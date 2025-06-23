@@ -1,0 +1,24 @@
+{
+  "extends": "ts-config-single-spa",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "ES2021",
+    "jsx": "react-jsx",
+    "declarationDir": "dist",
+    "baseUrl": "src",
+    "paths": {
+      "@packages/*": [
+        "shared/*"
+      ],
+      "@store/*": [
+        "store/*"
+      ],
+      "@api/*": [
+        "api/generated/*"
+      ]
+    }
+  },
+  "files": ["src/saltbox-core.tsx"],
+  "include": ["src/**/*"],
+  "exclude": ["src/**/*.test*"]
+}

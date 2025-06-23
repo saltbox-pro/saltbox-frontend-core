@@ -1,0 +1,134 @@
+.dashboardTableBlock {
+  transition: all 0.3s ease-in-out;
+  overflow: auto;
+  padding: 10px;
+  height: 100%;
+}
+
+.dashboardTableBlock table th:nth-child(2) {
+  width: 80px;
+}
+
+.dashboardTableBlock table th:nth-child(1) {
+  text-wrap: wrap;
+}
+
+.dashboardTableBlock :global(.fast-table-wrapper) thead {
+  position: sticky;
+  top: -1px;
+  z-index: 1;
+}
+
+.dashboardTableBlock :global(.fast-table-wrapper) {
+  flex: 1;
+  overflow: auto;
+  max-height: 400px;
+}
+
+.dashboardTableBlock :global(.fast-table) {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboardTableBlock :global(.fast-table table > thead > tr > th) {
+  background: white;
+  border: none;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.dashboardTableBlock :global(.fast-table table > tbody > tr > td) {
+  border: none;
+}
+
+.dashboardTableBlock :global(.fast-table-summary) {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dashboardTableBlockHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dashboardTableBlockHeaderTitle {
+  font-weight: bold;
+  font-size: large;
+}
+
+.dashboardTableBlockHeaderSettings {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboardTableBlockHeaderSelect {
+  position: relative;
+  cursor: pointer;
+}
+
+.dashboardTableBlock.fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+
+:global(.ant-select-dropdown) {
+  z-index: 3;
+}
+
+.dashboardTableBlock.fullscreen .dashboardTableBlockHeader {
+  width: 100%;
+  text-align: center;
+}
+
+.dashboardTableBlock.fullscreen .dashboardTableBlockHeader button {
+  margin-right: 10px;
+}
+
+.dashboardTableBlock.fullscreen :global(.fast-table-wrapper) {
+  max-height: none;
+  height: calc(100vh - 150px);
+  overflow-y: auto;
+}
+
+.dashboardTableBlock.fullscreen :global(.fast-table) {
+  height: 100%;
+}
+
+.dashboardTableBlock .minionDashboardCardGrainCol {
+  padding-right: 0.5rem;
+}
+
+.dashboardTableBlock .minionDashboardCardGrainTitle {
+  padding-top: 2px;
+}
+
+.dashboardTableBlock .minionDashboardCardGrainFilter {
+  width: 1.5rem;
+  min-height: 24px;
+}
+
+.dashboardTableBlock .minionDashboardCardGrainFilter button {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.1s linear;
+}
+
+.dashboardTableBlock tr:hover .minionDashboardCardGrainFilter button {
+  visibility: visible;
+  opacity: 1;
+}

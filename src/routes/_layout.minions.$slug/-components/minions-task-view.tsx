@@ -1,0 +1,130 @@
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+import { createColumnHelper } from "@tanstack/react-table";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { Button, Flex, Tag } from "antd";
+import { TaskListResponseSchema } from "@api/models";
+import { CopyToClipboardButton } from "@packages/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { FastTablePaginated } from "@packages/components/fast-table-paginated/fast-table-paginated";
+import { pastTimeByUserTZ } from "@packages/utils/datetime";
+import { appStore } from "@store/app-store";
+import { envStore } from "@store/env-store";
+import { TasksStore } from "@store/tasks-store";
+
+const TasksTable = FastTablePaginated<TaskListResponseSchema>;
+const columnHelper = createColumnHelper<TaskListResponseSchema>();
+
+export const MinionsTaskView = observer((props: { slug?: string }) => {
+  const { t } = useTranslation();
+  const [socket, setSocket] = useState<WebSocket | undefined>();
+  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [tasksStore] = useState(new TasksStore());
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("id", {
+        header: "ID",
+        cell: (data) => (
+          <>
+            <Link to={`/task/${data.getValue()}`}>
+              <Button type="link" size={"small"}>
+                {data.getValue()}
+              </Button>
+            </Link>
+            <CopyToClipboardButton text={data.getValue()} />
+          </>
+        ),
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
+        },
+      }),
+      columnHelper.accessor("task_template.title", {
+        header: t("minions.table-task-template-title"),
+      }),
+      columnHelper.accessor("task_template.name", {
+        header: t("minions.table-task-template-name"),
+      }),
+      columnHelper.accessor("target_collection.title", {
+        header: t("minions.table-collection"),
+        cell: (data) => {
+          return <> {data.getValue()} </>;
+        },
+      }),
+      columnHelper.accessor("user.name", {
+        header: t("minions.table-user"),
+      }),
+      columnHelper.accessor("status", {
+        header: t("minions.table-status"),
+        cell: (data) => {
+          switch (data.getValue()) {
+            case "created":
+              return (
+                <Tag color="yellow">{t("minions.tasks-table-created")}</Tag>
+              );
+            case "running":
+              return <Tag color="blue">{t("minions.tasks-table-running")}</Tag>;
+            case "stopped":
+              return <Tag color="red">{t("minions.tasks-table-stopped")}</Tag>;
+            case "finished":
+              return (
+                <Tag color="green">{t("minions.tasks-table-finished")}</Tag>
+              );
+            default:
+              return (
+                <Tag>{`${t(
+                  "minions.tasks-table-unknown-code"
+                )}: ${data.getValue()}`}</Tag>
+              );
+          }
+        },
+      }),
+      columnHelper.accessor("created", {
+        header: t("minions.table-created"),
+        cell: (data) => {
+          const created: string = pastTimeByUserTZ(data.getValue());
+          return <div>{created}</div>;
+        },
+      }),
+    ],
+    [t]
+  );
+
+  useEffect(() => {
+    const webSocket = new WebSocket(`${envStore.env?.wsServerUrl}/tasks`);
+    setSocket(webSocket);
+    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
+      const parsedTask = JSON.parse(event.data) as TaskListResponseSchema;
+      tasksStore.updateTask(parsedTask);
+    });
+    webSocket.addEventListener("open", () => {
+      setIsSocketOpen(true);
+    });
+    return () => webSocket.close();
+  }, []);
+
+  useEffect(() => {
+    const accessToken = appStore.authStore?.user?.access_token;
+    if (accessToken && socket && isSocketOpen) {
+      socket.send(accessToken);
+    }
+  }, [appStore.authStore?.user, socket, isSocketOpen]);
+
+  useEffect(() => {
+    tasksStore.loadTasks(props.slug);
+  }, [props.slug]);
+
+  return (
+    <Flex style={{ height: "100%" }}>
+      <TasksTable
+        columns={columns}
+        getRowId={(row) => row.id}
+        data={toJS(tasksStore.tasks)}
+        total={tasksStore.total}
+        pagination={tasksStore.pagination}
+        onLazyLoad={(pagination) => tasksStore.handleLazyLoad(pagination)}
+      ></TasksTable>
+    </Flex>
+  );
+});

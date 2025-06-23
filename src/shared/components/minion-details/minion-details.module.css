@@ -1,0 +1,63 @@
+.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-view) {
+  border: none;
+}
+
+.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-item-label) {
+  color: black !important;
+  background-color: white !important;
+}
+
+.minionDetailsDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.interfaceBlock {
+  margin: 8px 0;
+  padding: 8px;
+  border-left: 3px solid #1890ff;
+  background: #fafafa;
+}
+
+.interfaceDetails {
+  margin-left: 16px;
+  margin-top: 4px;
+}
+
+.minionDetailsDashboard :global(.ant-descriptions-item-label),
+.minionDetailsDashboard :global(.ant-descriptions-item-content) {
+  padding: 8px 12px !important;
+}
+
+.minionDetailsDashboard :global(.ant-descriptions-item-label) {
+  width: 216px;
+}
+
+.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-item-label) {
+  width: 200px;
+}
+
+.minionDetailsGrainButtons {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.1s linear;
+}
+
+:global(.ant-descriptions-item-content:hover) .minionDetailsGrainButtons {
+  visibility: visible;
+  opacity: 1;
+}
+
+.minionsTabs,
+.minionsTabs :global(.ant-tabs-content),
+.minionsTabs :global(.ant-tabs-tabpane),
+.minionsTabs :global(.ant-spin-container) {
+  height: 100%;
+}
+
+.minionsTabs :global(.ant-tabs-tab) {
+  padding: 0 0 12px 0;
+}

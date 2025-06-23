@@ -1,0 +1,44 @@
+.fast-table {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fast-table-wrapper {
+  flex: 1;
+}
+
+.fast-table table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.fast-table table > thead > tr > th {
+  color: #000000;
+  font-weight: 600;
+  text-align: start;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  padding: 1rem;
+  line-height: 1.1rem;
+}
+
+.fast-table table > tbody > tr > td {
+  border: 1px solid #f0f0f0;
+  padding: 0.5rem 1rem;
+  line-height: 1.1rem;
+}
+
+.fast-table-summary {
+  display: flex;
+  padding: 0.5rem 0 0;
+  margin-bottom: 0.5rem;
+}
+
+.fast-table-pagination {
+  display: flex;
+  gap: 0.125rem;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}

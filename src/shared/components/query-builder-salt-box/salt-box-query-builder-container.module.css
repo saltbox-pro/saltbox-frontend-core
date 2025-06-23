@@ -1,0 +1,19 @@
+.queryBuilder> :global(.ruleGroup) {
+  border-style: none;
+  background: none;
+}
+
+.queryBuilderContainer {
+  border-color: var(--rqb-border-color);
+  border-style: var(--rqb-border-style);
+  border-radius: var(--rqb-border-radius);
+  background: var(--rqb-background-color);
+  border-width: var(--rqb-border-width);
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px
+}

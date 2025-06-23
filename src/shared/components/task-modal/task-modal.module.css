@@ -1,0 +1,20 @@
+.taskParamsForm :global(#task-params-form),
+.taskParamsForm :global(#task-params-form-kwargs),
+.taskParamsForm :global(#task-params-form-args) {
+  border: none;
+  padding: 0;
+}
+
+.taskParamsForm :global(#task-params-form) fieldset {
+  background-color: rgba(230, 244, 255, 0.05);
+  border-color: #f0f0f0;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+
+.taskParamsForm :global(.ant-form-item-extra) {
+  font-size: 12px;
+  line-height: 14px;
+  padding-top: 4px;
+}

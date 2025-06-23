@@ -1,0 +1,21 @@
+.headerSelectContainer {
+  position: relative;
+  cursor: pointer;
+}
+
+.headerSelectStyle :global(.ant-select-selector) {
+  border: none !important;
+  box-shadow: none !important;
+  font-weight: bold !important;
+  font-size: large !important;
+  background-color: transparent !important;
+}
+
+.headerSelectStyle :global(.ant-select-arrow) {
+  display: none !important;
+}
+
+.headerSelectWrapper {
+  width: 250px;
+  position: relative;
+} 

@@ -1,0 +1,23 @@
+.queryBuilderContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.queryBuilder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:global(.readonly-rule-group) {
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+}
+
+:global(.readonly-rule) {
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+}

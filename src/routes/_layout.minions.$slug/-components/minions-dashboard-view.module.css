@@ -1,0 +1,30 @@
+.dashboardMainHeader {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 5px;
+}
+
+.dashboardTablesContainer {
+  display: grid;
+  position: relative;
+  grid-template-columns: repeat(auto-fit, minmax(440px,1fr));
+  grid-column-gap: 5px;
+  grid-row-gap: 5px;
+}
+
+.dashboardTableBlock {
+  height: 100%;
+  min-height: 500px;
+}
+
+.dashboardTableBlock h2 {
+  margin-top: 0;
+}
+
+.dashboardTableBlock1 { grid-area: 1 / 1 / 2 / 2; }
+.dashboardTableBlock2 { grid-area: 1 / 2 / 2 / 3; }
+.dashboardTableBlock3 { grid-area: 1 / 3 / 2 / 4; }
+.dashboardTableBlock4 { grid-area: 2 / 1 / 3 / 2; }
+.dashboardTableBlock5 { grid-area: 2 / 2 / 3 / 3; }
+.dashboardTableBlock6 { grid-area: 2 / 3 / 3 / 4; }
