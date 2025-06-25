@@ -8,8 +8,8 @@ export interface EnvInterface {
 export class EnvStore {
   isLoading: boolean;
   env: EnvInterface = {
-    apiBasePath: "https://demo.saltbox.pro/api/core",
-    wsServerUrl: "wss://demo.saltbox.pro/api/core",
+    apiBasePath: "http://localhost/api/core",
+    wsServerUrl: "ws://localhost/api/core",
   };
   error: Error | undefined;
 
@@ -21,4 +21,4 @@ export class EnvStore {
 
 export const envStore = new EnvStore();
 
-autorun(() => {});
+autorun(() => { });
