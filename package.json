@@ -1,6 +1,7 @@
 {
   "name": "saltbox-frontend-core",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
   "scripts": {
     "start": "webpack serve",
     "start:standalone": "webpack serve --env standalone",
