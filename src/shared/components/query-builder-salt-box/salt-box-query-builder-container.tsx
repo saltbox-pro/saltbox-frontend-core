@@ -11,8 +11,8 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Button, Flex, Spin } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { MatIcon } from "@packages/components/mat-icon/mat-icon";
-import { FilterStore } from "@store/filter-store";
+import { MatIcon } from "../../../../../saltbox-frontend-shared";
+import { FilterStore } from "saltbox-core/store";
 import { QueryBuilderSaltBox } from "./query-builder-salt-box";
 import styles from "./salt-box-query-builder-container.module.css";
 

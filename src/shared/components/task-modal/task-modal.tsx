@@ -9,8 +9,8 @@ import {
   TaskData,
   TaskTargetMinion,
   TaskTemplateModel,
-} from "@api/models";
-import { apiStore } from "@store/api-store";
+} from "saltbox-core-api";
+import { apiStore } from "saltbox-core/store";
 import { TaskForm, TaskFormData } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";

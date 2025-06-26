@@ -12,12 +12,12 @@ import {
   FilterOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { GrainValue } from "@api/models";
-import { FastTableListed } from "@packages/components/fast-table-listed/fast-table-listed";
-import { HeaderSelect } from "@packages/components/header-select/header-select";
-import { DashboardCardStore } from "@store/dashboard-card-store";
-import { dashboardStore } from "@store/dashboard-store";
-import { MinionFilterStore } from "@store/minion-filter-store";
+import { GrainValue } from "saltbox-core-api";
+import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
+import { DashboardCardStore } from "saltbox-core/store";
+import { dashboardStore } from "saltbox-core/store";
+import { MinionFilterStore } from "saltbox-core/store";
 import styles from "./minion-dashboard-card.module.css";
 
 const columnHelper = createColumnHelper<GrainValue>();
@@ -422,9 +422,8 @@ export const MinionDashboardCard = observer(
       <>
         <Card
           size="small"
-          className={`${styles.dashboardTableBlock} ${
-            isFullScreen && styles.fullscreen
-          }`}
+          className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen
+            }`}
         >
           <Spin spinning={dashboardCardStore.isFilterLoading}>
             <div className={styles.dashboardTableBlockHeader}>

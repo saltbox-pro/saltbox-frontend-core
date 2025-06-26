@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
-import { GrainValue } from "@api/models";
-import { apiStore } from "./api-store";
+import { GrainValue } from "saltbox-core-api";
+import { apiStore } from "saltbox-core/store";
 
 export class DashboardCardStore {
   isFilterLoading: boolean;

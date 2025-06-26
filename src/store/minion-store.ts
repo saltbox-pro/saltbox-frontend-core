@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
-import { MinionDetailSchema, PillarModel } from "@api/models";
-import { apiStore } from "@store/api-store";
+import { MinionDetailSchema, PillarModel } from "saltbox-core-api";
+import { apiStore } from "saltbox-core/store";
 
 export class MinionStore {
   mid: string;

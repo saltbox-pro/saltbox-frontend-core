@@ -14,14 +14,14 @@ import {
   Tabs,
 } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
-import { GrainsSchema, MinionDetailSchema, PillarModel } from "@api/models";
-import { CopyToClipboardButton } from "@packages/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { GrainsSchema, MinionDetailSchema, PillarModel } from "saltbox-core-api";
+import { CopyToClipboardButton } from "saltbox-shared/copy-to-clipboard-button/copy-to-clipboard-button";
 import styles from "./minion-details.module.css";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode
-    ? K
-    : never]: GrainsSchema[K];
+  ? K
+  : never]: GrainsSchema[K];
 };
 
 interface MinionSimpleDetailView {
@@ -362,9 +362,9 @@ export function MinionDetails(props: {
   const { t } = useTranslation();
   const combinedGrains = props.minion
     ? {
-        ...props.minion.grains,
-        ...props.minion.additional_grains,
-      }
+      ...props.minion.grains,
+      ...props.minion.additional_grains,
+    }
     : {};
 
   const items = [

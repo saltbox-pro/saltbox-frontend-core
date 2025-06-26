@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Flex, Form } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { TaskCreateRequestSchemaInput } from "@api/index";
+import { TaskCreateRequestSchemaInput } from "saltbox-core-api";
 
 type TaskRawProps = {
   taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;

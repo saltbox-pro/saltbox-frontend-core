@@ -1,7 +1,7 @@
 import { observer } from "mobx-react-lite";
 import { Flex } from "antd";
-import { dashboardStore } from "@store/dashboard-store";
-import { MinionFilterStore } from "@store/minion-filter-store";
+import { dashboardStore } from "saltbox-core/store";
+import { MinionFilterStore } from "saltbox-core/store";
 import { MinionDashboardCard } from "./minion-dashboard-card";
 import styles from "./minions-dashboard-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
@@ -25,9 +25,8 @@ export const MinionsDashboardView = observer(
           {dashboardStore.blocks.map((block, index) => (
             <div
               key={index}
-              className={`${styles.dashboardTableBlock} ${
-                styles[`dashboardTableBlock${index + 1}`]
-              }`}
+              className={`${styles.dashboardTableBlock} ${styles[`dashboardTableBlock${index + 1}`]
+                }`}
             >
               <MinionDashboardCard
                 grains={block.grains}

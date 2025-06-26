@@ -1,8 +1,8 @@
-import {formatQuery} from 'react-querybuilder';
+import { formatQuery } from 'react-querybuilder';
 import { action, computed, makeObservable, runInAction } from 'mobx';
-import { customRuleProcessorMongoDB } from '@packages/utils/queryBulderUtils';
-import { apiStore } from '@store/api-store';
-import { FilterStore } from '@store/filter-store';
+import { customRuleProcessorMongoDB } from 'saltbox-core/shared/utils/queryBulderUtils';
+import { apiStore } from 'saltbox-core/store';
+import { FilterStore } from 'saltbox-core/store';
 
 export class MinionFilterStore extends FilterStore {
   constructor() {

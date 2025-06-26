@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { CollectionDetailSchema } from "@api/index";
-import { apiStore } from "@store/api-store";
+import { CollectionDetailSchema } from "saltbox-core-api";
+import { apiStore } from "saltbox-core/store";
 
 export class CollectionStore {
   isLoading: boolean;

@@ -6,7 +6,7 @@ type BlockType = {
   view: string;
 };
 
-class DashboardStore {
+export class DashboardStore {
   blocks: BlockType[];
   isCardFullScreen: boolean;
 

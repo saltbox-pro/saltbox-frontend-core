@@ -4,9 +4,9 @@ import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Button, Popover } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
-import { SaltBoxReadonlyQueryBuilder } from "@packages/components/query-builder-salt-box/salt-box-readonly-query-builder";
-import { CollectionPopoverFilterStore } from "@store/collection-popover-filter-store";
-import { CollectionStore } from "@store/collection-store";
+import { SaltBoxReadonlyQueryBuilder } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-readonly-query-builder";
+import { CollectionPopoverFilterStore } from "saltbox-core/store";
+import { CollectionStore } from "saltbox-core/store";
 
 interface CollectionInfoPopoverProps {
   slug: string;
@@ -44,9 +44,8 @@ export const CollectionInfoPopover = observer(
               >
                 {t("minions.subcollection-info")}
                 <Link
-                  to={`/minions/${
-                    collectionStore.collection?.parent_slug || ""
-                  }`}
+                  to={`/minions/${collectionStore.collection?.parent_slug || ""
+                    }`}
                 >
                   <Button type="link" size={"small"}>
                     {collectionStore.collection?.parent_title}

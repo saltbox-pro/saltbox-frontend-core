@@ -3,7 +3,7 @@ import QueryBuilder from "react-querybuilder";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Spin } from "antd";
-import { FilterStore } from "@store/filter-store";
+import { FilterStore } from "saltbox-core/store";
 import { QueryBuilderSaltBox } from "./query-builder-salt-box";
 import styles from "./salt-box-readonly-query-builder.module.css";
 import { SaltBoxReadonlyValueEditor } from "./salt-box-readonly-value-editor";

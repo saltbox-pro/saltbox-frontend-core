@@ -27,20 +27,20 @@ import {
   MinionShortSchema,
   TaskCreateRequestSchemaInput,
   TaskTargetMinion,
-} from "@api/models";
-import { CopyToClipboardButton } from "@packages/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated } from "@packages/components/fast-table-paginated/fast-table-paginated";
-import { MinionDetails } from "@packages/components/minion-details/minion-details";
-import { TaskModal } from "@packages/components/task-modal/task-modal";
-import { formatTimeByUserTZ, pastTimeByUserTZ } from "@packages/utils/datetime";
-import { apiStore } from "@store/api-store";
-import { appStore } from "@store/app-store";
-import { CollectionStore } from "@store/collection-store";
-import { envStore } from "@store/env-store";
-import { MinionFilterStore } from "@store/minion-filter-store";
-import { MinionStore } from "@store/minion-store";
-import { MinionsStore } from "@store/minions-store";
-import { TaskStore } from "@store/task-store";
+} from "saltbox-core-api";
+import { CopyToClipboardButton } from "saltbox-shared/copy-to-clipboard-button/copy-to-clipboard-button";
+import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
+import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import { apiStore } from "saltbox-core/store";
+import { appStore } from "saltbox-core/store";
+import { CollectionStore } from "saltbox-core/store";
+import { envStore } from "saltbox-core/store";
+import { MinionFilterStore } from "saltbox-core/store";
+import { MinionStore } from "saltbox-core/store";
+import { MinionsStore } from "saltbox-core/store";
+import { TaskStore } from "saltbox-core/store";
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
 
@@ -137,15 +137,15 @@ function minionsColumnGenerator(onMinionClick: (id: string) => void) {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
+            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+            badgeText: pastTimeByUserTZ(data.getValue()),
+            popoverContent: formatTimeByUserTZ(data.getValue()),
+          }
           : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
+            badgeColor: "orange",
+            badgeText: t("minions.never-synced"),
+            popoverContent: undefined,
+          };
         return (
           <Popover content={componentData.popoverContent}>
             <span>

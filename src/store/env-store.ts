@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable, runInAction } from "mobx";
+import { autorun, makeAutoObservable } from "mobx";
 
 export interface EnvInterface {
   wsServerUrl: string;

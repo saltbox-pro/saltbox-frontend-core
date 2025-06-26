@@ -12,15 +12,20 @@ module.exports = (webpackConfigEnv, argv) => {
   });
 
   return merge(defaultConfig, {
-    resolve: {
-      alias: {
-        "@packages": path.resolve(__dirname, "src/shared"),
-        "@store": path.resolve(__dirname, "src/store"),
-        "@api": path.resolve(__dirname, "src/api/generated"),
-      },
-    },
     devServer: {
       port: 4202,
     },
+    resolve: {
+      alias: {
+        "saltbox-shared": path.resolve(__dirname, "../saltbox-frontend-shared/src"),
+        "saltbox-core-api": path.resolve(__dirname, "../saltbox-frontend-core/src/api/generated"),
+        "saltbox-core": path.resolve(__dirname, "../saltbox-frontend-core/src"),
+        "saltbox-base": path.resolve(__dirname, "../saltbox-frontend-base/src"),
+        "saltbox-flow": path.resolve(__dirname, "../saltbox-frontend-flow/src"),
+        "saltbox-root-config": path.resolve(__dirname, "../saltbox-frontend-root-config/src"),
+      },
+    },
+    resolveLoader: {
+    }
   });
 };

@@ -7,7 +7,7 @@ import dayjs from "dayjs";
 import {
   DATETIME_TIMESTAMP,
   formatTimeByUserTZ,
-} from "@packages/utils/datetime";
+} from "saltbox-core/shared/utils/datetime";
 
 export const customRuleProcessorMongoDB: ValueProcessorByRule = (
   rule,

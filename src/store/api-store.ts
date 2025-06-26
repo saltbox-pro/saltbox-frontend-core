@@ -10,10 +10,10 @@ import {
   SettingsApi,
   TaskTemplatesApi,
   TasksApi,
-} from "@api/apis";
-import { Configuration } from "@api/runtime";
-import { appStore } from "@store/app-store";
-import { envStore } from "@store/env-store";
+} from "saltbox-core-api";
+import { Configuration } from "saltbox-core-api";
+import { appStore } from "saltbox-core/store";
+import { envStore } from "saltbox-core/store";
 
 class ApiStore {
   private get apiConfig() {

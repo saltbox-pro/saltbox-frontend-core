@@ -1,5 +1,7 @@
+import { AuthStore } from "saltbox-root-config/store";
+
 class AppStore {
-  authStore: any;
+  authStore: AuthStore;
 
   constructor() {
     this.authStore = null;

@@ -5,8 +5,8 @@ import {
   MasterViewSchema,
   TaskCreateRequestSchemaInput,
   TaskTemplateModel,
-} from "@api/index";
-import { apiStore } from "@store/api-store";
+} from "saltbox-core-api";
+import { apiStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
 
@@ -66,8 +66,8 @@ export function TaskForm({
           a.label.toLowerCase() > b.label.toLowerCase()
             ? 1
             : a.label.toLowerCase() < b.label.toLowerCase()
-            ? -1
-            : 0
+              ? -1
+              : 0
         );
         setTaskTemplateOptions(options);
       })

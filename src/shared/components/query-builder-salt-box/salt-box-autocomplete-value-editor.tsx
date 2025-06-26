@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ValueEditorProps } from "react-querybuilder";
 import { AutoComplete, AutoCompleteProps } from "antd";
-import { apiStore } from "@store/api-store";
+import { apiStore } from "saltbox-core/store";
 
 type AntDValueEditorProps = ValueEditorProps & {
   extraProps?: Record<string, any>;

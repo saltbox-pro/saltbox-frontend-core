@@ -1,8 +1,8 @@
 import { parseMongoDB } from 'react-querybuilder/parseMongoDB';
 import { action, makeObservable, runInAction } from 'mobx';
-import { generateIdsForQuery } from '@packages/utils/generateIdsForQuery';
-import { FilterStore } from '@store/filter-store';
-import { apiStore } from './api-store';
+import { generateIdsForQuery } from 'saltbox-core/shared/utils/generateIdsForQuery';
+import { FilterStore } from 'saltbox-core/store';
+import { apiStore } from 'saltbox-core/store';
 
 export class CollectionPopoverFilterStore extends FilterStore {
   constructor() {

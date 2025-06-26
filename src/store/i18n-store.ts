@@ -2,8 +2,8 @@ import { initReactI18next } from "react-i18next";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
-import { AppLanguage, AppLanguageLabel } from "@packages/conf/app-locales";
-import { setDateTimeLocale } from "@packages/utils/datetime";
+import { AppLanguage, AppLanguageLabel } from "saltbox-core/shared/conf/app-locales";
+import { setDateTimeLocale } from "saltbox-core/shared/utils/datetime";
 
 class I18NStore {
   readonly supportedLanguages: Array<AppLanguage> = [
