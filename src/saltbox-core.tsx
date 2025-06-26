@@ -24,7 +24,7 @@ export const meta = {
       {
         key: "minions",
         label: "Minions",
-        path: "/core/minions",
+        path: "/core/minions/root",
       },
       {
         key: "masters",

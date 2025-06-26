@@ -11,7 +11,8 @@
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "build:types": "tsc"
+    "build:types": "tsc",
+    "live": "npx http-server ./dist -p 4202 --cors"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",
