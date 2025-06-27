@@ -77,7 +77,7 @@ const CollectionPage = observer(() => {
 
       <Tabs
         className={styles.minionsTabs}
-        /* tabBarExtraContent={{
+        tabBarExtraContent={{
           right: (
             <>
               <Flex gap={8}>
@@ -105,7 +105,7 @@ const CollectionPage = observer(() => {
               </Flex>
             </>
           ),
-        }} */
+        }}
         items={[
           {
             label: t("minions.tab-list"),

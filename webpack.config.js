@@ -9,9 +9,10 @@ module.exports = (webpackConfigEnv, argv) => {
     webpackConfigEnv,
     argv,
     outputSystemJS: false,
+
   });
 
-  return merge(defaultConfig, {
+  const config = merge(defaultConfig, {
     devServer: {
       port: 4202,
     },
@@ -25,7 +26,9 @@ module.exports = (webpackConfigEnv, argv) => {
         "saltbox-root-config": path.resolve(__dirname, "../saltbox-frontend-root-config/src"),
       },
     },
-    resolveLoader: {
-    }
   });
+
+  config.externals = [];
+
+  return config;
 };
