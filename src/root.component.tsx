@@ -2,13 +2,21 @@ import { observer } from "mobx-react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import CollectionPage from "./routes/_layout.minions.$slug/index.lazy";
 import { I18nextProvider } from "react-i18next";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import i18n from "i18next";
-import { appStore } from "saltbox-core/store";
+import { appStore, envStore } from "saltbox-core/store";
+import { runInAction } from "mobx";
 
 export default observer(function Root(props) {
-  const { authStore } = props;
-  appStore.init(authStore);
+  useEffect(() => {
+    const { authStore, env } = props;
+    appStore.init(authStore);
+    runInAction(() => {
+      envStore.env = env;
+    });
+  }, []);
+
+  if (!envStore.env) return <>loading</>;
 
   return (
     <I18nextProvider i18n={i18n}>

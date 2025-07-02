@@ -1,4 +1,4 @@
-import { autorun, makeAutoObservable } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 export interface EnvInterface {
   wsServerUrl: string;
@@ -7,10 +7,7 @@ export interface EnvInterface {
 
 export class EnvStore {
   isLoading: boolean;
-  env: EnvInterface = {
-    apiBasePath: "http://localhost/api/core",
-    wsServerUrl: "ws://localhost/api/core",
-  };
+  env: EnvInterface | undefined;
   error: Error | undefined;
 
   constructor() {
@@ -20,5 +17,3 @@ export class EnvStore {
 }
 
 export const envStore = new EnvStore();
-
-autorun(() => { });
