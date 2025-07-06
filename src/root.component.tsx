@@ -6,6 +6,7 @@ import { Suspense, useEffect } from "react";
 import i18n from "i18next";
 import { appStore, envStore } from "saltbox-core/store";
 import { runInAction } from "mobx";
+import "react-querybuilder/dist/query-builder.css";
 
 export default observer(function Root(props) {
   useEffect(() => {
