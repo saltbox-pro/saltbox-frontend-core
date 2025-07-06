@@ -17,6 +17,8 @@ const lifecycles = singleSpaReact({
 export const { bootstrap, mount, unmount } = lifecycles;
 
 export const meta = {
+  name: "saltbox-frontend-core",
+  path: "/core",
   menuConfig: {
     key: "core",
     label: "Core",
