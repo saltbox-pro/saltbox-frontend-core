@@ -38,6 +38,22 @@ export const meta = {
         label: "Jobs",
         path: "/core/jobs",
       },
+      {
+        key: "jobs-templates",
+        label: "Jobs Templates",
+        path: "/core/jobs-templates",
+      },
+
+      {
+        key: "task-templates",
+        label: "Task Templates",
+        path: "/core/task-templates",
+      },
+      {
+        key: "settings-sls",
+        label: "Settings SLS",
+        path: "/core/settings-sls",
+      },
     ],
   },
 };

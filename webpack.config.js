@@ -1,4 +1,5 @@
 const { merge } = require("webpack-merge");
+const webpack = require("webpack");
 const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
 const CopyPlugin = require("copy-webpack-plugin");
 const path = require("path");
@@ -33,6 +34,11 @@ module.exports = (webpackConfigEnv, argv) => {
           { from: "public/locales", to: "locales" },
         ],
       }),
+      // TODO: make this work in real life
+      new webpack.DefinePlugin({
+        DEVELOPMENT: JSON.stringify(process.env.NODE_ENV || 'development'),
+        PRODUCTION: JSON.stringify(argv.mode === 'production'),
+      })
     ],
   });
 

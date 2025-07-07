@@ -1,0 +1,6 @@
+.collectionFlex,
+.collectionFlex :global(.fast-table),
+.collectionFlex :global(.ant-spin-nested-loading),
+.collectionFlex :global(.ant-spin-container) {
+  height: 100%;
+}

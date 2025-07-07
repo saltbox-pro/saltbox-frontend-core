@@ -1,0 +1,186 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { runInAction, toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { Badge, Breadcrumb, Button, Tabs, TabsProps } from "antd";
+import {
+  CaretRightOutlined,
+  HomeOutlined,
+  IssuesCloseOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
+import { JobResult, TaskModel, TaskStatus } from "saltbox-core-api";
+import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
+/* import { authStore } from "saltbox-core/store"; */
+import { envStore } from "saltbox-core/store";
+import { TaskStore } from "saltbox-core/store";
+import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns";
+import { TaskJobs } from "./-components/task-jobs/task-jobs";
+import { TaskMinions } from "./-components/task-minions/task-minions";
+import { TaskStat } from "./-components/task-stat/task-stat";
+import { Link, Route, useNavigate, useParams } from "react-router";
+import styles from "./index.module.css";
+
+const TaskPage = observer(() => {
+  const { t } = useTranslation();
+  const { taskId: taskid } = useParams();
+  const navigate = useNavigate();
+  const [taskStore] = useState(new TaskStore());
+
+  useEffect(() => {
+    taskStore.reload(taskid);
+  }, []);
+
+  useEffect(() => {
+    if (taskStore.error) {
+      navigate("/not-found");
+    }
+  }, [taskStore.error]);
+
+  const [socket, setSocket] = useState<WebSocket | undefined>();
+  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const webSocket = new WebSocket(
+      `${envStore.env?.wsServerUrl}/tasks/${taskid}`,
+    );
+    setSocket(webSocket);
+    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
+      const parsedData = JSON.parse(event.data);
+      if (parsedData?.retcode !== undefined) {
+        taskStore.addJobReturn(parsedData as JobResult);
+      } else if (parsedData?.jobs !== undefined) {
+        runInAction(() => {
+          taskStore.task = parsedData as TaskModel;
+        });
+      }
+    });
+    webSocket.addEventListener("open", () => {
+      setIsSocketOpen(true);
+    });
+    return () => webSocket.close();
+  }, []);
+
+  /* useEffect(() => {
+    const accessToken = authStore.user?.access_token;
+    if (accessToken && socket && isSocketOpen) {
+      socket.send(accessToken);
+    }
+  }, [authStore.user, socket, isSocketOpen]); */
+
+  const taskTabs: TabsProps["items"] = [
+    {
+      key: "minions",
+      label: t("minions.title"),
+      children: (
+        <TaskMinions
+          minions={toJS(Object.values(taskStore.task?.minions ?? {}))}
+          collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
+        />
+      ),
+    },
+    {
+      key: "jobs",
+      label: (
+        <span>
+          {t("mainmenu.jobs")}
+          {taskStore?.task?.jobs?.length !== undefined &&
+            taskStore.jobsCount > 0 && (
+              <Badge
+                color="blue"
+                count={taskStore.jobsCount}
+                size="small"
+                style={{ marginTop: -11 }}
+              />
+            )}
+        </span>
+      ),
+      children: <TaskJobs task={toJS(taskStore.task)} />,
+    },
+    {
+      key: "job-returns",
+      label: t("task.job-returns"),
+      children: <TaskJobReturns jobReturns={toJS(taskStore.jobReturns)} />,
+    },
+  ];
+
+  return (
+    <>
+      <Breadcrumb
+        items={[
+          {
+            href: "/",
+            title: <HomeOutlined />,
+          },
+          {
+            title: (
+              <Link
+                to={{
+                  pathname: `/minions/${taskStore.task?.target_collection?.slug ?? "root"}`
+                }}
+              >
+                {t("minions.title")}
+              </Link>
+            ),
+          },
+          {
+            title: t("task.title", { taskId: taskid }),
+          },
+        ]}
+      />
+
+      <PageHeader title={t("task.title", { taskId: taskid })} />
+
+      <TaskStat
+        task={toJS(taskStore.task)}
+        jobReturns={toJS(taskStore.jobReturns)}
+      />
+
+      <div>
+        {(taskStore.task?.status === TaskStatus.Created ||
+          taskStore.task?.status === TaskStatus.Stopped) && (
+            <Button
+              onClick={() => taskStore.handleRunTask()}
+              color="primary"
+              variant="solid"
+              icon={<CaretRightOutlined />}
+              disabled={taskStore.isTaskLoading}
+            >
+              {t("task.run")}
+            </Button>
+          )}
+        {taskStore.task?.status === TaskStatus.Running && (
+          <Button
+            onClick={() => taskStore.handleStopTask()}
+            color="danger"
+            variant="solid"
+            icon={<StopOutlined />}
+            disabled={taskStore.isTaskLoading}
+          >
+            {t("task.stop")}
+          </Button>
+        )}
+        {taskStore.task?.status === TaskStatus.Finished &&
+          taskStore.failedMinionsCount > 0 && (
+            <Button
+              onClick={() => taskStore.handleRestartFailed()}
+              color="danger"
+              variant="solid"
+              icon={<IssuesCloseOutlined />}
+              disabled={taskStore.isTaskLoading}
+            >
+              {t("task.restart-failed")}
+            </Button>
+          )}
+      </div>
+
+      <Tabs
+        className={styles.taskTabs}
+        defaultActiveKey="minions"
+        items={taskTabs}
+      ></Tabs>
+    </>
+  );
+});
+
+export default TaskPage;

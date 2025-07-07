@@ -1,0 +1,12 @@
+.masterTabs,
+.masterTabs :global(.ant-tabs-content),
+.masterTabs :global(.ant-tabs-tabpane),
+.masterTabs :global(.fast-table),
+.masterTabs :global(.pillars-table-container),
+.masterTabs :global(.ant-spin-container) {
+    height: 100%;
+}
+
+.masterTabs :global(.ant-tabs-tab) {
+    padding: 0 0 12px 0;
+}

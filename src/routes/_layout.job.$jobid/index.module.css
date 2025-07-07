@@ -1,0 +1,3 @@
+.jobReturnTableWrapper :global(.fast-table table > thead > tr > th:first-child) {
+  width: 1%;
+}

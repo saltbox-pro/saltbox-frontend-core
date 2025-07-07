@@ -12,6 +12,7 @@ import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
+
 import styles from "./index.module.css";
 
 const minionFilterStore = new MinionFilterStore();

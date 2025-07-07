@@ -1,0 +1,8 @@
+.taskTabs,
+.taskTabs :global(.ant-tabs-content),
+.taskTabs :global(.fast-table),
+.taskTabs :global(.ant-tabs-tabpane),
+.taskTabs :global(.ant-tabs-tabpane-active),
+.taskTabs :global(.ant-spin-container) {
+  height: 100%;
+}
