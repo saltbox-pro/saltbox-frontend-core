@@ -26,6 +26,13 @@ module.exports = (webpackConfigEnv, argv) => {
         "saltbox-root-config": path.resolve(__dirname, "../saltbox-frontend-root-config/src"),
       },
     },
+    plugins: [
+      new CopyPlugin({
+        patterns: [
+          { from: "public/locales", to: "locales" },
+        ],
+      }),
+    ],
   });
 
   config.externals = [];

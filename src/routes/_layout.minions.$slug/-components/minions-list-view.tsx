@@ -54,8 +54,7 @@ const lastActivitySecondsToBadgeColor = (seconds: number) => {
   return "red";
 };
 
-function minionsColumnGenerator(onMinionClick: (id: string) => void) {
-  const { t } = useTranslation();
+function minionsColumnGenerator(t: any, onMinionClick: (id: string) => void) {
   return [
     {
       id: "select-minion",
@@ -370,7 +369,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           spinning={minionsStore.isLoading}
         >
           <MinionsTable
-            columns={minionsColumnGenerator((minionId) =>
+            columns={minionsColumnGenerator(t, (minionId) =>
               setDrawerMinionId(minionId)
             )}
             getRowId={(row) => row.id}
