@@ -6,7 +6,7 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Button, Flex, Tag } from "antd";
 import { TaskListResponseSchema } from "saltbox-core-api";
-import { CopyToClipboardButton } from "saltbox-shared/copy-to-clipboard-button/copy-to-clipboard-button";
+import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 import { appStore } from "saltbox-core/store";

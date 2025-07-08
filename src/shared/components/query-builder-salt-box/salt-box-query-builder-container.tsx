@@ -11,10 +11,10 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Button, Flex, Spin } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import { MatIcon } from "../../../../../saltbox-frontend-shared";
 import { FilterStore } from "saltbox-core/store";
 import { QueryBuilderSaltBox } from "./query-builder-salt-box";
 import styles from "./salt-box-query-builder-container.module.css";
+import { MatIcon } from "saltbox-core/shared/components/mat-icon/mat-icon";
 
 type SaltBoxQueryBuilderContainerProps = {
   filterStore: FilterStore;
