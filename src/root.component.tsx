@@ -36,7 +36,9 @@ export default observer(function Root(props) {
             <Route path="/minion/:slug/:mid" element={<MinionPage />} />
             <Route path="/minions/:slug" element={<CollectionPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
+            <Route path="/minion/:slug/:mid" element={<MinionPage />} />
             <Route path="/masters" element={<MastersPage />} />
+            <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/job/:jid" element={<JobPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/jobs-templates" element={<JobsTemplatesPage />} />

@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { observer } from "mobx-react-lite"
-import { Breadcrumb, Flex, Tabs, Spin, Button, Modal, message, Upload } from "antd"
-import { HomeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined } from "@ant-design/icons"
+import { Breadcrumb, Flex, Tabs, Spin, Button, Modal, message, Upload, Space, Input as AntdInput } from "antd"
+import { HomeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons"
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header"
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated"
+import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed"
 import { createColumnHelper } from "@tanstack/react-table"
 import { MinionShortSchema, PillarModel, MinionGatherMinionSchema } from "saltbox-core-api"
 import { apiStore } from "saltbox-core/store"
@@ -16,6 +17,22 @@ import styles from "./index.module.css"
 
 const pillarColumnHelper = createColumnHelper<PillarModel>()
 const clientColumnHelper = createColumnHelper<MinionGatherMinionSchema>()
+
+const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
+  value: string;
+  onChange: (rowIdx: number, dataIndex: string, value: string) => void;
+  rowIndex: number;
+  fieldName: string;
+}) => {
+  return (
+    <AntdInput.TextArea
+      value={value}
+      onChange={(e) => onChange(rowIndex, fieldName, e.target.value)}
+      style={{ width: '100%' }}
+      autoSize={{ minRows: 1, maxRows: 10 }}
+    />
+  );
+};
 
 const MasterPage = observer(() => {
   const { t } = useTranslation();
@@ -29,14 +46,19 @@ const MasterPage = observer(() => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedPillar, setSelectedPillar] = useState<PillarModel | null>(null)
   const isFirstRender = useRef(true)
-  const [isClientsLoading, setIsClientsLoading] = useState(false)
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false)
-  const [importedPillars, setImportedPillars] = useState<PillarModel[]>([])
-  const [updateExisting, setUpdateExisting] = useState(false)
+  const [isImporting, setIsImporting] = useState(false)
+  const [parsedPillars, setParsedPillars] = useState<any[]>([])
+  const [isEditingImport, setIsEditingImport] = useState(false)
+  const [editedPillars, setEditedPillars] = useState<any[]>([])
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [isParsing, setIsParsing] = useState(false)
+  const [importFileList, setImportFileList] = useState<any[]>([])
+  const [isCustomImportModalOpen, setIsCustomImportModalOpen] = useState(false)
+  const [importStep, setImportStep] = useState(1)
 
   useEffect(() => {
     if (masterId) {
-      setIsClientsLoading(true)
+      setIsLoadingClients(true)
       apiStore.minionsApi
         ?.gatherMinionsMinionsGatherGet({
           tgt: "*",
@@ -50,7 +72,7 @@ const MasterPage = observer(() => {
           setClients([])
         })
         .finally(() => {
-          setIsClientsLoading(false)
+          setIsLoadingClients(false)
         })
     }
   }, [masterId])
@@ -60,6 +82,25 @@ const MasterPage = observer(() => {
       if (!masterId) return
       try {
         await pillarsStore.loadPillars(masterId)
+
+        const pillars = pillarsStore.pillars;
+        const servicePillars = pillars.filter(pillar =>
+          pillar.name === 'name' || pillar.name === 'value'
+        );
+
+        if (servicePillars.length > 0) {
+          for (const pillar of servicePillars) {
+            try {
+              await pillarsStore.deletePillar(
+                masterId,
+                pillar.name,
+                pillar.minion_id || undefined,
+              );
+            } catch (error) {
+            }
+          }
+          await pillarsStore.loadPillars(masterId);
+        }
       } catch (error) {
         if (isFirstRender.current) {
           message.error("Failed to load pillars")
@@ -162,11 +203,20 @@ const MasterPage = observer(() => {
       };
 
       const header = 'target minions,pillar name,pillar value';
-      const rows = pillars.map(pillar => [
-        escapeCsv(pillar.minion_id || '*'),
-        escapeCsv(pillar.name),
-        escapeCsv(pillar.value)
-      ].join(','));
+      const rows = pillars
+        .filter(pillar => {
+          const isServiceRecord = pillar.name === 'name' || pillar.name === 'value';
+          return !isServiceRecord;
+        })
+        .map(pillar => {
+          const row = [
+            escapeCsv(pillar.minion_id || '*'),
+            escapeCsv(pillar.name),
+            escapeCsv(pillar.value)
+          ];
+          return row.join(',');
+        });
+
       const csvContent = [header, ...rows].join('\n');
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
@@ -183,66 +233,149 @@ const MasterPage = observer(() => {
     }
   }
 
-  const handleImportCsv = async (file: File) => {
-    if (!masterId) return
-
+  const handleImportConfirm = async () => {
+    if (!masterId) return;
+    setIsImporting(true);
     try {
-      const text = await file.text()
-      let lines = text.split('\n').filter(line => line.trim())
-      if (lines[0].toLowerCase().replace(/\s+/g, '') === 'targetminions,pillarname,pillarvalue') {
-        lines[0] = 'minion_id,name,value';
-      }
-      const dataLines = lines.slice(1);
-      const items = dataLines.map(line => {
-        const [minion_id, name, value] = line.split(',').map(field => field.trim())
-        return {
+      const sourceData = isEditingImport ? editedPillars : parsedPillars;
+
+      const items = sourceData
+        .filter((row: any) => {
+          const name = row.name?.trim?.() || '';
+          const value = row.value?.trim?.() || '';
+          const shouldInclude = name && value && name !== 'name' && name !== 'value';
+          return shouldInclude;
+        })
+        .map((row: any) => ({
           master_id: masterId,
-          minion_id: minion_id || null,
-          name,
-          value
-        }
-      })
+          minion_id: row.minion_id?.trim?.() || null,
+          name: row.name?.trim?.() || '',
+          value: row.value?.trim?.() || '',
+        }));
 
       const result = await apiStore.pillarsApi?.pillarImport({
         PillarImportSchema: {
           items,
-          update_existing: false
+          update_existing: true
         }
-      })
+      });
 
       if (result) {
-        message.success(t("pillars.import-success"))
-        pillarsStore.loadPillars(masterId)
+        message.success(t("pillars.import-success"));
+        setIsCustomImportModalOpen(false);
+        setImportFile(null);
+        setImportFileList([]);
+        setParsedPillars([]);
+        setEditedPillars([]);
+        setImportStep(1);
+        await pillarsStore.loadPillars(masterId);
       }
     } catch (error) {
-      message.error(t("pillars.import-parse-error"))
+      message.error(t("pillars.import-parse-error"));
+    } finally {
+      setIsImporting(false);
     }
+  };
+
+  const handleOpenImportModal = () => {
+    setIsCustomImportModalOpen(true)
+    setImportStep(1)
+    setParsedPillars([])
+    setEditedPillars([])
+    setIsEditingImport(false)
+    setImportFile(null)
   }
 
-  const handleImportConfirm = async () => {
-    if (!masterId) return
+  const handleImportFileChange = (info: any) => {
+    if (info.file.status === 'removed') {
+      setImportFile(null);
+      setImportFileList([]);
+      setParsedPillars([]);
+      return;
+    }
+    const fileObj = info.file.originFileObj || info.file;
+    setImportFile(fileObj);
+    setImportFileList([info.file]);
+  }
 
+  const handleParseCsv = async (file?: File) => {
+    const fileToParse = file || importFile;
+    if (!fileToParse || !masterId) return;
+    setIsParsing(true);
     try {
-      const invalidPillars = importedPillars.filter(pillar => !pillar.name || !pillar.value)
-      if (invalidPillars.length > 0) {
-        throw new Error('Invalid pillars data: some pillars are missing required fields')
+      const text = await fileToParse.text();
+      let lines = text.split('\n');
+      if (lines[0].toLowerCase().replace(/\s+/g, '') === 'targetminions,pillarname,pillarvalue') {
+        lines[0] = 'minion_id,name,value';
+      }
+      const fixedText = lines.join('\n');
+      const fixedFile = new Blob([fixedText], { type: 'text/csv' });
+
+      const response = await apiStore.pillarsApi?.pillarParseCsvRaw({
+        master_id: masterId,
+        pillars_csv: fixedFile,
+      });
+      const rawData = await response?.value();
+
+      const correctedData: any[] = [];
+      for (let i = 0; i < rawData.length; i += 2) {
+        const nameRecord = rawData[i];
+        const valueRecord = rawData[i + 1];
+
+        if (nameRecord && valueRecord && nameRecord.name === 'name' && valueRecord.name === 'value') {
+          const allErrorCodes = [...(nameRecord.error_codes || []), ...(valueRecord.error_codes || [])];
+          const uniqueErrorCodes = [...new Set(allErrorCodes)];
+
+          correctedData.push({
+            master_id: nameRecord.master_id,
+            minion_id: nameRecord.minion_id,
+            name: nameRecord.value,
+            value: valueRecord.value,
+            error_codes: uniqueErrorCodes
+          });
+        }
       }
 
-      console.log('Confirming import with pillars:', importedPillars)
-      await apiStore.pillarsApi?.pillarImport({
-        PillarImportSchema: {
-          items: importedPillars,
-          update_existing: updateExisting,
-        },
-      })
-      setIsImportModalOpen(false)
-      message.success(t("pillars.import-success"))
-      pillarsStore.loadPillars(masterId)
-    } catch (error) {
-      console.error('Import error:', error)
-      message.error(error instanceof Error ? error.message : t("pillars.import-error"))
+      setParsedPillars(correctedData);
+      setEditedPillars(JSON.parse(JSON.stringify(correctedData)));
+      setImportStep(2);
+    } catch (e) {
+      message.error(t('pillars.import-parse-error'));
+    } finally {
+      setIsParsing(false);
     }
+  };
+
+  const handleEditImport = () => {
+    setIsEditingImport(true)
   }
+
+  const handleCancelEditImport = () => {
+    setIsEditingImport(false)
+    setEditedPillars(JSON.parse(JSON.stringify(parsedPillars)))
+  }
+
+  const handleSaveEditImport = () => {
+    setIsEditingImport(false)
+    setParsedPillars(JSON.parse(JSON.stringify(editedPillars)))
+  }
+
+  const handleCellChange = useCallback((rowIdx: number, dataIndex: string, value: string) => {
+    setEditedPillars(prev => {
+      if (!prev[rowIdx]) {
+        return prev;
+      }
+
+      const currentValue = prev[rowIdx][dataIndex];
+      if (currentValue === value) {
+        return prev;
+      }
+
+      const next = [...prev];
+      next[rowIdx] = { ...next[rowIdx], [dataIndex]: value };
+      return next;
+    });
+  }, []);
 
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
@@ -311,7 +444,7 @@ const MasterPage = observer(() => {
         tdClassName: "fast-table-column-nowrap",
       },
     }),
-  ]
+  ];
 
   const importPreviewColumns = [
     pillarColumnHelper.accessor("minion_id", {
@@ -334,6 +467,70 @@ const MasterPage = observer(() => {
       },
     }),
   ]
+
+  const importColumns = useMemo(() => {
+    return [
+      {
+        accessorKey: 'minion_id',
+        header: t('pillars.table-minion-id'),
+        cell: ({ row, getValue }: any) => {
+          const text = getValue();
+          return isEditingImport ? (
+            <div key={`minion_id_${row.index}`}>
+              <EditableCell
+                value={text || ''}
+                onChange={handleCellChange}
+                rowIndex={row.index}
+                fieldName="minion_id"
+              />
+            </div>
+          ) : text || '*';
+        },
+      },
+      {
+        accessorKey: 'name',
+        header: t('pillars.table-name'),
+        cell: ({ row, getValue }: any) => {
+          const text = getValue();
+          return isEditingImport ? (
+            <div key={`name_${row.index}`}>
+              <EditableCell
+                value={text || ''}
+                onChange={handleCellChange}
+                rowIndex={row.index}
+                fieldName="name"
+              />
+            </div>
+          ) : text;
+        },
+      },
+      {
+        accessorKey: 'value',
+        header: t('pillars.table-value'),
+        cell: ({ row, getValue }: any) => {
+          const text = getValue();
+          return isEditingImport ? (
+            <div key={`value_${row.index}`}>
+              <EditableCell
+                value={text || ''}
+                onChange={handleCellChange}
+                rowIndex={row.index}
+                fieldName="value"
+              />
+            </div>
+          ) : text;
+        },
+      },
+      {
+        accessorKey: 'error_codes',
+        header: 'error_codes',
+        cell: ({ getValue }: any) => {
+          const codes = getValue();
+          return Array.isArray(codes) ? codes.join(', ') : (codes || '');
+        },
+      },
+    ];
+  }, [t, isEditingImport, handleCellChange]);
 
   const tabItems = [
     {
@@ -364,18 +561,12 @@ const MasterPage = observer(() => {
       children: (
         <Flex vertical gap="large" className={styles.masterTabs}>
           <Flex gap="small">
-            <Upload
-              accept=".csv"
-              showUploadList={false}
-              beforeUpload={(file) => {
-                handleImportCsv(file)
-                return false
-              }}
+            <Button
+              icon={<UploadOutlined />}
+              onClick={handleOpenImportModal}
             >
-              <Button icon={<UploadOutlined />}>
-                {t("pillars.import")}
-              </Button>
-            </Upload>
+              {t("pillars.import")}
+            </Button>
             <Button
               icon={<DownloadOutlined />}
               onClick={handleExportCsv}
@@ -396,11 +587,12 @@ const MasterPage = observer(() => {
             </Flex>
           ) : (
             <FastTablePaginated
+              key={`pillars-table-${masterId}-${pillarsStore.pillars.length}`}
               columns={pillarColumns}
               data={toJS(pillarsStore.pillars)}
               total={pillarsStore.pillars.length}
               pagination={{ pageSize: 10, pageIndex: 0 }}
-              getRowId={(row) => row.name}
+              getRowId={(row) => `${row.name}_${row.minion_id || 'global'}`}
               onLazyLoad={() => { }}
             />
           )}
@@ -489,32 +681,78 @@ const MasterPage = observer(() => {
 
       <Modal
         title={t("pillars.import")}
-        open={isImportModalOpen}
-        onOk={handleImportConfirm}
-        onCancel={() => setIsImportModalOpen(false)}
-        okText={t("pillars.form-submit")}
-        cancelText={t("pillars.form-cancel")}
+        open={isCustomImportModalOpen}
+        onCancel={() => {
+          setIsCustomImportModalOpen(false);
+          setImportFile(null);
+          setImportFileList([]);
+        }}
+        footer={importStep === 1 ? (
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              type="primary"
+              onClick={() => handleParseCsv(importFile || undefined)}
+              disabled={!importFile}
+              loading={isParsing}
+            >
+              {t('pillars.next')}
+            </Button>
+          </div>
+        ) : null}
+        width={900}
       >
-        <Flex vertical gap="middle">
-          <p>{t("pillars.import-description", { count: importedPillars.length })}</p>
-          <FastTablePaginated
-            columns={importPreviewColumns}
-            data={importedPillars}
-            total={importedPillars.length}
-            pagination={{ pageSize: 5, pageIndex: 0 }}
-            getRowId={(row) => row.name}
-            onLazyLoad={() => { }}
-          />
-          <Flex align="center" gap="small">
-            <input
-              type="checkbox"
-              id="updateExisting"
-              checked={updateExisting}
-              onChange={(e) => setUpdateExisting(e.target.checked)}
+        {importStep === 1 && (
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Upload.Dragger
+              accept=".csv"
+              beforeUpload={() => false}
+              fileList={importFileList}
+              onChange={handleImportFileChange}
+              onRemove={() => {
+                setImportFile(null);
+                setImportFileList([]);
+              }}
+              multiple={false}
+              showUploadList={{ showRemoveIcon: true }}
+              maxCount={1}
+            >
+              <p className="ant-upload-drag-icon">
+                <UploadOutlined />
+              </p>
+              <p>{t('pillars.import-description')}</p>
+              <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>{t('pillars.import-single-upload')}</p>
+            </Upload.Dragger>
+          </Space>
+        )}
+        {importStep === 2 && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
+              <Button
+                type="primary"
+                onClick={handleImportConfirm}
+                loading={isImporting}
+                disabled={!(isEditingImport ? editedPillars.length : parsedPillars.length)}
+                style={{ marginRight: 8 }}
+              >
+                {t('pillars.import')}
+              </Button>
+              {!isEditingImport ? (
+                <Button type="link" size="small" icon={<EditOutlined />} onClick={handleEditImport} />
+              ) : (
+                <Flex gap={8}>
+                  <Button type="link" size="small" icon={<SaveOutlined />} onClick={handleSaveEditImport} />
+                  <Button type="link" size="small" danger icon={<CloseOutlined />} onClick={handleCancelEditImport} />
+                </Flex>
+              )}
+            </div>
+            <FastTableListed
+              key={`import-table-${isEditingImport ? 'editing' : 'viewing'}`}
+              columns={importColumns}
+              data={isEditingImport ? editedPillars : parsedPillars}
+              getRowId={(row, idx) => String(idx)}
             />
-            <label htmlFor="updateExisting">{t("pillars.update-existing")}</label>
-          </Flex>
-        </Flex>
+          </>
+        )}
       </Modal>
     </>
   )
