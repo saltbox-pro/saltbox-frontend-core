@@ -35,6 +35,11 @@ export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
 
     const handleSubmit = async (values: FormValues) => {
         let submitValues = { ...values };
+
+        if (submitValues.name) {
+            submitValues.name = submitValues.name.trim().replace(/\t/g, '');
+        }
+
         if (onlyValueField && props.initialValues) {
             if (!submitValues.name) submitValues.name = props.initialValues.name;
             if (submitValues.minionId === undefined) submitValues.minionId = props.initialValues.minionId;
