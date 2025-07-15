@@ -23,13 +23,15 @@ import styles from "./index.module.css";
 
 const TaskPage = observer(() => {
   const { t } = useTranslation();
-  const { taskId: taskid } = useParams();
+  const { taskid: taskId } = useParams();
   const navigate = useNavigate();
   const [taskStore] = useState(new TaskStore());
 
   useEffect(() => {
-    taskStore.reload(taskid);
-  }, []);
+    if (taskId) {
+      taskStore.reload(taskId);
+    }
+  }, [taskId]);
 
   useEffect(() => {
     if (taskStore.error) {
@@ -42,7 +44,7 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const webSocket = new WebSocket(
-      `${envStore.env?.wsServerUrl}/tasks/${taskid}`,
+      `${envStore.env?.wsServerUrl}/tasks/${taskId}`,
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
@@ -124,12 +126,12 @@ const TaskPage = observer(() => {
             ),
           },
           {
-            title: t("task.title", { taskId: taskid }),
+            title: t("task.title", { taskId: taskId }),
           },
         ]}
       />
 
-      <PageHeader title={t("task.title", { taskId: taskid })} />
+      <PageHeader title={t("task.title", { taskId: taskId })} />
 
       <TaskStat
         task={toJS(taskStore.task)}

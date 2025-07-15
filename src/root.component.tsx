@@ -13,6 +13,7 @@ import JobPage from "./routes/_layout.job.$jobid/index.lazy";
 import JobsTemplatesPage from "./routes/_layout.jobs-templates/index.lazy";
 import TaskTemplatesPage from "./routes/_layout.task-templates/index.lazy";
 import SettingsSlsPage from "./routes/_layout.settings-sls/index.lazy";
+import TaskPage from "./routes/_layout.task.$taskid/index.lazy";
 
 export default observer(function Root(props) {
   useEffect(() => {
@@ -37,6 +38,7 @@ export default observer(function Root(props) {
             <Route path="/jobs-templates" element={<JobsTemplatesPage />} />
             <Route path="/task-templates" element={<TaskTemplatesPage />} />
             <Route path="/settings-sls" element={<SettingsSlsPage />} />
+            <Route path="/task/:taskid" element={<TaskPage />} />
           </Routes>
         </BrowserRouter>
       </Suspense>
