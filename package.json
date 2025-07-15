@@ -7,12 +7,16 @@
     "start:standalone": "webpack serve --env standalone",
     "build": "concurrently yarn:build:*",
     "build:webpack": "webpack --mode=production",
+    "build:verbose": "node --version",
     "analyze": "webpack --mode=production --env analyze",
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "build:types": "tsc",
-    "live": "npx http-server ./dist -p 4202 --cors"
+    "live": "npx http-server ./dist -p 4202 --cors",
+    "generate-api:clean": "npx rimraf api/generated",
+    "generate-api:docker": "yarn generate-api:clean && yarn generate-api:docker-run",
+    "generate-api:docker-run": "docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v $PWD/src/api:/local openapitools/openapi-generator-cli generate -c /local/openapi-generator-config.json"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",

@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/filters-api.ts
 apis/index.ts
 apis/jobs-api.ts
