@@ -14,6 +14,8 @@ import JobsTemplatesPage from "./routes/_layout.jobs-templates/index.lazy";
 import TaskTemplatesPage from "./routes/_layout.task-templates/index.lazy";
 import SettingsSlsPage from "./routes/_layout.settings-sls/index.lazy";
 import TaskPage from "./routes/_layout.task.$taskid/index.lazy";
+import MinionPage from "./routes/_layout.minion.$slug.$mid/index.lazy";
+import MasterPage from "./routes/_layout.master.$mid/index.lazy";
 
 export default observer(function Root(props) {
   useEffect(() => {
@@ -31,7 +33,9 @@ export default observer(function Root(props) {
       <Suspense fallback="Loading translations...">
         <BrowserRouter basename="/core">
           <Routes>
+            <Route path="/minion/:slug/:mid" element={<MinionPage />} />
             <Route path="/minions/:slug" element={<CollectionPage />} />
+            <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/masters" element={<MastersPage />} />
             <Route path="/job/:jid" element={<JobPage />} />
             <Route path="/jobs" element={<JobsPage />} />
