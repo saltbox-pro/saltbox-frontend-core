@@ -6,16 +6,16 @@ import i18n from "i18next";
 import { appStore, envStore } from "saltbox-core/store";
 import { runInAction } from "mobx";
 import "react-querybuilder/dist/query-builder.css";
-import CollectionPage from "./routes/_layout.minions.$slug/index.lazy";
-import MastersPage from "./routes/_layout.masters/index.lazy";
-import JobsPage from "./routes/_layout.jobs/index.lazy";
-import JobPage from "./routes/_layout.job.$jobid/index.lazy";
-import JobsTemplatesPage from "./routes/_layout.jobs-templates/index.lazy";
-import TaskTemplatesPage from "./routes/_layout.task-templates/index.lazy";
-import SettingsSlsPage from "./routes/_layout.settings-sls/index.lazy";
-import TaskPage from "./routes/_layout.task.$taskid/index.lazy";
-import MinionPage from "./routes/_layout.minion.$slug.$mid/index.lazy";
-import MasterPage from "./routes/_layout.master.$mid/index.lazy";
+import CollectionPage from "./routes/minions.$slug";
+import MastersPage from "./routes/masters";
+import JobsPage from "./routes/jobs";
+import JobPage from "./routes/job.$jobid";
+import JobsTemplatesPage from "./routes/jobs-templates";
+import TaskTemplatesPage from "./routes/task-templates";
+import SettingsSlsPage from "./routes/settings-sls";
+import TaskPage from "./routes/task.$taskid";
+import MinionPage from "./routes/minion.$slug.$mid";
+import MasterPage from "./routes/master.$mid";
 
 export default observer(function Root(props) {
   useEffect(() => {
