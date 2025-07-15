@@ -40,6 +40,10 @@ export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
             submitValues.name = submitValues.name.trim().replace(/\t/g, '');
         }
 
+        if (submitValues.value) {
+            submitValues.value = submitValues.value.trim().replace(/\t/g, '');
+        }
+
         if (onlyValueField && props.initialValues) {
             if (!submitValues.name) submitValues.name = props.initialValues.name;
             if (submitValues.minionId === undefined) submitValues.minionId = props.initialValues.minionId;
