@@ -41,6 +41,7 @@ export class PillarsStore {
       const pillars = await apiStore.pillarsApi?.pillarsList({
         master_id: masterId,
       });
+
       if (pillars) {
         pillars.sort((a, b) => {
           if (a.minion_id === "*" && b.minion_id !== "*") return -1;

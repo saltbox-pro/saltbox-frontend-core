@@ -7,6 +7,7 @@
     "add-block-button": "Добавить блок",
     "filters-button": "Фильтры",
     "table-minion-id": "ID клиента",
+    "table-master": "Мастер",
     "table-fqdn": "FQDN",
     "table-os-full-name": "Полное имя ОС",
     "table-domain": "Домен",
@@ -416,6 +417,7 @@
     "table-name": "Имя",
     "table-value": "Значение",
     "table-minion-id": "ID клиента",
+    "table-actions": "Действия",
     "table-all-minions": "Все клиенты",
     "form-minion-id": "ID клиента",
     "form-minion-id-tooltip": "Необязательно. Если не указано, данные Pillar будут применены ко всем клиентам",
@@ -432,13 +434,20 @@
     "form-name-max": "Имя должно быть максимум 100 символов.",
     "form-value-max": "Значение должно быть максимум 100 символов.",
     "form-minion-id-max": "ID клиента должен быть максимум 100 символов.",
-    "form-submit": "Создать",
+    "form-submit": "Подтвердить",
+    "form-cancel": "Отмена",
     "create-success": "Pillar успешно создан",
     "create-error": "Ошибка при создании Pillar",
     "delete-success": "Pillar успешно удален",
     "delete-error": "Ошибка при удалении Pillar",
     "edit-success": "Pillar успешно изменен",
     "edit-error": "Ошибка при изменении Pillar",
-    "select-master-error": "Выберите мастера"
+    "select-master-error": "Выберите мастера",
+    "import": "Импорт",
+    "export": "Экспорт",
+    "edit-pillar-modal-title": "Редактировать Pillar",
+    "import-description": "Загрузите CSV-файл с данными Pillar для импорта.",
+    "import-single-upload": "Можно загрузить только один файл за раз.",
+    "next": "Далее"
   }
 }

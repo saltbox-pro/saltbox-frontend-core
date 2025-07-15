@@ -7,6 +7,7 @@
     "add-block-button": "Add block",
     "filters-button": "Filters",
     "table-minion-id": "Minion ID",
+    "table-master": "Master",
     "table-fqdn": "FQDN",
     "table-os-full-name": "OS Full Name",
     "table-domain": "Domain",
@@ -416,6 +417,7 @@
     "table-name": "Name",
     "table-value": "Value",
     "table-minion-id": "Minion ID",
+    "table-actions": "Actions",
     "table-all-minions": "All Minions",
     "form-minion-id": "Minion ID",
     "form-minion-id-tooltip": "Optional. If not specified, the pillar will be applied to all minions",
@@ -432,13 +434,20 @@
     "form-name-max": "Name must be maximum 100 characters.",
     "form-value-max": "Value must be maximum 100 characters.",
     "form-minion-id-max": "Minion ID must be maximum 100 characters.",
-    "form-submit": "Create",
+    "form-submit": "Confirm",
+    "form-cancel": "Cancel",
     "create-success": "Pillar created successfully",
     "create-error": "Failed to create pillar",
     "delete-success": "Pillar deleted successfully",
     "delete-error": "Failed to delete pillar",
     "edit-success": "Pillar edited successfully",
     "edit-error": "Failed to edit pillar",
-    "select-master-error": "Select master"
+    "select-master-error": "Select master",
+    "import": "Import",
+    "export": "Export",
+    "edit-pillar-modal-title": "Edit Pillar",
+    "import-description": "Upload a CSV file with Pillar data to import.",
+    "import-single-upload": "You can upload only one file at a time.",
+    "next": "Next"
   }
 }
