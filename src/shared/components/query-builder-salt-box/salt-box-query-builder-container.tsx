@@ -1,4 +1,4 @@
-import { ReactElement } from "react";
+import { JSX, ReactElement } from "react";
 import * as ReactDnD from "react-dnd";
 import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
