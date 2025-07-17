@@ -53,10 +53,10 @@ export interface TaskiqTaskResult {
     execution_time: number;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskiqTaskResult
      */
-    labels?: object;
+    labels?: { [key: string]: any; };
     /**
      * 
      * @type {any}

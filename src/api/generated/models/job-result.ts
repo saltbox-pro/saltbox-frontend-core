@@ -13,12 +13,35 @@
  */
 
 import { mapValues } from '../runtime';
+import type { FunKwarg } from './fun-kwarg';
+import {
+    FunKwargFromJSON,
+    FunKwargFromJSONTyped,
+    FunKwargToJSON,
+    FunKwargToJSONTyped,
+} from './fun-kwarg';
+import type { User } from './user';
+import {
+    UserFromJSON,
+    UserFromJSONTyped,
+    UserToJSON,
+    UserToJSONTyped,
+} from './user';
+import type { FunArgs } from './fun-args';
+import {
+    FunArgsFromJSON,
+    FunArgsFromJSONTyped,
+    FunArgsToJSON,
+    FunArgsToJSONTyped,
+} from './fun-args';
+
 /**
  * Describes return data for a job
  * @export
  * @interface JobResult
  */
 export interface JobResult {
+    [key: string]: any | any;
     /**
      * 
      * @type {string}
@@ -63,22 +86,22 @@ export interface JobResult {
     fun: string;
     /**
      * 
-     * @type {Array<any>}
+     * @type {FunArgs}
      * @memberof JobResult
      */
-    fun_args?: Array<any> | null;
+    fun_args?: FunArgs;
     /**
      * 
-     * @type {object}
+     * @type {FunKwarg}
      * @memberof JobResult
      */
-    fun_kwarg?: object | null;
+    fun_kwarg?: FunKwarg;
     /**
      * 
-     * @type {string}
+     * @type {User}
      * @memberof JobResult
      */
-    user?: string | null;
+    user?: User | null;
     /**
      * 
      * @type {string}
@@ -112,6 +135,7 @@ export function JobResultFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
+            ...json,
         'id': json['id'],
         'success': json['success'],
         'salt_master': json['salt_master'],
@@ -119,9 +143,9 @@ export function JobResultFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'retcode': json['retcode'],
         'jid': json['jid'],
         'fun': json['fun'],
-        'fun_args': json['fun_args'] == null ? undefined : json['fun_args'],
-        'fun_kwarg': json['fun_kwarg'] == null ? undefined : json['fun_kwarg'],
-        'user': json['user'] == null ? undefined : json['user'],
+        'fun_args': json['fun_args'] == null ? undefined : FunArgsFromJSON(json['fun_args']),
+        'fun_kwarg': json['fun_kwarg'] == null ? undefined : FunKwargFromJSON(json['fun_kwarg']),
+        'user': json['user'] == null ? undefined : UserFromJSON(json['user']),
         '_stamp': json['_stamp'],
     };
 }
@@ -137,6 +161,7 @@ export function JobResultToJSONTyped(value?: JobResult | null, ignoreDiscriminat
 
     return {
         
+            ...value,
         'id': value['id'],
         'success': value['success'],
         'salt_master': value['salt_master'],
@@ -144,9 +169,9 @@ export function JobResultToJSONTyped(value?: JobResult | null, ignoreDiscriminat
         'retcode': value['retcode'],
         'jid': value['jid'],
         'fun': value['fun'],
-        'fun_args': value['fun_args'],
-        'fun_kwarg': value['fun_kwarg'],
-        'user': value['user'],
+        'fun_args': FunArgsToJSON(value['fun_args']),
+        'fun_kwarg': FunKwargToJSON(value['fun_kwarg']),
+        'user': UserToJSON(value['user']),
         '_stamp': value['_stamp'],
     };
 }

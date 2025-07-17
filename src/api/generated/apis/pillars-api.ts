@@ -16,6 +16,7 @@
 import * as runtime from '../runtime';
 import type {
   HTTPValidationError,
+  PillarCSVParseResult,
   PillarImportResultSchema,
   PillarImportSchema,
   PillarModel,
@@ -24,6 +25,8 @@ import type {
 import {
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    PillarCSVParseResultFromJSON,
+    PillarCSVParseResultToJSON,
     PillarImportResultSchemaFromJSON,
     PillarImportResultSchemaToJSON,
     PillarImportSchemaFromJSON,
@@ -44,6 +47,10 @@ export interface PillarDeleteRequest {
 
 export interface PillarImportRequest {
     PillarImportSchema: PillarImportSchema;
+}
+
+export interface PillarImportValidateRequest {
+    PillarModel: Array<PillarModel>;
 }
 
 export interface PillarParseCsvRequest {
@@ -83,11 +90,6 @@ export class PillarsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/pillars`,
             method: 'POST',
@@ -123,11 +125,6 @@ export class PillarsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/pillars`,
@@ -169,11 +166,6 @@ export class PillarsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/pillars/import`,
             method: 'POST',
@@ -194,9 +186,45 @@ export class PillarsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Pillar Import Validate
+     */
+    async pillarImportValidateRaw(requestParameters: PillarImportValidateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PillarCSVParseResult>>> {
+        if (requestParameters['PillarModel'] == null) {
+            throw new runtime.RequiredError(
+                'PillarModel',
+                'Required parameter "PillarModel" was null or undefined when calling pillarImportValidate().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: `/pillars/validate`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['PillarModel']!.map(PillarModelToJSON),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PillarCSVParseResultFromJSON));
+    }
+
+    /**
+     * Pillar Import Validate
+     */
+    async pillarImportValidate(requestParameters: PillarImportValidateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PillarCSVParseResult>> {
+        const response = await this.pillarImportValidateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Pillar Parse Csv
      */
-    async pillarParseCsvRaw(requestParameters: PillarParseCsvRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<any>>> {
+    async pillarParseCsvRaw(requestParameters: PillarParseCsvRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<PillarCSVParseResult>>> {
         if (requestParameters['master_id'] == null) {
             throw new runtime.RequiredError(
                 'master_id',
@@ -218,11 +246,6 @@ export class PillarsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const consumes: runtime.Consume[] = [
             { contentType: 'multipart/form-data' },
@@ -252,13 +275,13 @@ export class PillarsApi extends runtime.BaseAPI {
             body: formParams,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(PillarCSVParseResultFromJSON));
     }
 
     /**
      * Pillar Parse Csv
      */
-    async pillarParseCsv(requestParameters: PillarParseCsvRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<any>> {
+    async pillarParseCsv(requestParameters: PillarParseCsvRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<PillarCSVParseResult>> {
         const response = await this.pillarParseCsvRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -279,11 +302,6 @@ export class PillarsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/pillars`,
@@ -330,11 +348,6 @@ export class PillarsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/pillars`,

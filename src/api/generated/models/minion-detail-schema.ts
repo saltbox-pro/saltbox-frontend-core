@@ -77,10 +77,10 @@ export interface MinionDetailSchema {
     last_activity_seconds: number | null;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof MinionDetailSchema
      */
-    readonly additional_grains: object;
+    readonly additional_grains: { [key: string]: any; };
 }
 
 /**

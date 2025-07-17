@@ -101,11 +101,6 @@ export class JobsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/jobs`,
             method: 'POST',
@@ -142,11 +137,6 @@ export class JobsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/jobs/sync_run`,
             method: 'POST',
@@ -181,11 +171,6 @@ export class JobsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/jobs/{jid}`.replace(`{${"jid"}}`, encodeURIComponent(String(requestParameters['jid']))),
             method: 'GET',
@@ -219,11 +204,6 @@ export class JobsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/jobs/{jid}/returns-count`.replace(`{${"jid"}}`, encodeURIComponent(String(requestParameters['jid']))),
@@ -271,11 +251,6 @@ export class JobsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/jobs/{jid}/return`.replace(`{${"jid"}}`, encodeURIComponent(String(requestParameters['jid']))),
@@ -337,11 +312,6 @@ export class JobsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/jobs`,
@@ -406,11 +376,6 @@ export class JobsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/jobs/cursored_list`,

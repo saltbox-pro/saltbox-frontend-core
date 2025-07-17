@@ -448,6 +448,15 @@
     "edit-pillar-modal-title": "Edit Pillar",
     "import-description": "Upload a CSV file with Pillar data to import.",
     "import-single-upload": "You can upload only one file at a time.",
-    "next": "Next"
+    "next": "Next",
+    "delete-pillar-modal-title": "Delete Pillar",
+    "modal-delete-confirm-text": "Are you sure you want to delete the pillar",
+    "import-update-existing": "Overwrite existing pillars",
+    "validation-success": "Validation completed successfully",
+    "validation-error": "Validation failed",
+    "error-minion-does-not-exist": "Minion does not exist",
+    "error-master-does-not-exist": "Master does not exist",
+    "error-pillar-already-exists": "Pillar already exists",
+    "table-errors": "Errors"
   }
 }

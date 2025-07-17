@@ -13,6 +13,258 @@
  */
 
 import { mapValues } from '../runtime';
+import type { IPv6List } from './ipv6-list';
+import {
+    IPv6ListFromJSON,
+    IPv6ListFromJSONTyped,
+    IPv6ListToJSON,
+    IPv6ListToJSONTyped,
+} from './ipv6-list';
+import type { ProductName } from './product-name';
+import {
+    ProductNameFromJSON,
+    ProductNameFromJSONTyped,
+    ProductNameToJSON,
+    ProductNameToJSONTyped,
+} from './product-name';
+import type { NodeName } from './node-name';
+import {
+    NodeNameFromJSON,
+    NodeNameFromJSONTyped,
+    NodeNameToJSON,
+    NodeNameToJSONTyped,
+} from './node-name';
+import type { OSMajorRelease } from './os-major-release';
+import {
+    OSMajorReleaseFromJSON,
+    OSMajorReleaseFromJSONTyped,
+    OSMajorReleaseToJSON,
+    OSMajorReleaseToJSONTyped,
+} from './os-major-release';
+import type { DNS } from './dns';
+import {
+    DNSFromJSON,
+    DNSFromJSONTyped,
+    DNSToJSON,
+    DNSToJSONTyped,
+} from './dns';
+import type { BIOSVendor } from './bios-vendor';
+import {
+    BIOSVendorFromJSON,
+    BIOSVendorFromJSONTyped,
+    BIOSVendorToJSON,
+    BIOSVendorToJSONTyped,
+} from './bios-vendor';
+import type { IPInterfacesList } from './ip-interfaces-list';
+import {
+    IPInterfacesListFromJSON,
+    IPInterfacesListFromJSONTyped,
+    IPInterfacesListToJSON,
+    IPInterfacesListToJSONTyped,
+} from './ip-interfaces-list';
+import type { SaltVersion } from './salt-version';
+import {
+    SaltVersionFromJSON,
+    SaltVersionFromJSONTyped,
+    SaltVersionToJSON,
+    SaltVersionToJSONTyped,
+} from './salt-version';
+import type { NumberOfCPUs } from './number-of-cpus';
+import {
+    NumberOfCPUsFromJSON,
+    NumberOfCPUsFromJSONTyped,
+    NumberOfCPUsToJSON,
+    NumberOfCPUsToJSONTyped,
+} from './number-of-cpus';
+import type { LocalInfo } from './local-info';
+import {
+    LocalInfoFromJSON,
+    LocalInfoFromJSONTyped,
+    LocalInfoToJSON,
+    LocalInfoToJSONTyped,
+} from './local-info';
+import type { LSBDistribRelease } from './lsb-distrib-release';
+import {
+    LSBDistribReleaseFromJSON,
+    LSBDistribReleaseFromJSONTyped,
+    LSBDistribReleaseToJSON,
+    LSBDistribReleaseToJSONTyped,
+} from './lsb-distrib-release';
+import type { NumberOfGPUs } from './number-of-gpus';
+import {
+    NumberOfGPUsFromJSON,
+    NumberOfGPUsFromJSONTyped,
+    NumberOfGPUsToJSON,
+    NumberOfGPUsToJSONTyped,
+} from './number-of-gpus';
+import type { PythonPathsList } from './python-paths-list';
+import {
+    PythonPathsListFromJSON,
+    PythonPathsListFromJSONTyped,
+    PythonPathsListToJSON,
+    PythonPathsListToJSONTyped,
+} from './python-paths-list';
+import type { Init } from './init';
+import {
+    InitFromJSON,
+    InitFromJSONTyped,
+    InitToJSON,
+    InitToJSONTyped,
+} from './init';
+import type { OSArchitecture } from './os-architecture';
+import {
+    OSArchitectureFromJSON,
+    OSArchitectureFromJSONTyped,
+    OSArchitectureToJSON,
+    OSArchitectureToJSONTyped,
+} from './os-architecture';
+import type { LSBDistribID } from './lsb-distrib-id';
+import {
+    LSBDistribIDFromJSON,
+    LSBDistribIDFromJSONTyped,
+    LSBDistribIDToJSON,
+    LSBDistribIDToJSONTyped,
+} from './lsb-distrib-id';
+import type { Manufacturer } from './manufacturer';
+import {
+    ManufacturerFromJSON,
+    ManufacturerFromJSONTyped,
+    ManufacturerToJSON,
+    ManufacturerToJSONTyped,
+} from './manufacturer';
+import type { BIOSReleaseDate } from './bios-release-date';
+import {
+    BIOSReleaseDateFromJSON,
+    BIOSReleaseDateFromJSONTyped,
+    BIOSReleaseDateToJSON,
+    BIOSReleaseDateToJSONTyped,
+} from './bios-release-date';
+import type { ID } from './id';
+import {
+    IDFromJSON,
+    IDFromJSONTyped,
+    IDToJSON,
+    IDToJSONTyped,
+} from './id';
+import type { ZFSSupport } from './zfs-support';
+import {
+    ZFSSupportFromJSON,
+    ZFSSupportFromJSONTyped,
+    ZFSSupportToJSON,
+    ZFSSupportToJSONTyped,
+} from './zfs-support';
+import type { Kernel } from './kernel';
+import {
+    KernelFromJSON,
+    KernelFromJSONTyped,
+    KernelToJSON,
+    KernelToJSONTyped,
+} from './kernel';
+import type { EFISecureBoot } from './efi-secure-boot';
+import {
+    EFISecureBootFromJSON,
+    EFISecureBootFromJSONTyped,
+    EFISecureBootToJSON,
+    EFISecureBootToJSONTyped,
+} from './efi-secure-boot';
+import type { PythonExecutable } from './python-executable';
+import {
+    PythonExecutableFromJSON,
+    PythonExecutableFromJSONTyped,
+    PythonExecutableToJSON,
+    PythonExecutableToJSONTyped,
+} from './python-executable';
+import type { GID } from './gid';
+import {
+    GIDFromJSON,
+    GIDFromJSONTyped,
+    GIDToJSON,
+    GIDToJSONTyped,
+} from './gid';
+import type { Ps } from './ps';
+import {
+    PsFromJSON,
+    PsFromJSONTyped,
+    PsToJSON,
+    PsToJSONTyped,
+} from './ps';
+import type { CPUFlags } from './cpu-flags';
+import {
+    CPUFlagsFromJSON,
+    CPUFlagsFromJSONTyped,
+    CPUFlagsToJSON,
+    CPUFlagsToJSONTyped,
+} from './cpu-flags';
+import type { IPv4List } from './ipv4-list';
+import {
+    IPv4ListFromJSON,
+    IPv4ListFromJSONTyped,
+    IPv4ListToJSON,
+    IPv4ListToJSONTyped,
+} from './ipv4-list';
+import type { SSDs } from './ssds';
+import {
+    SSDsFromJSON,
+    SSDsFromJSONTyped,
+    SSDsToJSON,
+    SSDsToJSONTyped,
+} from './ssds';
+import type { KernelParams } from './kernel-params';
+import {
+    KernelParamsFromJSON,
+    KernelParamsFromJSONTyped,
+    KernelParamsToJSON,
+    KernelParamsToJSONTyped,
+} from './kernel-params';
+import type { SaltPath } from './salt-path';
+import {
+    SaltPathFromJSON,
+    SaltPathFromJSONTyped,
+    SaltPathToJSON,
+    SaltPathToJSONTyped,
+} from './salt-path';
+import type { ZMQVersion } from './zmq-version';
+import {
+    ZMQVersionFromJSON,
+    ZMQVersionFromJSONTyped,
+    ZMQVersionToJSON,
+    ZMQVersionToJSONTyped,
+} from './zmq-version';
+import type { KernelVersion } from './kernel-version';
+import {
+    KernelVersionFromJSON,
+    KernelVersionFromJSONTyped,
+    KernelVersionToJSON,
+    KernelVersionToJSONTyped,
+} from './kernel-version';
+import type { UID } from './uid';
+import {
+    UIDFromJSON,
+    UIDFromJSONTyped,
+    UIDToJSON,
+    UIDToJSONTyped,
+} from './uid';
+import type { ServerID } from './server-id';
+import {
+    ServerIDFromJSON,
+    ServerIDFromJSONTyped,
+    ServerIDToJSON,
+    ServerIDToJSONTyped,
+} from './server-id';
+import type { FQDN } from './fqdn';
+import {
+    FQDNFromJSON,
+    FQDNFromJSONTyped,
+    FQDNToJSON,
+    FQDNToJSONTyped,
+} from './fqdn';
+import type { SerialNumber } from './serial-number';
+import {
+    SerialNumberFromJSON,
+    SerialNumberFromJSONTyped,
+    SerialNumberToJSON,
+    SerialNumberToJSONTyped,
+} from './serial-number';
 import type { IPv6GW } from './ipv6-gw';
 import {
     IPv6GWFromJSON,
@@ -20,6 +272,307 @@ import {
     IPv6GWToJSON,
     IPv6GWToJSONTyped,
 } from './ipv6-gw';
+import type { Disks } from './disks';
+import {
+    DisksFromJSON,
+    DisksFromJSONTyped,
+    DisksToJSON,
+    DisksToJSONTyped,
+} from './disks';
+import type { OSFullName } from './os-full-name';
+import {
+    OSFullNameFromJSON,
+    OSFullNameFromJSONTyped,
+    OSFullNameToJSON,
+    OSFullNameToJSONTyped,
+} from './os-full-name';
+import type { SaltVersionInfo } from './salt-version-info';
+import {
+    SaltVersionInfoFromJSON,
+    SaltVersionInfoFromJSONTyped,
+    SaltVersionInfoToJSON,
+    SaltVersionInfoToJSONTyped,
+} from './salt-version-info';
+import type { IPv4GW } from './ipv4-gw';
+import {
+    IPv4GWFromJSON,
+    IPv4GWFromJSONTyped,
+    IPv4GWToJSON,
+    IPv4GWToJSONTyped,
+} from './ipv4-gw';
+import type { IPv4InterfacesList } from './ipv4-interfaces-list';
+import {
+    IPv4InterfacesListFromJSON,
+    IPv4InterfacesListFromJSONTyped,
+    IPv4InterfacesListToJSON,
+    IPv4InterfacesListToJSONTyped,
+} from './ipv4-interfaces-list';
+import type { TotalMemory } from './total-memory';
+import {
+    TotalMemoryFromJSON,
+    TotalMemoryFromJSONTyped,
+    TotalMemoryToJSON,
+    TotalMemoryToJSONTyped,
+} from './total-memory';
+import type { Domain } from './domain';
+import {
+    DomainFromJSON,
+    DomainFromJSONTyped,
+    DomainToJSON,
+    DomainToJSONTyped,
+} from './domain';
+import type { Transactional } from './transactional';
+import {
+    TransactionalFromJSON,
+    TransactionalFromJSONTyped,
+    TransactionalToJSON,
+    TransactionalToJSONTyped,
+} from './transactional';
+import type { IPv6InterfacesList } from './ipv6-interfaces-list';
+import {
+    IPv6InterfacesListFromJSON,
+    IPv6InterfacesListFromJSONTyped,
+    IPv6InterfacesListToJSON,
+    IPv6InterfacesListToJSONTyped,
+} from './ipv6-interfaces-list';
+import type { BoardName } from './board-name';
+import {
+    BoardNameFromJSON,
+    BoardNameFromJSONTyped,
+    BoardNameToJSON,
+    BoardNameToJSONTyped,
+} from './board-name';
+import type { PythonVersionString } from './python-version-string';
+import {
+    PythonVersionStringFromJSON,
+    PythonVersionStringFromJSONTyped,
+    PythonVersionStringToJSON,
+    PythonVersionStringToJSONTyped,
+} from './python-version-string';
+import type { ZFSFeatureFlags } from './zfs-feature-flags';
+import {
+    ZFSFeatureFlagsFromJSON,
+    ZFSFeatureFlagsFromJSONTyped,
+    ZFSFeatureFlagsToJSON,
+    ZFSFeatureFlagsToJSONTyped,
+} from './zfs-feature-flags';
+import type { GPUs } from './gpus';
+import {
+    GPUsFromJSON,
+    GPUsFromJSONTyped,
+    GPUsToJSON,
+    GPUsToJSONTyped,
+} from './gpus';
+import type { PythonVersion } from './python-version';
+import {
+    PythonVersionFromJSON,
+    PythonVersionFromJSONTyped,
+    PythonVersionToJSON,
+    PythonVersionToJSONTyped,
+} from './python-version';
+import type { EFI } from './efi';
+import {
+    EFIFromJSON,
+    EFIFromJSONTyped,
+    EFIToJSON,
+    EFIToJSONTyped,
+} from './efi';
+import type { LSBDistribCodename } from './lsb-distrib-codename';
+import {
+    LSBDistribCodenameFromJSON,
+    LSBDistribCodenameFromJSONTyped,
+    LSBDistribCodenameToJSON,
+    LSBDistribCodenameToJSONTyped,
+} from './lsb-distrib-codename';
+import type { CWD } from './cwd';
+import {
+    CWDFromJSON,
+    CWDFromJSONTyped,
+    CWDToJSON,
+    CWDToJSONTyped,
+} from './cwd';
+import type { Shell } from './shell';
+import {
+    ShellFromJSON,
+    ShellFromJSONTyped,
+    ShellToJSON,
+    ShellToJSONTyped,
+} from './shell';
+import type { FQDNIPv6List } from './fqdnipv6-list';
+import {
+    FQDNIPv6ListFromJSON,
+    FQDNIPv6ListFromJSONTyped,
+    FQDNIPv6ListToJSON,
+    FQDNIPv6ListToJSONTyped,
+} from './fqdnipv6-list';
+import type { Localhost } from './localhost';
+import {
+    LocalhostFromJSON,
+    LocalhostFromJSONTyped,
+    LocalhostToJSON,
+    LocalhostToJSONTyped,
+} from './localhost';
+import type { SystemPathsList } from './system-paths-list';
+import {
+    SystemPathsListFromJSON,
+    SystemPathsListFromJSONTyped,
+    SystemPathsListToJSON,
+    SystemPathsListToJSONTyped,
+} from './system-paths-list';
+import type { BIOSVersion } from './bios-version';
+import {
+    BIOSVersionFromJSON,
+    BIOSVersionFromJSONTyped,
+    BIOSVersionToJSON,
+    BIOSVersionToJSONTyped,
+} from './bios-version';
+import type { OSRelease } from './os-release';
+import {
+    OSReleaseFromJSON,
+    OSReleaseFromJSONTyped,
+    OSReleaseToJSON,
+    OSReleaseToJSONTyped,
+} from './os-release';
+import type { GrainsMaster } from './grains-master';
+import {
+    GrainsMasterFromJSON,
+    GrainsMasterFromJSONTyped,
+    GrainsMasterToJSON,
+    GrainsMasterToJSONTyped,
+} from './grains-master';
+import type { TotalSwap } from './total-swap';
+import {
+    TotalSwapFromJSON,
+    TotalSwapFromJSONTyped,
+    TotalSwapToJSON,
+    TotalSwapToJSONTyped,
+} from './total-swap';
+import type { CPUModel } from './cpu-model';
+import {
+    CPUModelFromJSON,
+    CPUModelFromJSONTyped,
+    CPUModelToJSON,
+    CPUModelToJSONTyped,
+} from './cpu-model';
+import type { Path } from './path';
+import {
+    PathFromJSON,
+    PathFromJSONTyped,
+    PathToJSON,
+    PathToJSONTyped,
+} from './path';
+import type { OS } from './os';
+import {
+    OSFromJSON,
+    OSFromJSONTyped,
+    OSToJSON,
+    OSToJSONTyped,
+} from './os';
+import type { FQDNIPv4List } from './fqdnipv4-list';
+import {
+    FQDNIPv4ListFromJSON,
+    FQDNIPv4ListFromJSONTyped,
+    FQDNIPv4ListToJSON,
+    FQDNIPv4ListToJSONTyped,
+} from './fqdnipv4-list';
+import type { Host } from './host';
+import {
+    HostFromJSON,
+    HostFromJSONTyped,
+    HostToJSON,
+    HostToJSONTyped,
+} from './host';
+import type { PID } from './pid';
+import {
+    PIDFromJSON,
+    PIDFromJSONTyped,
+    PIDToJSON,
+    PIDToJSONTyped,
+} from './pid';
+import type { Virtual } from './virtual';
+import {
+    VirtualFromJSON,
+    VirtualFromJSONTyped,
+    VirtualToJSON,
+    VirtualToJSONTyped,
+} from './virtual';
+import type { CPUArchitecture } from './cpu-architecture';
+import {
+    CPUArchitectureFromJSON,
+    CPUArchitectureFromJSONTyped,
+    CPUArchitectureToJSON,
+    CPUArchitectureToJSONTyped,
+} from './cpu-architecture';
+import type { HWInterfaces } from './hw-interfaces';
+import {
+    HWInterfacesFromJSON,
+    HWInterfacesFromJSONTyped,
+    HWInterfacesToJSON,
+    HWInterfacesToJSONTyped,
+} from './hw-interfaces';
+import type { OSReleaseInfo } from './os-release-info';
+import {
+    OSReleaseInfoFromJSON,
+    OSReleaseInfoFromJSONTyped,
+    OSReleaseInfoToJSON,
+    OSReleaseInfoToJSONTyped,
+} from './os-release-info';
+import type { Groupname } from './groupname';
+import {
+    GroupnameFromJSON,
+    GroupnameFromJSONTyped,
+    GroupnameToJSON,
+    GroupnameToJSONTyped,
+} from './groupname';
+import type { IPGW } from './ipgw';
+import {
+    IPGWFromJSON,
+    IPGWFromJSONTyped,
+    IPGWToJSON,
+    IPGWToJSONTyped,
+} from './ipgw';
+import type { Username } from './username';
+import {
+    UsernameFromJSON,
+    UsernameFromJSONTyped,
+    UsernameToJSON,
+    UsernameToJSONTyped,
+} from './username';
+import type { OSFamily } from './os-family';
+import {
+    OSFamilyFromJSON,
+    OSFamilyFromJSONTyped,
+    OSFamilyToJSON,
+    OSFamilyToJSONTyped,
+} from './os-family';
+import type { KernelRelease } from './kernel-release';
+import {
+    KernelReleaseFromJSON,
+    KernelReleaseFromJSONTyped,
+    KernelReleaseToJSON,
+    KernelReleaseToJSONTyped,
+} from './kernel-release';
+import type { OSFinger } from './os-finger';
+import {
+    OSFingerFromJSON,
+    OSFingerFromJSONTyped,
+    OSFingerToJSON,
+    OSFingerToJSONTyped,
+} from './os-finger';
+import type { FQDNs } from './fqdns';
+import {
+    FQDNsFromJSON,
+    FQDNsFromJSONTyped,
+    FQDNsToJSON,
+    FQDNsToJSONTyped,
+} from './fqdns';
+import type { OSCodename } from './os-codename';
+import {
+    OSCodenameFromJSON,
+    OSCodenameFromJSONTyped,
+    OSCodenameToJSON,
+    OSCodenameToJSONTyped,
+} from './os-codename';
 
 /**
  * 
@@ -27,492 +580,493 @@ import {
  * @interface GrainsSchema
  */
 export interface GrainsSchema {
+    [key: string]: any | any;
     /**
      * 
-     * @type {string}
+     * @type {ID}
      * @memberof GrainsSchema
      */
-    id?: string | null;
+    id?: ID;
     /**
      * 
-     * @type {string}
+     * @type {Host}
      * @memberof GrainsSchema
      */
-    host?: string | null;
+    host?: Host;
     /**
      * 
-     * @type {string}
+     * @type {FQDN}
      * @memberof GrainsSchema
      */
-    fqdn?: string | null;
+    fqdn?: FQDN;
     /**
      * 
-     * @type {string}
+     * @type {GrainsMaster}
      * @memberof GrainsSchema
      */
-    master?: string | null;
+    master?: GrainsMaster;
     /**
      * 
-     * @type {Array<any>}
+     * @type {FQDNs}
      * @memberof GrainsSchema
      */
-    fqdns?: Array<any> | null;
+    fqdns?: FQDNs;
     /**
      * 
-     * @type {string}
+     * @type {CPUModel}
      * @memberof GrainsSchema
      */
-    cpu_model?: string | null;
+    cpu_model?: CPUModel;
     /**
      * 
-     * @type {number}
+     * @type {NumberOfCPUs}
      * @memberof GrainsSchema
      */
-    num_cpus?: number | null;
+    num_cpus?: NumberOfCPUs;
     /**
      * 
-     * @type {Array<any>}
+     * @type {CPUFlags}
      * @memberof GrainsSchema
      */
-    cpu_flags?: Array<any> | null;
+    cpu_flags?: CPUFlags;
     /**
      * 
-     * @type {string}
+     * @type {CPUArchitecture}
      * @memberof GrainsSchema
      */
-    cpuarch?: string | null;
+    cpuarch?: CPUArchitecture;
     /**
      * 
-     * @type {number}
+     * @type {TotalMemory}
      * @memberof GrainsSchema
      */
-    mem_total?: number | null;
+    mem_total?: TotalMemory;
     /**
      * 
-     * @type {number}
+     * @type {TotalSwap}
      * @memberof GrainsSchema
      */
-    swap_total?: number | null;
+    swap_total?: TotalSwap;
     /**
      * 
-     * @type {Array<any>}
+     * @type {GPUs}
      * @memberof GrainsSchema
      */
-    gpus?: Array<any> | null;
+    gpus?: GPUs;
     /**
      * 
-     * @type {number}
+     * @type {NumberOfGPUs}
      * @memberof GrainsSchema
      */
-    num_gpus?: number | null;
+    num_gpus?: NumberOfGPUs;
     /**
      * 
-     * @type {string}
+     * @type {OS}
      * @memberof GrainsSchema
      */
-    os?: string | null;
+    os?: OS;
     /**
      * 
-     * @type {string}
+     * @type {OSFullName}
      * @memberof GrainsSchema
      */
-    osfullname?: string | null;
+    osfullname?: OSFullName;
     /**
      * 
-     * @type {string}
+     * @type {OSFinger}
      * @memberof GrainsSchema
      */
-    osfinger?: string | null;
+    osfinger?: OSFinger;
     /**
      * 
-     * @type {string}
+     * @type {OSRelease}
      * @memberof GrainsSchema
      */
-    osrelease?: string | null;
+    osrelease?: OSRelease;
     /**
      * 
-     * @type {Array<any>}
+     * @type {OSReleaseInfo}
      * @memberof GrainsSchema
      */
-    osrelease_info?: Array<any> | null;
+    osrelease_info?: OSReleaseInfo;
     /**
      * 
-     * @type {string}
+     * @type {OSCodename}
      * @memberof GrainsSchema
      */
-    oscodename?: string | null;
+    oscodename?: OSCodename;
     /**
      * 
-     * @type {string}
+     * @type {OSFamily}
      * @memberof GrainsSchema
      */
-    os_family?: string | null;
+    os_family?: OSFamily;
     /**
      * 
-     * @type {string}
+     * @type {OSArchitecture}
      * @memberof GrainsSchema
      */
-    osarch?: string | null;
+    osarch?: OSArchitecture;
     /**
      * 
-     * @type {Array<any>}
+     * @type {Disks}
      * @memberof GrainsSchema
      */
-    disks?: Array<any> | null;
+    disks?: Disks;
     /**
      * 
-     * @type {string}
+     * @type {CWD}
      * @memberof GrainsSchema
      */
-    cwd?: string | null;
+    cwd?: CWD;
     /**
      * 
-     * @type {boolean}
+     * @type {IPGW}
      * @memberof GrainsSchema
      */
-    ip_gw?: boolean | null;
+    ip_gw?: IPGW;
     /**
      * 
-     * @type {string}
+     * @type {IPv4GW}
      * @memberof GrainsSchema
      */
-    ip4_gw?: string | null;
+    ip4_gw?: IPv4GW;
     /**
      * 
      * @type {IPv6GW}
      * @memberof GrainsSchema
      */
-    ip6_gw?: IPv6GW | null;
+    ip6_gw?: IPv6GW;
     /**
      * 
-     * @type {object}
+     * @type {DNS}
      * @memberof GrainsSchema
      */
-    dns?: object | null;
+    dns?: DNS;
     /**
      * 
-     * @type {number}
+     * @type {ServerID}
      * @memberof GrainsSchema
      */
-    server_id?: number | null;
+    server_id?: ServerID;
     /**
      * 
-     * @type {string}
+     * @type {Localhost}
      * @memberof GrainsSchema
      */
-    localhost?: string | null;
+    localhost?: Localhost;
     /**
      * 
-     * @type {string}
+     * @type {Domain}
      * @memberof GrainsSchema
      */
-    domain?: string | null;
+    domain?: Domain;
     /**
      * 
-     * @type {{ [key: string]: string; }}
+     * @type {HWInterfaces}
      * @memberof GrainsSchema
      */
-    hwaddr_interfaces?: { [key: string]: string; } | null;
+    hwaddr_interfaces?: HWInterfaces;
     /**
      * 
-     * @type {{ [key: string]: Array<string>; }}
+     * @type {IPv4InterfacesList}
      * @memberof GrainsSchema
      */
-    ip4_interfaces?: { [key: string]: Array<string>; } | null;
+    ip4_interfaces?: IPv4InterfacesList;
     /**
      * 
-     * @type {{ [key: string]: Array<string>; }}
+     * @type {IPv6InterfacesList}
      * @memberof GrainsSchema
      */
-    ip6_interfaces?: { [key: string]: Array<string>; } | null;
+    ip6_interfaces?: IPv6InterfacesList;
     /**
      * 
-     * @type {Array<string>}
+     * @type {IPv4List}
      * @memberof GrainsSchema
      */
-    ipv4?: Array<string> | null;
+    ipv4?: IPv4List;
     /**
      * 
-     * @type {Array<string>}
+     * @type {IPv6List}
      * @memberof GrainsSchema
      */
-    ipv6?: Array<string> | null;
+    ipv6?: IPv6List;
     /**
      * 
-     * @type {Array<string>}
+     * @type {FQDNIPv4List}
      * @memberof GrainsSchema
      */
-    fqdn_ip4?: Array<string> | null;
+    fqdn_ip4?: FQDNIPv4List;
     /**
      * 
-     * @type {Array<string>}
+     * @type {FQDNIPv6List}
      * @memberof GrainsSchema
      */
-    fqdn_ip6?: Array<string> | null;
+    fqdn_ip6?: FQDNIPv6List;
     /**
      * 
-     * @type {{ [key: string]: Array<string>; }}
+     * @type {IPInterfacesList}
      * @memberof GrainsSchema
      */
-    ip_interfaces?: { [key: string]: Array<string>; } | null;
+    ip_interfaces?: IPInterfacesList;
     /**
      * 
-     * @type {Array<Array<any>>}
+     * @type {KernelParams}
      * @memberof GrainsSchema
      */
-    kernelparams?: Array<Array<any>> | null;
+    kernelparams?: KernelParams;
     /**
      * 
-     * @type {{ [key: string]: string; }}
+     * @type {LocalInfo}
      * @memberof GrainsSchema
      */
-    locale_info?: { [key: string]: string; } | null;
+    locale_info?: LocalInfo;
     /**
      * 
-     * @type {string}
+     * @type {Kernel}
      * @memberof GrainsSchema
      */
-    kernel?: string | null;
+    kernel?: Kernel;
     /**
      * 
-     * @type {string}
+     * @type {NodeName}
      * @memberof GrainsSchema
      */
-    nodename?: string | null;
+    nodename?: NodeName;
     /**
      * 
-     * @type {string}
+     * @type {KernelRelease}
      * @memberof GrainsSchema
      */
-    kernelrelease?: string | null;
+    kernelrelease?: KernelRelease;
     /**
      * 
-     * @type {string}
+     * @type {KernelVersion}
      * @memberof GrainsSchema
      */
-    kernelversion?: string | null;
+    kernelversion?: KernelVersion;
     /**
      * 
-     * @type {string}
+     * @type {Init}
      * @memberof GrainsSchema
      */
-    init?: string | null;
+    init?: Init;
     /**
      * 
-     * @type {string}
+     * @type {LSBDistribID}
      * @memberof GrainsSchema
      */
-    lsb_distrib_id?: string | null;
+    lsb_distrib_id?: LSBDistribID;
     /**
      * 
-     * @type {string}
+     * @type {LSBDistribRelease}
      * @memberof GrainsSchema
      */
-    lsb_distrib_release?: string | null;
+    lsb_distrib_release?: LSBDistribRelease;
     /**
      * 
-     * @type {string}
+     * @type {LSBDistribCodename}
      * @memberof GrainsSchema
      */
-    lsb_distrib_codename?: string | null;
+    lsb_distrib_codename?: LSBDistribCodename;
     /**
      * 
-     * @type {string}
+     * @type {BIOSVersion}
      * @memberof GrainsSchema
      */
-    biosversion?: string | null;
+    biosversion?: BIOSVersion;
     /**
      * 
-     * @type {string}
+     * @type {BIOSVendor}
      * @memberof GrainsSchema
      */
-    biosvendor?: string | null;
+    biosvendor?: BIOSVendor;
     /**
      * 
-     * @type {string}
+     * @type {BoardName}
      * @memberof GrainsSchema
      */
-    boardname?: string | null;
+    boardname?: BoardName;
     /**
      * 
-     * @type {string}
+     * @type {ProductName}
      * @memberof GrainsSchema
      */
-    productname?: string | null;
+    productname?: ProductName;
     /**
      * 
-     * @type {string}
+     * @type {Manufacturer}
      * @memberof GrainsSchema
      */
-    manufacturer?: string | null;
+    manufacturer?: Manufacturer;
     /**
      * 
-     * @type {string}
+     * @type {BIOSReleaseDate}
      * @memberof GrainsSchema
      */
-    biosreleasedate?: string | null;
-    /**
-     * 
-     * @type {string}
-     * @memberof GrainsSchema
-     */
-    uuid?: string | null;
+    biosreleasedate?: BIOSReleaseDate;
     /**
      * 
      * @type {string}
      * @memberof GrainsSchema
      */
-    serialnumber?: string | null;
+    uuid?: string;
     /**
      * 
-     * @type {string}
+     * @type {SerialNumber}
      * @memberof GrainsSchema
      */
-    virtual?: string | null;
+    serialnumber?: SerialNumber;
     /**
      * 
-     * @type {string}
+     * @type {Virtual}
      * @memberof GrainsSchema
      */
-    ps?: string | null;
+    virtual?: Virtual;
     /**
      * 
-     * @type {number}
+     * @type {Ps}
      * @memberof GrainsSchema
      */
-    osmajorrelease?: number | null;
+    ps?: Ps;
     /**
      * 
-     * @type {string}
+     * @type {OSMajorRelease}
      * @memberof GrainsSchema
      */
-    path?: string | null;
+    osmajorrelease?: OSMajorRelease;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Path}
      * @memberof GrainsSchema
      */
-    systempath?: Array<string> | null;
+    path?: Path;
     /**
      * 
-     * @type {string}
+     * @type {SystemPathsList}
      * @memberof GrainsSchema
      */
-    pythonexecutable?: string | null;
+    systempath?: SystemPathsList;
     /**
      * 
-     * @type {Array<string>}
+     * @type {PythonExecutable}
      * @memberof GrainsSchema
      */
-    pythonpath?: Array<string> | null;
+    pythonexecutable?: PythonExecutable;
     /**
      * 
-     * @type {Array<any>}
+     * @type {PythonPathsList}
      * @memberof GrainsSchema
      */
-    pythonversion?: Array<any> | null;
+    pythonpath?: PythonPathsList;
     /**
      * 
-     * @type {string}
+     * @type {PythonVersion}
      * @memberof GrainsSchema
      */
-    pythonversionstring?: string | null;
+    pythonversion?: PythonVersion;
     /**
      * 
-     * @type {string}
+     * @type {PythonVersionString}
      * @memberof GrainsSchema
      */
-    saltpath?: string | null;
+    pythonversionstring?: PythonVersionString;
     /**
      * 
-     * @type {string}
+     * @type {SaltPath}
      * @memberof GrainsSchema
      */
-    saltversion?: string | null;
+    saltpath?: SaltPath;
     /**
      * 
-     * @type {Array<number>}
+     * @type {SaltVersion}
      * @memberof GrainsSchema
      */
-    saltversioninfo?: Array<number> | null;
+    saltversion?: SaltVersion;
     /**
      * 
-     * @type {string}
+     * @type {SaltVersionInfo}
      * @memberof GrainsSchema
      */
-    zmqversion?: string | null;
+    saltversioninfo?: SaltVersionInfo;
     /**
      * 
-     * @type {Array<string>}
+     * @type {ZMQVersion}
      * @memberof GrainsSchema
      */
-    ssds?: Array<string> | null;
+    zmqversion?: ZMQVersion;
     /**
      * 
-     * @type {string}
+     * @type {SSDs}
      * @memberof GrainsSchema
      */
-    shell?: string | null;
+    ssds?: SSDs;
     /**
      * 
-     * @type {boolean}
+     * @type {Shell}
      * @memberof GrainsSchema
      */
-    transactional?: boolean | null;
+    shell?: Shell;
     /**
      * 
-     * @type {boolean}
+     * @type {Transactional}
      * @memberof GrainsSchema
      */
-    efi?: boolean | null;
+    transactional?: Transactional;
     /**
      * 
-     * @type {boolean}
+     * @type {EFI}
      * @memberof GrainsSchema
      */
-    efi_secure_boot?: boolean | null;
+    efi?: EFI;
     /**
      * 
-     * @type {string}
+     * @type {EFISecureBoot}
      * @memberof GrainsSchema
      */
-    username?: string | null;
+    efi_secure_boot?: EFISecureBoot;
     /**
      * 
-     * @type {string}
+     * @type {Username}
      * @memberof GrainsSchema
      */
-    groupname?: string | null;
+    username?: Username;
     /**
      * 
-     * @type {number}
+     * @type {Groupname}
      * @memberof GrainsSchema
      */
-    pid?: number | null;
+    groupname?: Groupname;
     /**
      * 
-     * @type {number}
+     * @type {PID}
      * @memberof GrainsSchema
      */
-    gid?: number | null;
+    pid?: PID;
     /**
      * 
-     * @type {number}
+     * @type {GID}
      * @memberof GrainsSchema
      */
-    uid?: number | null;
+    gid?: GID;
     /**
      * 
-     * @type {boolean}
+     * @type {UID}
      * @memberof GrainsSchema
      */
-    zfs_support?: boolean | null;
+    uid?: UID;
     /**
      * 
-     * @type {boolean}
+     * @type {ZFSSupport}
      * @memberof GrainsSchema
      */
-    zfs_feature_flags?: boolean | null;
+    zfs_support?: ZFSSupport;
+    /**
+     * 
+     * @type {ZFSFeatureFlags}
+     * @memberof GrainsSchema
+     */
+    zfs_feature_flags?: ZFSFeatureFlags;
 }
 
 /**
@@ -532,87 +1086,88 @@ export function GrainsSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'id': json['id'] == null ? undefined : json['id'],
-        'host': json['host'] == null ? undefined : json['host'],
-        'fqdn': json['fqdn'] == null ? undefined : json['fqdn'],
-        'master': json['master'] == null ? undefined : json['master'],
-        'fqdns': json['fqdns'] == null ? undefined : json['fqdns'],
-        'cpu_model': json['cpu_model'] == null ? undefined : json['cpu_model'],
-        'num_cpus': json['num_cpus'] == null ? undefined : json['num_cpus'],
-        'cpu_flags': json['cpu_flags'] == null ? undefined : json['cpu_flags'],
-        'cpuarch': json['cpuarch'] == null ? undefined : json['cpuarch'],
-        'mem_total': json['mem_total'] == null ? undefined : json['mem_total'],
-        'swap_total': json['swap_total'] == null ? undefined : json['swap_total'],
-        'gpus': json['gpus'] == null ? undefined : json['gpus'],
-        'num_gpus': json['num_gpus'] == null ? undefined : json['num_gpus'],
-        'os': json['os'] == null ? undefined : json['os'],
-        'osfullname': json['osfullname'] == null ? undefined : json['osfullname'],
-        'osfinger': json['osfinger'] == null ? undefined : json['osfinger'],
-        'osrelease': json['osrelease'] == null ? undefined : json['osrelease'],
-        'osrelease_info': json['osrelease_info'] == null ? undefined : json['osrelease_info'],
-        'oscodename': json['oscodename'] == null ? undefined : json['oscodename'],
-        'os_family': json['os_family'] == null ? undefined : json['os_family'],
-        'osarch': json['osarch'] == null ? undefined : json['osarch'],
-        'disks': json['disks'] == null ? undefined : json['disks'],
-        'cwd': json['cwd'] == null ? undefined : json['cwd'],
-        'ip_gw': json['ip_gw'] == null ? undefined : json['ip_gw'],
-        'ip4_gw': json['ip4_gw'] == null ? undefined : json['ip4_gw'],
+            ...json,
+        'id': json['id'] == null ? undefined : IDFromJSON(json['id']),
+        'host': json['host'] == null ? undefined : HostFromJSON(json['host']),
+        'fqdn': json['fqdn'] == null ? undefined : FQDNFromJSON(json['fqdn']),
+        'master': json['master'] == null ? undefined : GrainsMasterFromJSON(json['master']),
+        'fqdns': json['fqdns'] == null ? undefined : FQDNsFromJSON(json['fqdns']),
+        'cpu_model': json['cpu_model'] == null ? undefined : CPUModelFromJSON(json['cpu_model']),
+        'num_cpus': json['num_cpus'] == null ? undefined : NumberOfCPUsFromJSON(json['num_cpus']),
+        'cpu_flags': json['cpu_flags'] == null ? undefined : CPUFlagsFromJSON(json['cpu_flags']),
+        'cpuarch': json['cpuarch'] == null ? undefined : CPUArchitectureFromJSON(json['cpuarch']),
+        'mem_total': json['mem_total'] == null ? undefined : TotalMemoryFromJSON(json['mem_total']),
+        'swap_total': json['swap_total'] == null ? undefined : TotalSwapFromJSON(json['swap_total']),
+        'gpus': json['gpus'] == null ? undefined : GPUsFromJSON(json['gpus']),
+        'num_gpus': json['num_gpus'] == null ? undefined : NumberOfGPUsFromJSON(json['num_gpus']),
+        'os': json['os'] == null ? undefined : OSFromJSON(json['os']),
+        'osfullname': json['osfullname'] == null ? undefined : OSFullNameFromJSON(json['osfullname']),
+        'osfinger': json['osfinger'] == null ? undefined : OSFingerFromJSON(json['osfinger']),
+        'osrelease': json['osrelease'] == null ? undefined : OSReleaseFromJSON(json['osrelease']),
+        'osrelease_info': json['osrelease_info'] == null ? undefined : OSReleaseInfoFromJSON(json['osrelease_info']),
+        'oscodename': json['oscodename'] == null ? undefined : OSCodenameFromJSON(json['oscodename']),
+        'os_family': json['os_family'] == null ? undefined : OSFamilyFromJSON(json['os_family']),
+        'osarch': json['osarch'] == null ? undefined : OSArchitectureFromJSON(json['osarch']),
+        'disks': json['disks'] == null ? undefined : DisksFromJSON(json['disks']),
+        'cwd': json['cwd'] == null ? undefined : CWDFromJSON(json['cwd']),
+        'ip_gw': json['ip_gw'] == null ? undefined : IPGWFromJSON(json['ip_gw']),
+        'ip4_gw': json['ip4_gw'] == null ? undefined : IPv4GWFromJSON(json['ip4_gw']),
         'ip6_gw': json['ip6_gw'] == null ? undefined : IPv6GWFromJSON(json['ip6_gw']),
-        'dns': json['dns'] == null ? undefined : json['dns'],
-        'server_id': json['server_id'] == null ? undefined : json['server_id'],
-        'localhost': json['localhost'] == null ? undefined : json['localhost'],
-        'domain': json['domain'] == null ? undefined : json['domain'],
-        'hwaddr_interfaces': json['hwaddr_interfaces'] == null ? undefined : json['hwaddr_interfaces'],
-        'ip4_interfaces': json['ip4_interfaces'] == null ? undefined : json['ip4_interfaces'],
-        'ip6_interfaces': json['ip6_interfaces'] == null ? undefined : json['ip6_interfaces'],
-        'ipv4': json['ipv4'] == null ? undefined : json['ipv4'],
-        'ipv6': json['ipv6'] == null ? undefined : json['ipv6'],
-        'fqdn_ip4': json['fqdn_ip4'] == null ? undefined : json['fqdn_ip4'],
-        'fqdn_ip6': json['fqdn_ip6'] == null ? undefined : json['fqdn_ip6'],
-        'ip_interfaces': json['ip_interfaces'] == null ? undefined : json['ip_interfaces'],
-        'kernelparams': json['kernelparams'] == null ? undefined : json['kernelparams'],
-        'locale_info': json['locale_info'] == null ? undefined : json['locale_info'],
-        'kernel': json['kernel'] == null ? undefined : json['kernel'],
-        'nodename': json['nodename'] == null ? undefined : json['nodename'],
-        'kernelrelease': json['kernelrelease'] == null ? undefined : json['kernelrelease'],
-        'kernelversion': json['kernelversion'] == null ? undefined : json['kernelversion'],
-        'init': json['init'] == null ? undefined : json['init'],
-        'lsb_distrib_id': json['lsb_distrib_id'] == null ? undefined : json['lsb_distrib_id'],
-        'lsb_distrib_release': json['lsb_distrib_release'] == null ? undefined : json['lsb_distrib_release'],
-        'lsb_distrib_codename': json['lsb_distrib_codename'] == null ? undefined : json['lsb_distrib_codename'],
-        'biosversion': json['biosversion'] == null ? undefined : json['biosversion'],
-        'biosvendor': json['biosvendor'] == null ? undefined : json['biosvendor'],
-        'boardname': json['boardname'] == null ? undefined : json['boardname'],
-        'productname': json['productname'] == null ? undefined : json['productname'],
-        'manufacturer': json['manufacturer'] == null ? undefined : json['manufacturer'],
-        'biosreleasedate': json['biosreleasedate'] == null ? undefined : json['biosreleasedate'],
+        'dns': json['dns'] == null ? undefined : DNSFromJSON(json['dns']),
+        'server_id': json['server_id'] == null ? undefined : ServerIDFromJSON(json['server_id']),
+        'localhost': json['localhost'] == null ? undefined : LocalhostFromJSON(json['localhost']),
+        'domain': json['domain'] == null ? undefined : DomainFromJSON(json['domain']),
+        'hwaddr_interfaces': json['hwaddr_interfaces'] == null ? undefined : HWInterfacesFromJSON(json['hwaddr_interfaces']),
+        'ip4_interfaces': json['ip4_interfaces'] == null ? undefined : IPv4InterfacesListFromJSON(json['ip4_interfaces']),
+        'ip6_interfaces': json['ip6_interfaces'] == null ? undefined : IPv6InterfacesListFromJSON(json['ip6_interfaces']),
+        'ipv4': json['ipv4'] == null ? undefined : IPv4ListFromJSON(json['ipv4']),
+        'ipv6': json['ipv6'] == null ? undefined : IPv6ListFromJSON(json['ipv6']),
+        'fqdn_ip4': json['fqdn_ip4'] == null ? undefined : FQDNIPv4ListFromJSON(json['fqdn_ip4']),
+        'fqdn_ip6': json['fqdn_ip6'] == null ? undefined : FQDNIPv6ListFromJSON(json['fqdn_ip6']),
+        'ip_interfaces': json['ip_interfaces'] == null ? undefined : IPInterfacesListFromJSON(json['ip_interfaces']),
+        'kernelparams': json['kernelparams'] == null ? undefined : KernelParamsFromJSON(json['kernelparams']),
+        'locale_info': json['locale_info'] == null ? undefined : LocalInfoFromJSON(json['locale_info']),
+        'kernel': json['kernel'] == null ? undefined : KernelFromJSON(json['kernel']),
+        'nodename': json['nodename'] == null ? undefined : NodeNameFromJSON(json['nodename']),
+        'kernelrelease': json['kernelrelease'] == null ? undefined : KernelReleaseFromJSON(json['kernelrelease']),
+        'kernelversion': json['kernelversion'] == null ? undefined : KernelVersionFromJSON(json['kernelversion']),
+        'init': json['init'] == null ? undefined : InitFromJSON(json['init']),
+        'lsb_distrib_id': json['lsb_distrib_id'] == null ? undefined : LSBDistribIDFromJSON(json['lsb_distrib_id']),
+        'lsb_distrib_release': json['lsb_distrib_release'] == null ? undefined : LSBDistribReleaseFromJSON(json['lsb_distrib_release']),
+        'lsb_distrib_codename': json['lsb_distrib_codename'] == null ? undefined : LSBDistribCodenameFromJSON(json['lsb_distrib_codename']),
+        'biosversion': json['biosversion'] == null ? undefined : BIOSVersionFromJSON(json['biosversion']),
+        'biosvendor': json['biosvendor'] == null ? undefined : BIOSVendorFromJSON(json['biosvendor']),
+        'boardname': json['boardname'] == null ? undefined : BoardNameFromJSON(json['boardname']),
+        'productname': json['productname'] == null ? undefined : ProductNameFromJSON(json['productname']),
+        'manufacturer': json['manufacturer'] == null ? undefined : ManufacturerFromJSON(json['manufacturer']),
+        'biosreleasedate': json['biosreleasedate'] == null ? undefined : BIOSReleaseDateFromJSON(json['biosreleasedate']),
         'uuid': json['uuid'] == null ? undefined : json['uuid'],
-        'serialnumber': json['serialnumber'] == null ? undefined : json['serialnumber'],
-        'virtual': json['virtual'] == null ? undefined : json['virtual'],
-        'ps': json['ps'] == null ? undefined : json['ps'],
-        'osmajorrelease': json['osmajorrelease'] == null ? undefined : json['osmajorrelease'],
-        'path': json['path'] == null ? undefined : json['path'],
-        'systempath': json['systempath'] == null ? undefined : json['systempath'],
-        'pythonexecutable': json['pythonexecutable'] == null ? undefined : json['pythonexecutable'],
-        'pythonpath': json['pythonpath'] == null ? undefined : json['pythonpath'],
-        'pythonversion': json['pythonversion'] == null ? undefined : json['pythonversion'],
-        'pythonversionstring': json['pythonversionstring'] == null ? undefined : json['pythonversionstring'],
-        'saltpath': json['saltpath'] == null ? undefined : json['saltpath'],
-        'saltversion': json['saltversion'] == null ? undefined : json['saltversion'],
-        'saltversioninfo': json['saltversioninfo'] == null ? undefined : json['saltversioninfo'],
-        'zmqversion': json['zmqversion'] == null ? undefined : json['zmqversion'],
-        'ssds': json['ssds'] == null ? undefined : json['ssds'],
-        'shell': json['shell'] == null ? undefined : json['shell'],
-        'transactional': json['transactional'] == null ? undefined : json['transactional'],
-        'efi': json['efi'] == null ? undefined : json['efi'],
-        'efi_secure_boot': json['efi-secure-boot'] == null ? undefined : json['efi-secure-boot'],
-        'username': json['username'] == null ? undefined : json['username'],
-        'groupname': json['groupname'] == null ? undefined : json['groupname'],
-        'pid': json['pid'] == null ? undefined : json['pid'],
-        'gid': json['gid'] == null ? undefined : json['gid'],
-        'uid': json['uid'] == null ? undefined : json['uid'],
-        'zfs_support': json['zfs_support'] == null ? undefined : json['zfs_support'],
-        'zfs_feature_flags': json['zfs_feature_flags'] == null ? undefined : json['zfs_feature_flags'],
+        'serialnumber': json['serialnumber'] == null ? undefined : SerialNumberFromJSON(json['serialnumber']),
+        'virtual': json['virtual'] == null ? undefined : VirtualFromJSON(json['virtual']),
+        'ps': json['ps'] == null ? undefined : PsFromJSON(json['ps']),
+        'osmajorrelease': json['osmajorrelease'] == null ? undefined : OSMajorReleaseFromJSON(json['osmajorrelease']),
+        'path': json['path'] == null ? undefined : PathFromJSON(json['path']),
+        'systempath': json['systempath'] == null ? undefined : SystemPathsListFromJSON(json['systempath']),
+        'pythonexecutable': json['pythonexecutable'] == null ? undefined : PythonExecutableFromJSON(json['pythonexecutable']),
+        'pythonpath': json['pythonpath'] == null ? undefined : PythonPathsListFromJSON(json['pythonpath']),
+        'pythonversion': json['pythonversion'] == null ? undefined : PythonVersionFromJSON(json['pythonversion']),
+        'pythonversionstring': json['pythonversionstring'] == null ? undefined : PythonVersionStringFromJSON(json['pythonversionstring']),
+        'saltpath': json['saltpath'] == null ? undefined : SaltPathFromJSON(json['saltpath']),
+        'saltversion': json['saltversion'] == null ? undefined : SaltVersionFromJSON(json['saltversion']),
+        'saltversioninfo': json['saltversioninfo'] == null ? undefined : SaltVersionInfoFromJSON(json['saltversioninfo']),
+        'zmqversion': json['zmqversion'] == null ? undefined : ZMQVersionFromJSON(json['zmqversion']),
+        'ssds': json['ssds'] == null ? undefined : SSDsFromJSON(json['ssds']),
+        'shell': json['shell'] == null ? undefined : ShellFromJSON(json['shell']),
+        'transactional': json['transactional'] == null ? undefined : TransactionalFromJSON(json['transactional']),
+        'efi': json['efi'] == null ? undefined : EFIFromJSON(json['efi']),
+        'efi_secure_boot': json['efi-secure-boot'] == null ? undefined : EFISecureBootFromJSON(json['efi-secure-boot']),
+        'username': json['username'] == null ? undefined : UsernameFromJSON(json['username']),
+        'groupname': json['groupname'] == null ? undefined : GroupnameFromJSON(json['groupname']),
+        'pid': json['pid'] == null ? undefined : PIDFromJSON(json['pid']),
+        'gid': json['gid'] == null ? undefined : GIDFromJSON(json['gid']),
+        'uid': json['uid'] == null ? undefined : UIDFromJSON(json['uid']),
+        'zfs_support': json['zfs_support'] == null ? undefined : ZFSSupportFromJSON(json['zfs_support']),
+        'zfs_feature_flags': json['zfs_feature_flags'] == null ? undefined : ZFSFeatureFlagsFromJSON(json['zfs_feature_flags']),
     };
 }
 
@@ -627,87 +1182,88 @@ export function GrainsSchemaToJSONTyped(value?: GrainsSchema | null, ignoreDiscr
 
     return {
         
-        'id': value['id'],
-        'host': value['host'],
-        'fqdn': value['fqdn'],
-        'master': value['master'],
-        'fqdns': value['fqdns'],
-        'cpu_model': value['cpu_model'],
-        'num_cpus': value['num_cpus'],
-        'cpu_flags': value['cpu_flags'],
-        'cpuarch': value['cpuarch'],
-        'mem_total': value['mem_total'],
-        'swap_total': value['swap_total'],
-        'gpus': value['gpus'],
-        'num_gpus': value['num_gpus'],
-        'os': value['os'],
-        'osfullname': value['osfullname'],
-        'osfinger': value['osfinger'],
-        'osrelease': value['osrelease'],
-        'osrelease_info': value['osrelease_info'],
-        'oscodename': value['oscodename'],
-        'os_family': value['os_family'],
-        'osarch': value['osarch'],
-        'disks': value['disks'],
-        'cwd': value['cwd'],
-        'ip_gw': value['ip_gw'],
-        'ip4_gw': value['ip4_gw'],
+            ...value,
+        'id': IDToJSON(value['id']),
+        'host': HostToJSON(value['host']),
+        'fqdn': FQDNToJSON(value['fqdn']),
+        'master': GrainsMasterToJSON(value['master']),
+        'fqdns': FQDNsToJSON(value['fqdns']),
+        'cpu_model': CPUModelToJSON(value['cpu_model']),
+        'num_cpus': NumberOfCPUsToJSON(value['num_cpus']),
+        'cpu_flags': CPUFlagsToJSON(value['cpu_flags']),
+        'cpuarch': CPUArchitectureToJSON(value['cpuarch']),
+        'mem_total': TotalMemoryToJSON(value['mem_total']),
+        'swap_total': TotalSwapToJSON(value['swap_total']),
+        'gpus': GPUsToJSON(value['gpus']),
+        'num_gpus': NumberOfGPUsToJSON(value['num_gpus']),
+        'os': OSToJSON(value['os']),
+        'osfullname': OSFullNameToJSON(value['osfullname']),
+        'osfinger': OSFingerToJSON(value['osfinger']),
+        'osrelease': OSReleaseToJSON(value['osrelease']),
+        'osrelease_info': OSReleaseInfoToJSON(value['osrelease_info']),
+        'oscodename': OSCodenameToJSON(value['oscodename']),
+        'os_family': OSFamilyToJSON(value['os_family']),
+        'osarch': OSArchitectureToJSON(value['osarch']),
+        'disks': DisksToJSON(value['disks']),
+        'cwd': CWDToJSON(value['cwd']),
+        'ip_gw': IPGWToJSON(value['ip_gw']),
+        'ip4_gw': IPv4GWToJSON(value['ip4_gw']),
         'ip6_gw': IPv6GWToJSON(value['ip6_gw']),
-        'dns': value['dns'],
-        'server_id': value['server_id'],
-        'localhost': value['localhost'],
-        'domain': value['domain'],
-        'hwaddr_interfaces': value['hwaddr_interfaces'],
-        'ip4_interfaces': value['ip4_interfaces'],
-        'ip6_interfaces': value['ip6_interfaces'],
-        'ipv4': value['ipv4'],
-        'ipv6': value['ipv6'],
-        'fqdn_ip4': value['fqdn_ip4'],
-        'fqdn_ip6': value['fqdn_ip6'],
-        'ip_interfaces': value['ip_interfaces'],
-        'kernelparams': value['kernelparams'],
-        'locale_info': value['locale_info'],
-        'kernel': value['kernel'],
-        'nodename': value['nodename'],
-        'kernelrelease': value['kernelrelease'],
-        'kernelversion': value['kernelversion'],
-        'init': value['init'],
-        'lsb_distrib_id': value['lsb_distrib_id'],
-        'lsb_distrib_release': value['lsb_distrib_release'],
-        'lsb_distrib_codename': value['lsb_distrib_codename'],
-        'biosversion': value['biosversion'],
-        'biosvendor': value['biosvendor'],
-        'boardname': value['boardname'],
-        'productname': value['productname'],
-        'manufacturer': value['manufacturer'],
-        'biosreleasedate': value['biosreleasedate'],
+        'dns': DNSToJSON(value['dns']),
+        'server_id': ServerIDToJSON(value['server_id']),
+        'localhost': LocalhostToJSON(value['localhost']),
+        'domain': DomainToJSON(value['domain']),
+        'hwaddr_interfaces': HWInterfacesToJSON(value['hwaddr_interfaces']),
+        'ip4_interfaces': IPv4InterfacesListToJSON(value['ip4_interfaces']),
+        'ip6_interfaces': IPv6InterfacesListToJSON(value['ip6_interfaces']),
+        'ipv4': IPv4ListToJSON(value['ipv4']),
+        'ipv6': IPv6ListToJSON(value['ipv6']),
+        'fqdn_ip4': FQDNIPv4ListToJSON(value['fqdn_ip4']),
+        'fqdn_ip6': FQDNIPv6ListToJSON(value['fqdn_ip6']),
+        'ip_interfaces': IPInterfacesListToJSON(value['ip_interfaces']),
+        'kernelparams': KernelParamsToJSON(value['kernelparams']),
+        'locale_info': LocalInfoToJSON(value['locale_info']),
+        'kernel': KernelToJSON(value['kernel']),
+        'nodename': NodeNameToJSON(value['nodename']),
+        'kernelrelease': KernelReleaseToJSON(value['kernelrelease']),
+        'kernelversion': KernelVersionToJSON(value['kernelversion']),
+        'init': InitToJSON(value['init']),
+        'lsb_distrib_id': LSBDistribIDToJSON(value['lsb_distrib_id']),
+        'lsb_distrib_release': LSBDistribReleaseToJSON(value['lsb_distrib_release']),
+        'lsb_distrib_codename': LSBDistribCodenameToJSON(value['lsb_distrib_codename']),
+        'biosversion': BIOSVersionToJSON(value['biosversion']),
+        'biosvendor': BIOSVendorToJSON(value['biosvendor']),
+        'boardname': BoardNameToJSON(value['boardname']),
+        'productname': ProductNameToJSON(value['productname']),
+        'manufacturer': ManufacturerToJSON(value['manufacturer']),
+        'biosreleasedate': BIOSReleaseDateToJSON(value['biosreleasedate']),
         'uuid': value['uuid'],
-        'serialnumber': value['serialnumber'],
-        'virtual': value['virtual'],
-        'ps': value['ps'],
-        'osmajorrelease': value['osmajorrelease'],
-        'path': value['path'],
-        'systempath': value['systempath'],
-        'pythonexecutable': value['pythonexecutable'],
-        'pythonpath': value['pythonpath'],
-        'pythonversion': value['pythonversion'],
-        'pythonversionstring': value['pythonversionstring'],
-        'saltpath': value['saltpath'],
-        'saltversion': value['saltversion'],
-        'saltversioninfo': value['saltversioninfo'],
-        'zmqversion': value['zmqversion'],
-        'ssds': value['ssds'],
-        'shell': value['shell'],
-        'transactional': value['transactional'],
-        'efi': value['efi'],
-        'efi-secure-boot': value['efi_secure_boot'],
-        'username': value['username'],
-        'groupname': value['groupname'],
-        'pid': value['pid'],
-        'gid': value['gid'],
-        'uid': value['uid'],
-        'zfs_support': value['zfs_support'],
-        'zfs_feature_flags': value['zfs_feature_flags'],
+        'serialnumber': SerialNumberToJSON(value['serialnumber']),
+        'virtual': VirtualToJSON(value['virtual']),
+        'ps': PsToJSON(value['ps']),
+        'osmajorrelease': OSMajorReleaseToJSON(value['osmajorrelease']),
+        'path': PathToJSON(value['path']),
+        'systempath': SystemPathsListToJSON(value['systempath']),
+        'pythonexecutable': PythonExecutableToJSON(value['pythonexecutable']),
+        'pythonpath': PythonPathsListToJSON(value['pythonpath']),
+        'pythonversion': PythonVersionToJSON(value['pythonversion']),
+        'pythonversionstring': PythonVersionStringToJSON(value['pythonversionstring']),
+        'saltpath': SaltPathToJSON(value['saltpath']),
+        'saltversion': SaltVersionToJSON(value['saltversion']),
+        'saltversioninfo': SaltVersionInfoToJSON(value['saltversioninfo']),
+        'zmqversion': ZMQVersionToJSON(value['zmqversion']),
+        'ssds': SSDsToJSON(value['ssds']),
+        'shell': ShellToJSON(value['shell']),
+        'transactional': TransactionalToJSON(value['transactional']),
+        'efi': EFIToJSON(value['efi']),
+        'efi-secure-boot': EFISecureBootToJSON(value['efi_secure_boot']),
+        'username': UsernameToJSON(value['username']),
+        'groupname': GroupnameToJSON(value['groupname']),
+        'pid': PIDToJSON(value['pid']),
+        'gid': GIDToJSON(value['gid']),
+        'uid': UIDToJSON(value['uid']),
+        'zfs_support': ZFSSupportToJSON(value['zfs_support']),
+        'zfs_feature_flags': ZFSFeatureFlagsToJSON(value['zfs_feature_flags']),
     };
 }
 

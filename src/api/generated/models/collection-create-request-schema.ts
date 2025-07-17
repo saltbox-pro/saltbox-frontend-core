@@ -39,10 +39,10 @@ export interface CollectionCreateRequestSchema {
     title: string;
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof CollectionCreateRequestSchema
      */
-    query?: object;
+    query?: { [key: string]: any; };
     /**
      * 
      * @type {string}

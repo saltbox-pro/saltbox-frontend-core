@@ -27,10 +27,10 @@ export interface TaskData {
     args?: Array<any> | null;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskData
      */
-    kwargs?: object | null;
+    kwargs?: { [key: string]: any; } | null;
 }
 
 /**

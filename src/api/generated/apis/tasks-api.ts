@@ -97,11 +97,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/{tid}/restart_failed`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
             method: 'POST',
@@ -157,11 +152,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/{tid}/restart_failed_on_minion`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
             method: 'POST',
@@ -197,11 +187,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks`,
             method: 'POST',
@@ -236,11 +221,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/{tid}/jobs`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
             method: 'GET',
@@ -273,11 +253,6 @@ export class TasksApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/tasks/{tid}`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
@@ -312,11 +287,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/{tid}/returns`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
             method: 'GET',
@@ -350,11 +320,6 @@ export class TasksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/{tid}/run`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
             method: 'POST',
@@ -387,11 +352,6 @@ export class TasksApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/tasks/{tid}/stop`.replace(`{${"tid"}}`, encodeURIComponent(String(requestParameters['tid']))),
@@ -437,11 +397,6 @@ export class TasksApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/tasks`,

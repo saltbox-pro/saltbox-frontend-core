@@ -20,6 +20,13 @@ import {
     MasterStatusToJSON,
     MasterStatusToJSONTyped,
 } from './master-status';
+import type { MasterSyncStatus } from './master-sync-status';
+import {
+    MasterSyncStatusFromJSON,
+    MasterSyncStatusFromJSONTyped,
+    MasterSyncStatusToJSON,
+    MasterSyncStatusToJSONTyped,
+} from './master-sync-status';
 
 /**
  * 
@@ -51,6 +58,18 @@ export interface MasterViewSchema {
      * @memberof MasterViewSchema
      */
     status?: MasterStatus;
+    /**
+     * 
+     * @type {string}
+     * @memberof MasterViewSchema
+     */
+    last_sync_timestamp?: string | null;
+    /**
+     * 
+     * @type {MasterSyncStatus}
+     * @memberof MasterViewSchema
+     */
+    last_sync_status?: MasterSyncStatus;
     /**
      * 
      * @type {string}
@@ -93,6 +112,8 @@ export function MasterViewSchemaFromJSONTyped(json: any, ignoreDiscriminator: bo
         'master_id': json['master_id'],
         'title': json['title'],
         'status': json['status'] == null ? undefined : MasterStatusFromJSON(json['status']),
+        'last_sync_timestamp': json['last_sync_timestamp'] == null ? undefined : json['last_sync_timestamp'],
+        'last_sync_status': json['last_sync_status'] == null ? undefined : MasterSyncStatusFromJSON(json['last_sync_status']),
         'created': json['created'],
         'modified': json['modified'],
     };
@@ -113,6 +134,8 @@ export function MasterViewSchemaToJSONTyped(value?: MasterViewSchema | null, ign
         'master_id': value['master_id'],
         'title': value['title'],
         'status': MasterStatusToJSON(value['status']),
+        'last_sync_timestamp': value['last_sync_timestamp'],
+        'last_sync_status': MasterSyncStatusToJSON(value['last_sync_status']),
         'created': value['created'],
         'modified': value['modified'],
     };

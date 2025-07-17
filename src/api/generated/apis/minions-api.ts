@@ -15,19 +15,19 @@
 
 import * as runtime from '../runtime';
 import type {
+  BridgeGatherMinionsResponse,
   HTTPValidationError,
   MinionDetailSchema,
-  MinionGatherResponseSchema,
   MinionListBody,
   PaginatedResponseMinionShortSchema,
 } from '../models/index';
 import {
+    BridgeGatherMinionsResponseFromJSON,
+    BridgeGatherMinionsResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     MinionDetailSchemaFromJSON,
     MinionDetailSchemaToJSON,
-    MinionGatherResponseSchemaFromJSON,
-    MinionGatherResponseSchemaToJSON,
     MinionListBodyFromJSON,
     MinionListBodyToJSON,
     PaginatedResponseMinionShortSchemaFromJSON,
@@ -66,7 +66,7 @@ export class MinionsApi extends runtime.BaseAPI {
     /**
      * Gather Minions
      */
-    async gatherMinionsMinionsGatherGetRaw(requestParameters: GatherMinionsMinionsGatherGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MinionGatherResponseSchema>> {
+    async gatherMinionsMinionsGatherGetRaw(requestParameters: GatherMinionsMinionsGatherGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BridgeGatherMinionsResponse>> {
         if (requestParameters['tgt'] == null) {
             throw new runtime.RequiredError(
                 'tgt',
@@ -104,11 +104,6 @@ export class MinionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/minions/gather`,
             method: 'GET',
@@ -116,13 +111,13 @@ export class MinionsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => MinionGatherResponseSchemaFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BridgeGatherMinionsResponseFromJSON(jsonValue));
     }
 
     /**
      * Gather Minions
      */
-    async gatherMinionsMinionsGatherGet(requestParameters: GatherMinionsMinionsGatherGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MinionGatherResponseSchema> {
+    async gatherMinionsMinionsGatherGet(requestParameters: GatherMinionsMinionsGatherGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BridgeGatherMinionsResponse> {
         const response = await this.gatherMinionsMinionsGatherGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -152,11 +147,6 @@ export class MinionsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/minions/{mid}`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),
@@ -201,11 +191,6 @@ export class MinionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/minions/{mid}`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),
             method: 'GET',
@@ -241,11 +226,6 @@ export class MinionsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/minions/export`,
             method: 'POST',
@@ -280,11 +260,6 @@ export class MinionsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/minions`,

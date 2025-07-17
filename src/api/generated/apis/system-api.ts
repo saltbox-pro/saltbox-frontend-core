@@ -15,15 +15,48 @@
 
 import * as runtime from '../runtime';
 import type {
+  BridgeTestBurstResponse,
+  BurstJobsTestDeleteResponse,
+  BurstJobsTestPostResponse,
+  BurstJobsTestStatsResponse,
   HTTPValidationError,
 } from '../models/index';
 import {
+    BridgeTestBurstResponseFromJSON,
+    BridgeTestBurstResponseToJSON,
+    BurstJobsTestDeleteResponseFromJSON,
+    BurstJobsTestDeleteResponseToJSON,
+    BurstJobsTestPostResponseFromJSON,
+    BurstJobsTestPostResponseToJSON,
+    BurstJobsTestStatsResponseFromJSON,
+    BurstJobsTestStatsResponseToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
 } from '../models/index';
 
 export interface AuthorizedKeysRequest {
     user: string;
+}
+
+export interface BurstJobsTestDeleteSystemBurstJobsTestDeleteRequest {
+    id?: string | null;
+}
+
+export interface BurstJobsTestGetSystemBurstJobsTestGetRequest {
+    id: string;
+}
+
+export interface BurstJobsTestPostSystemMasterBurstJobsTestPostRequest {
+    master_id: string;
+    duration: number;
+    rate: number;
+    strict?: boolean;
+}
+
+export interface BurstTestSystemMasterBurstTestPostRequest {
+    master_id: string;
+    count?: number;
+    size?: number;
 }
 
 /**
@@ -46,11 +79,6 @@ export class SystemApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/system/{user}/authorized_keys`.replace(`{${"user"}}`, encodeURIComponent(String(requestParameters['user']))),
             method: 'GET',
@@ -70,6 +98,181 @@ export class SystemApi extends runtime.BaseAPI {
      */
     async authorizedKeys(requestParameters: AuthorizedKeysRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<string> {
         const response = await this.authorizedKeysRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Burst Jobs Test Delete
+     */
+    async burstJobsTestDeleteSystemBurstJobsTestDeleteRaw(requestParameters: BurstJobsTestDeleteSystemBurstJobsTestDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BurstJobsTestDeleteResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['id'] != null) {
+            queryParameters['id'] = requestParameters['id'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/system/burst_jobs_test`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BurstJobsTestDeleteResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Burst Jobs Test Delete
+     */
+    async burstJobsTestDeleteSystemBurstJobsTestDelete(requestParameters: BurstJobsTestDeleteSystemBurstJobsTestDeleteRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BurstJobsTestDeleteResponse> {
+        const response = await this.burstJobsTestDeleteSystemBurstJobsTestDeleteRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Burst Jobs Test Get
+     */
+    async burstJobsTestGetSystemBurstJobsTestGetRaw(requestParameters: BurstJobsTestGetSystemBurstJobsTestGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BurstJobsTestStatsResponse>> {
+        if (requestParameters['id'] == null) {
+            throw new runtime.RequiredError(
+                'id',
+                'Required parameter "id" was null or undefined when calling burstJobsTestGetSystemBurstJobsTestGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['id'] != null) {
+            queryParameters['id'] = requestParameters['id'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/system/burst_jobs_test`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BurstJobsTestStatsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Burst Jobs Test Get
+     */
+    async burstJobsTestGetSystemBurstJobsTestGet(requestParameters: BurstJobsTestGetSystemBurstJobsTestGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BurstJobsTestStatsResponse> {
+        const response = await this.burstJobsTestGetSystemBurstJobsTestGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Burst Jobs Test Post
+     */
+    async burstJobsTestPostSystemMasterBurstJobsTestPostRaw(requestParameters: BurstJobsTestPostSystemMasterBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BurstJobsTestPostResponse>> {
+        if (requestParameters['master_id'] == null) {
+            throw new runtime.RequiredError(
+                'master_id',
+                'Required parameter "master_id" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+            );
+        }
+
+        if (requestParameters['duration'] == null) {
+            throw new runtime.RequiredError(
+                'duration',
+                'Required parameter "duration" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+            );
+        }
+
+        if (requestParameters['rate'] == null) {
+            throw new runtime.RequiredError(
+                'rate',
+                'Required parameter "rate" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['master_id'] != null) {
+            queryParameters['master_id'] = requestParameters['master_id'];
+        }
+
+        if (requestParameters['duration'] != null) {
+            queryParameters['duration'] = requestParameters['duration'];
+        }
+
+        if (requestParameters['rate'] != null) {
+            queryParameters['rate'] = requestParameters['rate'];
+        }
+
+        if (requestParameters['strict'] != null) {
+            queryParameters['strict'] = requestParameters['strict'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/system/{master}/burst_jobs_test`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BurstJobsTestPostResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Burst Jobs Test Post
+     */
+    async burstJobsTestPostSystemMasterBurstJobsTestPost(requestParameters: BurstJobsTestPostSystemMasterBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BurstJobsTestPostResponse> {
+        const response = await this.burstJobsTestPostSystemMasterBurstJobsTestPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Burst Test
+     */
+    async burstTestSystemMasterBurstTestPostRaw(requestParameters: BurstTestSystemMasterBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BridgeTestBurstResponse>> {
+        if (requestParameters['master_id'] == null) {
+            throw new runtime.RequiredError(
+                'master_id',
+                'Required parameter "master_id" was null or undefined when calling burstTestSystemMasterBurstTestPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['master_id'] != null) {
+            queryParameters['master_id'] = requestParameters['master_id'];
+        }
+
+        if (requestParameters['count'] != null) {
+            queryParameters['count'] = requestParameters['count'];
+        }
+
+        if (requestParameters['size'] != null) {
+            queryParameters['size'] = requestParameters['size'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/system/{master}/burst_test`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BridgeTestBurstResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Burst Test
+     */
+    async burstTestSystemMasterBurstTestPost(requestParameters: BurstTestSystemMasterBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BridgeTestBurstResponse> {
+        const response = await this.burstTestSystemMasterBurstTestPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

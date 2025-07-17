@@ -19,6 +19,7 @@ import { mapValues } from '../runtime';
  * @interface SettingsSlsRepoUpdateSchema
  */
 export interface SettingsSlsRepoUpdateSchema {
+    [key: string]: any | any;
     /**
      * 
      * @type {string}
@@ -77,6 +78,7 @@ export function SettingsSlsRepoUpdateSchemaFromJSONTyped(json: any, ignoreDiscri
     }
     return {
         
+            ...json,
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
         'is_active': json['is_active'] == null ? undefined : json['is_active'],
@@ -97,6 +99,7 @@ export function SettingsSlsRepoUpdateSchemaToJSONTyped(value?: SettingsSlsRepoUp
 
     return {
         
+            ...value,
         'name': value['name'],
         'description': value['description'],
         'is_active': value['is_active'],

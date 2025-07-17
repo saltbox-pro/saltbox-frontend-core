@@ -19,6 +19,7 @@ import { mapValues } from '../runtime';
  * @interface CollectionUpdateSchema
  */
 export interface CollectionUpdateSchema {
+    [key: string]: any | any;
     /**
      * 
      * @type {string}
@@ -33,10 +34,10 @@ export interface CollectionUpdateSchema {
     title: string;
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof CollectionUpdateSchema
      */
-    query?: object;
+    query?: { [key: string]: any; };
     /**
      * 
      * @type {string}
@@ -63,6 +64,7 @@ export function CollectionUpdateSchemaFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+            ...json,
         'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
         'title': json['title'],
         'query': json['query'] == null ? undefined : json['query'],
@@ -81,6 +83,7 @@ export function CollectionUpdateSchemaToJSONTyped(value?: CollectionUpdateSchema
 
     return {
         
+            ...value,
         'parent_id': value['parent_id'],
         'title': value['title'],
         'query': value['query'],

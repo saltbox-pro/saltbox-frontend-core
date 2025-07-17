@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, List, Modal, Spin, Typography } from "antd";
-import { MinionGatherMinionSchema } from "saltbox-core-api";
+import { GatheredMinionSchema } from "saltbox-core-api";
 import { apiStore } from "saltbox-core/store";
 
 interface MinionGatherModalProps {
@@ -20,7 +20,7 @@ export function MinionGatherModal({
   master,
 }: MinionGatherModalProps) {
   const { t } = useTranslation();
-  const [minions, setMinions] = useState<MinionGatherMinionSchema[]>([]);
+  const [minions, setMinions] = useState<GatheredMinionSchema[]>([]);
   const [count, setCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
 

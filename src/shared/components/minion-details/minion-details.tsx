@@ -79,7 +79,7 @@ const minionDetailsViewsToDescriptionItems = (
                 title={t("dashboard.apply-value-to-filters")}
                 onClick={() =>
                   onFilterButton({
-                    name: minionDetailView.key,
+                    name: String(minionDetailView.key),
                     value: grainValue,
                   })
                 }
@@ -176,14 +176,14 @@ export function MinionDetails(props: {
           value: (s) =>
             (
               <>
-                {s.grains.gpus?.map((gpu) => (
+                {Array.isArray(s.grains.gpus) ? s.grains.gpus.map((gpu: any) => (
                   <div key={gpu.model} className={styles.interfaceBlock}>
                     <div className={styles.interfaceDetails}>
                       <div>Vendor: {gpu.vendor || ""}</div>
                       <div>Model: {gpu.model || ""}</div>
                     </div>
                   </div>
-                )) || ""}
+                )) : ""}
               </>
             ) || "",
         },
@@ -206,7 +206,9 @@ export function MinionDetails(props: {
           key: "kernelparams",
           name: t("minions.kernel-parameters"),
           value: (s) =>
-            s.grains.kernelparams?.map((p) => p.join("=")).join("\n") || "",
+            Object.entries(s.grains.kernelparams || {})
+              .map(([key, value]) => `${key}=${value}`)
+              .join("\n") || "",
         },
       ],
     },
@@ -230,28 +232,32 @@ export function MinionDetails(props: {
           key: "defaultlanguage",
           name: t("minions.default-language"),
           value: (minionDetailSchema) => {
-            return minionDetailSchema.grains.locale_info?.defaultlanguage ?? "";
+            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            return localeInfo?.defaultlanguage ?? "";
           },
         },
         {
           key: "defaultencoding",
           name: t("minions.default-encoding"),
           value: (minionDetailSchema) => {
-            return minionDetailSchema.grains.locale_info?.defaultencoding ?? "";
+            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            return localeInfo?.defaultencoding ?? "";
           },
         },
         {
           key: "detectedencoding",
           name: t("minions.detected-encoding"),
           value: (minionDetailSchema) => {
-            return minionDetailSchema.grains.locale_info?.detectedencoding ?? "";
+            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            return localeInfo?.detectedencoding ?? "";
           },
         },
         {
           key: "timezone",
           name: t("minions.timezone"),
           value: (minionDetailSchema) => {
-            return minionDetailSchema.grains.locale_info?.timezone ?? "";
+            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            return localeInfo?.timezone ?? "";
           },
         },
       ],
@@ -262,12 +268,18 @@ export function MinionDetails(props: {
         {
           key: "disks",
           name: t("minions.disks"),
-          value: (s) => s.grains.disks?.join(", ") || "",
+          value: (s) => {
+            const disks = s.grains.disks as any;
+            return Array.isArray(disks) ? disks.join(", ") : "";
+          },
         },
         {
           key: "ssds",
           name: t("minions.ssd-drives"),
-          value: (s) => s.grains.ssds?.join(", ") || "",
+          value: (s) => {
+            const ssds = s.grains.ssds as any;
+            return Array.isArray(ssds) ? ssds.join(", ") : "";
+          },
         },
         { key: "swap_total", name: t("minions.swap-total") },
       ],

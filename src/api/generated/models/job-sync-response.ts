@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { JobReturn } from './job-return';
+import type { JobReturnSchema } from './job-return-schema';
 import {
-    JobReturnFromJSON,
-    JobReturnFromJSONTyped,
-    JobReturnToJSON,
-    JobReturnToJSONTyped,
-} from './job-return';
+    JobReturnSchemaFromJSON,
+    JobReturnSchemaFromJSONTyped,
+    JobReturnSchemaToJSON,
+    JobReturnSchemaToJSONTyped,
+} from './job-return-schema';
 
 /**
  * 
@@ -59,16 +59,16 @@ export interface JobSyncResponse {
     arg: Array<any>;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof JobSyncResponse
      */
-    kwarg: object;
+    kwarg: { [key: string]: any; };
     /**
      * 
-     * @type {{ [key: string]: JobReturn; }}
+     * @type {{ [key: string]: JobReturnSchema; }}
      * @memberof JobSyncResponse
      */
-    returns: { [key: string]: JobReturn; };
+    returns: { [key: string]: JobReturnSchema; };
 }
 
 /**
@@ -101,7 +101,7 @@ export function JobSyncResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
         'fun': json['fun'],
         'arg': json['arg'],
         'kwarg': json['kwarg'],
-        'returns': (mapValues(json['returns'], JobReturnFromJSON)),
+        'returns': (mapValues(json['returns'], JobReturnSchemaFromJSON)),
     };
 }
 
@@ -122,7 +122,7 @@ export function JobSyncResponseToJSONTyped(value?: JobSyncResponse | null, ignor
         'fun': value['fun'],
         'arg': value['arg'],
         'kwarg': value['kwarg'],
-        'returns': (mapValues(value['returns'], JobReturnToJSON)),
+        'returns': (mapValues(value['returns'], JobReturnSchemaToJSON)),
     };
 }
 

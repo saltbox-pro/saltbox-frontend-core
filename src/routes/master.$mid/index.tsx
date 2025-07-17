@@ -2,21 +2,21 @@ import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useParams } from "react-router"
 import { observer } from "mobx-react-lite"
-import { Breadcrumb, Flex, Tabs, Spin, Button, Modal, message, Upload, Space, Input as AntdInput } from "antd"
+import { Breadcrumb, Flex, Tabs, Spin, Button, Modal, message, Upload, Space, Input as AntdInput, Checkbox } from "antd"
 import { HomeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons"
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header"
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated"
 import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed"
 import { createColumnHelper } from "@tanstack/react-table"
-import { MinionShortSchema, PillarModel, MinionGatherMinionSchema } from "saltbox-core-api"
 import { apiStore } from "saltbox-core/store"
 import { PillarCreateForm } from "./-components/pillar-create-form"
 import { PillarsStore } from "saltbox-core/store"
 import { toJS } from "mobx"
 import styles from "./index.module.css"
+import { GatheredMinionSchema, PillarModel, PillarSelector, PillarCSVParseResult, PillarCSVParseResultErrorCode } from "saltbox-core-api"
 
 const pillarColumnHelper = createColumnHelper<PillarModel>()
-const clientColumnHelper = createColumnHelper<MinionGatherMinionSchema>()
+const clientColumnHelper = createColumnHelper<GatheredMinionSchema>()
 
 const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
   value: string;
@@ -37,8 +37,9 @@ const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
 const MasterPage = observer(() => {
   const { t } = useTranslation();
   const { mid: masterId } = useParams();
+  const [messageApi, contextHolder] = message.useMessage();
   const [activeTab, setActiveTab] = useState("clients")
-  const [clients, setClients] = useState<MinionGatherMinionSchema[]>([])
+  const [clients, setClients] = useState<GatheredMinionSchema[]>([])
   const [pillarsStore] = useState(() => new PillarsStore())
   const [isLoadingClients, setIsLoadingClients] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
@@ -55,6 +56,21 @@ const MasterPage = observer(() => {
   const [importFileList, setImportFileList] = useState<any[]>([])
   const [isCustomImportModalOpen, setIsCustomImportModalOpen] = useState(false)
   const [importStep, setImportStep] = useState(1)
+  const [updateExisting, setUpdateExisting] = useState(true)
+  const [isValidating, setIsValidating] = useState(false)
+
+  const translateErrorCode = (errorCode: PillarCSVParseResultErrorCode): string => {
+    switch (errorCode) {
+      case PillarCSVParseResultErrorCode.MinionDoesNotExist:
+        return t('pillars.error-minion-does-not-exist');
+      case PillarCSVParseResultErrorCode.MasterDoesNotExist:
+        return t('pillars.error-master-does-not-exist');
+      case PillarCSVParseResultErrorCode.PillarAlreadyExists:
+        return t('pillars.error-pillar-already-exists');
+      default:
+        return errorCode;
+    }
+  };
 
   useEffect(() => {
     if (masterId) {
@@ -103,7 +119,7 @@ const MasterPage = observer(() => {
         }
       } catch (error) {
         if (isFirstRender.current) {
-          message.error("Failed to load pillars")
+          messageApi.error("Failed to load pillars")
           isFirstRender.current = false;
         }
       }
@@ -118,7 +134,7 @@ const MasterPage = observer(() => {
     minionId?: string
   }) => {
     if (!masterId) {
-      message.error(t("pillars.select-master-error"))
+      messageApi.error(t("pillars.select-master-error"))
       return false
     }
 
@@ -130,10 +146,10 @@ const MasterPage = observer(() => {
         values.minionId,
       )
       setIsCreateModalOpen(false)
-      message.success(t("pillars.create-success"))
+      messageApi.success(t("pillars.create-success"))
       return true
     } catch (error) {
-      message.error(t("pillars.create-error"))
+      messageApi.error(t("pillars.create-error"))
       return false
     }
   }
@@ -144,7 +160,7 @@ const MasterPage = observer(() => {
     minionId?: string
   }) => {
     if (!masterId || !selectedPillar) {
-      message.error(t("pillars.select-master-error"))
+      messageApi.error(t("pillars.select-master-error"))
       return false
     }
 
@@ -156,30 +172,37 @@ const MasterPage = observer(() => {
         values.minionId,
       )
       setIsEditModalOpen(false)
-      message.success(t("pillars.edit-success"))
+      messageApi.success(t("pillars.edit-success"))
       return true
     } catch (error) {
-      message.error(t("pillars.edit-error"))
+      messageApi.error(t("pillars.edit-error"))
       return false
     }
   }
 
   const handleDeletePillar = async () => {
     if (!masterId || !selectedPillar) {
-      message.error(t("pillars.select-master-error"))
+      messageApi.error(t("pillars.select-master-error"))
       return
     }
 
     try {
-      await pillarsStore.deletePillar(
-        masterId,
-        selectedPillar.name,
-        selectedPillar.minion_id || undefined,
-      )
+      const pillarSelector: PillarSelector = {
+        master_id: masterId,
+        name: selectedPillar.name,
+        minion_id: selectedPillar.minion_id || null,
+      };
+
+      await apiStore.pillarsApi?.pillarDelete({
+        PillarSelector: pillarSelector,
+      });
+
       setIsDeleteModalOpen(false)
-      message.success(t("pillars.delete-success"))
+      messageApi.success(t("pillars.delete-success"))
+
+      await pillarsStore.loadPillars(masterId);
     } catch (error) {
-      message.error(t("pillars.delete-error"))
+      messageApi.error(t("pillars.delete-error"))
     }
   }
 
@@ -229,7 +252,7 @@ const MasterPage = observer(() => {
       link.click()
       document.body.removeChild(link)
     } catch (error) {
-      message.error(t("pillars.export-error"))
+      messageApi.error(t("pillars.export-error"))
     }
   }
 
@@ -256,12 +279,12 @@ const MasterPage = observer(() => {
       const result = await apiStore.pillarsApi?.pillarImport({
         PillarImportSchema: {
           items,
-          update_existing: true
+          update_existing: updateExisting
         }
       });
 
       if (result) {
-        message.success(t("pillars.import-success"));
+        messageApi.success(t("pillars.import-success"));
         setIsCustomImportModalOpen(false);
         setImportFile(null);
         setImportFileList([]);
@@ -271,7 +294,7 @@ const MasterPage = observer(() => {
         await pillarsStore.loadPillars(masterId);
       }
     } catch (error) {
-      message.error(t("pillars.import-parse-error"));
+      messageApi.error(t("pillars.import-parse-error"));
     } finally {
       setIsImporting(false);
     }
@@ -284,6 +307,7 @@ const MasterPage = observer(() => {
     setEditedPillars([])
     setIsEditingImport(false)
     setImportFile(null)
+    setUpdateExisting(true)
   }
 
   const handleImportFileChange = (info: any) => {
@@ -340,7 +364,7 @@ const MasterPage = observer(() => {
       setEditedPillars(JSON.parse(JSON.stringify(correctedData)));
       setImportStep(2);
     } catch (e) {
-      message.error(t('pillars.import-parse-error'));
+      messageApi.error(t('pillars.import-parse-error'));
     } finally {
       setIsParsing(false);
     }
@@ -355,9 +379,47 @@ const MasterPage = observer(() => {
     setEditedPillars(JSON.parse(JSON.stringify(parsedPillars)))
   }
 
-  const handleSaveEditImport = () => {
-    setIsEditingImport(false)
-    setParsedPillars(JSON.parse(JSON.stringify(editedPillars)))
+  const handleSaveEditImport = async () => {
+    if (!masterId) return;
+
+    setIsValidating(true);
+    try {
+      const pillarsForValidation = editedPillars
+        .filter((row: any) => {
+          const name = row.name?.trim?.() || '';
+          const value = row.value?.trim?.() || '';
+          return name && value && name !== 'name' && name !== 'value';
+        })
+        .map((row: any) => ({
+          master_id: masterId,
+          minion_id: row.minion_id?.trim?.() || null,
+          name: row.name?.trim?.() || '',
+          value: row.value?.trim?.() || '',
+        }));
+
+      const validationResults = await apiStore.pillarsApi?.pillarImportValidate({
+        PillarModel: pillarsForValidation,
+      });
+
+      if (validationResults) {
+        const validatedData = validationResults.map((result: PillarCSVParseResult) => ({
+          master_id: result.master_id,
+          minion_id: result.minion_id,
+          name: result.name,
+          value: result.value,
+          error_codes: result.error_codes || [],
+        }));
+
+        setParsedPillars(validatedData);
+        setEditedPillars(JSON.parse(JSON.stringify(validatedData)));
+        setIsEditingImport(false);
+        messageApi.success(t('pillars.validation-success'));
+      }
+    } catch (error) {
+      messageApi.error(t('pillars.validation-error'));
+    } finally {
+      setIsValidating(false);
+    }
   }
 
   const handleCellChange = useCallback((rowIdx: number, dataIndex: string, value: string) => {
@@ -523,10 +585,17 @@ const MasterPage = observer(() => {
       },
       {
         accessorKey: 'error_codes',
-        header: 'error_codes',
+        header: t('pillars.table-errors'),
         cell: ({ getValue }: any) => {
           const codes = getValue();
-          return Array.isArray(codes) ? codes.join(', ') : (codes || '');
+          if (!Array.isArray(codes) || codes.length === 0) {
+            return '';
+          }
+          return (
+            <div style={{ color: '#ff4d4f' }}>
+              {codes.map(code => translateErrorCode(code)).join(', ')}
+            </div>
+          );
         },
       },
     ];
@@ -603,6 +672,7 @@ const MasterPage = observer(() => {
 
   return (
     <>
+      {contextHolder}
       <Breadcrumb
         items={[
           {
@@ -677,6 +747,11 @@ const MasterPage = observer(() => {
           {t("pillars.modal-delete-confirm-text") + " "}
           <b>{selectedPillar ? selectedPillar.name : ""}</b>?
         </p>
+        {selectedPillar && (
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            Master: {selectedPillar.master_id}, Minion: {selectedPillar.minion_id || 'global'}
+          </p>
+        )}
       </Modal>
 
       <Modal
@@ -726,24 +801,39 @@ const MasterPage = observer(() => {
         )}
         {importStep === 2 && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
-              <Button
-                type="primary"
-                onClick={handleImportConfirm}
-                loading={isImporting}
-                disabled={!(isEditingImport ? editedPillars.length : parsedPillars.length)}
-                style={{ marginRight: 8 }}
-              >
-                {t('pillars.import')}
-              </Button>
-              {!isEditingImport ? (
-                <Button type="link" size="small" icon={<EditOutlined />} onClick={handleEditImport} />
-              ) : (
-                <Flex gap={8}>
-                  <Button type="link" size="small" icon={<SaveOutlined />} onClick={handleSaveEditImport} />
-                  <Button type="link" size="small" danger icon={<CloseOutlined />} onClick={handleCancelEditImport} />
-                </Flex>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Checkbox
+                  checked={updateExisting}
+                  onChange={(e) => setUpdateExisting(e.target.checked)}
+                >
+                  {t('pillars.import-update-existing')}
+                </Checkbox>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <Button
+                  type="primary"
+                  onClick={handleImportConfirm}
+                  loading={isImporting}
+                  disabled={!(isEditingImport ? editedPillars.length : parsedPillars.length)}
+                >
+                  {t('pillars.import')}
+                </Button>
+                {!isEditingImport ? (
+                  <Button type="link" size="small" icon={<EditOutlined />} onClick={handleEditImport} />
+                ) : (
+                  <Flex gap={8}>
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<SaveOutlined />}
+                      onClick={handleSaveEditImport}
+                      loading={isValidating}
+                    />
+                    <Button type="link" size="small" danger icon={<CloseOutlined />} onClick={handleCancelEditImport} />
+                  </Flex>
+                )}
+              </div>
             </div>
             <FastTableListed
               key={`import-table-${isEditingImport ? 'editing' : 'viewing'}`}

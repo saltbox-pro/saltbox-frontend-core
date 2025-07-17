@@ -64,7 +64,7 @@ export interface SettingsSlsRepoModel {
      */
     last_sync_error?: string | null;
     /**
-     * Path in repository supposed as Salt GitFS root
+     * Path in repository to serve for masters
      * @type {string}
      * @memberof SettingsSlsRepoModel
      */

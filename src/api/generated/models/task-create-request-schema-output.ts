@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { UserShort } from './user-short';
+import {
+    UserShortFromJSON,
+    UserShortFromJSONTyped,
+    UserShortToJSON,
+    UserShortToJSONTyped,
+} from './user-short';
 import type { TaskTargetMinion } from './task-target-minion';
 import {
     TaskTargetMinionFromJSON,
@@ -73,10 +80,10 @@ export interface TaskCreateRequestSchemaOutput {
     collection_id: string;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskCreateRequestSchemaOutput
      */
-    query?: object;
+    query?: { [key: string]: any; };
     /**
      * 
      * @type {Array<TaskTargetMinion>}
@@ -107,6 +114,12 @@ export interface TaskCreateRequestSchemaOutput {
      * @memberof TaskCreateRequestSchemaOutput
      */
     postprocessing?: TaskPostProcessingCreateOutput | null;
+    /**
+     * 
+     * @type {UserShort}
+     * @memberof TaskCreateRequestSchemaOutput
+     */
+    user?: UserShort;
 }
 
 /**
@@ -138,6 +151,7 @@ export function TaskCreateRequestSchemaOutputFromJSONTyped(json: any, ignoreDisc
         'max_jobs_count_at_same_time': json['max_jobs_count_at_same_time'] == null ? undefined : json['max_jobs_count_at_same_time'],
         'max_retries': json['max_retries'] == null ? undefined : json['max_retries'],
         'postprocessing': json['postprocessing'] == null ? undefined : TaskPostProcessingCreateOutputFromJSON(json['postprocessing']),
+        'user': json['user'] == null ? undefined : UserShortFromJSON(json['user']),
     };
 }
 
@@ -163,6 +177,7 @@ export function TaskCreateRequestSchemaOutputToJSONTyped(value?: TaskCreateReque
         'max_jobs_count_at_same_time': value['max_jobs_count_at_same_time'],
         'max_retries': value['max_retries'],
         'postprocessing': TaskPostProcessingCreateOutputToJSON(value['postprocessing']),
+        'user': UserShortToJSON(value['user']),
     };
 }
 

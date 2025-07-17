@@ -58,7 +58,7 @@ export interface SettingsSlsRepoCreateSchema {
      */
     last_sync_error?: string | null;
     /**
-     * Path in repository supposed as Salt GitFS root
+     * Path in repository to serve for masters
      * @type {string}
      * @memberof SettingsSlsRepoCreateSchema
      */
@@ -150,7 +150,7 @@ export function SettingsSlsRepoCreateSchemaToJSONTyped(value?: SettingsSlsRepoCr
         
         'repo_url': RepoUrlToJSON(value['repo_url']),
         'local_path': value['local_path'],
-        'last_synced': value['last_synced'] === null ? null : ((value['last_synced'] as any)?.toISOString()),
+        'last_synced': value['last_synced'] == null ? undefined : ((value['last_synced'] as any).toISOString()),
         'is_last_sync_successful': value['is_last_sync_successful'],
         'last_sync_error': value['last_sync_error'],
         'root': value['root'],

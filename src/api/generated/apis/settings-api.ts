@@ -137,11 +137,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/sync-status/{task_id}`.replace(`{${"task_id"}}`, encodeURIComponent(String(requestParameters['task_id']))),
             method: 'GET',
@@ -177,11 +172,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/sync-status/{task_id}`.replace(`{${"task_id"}}`, encodeURIComponent(String(requestParameters['task_id']))),
             method: 'GET',
@@ -216,11 +206,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/activate`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'POST',
@@ -253,11 +238,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/activate`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
@@ -293,11 +273,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos`,
@@ -335,11 +310,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos`,
             method: 'POST',
@@ -374,11 +344,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/deactivate`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'POST',
@@ -412,11 +377,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/deactivate`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'POST',
@@ -449,11 +409,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
@@ -491,11 +446,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
@@ -535,11 +485,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos`,
             method: 'GET',
@@ -574,11 +519,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos`,
             method: 'GET',
@@ -611,11 +551,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
@@ -650,11 +585,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'GET',
@@ -681,11 +611,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/sync_all`,
             method: 'POST',
@@ -711,11 +636,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/sync_all`,
@@ -750,11 +670,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/sync`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'POST',
@@ -787,11 +702,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}/sync`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
@@ -835,11 +745,6 @@ export class SettingsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),
             method: 'PUT',
@@ -882,11 +787,6 @@ export class SettingsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/settings/sls-repos/{sid}`.replace(`{${"sid"}}`, encodeURIComponent(String(requestParameters['sid']))),

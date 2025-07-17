@@ -448,6 +448,15 @@
     "edit-pillar-modal-title": "Редактировать Pillar",
     "import-description": "Загрузите CSV-файл с данными Pillar для импорта.",
     "import-single-upload": "Можно загрузить только один файл за раз.",
-    "next": "Далее"
+    "next": "Далее",
+    "delete-pillar-modal-title": "Удалить Pillar",
+    "modal-delete-confirm-text": "Вы действительно хотите удалить pillar",
+    "import-update-existing": "Перезаписать существующие",
+    "validation-success": "Валидация завершена успешно",
+    "validation-error": "Ошибка валидации",
+    "error-minion-does-not-exist": "Клиент не существует",
+    "error-master-does-not-exist": "Мастер не существует",
+    "error-pillar-already-exists": "Pillar уже существует",
+    "table-errors": "Ошибки"
   }
 }

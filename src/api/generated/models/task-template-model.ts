@@ -57,16 +57,16 @@ export interface TaskTemplateModel {
     commit_hash: string;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskTemplateModel
      */
-    json_schema: object;
+    json_schema: { [key: string]: any; };
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskTemplateModel
      */
-    ui_schema?: object;
+    ui_schema?: { [key: string]: any; };
     /**
      * 
      * @type {string}
