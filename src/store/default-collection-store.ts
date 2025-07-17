@@ -18,8 +18,8 @@ export class DefaultCollectionStore {
     this.error = null;
 
     try {
-      this.defaultCollection =
-        await apiStore.minionCollectionsApi.minionCollectionDefault();
+      //  this.defaultCollection =
+      //    await apiStore.minionCollectionsApi.minionCollectionDefault();
     } catch (err) {
       this.error =
         err instanceof Error

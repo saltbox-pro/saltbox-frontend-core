@@ -45,16 +45,16 @@ export interface JobSchemaModel {
     name: string;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof JobSchemaModel
      */
-    json_schema: object;
+    json_schema: { [key: string]: any; };
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof JobSchemaModel
      */
-    ui_schema?: object;
+    ui_schema?: { [key: string]: any; };
     /**
      * 
      * @type {string}

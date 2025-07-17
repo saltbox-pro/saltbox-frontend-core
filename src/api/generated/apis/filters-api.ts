@@ -48,11 +48,6 @@ export class FiltersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/filters/schema`,
             method: 'GET',
@@ -88,11 +83,6 @@ export class FiltersApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/filters/unique-grain-values`,

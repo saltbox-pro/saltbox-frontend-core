@@ -69,11 +69,6 @@ export class MastersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/masters/{master_id}`.replace(`{${"master_id"}}`, encodeURIComponent(String(requestParameters['master_id']))),
             method: 'GET',
@@ -112,11 +107,6 @@ export class MastersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/masters`,
             method: 'GET',
@@ -150,11 +140,6 @@ export class MastersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/masters/{mid}/accept`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),
             method: 'POST',
@@ -187,11 +172,6 @@ export class MastersApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/masters/{mid}/reject`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),

@@ -72,22 +72,22 @@ export interface JobModel {
     arg?: Array<any> | null;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof JobModel
      */
-    kwarg?: object | null;
+    kwarg?: { [key: string]: any; } | null;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<string | null>}
      * @memberof JobModel
      */
-    minions?: Array<string>;
+    minions?: Array<string | null>;
     /**
      * 
-     * @type {Array<string>}
+     * @type {Array<string | null>}
      * @memberof JobModel
      */
-    missing?: Array<string>;
+    missing?: Array<string | null>;
     /**
      * 
      * @type {string}

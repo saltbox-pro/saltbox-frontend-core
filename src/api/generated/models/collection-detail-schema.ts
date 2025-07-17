@@ -21,10 +21,10 @@ import { mapValues } from '../runtime';
 export interface CollectionDetailSchema {
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof CollectionDetailSchema
      */
-    full_query?: object;
+    full_query?: { [key: string]: any; };
     /**
      * 
      * @type {string}
@@ -45,10 +45,10 @@ export interface CollectionDetailSchema {
     title: string;
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof CollectionDetailSchema
      */
-    query?: object;
+    query?: { [key: string]: any; };
     /**
      * 
      * @type {string}

@@ -13,12 +13,21 @@
  */
 
 import { mapValues } from '../runtime';
+import type { Limit } from './limit';
+import {
+    LimitFromJSON,
+    LimitFromJSONTyped,
+    LimitToJSON,
+    LimitToJSONTyped,
+} from './limit';
+
 /**
  * 
  * @export
  * @interface MinionFilterValuesBody
  */
 export interface MinionFilterValuesBody {
+    [key: string]: any | any;
     /**
      * Collection slug
      * @type {string}
@@ -27,10 +36,10 @@ export interface MinionFilterValuesBody {
     collection_slug?: string;
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof MinionFilterValuesBody
      */
-    query?: object;
+    query?: { [key: string]: any; };
     /**
      * Field name to get unique values
      * @type {string}
@@ -45,10 +54,10 @@ export interface MinionFilterValuesBody {
     skip?: number;
     /**
      * 
-     * @type {number}
+     * @type {Limit}
      * @memberof MinionFilterValuesBody
      */
-    limit?: number | null;
+    limit?: Limit;
 }
 
 /**
@@ -69,11 +78,12 @@ export function MinionFilterValuesBodyFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
+            ...json,
         'collection_slug': json['collection_slug'] == null ? undefined : json['collection_slug'],
         'query': json['query'] == null ? undefined : json['query'],
         'field': json['field'],
         'skip': json['skip'] == null ? undefined : json['skip'],
-        'limit': json['limit'] == null ? undefined : json['limit'],
+        'limit': json['limit'] == null ? undefined : LimitFromJSON(json['limit']),
     };
 }
 
@@ -88,11 +98,12 @@ export function MinionFilterValuesBodyToJSONTyped(value?: MinionFilterValuesBody
 
     return {
         
+            ...value,
         'collection_slug': value['collection_slug'],
         'query': value['query'],
         'field': value['field'],
         'skip': value['skip'],
-        'limit': value['limit'],
+        'limit': LimitToJSON(value['limit']),
     };
 }
 

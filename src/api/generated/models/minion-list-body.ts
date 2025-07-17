@@ -39,10 +39,10 @@ export interface MinionListBody {
     collection_slug: string;
     /**
      * A valid MongoDB query dictionary
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof MinionListBody
      */
-    query?: object;
+    query?: { [key: string]: any; };
 }
 
 /**

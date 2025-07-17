@@ -1,6 +1,6 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable } from "mobx";
-import { PillarModel } from "saltbox-core-api";
+import { PillarModel, PillarSelector } from "saltbox-core-api";
 import { apiStore } from "saltbox-core/store";
 
 export class PillarsStore {
@@ -130,16 +130,20 @@ export class PillarsStore {
     if (!apiStore.pillarsApi) return false;
 
     try {
+      const pillarSelector: PillarSelector = {
+        master_id: masterId,
+        name,
+        minion_id: minionId || null,
+      };
+
       await apiStore.pillarsApi.pillarDelete({
-        PillarSelector: {
-          master_id: masterId,
-          minion_id: minionId || null,
-          name,
-        },
+        PillarSelector: pillarSelector,
       });
+
       await this.loadPillars(masterId);
       return true;
     } catch (error) {
+      console.error('Delete pillar error in store:', error);
       throw error;
     }
   };

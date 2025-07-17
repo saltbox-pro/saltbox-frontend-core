@@ -87,10 +87,10 @@ export interface TaskListResponseSchema {
     task_args?: Array<string> | null;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskListResponseSchema
      */
-    task_kwargs?: object | null;
+    task_kwargs?: { [key: string]: any; } | null;
     /**
      * 
      * @type {CollectionShort}
@@ -99,10 +99,10 @@ export interface TaskListResponseSchema {
     target_collection: CollectionShort;
     /**
      * 
-     * @type {object}
+     * @type {{ [key: string]: any; }}
      * @memberof TaskListResponseSchema
      */
-    target_query?: object;
+    target_query?: { [key: string]: any; };
     /**
      * 
      * @type {Array<TaskTargetMinion>}

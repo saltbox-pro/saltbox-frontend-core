@@ -13,12 +13,12 @@
  */
 
 import { mapValues } from '../runtime';
-import type { MinionGatherMinionSchema } from './minion-gather-minion-schema';
+import type { GatheredMinionSchema } from './minion-gather-minion-schema';
 import {
-    MinionGatherMinionSchemaFromJSON,
-    MinionGatherMinionSchemaFromJSONTyped,
-    MinionGatherMinionSchemaToJSON,
-    MinionGatherMinionSchemaToJSONTyped,
+    GatheredMinionSchemaFromJSON,
+    GatheredMinionSchemaFromJSONTyped,
+    GatheredMinionSchemaToJSON,
+    GatheredMinionSchemaToJSONTyped,
 } from './minion-gather-minion-schema';
 
 /**
@@ -35,10 +35,10 @@ export interface MinionGatherResponseSchema {
     count?: number;
     /**
      * 
-     * @type {Array<MinionGatherMinionSchema>}
+     * @type {Array<GatheredMinionSchema>}
      * @memberof MinionGatherResponseSchema
      */
-    minions?: Array<MinionGatherMinionSchema>;
+    minions?: Array<GatheredMinionSchema>;
 }
 
 /**
@@ -57,9 +57,9 @@ export function MinionGatherResponseSchemaFromJSONTyped(json: any, ignoreDiscrim
         return json;
     }
     return {
-        
+
         'count': json['count'] == null ? undefined : json['count'],
-        'minions': json['minions'] == null ? undefined : ((json['minions'] as Array<any>).map(MinionGatherMinionSchemaFromJSON)),
+        'minions': json['minions'] == null ? undefined : ((json['minions'] as Array<any>).map(GatheredMinionSchemaFromJSON)),
     };
 }
 
@@ -73,9 +73,9 @@ export function MinionGatherResponseSchemaToJSONTyped(value?: MinionGatherRespon
     }
 
     return {
-        
+
         'count': value['count'],
-        'minions': value['minions'] == null ? undefined : ((value['minions'] as Array<any>).map(MinionGatherMinionSchemaToJSON)),
+        'minions': value['minions'] == null ? undefined : ((value['minions'] as Array<any>).map(GatheredMinionSchemaToJSON)),
     };
 }
 

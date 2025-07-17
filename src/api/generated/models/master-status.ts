@@ -20,7 +20,8 @@
 export const MasterStatus = {
     New: 'new',
     Accepted: 'accepted',
-    Rejected: 'rejected'
+    Rejected: 'rejected',
+    KeysStale: 'keys_stale'
 } as const;
 export type MasterStatus = typeof MasterStatus[keyof typeof MasterStatus];
 

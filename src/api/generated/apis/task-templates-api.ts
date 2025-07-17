@@ -63,11 +63,6 @@ export class TaskTemplatesApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
-
         const response = await this.request({
             path: `/tasks/template`,
             method: 'GET',
@@ -100,11 +95,6 @@ export class TaskTemplatesApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
-
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
-        }
 
         const response = await this.request({
             path: `/tasks/template/{tpl_id}`.replace(`{${"tpl_id"}}`, encodeURIComponent(String(requestParameters['tpl_id']))),

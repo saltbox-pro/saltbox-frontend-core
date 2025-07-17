@@ -16,58 +16,58 @@ import { mapValues } from '../runtime';
 /**
  * 
  * @export
- * @interface MinionGatherMinionSchema
+ * @interface GatheredMinionSchema
  */
-export interface MinionGatherMinionSchema {
+export interface GatheredMinionSchema {
     /**
      * 
      * @type {string}
-     * @memberof MinionGatherMinionSchema
+     * @memberof GatheredMinionSchema
      */
     minion_id: string;
     /**
      * 
      * @type {string}
-     * @memberof MinionGatherMinionSchema
+     * @memberof GatheredMinionSchema
      */
     master: string;
 }
 
 /**
- * Check if a given object implements the MinionGatherMinionSchema interface.
+ * Check if a given object implements the GatheredMinionSchema interface.
  */
-export function instanceOfMinionGatherMinionSchema(value: object): value is MinionGatherMinionSchema {
+export function instanceOfGatheredMinionSchema(value: object): value is GatheredMinionSchema {
     if (!('minion_id' in value) || value['minion_id'] === undefined) return false;
     if (!('master' in value) || value['master'] === undefined) return false;
     return true;
 }
 
-export function MinionGatherMinionSchemaFromJSON(json: any): MinionGatherMinionSchema {
-    return MinionGatherMinionSchemaFromJSONTyped(json, false);
+export function GatheredMinionSchemaFromJSON(json: any): GatheredMinionSchema {
+    return GatheredMinionSchemaFromJSONTyped(json, false);
 }
 
-export function MinionGatherMinionSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean): MinionGatherMinionSchema {
+export function GatheredMinionSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean): GatheredMinionSchema {
     if (json == null) {
         return json;
     }
     return {
-        
+
         'minion_id': json['minion_id'],
         'master': json['master'],
     };
 }
 
-export function MinionGatherMinionSchemaToJSON(json: any): MinionGatherMinionSchema {
-    return MinionGatherMinionSchemaToJSONTyped(json, false);
+export function GatheredMinionSchemaToJSON(json: any): GatheredMinionSchema {
+    return GatheredMinionSchemaToJSONTyped(json, false);
 }
 
-export function MinionGatherMinionSchemaToJSONTyped(value?: MinionGatherMinionSchema | null, ignoreDiscriminator: boolean = false): any {
+export function GatheredMinionSchemaToJSONTyped(value?: GatheredMinionSchema | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }
 
     return {
-        
+
         'minion_id': value['minion_id'],
         'master': value['master'],
     };
