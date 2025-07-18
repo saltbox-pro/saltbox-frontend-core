@@ -2,7 +2,7 @@ import { initReactI18next } from "react-i18next";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
-import { AppLanguage, AppLanguageLabel } from "saltbox-core/shared/conf/app-locales";
+import { AppLanguage } from "saltbox-core/shared/conf/app-locales";
 import { setDateTimeLocale } from "saltbox-core/shared/utils/datetime";
 
 class I18NStore {
@@ -52,14 +52,6 @@ class I18NStore {
   set currentLanguage(language: AppLanguage) {
     i18n.changeLanguage(language);
   }
-
-  get currentLanguageLabel(): AppLanguageLabel {
-    return this.getLanguageLabel(i18n.language);
-  }
-
-  getLanguageLabel = (language: AppLanguage | string): AppLanguageLabel => {
-    return AppLanguageLabel[language as keyof typeof AppLanguageLabel];
-  };
 }
 
 export const i18nStore = new I18NStore();

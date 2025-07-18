@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { I18nextProvider } from "react-i18next";
 import { Suspense, useEffect } from "react";
 import i18n from "i18next";
-import { appStore, envStore } from "saltbox-core/store";
-import { runInAction } from "mobx";
+import { appStore, envStore, i18nStore } from "saltbox-core/store";
+import { autorun, runInAction } from "mobx";
 import "react-querybuilder/dist/query-builder.css";
 import CollectionPage from "./routes/minions.$slug";
 import MastersPage from "./routes/masters";
@@ -19,10 +19,13 @@ import MasterPage from "./routes/master.$mid";
 
 export default observer(function Root(props) {
   useEffect(() => {
-    const { authStore, env } = props;
+    const { authStore, localeStore, env } = props;
     appStore.init(authStore);
     runInAction(() => {
       envStore.env = env;
+    });
+    autorun(() => {
+      i18nStore.currentLanguage = localeStore.currentLocale;
     });
   }, []);
 
