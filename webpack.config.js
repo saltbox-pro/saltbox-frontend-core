@@ -40,6 +40,9 @@ module.exports = (webpackConfigEnv, argv) => {
         PRODUCTION: JSON.stringify(argv.mode === 'production'),
       })
     ],
+    output: {
+      filename: 'index.js',
+    },
   });
 
   config.externals = [];

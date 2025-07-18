@@ -5,14 +5,13 @@
   "scripts": {
     "start": "webpack serve",
     "start:standalone": "webpack serve --env standalone",
-    "build": "concurrently yarn:build:*",
-    "build:webpack": "webpack --mode=production",
-    "build:verbose": "node --version",
+    "build": "yarn clean && webpack --mode=production",
     "analyze": "webpack --mode=production --env analyze",
     "lint": "eslint src --ext js,ts,tsx",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "live": "npx http-server ./dist -p 4202 --cors",
+    "clean": "npx rimraf ./dist",
     "generate-api:clean": "npx rimraf api/generated",
     "generate-api:docker": "yarn generate-api:clean && yarn generate-api:docker-run",
     "generate-api:docker-run": "docker run --rm -u $(id -u ${USER}):$(id -g ${USER}) -v $PWD/src/api:/local openapitools/openapi-generator-cli generate -c /local/openapi-generator-config.json"
