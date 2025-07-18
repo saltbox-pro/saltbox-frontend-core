@@ -30,7 +30,7 @@ class I18NStore {
         },
         supportedLngs: this.supportedLanguages,
         backend: {
-          loadPath: "http://localhost:4202/locales/{{lng}}/{{ns}}.json",
+          loadPath: "/locales/{{lng}}/{{ns}}.json",
           allowMultiLoading: true,
         },
         react: {
