@@ -32,7 +32,10 @@ import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-cl
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
-import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import {
+  formatTimeByUserTZ,
+  pastTimeByUserTZ,
+} from "saltbox-core/shared/utils/datetime";
 import { apiStore } from "saltbox-core/store";
 import { appStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
@@ -136,15 +139,15 @@ function minionsColumnGenerator(t: any, onMinionClick: (id: string) => void) {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-            badgeText: pastTimeByUserTZ(data.getValue()),
-            popoverContent: formatTimeByUserTZ(data.getValue()),
-          }
+              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+              badgeText: pastTimeByUserTZ(data.getValue()),
+              popoverContent: formatTimeByUserTZ(data.getValue()),
+            }
           : {
-            badgeColor: "orange",
-            badgeText: t("minions.never-synced"),
-            popoverContent: undefined,
-          };
+              badgeColor: "orange",
+              badgeText: t("minions.never-synced"),
+              popoverContent: undefined,
+            };
         return (
           <Popover content={componentData.popoverContent}>
             <span>
@@ -246,7 +249,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     try {
       setIsCSVLoading(true);
       const response = await fetch(
-        `${envStore.env?.apiBasePath}/minions/export`,
+        `${envStore.env?.api_base_path}/minions/export`,
         {
           method: "POST",
           headers: {

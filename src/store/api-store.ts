@@ -20,7 +20,7 @@ class ApiStore {
     if (!envStore.env || !appStore.authStore?.user?.access_token)
       return undefined;
     return new Configuration({
-      basePath: envStore.env.apiBasePath,
+      basePath: envStore.env.api_base_path,
       headers: {
         Authorization: `Bearer ${appStore.authStore.user.access_token}`,
       },

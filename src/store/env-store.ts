@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 
 export interface EnvInterface {
   wsServerUrl: string;
-  apiBasePath: string;
+  api_base_path: string;
 }
 
 export class EnvStore {
