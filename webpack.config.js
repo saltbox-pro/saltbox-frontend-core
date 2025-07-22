@@ -11,7 +11,6 @@ module.exports = (webpackConfigEnv, argv) => {
     webpackConfigEnv,
     argv,
     outputSystemJS: false,
-
   });
 
   const config = merge(defaultConfig, {
@@ -20,12 +19,8 @@ module.exports = (webpackConfigEnv, argv) => {
     },
     resolve: {
       alias: {
-        "saltbox-shared": path.resolve(__dirname, "../saltbox-frontend-shared/src"),
-        "saltbox-core-api": path.resolve(__dirname, "../saltbox-frontend-core/src/api/generated"),
-        "saltbox-core": path.resolve(__dirname, "../saltbox-frontend-core/src"),
-        "saltbox-base": path.resolve(__dirname, "../saltbox-frontend-base/src"),
-        "saltbox-flow": path.resolve(__dirname, "../saltbox-frontend-flow/src"),
-        "saltbox-root-config": path.resolve(__dirname, "../saltbox-frontend-root-config/src"),
+        "saltbox-core-api": path.resolve(__dirname, "./src/api/generated"),
+        "saltbox-core": path.resolve(__dirname, "./src"),
       },
     },
     plugins: [
@@ -34,16 +29,17 @@ module.exports = (webpackConfigEnv, argv) => {
           { from: "public/locales", to: "locales" },
         ],
       }),
-      // TODO: make this work in real life
       new webpack.DefinePlugin({
-        DEVELOPMENT: JSON.stringify(process.env.NODE_ENV || 'development'),
-        PRODUCTION: JSON.stringify(argv.mode === 'production'),
-      })
+        DEVELOPMENT: argv.mode === 'development',
+        PRODUCTION: argv.mode === 'production',
+      }),
     ],
     output: {
       filename: 'index.js',
     },
   });
+
+  console.log('MODE', argv.mode);
 
   config.externals = [];
 
