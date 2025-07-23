@@ -16,6 +16,7 @@ import SettingsSlsPage from "./routes/settings-sls";
 import TaskPage from "./routes/task.$taskid";
 import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
+import CollectionEditPage from "./routes/collection.$slug";
 
 export default observer(function Root(props) {
   useEffect(() => {
@@ -38,6 +39,7 @@ export default observer(function Root(props) {
           <Routes>
             <Route path="/minion/:slug/:mid" element={<MinionPage />} />
             <Route path="/minions/:slug" element={<CollectionPage />} />
+            <Route path="/collection/:slug" element={<CollectionEditPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/minion/:slug/:mid" element={<MinionPage />} />
             <Route path="/masters" element={<MastersPage />} />

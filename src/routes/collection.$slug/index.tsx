@@ -30,7 +30,7 @@ import styles from "./index.module.css";
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
 
-const CollectionPage = observer(() => {
+const CollectionEditPage = observer(() => {
   const { t } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -219,4 +219,4 @@ const CollectionPage = observer(() => {
   );
 });
 
-export default CollectionPage;
+export default CollectionEditPage;
