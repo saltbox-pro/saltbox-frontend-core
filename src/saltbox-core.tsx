@@ -1,20 +1,36 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOMClient from "react-dom/client";
 import singleSpaReact from "single-spa-react";
 import Root from "./root.component";
+import { CollectionSelector } from "saltbox-core/shared/components/collection-selector/collection-selector";
+import { I18nextProvider } from "react-i18next";
+import i18n from "i18next";
+import { BrowserRouter } from "react-router";
 
-const lifecycles = singleSpaReact({
+const mainLifecycles = singleSpaReact({
   React,
   ReactDOMClient,
   rootComponent: Root,
-  errorBoundary(err, info, props) {
-    // Customize the root error boundary for your microfrontend here.
-    return null;
-  },
   domElementGetter: () => document.getElementById("app-container"),
 });
 
-export const { bootstrap, mount, unmount } = lifecycles;
+export const { bootstrap, mount, unmount } = mainLifecycles;
+
+const collectionSelectorRootComponent = ({ onClose }) => (
+  <I18nextProvider i18n={i18n}>
+    <Suspense fallback="Loading translations...">
+      <BrowserRouter basename="/core">
+        <CollectionSelector onClose={onClose} />
+      </BrowserRouter>
+    </Suspense>
+  </I18nextProvider>
+);
+
+const collectionSelectorLifecycles = singleSpaReact({
+  React,
+  ReactDOMClient,
+  rootComponent: collectionSelectorRootComponent,
+});
 
 export const meta = {
   name: "saltbox-frontend-core",
@@ -26,7 +42,11 @@ export const meta = {
       {
         key: "minions",
         label: "Minions",
-        path: "/core/minions/root",
+        drawer: {
+          bootstrap: collectionSelectorLifecycles.bootstrap,
+          mount: collectionSelectorLifecycles.mount,
+          unmount: collectionSelectorLifecycles.unmount,
+        },
       },
       {
         key: "masters",

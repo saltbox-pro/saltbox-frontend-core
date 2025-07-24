@@ -1,0 +1,27 @@
+.collectionSelectorTable {
+  flex: 1;
+}
+.collectionSelectorTable :global(.fast-table) {
+  height: 100%;
+}
+
+.collectionSelectorTable :global(.fast-table thead th) {
+  display: none;
+}
+.collectionSelectorTable :global(.fast-table tbody td) {
+  border: 0 none;
+}
+
+.collectionSelectorTable tr:has(:global(a.active)) td:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 10px;
+}
+.collectionSelectorTable tr:has(:global(a.active)) td:last-child {
+  width: 24px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.collectionSelectorTable tr:has(:global(a.active)) td {
+  background-color: #e6f4ff;
+}
