@@ -616,7 +616,7 @@ const MasterPage = observer(() => {
             return '';
           }
           return (
-            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal', color: '#f9a825' }}>
               {codes.map(code => translateErrorCode(code)).join(', ')}
             </div>
           );
