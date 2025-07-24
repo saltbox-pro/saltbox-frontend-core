@@ -16,6 +16,7 @@ import SettingsSlsPage from "./routes/settings-sls";
 import TaskPage from "./routes/task.$taskid";
 import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
+import NotFound from "./shared/components/not-found";
 import CollectionEditPage from "./routes/collection.$slug";
 
 export default observer(function Root(props) {
@@ -50,6 +51,8 @@ export default observer(function Root(props) {
             <Route path="/task-templates" element={<TaskTemplatesPage />} />
             <Route path="/settings-sls" element={<SettingsSlsPage />} />
             <Route path="/task/:taskid" element={<TaskPage />} />
+            <Route path="/not-found" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </Suspense>
