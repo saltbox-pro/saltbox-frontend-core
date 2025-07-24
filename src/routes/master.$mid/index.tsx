@@ -28,8 +28,13 @@ const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
     <AntdInput.TextArea
       value={value}
       onChange={(e) => onChange(rowIndex, fieldName, e.target.value)}
-      style={{ width: '100%' }}
-      autoSize={{ minRows: 1, maxRows: 10 }}
+      style={{
+        width: '100%',
+        resize: 'vertical',
+        minHeight: '32px',
+        maxHeight: '120px'
+      }}
+      autoSize={{ minRows: 1, maxRows: 6 }}
     />
   );
 };
@@ -553,7 +558,11 @@ const MasterPage = observer(() => {
                 fieldName="minion_id"
               />
             </div>
-          ) : text || '*';
+          ) : (
+            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+              {text || '*'}
+            </div>
+          );
         },
       },
       {
@@ -570,7 +579,11 @@ const MasterPage = observer(() => {
                 fieldName="name"
               />
             </div>
-          ) : text;
+          ) : (
+            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+              {text}
+            </div>
+          );
         },
       },
       {
@@ -587,7 +600,11 @@ const MasterPage = observer(() => {
                 fieldName="value"
               />
             </div>
-          ) : text;
+          ) : (
+            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+              {text}
+            </div>
+          );
         },
       },
       {
@@ -599,7 +616,7 @@ const MasterPage = observer(() => {
             return '';
           }
           return (
-            <div style={{ color: '#ff4d4f' }}>
+            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
               {codes.map(code => translateErrorCode(code)).join(', ')}
             </div>
           );
@@ -781,7 +798,7 @@ const MasterPage = observer(() => {
             </Button>
           </div>
         ) : null}
-        width={900}
+        width={1000}
       >
         {importStep === 1 && (
           <Space direction="vertical" style={{ width: '100%' }}>
@@ -842,12 +859,14 @@ const MasterPage = observer(() => {
                 )}
               </div>
             </div>
-            <FastTableListed
-              key={`import-table-${isEditingImport ? 'editing' : 'viewing'}`}
-              columns={importColumns}
-              data={isEditingImport ? editedPillars : parsedPillars}
-              getRowId={(row, idx) => String(idx)}
-            />
+            <div className={styles.importTableContainer}>
+              <FastTableListed
+                key={`import-table-${isEditingImport ? 'editing' : 'viewing'}`}
+                columns={importColumns}
+                data={isEditingImport ? editedPillars : parsedPillars}
+                getRowId={(row, idx) => String(idx)}
+              />
+            </div>
           </>
         )}
       </Modal>

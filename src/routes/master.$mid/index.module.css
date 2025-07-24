@@ -10,3 +10,65 @@
 .masterTabs :global(.ant-tabs-tab) {
     padding: 0 0 12px 0;
 }
+
+.importTableContainer {
+    max-height: 70vh;
+    overflow-y: auto;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+}
+
+.importTableContainer :global(.fast-table) {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.importTableContainer :global(.fast-table th),
+.importTableContainer :global(.fast-table td) {
+    padding: 8px 12px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    vertical-align: top;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.importTableContainer :global(.fast-table th:nth-child(1)),
+.importTableContainer :global(.fast-table td:nth-child(1)) {
+    width: 20%;
+    min-width: 120px;
+}
+
+.importTableContainer :global(.fast-table th:nth-child(2)),
+.importTableContainer :global(.fast-table td:nth-child(2)) {
+    width: 25%;
+    min-width: 150px;
+}
+
+.importTableContainer :global(.fast-table th:nth-child(3)),
+.importTableContainer :global(.fast-table td:nth-child(3)) {
+    width: 35%;
+    min-width: 200px;
+}
+
+.importTableContainer :global(.fast-table th:nth-child(4)),
+.importTableContainer :global(.fast-table td:nth-child(4)) {
+    width: 20%;
+    min-width: 120px;
+}
+
+.importTableContainer :global(.fast-table .ant-input) {
+    width: 100%;
+    min-height: 32px;
+    resize: vertical;
+}
+
+.importTableContainer :global(.fast-table .ant-input-textarea) {
+    width: 100%;
+}
+
+.importTableContainer :global(.fast-table .ant-input-textarea textarea) {
+    resize: vertical;
+    min-height: 32px;
+    max-height: 120px;
+}
