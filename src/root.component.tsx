@@ -6,7 +6,7 @@ import i18n from "i18next";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { autorun, runInAction } from "mobx";
 import "react-querybuilder/dist/query-builder.css";
-import CollectionPage from "./routes/minions.$slug";
+import MinionsPage from "./routes/minions.$slug";
 import MastersPage from "./routes/masters";
 import JobsPage from "./routes/jobs";
 import JobPage from "./routes/job.$jobid";
@@ -18,6 +18,7 @@ import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
 import NotFound from "./shared/components/not-found";
 import CollectionEditPage from "./routes/collection.$slug";
+import DefaultMinionsPage from "saltbox-core/routes/minions";
 
 export default observer(function Root(props) {
   useEffect(() => {
@@ -39,7 +40,8 @@ export default observer(function Root(props) {
         <BrowserRouter basename="/core">
           <Routes>
             <Route path="/minion/:slug/:mid" element={<MinionPage />} />
-            <Route path="/minions/:slug" element={<CollectionPage />} />
+            <Route path="/minions/:slug" element={<MinionsPage />} />
+            <Route path="/minions" element={<DefaultMinionsPage />} />
             <Route path="/collection/:slug" element={<CollectionEditPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/minion/:slug/:mid" element={<MinionPage />} />

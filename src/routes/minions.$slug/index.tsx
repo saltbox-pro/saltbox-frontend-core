@@ -5,9 +5,11 @@ import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Tabs } from "antd";
 import { FilterOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { CollectionStore } from "saltbox-core/store";
-import { dashboardStore } from "saltbox-core/store";
-import { MinionFilterStore } from "saltbox-core/store";
+import {
+  CollectionStore,
+  dashboardStore,
+  MinionFilterStore,
+} from "saltbox-core/store";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
@@ -17,7 +19,7 @@ import styles from "./index.module.css";
 
 const minionFilterStore = new MinionFilterStore();
 
-const CollectionPage = observer(() => {
+const MinionsPage = observer(() => {
   const { t } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -145,4 +147,4 @@ const CollectionPage = observer(() => {
   );
 });
 
-export default CollectionPage;
+export default MinionsPage;
