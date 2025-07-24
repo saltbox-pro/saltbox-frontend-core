@@ -457,6 +457,11 @@
     "error-minion-does-not-exist": "Клиент не существует",
     "error-master-does-not-exist": "Мастер не существует",
     "error-pillar-already-exists": "Pillar уже существует",
-    "table-errors": "Ошибки"
+    "table-errors": "Ошибки",
+    "export-error": "Ошибка при экспорте pillars",
+    "import-success": "Pillars успешно импортированы",
+    "import-parse-error": "Ошибка при парсинге CSV файла",
+    "table-edit": "Редактировать",
+    "table-delete": "Удалить"
   }
 }

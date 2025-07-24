@@ -15,10 +15,10 @@ const NotFound: React.FC = () => {
         <Result
             status="404"
             title="404"
-            subTitle={t('base:not-found')}
+            subTitle={t('base.not-found')}
             extra={
                 <Button type="primary" onClick={handleBackHome}>
-                    {t('base:back-home')}
+                    {t('base.back-home')}
                 </Button>
             }
         />

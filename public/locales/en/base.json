@@ -457,6 +457,11 @@
     "error-minion-does-not-exist": "Minion does not exist",
     "error-master-does-not-exist": "Master does not exist",
     "error-pillar-already-exists": "Pillar already exists",
-    "table-errors": "Errors"
+    "table-errors": "Errors",
+    "export-error": "Failed to export pillars",
+    "import-success": "Pillars imported successfully",
+    "import-parse-error": "Failed to parse CSV file",
+    "table-edit": "Edit",
+    "table-delete": "Delete"
   }
 }
