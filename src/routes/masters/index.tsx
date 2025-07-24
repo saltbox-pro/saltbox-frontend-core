@@ -1,7 +1,7 @@
 import { JSX, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Popover, Tag, message } from "antd";
@@ -22,6 +22,7 @@ const columnHelper = createColumnHelper<TableRowData>();
 
 const MastersPage = observer(() => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const columns = [
     columnHelper.accessor("master_id", {
       header: t("masters.table-master-id"),
@@ -117,6 +118,12 @@ const MastersPage = observer(() => {
   useEffect(() => {
     mastersStore.loadMasters();
   }, []);
+
+  useEffect(() => {
+    if (mastersStore.error) {
+      navigate("/not-found");
+    }
+  }, [mastersStore.error]);
 
   const handleAccept = (id: string) => {
     mastersStore

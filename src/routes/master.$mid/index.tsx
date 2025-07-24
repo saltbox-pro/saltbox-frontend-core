@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { useParams } from "react-router"
+import { useParams, useNavigate } from "react-router"
 import { observer } from "mobx-react-lite"
 import { Breadcrumb, Flex, Tabs, Spin, Button, Modal, message, Upload, Space, Input as AntdInput, Checkbox } from "antd"
 import { HomeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, DownloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons"
@@ -37,6 +37,7 @@ const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
 const MasterPage = observer(() => {
   const { t } = useTranslation();
   const { mid: masterId } = useParams();
+  const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [activeTab, setActiveTab] = useState("clients")
   const [clients, setClients] = useState<GatheredMinionSchema[]>([])
@@ -71,6 +72,12 @@ const MasterPage = observer(() => {
         return errorCode;
     }
   };
+
+  useEffect(() => {
+    if (pillarsStore.error) {
+      navigate("/not-found");
+    }
+  }, [pillarsStore.error]);
 
   useEffect(() => {
     if (masterId) {

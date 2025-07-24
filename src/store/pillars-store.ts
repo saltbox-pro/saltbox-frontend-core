@@ -5,6 +5,7 @@ import { apiStore } from "saltbox-core/store";
 
 export class PillarsStore {
   isLoading: boolean;
+  error: string | null;
   pillars: Array<PillarModel>;
   selectedMasterId: string | null;
   total: number;
@@ -14,6 +15,7 @@ export class PillarsStore {
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
+    this.error = null;
     this.pillars = [];
     this.allPillars = [];
     this.selectedMasterId = null;
@@ -37,6 +39,7 @@ export class PillarsStore {
 
   loadPillars = async (masterId: string) => {
     this.isLoading = true;
+    this.error = null;
     try {
       const pillars = await apiStore.pillarsApi?.pillarsList({
         master_id: masterId,
@@ -57,6 +60,7 @@ export class PillarsStore {
       this.total = this.allPillars.length;
       this.updatePaginatedPillars();
     } catch (error) {
+      this.error = "Failed to load pillars";
       throw error;
     } finally {
       this.isLoading = false;

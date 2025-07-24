@@ -5,6 +5,7 @@ import { apiStore } from './api-store';
 
 export class MastersStore {
   isLoading: boolean;
+  error: string | null;
   pagination: PaginationState;
   masters: Array<MasterViewSchema>;
   totalMasters: number;
@@ -12,6 +13,7 @@ export class MastersStore {
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
+    this.error = null;
     this.masters = [];
     this.totalMasters = 0;
     this.pagination = {
@@ -70,6 +72,7 @@ export class MastersStore {
 
   loadMasters = () => {
     this.isLoading = true;
+    this.error = null;
 
     apiStore.mastersApi
       ?.mastersList({
@@ -83,9 +86,10 @@ export class MastersStore {
           this.totalMasters = response.total;
         });
       })
-      .catch(() => {
+      .catch((error) => {
         runInAction(() => {
           this.isLoading = false;
+          this.error = "Failed to load masters";
         });
       });
   };

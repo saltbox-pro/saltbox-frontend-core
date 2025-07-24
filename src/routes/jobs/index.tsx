@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { observer } from "mobx-react-lite";
@@ -14,7 +14,6 @@ import { PageHeader } from "saltbox-core/shared/components/page-header/page-head
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { useInfiniteScroll } from "saltbox-core/shared/hooks/useInfiniteScroll";
 import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
-/* import { authStore } from "saltbox-core/store"; */
 import { envStore } from "saltbox-core/store";
 import { JobFilterStore } from "saltbox-core/store";
 import { JobsStore } from "saltbox-core/store";
@@ -157,6 +156,7 @@ const filterSchema = [
 
 const JobsPage = observer(() => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
@@ -241,6 +241,12 @@ const JobsPage = observer(() => {
     });
     return () => webSocket.close();
   }, []);
+
+  useEffect(() => {
+    if (jobsStore.error) {
+      navigate("/not-found");
+    }
+  }, [jobsStore.error]);
 
   /* useEffect(() => {
     const accessToken = authStore.user?.access_token;

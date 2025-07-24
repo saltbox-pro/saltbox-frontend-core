@@ -25,6 +25,7 @@ export class JobsStore {
   page: number;
   total: number;
   isJobsLoading: boolean;
+  error: string | null;
   dateRange: [dayjs.Dayjs, dayjs.Dayjs];
   jobFilterStore: JobFilterStore;
 
@@ -51,6 +52,7 @@ export class JobsStore {
     this.jobFilterStore = jobFilterStore;
     this.jobs = [];
     this.isJobsLoading = false;
+    this.error = null;
     this.dateRange = [dayjs().startOf('day'), dayjs()];
     this.page = 0;
     this.total = 0;
@@ -60,6 +62,7 @@ export class JobsStore {
     if (this.isJobsLoading) return;
 
     this.isJobsLoading = true;
+    this.error = null;
     this.page = page;
     apiStore.jobsApi
       ?.jobsList({
@@ -75,9 +78,10 @@ export class JobsStore {
           response.data.forEach((job) => this.pushJob(job));
         });
       })
-      .catch(() => {
+      .catch((error) => {
         runInAction(() => {
           this.isJobsLoading = false;
+          this.error = "Failed to load jobs";
         });
       });
   };
