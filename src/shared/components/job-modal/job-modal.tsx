@@ -414,7 +414,13 @@ export function JobModal({
               <Select
                 options={saltTargetTypes}
                 optionLabelProp="value"
-                dropdownStyle={{ minWidth: 450 }}
+                styles={{
+                  popup: {
+                    root: {
+                      minWidth: 450,
+                    },
+                  },
+                }}
               />
             </Form.Item>
 

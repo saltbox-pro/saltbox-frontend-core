@@ -66,7 +66,13 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
         style={{ minWidth: 125 }}
         optionLabelProp="label"
         defaultValue={optionsDefaultValue}
-        dropdownStyle={{ minWidth: 125 }}
+        styles={{
+          popup: {
+            root: {
+              minWidth: 125,
+            },
+          },
+        }}
         onChange={handleChangeRange}
         disabled={props?.disabled}
       />

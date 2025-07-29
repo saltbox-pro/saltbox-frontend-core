@@ -30,7 +30,14 @@ export const SaltBoxMultiselectValueEditor = ({
       className={className}
       title={title}
       style={{ width: "100%" }}
-      dropdownStyle={{ minWidth: 450, maxWidth: 550 }}
+      styles={{
+        popup: {
+          root: {
+            minWidth: 450,
+            maxWidth: 550,
+          },
+        },
+      }}
     />
   );
 };
