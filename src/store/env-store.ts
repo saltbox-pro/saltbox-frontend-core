@@ -1,7 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
 export interface EnvInterface {
-  wsServerUrl: string;
+  ws_server_url: string;
   api_base_path: string;
 }
 

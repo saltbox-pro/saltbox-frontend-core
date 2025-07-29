@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { JobResult, TaskModel, TaskStatus } from "saltbox-core-api";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-/* import { authStore } from "saltbox-core/store"; */
+import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
 import { TaskStore } from "saltbox-core/store";
 import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns";
@@ -44,7 +44,7 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const webSocket = new WebSocket(
-      `${envStore.env?.wsServerUrl}/tasks/${taskId}`,
+      `${envStore.env?.ws_server_url}/tasks/${taskId}`,
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
@@ -63,12 +63,12 @@ const TaskPage = observer(() => {
     return () => webSocket.close();
   }, []);
 
-  /* useEffect(() => {
-    const accessToken = authStore.user?.access_token;
+  useEffect(() => {
+    const accessToken = appStore.authStore?.user?.access_token;
     if (accessToken && socket && isSocketOpen) {
       socket.send(accessToken);
     }
-  }, [authStore.user, socket, isSocketOpen]); */
+  }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   const taskTabs: TabsProps["items"] = [
     {

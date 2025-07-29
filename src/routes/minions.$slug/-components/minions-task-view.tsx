@@ -92,7 +92,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   );
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${envStore.env?.wsServerUrl}/tasks`);
+    const webSocket = new WebSocket(`${envStore.env?.ws_server_url}/tasks`);
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedTask = JSON.parse(event.data) as TaskListResponseSchema;

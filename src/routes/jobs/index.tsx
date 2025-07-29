@@ -14,7 +14,7 @@ import { PageHeader } from "saltbox-core/shared/components/page-header/page-head
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { useInfiniteScroll } from "saltbox-core/shared/hooks/useInfiniteScroll";
 import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
-import { envStore } from "saltbox-core/store";
+import { appStore, envStore } from "saltbox-core/store";
 import { JobFilterStore } from "saltbox-core/store";
 import { JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -230,7 +230,7 @@ const JobsPage = observer(() => {
   });
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${envStore.env?.wsServerUrl}/jobs`);
+    const webSocket = new WebSocket(`${envStore.env?.ws_server_url}/jobs`);
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedJob = JSON.parse(event.data) as JobsListResponse;
@@ -248,12 +248,12 @@ const JobsPage = observer(() => {
     }
   }, [jobsStore.error]);
 
-  /* useEffect(() => {
-    const accessToken = authStore.user?.access_token;
+  useEffect(() => {
+    const accessToken = appStore.authStore?.user?.access_token;
     if (accessToken && socket && isSocketOpen) {
       socket.send(accessToken);
     }
-  }, [authStore.user, socket, isSocketOpen]); */
+  }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   useEffect(() => {
     jobsStore.handleDateRangeChange([dayjs().startOf("day"), dayjs()]);

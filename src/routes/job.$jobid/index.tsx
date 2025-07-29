@@ -20,7 +20,7 @@ import { JobResult } from "saltbox-core-api";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-/* import { authStore } from "saltbox-core/store"; */
+import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
 import { jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
@@ -45,9 +45,9 @@ const JobPage = observer(() => {
     }
   }, [jobStore.error]);
 
-  /* useEffect(() => {
+  useEffect(() => {
     const webSocket = new WebSocket(
-      `${envStore.env?.wsServerUrl}/jobs/${jid}/return`,
+      `${envStore.env?.ws_server_url}/jobs/${jid}/return`,
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
@@ -61,11 +61,11 @@ const JobPage = observer(() => {
   }, []);
 
   useEffect(() => {
-    const accessToken = authStore.user?.access_token;
+    const accessToken = appStore.authStore?.user?.access_token;
     if (accessToken && socket && isSocketOpen) {
       socket.send(accessToken);
     }
-  }, [authStore.user, socket, isSocketOpen]); */
+  }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   return (
     <>
