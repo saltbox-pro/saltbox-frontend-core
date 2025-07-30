@@ -81,6 +81,7 @@ export const SaltBoxQueryBuilderContainer = observer(
               disabled={props.filterStore.currentFilters.rules.length === 0}
               onClick={() => props.filterStore.handleResetFilters()}
               icon={<MatIcon icon="filter_alt_off" />}
+              title={t("minions.reset")}
             />
             {props?.additionalButtons}
           </div>

@@ -61,7 +61,12 @@ export function JsonPopover({
       open={isPopoverOpen}
       onOpenChange={setIsPopoverOpen}
     >
-      <Button icon={<MatIcon icon="search" />} type="link" size="small" />
+      <Button
+        icon={<MatIcon icon="search" />}
+        type="link"
+        size="small"
+        title={t("minions.view")}
+      />
     </Popover>
   );
 }

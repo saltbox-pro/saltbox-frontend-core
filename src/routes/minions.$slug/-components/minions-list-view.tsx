@@ -139,15 +139,15 @@ function minionsColumnGenerator(t: any, onMinionClick: (id: string) => void) {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
+            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+            badgeText: pastTimeByUserTZ(data.getValue()),
+            popoverContent: formatTimeByUserTZ(data.getValue()),
+          }
           : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
+            badgeColor: "orange",
+            badgeText: t("minions.never-synced"),
+            popoverContent: undefined,
+          };
         return (
           <Popover content={componentData.popoverContent}>
             <span>
@@ -363,6 +363,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
               icon={<SyncOutlined spin={minionsStore.isLoading} />}
               onClick={() => minionsStore.loadMinions(props.slug)}
               type="text"
+              title={t("minions.refresh")}
             />
           </Flex>
         </div>

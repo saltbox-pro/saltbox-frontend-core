@@ -8,6 +8,7 @@ import { CollectionsStore } from "saltbox-core/store/collections-store";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { CollectionModel } from "saltbox-core-api";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 
 const CollectionsTable = FastTablePaginated<CollectionModel>;
 
@@ -15,6 +16,7 @@ const collectionsColumnHelper = createColumnHelper<CollectionModel>();
 
 export const CollectionSelector = observer(
   ({ onClose }: { onClose: () => void }) => {
+    const { t } = useTranslation();
     const [collectionsStore] = useState(() => new CollectionsStore());
 
     const collectionsColumns = [
@@ -45,7 +47,12 @@ export const CollectionSelector = observer(
               to={`/collection/${data.row.original.slug}`}
               onClick={() => onClose()}
             >
-              <Button type="link" icon={<EditOutlined />} size={"small"} />
+              <Button
+                type="link"
+                icon={<EditOutlined />}
+                size={"small"}
+                title={t("minions.edit")}
+              />
             </Link>
           ),
       }),

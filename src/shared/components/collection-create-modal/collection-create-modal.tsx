@@ -76,6 +76,7 @@ function CollectionCreateModal({
         onClick={showModal}
         disabled={disable}
         icon={<SaveOutlined />}
+        title={t("minions.save")}
       ></Button>
       <Modal
         title={t("collection-create-modal.dialog-title")}
