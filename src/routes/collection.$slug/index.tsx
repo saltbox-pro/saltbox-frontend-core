@@ -129,6 +129,7 @@ const CollectionEditPage = observer(() => {
                     collectionStore.updateCollectionTitle(newTitle);
                     setIsEditing(false);
                   }}
+                  title={t("minions.save")}
                 />
                 <Button
                   type="link"
@@ -136,6 +137,7 @@ const CollectionEditPage = observer(() => {
                   danger
                   icon={<CloseOutlined />}
                   onClick={() => setIsEditing(false)}
+                  title={t("minions.cancel")}
                 />
               </Flex>
             ) : (
@@ -149,6 +151,7 @@ const CollectionEditPage = observer(() => {
                     setNewTitle(collectionStore.collection?.title || "");
                     setIsEditing(true);
                   }}
+                  title={t("minions.edit")}
                 />
                 <Button
                   type="link"
@@ -156,6 +159,7 @@ const CollectionEditPage = observer(() => {
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => setIsDeleteModalOpen(true)}
+                  title={t("minions.delete")}
                 />
               </Flex>
             ),
@@ -193,6 +197,7 @@ const CollectionEditPage = observer(() => {
                   filterStore.searchMongoDBQuery,
                 )
               }
+              title={t("minions.save")}
             ></Button>
           }
           controlElements={{

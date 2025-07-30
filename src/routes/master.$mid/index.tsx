@@ -520,28 +520,6 @@ const MasterPage = observer(() => {
     }),
   ];
 
-  const importPreviewColumns = [
-    pillarColumnHelper.accessor("minion_id", {
-      header: t("pillars.table-minion-id"),
-      cell: (info) => info.getValue() || "*",
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-    pillarColumnHelper.accessor("name", {
-      header: t("pillars.table-name"),
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-    pillarColumnHelper.accessor("value", {
-      header: t("pillars.table-value"),
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-  ]
-
   const importColumns = useMemo(() => {
     return [
       {

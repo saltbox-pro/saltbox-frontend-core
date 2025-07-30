@@ -12,10 +12,11 @@ import {
   Form,
   Input,
   Modal,
+  Popover,
   Select,
   message,
 } from "antd";
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   CreateJobRequest,
   JobData,
@@ -72,6 +73,7 @@ export function JobModal({
   const [validationErrors, setValidationErrors] = useState<
     RJSFValidationError[]
   >([]);
+  const [functionHovered, setFunctionHovered] = useState(false);
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<RjsfForm>(null);
@@ -333,6 +335,10 @@ export function JobModal({
     return funcName ? !saltFlatFunctionList.includes(funcName) : false;
   };
 
+  const handleFunctionHoverChange = (open: boolean) => {
+    setFunctionHovered(open);
+  };
+
   const isLoading =
     isSchemaListLoading ||
     isMasterListLoading ||
@@ -444,7 +450,20 @@ export function JobModal({
           </Flex>
 
           <Form.Item<JobFormData>
-            label={t("job-modal.function")}
+            label={
+              <Flex gap={4} align="center">
+                <span>{t("job-modal.function")}</span>
+                <Popover
+                  style={{ width: 500 }}
+                  content={t("job-modal.function-tooltip")}
+                  trigger="hover"
+                  open={functionHovered}
+                  onOpenChange={handleFunctionHoverChange}
+                >
+                  <QuestionCircleOutlined />
+                </Popover>
+              </Flex>
+            }
             name="fun"
             rules={[
               {

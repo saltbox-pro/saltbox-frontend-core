@@ -101,7 +101,13 @@
     "efi-no": "No",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
     "subcollection-info": "This collection is a subcollection of",
-    "collection-query": "Collection query"
+    "refresh": "Refresh",
+    "save": "Save",
+    "reset": "Reset",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "view": "Details"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",
@@ -258,6 +264,7 @@
     "target-type": "Target Type",
     "target": "Target",
     "function": "Function",
+    "function-tooltip": "You can select from the list or enter any available SaltStack function.",
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
