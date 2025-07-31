@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Tabs } from "antd";
-import { FilterOutlined, HomeOutlined, PlusOutlined } from "@ant-design/icons";
+import { Breadcrumb, Button, Flex, Tabs, Popover } from "antd";
+import { FilterOutlined, HomeOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   CollectionStore,
@@ -86,12 +86,27 @@ const MinionsPage = observer(() => {
               <Flex gap={8}>
                 {tabKey === "statistics" &&
                   !dashboardStore.isCardFullScreen && (
-                    <Button onClick={addBlock} type="default">
-                      <Flex gap={8}>
-                        <PlusOutlined />
-                        {t("minions.add-block-button")}
-                      </Flex>
-                    </Button>
+                    <Flex gap={8} align="center">
+                      <Button
+                        onClick={addBlock}
+                        type="default"
+                        disabled={!dashboardStore.canAddBlock}
+                      >
+                        <Flex gap={8}>
+                          <PlusOutlined />
+                          {t("minions.add-block-button")}
+                        </Flex>
+                      </Button>
+                      {!dashboardStore.canAddBlock && (
+                        <Popover
+                          style={{ width: 300 }}
+                          content={t("minions.blocks-limit-tooltip")}
+                          trigger="hover"
+                        >
+                          <QuestionCircleOutlined style={{ color: '#8c8c8c' }} />
+                        </Popover>
+                      )}
+                    </Flex>
                   )}
 
                 {tabKey !== "tasks" && (

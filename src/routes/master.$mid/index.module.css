@@ -72,3 +72,23 @@
     min-height: 32px;
     max-height: 120px;
 }
+
+.pillarsTableContainer {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.pillarsTableContainer :global(.fast-table) {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.pillarsTableContainer :global(.fast-table th),
+.pillarsTableContainer :global(.fast-table td) {
+    padding: 8px 12px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    vertical-align: top;
+    border-bottom: 1px solid #f0f0f0;
+}
