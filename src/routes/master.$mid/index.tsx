@@ -65,6 +65,11 @@ const MasterPage = observer(() => {
   const [updateExisting, setUpdateExisting] = useState(true)
   const [isValidating, setIsValidating] = useState(false)
 
+  const truncateText = (text: string, maxLength: number = 100): string => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   const translateErrorCode = (errorCode: PillarCSVParseResultErrorCode): string => {
     switch (errorCode) {
       case PillarCSVParseResultErrorCode.MinionDoesNotExist:
@@ -747,7 +752,9 @@ const MasterPage = observer(() => {
       >
         <p>
           {t("pillars.modal-delete-confirm-text") + " "}
-          <b>{selectedPillar ? selectedPillar.name : ""}</b>?
+          <b>
+            {selectedPillar ? truncateText(selectedPillar.name) : ""}
+          </b>?
         </p>
         {selectedPillar && (
           <p style={{ fontSize: '12px', color: '#666' }}>
