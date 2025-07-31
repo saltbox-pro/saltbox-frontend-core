@@ -42,6 +42,7 @@ export const meta = {
       {
         key: "minions",
         label: "Minions",
+        icon: "computer",
         drawer: {
           bootstrap: collectionSelectorLifecycles.bootstrap,
           mount: collectionSelectorLifecycles.mount,
@@ -51,27 +52,32 @@ export const meta = {
       {
         key: "masters",
         label: "Masters",
+        icon: "dns",
         path: "/core/masters",
       },
       {
         key: "jobs",
         label: "Jobs",
+        icon: "build_circle",
         path: "/core/jobs",
       },
       {
         key: "jobs-templates",
         label: "Jobs Templates",
+        icon: "task",
         path: "/core/jobs-templates",
       },
 
       {
         key: "task-templates",
         label: "Task Templates",
+        icon: "task",
         path: "/core/task-templates",
       },
       {
         key: "settings-sls",
         label: "Settings SLS",
+        icon: "settings",
         path: "/core/settings-sls",
       },
     ],
