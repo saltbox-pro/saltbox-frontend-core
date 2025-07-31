@@ -1,5 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
+const MAX_BLOCKS = 12;
+
 type BlockType = {
   title: string;
   grains: string;
@@ -15,6 +17,14 @@ export class DashboardStore {
     this.isCardFullScreen = false;
 
     this.blocks = this.loadFromLocalStorage();
+  }
+
+  get canAddBlock(): boolean {
+    return this.blocks.length < MAX_BLOCKS;
+  }
+
+  get maxBlocks(): number {
+    return MAX_BLOCKS;
   }
 
   loadFromLocalStorage(): BlockType[] {
@@ -47,8 +57,10 @@ export class DashboardStore {
   }
 
   addBlock(newBlock: BlockType) {
-    this.blocks.push(newBlock);
-    this.saveToLocalStorage();
+    if (this.canAddBlock) {
+      this.blocks.push(newBlock);
+      this.saveToLocalStorage();
+    }
   }
 
   removeBlock(index: number) {

@@ -71,12 +71,14 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
               return (
                 <Tag color="green">{t("minions.tasks-table-finished")}</Tag>
               );
-            default:
+            case "stopping":
+              return <Tag color="orange">{t("minions.tasks-table-stopping")}</Tag>;
+            case "postprocessing":
               return (
-                <Tag>{`${t(
-                  "minions.tasks-table-unknown-code"
-                )}: ${data.getValue()}`}</Tag>
+                <Tag color="purple">{t("minions.tasks-table-postprocessing")}</Tag>
               );
+            default:
+              return <Tag color="default">{data.getValue()}</Tag>;
           }
         },
       }),
