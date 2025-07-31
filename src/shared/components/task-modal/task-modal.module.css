@@ -6,8 +6,8 @@
 }
 
 .taskParamsForm :global(#task-params-form) fieldset {
-  background-color: rgba(230, 244, 255, 0.05);
-  border-color: #f0f0f0;
+  background-color: none;
+  border: none;
   margin-left: 0;
   margin-right: 0;
 }
