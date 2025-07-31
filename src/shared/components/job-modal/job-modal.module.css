@@ -7,12 +7,14 @@
 }
 
 .jobParamsForm :global(#job-params-form) fieldset {
-  background-color: rgba(230, 244, 255, 0.05);
-  border-color: #f0f0f0;
+  border: none;
 }
 
+.jobParamsForm label[for="job-params-form__title"] {
+  display: none;
+}
 
-.jobParamsForm :global(#job-params-form)  {
+.jobParamsForm :global(#job-params-form) {
   border: none;
   padding: 0;
   background-color: none;
@@ -22,6 +24,16 @@
   font-size: 12px;
   line-height: 14px;
   padding-top: 4px;
+}
+
+.jobParamsForm :global(button.array-item-remove),
+.jobParamsForm :global(button.object-property-expand),
+.jobParamsFrom :global(button.array-item-add) {
+  width: 32px;
+}
+
+.jobParamsForm :global(button.array-item-remove) {
+  margin-top: 23px;
 }
 
 .jobFormTgtType {
