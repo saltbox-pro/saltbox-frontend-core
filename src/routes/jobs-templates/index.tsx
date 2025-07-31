@@ -65,7 +65,7 @@ const JobsTemplatePage = observer(() => {
         ]}
       />
       <PageHeader title={t("jobs-templates.title")} />
-      <div className="filters-actions-buttons">
+      <div className="page-actions-buttons">
         <SyncTemplatesButton onSyncComplete={() => jobTemplateStore.reload()} />
       </div>
       <JobsTemplateTable

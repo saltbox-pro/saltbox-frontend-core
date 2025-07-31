@@ -317,7 +317,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   return (
     <>
-      <Flex gap={8} vertical style={{ height: "100%" }}>
+      <Flex vertical>
         {props.showFilter && (
           <MinionsQueryBuilder
             slug={props.slug}
@@ -325,48 +325,44 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
         )}
 
-        <div className="filters-actions-buttons">
-          <Flex gap={8} justify="space-between" style={{ width: "100%" }}>
-            <Flex gap={8}>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setIsCreateTaskLoading(true);
-                  apiStore.mastersApi
-                    ?.mastersList({ status: "accepted" })
-                    .then((result) => {
-                      if (result?.data?.length === 0) {
-                        message.warning(t("minions.warning-on-create-task"));
-                        return;
-                      }
-                      setSaltMasters(result.data);
-                      setIsCreateTaskModalOpen(true);
-                    })
-                    .catch(() => {
-                      message.error(t("minions.error-on-load-salt-masters"));
-                    })
-                    .finally(() => setIsCreateTaskLoading(false));
-                }}
-                loading={isCreateTaskLoading}
-              >
-                {t("minions.create-task")}
-              </Button>
-              <Button
-                onClick={() => handelCSVDownload()}
-                loading={isCSVLoading}
-              >
-                {t("minions.export")}
-              </Button>
-            </Flex>
-            <Button
-              icon={<SyncOutlined spin={minionsStore.isLoading} />}
-              onClick={() => minionsStore.loadMinions(props.slug)}
-              type="text"
-              title={t("minions.refresh")}
-            />
-          </Flex>
-        </div>
+        <div className="page-actions-buttons">
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setIsCreateTaskLoading(true);
+              apiStore.mastersApi
+                ?.mastersList({ status: "accepted" })
+                .then((result) => {
+                  if (result?.data?.length === 0) {
+                    message.warning(t("minions.warning-on-create-task"));
+                    return;
+                  }
+                  setSaltMasters(result.data);
+                  setIsCreateTaskModalOpen(true);
+                })
+                .catch(() => {
+                  message.error(t("minions.error-on-load-salt-masters"));
+                })
+                .finally(() => setIsCreateTaskLoading(false));
+            }}
+            loading={isCreateTaskLoading}
+          >
+            {t("minions.create-task")}
+          </Button>
+          <Button
+            onClick={() => handelCSVDownload()}
+            loading={isCSVLoading}
+          >
+            {t("minions.export")}
+          </Button>
+          <Button
+            icon={<SyncOutlined spin={minionsStore.isLoading} />}
+            onClick={() => minionsStore.loadMinions(props.slug)}
+            type="text"
+            title={t("minions.refresh")}
+          />
+        </div >
 
         <Spin
           wrapperClassName={styles.minionsListSpin}
@@ -385,17 +381,19 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
           ></MinionsTable>
         </Spin>
-        {isCreateTaskModalOpen && (
-          <TaskModal
-            isOpen={isCreateTaskModalOpen}
-            collection={toJS(props.collectionStore.collection)}
-            minionList={selectedMinionIds}
-            query={props.filterStore?.searchMongoDBQuery ?? {}}
-            onClose={handleCreateTaskModalClose}
-            saltMasters={saltMasters}
-          />
-        )}
-      </Flex>
+        {
+          isCreateTaskModalOpen && (
+            <TaskModal
+              isOpen={isCreateTaskModalOpen}
+              collection={toJS(props.collectionStore.collection)}
+              minionList={selectedMinionIds}
+              query={props.filterStore?.searchMongoDBQuery ?? {}}
+              onClose={handleCreateTaskModalClose}
+              saltMasters={saltMasters}
+            />
+          )
+        }
+      </Flex >
       <Drawer
         onClose={() => setDrawerMinionId(undefined)}
         open={Boolean(drawerMinionId)}

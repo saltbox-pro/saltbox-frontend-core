@@ -263,7 +263,7 @@ const SettingsSlsPage = observer(() => {
 
       <PageHeader title={t("settings-sls.title")}></PageHeader>
 
-      <div className={styles.filtersActionsButtons}>
+      <div className="page-actions-buttons">
         <Button
           type="primary"
           icon={<PlusOutlined />}

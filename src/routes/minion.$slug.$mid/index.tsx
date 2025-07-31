@@ -54,7 +54,7 @@ const MinionPage = observer(() => {
         title={`${t("minions.minion")} #${minionStore.minion?.minion_id}`}
       />
 
-      <div className="filters-actions-buttons">
+      <div className="page-actions-buttons">
         <JobModal
           target={minionStore.minion?.minion_id ?? ""}
           targetType="glob"

@@ -276,7 +276,7 @@ const JobsPage = observer(() => {
 
       <JobsQueryBuilder filterStore={jobFilterStore} />
 
-      <div className={styles.filtersActionsButtons}>
+      <div className="page-actions-buttons">
         <JobModal target="" targetType="glob" />
 
         <JobDatetimeRangeSelector

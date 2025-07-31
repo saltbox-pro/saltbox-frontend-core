@@ -9,11 +9,12 @@
   border-radius: var(--rqb-border-radius);
   background: var(--rqb-background-color);
   border-width: var(--rqb-border-width);
+  margin-bottom: var(--app-layout-gap);
 }
 
 .buttons {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 8px
+  gap: calc(var(--app-layout-gap) / 2);
 }
