@@ -635,13 +635,14 @@ const MasterPage = observer(() => {
       key: "pillars",
       label: t("pillars.title"),
       children: (
-        <Flex vertical gap="large" className={styles.masterTabs}>
-          <Flex gap="small">
+        <Flex vertical className={styles.masterTabs}>
+          <Flex className="page-actions-buttons">
             <Button
-              icon={<UploadOutlined />}
-              onClick={handleOpenImportModal}
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsCreateModalOpen(true)}
             >
-              {t("pillars.import")}
+              {t("pillars.create-pillar")}
             </Button>
             <Button
               icon={<DownloadOutlined />}
@@ -650,11 +651,10 @@ const MasterPage = observer(() => {
               {t("pillars.export")}
             </Button>
             <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsCreateModalOpen(true)}
+              icon={<UploadOutlined />}
+              onClick={handleOpenImportModal}
             >
-              {t("pillars.create-pillar")}
+              {t("pillars.import")}
             </Button>
           </Flex>
           {pillarsStore.isLoading ? (
