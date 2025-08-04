@@ -28,12 +28,7 @@ const EditableCell = ({ value, onChange, rowIndex, fieldName }: {
     <AntdInput.TextArea
       value={value}
       onChange={(e) => onChange(rowIndex, fieldName, e.target.value)}
-      style={{
-        width: '100%',
-        resize: 'vertical',
-        minHeight: '32px',
-        maxHeight: '120px'
-      }}
+      className={styles.editableCell}
       autoSize={{ minRows: 1, maxRows: 6 }}
     />
   );
@@ -542,7 +537,7 @@ const MasterPage = observer(() => {
               />
             </div>
           ) : (
-            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <div className={styles.tableCell}>
               {text || '*'}
             </div>
           );
@@ -563,7 +558,7 @@ const MasterPage = observer(() => {
               />
             </div>
           ) : (
-            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <div className={styles.tableCell}>
               {text}
             </div>
           );
@@ -584,7 +579,7 @@ const MasterPage = observer(() => {
               />
             </div>
           ) : (
-            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal' }}>
+            <div className={styles.tableCell}>
               {text}
             </div>
           );
@@ -599,7 +594,7 @@ const MasterPage = observer(() => {
             return '';
           }
           return (
-            <div style={{ wordBreak: 'break-word', whiteSpace: 'normal', color: '#f9a825' }}>
+            <div className={styles.errorCell}>
               {codes.map(code => translateErrorCode(code)).join(', ')}
             </div>
           );
@@ -619,14 +614,16 @@ const MasterPage = observer(() => {
               <Spin />
             </Flex>
           ) : (
-            <FastTablePaginated
-              columns={clientColumns}
-              data={toJS(clients)}
-              total={clients.length}
-              pagination={{ pageSize: 10, pageIndex: 0 }}
-              getRowId={(row) => row.minion_id}
-              onLazyLoad={() => { }}
-            />
+            <div className={styles.clientsTableContainer}>
+              <FastTablePaginated
+                columns={clientColumns}
+                data={toJS(clients)}
+                total={clients.length}
+                pagination={{ pageSize: 10, pageIndex: 0 }}
+                getRowId={(row) => row.minion_id}
+                onLazyLoad={() => { }}
+              />
+            </div>
           )}
         </Flex>
       ),
@@ -662,15 +659,17 @@ const MasterPage = observer(() => {
               <Spin />
             </Flex>
           ) : (
-            <FastTablePaginated
-              key={`pillars-table-${masterId}-${pillarsStore.pillars.length}`}
-              columns={pillarColumns}
-              data={toJS(pillarsStore.pillars)}
-              total={pillarsStore.pillars.length}
-              pagination={{ pageSize: 10, pageIndex: 0 }}
-              getRowId={(row) => `${row.name}_${row.minion_id || 'global'}`}
-              onLazyLoad={() => { }}
-            />
+            <div className={styles.pillarsTableContainer}>
+              <FastTablePaginated
+                key={`pillars-table-${masterId}-${pillarsStore.pillars.length}`}
+                columns={pillarColumns}
+                data={toJS(pillarsStore.pillars)}
+                total={pillarsStore.pillars.length}
+                pagination={{ pageSize: 10, pageIndex: 0 }}
+                getRowId={(row) => `${row.name}_${row.minion_id || 'global'}`}
+                onLazyLoad={() => { }}
+              />
+            </div>
           )}
         </Flex>
       ),
@@ -711,6 +710,8 @@ const MasterPage = observer(() => {
           open={isCreateModalOpen}
           onCancel={() => setIsCreateModalOpen(false)}
           footer={null}
+          className={styles.modalContainer}
+          closable={false}
         >
           <PillarCreateForm
             masterId={masterId || ""}
@@ -722,10 +723,12 @@ const MasterPage = observer(() => {
 
       {isEditModalOpen && selectedPillar && (
         <Modal
-          title={t("pillars.edit-pillar-modal-title") + (selectedPillar.name ? `: ${selectedPillar.name}` : "")}
+          title={t("pillars.edit-pillar-modal-title") + (selectedPillar.name ? `: ${truncateText(selectedPillar.name)}` : "")}
           open={isEditModalOpen}
           onCancel={() => setIsEditModalOpen(false)}
           footer={null}
+          className={styles.modalContainer}
+          closable={false}
         >
           <PillarCreateForm
             masterId={masterId || ""}
@@ -749,6 +752,8 @@ const MasterPage = observer(() => {
         okText={t("pillars.form-submit")}
         cancelText={t("pillars.form-cancel")}
         okButtonProps={{ danger: true }}
+        className={styles.modalContainer}
+        closable={false}
       >
         <p>
           {t("pillars.modal-delete-confirm-text") + " "}
@@ -757,7 +762,7 @@ const MasterPage = observer(() => {
           </b>?
         </p>
         {selectedPillar && (
-          <p style={{ fontSize: '12px', color: '#666' }}>
+          <p className={styles.deleteInfo}>
             Master: {selectedPillar.master_id}, Minion: {selectedPillar.minion_id || 'global'}
           </p>
         )}
@@ -772,7 +777,7 @@ const MasterPage = observer(() => {
           setImportFileList([]);
         }}
         footer={importStep === 1 ? (
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div className={styles.importFooter}>
             <Button
               type="primary"
               onClick={() => handleParseCsv(importFile || undefined)}
@@ -784,9 +789,10 @@ const MasterPage = observer(() => {
           </div>
         ) : null}
         width={1000}
+        className={styles.modalContainer}
       >
         {importStep === 1 && (
-          <Space direction="vertical" style={{ width: '100%' }}>
+          <Space direction="vertical" className={styles.importSpace}>
             <Upload.Dragger
               accept=".csv"
               beforeUpload={() => false}
@@ -804,13 +810,13 @@ const MasterPage = observer(() => {
                 <UploadOutlined />
               </p>
               <p>{t('pillars.import-description')}</p>
-              <p style={{ fontSize: '14px', color: '#888', margin: 0 }}>{t('pillars.import-single-upload')}</p>
+              <p className={styles.importDescription}>{t('pillars.import-single-upload')}</p>
             </Upload.Dragger>
           </Space>
         )}
         {importStep === 2 && (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div className={styles.importControls}>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Checkbox
                   checked={updateExisting}
