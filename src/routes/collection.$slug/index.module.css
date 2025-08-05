@@ -1,6 +1,24 @@
 .collectionFlex,
 .collectionFlex :global(.fast-table),
-.collectionFlex :global(.ant-spin-nested-loading),
+.collectionFlex :global(.ant-tabs-content),
+.collectionFlex :global(.ant-tabs-tabpane),
 .collectionFlex :global(.ant-spin-container) {
   height: 100%;
+}
+
+.collectionHeader {
+  margin-bottom: 16px;
+}
+
+.collectionButtons {
+  gap: 8px;
+  align-items: center;
+}
+
+.editInput {
+  max-width: 300px;
+}
+
+.collectionSpin {
+  width: 100%;
 }

@@ -25,6 +25,7 @@ import { CollectionFilterStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
 import { defaultCollectionStore } from "saltbox-core/store";
 import { MinionsStore } from "saltbox-core/store";
+import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import styles from "./index.module.css";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
@@ -114,58 +115,101 @@ const CollectionEditPage = observer(() => {
             title: t("collection.collections"),
           },
           {
-            title: isEditing ? (
-              <Flex gap={8} align="center">
-                <Input
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  size="small"
-                />
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<SaveOutlined />}
-                  onClick={() => {
-                    collectionStore.updateCollectionTitle(newTitle);
-                    setIsEditing(false);
-                  }}
-                  title={t("minions.save")}
-                />
-                <Button
-                  type="link"
-                  size="small"
-                  danger
-                  icon={<CloseOutlined />}
-                  onClick={() => setIsEditing(false)}
-                  title={t("minions.cancel")}
-                />
-              </Flex>
-            ) : (
+            title: (
               <Flex gap={8} align="center">
                 {collectionStore.collection?.title}
-                <Button
-                  type="link"
-                  size="small"
-                  icon={<EditOutlined />}
-                  onClick={() => {
-                    setNewTitle(collectionStore.collection?.title || "");
-                    setIsEditing(true);
-                  }}
-                  title={t("minions.edit")}
-                />
-                <Button
-                  type="link"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => setIsDeleteModalOpen(true)}
-                  title={t("minions.delete")}
-                />
               </Flex>
             ),
           },
         ]}
       />
+      <Flex className={styles.collectionHeader} gap={8} align="center">
+        <PageHeader title={collectionStore.collection?.title} />
+        {!isEditing && (
+          <Flex className={styles.collectionButtons}>
+            <Button
+              type="link"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setNewTitle(collectionStore.collection?.title || "");
+                setIsEditing(true);
+              }}
+              title={t("minions.edit")}
+            />
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => setIsDeleteModalOpen(true)}
+              title={t("minions.delete")}
+            />
+          </Flex>
+        )}
+      </Flex>
+      {isEditing && (
+        <Flex className={styles.collectionHeader} gap={8} align="center">
+          <Input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            size="small"
+            className={styles.editInput}
+          />
+          <Flex className={styles.collectionButtons}>
+            <Button
+              type="link"
+              size="small"
+              icon={<SaveOutlined />}
+              onClick={() => {
+                collectionStore.updateCollectionTitle(newTitle);
+                setIsEditing(false);
+              }}
+              title={t("minions.save")}
+            />
+            <Button
+              type="link"
+              size="small"
+              danger
+              icon={<CloseOutlined />}
+              onClick={() => setIsEditing(false)}
+              title={t("minions.cancel")}
+            />
+          </Flex>
+        </Flex>
+      )}
+      <Flex className={styles.collectionFlex} gap={8} vertical>
+        <SaltBoxQueryBuilderContainer
+          filterStore={filterStore}
+          additionalButtons={
+            <Button
+              type="link"
+              size="small"
+              icon={<SaveOutlined />}
+              onClick={() =>
+                collectionStore.updateCollectionQuery(
+                  filterStore.searchMongoDBQuery,
+                )
+              }
+              title={t("minions.save")}
+            />
+          }
+          controlElements={{
+            valueEditor: SaltBoxMinionValueEditor("root"),
+            valueSelector: SaltBoxMinionValueSelector,
+          }}
+        />
+        <Spin spinning={minionsStore.isLoading} className={styles.collectionSpin}>
+          <MinionsTable
+            columns={minionsColumns}
+            getRowId={(row) => `${row.master}-${row.minion_id}`}
+            data={toJS(minionsStore.minions)}
+            total={toJS(minionsStore.totalMinions)}
+            pagination={toJS(minionsStore.pagination)}
+            onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          />
+        </Spin>
+      </Flex>
       <Modal
         title={t("collection.delete-collection")}
         open={isDeleteModalOpen}
@@ -184,42 +228,6 @@ const CollectionEditPage = observer(() => {
           })}
         </p>
       </Modal>
-      <Flex className={styles.collectionFlex} gap={8} vertical>
-        <SaltBoxQueryBuilderContainer
-          filterStore={filterStore}
-          additionalButtons={
-            <Button
-              color="primary"
-              variant="link"
-              icon={<SaveOutlined />}
-              onClick={() =>
-                collectionStore.updateCollectionQuery(
-                  filterStore.searchMongoDBQuery,
-                )
-              }
-              title={t("minions.save")}
-            ></Button>
-          }
-          controlElements={{
-            valueEditor: SaltBoxMinionValueEditor("root"),
-            valueSelector: SaltBoxMinionValueSelector,
-          }}
-        />
-
-        <Spin
-          spinning={minionsStore.isLoading}
-          className={styles.minionsTableSpin}
-        >
-          <MinionsTable
-            columns={minionsColumns}
-            getRowId={(row) => `${row.master}-${row.minion_id}`}
-            data={toJS(minionsStore.minions)}
-            total={toJS(minionsStore.totalMinions)}
-            pagination={toJS(minionsStore.pagination)}
-            onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
-          />
-        </Spin>
-      </Flex>
     </>
   );
 });
