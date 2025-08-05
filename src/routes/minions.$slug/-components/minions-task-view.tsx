@@ -78,7 +78,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
                 <Tag color="purple">{t("minions.tasks-table-postprocessing")}</Tag>
               );
             default:
-              return <Tag color="default">{data.getValue()}</Tag>;
+              return <Tag color="#2db7f5">{t("minions.table-unknown-code")}</Tag>;
           }
         },
       }),
