@@ -33,6 +33,7 @@ export class DashboardCardStore {
     mongoDBQuery: object | undefined
   ) => {
     this.isFilterLoading = true;
+
     apiStore.filtersApi
       ?.filterValues({
         MinionFilterValuesBody: {
