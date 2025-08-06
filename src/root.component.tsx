@@ -20,20 +20,7 @@ import NotFound from "./shared/components/not-found";
 import CollectionEditPage from "./routes/collection.$slug";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
 
-export default observer(function Root(props) {
-  useEffect(() => {
-    const { authStore, localeStore, env } = props;
-    appStore.init(authStore);
-    runInAction(() => {
-      envStore.env = env;
-    });
-    autorun(() => {
-      i18nStore.currentLanguage = localeStore.currentLocale;
-    });
-  }, []);
-
-  if (!envStore.env) return <>loading</>;
-
+export default observer(function Root() {
   return (
     <I18nextProvider i18n={i18n}>
       <Suspense fallback="Loading translations...">

@@ -6,6 +6,8 @@ import { CollectionSelector } from "saltbox-core/shared/components/collection-se
 import { I18nextProvider } from "react-i18next";
 import i18n from "i18next";
 import { BrowserRouter } from "react-router";
+import { appStore, envStore, i18nStore } from "saltbox-core/store";
+import { autorun, runInAction } from "mobx";
 
 const mainLifecycles = singleSpaReact({
   React,
@@ -84,5 +86,14 @@ export const meta = {
         path: "/core/settings-sls",
       },
     ],
+  },
+  init: (authStore, env, localeStore) => {
+    appStore.init(authStore);
+    runInAction(() => {
+      envStore.env = env;
+    });
+    autorun(() => {
+      i18nStore.currentLanguage = localeStore.currentLocale;
+    });
   },
 };
