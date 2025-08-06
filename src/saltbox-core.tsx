@@ -61,23 +61,26 @@ export const meta = {
         icon: "build_circle",
         path: "/core/jobs",
       },
+    ],
+  },
+  settingsConfig: {
+    key: "core",
+    label: "Core",
+    children: [
       {
         key: "jobs-templates",
         label: "Jobs Templates",
-        icon: "task",
         path: "/core/jobs-templates",
       },
 
       {
         key: "task-templates",
         label: "Task Templates",
-        icon: "task",
         path: "/core/task-templates",
       },
       {
         key: "settings-sls",
         label: "Settings SLS",
-        icon: "settings",
         path: "/core/settings-sls",
       },
     ],
