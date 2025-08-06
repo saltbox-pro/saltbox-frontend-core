@@ -266,6 +266,9 @@ type MinionDashboardCardProps = {
   onChangeView: (newView: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
+  isLoading?: boolean;
+  isLoaded?: boolean;
+  blockIndex?: number;
 };
 
 export const MinionDashboardCard = observer(
@@ -277,6 +280,9 @@ export const MinionDashboardCard = observer(
     onChangeView,
     slug,
     filterStore,
+    isLoading = false,
+    isLoaded = false,
+    blockIndex = 0,
   }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [sorting, setSorting] = useState<SortingState>([
@@ -293,8 +299,10 @@ export const MinionDashboardCard = observer(
     const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
     useEffect(() => {
-      updateCard();
-    }, [filterStore.searchMongoDBQuery]);
+      if (isLoaded && !isLoading) {
+        updateCard();
+      }
+    }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
 
     const columns = [
       columnHelper.accessor("value", {
@@ -361,10 +369,6 @@ export const MinionDashboardCard = observer(
       );
     };
 
-    useEffect(() => {
-      updateCard();
-    }, [currentGrains, slug]);
-
     const handleGrainsChange = (newGrains: string) => {
       setCurrentGrains(newGrains);
       onUpdateGrains(newGrains);
@@ -425,7 +429,7 @@ export const MinionDashboardCard = observer(
           className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen
             }`}
         >
-          <Spin spinning={dashboardCardStore.isFilterLoading}>
+          <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
             <div className={styles.dashboardTableBlockHeader}>
               <HeaderSelect
                 value={currentGrains}

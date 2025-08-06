@@ -1,5 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { Flex } from "antd";
+import { useEffect, useState } from "react";
 import { dashboardStore } from "saltbox-core/store";
 import { MinionFilterStore } from "saltbox-core/store";
 import { MinionDashboardCard } from "./minion-dashboard-card";
@@ -12,6 +13,18 @@ export const MinionsDashboardView = observer(
     filterStore: MinionFilterStore;
     showFilter: boolean;
   }) => {
+    const [visibleBlocks, setVisibleBlocks] = useState<number>(0);
+
+    useEffect(() => {
+      setVisibleBlocks(0);
+    }, [dashboardStore.blocks.length, props.filterStore.searchMongoDBQuery]);
+
+    useEffect(() => {
+      if (visibleBlocks < dashboardStore.blocks.length) {
+        setVisibleBlocks(prev => prev + 1);
+      }
+    }, [visibleBlocks, dashboardStore.blocks.length]);
+
     return (
       <Flex gap={8} vertical>
         {props.showFilter && (
@@ -40,6 +53,9 @@ export const MinionsDashboardView = observer(
                 }
                 slug={props.slug}
                 filterStore={props.filterStore}
+                isLoading={index >= visibleBlocks}
+                isLoaded={index < visibleBlocks}
+                blockIndex={index}
               />
             </div>
           ))}
