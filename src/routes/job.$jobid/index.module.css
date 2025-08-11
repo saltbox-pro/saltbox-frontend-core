@@ -1,3 +1,7 @@
 .jobReturnTableWrapper :global(.fast-table table > thead > tr > th:first-child) {
   width: 1%;
 }
+
+.descriptionsContainer {
+  margin-bottom: 0.67em;
+}

@@ -86,6 +86,7 @@ const JobPage = observer(() => {
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
       <Descriptions
+        className={styles.descriptionsContainer}
         bordered
         items={[
           {
