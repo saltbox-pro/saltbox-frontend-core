@@ -21,7 +21,7 @@ export const { bootstrap, mount, unmount } = mainLifecycles;
 const collectionSelectorRootComponent = ({ onClose }) => (
   <I18nextProvider i18n={i18n}>
     <Suspense fallback="Loading translations...">
-      <BrowserRouter basename="/core">
+      <BrowserRouter>
         <CollectionSelector onClose={onClose} />
       </BrowserRouter>
     </Suspense>

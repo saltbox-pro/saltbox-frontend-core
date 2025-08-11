@@ -25,7 +25,7 @@ export const CollectionSelector = observer(
         cell: (data) => (
           <>
             <Link
-              to={`/minions/${data.row.original.slug}`}
+              to={`/core/minions/${data.row.original.slug}`}
               onClick={() => onClose()}
             >
               <Button type="link" size={"small"}>
@@ -44,7 +44,7 @@ export const CollectionSelector = observer(
         cell: (data) =>
           data.row.original.slug !== "root" && (
             <Link
-              to={`/collection/${data.row.original.slug}`}
+              to={`/core/collection/${data.row.original.slug}`}
               onClick={() => onClose()}
             >
               <Button
@@ -57,7 +57,6 @@ export const CollectionSelector = observer(
           ),
       }),
     ];
-
     return (
       <>
         <div className={styles.collectionSelectorTable}>
