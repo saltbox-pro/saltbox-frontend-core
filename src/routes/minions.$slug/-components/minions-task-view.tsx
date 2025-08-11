@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -22,42 +22,42 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
   const [tasksStore] = useState(new TasksStore());
 
-  const columns = useMemo(
-    () => [
-      columnHelper.accessor("id", {
-        header: "ID",
-        cell: (data) => (
-          <>
-            <Link to={`/task/${data.getValue()}`}>
-              <Button type="link" size={"small"}>
-                {data.getValue()}
-              </Button>
-            </Link>
-            <CopyToClipboardButton text={data.getValue()} />
-          </>
-        ),
-        meta: {
-          tdClassName: "fast-table-column-nowrap",
-        },
-      }),
-      columnHelper.accessor("task_template.title", {
-        header: t("minions.table-task-template-title"),
-      }),
-      columnHelper.accessor("task_template.name", {
-        header: t("minions.table-task-template-name"),
-      }),
-      columnHelper.accessor("target_collection.title", {
-        header: t("minions.table-collection"),
-        cell: (data) => {
-          return <> {data.getValue()} </>;
-        },
-      }),
-      columnHelper.accessor("user.name", {
-        header: t("minions.table-user"),
-      }),
-      columnHelper.accessor("status", {
-        header: t("minions.table-status"),
-        cell: (data) => {
+  const columns = [
+    columnHelper.accessor("id", {
+      header: "ID",
+      cell: (data) => (
+        <>
+          <Link to={`/task/${data.getValue()}`}>
+            <Button type="link" size={"small"}>
+              {data.getValue()}
+            </Button>
+          </Link>
+          <CopyToClipboardButton text={data.getValue()} />
+        </>
+      ),
+      meta: {
+        tdClassName: "fast-table-column-nowrap",
+      },
+    }),
+    columnHelper.accessor("task_template.title", {
+      header: t("minions.table-task-template-title"),
+    }),
+    columnHelper.accessor("task_template.name", {
+      header: t("minions.table-task-template-name"),
+    }),
+    columnHelper.accessor("target_collection.title", {
+      header: t("minions.table-collection"),
+      cell: (data) => {
+        return <> {data.getValue()} </>;
+      },
+    }),
+    columnHelper.accessor("user.name", {
+      header: t("minions.table-user"),
+    }),
+    columnHelper.accessor("status", {
+      header: t("minions.table-status"),
+      cell: (data) => {
+        if (data.getValue()) {
           switch (data.getValue()) {
             case "created":
               return (
@@ -77,21 +77,18 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
               return (
                 <Tag color="purple">{t("minions.tasks-table-postprocessing")}</Tag>
               );
-            default:
-              return <Tag color="#2db7f5">{t("minions.table-unknown-code")}</Tag>;
           }
-        },
-      }),
-      columnHelper.accessor("created", {
-        header: t("minions.table-created"),
-        cell: (data) => {
-          const created: string = pastTimeByUserTZ(data.getValue());
-          return <div>{created}</div>;
-        },
-      }),
-    ],
-    [t]
-  );
+        }
+      },
+    }),
+    columnHelper.accessor("created", {
+      header: t("minions.table-created"),
+      cell: (data) => {
+        const created: string = pastTimeByUserTZ(data.getValue());
+        return <div>{created}</div>;
+      },
+    }),
+  ];
 
   useEffect(() => {
     const webSocket = new WebSocket(`${envStore.env?.ws_server_url}/tasks`);
