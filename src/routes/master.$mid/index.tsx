@@ -60,6 +60,8 @@ const MasterPage = observer(() => {
   const [updateExisting, setUpdateExisting] = useState(true)
   const [isValidating, setIsValidating] = useState(false)
 
+  const PillarsTable = FastTableListed<PillarModel>;
+
   const truncateText = (text: string, maxLength: number = 100): string => {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
@@ -615,13 +617,11 @@ const MasterPage = observer(() => {
             </Flex>
           ) : (
             <div className={styles.clientsTableContainer}>
-              <FastTablePaginated
+              <FastTableListed
                 columns={clientColumns}
                 data={toJS(clients)}
                 total={clients.length}
-                pagination={{ pageSize: 10, pageIndex: 0 }}
                 getRowId={(row) => row.minion_id}
-                onLazyLoad={() => { }}
               />
             </div>
           )}
@@ -660,14 +660,12 @@ const MasterPage = observer(() => {
             </Flex>
           ) : (
             <div className={styles.pillarsTableContainer}>
-              <FastTablePaginated
+              <PillarsTable
                 key={`pillars-table-${masterId}-${pillarsStore.pillars.length}`}
                 columns={pillarColumns}
                 data={toJS(pillarsStore.pillars)}
-                total={pillarsStore.pillars.length}
-                pagination={{ pageSize: 10, pageIndex: 0 }}
+                total={pillarsStore.total}
                 getRowId={(row) => `${row.name}_${row.minion_id || 'global'}`}
-                onLazyLoad={() => { }}
               />
             </div>
           )}

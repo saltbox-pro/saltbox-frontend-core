@@ -1,4 +1,3 @@
-import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable } from "mobx";
 import { PillarModel, PillarSelector } from "saltbox-core-api";
 import { apiStore } from "saltbox-core/store";
@@ -9,21 +8,14 @@ export class PillarsStore {
   pillars: Array<PillarModel>;
   selectedMasterId: string | null;
   total: number;
-  pagination: PaginationState;
-  allPillars: Array<PillarModel>;
 
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
     this.error = null;
     this.pillars = [];
-    this.allPillars = [];
     this.selectedMasterId = null;
     this.total = 0;
-    this.pagination = {
-      pageIndex: 0,
-      pageSize: 50,
-    };
   }
 
   setSelectedMasterId = (masterId: string | null) => {
@@ -32,7 +24,6 @@ export class PillarsStore {
       this.loadPillars(masterId);
     } else {
       this.pillars = [];
-      this.allPillars = [];
       this.total = 0;
     }
   };
@@ -56,26 +47,14 @@ export class PillarsStore {
           return a.name.localeCompare(b.name);
         });
       }
-      this.allPillars = pillars || [];
-      this.total = this.allPillars.length;
-      this.updatePaginatedPillars();
+      this.pillars = pillars || [];
+      this.total = this.pillars.length;
     } catch (error) {
       this.error = "Failed to load pillars";
       throw error;
     } finally {
       this.isLoading = false;
     }
-  };
-
-  updatePaginatedPillars = () => {
-    const start = this.pagination.pageIndex * this.pagination.pageSize;
-    const end = start + this.pagination.pageSize;
-    this.pillars = this.allPillars.slice(start, end);
-  };
-
-  handleLazyLoad = (pagination: PaginationState) => {
-    this.pagination = pagination;
-    this.updatePaginatedPillars();
   };
 
   createPillar = async (
@@ -147,8 +126,8 @@ export class PillarsStore {
       await this.loadPillars(masterId);
       return true;
     } catch (error) {
-      console.error('Delete pillar error in store:', error);
       throw error;
     }
   };
+
 }
