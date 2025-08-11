@@ -43,7 +43,7 @@ export const meta = {
     children: [
       {
         key: "minions",
-        label: "Minions",
+        label: { en: "Minions", ru: "Клиенты" },
         icon: "computer",
         drawer: {
           bootstrap: collectionSelectorLifecycles.bootstrap,
@@ -53,13 +53,13 @@ export const meta = {
       },
       {
         key: "masters",
-        label: "Masters",
+        label: { en: "Masters", ru: "Мастера" },
         icon: "dns",
         path: "/core/masters",
       },
       {
         key: "jobs",
-        label: "Jobs",
+        label: { en: "Jobs", ru: "Команды" },
         icon: "build_circle",
         path: "/core/jobs",
       },
@@ -71,18 +71,18 @@ export const meta = {
     children: [
       {
         key: "jobs-templates",
-        label: "Jobs Templates",
+        label: { en: "Jobs Templates", ru: "Шаблоны команд" },
         path: "/core/jobs-templates",
       },
 
       {
         key: "task-templates",
-        label: "Task Templates",
+        label: { en: "Task Templates", ru: "Шаблоны задач" },
         path: "/core/task-templates",
       },
       {
         key: "settings-sls",
-        label: "Settings SLS",
+        label: { en: "Settings SLS", ru: "Репозитории конфигураций" },
         path: "/core/settings-sls",
       },
     ],
