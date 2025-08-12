@@ -3,7 +3,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Tabs, Popover } from "antd";
-import { FilterOutlined, HomeOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  FilterOutlined,
+  HomeOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   CollectionStore,
@@ -24,7 +29,7 @@ const MinionsPage = observer(() => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [collectionStore] = useState(new CollectionStore());
-  const [showFilter, setShowFilter] = useState(true);
+  const [showFilter, setShowFilter] = useState(false);
   const [tabKey, setTabKey] = useState("list");
 
   const addBlock = () => {
@@ -103,7 +108,9 @@ const MinionsPage = observer(() => {
                           content={t("minions.blocks-limit-tooltip")}
                           trigger="hover"
                         >
-                          <QuestionCircleOutlined style={{ color: '#8c8c8c' }} />
+                          <QuestionCircleOutlined
+                            style={{ color: "#8c8c8c" }}
+                          />
                         </Popover>
                       )}
                     </Flex>
