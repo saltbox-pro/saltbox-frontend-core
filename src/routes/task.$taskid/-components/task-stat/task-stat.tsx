@@ -16,6 +16,7 @@ import {
   TaskStatus,
 } from "saltbox-core-api";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import styles from "./task-stat.module.css";
 
 interface TaskStatistics {
   pendingJobs: number;
@@ -135,6 +136,7 @@ export const TaskStat = ({
   return (
     <Descriptions
       bordered
+      className={styles.taskStat}
       column={3}
       items={[
         {

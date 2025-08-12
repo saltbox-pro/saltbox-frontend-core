@@ -66,11 +66,9 @@ export const TaskJobs = ({ task }: { task: TaskModel | null }) => {
               text: data.getValue() as string,
               tooltips: t("task.jobs.table-copy"),
             }}
-            ellipsis
-            style={{ maxWidth: "250px" }}
             title={data.getValue() as string}
           >
-            {data.getValue() as string}
+            {t("task.job-tgt-count", { count: data.row.original.minions_by_targeting.length ?? 0 })}
           </Text>
         );
       },

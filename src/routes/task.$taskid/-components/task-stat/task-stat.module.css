@@ -1,0 +1,4 @@
+.taskStat {
+  margin-bottom: var(--app-layout-gap);
+  margin-top: calc(var(--app-layout-gap) / 2);
+}

@@ -176,10 +176,11 @@
     "failed-minions": "Завершено с ошибками",
     "running": "Выполняется",
     "stopping": "Остановка",
-    "post-processing": "Пост-обработка",
+    "postprocessing": "Пост-обработка",
     "unknown": "Неизвестно",
     "finished": "Завершена",
     "stopped": "Остановлена",
+    "job-tgt-count": "{{count}} клиентов",
     "minions": {
       "table-minion-id": "ID клиента",
       "table-master": "Мастер",

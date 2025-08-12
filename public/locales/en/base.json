@@ -176,10 +176,11 @@
     "failed-minions": "Failed Minions",
     "running": "Running",
     "stopping": "Stopping",
-    "post-processing": "Post-processing",
+    "postprocessing": "Post-processing",
     "unknown": "Unknown",
     "finished": "Finished",
     "stopped": "Stopped",
+    "job-tgt-count": "{{count}} minions",
     "minions": {
       "table-minion-id": "Minion ID",
       "table-master": "Master",

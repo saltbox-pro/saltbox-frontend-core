@@ -18,7 +18,7 @@ import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns"
 import { TaskJobs } from "./-components/task-jobs/task-jobs";
 import { TaskMinions } from "./-components/task-minions/task-minions";
 import { TaskStat } from "./-components/task-stat/task-stat";
-import { Link, Route, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import styles from "./index.module.css";
 
 const TaskPage = observer(() => {
@@ -151,7 +151,29 @@ const TaskPage = observer(() => {
               {t("task.run")}
             </Button>
           )}
-        {taskStore.task?.status === TaskStatus.Running && (
+        {(taskStore.task?.status === TaskStatus.Postprocessing) && (
+          <Button
+            onClick={() => taskStore.handleStopTask()}
+            color="default"
+            variant="solid"
+            icon={<StopOutlined />}
+            disabled={true}
+          >
+            {t("task.postprocessing")}
+          </Button>
+        )}
+        {(taskStore.task?.status === TaskStatus.Stopping) && (
+          <Button
+            onClick={() => taskStore.handleStopTask()}
+            color="default"
+            variant="solid"
+            icon={<StopOutlined />}
+            disabled={true}
+          >
+            {t("task.stopping")}
+          </Button>
+        )}
+        {(taskStore.task?.status === TaskStatus.Running) && (
           <Button
             onClick={() => taskStore.handleStopTask()}
             color="danger"
