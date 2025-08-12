@@ -268,6 +268,9 @@ export function JobModal({
       .then((result) => {
         setSaltFunction(result);
       })
+      .catch(() => {
+        message.error("Error on load salt function schema.");
+      })
       .finally(() => setIsSchemaLoading(false));
   }, [saltFunctionName]);
 
