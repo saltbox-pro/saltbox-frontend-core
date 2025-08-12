@@ -30,7 +30,7 @@ export const TaskMinions = ({
         return (
           <>
             <Link
-              to={`/minion/$slug/${collectionSlug}/${mid}/`}
+              to={`/minion/${collectionSlug}/${mid}/`}
             >
               <Button type="link" size={"small"}>
                 {data.getValue()}
