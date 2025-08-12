@@ -43,7 +43,7 @@ const MinionPage = observer(() => {
           },
           {
             title: collectionStore.collection?.title ?? "",
-            href: `/minions/${slug}`,
+            href: `/core/minions/${slug}`,
           },
           {
             title: `${t("minions.minion")} #${minionStore.minion?.minion_id}`,
