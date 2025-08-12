@@ -46,14 +46,14 @@ export interface BurstJobsTestGetSystemBurstJobsTestGetRequest {
     id: string;
 }
 
-export interface BurstJobsTestPostSystemMasterBurstJobsTestPostRequest {
+export interface BurstJobsTestPostSystemMasterIdBurstJobsTestPostRequest {
     master_id: string;
     duration: number;
     rate: number;
     strict?: boolean;
 }
 
-export interface BurstTestSystemMasterBurstTestPostRequest {
+export interface BurstTestSystemMasterIdBurstTestPostRequest {
     master_id: string;
     count?: number;
     size?: number;
@@ -78,6 +78,11 @@ export class SystemApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/system/{user}/authorized_keys`.replace(`{${"user"}}`, encodeURIComponent(String(requestParameters['user']))),
@@ -112,6 +117,11 @@ export class SystemApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/system/burst_jobs_test`,
@@ -150,6 +160,11 @@ export class SystemApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/system/burst_jobs_test`,
             method: 'GET',
@@ -171,33 +186,29 @@ export class SystemApi extends runtime.BaseAPI {
     /**
      * Burst Jobs Test Post
      */
-    async burstJobsTestPostSystemMasterBurstJobsTestPostRaw(requestParameters: BurstJobsTestPostSystemMasterBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BurstJobsTestPostResponse>> {
+    async burstJobsTestPostSystemMasterIdBurstJobsTestPostRaw(requestParameters: BurstJobsTestPostSystemMasterIdBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BurstJobsTestPostResponse>> {
         if (requestParameters['master_id'] == null) {
             throw new runtime.RequiredError(
                 'master_id',
-                'Required parameter "master_id" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+                'Required parameter "master_id" was null or undefined when calling burstJobsTestPostSystemMasterIdBurstJobsTestPost().'
             );
         }
 
         if (requestParameters['duration'] == null) {
             throw new runtime.RequiredError(
                 'duration',
-                'Required parameter "duration" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+                'Required parameter "duration" was null or undefined when calling burstJobsTestPostSystemMasterIdBurstJobsTestPost().'
             );
         }
 
         if (requestParameters['rate'] == null) {
             throw new runtime.RequiredError(
                 'rate',
-                'Required parameter "rate" was null or undefined when calling burstJobsTestPostSystemMasterBurstJobsTestPost().'
+                'Required parameter "rate" was null or undefined when calling burstJobsTestPostSystemMasterIdBurstJobsTestPost().'
             );
         }
 
         const queryParameters: any = {};
-
-        if (requestParameters['master_id'] != null) {
-            queryParameters['master_id'] = requestParameters['master_id'];
-        }
 
         if (requestParameters['duration'] != null) {
             queryParameters['duration'] = requestParameters['duration'];
@@ -213,8 +224,13 @@ export class SystemApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
-            path: `/system/{master}/burst_jobs_test`,
+            path: `/system/{master_id}/burst_jobs_test`.replace(`{${"master_id"}}`, encodeURIComponent(String(requestParameters['master_id']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -226,27 +242,23 @@ export class SystemApi extends runtime.BaseAPI {
     /**
      * Burst Jobs Test Post
      */
-    async burstJobsTestPostSystemMasterBurstJobsTestPost(requestParameters: BurstJobsTestPostSystemMasterBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BurstJobsTestPostResponse> {
-        const response = await this.burstJobsTestPostSystemMasterBurstJobsTestPostRaw(requestParameters, initOverrides);
+    async burstJobsTestPostSystemMasterIdBurstJobsTestPost(requestParameters: BurstJobsTestPostSystemMasterIdBurstJobsTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BurstJobsTestPostResponse> {
+        const response = await this.burstJobsTestPostSystemMasterIdBurstJobsTestPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
      * Burst Test
      */
-    async burstTestSystemMasterBurstTestPostRaw(requestParameters: BurstTestSystemMasterBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BridgeTestBurstResponse>> {
+    async burstTestSystemMasterIdBurstTestPostRaw(requestParameters: BurstTestSystemMasterIdBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BridgeTestBurstResponse>> {
         if (requestParameters['master_id'] == null) {
             throw new runtime.RequiredError(
                 'master_id',
-                'Required parameter "master_id" was null or undefined when calling burstTestSystemMasterBurstTestPost().'
+                'Required parameter "master_id" was null or undefined when calling burstTestSystemMasterIdBurstTestPost().'
             );
         }
 
         const queryParameters: any = {};
-
-        if (requestParameters['master_id'] != null) {
-            queryParameters['master_id'] = requestParameters['master_id'];
-        }
 
         if (requestParameters['count'] != null) {
             queryParameters['count'] = requestParameters['count'];
@@ -258,8 +270,13 @@ export class SystemApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
-            path: `/system/{master}/burst_test`,
+            path: `/system/{master_id}/burst_test`.replace(`{${"master_id"}}`, encodeURIComponent(String(requestParameters['master_id']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -271,8 +288,8 @@ export class SystemApi extends runtime.BaseAPI {
     /**
      * Burst Test
      */
-    async burstTestSystemMasterBurstTestPost(requestParameters: BurstTestSystemMasterBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BridgeTestBurstResponse> {
-        const response = await this.burstTestSystemMasterBurstTestPostRaw(requestParameters, initOverrides);
+    async burstTestSystemMasterIdBurstTestPost(requestParameters: BurstTestSystemMasterIdBurstTestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BridgeTestBurstResponse> {
+        const response = await this.burstTestSystemMasterIdBurstTestPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

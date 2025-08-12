@@ -30,7 +30,7 @@ export interface CollectionCreateRequestSchema {
      * @type {string}
      * @memberof CollectionCreateRequestSchema
      */
-    parent_title?: string | null;
+    owner_id?: string | null;
     /**
      * 
      * @type {string}
@@ -72,7 +72,7 @@ export function CollectionCreateRequestSchemaFromJSONTyped(json: any, ignoreDisc
     return {
         
         'slug': json['slug'],
-        'parent_title': json['parent_title'] == null ? undefined : json['parent_title'],
+        'owner_id': json['owner_id'] == null ? undefined : json['owner_id'],
         'title': json['title'],
         'query': json['query'] == null ? undefined : json['query'],
         'parent_slug': json['parent_slug'],
@@ -91,7 +91,7 @@ export function CollectionCreateRequestSchemaToJSONTyped(value?: CollectionCreat
     return {
         
         'slug': value['slug'],
-        'parent_title': value['parent_title'],
+        'owner_id': value['owner_id'],
         'title': value['title'],
         'query': value['query'],
         'parent_slug': value['parent_slug'],

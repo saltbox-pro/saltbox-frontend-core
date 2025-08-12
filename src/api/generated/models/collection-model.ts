@@ -36,7 +36,7 @@ export interface CollectionModel {
      * @type {string}
      * @memberof CollectionModel
      */
-    parent_title?: string | null;
+    owner_id?: string | null;
     /**
      * 
      * @type {string}
@@ -49,12 +49,6 @@ export interface CollectionModel {
      * @memberof CollectionModel
      */
     query?: { [key: string]: any; };
-    /**
-     * 
-     * @type {string}
-     * @memberof CollectionModel
-     */
-    parent_slug?: string | null;
     /**
      * 
      * @type {string}
@@ -79,6 +73,18 @@ export interface CollectionModel {
      * @memberof CollectionModel
      */
     id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CollectionModel
+     */
+    parent_title?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof CollectionModel
+     */
+    parent_slug?: string | null;
 }
 
 /**
@@ -105,14 +111,15 @@ export function CollectionModelFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'full_query': json['full_query'] == null ? undefined : json['full_query'],
         'slug': json['slug'],
-        'parent_title': json['parent_title'] == null ? undefined : json['parent_title'],
+        'owner_id': json['owner_id'] == null ? undefined : json['owner_id'],
         'title': json['title'],
         'query': json['query'] == null ? undefined : json['query'],
-        'parent_slug': json['parent_slug'] == null ? undefined : json['parent_slug'],
         'created': json['created'],
         'modified': json['modified'],
         'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
         'id': json['id'],
+        'parent_title': json['parent_title'] == null ? undefined : json['parent_title'],
+        'parent_slug': json['parent_slug'] == null ? undefined : json['parent_slug'],
     };
 }
 
@@ -129,14 +136,15 @@ export function CollectionModelToJSONTyped(value?: CollectionModel | null, ignor
         
         'full_query': value['full_query'],
         'slug': value['slug'],
-        'parent_title': value['parent_title'],
+        'owner_id': value['owner_id'],
         'title': value['title'],
         'query': value['query'],
-        'parent_slug': value['parent_slug'],
         'created': value['created'],
         'modified': value['modified'],
         'parent_id': value['parent_id'],
         'id': value['id'],
+        'parent_title': value['parent_title'],
+        'parent_slug': value['parent_slug'],
     };
 }
 

@@ -19,6 +19,7 @@ import {
 import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   CreateJobRequest,
+  GatherMinionsMinionsGatherGetTgtTypeEnum,
   JobData,
   JobSchemaModel,
   JobSchemaShortSchema,
@@ -525,7 +526,7 @@ export function JobModal({
         isOpen={isGatherModalOpen}
         onClose={() => setIsGatherModalOpen(false)}
         target={tgt ?? ""}
-        targetType={tgtType ?? ""}
+        targetType={tgtType as GatherMinionsMinionsGatherGetTgtTypeEnum}
         master={saltMaster ?? ""}
       />
     </>

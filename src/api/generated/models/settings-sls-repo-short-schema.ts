@@ -82,6 +82,12 @@ export interface SettingsSlsRepoShortSchema {
      */
     last_sync_error?: string | null;
     /**
+     * 
+     * @type {boolean}
+     * @memberof SettingsSlsRepoShortSchema
+     */
+    locked?: boolean | null;
+    /**
      * Path in repository to serve for masters
      * @type {string}
      * @memberof SettingsSlsRepoShortSchema
@@ -118,6 +124,7 @@ export function SettingsSlsRepoShortSchemaFromJSONTyped(json: any, ignoreDiscrim
         'last_synced': json['last_synced'] == null ? undefined : json['last_synced'],
         'is_last_sync_successful': json['is_last_sync_successful'] == null ? undefined : json['is_last_sync_successful'],
         'last_sync_error': json['last_sync_error'] == null ? undefined : json['last_sync_error'],
+        'locked': json['locked'] == null ? undefined : json['locked'],
         'root': json['root'] == null ? undefined : json['root'],
     };
 }
@@ -142,6 +149,7 @@ export function SettingsSlsRepoShortSchemaToJSONTyped(value?: SettingsSlsRepoSho
         'last_synced': value['last_synced'],
         'is_last_sync_successful': value['is_last_sync_successful'],
         'last_sync_error': value['last_sync_error'],
+        'locked': value['locked'],
         'root': value['root'],
     };
 }

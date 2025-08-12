@@ -74,7 +74,7 @@ export function TaskModal({
     onClose({
       task_template_id: taskCreateRequest?.task_template_id ?? "",
       salt_masters: taskCreateRequest?.salt_masters ?? [],
-      collection_id: collection?.id ?? "",
+      collection_slug: collection?.slug ?? "",
       minions: minionList ?? [],
       query: query ?? {},
       batch_size: taskCreateRequest?.batch_size ?? 0,

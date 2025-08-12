@@ -90,6 +90,11 @@ export class PillarsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/pillars`,
             method: 'POST',
@@ -125,6 +130,11 @@ export class PillarsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/pillars`,
@@ -166,6 +176,11 @@ export class PillarsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/pillars/import`,
             method: 'POST',
@@ -201,6 +216,11 @@ export class PillarsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/pillars/validate`,
@@ -246,6 +266,11 @@ export class PillarsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const consumes: runtime.Consume[] = [
             { contentType: 'multipart/form-data' },
@@ -303,6 +328,11 @@ export class PillarsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/pillars`,
             method: 'PUT',
@@ -348,6 +378,11 @@ export class PillarsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/pillars`,

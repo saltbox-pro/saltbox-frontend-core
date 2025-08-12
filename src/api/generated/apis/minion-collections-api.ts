@@ -81,6 +81,11 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/collections`,
             method: 'POST',
@@ -101,6 +106,37 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Collection Default
+     */
+    async minionCollectionDefaultRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectionDetailSchema>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
+        const response = await this.request({
+            path: `/collections/default`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectionDetailSchemaFromJSON(jsonValue));
+    }
+
+    /**
+     * Collection Default
+     */
+    async minionCollectionDefault(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectionDetailSchema> {
+        const response = await this.minionCollectionDefaultRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Collection Delete
      */
     async minionCollectionDeleteRaw(requestParameters: MinionCollectionDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
@@ -114,6 +150,11 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/collections/{slug}`.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug']))),
@@ -146,6 +187,11 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/collections/{slug}`.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug']))),
@@ -189,6 +235,11 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/collections/{slug}`.replace(`{${"slug"}}`, encodeURIComponent(String(requestParameters['slug']))),
             method: 'PUT',
@@ -223,6 +274,11 @@ export class MinionCollectionsApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/collections`,

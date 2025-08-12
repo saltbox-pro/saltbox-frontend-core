@@ -36,7 +36,7 @@ import {
 
 export interface GatherMinionsMinionsGatherGetRequest {
     tgt: string;
-    tgt_type: string;
+    tgt_type: GatherMinionsMinionsGatherGetTgtTypeEnum;
     master: string;
 }
 
@@ -104,6 +104,11 @@ export class MinionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/minions/gather`,
             method: 'GET',
@@ -148,6 +153,11 @@ export class MinionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/minions/{mid}`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),
             method: 'DELETE',
@@ -191,6 +201,11 @@ export class MinionsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/minions/{mid}`.replace(`{${"mid"}}`, encodeURIComponent(String(requestParameters['mid']))),
             method: 'GET',
@@ -225,6 +240,11 @@ export class MinionsApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
 
         const response = await this.request({
             path: `/minions/export`,
@@ -261,6 +281,11 @@ export class MinionsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/minions`,
             method: 'POST',
@@ -281,3 +306,21 @@ export class MinionsApi extends runtime.BaseAPI {
     }
 
 }
+
+/**
+ * @export
+ */
+export const GatherMinionsMinionsGatherGetTgtTypeEnum = {
+    Glob: 'glob',
+    Pcre: 'pcre',
+    List: 'list',
+    Grain: 'grain',
+    GrainPcre: 'grain_pcre',
+    Pillar: 'pillar',
+    PillarPcre: 'pillar_pcre',
+    Nodegroup: 'nodegroup',
+    Range: 'range',
+    Compound: 'compound',
+    Ipcidr: 'ipcidr'
+} as const;
+export type GatherMinionsMinionsGatherGetTgtTypeEnum = typeof GatherMinionsMinionsGatherGetTgtTypeEnum[keyof typeof GatherMinionsMinionsGatherGetTgtTypeEnum];

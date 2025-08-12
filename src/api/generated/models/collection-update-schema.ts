@@ -38,12 +38,6 @@ export interface CollectionUpdateSchema {
      * @memberof CollectionUpdateSchema
      */
     query?: { [key: string]: any; };
-    /**
-     * 
-     * @type {string}
-     * @memberof CollectionUpdateSchema
-     */
-    parent_slug?: string | null;
 }
 
 /**
@@ -68,7 +62,6 @@ export function CollectionUpdateSchemaFromJSONTyped(json: any, ignoreDiscriminat
         'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
         'title': json['title'],
         'query': json['query'] == null ? undefined : json['query'],
-        'parent_slug': json['parent_slug'] == null ? undefined : json['parent_slug'],
     };
 }
 
@@ -87,7 +80,6 @@ export function CollectionUpdateSchemaToJSONTyped(value?: CollectionUpdateSchema
         'parent_id': value['parent_id'],
         'title': value['title'],
         'query': value['query'],
-        'parent_slug': value['parent_slug'],
     };
 }
 

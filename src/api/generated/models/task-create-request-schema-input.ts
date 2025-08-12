@@ -13,13 +13,6 @@
  */
 
 import { mapValues } from '../runtime';
-import type { UserShort } from './user-short';
-import {
-    UserShortFromJSON,
-    UserShortFromJSONTyped,
-    UserShortToJSON,
-    UserShortToJSONTyped,
-} from './user-short';
 import type { TaskTargetMinion } from './task-target-minion';
 import {
     TaskTargetMinionFromJSON,
@@ -77,7 +70,7 @@ export interface TaskCreateRequestSchemaInput {
      * @type {string}
      * @memberof TaskCreateRequestSchemaInput
      */
-    collection_id: string;
+    collection_slug: string;
     /**
      * 
      * @type {{ [key: string]: any; }}
@@ -114,19 +107,13 @@ export interface TaskCreateRequestSchemaInput {
      * @memberof TaskCreateRequestSchemaInput
      */
     postprocessing?: TaskPostProcessingCreateInput | null;
-    /**
-     * 
-     * @type {UserShort}
-     * @memberof TaskCreateRequestSchemaInput
-     */
-    user?: UserShort;
 }
 
 /**
  * Check if a given object implements the TaskCreateRequestSchemaInput interface.
  */
 export function instanceOfTaskCreateRequestSchemaInput(value: object): value is TaskCreateRequestSchemaInput {
-    if (!('collection_id' in value) || value['collection_id'] === undefined) return false;
+    if (!('collection_slug' in value) || value['collection_slug'] === undefined) return false;
     return true;
 }
 
@@ -144,14 +131,13 @@ export function TaskCreateRequestSchemaInputFromJSONTyped(json: any, ignoreDiscr
         'fun': json['fun'] == null ? undefined : json['fun'],
         'salt_masters': json['salt_masters'] == null ? undefined : json['salt_masters'],
         'data': json['data'] == null ? undefined : TaskDataFromJSON(json['data']),
-        'collection_id': json['collection_id'],
+        'collection_slug': json['collection_slug'],
         'query': json['query'] == null ? undefined : json['query'],
         'minions': json['minions'] == null ? undefined : ((json['minions'] as Array<any>).map(TaskTargetMinionFromJSON)),
         'batch_size': json['batch_size'] == null ? undefined : json['batch_size'],
         'max_jobs_count_at_same_time': json['max_jobs_count_at_same_time'] == null ? undefined : json['max_jobs_count_at_same_time'],
         'max_retries': json['max_retries'] == null ? undefined : json['max_retries'],
         'postprocessing': json['postprocessing'] == null ? undefined : TaskPostProcessingCreateInputFromJSON(json['postprocessing']),
-        'user': json['user'] == null ? undefined : UserShortFromJSON(json['user']),
     };
 }
 
@@ -170,14 +156,13 @@ export function TaskCreateRequestSchemaInputToJSONTyped(value?: TaskCreateReques
         'fun': value['fun'],
         'salt_masters': value['salt_masters'],
         'data': TaskDataToJSON(value['data']),
-        'collection_id': value['collection_id'],
+        'collection_slug': value['collection_slug'],
         'query': value['query'],
         'minions': value['minions'] == null ? undefined : ((value['minions'] as Array<any>).map(TaskTargetMinionToJSON)),
         'batch_size': value['batch_size'],
         'max_jobs_count_at_same_time': value['max_jobs_count_at_same_time'],
         'max_retries': value['max_retries'],
         'postprocessing': TaskPostProcessingCreateInputToJSON(value['postprocessing']),
-        'user': UserShortToJSON(value['user']),
     };
 }
 

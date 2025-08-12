@@ -36,7 +36,7 @@ export interface CollectionDetailSchema {
      * @type {string}
      * @memberof CollectionDetailSchema
      */
-    parent_title?: string | null;
+    owner_id?: string | null;
     /**
      * 
      * @type {string}
@@ -49,12 +49,6 @@ export interface CollectionDetailSchema {
      * @memberof CollectionDetailSchema
      */
     query?: { [key: string]: any; };
-    /**
-     * 
-     * @type {string}
-     * @memberof CollectionDetailSchema
-     */
-    parent_slug?: string | null;
     /**
      * 
      * @type {string}
@@ -79,6 +73,18 @@ export interface CollectionDetailSchema {
      * @memberof CollectionDetailSchema
      */
     id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof CollectionDetailSchema
+     */
+    parent_title?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof CollectionDetailSchema
+     */
+    parent_slug?: string | null;
     /**
      * 
      * @type {Array<string>}
@@ -112,14 +118,15 @@ export function CollectionDetailSchemaFromJSONTyped(json: any, ignoreDiscriminat
         
         'full_query': json['full_query'] == null ? undefined : json['full_query'],
         'slug': json['slug'],
-        'parent_title': json['parent_title'] == null ? undefined : json['parent_title'],
+        'owner_id': json['owner_id'] == null ? undefined : json['owner_id'],
         'title': json['title'],
         'query': json['query'] == null ? undefined : json['query'],
-        'parent_slug': json['parent_slug'] == null ? undefined : json['parent_slug'],
         'created': json['created'],
         'modified': json['modified'],
         'parent_id': json['parent_id'] == null ? undefined : json['parent_id'],
         'id': json['id'],
+        'parent_title': json['parent_title'] == null ? undefined : json['parent_title'],
+        'parent_slug': json['parent_slug'] == null ? undefined : json['parent_slug'],
         'allowed_actions': json['allowed_actions'],
     };
 }
@@ -137,14 +144,15 @@ export function CollectionDetailSchemaToJSONTyped(value?: CollectionDetailSchema
         
         'full_query': value['full_query'],
         'slug': value['slug'],
-        'parent_title': value['parent_title'],
+        'owner_id': value['owner_id'],
         'title': value['title'],
         'query': value['query'],
-        'parent_slug': value['parent_slug'],
         'created': value['created'],
         'modified': value['modified'],
         'parent_id': value['parent_id'],
         'id': value['id'],
+        'parent_title': value['parent_title'],
+        'parent_slug': value['parent_slug'],
         'allowed_actions': value['allowed_actions'],
     };
 }

@@ -36,6 +36,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("KeycloakOIDC", []);
+        }
+
         const response = await this.request({
             path: `/discovery/health`,
             method: 'GET',

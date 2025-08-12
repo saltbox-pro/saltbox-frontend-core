@@ -30,13 +30,19 @@ export interface UserShort {
      * @type {string}
      * @memberof UserShort
      */
-    name: string;
+    email?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof UserShort
+     */
+    email_verified?: boolean;
     /**
      * 
      * @type {string}
      * @memberof UserShort
      */
-    email: string;
+    name?: string;
 }
 
 /**
@@ -44,8 +50,6 @@ export interface UserShort {
  */
 export function instanceOfUserShort(value: object): value is UserShort {
     if (!('sub' in value) || value['sub'] === undefined) return false;
-    if (!('name' in value) || value['name'] === undefined) return false;
-    if (!('email' in value) || value['email'] === undefined) return false;
     return true;
 }
 
@@ -60,8 +64,9 @@ export function UserShortFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     return {
         
         'sub': json['sub'],
-        'name': json['name'],
-        'email': json['email'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'email_verified': json['email_verified'] == null ? undefined : json['email_verified'],
+        'name': json['name'] == null ? undefined : json['name'],
     };
 }
 
@@ -77,8 +82,9 @@ export function UserShortToJSONTyped(value?: UserShort | null, ignoreDiscriminat
     return {
         
         'sub': value['sub'],
-        'name': value['name'],
         'email': value['email'],
+        'email_verified': value['email_verified'],
+        'name': value['name'],
     };
 }
 

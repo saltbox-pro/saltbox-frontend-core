@@ -58,6 +58,12 @@ export interface SettingsSlsRepoCreateSchema {
      */
     last_sync_error?: string | null;
     /**
+     * 
+     * @type {boolean}
+     * @memberof SettingsSlsRepoCreateSchema
+     */
+    locked?: boolean | null;
+    /**
      * Path in repository to serve for masters
      * @type {string}
      * @memberof SettingsSlsRepoCreateSchema
@@ -127,6 +133,7 @@ export function SettingsSlsRepoCreateSchemaFromJSONTyped(json: any, ignoreDiscri
         'last_synced': json['last_synced'] == null ? undefined : (new Date(json['last_synced'])),
         'is_last_sync_successful': json['is_last_sync_successful'] == null ? undefined : json['is_last_sync_successful'],
         'last_sync_error': json['last_sync_error'] == null ? undefined : json['last_sync_error'],
+        'locked': json['locked'] == null ? undefined : json['locked'],
         'root': json['root'] == null ? undefined : json['root'],
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -150,9 +157,10 @@ export function SettingsSlsRepoCreateSchemaToJSONTyped(value?: SettingsSlsRepoCr
         
         'repo_url': RepoUrlToJSON(value['repo_url']),
         'local_path': value['local_path'],
-        'last_synced': value['last_synced'] == null ? undefined : ((value['last_synced'] as any).toISOString()),
+        'last_synced': value['last_synced'] === null ? null : ((value['last_synced'] as any)?.toISOString()),
         'is_last_sync_successful': value['is_last_sync_successful'],
         'last_sync_error': value['last_sync_error'],
+        'locked': value['locked'],
         'root': value['root'],
         'name': value['name'],
         'description': value['description'],

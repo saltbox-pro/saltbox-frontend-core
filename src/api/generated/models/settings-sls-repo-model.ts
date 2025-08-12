@@ -64,6 +64,12 @@ export interface SettingsSlsRepoModel {
      */
     last_sync_error?: string | null;
     /**
+     * 
+     * @type {boolean}
+     * @memberof SettingsSlsRepoModel
+     */
+    locked?: boolean | null;
+    /**
      * Path in repository to serve for masters
      * @type {string}
      * @memberof SettingsSlsRepoModel
@@ -149,6 +155,7 @@ export function SettingsSlsRepoModelFromJSONTyped(json: any, ignoreDiscriminator
         'last_synced': json['last_synced'] == null ? undefined : json['last_synced'],
         'is_last_sync_successful': json['is_last_sync_successful'] == null ? undefined : json['is_last_sync_successful'],
         'last_sync_error': json['last_sync_error'] == null ? undefined : json['last_sync_error'],
+        'locked': json['locked'] == null ? undefined : json['locked'],
         'root': json['root'] == null ? undefined : json['root'],
         'name': json['name'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -178,6 +185,7 @@ export function SettingsSlsRepoModelToJSONTyped(value?: SettingsSlsRepoModel | n
         'last_synced': value['last_synced'],
         'is_last_sync_successful': value['is_last_sync_successful'],
         'last_sync_error': value['last_sync_error'],
+        'locked': value['locked'],
         'root': value['root'],
         'name': value['name'],
         'description': value['description'],
