@@ -23,6 +23,7 @@ const columnHelper = createColumnHelper<TableRowData>();
 const MastersPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const columns = [
     columnHelper.accessor("master_id", {
       header: t("masters.table-master-id"),
@@ -129,7 +130,7 @@ const MastersPage = observer(() => {
     mastersStore
       .acceptMaster(id)
       .then((master) => {
-        message.success(
+        messageApi.success(
           t("masters.success-on-change-master-status", {
             name: master.title,
             status:
@@ -140,7 +141,7 @@ const MastersPage = observer(() => {
         );
       })
       .catch(() => {
-        message.success(t("masters.error-on-change-master-status"));
+        messageApi.error(t("masters.error-on-change-master-status"));
       });
   };
 
@@ -148,7 +149,7 @@ const MastersPage = observer(() => {
     mastersStore
       .rejectMaster(id)
       .then((master) => {
-        message.success(
+        messageApi.success(
           t("masters.success-on-change-master-status", {
             name: master.title,
             status:
@@ -159,12 +160,13 @@ const MastersPage = observer(() => {
         );
       })
       .catch(() => {
-        message.success(t("masters.error-on-change-master-status"));
+        messageApi.error(t("masters.error-on-change-master-status"));
       });
   };
 
   return (
     <>
+      {contextHolder}
       <Breadcrumb
         items={[
           {

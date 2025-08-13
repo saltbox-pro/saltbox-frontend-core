@@ -13,6 +13,7 @@ export function SyncTemplatesButton({
 }: SyncTemplatesButtonProps) {
   const { t } = useTranslation();
   const [isSyncTemplates, setIsSyncTemplates] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const checkTemplatesSyncTask = async (taskId: string): Promise<void> => {
     try {
@@ -25,26 +26,26 @@ export function SyncTemplatesButton({
 
       if (!result) {
         setIsSyncTemplates(false);
-        message.error(t("sync-templates-button.error-checking-task-status"));
+        messageApi.error(t("sync-templates-button.error-checking-task-status"));
         return;
       }
 
       if (result.progress === "FAILURE") {
         setIsSyncTemplates(false);
-        message.error(t("sync-templates-button.task-failed"));
+        messageApi.error(t("sync-templates-button.task-failed"));
         return;
       }
 
       if (result.progress === "SUCCESS") {
         setIsSyncTemplates(false);
-        message.success(t("sync-templates-button.success-on-sync-templates"));
+        messageApi.success(t("sync-templates-button.success-on-sync-templates"));
         return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await checkTemplatesSyncTask(taskId);
     } catch {
-      message.error(t("sync-templates-button.error-checking-task-status"));
+      messageApi.error(t("sync-templates-button.error-checking-task-status"));
       setIsSyncTemplates(false);
     } finally {
       onSyncComplete?.();
@@ -59,18 +60,21 @@ export function SyncTemplatesButton({
         checkTemplatesSyncTask(res.task_id);
       })
       .catch(() => {
-        message.error(t("sync-templates-button.sync-failed"));
+        messageApi.error(t("sync-templates-button.sync-failed"));
         setIsSyncTemplates(false);
       });
   };
 
   return (
-    <Button
-      onClick={() => handleSyncTemplates()}
-      loading={isSyncTemplates}
-      icon={<SyncOutlined />}
-    >
-      {t("sync-templates-button.sync-templates")}
-    </Button>
+    <>
+      {contextHolder}
+      <Button
+        onClick={() => handleSyncTemplates()}
+        loading={isSyncTemplates}
+        icon={<SyncOutlined />}
+      >
+        {t("sync-templates-button.sync-templates")}
+      </Button>
+    </>
   );
 }
