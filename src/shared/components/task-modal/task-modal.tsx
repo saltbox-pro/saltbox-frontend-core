@@ -45,6 +45,7 @@ export function TaskModal({
   const { t } = useTranslation();
   const [taskTemplate, setTaskTemplate] = useState<TaskTemplateModel>();
   const [activeTabKey, setActiveTabKey] = useState<string>("task-info");
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [taskCreateRequest, setTaskCreateRequest] = useState<
     Partial<TaskCreateRequestSchemaInput>
@@ -97,7 +98,7 @@ export function TaskModal({
         })
         .catch(() => {
           setTaskTemplate(undefined);
-          message.error(t("task-modal.error-on-load-task-template"));
+          messageApi.error(t("task-modal.error-on-load-task-template"));
         });
     } else {
       setTaskTemplate(undefined);
@@ -159,6 +160,7 @@ export function TaskModal({
         styles={{ body: { height: "100%" } }}
         footer={""}
         maskClosable={false}
+        closable={false}
       >
         <Tabs
           defaultActiveKey="task-info"

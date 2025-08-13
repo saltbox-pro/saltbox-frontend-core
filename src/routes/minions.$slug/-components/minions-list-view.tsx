@@ -223,6 +223,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     TaskTargetMinion[]
   >([]);
   const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
+  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     minionsStore.setCollectionSlug(props.slug);
@@ -295,7 +296,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       setIsCSVLoading(false);
     } catch {
       setIsCSVLoading(false);
-      message.error(t("minions.error-on-csv-download"));
+      messageApi.error(t("minions.error-on-csv-download"));
     }
   };
 
@@ -311,12 +312,13 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         navigate(`/task/${task.id}`);
       })
       .catch(() => {
-        message.error(t("minions.error-on-task-create"));
+        messageApi.error(t("minions.error-on-task-create"));
       });
   };
 
   return (
     <>
+      {contextHolder}
       <Flex vertical>
         {props.showFilter && (
           <MinionsQueryBuilder
@@ -335,14 +337,14 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
                 ?.mastersList({ status: "accepted" })
                 .then((result) => {
                   if (result?.data?.length === 0) {
-                    message.warning(t("minions.warning-on-create-task"));
+                    messageApi.warning(t("minions.warning-on-create-task"));
                     return;
                   }
                   setSaltMasters(result.data);
                   setIsCreateTaskModalOpen(true);
                 })
                 .catch(() => {
-                  message.error(t("minions.error-on-load-salt-masters"));
+                  messageApi.error(t("minions.error-on-load-salt-masters"));
                 })
                 .finally(() => setIsCreateTaskLoading(false));
             }}

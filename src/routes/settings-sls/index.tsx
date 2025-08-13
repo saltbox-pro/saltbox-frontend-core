@@ -33,6 +33,7 @@ const columnHelper = createColumnHelper<TableRowData>();
 
 const SettingsSlsPage = observer(() => {
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
   const columns = [
     columnHelper.accessor("name", {
       header: t("settings-sls.table-name"),
@@ -143,7 +144,7 @@ const SettingsSlsPage = observer(() => {
         checkSlsSyncTask(res.task_id);
       })
       .catch(() => {
-        message.error(t("settings-sls.error-on-sync"));
+        messageApi.error(t("settings-sls.error-on-sync"));
         settingsSlsStore.reload();
         setIsSyncSls(false);
       });
@@ -160,26 +161,26 @@ const SettingsSlsPage = observer(() => {
 
       if (!result) {
         setIsSyncSls(false);
-        message.error(t("settings-sls.error-on-check-task-status"));
+        messageApi.error(t("settings-sls.error-on-check-task-status"));
         return;
       }
 
       if (result.progress === "FAILURE") {
         setIsSyncSls(false);
-        message.error(t("settings-sls.task-failed"));
+        messageApi.error(t("settings-sls.task-failed"));
         return;
       }
 
       if (result.progress === "SUCCESS") {
         setIsSyncSls(false);
-        message.success(t("settings-sls.success-on-sync-sls"));
+        messageApi.success(t("settings-sls.success-on-sync-sls"));
         return;
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await checkSlsSyncTask(taskId);
     } catch {
-      message.error(t("settings-sls.error-on-check-task-status"));
+      messageApi.error(t("settings-sls.error-on-check-task-status"));
       setIsSyncSls(false);
     }
     settingsSlsStore.reload();
@@ -213,10 +214,10 @@ const SettingsSlsPage = observer(() => {
           },
         })
         .then(() => {
-          message.success(t("settings-sls.success-on-create-sls"));
+          messageApi.success(t("settings-sls.success-on-create-sls"));
         })
         .catch(() => {
-          message.error(t("settings-sls.error-on-create-sls"));
+          messageApi.error(t("settings-sls.error-on-create-sls"));
         })
         .finally(() => {
           settingsSlsStore.reload();
@@ -235,10 +236,10 @@ const SettingsSlsPage = observer(() => {
           },
         })
         .then(() => {
-          message.success(t("settings-sls.success-on-edit-sls"));
+          messageApi.success(t("settings-sls.success-on-edit-sls"));
         })
         .catch(() => {
-          message.error(t("settings-sls.error-on-edit-sls"));
+          messageApi.error(t("settings-sls.error-on-edit-sls"));
         })
         .finally(() => {
           settingsSlsStore.reload();
@@ -249,6 +250,7 @@ const SettingsSlsPage = observer(() => {
 
   return (
     <>
+      {contextHolder}
       <Breadcrumb
         items={[
           {
@@ -301,6 +303,7 @@ const SettingsSlsPage = observer(() => {
         okText={t("settings-sls.modal-delete-repository-confirm")}
         cancelText={t("settings-sls.modal-delete-repository-reject")}
         okButtonProps={{ danger: true }}
+        closable={false}
       >
         <p>
           {t("settings-sls.modal-delete-repository-confirm-text") + " "}

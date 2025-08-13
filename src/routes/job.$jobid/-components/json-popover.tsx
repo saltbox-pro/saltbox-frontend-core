@@ -20,53 +20,57 @@ export function JsonPopover({
 }: JsonPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
 
   return (
-    <Popover
-      content={
-        <div style={{ maxHeight, overflow: "auto" }}>
-          <ReactJson
-            displayDataTypes={false}
-            enableClipboard={false}
-            name={false}
-            displayObjectSize={false}
-            src={data}
-            collapsed={1}
-          />
-        </div>
-      }
-      title={
-        <Flex justify="space-between" align="center">
-          <span>{title}</span>
-          <Flex gap={8}>
-            <Button
-              type="link"
-              icon={<CopyOutlined />}
-              onClick={() => {
-                navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-                message.success(t("jobs.table-copy-success"));
-              }}
+    <>
+      {contextHolder}
+      <Popover
+        content={
+          <div style={{ maxHeight, overflow: "auto" }}>
+            <ReactJson
+              displayDataTypes={false}
+              enableClipboard={false}
+              name={false}
+              displayObjectSize={false}
+              src={data}
+              collapsed={1}
             />
-            <Button
-              type="link"
-              icon={<CloseOutlined />}
-              onClick={() => setIsPopoverOpen(false)}
-            />
+          </div>
+        }
+        title={
+          <Flex justify="space-between" align="center">
+            <span>{title}</span>
+            <Flex gap={8}>
+              <Button
+                type="link"
+                icon={<CopyOutlined />}
+                onClick={() => {
+                  navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+                  messageApi.success(t("jobs.table-copy-success"));
+                }}
+              />
+              <Button
+                type="link"
+                icon={<CloseOutlined />}
+                onClick={() => setIsPopoverOpen(false)}
+              />
+            </Flex>
           </Flex>
-        </Flex>
-      }
-      trigger="click"
-      overlayStyle={{ maxWidth }}
-      placement="bottomRight"
-      open={isPopoverOpen}
-      onOpenChange={setIsPopoverOpen}
-    >
-      <Button
-        icon={<MatIcon icon="search" />}
-        type="link"
-        size="small"
-        title={t("minions.view")}
-      />
-    </Popover>
+        }
+        trigger="click"
+        overlayStyle={{ maxWidth }}
+        placement="bottomRight"
+        open={isPopoverOpen}
+        onOpenChange={setIsPopoverOpen}
+      >
+        <Button
+          icon={<MatIcon icon="search" />}
+          type="link"
+          size="small"
+          title={t("minions.view")}
+        />
+      </Popover>
+    </>
   );
 }

@@ -75,6 +75,7 @@ export function JobModal({
     RJSFValidationError[]
   >([]);
   const [functionHovered, setFunctionHovered] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<RjsfForm>(null);
@@ -89,7 +90,7 @@ export function JobModal({
       ?.mastersList({ status: "accepted" })
       .then((result) => {
         if (result?.data?.length === 0) {
-          message.warning(
+          messageApi.warning(
             "To create a job, activate the master on the Masters page",
           );
           setIsModalOpen(false);
@@ -107,7 +108,7 @@ export function JobModal({
         setIsModalOpen(true);
       })
       .catch(() => {
-        message.error("Error on load salt masters.");
+        messageApi.error("Error on load salt masters.");
       })
       .finally(() => setIsMasterListLoading(false));
   };
@@ -184,7 +185,7 @@ export function JobModal({
         fillSaltFunctionList(result?.data ?? []);
       })
       .catch(() => {
-        message.error("Error on load salt function schemes.");
+        messageApi.error("Error on load salt function schemes.");
       })
       .finally(() => setIsSchemaListLoading(false));
   }, [isModalOpen]);
@@ -229,7 +230,7 @@ export function JobModal({
         }
       })
       .catch((_) => {
-        message.error(`Error on job created.`);
+        messageApi.error(`Error on job created.`);
       })
       .finally(() => setIsJobCreating(false));
   };
@@ -270,7 +271,7 @@ export function JobModal({
         setSaltFunction(result);
       })
       .catch(() => {
-        message.error("Error on load salt function schema.");
+        messageApi.error("Error on load salt function schema.");
       })
       .finally(() => setIsSchemaLoading(false));
   }, [saltFunctionName]);
@@ -307,6 +308,7 @@ export function JobModal({
         ...saltFunctionList.slice(1),
       ]);
     }
+
     setSearchFunctionName(filteredSearchText);
   };
 
@@ -351,6 +353,7 @@ export function JobModal({
 
   return (
     <>
+      {contextHolder}
       <Button
         type="primary"
         icon={<PlusOutlined />}
@@ -387,6 +390,7 @@ export function JobModal({
             </Button>
           </>
         }
+        closable={false}
       >
         <Form
           form={form}

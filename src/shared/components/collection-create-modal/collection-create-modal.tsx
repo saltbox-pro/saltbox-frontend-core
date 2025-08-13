@@ -25,6 +25,7 @@ function CollectionCreateModal({
 
   const [form] = Form.useForm<collectionCreateFormType>();
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -54,14 +55,14 @@ function CollectionCreateModal({
         },
       })
       .then((response) => {
-        message.success(t("collection-create-modal.success"));
+        messageApi.success(t("collection-create-modal.success"));
         setIsModalOpen(false);
         if (response.slug) {
           navigate(`/minions/${response.slug}`);
         }
       })
       .catch((e) => {
-        message.error(t("collection-create-modal.error"));
+        messageApi.error(t("collection-create-modal.error"));
       })
       .finally(() => {
         setIsCollectionCreating(false);
@@ -70,6 +71,7 @@ function CollectionCreateModal({
 
   return (
     <>
+      {contextHolder}
       <Button
         color="primary"
         variant="link"
@@ -103,6 +105,7 @@ function CollectionCreateModal({
             </Button>
           </>
         }
+        closable={false}
       >
         <Form
           form={form}
