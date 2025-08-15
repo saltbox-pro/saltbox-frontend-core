@@ -19,27 +19,28 @@ module.exports = (webpackConfigEnv, argv) => {
     },
     resolve: {
       alias: {
-        "saltbox-core-api": path.resolve(__dirname, "./src/api/generated"),
+        "saltbox-core-api": path.resolve(
+          __dirname,
+          "./node_modules/@saltbox/saltbox-core-api-client"
+        ),
         "saltbox-core": path.resolve(__dirname, "./src"),
       },
     },
     plugins: [
       new CopyPlugin({
-        patterns: [
-          { from: "public/locales", to: "locales" },
-        ],
+        patterns: [{ from: "public/locales", to: "locales" }],
       }),
       new webpack.DefinePlugin({
-        DEVELOPMENT: argv.mode === 'development',
-        PRODUCTION: argv.mode === 'production',
+        DEVELOPMENT: argv.mode === "development",
+        PRODUCTION: argv.mode === "production",
       }),
     ],
     output: {
-      filename: 'index.js',
+      filename: "index.js",
     },
   });
 
-  console.log('MODE', argv.mode);
+  console.log("MODE", argv.mode);
 
   config.externals = [];
 
