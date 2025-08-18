@@ -13,7 +13,7 @@
     "esModuleInterop": true,
     "paths": {
       "saltbox-core-api": [
-        "./node_modules/@saltbox/saltbox-core-api-client"
+        "src/api/generated/"
       ],
       "saltbox-core/*": [
         "src/*"
