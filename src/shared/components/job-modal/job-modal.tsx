@@ -90,9 +90,7 @@ export function JobModal({
       ?.mastersList({ status: "accepted" })
       .then((result) => {
         if (result?.data?.length === 0) {
-          messageApi.warning(
-            "To create a job, activate the master on the Masters page",
-          );
+          messageApi.warning(t("job-modal.warning-message"));
           setIsModalOpen(false);
           return;
         }
