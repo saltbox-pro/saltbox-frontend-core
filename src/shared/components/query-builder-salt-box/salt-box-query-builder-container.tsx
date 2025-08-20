@@ -19,6 +19,7 @@ import { MatIcon } from "saltbox-core/shared/components/mat-icon/mat-icon";
 type SaltBoxQueryBuilderContainerProps = {
   filterStore: FilterStore;
   additionalButtons?: ReactElement;
+  hideButtons?: boolean;
   controlElements?: {
     valueEditor?: (props: ValueEditorProps) => JSX.Element;
     valueSelector?: (props: ValueSelectorProps) => JSX.Element;
@@ -65,27 +66,29 @@ export const SaltBoxQueryBuilderContainer = observer(
             </QueryBuilderSaltBox>
           </QueryBuilderDnD>
         </Spin>
-        <Flex justify="space-between" style={{ padding: "8px" }}>
-          <Button
-            disabled={!props.filterStore.isSearchEnable}
-            onClick={() => props.filterStore.handelSearch()}
-            icon={<SearchOutlined />}
-            type="primary"
-          >
-            {t("filters.search")}
-          </Button>
-          <div className={styles.buttons}>
+        {!props.hideButtons && (
+          <Flex justify="space-between" style={{ padding: "8px" }}>
             <Button
-              color="danger"
-              variant="link"
-              disabled={props.filterStore.currentFilters.rules.length === 0}
-              onClick={() => props.filterStore.handleResetFilters()}
-              icon={<MatIcon icon="filter_alt_off" />}
-              title={t("minions.reset")}
-            />
-            {props?.additionalButtons}
-          </div>
-        </Flex>
+              disabled={!props.filterStore.isSearchEnable}
+              onClick={() => props.filterStore.handelSearch()}
+              icon={<SearchOutlined />}
+              type="primary"
+            >
+              {t("filters.search")}
+            </Button>
+            <div className={styles.buttons}>
+              <Button
+                color="danger"
+                variant="link"
+                disabled={props.filterStore.currentFilters.rules.length === 0}
+                onClick={() => props.filterStore.handleResetFilters()}
+                icon={<MatIcon icon="filter_alt_off" />}
+                title={t("minions.reset")}
+              />
+              {props?.additionalButtons}
+            </div>
+          </Flex>
+        )}
       </div>
     );
   }
