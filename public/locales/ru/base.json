@@ -271,7 +271,8 @@
     "salt-master-error-required": "Мастер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
     "tgt-error-required": "Цель обязательна",
-    "function-error-required": "Функция обязательна"
+    "function-error-required": "Функция обязательна",
+    "warning-message": "Для создания команды, активируйте мастера на странице Мастера"
   },
   "jobs-templates": {
     "title": "Шаблоны команд",
@@ -341,6 +342,10 @@
   },
   "collection": {
     "collections": "Коллекции",
+    "editing-collection": "Редактирование коллекции",
+    "change-name": "Изменить название",
+    "edit-collection-name": "Название коллекции",
+    "enter-collection-name": "Введите название коллекции",
     "delete-collection": "Удалить коллекцию",
     "delete": "Удалить",
     "cancel": "Отмена",

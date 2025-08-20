@@ -271,7 +271,8 @@
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
-    "function-error-required": "Function is required"
+    "function-error-required": "Function is required",
+    "warning-message": "To create a job, activate the master on the Masters page"
   },
   "jobs-templates": {
     "title": "Job Templates",
@@ -341,6 +342,10 @@
   },
   "collection": {
     "collections": "Collections",
+    "editing-collection": "Editing Collection",
+    "change-name": "Change Name",
+    "edit-collection-name": "Collection Name",
+    "enter-collection-name": "Enter collection name",
     "delete-collection": "Delete Collection",
     "delete": "Delete",
     "cancel": "Cancel",
