@@ -23,7 +23,7 @@ import {
   JobData,
   JobSchemaModel,
   JobSchemaShortSchema,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";

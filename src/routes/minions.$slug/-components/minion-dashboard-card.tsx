@@ -12,7 +12,7 @@ import {
   FilterOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { GrainValue } from "saltbox-core-api";
+import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
 import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
 import { DashboardCardStore } from "saltbox-core/store";

@@ -4,7 +4,7 @@ import {
   TaskCreateRequestSchemaInput,
   TaskMinionStatus,
   TaskModel,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export class TaskStore {

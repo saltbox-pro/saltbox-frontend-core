@@ -10,7 +10,7 @@ import {
   EditOutlined,
   DeleteOutlined
 } from "@ant-design/icons";
-import { SettingsSlsRepoShortSchema } from "saltbox-core-api";
+import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {

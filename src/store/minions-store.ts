@@ -1,6 +1,6 @@
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
-import { MinionShortSchema } from "saltbox-core-api";
+import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export class MinionsStore {

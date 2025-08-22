@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from "mobx";
-import { CollectionDetailSchema } from "saltbox-core-api";
+import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export class CollectionStore {

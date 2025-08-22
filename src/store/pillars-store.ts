@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { PillarModel, PillarSelector } from "saltbox-core-api";
+import { PillarModel, PillarSelector } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export class PillarsStore {

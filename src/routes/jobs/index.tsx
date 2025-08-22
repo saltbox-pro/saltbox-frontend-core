@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Popover, Spin, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { JobsListResponse } from "saltbox-core-api";
+import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";

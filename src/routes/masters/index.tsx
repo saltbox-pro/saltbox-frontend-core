@@ -6,7 +6,7 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Popover, Tag, message } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { MasterViewSchema } from "saltbox-core-api";
+import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";

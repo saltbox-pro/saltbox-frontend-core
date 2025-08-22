@@ -16,7 +16,7 @@ import {
   message,
 } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { JobResult } from "saltbox-core-api";
+import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";

@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { Breadcrumb } from "antd";
 import { Popover } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { JobSchemaShortSchema } from "saltbox-core-api";
+import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";

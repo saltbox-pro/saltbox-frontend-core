@@ -10,8 +10,8 @@ import {
   SettingsApi,
   TaskTemplatesApi,
   TasksApi,
-} from "saltbox-core-api";
-import { Configuration } from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
+import { Configuration } from "@saltbox/saltbox-core-api-client";
 import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
 

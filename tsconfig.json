@@ -12,9 +12,6 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "paths": {
-      "saltbox-core-api": [
-        "src/api/generated/"
-      ],
       "saltbox-core/*": [
         "src/*"
       ],

@@ -19,7 +19,6 @@ module.exports = (webpackConfigEnv, argv) => {
     },
     resolve: {
       alias: {
-        "saltbox-core-api": path.resolve(__dirname, "./src/api/generated"),
         "saltbox-core": path.resolve(__dirname, "./src"),
       },
     },
@@ -38,8 +37,6 @@ module.exports = (webpackConfigEnv, argv) => {
       filename: 'index.js',
     },
   });
-
-  console.log('MODE', argv.mode);
 
   config.externals = [];
 

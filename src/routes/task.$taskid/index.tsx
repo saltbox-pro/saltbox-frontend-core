@@ -9,7 +9,7 @@ import {
   IssuesCloseOutlined,
   StopOutlined,
 } from "@ant-design/icons";
-import { JobResult, TaskModel, TaskStatus } from "saltbox-core-api";
+import { JobResult, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";

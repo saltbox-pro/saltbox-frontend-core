@@ -2,7 +2,7 @@ import { jsonLogicAdditionalOperators } from 'react-querybuilder';
 import dayjs from 'dayjs';
 import { add_operation, apply } from 'json-logic-js';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { JobsListResponse } from 'saltbox-core-api';
+import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import {
   DATETIME_TIMESTAMP,
   formatTimeByUserTZ,

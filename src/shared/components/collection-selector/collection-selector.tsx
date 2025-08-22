@@ -6,7 +6,7 @@ import { EditOutlined } from "@ant-design/icons";
 import styles from "./collection-selector.module.css";
 import { CollectionsStore } from "saltbox-core/store/collections-store";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
-import { CollectionModel } from "saltbox-core-api";
+import { CollectionModel } from "@saltbox/saltbox-core-api-client";
 import { Link } from "react-router";
 import { useTranslation } from "react-i18next";
 

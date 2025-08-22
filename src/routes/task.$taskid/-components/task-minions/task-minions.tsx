@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
-import { TaskMinion, TaskMinionStatus } from "saltbox-core-api";
+import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";

@@ -7,7 +7,7 @@ import {
   TaskCreateRequestSchemaInput,
   TaskData,
   TaskTemplateModel,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import styles from "./task-modal.module.css";
 
 type TaskParamsFormProps = {

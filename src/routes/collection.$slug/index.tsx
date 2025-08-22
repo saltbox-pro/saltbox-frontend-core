@@ -15,7 +15,7 @@ import {
   HomeOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
-import { MinionShortSchema } from "saltbox-core-api";
+import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { SaltBoxMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-editor";
 import { SaltBoxMinionValueSelector } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-selector";

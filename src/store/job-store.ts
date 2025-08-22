@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { JobModel, JobResult } from 'saltbox-core-api';
+import { JobModel, JobResult } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from 'saltbox-core/store';
 
 export class JobStore {

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { GrainValue } from "saltbox-core-api";
+import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export class DashboardCardStore {

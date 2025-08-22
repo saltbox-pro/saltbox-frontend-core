@@ -27,7 +27,7 @@ import {
   MinionShortSchema,
   TaskCreateRequestSchemaInput,
   TaskTargetMinion,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";

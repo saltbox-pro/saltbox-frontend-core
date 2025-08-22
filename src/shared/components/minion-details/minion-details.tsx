@@ -13,7 +13,7 @@ import {
   Tabs,
 } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
-import { GrainsSchema, MinionDetailSchema, PillarModel } from "saltbox-core-api";
+import { GrainsSchema, MinionDetailSchema, PillarModel } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import styles from "./minion-details.module.css";
 

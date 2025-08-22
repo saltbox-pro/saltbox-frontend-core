@@ -13,7 +13,7 @@ import { PillarCreateForm } from "./-components/pillar-create-form"
 import { PillarsStore } from "saltbox-core/store"
 import { toJS } from "mobx"
 import styles from "./index.module.css"
-import { GatheredMinionSchema, PillarModel, PillarSelector, PillarCSVParseResult, PillarCSVParseResultErrorCode } from "saltbox-core-api"
+import { GatheredMinionSchema, PillarModel, PillarSelector, PillarCSVParseResult, PillarCSVParseResultErrorCode } from "@saltbox/saltbox-core-api-client"
 
 const pillarColumnHelper = createColumnHelper<PillarModel>()
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>()

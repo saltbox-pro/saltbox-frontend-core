@@ -5,7 +5,7 @@ import {
   MasterViewSchema,
   TaskCreateRequestSchemaInput,
   TaskTemplateModel,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import { apiStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;

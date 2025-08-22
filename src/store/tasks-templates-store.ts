@@ -1,6 +1,6 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable, runInAction } from 'mobx';
-import { TaskTemplateShortSchema } from 'saltbox-core-api';
+import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from './api-store';
 
 export class TaskTemplatesStore {

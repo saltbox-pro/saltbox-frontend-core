@@ -14,7 +14,7 @@ import {
   TaskMinionStatus,
   TaskModel,
   TaskStatus,
-} from "saltbox-core-api";
+} from "@saltbox/saltbox-core-api-client";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 import styles from "./task-stat.module.css";
 

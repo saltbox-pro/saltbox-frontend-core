@@ -1,4 +1,4 @@
-import { JobResult } from "saltbox-core-api";
+import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 
 export const TaskJobReturns = ({

@@ -2,7 +2,7 @@ import { Form, Input, Button, Space } from "antd"
 import { useTranslation } from "react-i18next"
 import { observer } from "mobx-react-lite"
 import { useEffect } from "react"
-import { PillarModel } from "saltbox-core-api"
+import { PillarModel } from "@saltbox/saltbox-core-api-client"
 
 interface PillarCreateFormProps {
     masterId: string

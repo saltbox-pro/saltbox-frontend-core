@@ -1,5 +1,5 @@
 import { autorun, makeAutoObservable } from 'mobx';
-import { CollectionDetailSchema } from 'saltbox-core-api';
+import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { apiStore } from './api-store';
 
 export class DefaultCollectionStore {

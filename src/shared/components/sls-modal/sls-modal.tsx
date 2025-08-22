@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Flex, Form, Input, Modal, Popover } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import { SettingsSlsRepoShortSchema } from "saltbox-core-api";
+import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
 
 export type SlsFormData = {
   name: string;
