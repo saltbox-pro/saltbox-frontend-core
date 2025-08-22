@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ValueEditorProps } from "react-querybuilder";
 import { AutoComplete, AutoCompleteProps } from "antd";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 type AntDValueEditorProps = ValueEditorProps & {
   extraProps?: Record<string, any>;
@@ -12,7 +12,7 @@ export const SaltBoxAutocompleteValueEditor = (props: AntDValueEditorProps) => {
   const [options, setOptions] = useState<AutoCompleteProps["options"]>([]);
 
   useEffect(() => {
-    apiStore.filtersApi
+    apiCoreStore.filtersApi
       ?.filterValues({
         MinionFilterValuesBody: {
           collection_slug: props.slug,

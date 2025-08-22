@@ -15,7 +15,7 @@ import { Configuration } from "@saltbox/saltbox-core-api-client";
 import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
 
-class ApiStore {
+class ApiCoreStore {
   private get apiConfig() {
     if (!envStore.env || !appStore.authStore?.user?.access_token)
       return undefined;
@@ -72,4 +72,4 @@ class ApiStore {
   }
 }
 
-export const apiStore = new ApiStore();
+export const apiCoreStore = new ApiCoreStore();

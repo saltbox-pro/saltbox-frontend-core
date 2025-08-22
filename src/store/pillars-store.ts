@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { PillarModel, PillarSelector } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class PillarsStore {
   isLoading: boolean;
@@ -32,7 +32,7 @@ export class PillarsStore {
     this.isLoading = true;
     this.error = null;
     try {
-      const pillars = await apiStore.pillarsApi?.pillarsList({
+      const pillars = await apiCoreStore.pillarsApi?.pillarsList({
         master_id: masterId,
       });
 
@@ -63,10 +63,10 @@ export class PillarsStore {
     value: string,
     minionId?: string,
   ): Promise<boolean> => {
-    if (!apiStore.pillarsApi) return false;
+    if (!apiCoreStore.pillarsApi) return false;
 
     try {
-      await apiStore.pillarsApi.pillarCreate({
+      await apiCoreStore.pillarsApi.pillarCreate({
         PillarModel: {
           master_id: masterId,
           minion_id: minionId || null,
@@ -87,10 +87,10 @@ export class PillarsStore {
     value: string,
     minionId?: string,
   ): Promise<boolean> => {
-    if (!apiStore.pillarsApi) return false;
+    if (!apiCoreStore.pillarsApi) return false;
 
     try {
-      await apiStore.pillarsApi.pillarUpdate({
+      await apiCoreStore.pillarsApi.pillarUpdate({
         PillarModel: {
           master_id: masterId,
           minion_id: minionId || null,
@@ -110,7 +110,7 @@ export class PillarsStore {
     name: string,
     minionId?: string,
   ): Promise<boolean> => {
-    if (!apiStore.pillarsApi) return false;
+    if (!apiCoreStore.pillarsApi) return false;
 
     try {
       const pillarSelector: PillarSelector = {
@@ -119,7 +119,7 @@ export class PillarsStore {
         minion_id: minionId || null,
       };
 
-      await apiStore.pillarsApi.pillarDelete({
+      await apiCoreStore.pillarsApi.pillarDelete({
         PillarSelector: pillarSelector,
       });
 

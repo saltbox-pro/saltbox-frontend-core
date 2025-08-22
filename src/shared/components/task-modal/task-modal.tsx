@@ -10,7 +10,7 @@ import {
   TaskTargetMinion,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 import { TaskForm, TaskFormData } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";
@@ -88,7 +88,7 @@ export function TaskModal({
 
   useEffect(() => {
     if (taskCreateRequest?.task_template_id) {
-      apiStore.taskTemplatesApi
+      apiCoreStore.taskTemplatesApi
         ?.taskTemplateRetrieveTasksTemplateTplIdGet({
           tpl_id: taskCreateRequest?.task_template_id,
         })

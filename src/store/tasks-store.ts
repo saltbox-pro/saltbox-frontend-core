@@ -1,7 +1,7 @@
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 import { TaskListResponseSchema, TaskModel } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class TasksStore {
   tasks: Array<TaskListResponseSchema>;
@@ -29,7 +29,7 @@ export class TasksStore {
     if (!collectionSlug) return;
     this.collectionSlug = collectionSlug;
     this.isTasksLoading = true;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.tasksList({
         collection_slug: this.collectionSlug,
         limit: this.pagination.pageSize,

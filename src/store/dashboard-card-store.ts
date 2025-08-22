@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class DashboardCardStore {
   isFilterLoading: boolean;
@@ -34,7 +34,7 @@ export class DashboardCardStore {
   ) => {
     this.isFilterLoading = true;
 
-    apiStore.filtersApi
+    apiCoreStore.filtersApi
       ?.filterValues({
         MinionFilterValuesBody: {
           collection_slug: slug,

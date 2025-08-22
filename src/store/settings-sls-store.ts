@@ -1,7 +1,7 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from './api-store';
+import { apiCoreStore } from './api-core-store';
 
 export class SettingsSlsStore {
   isLoading: boolean;
@@ -25,7 +25,7 @@ export class SettingsSlsStore {
   loadSLS = () => {
     this.isLoading = true;
 
-    apiStore.settingsApi
+    apiCoreStore.settingsApi
       ?.slsRepoSettingsListSettingsSlsReposGet({})
       .then((response) => {
         runInAction(() => {
@@ -46,13 +46,13 @@ export class SettingsSlsStore {
 
   handleSlsActivation = (id: string, isActive: boolean | undefined) => {
     if (!isActive) {
-      apiStore.settingsApi
+      apiCoreStore.settingsApi
         ?.slsRepoSettingsActivateSettingsSlsReposSidActivatePost({ sid: id })
         .finally(() => {
           this.reload();
         });
     } else {
-      apiStore.settingsApi
+      apiCoreStore.settingsApi
         ?.slsRepoSettingsDeactivateSettingsSlsReposSidDeactivatePostRaw({
           sid: id,
         })
@@ -64,7 +64,7 @@ export class SettingsSlsStore {
 
   handleSlsDelete = (id: string) => {
     this.isLoading = true;
-    apiStore.settingsApi
+    apiCoreStore.settingsApi
       ?.slsRepoSettingsDeleteSettingsSlsReposSidDelete({
         sid: id,
       })

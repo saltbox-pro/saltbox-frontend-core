@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, List, Modal, Spin, Typography } from "antd";
 import { GatheredMinionSchema, GatherMinionsMinionsGatherGetTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 interface MinionGatherModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ export function MinionGatherModal({
   useEffect(() => {
     if (isOpen && target && targetType && master) {
       setIsLoading(true);
-      apiStore.minionsApi
+      apiCoreStore.minionsApi
         ?.gatherMinionsMinionsGatherGet({
           tgt: target,
           tgt_type: targetType,

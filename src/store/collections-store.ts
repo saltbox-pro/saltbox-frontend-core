@@ -1,7 +1,7 @@
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 import { CollectionModel } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionsStore {
   collections: Array<CollectionModel>;
@@ -25,7 +25,7 @@ export class CollectionsStore {
 
   loadCollections = () => {
     this.isMinionsLoading = true;
-    apiStore.minionCollectionsApi
+    apiCoreStore.minionCollectionsApi
       ?.minionCollectionsList({
         skip: this.pagination.pageIndex * this.pagination.pageSize,
         limit: this.pagination.pageSize,

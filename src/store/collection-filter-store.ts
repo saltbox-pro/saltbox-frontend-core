@@ -3,7 +3,7 @@ import { parseMongoDB } from 'react-querybuilder/parseMongoDB';
 import { action, computed, makeObservable, runInAction } from 'mobx';
 import { generateIdsForQuery } from 'saltbox-core/shared/utils/generateIdsForQuery';
 import { customRuleProcessorMongoDB } from 'saltbox-core/shared/utils/queryBulderUtils';
-import { apiStore } from 'saltbox-core/store';
+import { apiCoreStore } from 'saltbox-core/store';
 import { FilterStore } from 'saltbox-core/store';
 
 export class CollectionFilterStore extends FilterStore {
@@ -42,7 +42,7 @@ export class CollectionFilterStore extends FilterStore {
   @action
   loadFiltersScheme = () => {
     this.setIsCollectionLoading(true);
-    apiStore.filtersApi
+    apiCoreStore.filtersApi
       ?.filterSchema()
       .then((schema) => {
         runInAction(() => {

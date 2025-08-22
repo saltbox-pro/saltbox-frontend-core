@@ -7,7 +7,7 @@ import {
   DATETIME_TIMESTAMP,
   formatTimeByUserTZ,
 } from 'saltbox-core/shared/utils/datetime';
-import { apiStore } from 'saltbox-core/store';
+import { apiCoreStore } from 'saltbox-core/store';
 import { JobFilterStore } from 'saltbox-core/store';
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
@@ -64,7 +64,7 @@ export class JobsStore {
     this.isJobsLoading = true;
     this.error = null;
     this.page = page;
-    apiStore.jobsApi
+    apiCoreStore.jobsApi
       ?.jobsList({
         start_datetime: this.dateRange[0].toDate(),
         end_datetime: this.dateRange[1].toDate(),

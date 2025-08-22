@@ -1,6 +1,6 @@
 import { autorun, makeAutoObservable } from 'mobx';
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from './api-store';
+import { apiCoreStore } from './api-core-store';
 
 export class DefaultCollectionStore {
   isLoading = false;
@@ -12,14 +12,14 @@ export class DefaultCollectionStore {
   }
 
   async fetchDefaultCollection() {
-    if (!apiStore.minionCollectionsApi) return;
+    if (!apiCoreStore.minionCollectionsApi) return;
 
     this.isLoading = true;
     this.error = null;
 
     try {
       //  this.defaultCollection =
-      //    await apiStore.minionCollectionsApi.minionCollectionDefault();
+      //    await apiCoreStore.minionCollectionsApi.minionCollectionDefault();
     } catch (err) {
       this.error =
         err instanceof Error
@@ -33,7 +33,7 @@ export class DefaultCollectionStore {
 
 autorun(() => {
   if (
-    !apiStore.minionCollectionsApi ||
+    !apiCoreStore.minionCollectionsApi ||
     defaultCollectionStore.defaultCollection
   )
     return;

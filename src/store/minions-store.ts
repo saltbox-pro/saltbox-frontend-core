@@ -1,7 +1,7 @@
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class MinionsStore {
   isLoading: boolean;
@@ -30,7 +30,7 @@ export class MinionsStore {
   loadMinions = (collectionSlug: string) => {
     this.isLoading = true;
     this.collectionSlug = collectionSlug;
-    apiStore.minionsApi
+    apiCoreStore.minionsApi
       ?.minionsList({
         MinionListBody: {
           collection_slug: this.collectionSlug,

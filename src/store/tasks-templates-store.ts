@@ -1,7 +1,7 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from './api-store';
+import { apiCoreStore } from './api-core-store';
 
 export class TaskTemplatesStore {
   taskTemplates: Array<TaskTemplateShortSchema>;
@@ -31,7 +31,7 @@ export class TaskTemplatesStore {
 
   loadTaskTemplates = () => {
     this.isTaskTemplatesLoading = true;
-    apiStore.taskTemplatesApi
+    apiCoreStore.taskTemplatesApi
       ?.taskTemplateListTasksTemplateGet({
         limit: this.pagination.pageSize,
         skip: this.pagination.pageIndex * this.pagination.pageSize,

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { MinionDetailSchema, PillarModel } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class MinionStore {
   mid: string;
@@ -32,7 +32,7 @@ export class MinionStore {
     }
     this.isMinionLoading = true;
     this.error = null;
-    apiStore.minionsApi
+    apiCoreStore.minionsApi
       ?.minionRetrieveMinionsMidGet({
         collection_slug: this.slug,
         mid: this.mid,
@@ -56,7 +56,7 @@ export class MinionStore {
     }
     this.isPillarsLoading = true;
     this.pillarsError = null;
-    apiStore.pillarsApi
+    apiCoreStore.pillarsApi
       ?.pillarsList({
         master_id: this.minion.master,
         minion_id: this.minion.minion_id,

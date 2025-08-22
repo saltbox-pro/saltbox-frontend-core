@@ -5,7 +5,7 @@ import {
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export class TaskStore {
   task: TaskModel | null;
@@ -43,7 +43,7 @@ export class TaskStore {
   loadTask = (taskId: string) => {
     this.isTaskLoading = true;
     this.error = null;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.taskRetrieve({
         tid: taskId,
       })
@@ -72,7 +72,7 @@ export class TaskStore {
 
   loadJobReturns = (taskId: string) => {
     this.isTaskLoading = true;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.taskReturns({ tid: taskId })
       .then((jobReturns) => {
         runInAction(() => {
@@ -95,7 +95,7 @@ export class TaskStore {
       return;
     }
     this.isTaskLoading = true;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.taskRun({
         tid: this.task.id,
       })
@@ -116,7 +116,7 @@ export class TaskStore {
       return;
     }
     this.isTaskLoading = true;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.taskStop({
         tid: this.task.id,
       })
@@ -137,7 +137,7 @@ export class TaskStore {
       return;
     }
     this.isTaskLoading = true;
-    apiStore.tasksApi
+    apiCoreStore.tasksApi
       ?.restartFailed({ tid: this.task.id })
       .then((task) => {
         runInAction(() => {
@@ -153,7 +153,7 @@ export class TaskStore {
 
   createTask = (form: TaskCreateRequestSchemaInput): Promise<TaskModel> => {
     return new Promise<TaskModel>((resolve, reject) => {
-      apiStore.tasksApi
+      apiCoreStore.tasksApi
         ?.taskCreate({
           TaskCreateRequestSchemaInput: form,
         })

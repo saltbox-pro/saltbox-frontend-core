@@ -1,7 +1,7 @@
 import { formatQuery } from 'react-querybuilder';
 import { action, computed, makeObservable, runInAction } from 'mobx';
 import { customRuleProcessorMongoDB } from 'saltbox-core/shared/utils/queryBulderUtils';
-import { apiStore } from 'saltbox-core/store';
+import { apiCoreStore } from 'saltbox-core/store';
 import { FilterStore } from 'saltbox-core/store';
 
 export class MinionFilterStore extends FilterStore {
@@ -23,7 +23,7 @@ export class MinionFilterStore extends FilterStore {
   @action
   loadFiltersScheme = () => {
     this.isLoading = true;
-    apiStore.filtersApi
+    apiCoreStore.filtersApi
       ?.filterSchema()
       .then((schema) => {
         runInAction(() => {

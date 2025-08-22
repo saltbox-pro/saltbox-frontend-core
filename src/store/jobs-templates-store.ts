@@ -1,7 +1,7 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from './api-store';
+import { apiCoreStore } from './api-core-store';
 
 export class JobTemplateStore {
   jobsTemplate: Array<JobSchemaShortSchema>;
@@ -27,7 +27,7 @@ export class JobTemplateStore {
 
   loadJobsTemplate = () => {
     this.isLoading = true;
-    apiStore.jsonSchemasApi
+    apiCoreStore.jsonSchemasApi
       ?.getJsonSchemasListJsonSchemasGet({
         limit: this.pagination.pageSize,
         skip: this.pagination.pageIndex * this.pagination.pageSize,

@@ -6,7 +6,7 @@ import {
   TaskCreateRequestSchemaInput,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
 
@@ -48,7 +48,7 @@ export function TaskForm({
   useEffect(() => {
     form.resetFields();
     setIsLoading(true);
-    apiStore.taskTemplatesApi
+    apiCoreStore.taskTemplatesApi
       ?.taskTemplateListTasksTemplateGet()
       .then((result) => {
         const options =

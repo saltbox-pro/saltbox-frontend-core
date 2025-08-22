@@ -36,7 +36,7 @@ import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
 } from "saltbox-core/shared/utils/datetime";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 import { appStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
@@ -333,7 +333,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             icon={<PlusOutlined />}
             onClick={() => {
               setIsCreateTaskLoading(true);
-              apiStore.mastersApi
+              apiCoreStore.mastersApi
                 ?.mastersList({ status: "accepted" })
                 .then((result) => {
                   if (result?.data?.length === 0) {

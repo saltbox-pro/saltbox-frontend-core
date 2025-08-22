@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Button, Form, Input, Modal, message } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
@@ -45,7 +45,7 @@ function CollectionCreateModal({
 
   const handleFormFinish = (formValue: collectionCreateFormType) => {
     setIsCollectionCreating(true);
-    apiStore.minionCollectionsApi
+    apiCoreStore.minionCollectionsApi
       ?.minionCollectionCreate({
         CollectionCreateRequestSchema: {
           query: query,

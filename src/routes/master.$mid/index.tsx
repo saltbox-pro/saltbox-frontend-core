@@ -8,7 +8,7 @@ import { PageHeader } from "saltbox-core/shared/components/page-header/page-head
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated"
 import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed"
 import { createColumnHelper } from "@tanstack/react-table"
-import { apiStore } from "saltbox-core/store"
+import { apiCoreStore } from "saltbox-core/store"
 import { PillarCreateForm } from "./-components/pillar-create-form"
 import { PillarsStore } from "saltbox-core/store"
 import { toJS } from "mobx"
@@ -89,7 +89,7 @@ const MasterPage = observer(() => {
   useEffect(() => {
     if (masterId) {
       setIsLoadingClients(true)
-      apiStore.minionsApi
+      apiCoreStore.minionsApi
         ?.gatherMinionsMinionsGatherGet({
           tgt: "*",
           tgt_type: "glob",
@@ -207,7 +207,7 @@ const MasterPage = observer(() => {
         minion_id: selectedPillar.minion_id || null,
       };
 
-      await apiStore.pillarsApi?.pillarDelete({
+      await apiCoreStore.pillarsApi?.pillarDelete({
         PillarSelector: pillarSelector,
       });
 
@@ -224,7 +224,7 @@ const MasterPage = observer(() => {
     if (!masterId) return
 
     try {
-      const pillars = await apiStore.pillarsApi?.pillarsList({
+      const pillars = await apiCoreStore.pillarsApi?.pillarsList({
         master_id: masterId,
       })
 
@@ -290,7 +290,7 @@ const MasterPage = observer(() => {
           value: row.value?.trim?.() || '',
         }));
 
-      const result = await apiStore.pillarsApi?.pillarImport({
+      const result = await apiCoreStore.pillarsApi?.pillarImport({
         PillarImportSchema: {
           items,
           update_existing: updateExisting
@@ -349,7 +349,7 @@ const MasterPage = observer(() => {
       const fixedText = lines.join('\n');
       const fixedFile = new Blob([fixedText], { type: 'text/csv' });
 
-      const response = await apiStore.pillarsApi?.pillarParseCsvRaw({
+      const response = await apiCoreStore.pillarsApi?.pillarParseCsvRaw({
         master_id: masterId,
         pillars_csv: fixedFile,
       });
@@ -411,7 +411,7 @@ const MasterPage = observer(() => {
           value: row.value?.trim?.() || '',
         }));
 
-      const validationResults = await apiStore.pillarsApi?.pillarImportValidate({
+      const validationResults = await apiCoreStore.pillarsApi?.pillarImportValidate({
         PillarModel: pillarsForValidation,
       });
 

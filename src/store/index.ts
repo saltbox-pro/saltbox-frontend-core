@@ -1,7 +1,7 @@
 export { envStore } from "./env-store";
 export { i18nStore } from "./i18n-store";
 export { appStore } from "./app-store";
-export { apiStore } from "./api-store";
+export { apiCoreStore } from "./api-core-store";
 export { dashboardStore } from "./dashboard-store";
 export { taskTemplatesStore } from "./tasks-templates-store";
 export { settingsSlsStore } from "./settings-sls-store";

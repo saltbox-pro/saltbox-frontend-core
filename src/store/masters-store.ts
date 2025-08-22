@@ -1,7 +1,7 @@
 import { PaginationState } from '@tanstack/react-table';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from './api-store';
+import { apiCoreStore } from './api-core-store';
 
 export class MastersStore {
   isLoading: boolean;
@@ -25,7 +25,7 @@ export class MastersStore {
   rejectMaster = (id: string): Promise<MasterViewSchema> => {
     this.isLoading = true;
     const result = new Promise<MasterViewSchema>((resolve, reject) => {
-      apiStore.mastersApi
+      apiCoreStore.mastersApi
         ?.taskReject({
           mid: id,
         })
@@ -49,7 +49,7 @@ export class MastersStore {
   acceptMaster = (id: string): Promise<MasterViewSchema> => {
     this.isLoading = true;
     const result = new Promise<MasterViewSchema>((resolve, reject) => {
-      apiStore.mastersApi
+      apiCoreStore.mastersApi
         ?.taskAccept({
           mid: id,
         })
@@ -74,7 +74,7 @@ export class MastersStore {
     this.isLoading = true;
     this.error = null;
 
-    apiStore.mastersApi
+    apiCoreStore.mastersApi
       ?.mastersList({
         limit: this.pagination.pageSize,
         skip: this.pagination.pageIndex * this.pagination.pageSize,

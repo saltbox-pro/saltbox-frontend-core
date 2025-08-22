@@ -18,7 +18,7 @@ import {
   SlsModal,
 } from "saltbox-core/shared/components/sls-modal/sls-modal";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 import { settingsSlsStore } from "saltbox-core/store";
 import styles from "./index.module.css";
 
@@ -136,7 +136,7 @@ const SettingsSlsPage = observer(() => {
 
   const handleSlsSync = (id: string) => {
     setIsSyncSls(true);
-    apiStore.settingsApi
+    apiCoreStore.settingsApi
       ?.slsRepoSettingsSyncSettingsSlsReposSidSyncPost({
         sid: id,
       })
@@ -153,7 +153,7 @@ const SettingsSlsPage = observer(() => {
   const checkSlsSyncTask = async (taskId: string): Promise<void> => {
     try {
       const result =
-        await apiStore.settingsApi?.getSyncStatusSettingsSlsReposSyncStatusTaskIdGet(
+        await apiCoreStore.settingsApi?.getSyncStatusSettingsSlsReposSyncStatusTaskIdGet(
           {
             task_id: taskId,
           },
@@ -203,7 +203,7 @@ const SettingsSlsPage = observer(() => {
     }
 
     if (dialogMode === "create") {
-      apiStore.settingsApi
+      apiCoreStore.settingsApi
         ?.slsRepoSettingsCreateSettingsSlsReposPost({
           SettingsSlsRepoCreateSchema: {
             name: formValue.name,
@@ -225,7 +225,7 @@ const SettingsSlsPage = observer(() => {
         });
     }
     if (dialogMode === "edit") {
-      apiStore.settingsApi
+      apiCoreStore.settingsApi
         ?.slsRepoSettingsUpdateSettingsSlsReposSidPutRaw({
           sid: recordToEdit ? recordToEdit?.id : "",
           SettingsSlsRepoUpdateSchema: {

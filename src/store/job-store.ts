@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { JobModel, JobResult } from "@saltbox/saltbox-core-api-client";
-import { apiStore } from 'saltbox-core/store';
+import { apiCoreStore } from 'saltbox-core/store';
 
 export class JobStore {
   jid: string;
@@ -36,7 +36,7 @@ export class JobStore {
     }
     this.isJobLoading = true;
     this.error = null;
-    apiStore.jobsApi
+    apiCoreStore.jobsApi
       ?.jobRetrieve({ jid: this.jid as any })
       .then((job) => {
         if (!job) {
@@ -56,7 +56,7 @@ export class JobStore {
   };
 
   loadJobReturnsCount = () => {
-    apiStore.jobsApi?.jobReturnsCount({ jid: this.jid as any }).then((val) => {
+    apiCoreStore.jobsApi?.jobReturnsCount({ jid: this.jid as any }).then((val) => {
       this.jobReturnsCount = val;
       this.loadJobReturns();
     });
@@ -67,7 +67,7 @@ export class JobStore {
       this.jobReturns = [];
       this.isJobReturnsLoading = true;
     }
-    apiStore.jobsApi
+    apiCoreStore.jobsApi
       ?.jobReturnsList({
         jid: this.jid as any,
         cursor,

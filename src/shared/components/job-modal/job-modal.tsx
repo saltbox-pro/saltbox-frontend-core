@@ -25,7 +25,7 @@ import {
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
-import { apiStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 
 import styles from "./job-modal.module.css";
@@ -86,7 +86,7 @@ export function JobModal({
 
   const showModal = () => {
     setIsMasterListLoading(true);
-    apiStore.mastersApi
+    apiCoreStore.mastersApi
       ?.mastersList({ status: "accepted" })
       .then((result) => {
         if (result?.data?.length === 0) {
@@ -177,7 +177,7 @@ export function JobModal({
     setJsonFormValue({});
     setIsSchemaListLoading(true);
 
-    apiStore.jsonSchemasApi
+    apiCoreStore.jsonSchemasApi
       ?.getJsonSchemasListJsonSchemasGet()
       .then((result) => {
         fillSaltFunctionList(result?.data ?? []);
@@ -211,7 +211,7 @@ export function JobModal({
 
     setIsJobCreating(true);
 
-    apiStore.jobsApi
+    apiCoreStore.jobsApi
       ?.jobCreate({
         CreateJobRequest: {
           tgt: formValue.tgt,
@@ -263,7 +263,7 @@ export function JobModal({
     }
 
     setIsSchemaLoading(true);
-    apiStore.jsonSchemasApi
+    apiCoreStore.jsonSchemasApi
       ?.getJsonSchemaJsonSchemasNameGet({ name: saltFunctionName })
       .then((result) => {
         setSaltFunction(result);
