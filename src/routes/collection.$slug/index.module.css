@@ -1,18 +1,19 @@
 .collectionFlex,
 .collectionFlex :global(.fast-table),
-.collectionFlex :global(.ant-tabs-content),
-.collectionFlex :global(.ant-tabs-tabpane),
+.collectionFlex :global(.ant-spin-nested-loading),
 .collectionFlex :global(.ant-spin-container) {
   height: 100%;
 }
 
 .collectionHeader {
   margin-bottom: 16px;
+  margin-top: 8px;
 }
 
 .collectionButtons {
   gap: 8px;
   align-items: center;
+  justify-content: center;
 }
 
 .editInput {
@@ -21,4 +22,23 @@
 
 .collectionSpin {
   width: 100%;
+}
+
+.customFilterBackground :global(.queryBuilder) {
+  background-color: #ffa39e !important;
+}
+
+.customFilterBackground :global(.queryBuilderContainer),
+.customFilterBackground :global(.queryBuilderContainer *) {
+  background-color: #ffa39e !important;
+}
+
+.customFilterBackground :global(.ant-flex[style*="padding: 8px"]) {
+  background-color: #ffa39e !important;
+}
+
+.editButtonsContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }

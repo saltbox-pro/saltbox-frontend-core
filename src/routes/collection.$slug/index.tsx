@@ -9,11 +9,8 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Input, Modal, Spin } from "antd";
 import {
-  CloseOutlined,
   DeleteOutlined,
-  EditOutlined,
   HomeOutlined,
-  SaveOutlined,
 } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
@@ -25,7 +22,7 @@ import { CollectionFilterStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
 import { defaultCollectionStore } from "saltbox-core/store";
 import { MinionsStore } from "saltbox-core/store";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
+
 import styles from "./index.module.css";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
@@ -38,8 +35,8 @@ const CollectionEditPage = observer(() => {
   const [collectionStore] = useState(new CollectionStore());
   const [filterStore] = useState(new CollectionFilterStore());
   const [minionsStore] = useState(new MinionsStore(undefined, "root"));
-  const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [originalTitle, setOriginalTitle] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
@@ -90,6 +87,13 @@ const CollectionEditPage = observer(() => {
   }, [collectionStore.collection]);
 
   useEffect(() => {
+    if (collectionStore.collection?.title) {
+      setNewTitle(collectionStore.collection.title);
+      setOriginalTitle(collectionStore.collection.title);
+    }
+  }, [collectionStore.collection?.title]);
+
+  useEffect(() => {
     if (collectionStore.collection?.query) {
       minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
       minionsStore.handleSearch();
@@ -97,27 +101,17 @@ const CollectionEditPage = observer(() => {
   }, [filterStore.searchMongoDBQuery]);
 
   useEffect(() => {
+    if (collectionStore.collection?.query) {
+      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+      minionsStore.handleSearch();
+    }
+  }, [filterStore.currentFilters]);
+
+  useEffect(() => {
     if (collectionStore.isDeleted) {
-      const slug = defaultCollectionStore.defaultCollection?.slug;
       navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
     }
   }, [collectionStore.isDeleted]);
-
-  const handleEditNameClick = () => {
-    setNewTitle(collectionStore.collection?.title || "");
-    setIsEditNameModalOpen(true);
-  };
-
-  const handleSaveName = () => {
-    collectionStore.updateCollectionTitle(newTitle);
-    setIsEditNameModalOpen(false);
-  };
-
-  const handleSaveFilter = () => {
-    minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-    minionsStore.handleSearch();
-    collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
-  };
 
   return (
     <>
@@ -139,38 +133,51 @@ const CollectionEditPage = observer(() => {
           },
         ]}
       />
-      <PageHeader title={`${t("collection.editing-collection")} ${collectionStore.collection?.title || ""}`} />
-      <Flex className={styles.collectionFlex} vertical>
-        <SaltBoxQueryBuilderContainer
-          filterStore={filterStore}
-          additionalButtons={
-            <Button
-              type="link"
-              size="small"
-              icon={<SaveOutlined />}
-              onClick={handleSaveFilter}
-              title={t("minions.save")}
-            />
-          }
-          controlElements={{
-            valueEditor: SaltBoxMinionValueEditor("root"),
-            valueSelector: SaltBoxMinionValueSelector,
-          }}
+      <Flex className={styles.collectionHeader} gap={8} align="center">
+        <Input
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          className={styles.editInput}
         />
-        <div className="page-actions-buttons">
+        <Button
+          type="link"
+          size="small"
+          danger
+          icon={<DeleteOutlined />}
+          onClick={() => setIsDeleteModalOpen(true)}
+          title={t("minions.delete")}
+        />
+
+      </Flex>
+      <Flex className={styles.collectionFlex} gap={8} vertical>
+        <div className={styles.customFilterBackground}>
+          <SaltBoxQueryBuilderContainer
+            filterStore={filterStore}
+            hideButtons={true}
+            controlElements={{
+              valueEditor: SaltBoxMinionValueEditor("root"),
+              valueSelector: SaltBoxMinionValueSelector,
+            }}
+          />
+        </div>
+        <div className={styles.editButtonsContainer}>
           <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={handleEditNameClick}
+            type="default"
+            onClick={() => {
+              setNewTitle(originalTitle);
+            }}
           >
-            {t("collection.change-name")}
+            {t("minions.cancel")}
           </Button>
           <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => setIsDeleteModalOpen(true)}
+            type="primary"
+            disabled={newTitle === originalTitle || newTitle.trim() === ""}
+            onClick={() => {
+              collectionStore.updateCollectionTitle(newTitle);
+              setOriginalTitle(newTitle);
+            }}
           >
-            {t("minions.delete")}
+            {t("minions.save")}
           </Button>
         </div>
         <Spin spinning={minionsStore.isLoading} className={styles.collectionSpin}>
@@ -184,22 +191,6 @@ const CollectionEditPage = observer(() => {
           />
         </Spin>
       </Flex>
-
-      <Modal
-        title={t("collection.edit-collection-name")}
-        open={isEditNameModalOpen}
-        onOk={handleSaveName}
-        onCancel={() => setIsEditNameModalOpen(false)}
-        okText={t("minions.save")}
-        cancelText={t("minions.cancel")}
-      >
-        <Input
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          placeholder={t("collection.enter-collection-name")}
-        />
-      </Modal>
-
       <Modal
         title={t("collection.delete-collection")}
         open={isDeleteModalOpen}
