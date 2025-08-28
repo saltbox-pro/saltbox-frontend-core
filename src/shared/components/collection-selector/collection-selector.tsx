@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Button } from "antd";
-import { EditOutlined } from "@ant-design/icons";
 import styles from "./collection-selector.module.css";
 import { CollectionsStore } from "saltbox-core/store/collections-store";
 import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
@@ -37,24 +36,6 @@ export const CollectionSelector = observer(
         meta: {
           tdClassName: "fast-table-column-nowrap",
         },
-      }),
-      collectionsColumnHelper.display({
-        id: "actions",
-        header: "Actions",
-        cell: (data) =>
-          data.row.original.slug !== "root" && (
-            <Link
-              to={`/core/collection/${data.row.original.slug}`}
-              onClick={() => onClose()}
-            >
-              <Button
-                type="link"
-                icon={<EditOutlined />}
-                size={"small"}
-                title={t("minions.edit")}
-              />
-            </Link>
-          ),
       }),
     ];
     return (
