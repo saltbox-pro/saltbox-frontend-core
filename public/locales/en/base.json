@@ -109,7 +109,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
-    "view": "Details"
+    "view": "Details",
+    "save-as-new": "Save as New"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",
@@ -342,6 +343,7 @@
   },
   "collection": {
     "collections": "Collections",
+    "collection": "Collection",
     "editing-collection": "Editing Collection",
     "change-name": "Change Name",
     "edit-collection-name": "Collection Name",
@@ -353,7 +355,14 @@
     "minion-id": "Minion ID",
     "master": "Master",
     "last-seen": "Last Seen",
-    "select-collection": "Select Collection"
+    "select-collection": "Select Collection",
+    "create-new-collection": "Create New Collection",
+    "create": "Create",
+    "create-new-collection-description": "This will create a new collection based on the current filter settings.",
+    "collection-has-been-changed": "Collection has been changed",
+    "error-updating-collection": "Error updating collection",
+    "collection-deleted-successfully": "Collection deleted successfully",
+    "error-deleting-collection": "Error deleting collection"
   },
   "filters": {
     "search": "Search"

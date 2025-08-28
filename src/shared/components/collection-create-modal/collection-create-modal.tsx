@@ -12,24 +12,26 @@ type collectionCreateFormType = {
 
 function CollectionCreateModal({
   query,
-  disable,
   parentSlug,
+  isOpen = false,
+  onClose,
 }: {
   query: object;
-  disable: boolean;
   parentSlug: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }) {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(isOpen);
   const [isCollectionCreating, setIsCollectionCreating] = useState(false);
 
   const [form] = Form.useForm<collectionCreateFormType>();
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
+  useEffect(() => {
+    setIsModalOpen(isOpen);
+  }, [isOpen]);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -40,6 +42,7 @@ function CollectionCreateModal({
   const handleModalCancel = () => {
     if (!isCollectionCreating) {
       setIsModalOpen(false);
+      onClose?.();
     }
   };
 
@@ -57,6 +60,7 @@ function CollectionCreateModal({
       .then((response) => {
         messageApi.success(t("collection-create-modal.success"));
         setIsModalOpen(false);
+        onClose?.();
         if (response.slug) {
           navigate(`/minions/${response.slug}`);
         }
@@ -72,14 +76,6 @@ function CollectionCreateModal({
   return (
     <>
       {contextHolder}
-      <Button
-        color="primary"
-        variant="link"
-        onClick={showModal}
-        disabled={disable}
-        icon={<SaveOutlined />}
-        title={t("minions.save")}
-      ></Button>
       <Modal
         title={t("collection-create-modal.dialog-title")}
         open={isModalOpen}

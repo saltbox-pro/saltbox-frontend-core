@@ -109,7 +109,8 @@
     "edit": "Редактировать",
     "delete": "Удалить",
     "cancel": "Отмена",
-    "view": "Подробнее"
+    "view": "Подробнее",
+    "save-as-new": "Сохранить как новую"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
@@ -342,6 +343,7 @@
   },
   "collection": {
     "collections": "Коллекции",
+    "collection": "Коллекция",
     "editing-collection": "Редактирование коллекции",
     "change-name": "Изменить название",
     "edit-collection-name": "Название коллекции",
@@ -353,7 +355,14 @@
     "minion-id": "ID клиента",
     "master": "Мастер",
     "last-seen": "Последнее обновление",
-    "select-collection": "Выбор коллекции"
+    "select-collection": "Выбор коллекции",
+    "create-new-collection": "Создать новую коллекцию",
+    "create": "Создать",
+    "create-new-collection-description": "Это создаст новую коллекцию на основе текущих настроек фильтра.",
+    "collection-has-been-changed": "Коллекция была изменена",
+    "error-updating-collection": "Ошибка при обновлении коллекции",
+    "collection-deleted-successfully": "Коллекция успешно удалена",
+    "error-deleting-collection": "Ошибка при удалении коллекции"
   },
   "filters": {
     "search": "Поиск"

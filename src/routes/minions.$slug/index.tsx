@@ -2,23 +2,28 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Tabs, Popover } from "antd";
+import { Breadcrumb, Button, Dropdown, Flex, Modal, Tabs, Popover, message } from "antd";
 import {
+  DeleteOutlined,
+  EditOutlined,
   FilterOutlined,
   HomeOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   CollectionStore,
   dashboardStore,
+  defaultCollectionStore,
   MinionFilterStore,
 } from "saltbox-core/store";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
+import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 
 import styles from "./index.module.css";
 
@@ -31,6 +36,9 @@ const MinionsPage = observer(() => {
   const [collectionStore] = useState(new CollectionStore());
   const [showFilter, setShowFilter] = useState(false);
   const [tabKey, setTabKey] = useState("list");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
 
   const addBlock = () => {
     dashboardStore.addBlock({
@@ -39,6 +47,41 @@ const MinionsPage = observer(() => {
       view: "table",
     });
   };
+
+  const handleEditCollection = () => {
+    navigate(`/collection/${slug}`);
+  };
+
+  const handleSaveAsNew = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleDeleteCollection = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const collectionMenuItems = [
+    {
+      key: "edit",
+      label: t("minions.edit"),
+      icon: <EditOutlined />,
+      onClick: handleEditCollection,
+    },
+    {
+      key: "save-as-new",
+      label: t("minions.save-as-new"),
+      icon: <SaveOutlined />,
+      onClick: handleSaveAsNew,
+      disabled: minionFilterStore.currentFilters.rules.length === 0,
+    },
+    {
+      key: "delete",
+      label: t("minions.delete"),
+      icon: <DeleteOutlined />,
+      onClick: handleDeleteCollection,
+      danger: true,
+    },
+  ];
 
   useEffect(() => {
     if (slug) {
@@ -56,8 +99,15 @@ const MinionsPage = observer(() => {
     minionFilterStore.loadFiltersScheme();
   }, []);
 
+  useEffect(() => {
+    if (collectionStore.isDeleted) {
+      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
+    }
+  }, [collectionStore.isDeleted, navigate]);
+
   return (
     <>
+      {contextHolder}
       <Breadcrumb
         items={[
           {
@@ -117,15 +167,27 @@ const MinionsPage = observer(() => {
                   )}
 
                 {tabKey !== "tasks" && (
-                  <Button
-                    onClick={() => setShowFilter(!showFilter)}
-                    type={showFilter ? "primary" : "default"}
-                  >
-                    <Flex gap={8}>
-                      <FilterOutlined />
-                      {t("minions.filters-button")}
-                    </Flex>
-                  </Button>
+                  <>
+                    <Button
+                      onClick={() => setShowFilter(!showFilter)}
+                      type={showFilter ? "primary" : "default"}
+                    >
+                      <Flex gap={8}>
+                        <FilterOutlined />
+                        {t("minions.filters-button")}
+                      </Flex>
+                    </Button>
+                    <Dropdown
+                      menu={{ items: collectionMenuItems }}
+                      trigger={["click"]}
+                    >
+                      <Button>
+                        <Flex gap={8}>
+                          {t("collection.collection")}
+                        </Flex>
+                      </Button>
+                    </Dropdown>
+                  </>
                 )}
               </Flex>
             </>
@@ -164,6 +226,35 @@ const MinionsPage = observer(() => {
           },
         ]}
         onChange={setTabKey}
+      />
+      <Modal
+        title={t("collection.delete-collection")}
+        open={isDeleteModalOpen}
+        onOk={async () => {
+          try {
+            await collectionStore.deleteCollection();
+            setIsDeleteModalOpen(false);
+            messageApi.success(t("collection.collection-deleted-successfully"));
+          } catch (error) {
+            messageApi.error(t("collection.error-deleting-collection"));
+          }
+        }}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        okText={t("collection.delete")}
+        cancelText={t("collection.cancel")}
+        okButtonProps={{ danger: true }}
+      >
+        <p>
+          {t("collection.are-you-sure-you-want-to-delete-collection", {
+            name: collectionStore.collection?.title,
+          })}
+        </p>
+      </Modal>
+      <CollectionCreateModal
+        query={minionFilterStore.searchMongoDBQuery as object}
+        parentSlug={slug || ""}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
       />
     </>
   );

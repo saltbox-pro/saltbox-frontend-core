@@ -1,5 +1,4 @@
 import { observer } from "mobx-react-lite";
-import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { SaltBoxMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-editor";
 import { SaltBoxMinionValueSelector } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-selector";
 import { SaltBoxQueryBuilderContainer } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-query-builder-container";
@@ -10,13 +9,7 @@ export const MinionsQueryBuilder = observer(
     return (
       <SaltBoxQueryBuilderContainer
         filterStore={props.filterStore}
-        additionalButtons={
-          <CollectionCreateModal
-            disable={props.filterStore.currentFilters.rules.length === 0}
-            query={props.filterStore.searchMongoDBQuery as object}
-            parentSlug={props.slug}
-          />
-        }
+        additionalButtons={null}
         controlElements={{
           valueEditor: SaltBoxMinionValueEditor(props.slug),
           valueSelector: SaltBoxMinionValueSelector,
