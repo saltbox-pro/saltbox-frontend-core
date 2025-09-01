@@ -5,7 +5,7 @@ import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Button, Card, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 
 const columnHelper = createColumnHelper<JobResult>();

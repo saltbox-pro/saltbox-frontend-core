@@ -4,7 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag, Typography } from "antd";
 import { TaskJob, TaskModel } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 
 const { Text } = Typography;
@@ -46,7 +46,9 @@ export const TaskJobs = ({ task }: { task: TaskModel | null }) => {
             return <Tag color="yellow">{t("task.jobs.table-pending")}</Tag>;
           default:
             return (
-              <Tag>{`${t("task.jobs.table-unknown-code")}: ${data.getValue()}`}</Tag>
+              <Tag>{`${t(
+                "task.jobs.table-unknown-code"
+              )}: ${data.getValue()}`}</Tag>
             );
         }
       },
@@ -68,7 +70,9 @@ export const TaskJobs = ({ task }: { task: TaskModel | null }) => {
             }}
             title={data.getValue() as string}
           >
-            {t("task.job-tgt-count", { count: data.row.original.minions_by_targeting.length ?? 0 })}
+            {t("task.job-tgt-count", {
+              count: data.row.original.minions_by_targeting.length ?? 0,
+            })}
           </Text>
         );
       },

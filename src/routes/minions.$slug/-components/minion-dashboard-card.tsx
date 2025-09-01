@@ -13,7 +13,7 @@ import {
   FullscreenOutlined,
 } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
 import { DashboardCardStore } from "saltbox-core/store";
 import { dashboardStore } from "saltbox-core/store";
@@ -302,7 +302,13 @@ export const MinionDashboardCard = observer(
       if (isLoaded && !isLoading) {
         updateCard();
       }
-    }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
+    }, [
+      filterStore.searchMongoDBQuery,
+      isLoaded,
+      isLoading,
+      currentGrains,
+      slug,
+    ]);
 
     const columns = [
       columnHelper.accessor("value", {
@@ -426,8 +432,9 @@ export const MinionDashboardCard = observer(
       <>
         <Card
           size="small"
-          className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen
-            }`}
+          className={`${styles.dashboardTableBlock} ${
+            isFullScreen && styles.fullscreen
+          }`}
         >
           <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
             <div className={styles.dashboardTableBlockHeader}>

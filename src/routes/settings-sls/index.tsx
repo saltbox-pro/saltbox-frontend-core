@@ -8,10 +8,10 @@ import {
   PlusOutlined,
   SyncOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   SlsFormData,
@@ -107,7 +107,7 @@ const SettingsSlsPage = observer(() => {
             onClick={() =>
               settingsSlsStore.handleSlsActivation(
                 row.original.id,
-                row.original.is_active,
+                row.original.is_active
               )
             }
           />
@@ -156,7 +156,7 @@ const SettingsSlsPage = observer(() => {
         await apiCoreStore.settingsApi?.getSyncStatusSettingsSlsReposSyncStatusTaskIdGet(
           {
             task_id: taskId,
-          },
+          }
         );
 
       if (!result) {

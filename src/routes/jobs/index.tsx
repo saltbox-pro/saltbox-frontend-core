@@ -8,12 +8,15 @@ import { Breadcrumb, Button, Popover, Spin, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { useInfiniteScroll } from "saltbox-core/shared/hooks/useInfiniteScroll";
-import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import {
+  formatTimeByUserTZ,
+  pastTimeByUserTZ,
+} from "saltbox-core/shared/utils/datetime";
 import { appStore, envStore } from "saltbox-core/store";
 import { JobFilterStore } from "saltbox-core/store";
 import { JobsStore } from "saltbox-core/store";

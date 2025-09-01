@@ -6,7 +6,7 @@ import { Breadcrumb, Button, Typography } from "antd";
 import { ExportOutlined, HomeOutlined } from "@ant-design/icons";
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { taskTemplatesStore } from "saltbox-core/store";
 

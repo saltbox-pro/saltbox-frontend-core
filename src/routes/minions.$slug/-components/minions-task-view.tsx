@@ -7,7 +7,7 @@ import { observer } from "mobx-react-lite";
 import { Button, Flex, Tag } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 import { appStore } from "saltbox-core/store";
 import { envStore } from "saltbox-core/store";
@@ -72,10 +72,14 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
                 <Tag color="green">{t("minions.tasks-table-finished")}</Tag>
               );
             case "stopping":
-              return <Tag color="orange">{t("minions.tasks-table-stopping")}</Tag>;
+              return (
+                <Tag color="orange">{t("minions.tasks-table-stopping")}</Tag>
+              );
             case "postprocessing":
               return (
-                <Tag color="purple">{t("minions.tasks-table-postprocessing")}</Tag>
+                <Tag color="purple">
+                  {t("minions.tasks-table-postprocessing")}
+                </Tag>
               );
           }
         }

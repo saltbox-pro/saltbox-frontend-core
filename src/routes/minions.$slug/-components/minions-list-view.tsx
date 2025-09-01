@@ -29,7 +29,7 @@ import {
   TaskTargetMinion,
 } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
 import {
@@ -139,15 +139,15 @@ function minionsColumnGenerator(t: any, onMinionClick: (id: string) => void) {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-            badgeText: pastTimeByUserTZ(data.getValue()),
-            popoverContent: formatTimeByUserTZ(data.getValue()),
-          }
+              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+              badgeText: pastTimeByUserTZ(data.getValue()),
+              popoverContent: formatTimeByUserTZ(data.getValue()),
+            }
           : {
-            badgeColor: "orange",
-            badgeText: t("minions.never-synced"),
-            popoverContent: undefined,
-          };
+              badgeColor: "orange",
+              badgeText: t("minions.never-synced"),
+              popoverContent: undefined,
+            };
         return (
           <Popover content={componentData.popoverContent}>
             <span>
@@ -352,10 +352,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           >
             {t("minions.create-task")}
           </Button>
-          <Button
-            onClick={() => handelCSVDownload()}
-            loading={isCSVLoading}
-          >
+          <Button onClick={() => handelCSVDownload()} loading={isCSVLoading}>
             {t("minions.export")}
           </Button>
           <Button
@@ -364,7 +361,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             type="text"
             title={t("minions.refresh")}
           />
-        </div >
+        </div>
 
         <Spin
           wrapperClassName={styles.minionsListSpin}
@@ -383,19 +380,17 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
           ></MinionsTable>
         </Spin>
-        {
-          isCreateTaskModalOpen && (
-            <TaskModal
-              isOpen={isCreateTaskModalOpen}
-              collection={toJS(props.collectionStore.collection)}
-              minionList={selectedMinionIds}
-              query={props.filterStore?.searchMongoDBQuery ?? {}}
-              onClose={handleCreateTaskModalClose}
-              saltMasters={saltMasters}
-            />
-          )
-        }
-      </Flex >
+        {isCreateTaskModalOpen && (
+          <TaskModal
+            isOpen={isCreateTaskModalOpen}
+            collection={toJS(props.collectionStore.collection)}
+            minionList={selectedMinionIds}
+            query={props.filterStore?.searchMongoDBQuery ?? {}}
+            onClose={handleCreateTaskModalClose}
+            saltMasters={saltMasters}
+          />
+        )}
+      </Flex>
       <Drawer
         onClose={() => setDrawerMinionId(undefined)}
         open={Boolean(drawerMinionId)}

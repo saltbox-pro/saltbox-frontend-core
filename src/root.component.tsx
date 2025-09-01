@@ -19,6 +19,7 @@ import MasterPage from "./routes/master.$mid";
 import NotFound from "./shared/components/not-found";
 import CollectionEditPage from "./routes/collection.$slug";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
+import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
 export default observer(function Root() {
   return (

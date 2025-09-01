@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  useNavigate,
-  useParams,
-} from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Input, Modal, Spin, message } from "antd";
-import {
-  HomeOutlined,
-} from "@ant-design/icons";
+import { HomeOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import { pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 import { CollectionFilterStore } from "saltbox-core/store";
@@ -110,8 +105,6 @@ const CollectionEditPage = observer(() => {
     }
   }, [filterStore.currentFilters]);
 
-
-
   return (
     <>
       {contextHolder}
@@ -133,7 +126,11 @@ const CollectionEditPage = observer(() => {
           },
         ]}
       />
-      <PageHeader title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}></PageHeader>
+      <PageHeader
+        title={`${t("collection.editing-collection")} ${
+          collectionStore.collection?.title
+        }`}
+      ></PageHeader>
       <Flex className={styles.collectionHeader} gap={8} align="center">
         <Input
           value={newTitle}
@@ -143,10 +140,7 @@ const CollectionEditPage = observer(() => {
       </Flex>
       <Flex className={styles.collectionFlex} gap={8} vertical>
         <div className={styles.customFilterBackground}>
-          <CollectionQueryBuilder
-            slug={slug || ""}
-            filterStore={filterStore}
-          />
+          <CollectionQueryBuilder slug={slug || ""} filterStore={filterStore} />
         </div>
         <div className={styles.editButtonsContainer}>
           <Button
@@ -170,9 +164,13 @@ const CollectionEditPage = observer(() => {
                   await collectionStore.updateCollectionTitle(newTitle);
                   setOriginalTitle(newTitle);
                 }
-                const currentQueryString = JSON.stringify(filterStore.currentFilters);
+                const currentQueryString = JSON.stringify(
+                  filterStore.currentFilters
+                );
                 if (currentQueryString !== originalQuery) {
-                  await collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
+                  await collectionStore.updateCollectionQuery(
+                    filterStore.searchMongoDBQuery
+                  );
                   setOriginalQuery(currentQueryString);
                 }
 
@@ -185,7 +183,10 @@ const CollectionEditPage = observer(() => {
             {t("minions.save")}
           </Button>
         </div>
-        <Spin spinning={minionsStore.isLoading} className={styles.collectionSpin}>
+        <Spin
+          spinning={minionsStore.isLoading}
+          className={styles.collectionSpin}
+        >
           <MinionsTable
             columns={minionsColumns}
             getRowId={(row) => `${row.master}-${row.minion_id}`}
@@ -196,7 +197,6 @@ const CollectionEditPage = observer(() => {
           />
         </Spin>
       </Flex>
-
     </>
   );
 });

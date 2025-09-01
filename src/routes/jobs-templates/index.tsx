@@ -6,10 +6,13 @@ import { Breadcrumb } from "antd";
 import { Popover } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "saltbox-core/shared/components/fast-table-paginated/fast-table-paginated";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
-import { formatTimeByUserTZ, pastTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import {
+  formatTimeByUserTZ,
+  pastTimeByUserTZ,
+} from "saltbox-core/shared/utils/datetime";
 import { JobTemplateStore } from "saltbox-core/store";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;

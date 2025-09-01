@@ -4,7 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed } from "saltbox-core/shared/components/fast-table-listed/fast-table-listed";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
@@ -29,9 +29,7 @@ export const TaskMinions = ({
         }
         return (
           <>
-            <Link
-              to={`/minion/${collectionSlug}/${mid}/`}
-            >
+            <Link to={`/minion/${collectionSlug}/${mid}/`}>
               <Button type="link" size={"small"}>
                 {data.getValue()}
               </Button>
@@ -61,7 +59,9 @@ export const TaskMinions = ({
             return <Tag color="yellow">{t("task.minions.table-pending")}</Tag>;
           default:
             return (
-              <Tag>{`${t("task.minions.table-unknown-code")}: ${data.getValue()}`}</Tag>
+              <Tag>{`${t(
+                "task.minions.table-unknown-code"
+              )}: ${data.getValue()}`}</Tag>
             );
         }
       },
