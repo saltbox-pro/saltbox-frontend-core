@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
+import Parcel from "single-spa-react/parcel";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Dropdown, Flex, Modal, Tabs, Popover, message } from "antd";
 import {
@@ -14,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
+  appStore,
   CollectionStore,
   dashboardStore,
   defaultCollectionStore,
@@ -39,6 +41,7 @@ const MinionsPage = observer(() => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [minionsTabs, setMinionsTabs] = useState([]);
 
   const addBlock = () => {
     dashboardStore.addBlock({
@@ -97,13 +100,80 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     minionFilterStore.loadFiltersScheme();
+    fillMinionsTabs();
   }, []);
+
+  useEffect(() => {
+    fillMinionsTabs();
+  }, [appStore.pluginsStore?.minions?.tabs]);
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
       navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
     }
   }, [collectionStore.isDeleted, navigate]);
+
+  const fillMinionsTabs = () => {
+    const tabs = [
+      {
+        label: t("minions.tab-list"),
+        key: "list",
+        children: (
+          <MinionsListView
+            slug={slug}
+            filterStore={minionFilterStore}
+            showFilter={showFilter}
+            collectionStore={collectionStore}
+          />
+        ),
+        style: { height: "100%" },
+      },
+      {
+        label: t("minions.tab-tasks"),
+        key: "tasks",
+        children: <MinionsTaskView slug={slug} />,
+        style: { height: "100%" },
+      },
+      {
+        label: t("minions.tab-statistics"),
+        key: "statistics",
+        children: (
+          <MinionsDashboardView
+            slug={slug}
+            filterStore={minionFilterStore}
+            showFilter={showFilter}
+          />
+        ),
+      },
+    ];
+
+    if (appStore.pluginsStore?.plugins?.minions?.tabs) {
+      Object.keys(appStore.pluginsStore.plugins.minions.tabs).forEach((pluginTab) => {
+        tabs.push({
+          label: appStore.pluginsStore.plugins.minions.tabs[pluginTab].label,
+          key: appStore.pluginsStore.plugins.minions.tabs[pluginTab].key,
+          children: <Parcel
+            config={appStore.pluginsStore.plugins.minions.tabs[pluginTab].parcel}
+            wrapWith="div"
+          />,
+          style: { height: "100%" },
+        });
+      });
+      /* appStore.pluginsStore.plugins.minions.tabs.forEach((pluginTab) => {
+        tabs.push({
+          label: pluginTab.label,
+          key: pluginTab.key,
+          children: <Parcel
+            config={pluginTab.parcel}
+            wrapWith="div"
+          />,
+          style: { height: "100%" },
+        });
+      }); */
+    }
+
+    setMinionsTabs(tabs);
+  };
 
   return (
     <>
@@ -193,38 +263,7 @@ const MinionsPage = observer(() => {
             </>
           ),
         }}
-        items={[
-          {
-            label: t("minions.tab-list"),
-            key: "list",
-            children: (
-              <MinionsListView
-                slug={slug}
-                filterStore={minionFilterStore}
-                showFilter={showFilter}
-                collectionStore={collectionStore}
-              />
-            ),
-            style: { height: "100%" },
-          },
-          {
-            label: t("minions.tab-tasks"),
-            key: "tasks",
-            children: <MinionsTaskView slug={slug} />,
-            style: { height: "100%" },
-          },
-          {
-            label: t("minions.tab-statistics"),
-            key: "statistics",
-            children: (
-              <MinionsDashboardView
-                slug={slug}
-                filterStore={minionFilterStore}
-                showFilter={showFilter}
-              />
-            ),
-          },
-        ]}
+        items={minionsTabs}
         onChange={setTabKey}
       />
       <Modal

@@ -1,12 +1,15 @@
 class AppStore {
   authStore: any;
+  pluginsStore: any;
 
   constructor() {
     this.authStore = null;
+    this.pluginsStore = null;
   }
 
-  init(authStore: any) {
+  init(authStore: any, pluginsStore: any) {
     this.authStore = authStore;
+    this.pluginsStore = pluginsStore;
   }
 }
 

@@ -9,14 +9,12 @@ import { BrowserRouter } from "react-router";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { autorun, runInAction } from "mobx";
 
-const mainLifecycles = singleSpaReact({
+const coreLifecycles = singleSpaReact({
   React,
   ReactDOMClient,
   rootComponent: Root,
   domElementGetter: () => document.getElementById("app-container"),
 });
-
-export const { bootstrap, mount, unmount } = mainLifecycles;
 
 const collectionSelectorRootComponent = ({ onClose }) => (
   <I18nextProvider i18n={i18n}>
@@ -34,11 +32,13 @@ const collectionSelectorLifecycles = singleSpaReact({
   rootComponent: collectionSelectorRootComponent,
 });
 
-export const meta = {
+export const { bootstrap, mount, unmount } = coreLifecycles;
+
+export const saltboxModule = {
   name: "saltbox-frontend-core",
   path: "/core",
   menuConfig: {
-    key: "core",
+    key: "core-module",
     label: "Core",
     children: [
       {
@@ -87,8 +87,8 @@ export const meta = {
       },
     ],
   },
-  init: (authStore, env, localeStore) => {
-    appStore.init(authStore);
+  init: (authStore, env, localeStore, pluginsStore) => {
+    appStore.init(authStore, pluginsStore);
     runInAction(() => {
       envStore.env = env;
     });
