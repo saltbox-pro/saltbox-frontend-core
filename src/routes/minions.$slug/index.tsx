@@ -156,21 +156,13 @@ const MinionsPage = observer(() => {
           children: <Parcel
             config={appStore.pluginsStore.plugins.minions.tabs[pluginTab].parcel}
             wrapWith="div"
+            customProps={{
+              slug,
+            }}
           />,
           style: { height: "100%" },
         });
       });
-      /* appStore.pluginsStore.plugins.minions.tabs.forEach((pluginTab) => {
-        tabs.push({
-          label: pluginTab.label,
-          key: pluginTab.key,
-          children: <Parcel
-            config={pluginTab.parcel}
-            wrapWith="div"
-          />,
-          style: { height: "100%" },
-        });
-      }); */
     }
 
     setMinionsTabs(tabs);
