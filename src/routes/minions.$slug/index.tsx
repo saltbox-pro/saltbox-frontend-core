@@ -7,6 +7,7 @@ import { Breadcrumb, Button, Dropdown, Flex, Modal, Tabs, Popover, message } fro
 import {
   DeleteOutlined,
   EditOutlined,
+  EllipsisOutlined,
   FilterOutlined,
   HomeOutlined,
   PlusOutlined,
@@ -253,7 +254,7 @@ const MinionsPage = observer(() => {
                     >
                       <Button>
                         <Flex gap={8}>
-                          {t("collection.collection")}
+                          <EllipsisOutlined />
                         </Flex>
                       </Button>
                     </Dropdown>
