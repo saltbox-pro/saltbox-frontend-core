@@ -32,9 +32,10 @@ const collectionSelectorLifecycles = singleSpaReact({
   rootComponent: collectionSelectorRootComponent,
 });
 
-export const { bootstrap, mount, unmount } = coreLifecycles;
+//export const { bootstrap, mount, unmount } = coreLifecycles;
 
 export const saltboxModule = {
+  singleSpaLifecycle: coreLifecycles,
   name: "saltbox-frontend-core",
   path: "/core",
   menuConfig: {
