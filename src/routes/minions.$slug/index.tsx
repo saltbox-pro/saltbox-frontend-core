@@ -148,13 +148,13 @@ const MinionsPage = observer(() => {
       },
     ];
 
-    if (appStore.pluginsStore?.plugins?.minions?.tabs) {
-      Object.keys(appStore.pluginsStore.plugins.minions.tabs).forEach((pluginTab) => {
+    if (appStore.pluginsStore?.plugins?.['minions.tabs']) {
+      for (const pluginTab of appStore.pluginsStore.plugins['minions.tabs']) {
         tabs.push({
-          label: appStore.pluginsStore.plugins.minions.tabs[pluginTab].label,
-          key: appStore.pluginsStore.plugins.minions.tabs[pluginTab].key,
+          label: pluginTab.label,
+          key: pluginTab.key,
           children: <Parcel
-            config={appStore.pluginsStore.plugins.minions.tabs[pluginTab].parcel}
+            config={pluginTab.parcel}
             wrapWith="div"
             customProps={{
               slug,
@@ -162,7 +162,7 @@ const MinionsPage = observer(() => {
           />,
           style: { height: "100%" },
         });
-      });
+      }
     }
 
     setMinionsTabs(tabs);
