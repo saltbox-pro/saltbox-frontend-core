@@ -64,6 +64,7 @@ function CollectionCreateModal({
         if (response.slug) {
           navigate(`/minions/${response.slug}`);
         }
+        window.location.reload();
       })
       .catch((e) => {
         messageApi.error(t("collection-create-modal.error"));

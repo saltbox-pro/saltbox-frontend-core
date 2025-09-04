@@ -70,6 +70,8 @@ const MinionsPage = observer(() => {
       label: t("minions.edit"),
       icon: <EditOutlined />,
       onClick: handleEditCollection,
+      disabled: slug === "root",
+      title: slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
     },
     {
       key: "save-as-new",
@@ -77,6 +79,7 @@ const MinionsPage = observer(() => {
       icon: <SaveOutlined />,
       onClick: handleSaveAsNew,
       disabled: minionFilterStore.currentFilters.rules.length === 0,
+      title: minionFilterStore.currentFilters.rules.length === 0 ? t("minions.add-filters-to-save") : undefined,
     },
     {
       key: "delete",
@@ -84,14 +87,17 @@ const MinionsPage = observer(() => {
       icon: <DeleteOutlined />,
       onClick: handleDeleteCollection,
       danger: true,
+      disabled: slug === "root",
+      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
     },
   ];
 
   useEffect(() => {
     if (slug) {
       collectionStore.setCollectionSlug(slug);
+      minionFilterStore.handleResetFilters();
     }
-  }, [slug]);
+  }, [slug, minionFilterStore]);
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -102,7 +108,8 @@ const MinionsPage = observer(() => {
   useEffect(() => {
     minionFilterStore.loadFiltersScheme();
     fillMinionsTabs();
-  }, []);
+    minionFilterStore.handleResetFilters();
+  }, [minionFilterStore]);
 
   useEffect(() => {
     fillMinionsTabs();
