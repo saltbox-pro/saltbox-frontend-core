@@ -19,16 +19,16 @@
 }
 
 .customFilterBackground :global(.queryBuilder) {
-  background-color: #ffa39e !important;
+  background-color: #f0f0f0 !important;
 }
 
 .customFilterBackground :global(.queryBuilderContainer),
 .customFilterBackground :global(.queryBuilderContainer *) {
-  background-color: #ffa39e !important;
+  background-color: #f0f0f0 !important;
 }
 
 .customFilterBackground :global(.ant-flex[style*="padding: 8px"]) {
-  background-color: #ffa39e !important;
+  background-color: #f0f0f0 !important;
 }
 
 .editButtonsContainer {
