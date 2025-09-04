@@ -10,12 +10,6 @@
   margin-top: 8px;
 }
 
-.collectionButtons {
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-}
-
 .editInput {
   max-width: 300px;
 }

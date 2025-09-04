@@ -115,18 +115,35 @@ const TaskPage = observer(() => {
             title: <HomeOutlined />,
           },
           {
-            title: (
-              <Link
-                to={{
-                  pathname: `/minions/${taskStore.task?.target_collection?.slug ?? "root"}`
-                }}
-              >
-                {t("minions.title")}
-              </Link>
-            ),
+            title: t("minions.title"),
           },
+          ...(taskStore.task?.target_collection ? [
+            {
+              title: (
+                <Link
+                  to={{
+                    pathname: `/minions/${taskStore.task.target_collection.slug}`
+                  }}
+                >
+                  {taskStore.task.target_collection.title}
+                </Link>
+              ),
+            }
+          ] : [
+            {
+              title: (
+                <Link
+                  to={{
+                    pathname: `/minions/root`
+                  }}
+                >
+                  {taskStore.task ? t("minions.title") : "..."}
+                </Link>
+              ),
+            }
+          ]),
           {
-            title: t("task.title", { taskId: taskId }),
+            title: taskStore.task ? t("task.title", { taskId: taskId }) : "...",
           },
         ]}
       />

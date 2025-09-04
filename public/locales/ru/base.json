@@ -110,7 +110,10 @@
     "delete": "Удалить",
     "cancel": "Отмена",
     "view": "Подробнее",
-    "save-as-new": "Сохранить как новую"
+    "save-as-new": "Сохранить как новую",
+    "root-collection-cannot-edit": "Корневую коллекцию нельзя редактировать",
+    "root-collection-cannot-delete": "Корневую коллекцию нельзя удалить",
+    "add-filters-to-save": "Добавьте фильтры для сохранения коллекции"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",

@@ -113,6 +113,7 @@ export class CollectionStore {
         this.collection = undefined;
         this.collectionSlug = undefined;
       });
+      window.location.reload();
     } finally {
       runInAction(() => {
         this.isLoading = false;
