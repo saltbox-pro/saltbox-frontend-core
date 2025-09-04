@@ -517,6 +517,9 @@ export function JobModal({
               formData={jsonFormValue}
               onChange={(d) => setJsonFormValue(d?.formData)}
               onError={(errors) => setValidationErrors(errors)}
+              experimental_defaultFormStateBehavior={{
+                allOf: 'populateDefaults',
+              }}
             >
               <Fragment />
             </JsonForm>
