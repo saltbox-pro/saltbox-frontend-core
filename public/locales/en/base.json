@@ -110,7 +110,10 @@
     "delete": "Delete",
     "cancel": "Cancel",
     "view": "Details",
-    "save-as-new": "Save as New"
+    "save-as-new": "Save as New",
+    "root-collection-cannot-edit": "Root collection cannot be edited",
+    "root-collection-cannot-delete": "Root collection cannot be deleted",
+    "add-filters-to-save": "Add filters to save collection"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",

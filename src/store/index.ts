@@ -25,5 +25,4 @@ export { PillarsStore } from "./pillars-store";
 export { JobTemplateStore } from "./jobs-templates-store";
 export { JobFilterStore } from "./job-filter-store";
 export { JobsStore } from "./jobs-store";
-export { CollectionFilterStore } from "./collection-filter-store";
 export { DefaultCollectionStore } from "./default-collection-store";

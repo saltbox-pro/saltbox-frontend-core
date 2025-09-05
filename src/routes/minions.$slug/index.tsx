@@ -70,6 +70,8 @@ const MinionsPage = observer(() => {
       label: t("minions.edit"),
       icon: <EditOutlined />,
       onClick: handleEditCollection,
+      disabled: slug === "root",
+      title: slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
     },
     {
       key: "save-as-new",
@@ -77,6 +79,7 @@ const MinionsPage = observer(() => {
       icon: <SaveOutlined />,
       onClick: handleSaveAsNew,
       disabled: minionFilterStore.currentFilters.rules.length === 0,
+      title: minionFilterStore.currentFilters.rules.length === 0 ? t("minions.add-filters-to-save") : undefined,
     },
     {
       key: "delete",
@@ -84,14 +87,22 @@ const MinionsPage = observer(() => {
       icon: <DeleteOutlined />,
       onClick: handleDeleteCollection,
       danger: true,
+      disabled: slug === "root",
+      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
     },
   ];
+
+  useEffect(() => {
+    fillMinionsTabs();
+  }, [showFilter]);
 
   useEffect(() => {
     if (slug) {
       collectionStore.setCollectionSlug(slug);
     }
+    fillMinionsTabs();
   }, [slug]);
+
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -268,6 +279,7 @@ const MinionsPage = observer(() => {
             await collectionStore.deleteCollection();
             setIsDeleteModalOpen(false);
             messageApi.success(t("collection.collection-deleted-successfully"));
+            window.location.reload();
           } catch (error) {
             messageApi.error(t("collection.error-deleting-collection"));
           }
