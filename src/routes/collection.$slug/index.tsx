@@ -40,7 +40,7 @@ const CollectionEditPage = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
   const [collectionStore] = useState(new CollectionStore());
   const [filterStore] = useState(new MinionFilterStore());
-  const [minionsStore] = useState(new MinionsStore(undefined, slug));
+  const [minionsStore] = useState(new MinionsStore(undefined, undefined));
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
@@ -153,8 +153,9 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
-    minionsStore.setCollectionSlug(slug);
-  }, [slug]);
+    // Устанавливаем collectionSlug без автоматического поиска
+    minionsStore.collectionSlug = collectionStore.collection?.parent_slug || slug;
+  }, [slug, collectionStore.collection?.parent_slug]);
 
 
   useEffect(() => {
@@ -176,9 +177,11 @@ const CollectionEditPage = observer(() => {
   }, [collectionStore.collection?.title, collectionStore.collection?.query]);
 
   useEffect(() => {
-    minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-    minionsStore.handleSearch();
-  }, [filterStore.searchMongoDBQuery]);
+    if (collectionStore.collection?.query) {
+      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+      minionsStore.handleSearch();
+    }
+  }, [filterStore.searchMongoDBQuery, collectionStore.collection?.query]);
   return (
     <>
       {contextHolder}
@@ -211,7 +214,7 @@ const CollectionEditPage = observer(() => {
       <Flex className={styles.collectionFlex} gap={8} vertical>
         <div className={styles.customFilterBackground}>
           <CollectionQueryBuilder
-            slug={slug || ""}
+            slug={collectionStore.collection?.parent_slug || ""}
             filterStore={filterStore}
           />
         </div>
