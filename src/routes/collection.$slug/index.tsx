@@ -159,6 +159,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.collection?.query) {
+      filterStore.initializeFromQuery(collectionStore.collection.query);
       minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
       minionsStore.handleSearch();
     }
