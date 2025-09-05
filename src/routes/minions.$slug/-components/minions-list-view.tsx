@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
+import Parcel from "single-spa-react/parcel";
 import {
   Badge,
   Button,
@@ -139,15 +140,15 @@ function minionsColumnGenerator(t: any, onMinionClick: (id: string) => void) {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
+            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+            badgeText: pastTimeByUserTZ(data.getValue()),
+            popoverContent: formatTimeByUserTZ(data.getValue()),
+          }
           : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
+            badgeColor: "orange",
+            badgeText: t("minions.never-synced"),
+            popoverContent: undefined,
+          };
         return (
           <Popover content={componentData.popoverContent}>
             <span>
@@ -316,6 +317,14 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       });
   };
 
+  let taskModalCreatePlugin: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
+    taskModalCreatePlugin = <>
+      {taskModalCreatePlugin}
+      <Parcel config={plugin.parcel} wrapWith="div" />
+    </>;
+  });
+
   return (
     <>
       {contextHolder}
@@ -352,9 +361,11 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           >
             {t("minions.create-task")}
           </Button>
+
           <Button onClick={() => handelCSVDownload()} loading={isCSVLoading}>
             {t("minions.export")}
           </Button>
+
           <Button
             icon={<SyncOutlined spin={minionsStore.isLoading} />}
             onClick={() => minionsStore.loadMinions(props.slug)}
@@ -391,6 +402,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
         )}
       </Flex>
+
       <Drawer
         onClose={() => setDrawerMinionId(undefined)}
         open={Boolean(drawerMinionId)}
@@ -411,6 +423,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
         )}
       </Drawer>
+
+      {taskModalCreatePlugin}
     </>
   );
 });

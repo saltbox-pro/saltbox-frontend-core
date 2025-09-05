@@ -259,6 +259,7 @@ const MinionsPage = observer(() => {
         items={minionsTabs}
         onChange={setTabKey}
       />
+
       <Modal
         title={t("collection.delete-collection")}
         open={isDeleteModalOpen}
@@ -282,6 +283,7 @@ const MinionsPage = observer(() => {
           })}
         </p>
       </Modal>
+
       <CollectionCreateModal
         query={minionFilterStore.searchMongoDBQuery as object}
         parentSlug={slug || ""}

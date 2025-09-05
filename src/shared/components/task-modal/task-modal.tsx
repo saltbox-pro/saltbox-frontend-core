@@ -14,6 +14,7 @@ import { apiCoreStore } from "saltbox-core/store";
 import { TaskForm, TaskFormData } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";
+import { publish } from "@saltbox/saltbox-frontend-common";
 
 const filterAdditionalParams = (
   formData: Partial<TaskCreateRequestSchemaInput>,
@@ -27,6 +28,15 @@ const filterAdditionalParams = (
   }
 };
 
+export type TaskModalProps = {
+  isOpen: boolean;
+  collection?: CollectionModel;
+  minionList?: Array<TaskTargetMinion>;
+  query?: object;
+  onClose: (form?: TaskCreateRequestSchemaInput) => void;
+  saltMasters: Array<MasterViewSchema>;
+}
+
 export function TaskModal({
   isOpen,
   collection,
@@ -34,18 +44,11 @@ export function TaskModal({
   query,
   onClose,
   saltMasters,
-}: {
-  isOpen: boolean;
-  collection?: CollectionModel;
-  minionList?: Array<TaskTargetMinion>;
-  query?: object;
-  onClose: (form?: TaskCreateRequestSchemaInput) => void;
-  saltMasters: Array<MasterViewSchema>;
-}) {
+}: TaskModalProps) {
   const { t } = useTranslation();
   const [taskTemplate, setTaskTemplate] = useState<TaskTemplateModel>();
   const [activeTabKey, setActiveTabKey] = useState<string>("task-info");
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi] = message.useMessage();
 
   const [taskCreateRequest, setTaskCreateRequest] = useState<
     Partial<TaskCreateRequestSchemaInput>
@@ -71,8 +74,8 @@ export function TaskModal({
     setActiveTabKey("task-params");
   };
 
-  const handleCreateTask = () => {
-    onClose({
+  const getTaskCreateRequest = () => {
+    return {
       task_template_id: taskCreateRequest?.task_template_id ?? "",
       salt_masters: taskCreateRequest?.salt_masters ?? [],
       collection_slug: collection?.slug ?? "",
@@ -83,8 +86,20 @@ export function TaskModal({
       max_jobs_count_at_same_time:
         taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
       data: filterAdditionalParams(taskCreateRequest, taskTemplate),
-    });
+    };
+  }
+
+  const handleCreateTask = () => {
+    onClose(getTaskCreateRequest());
   };
+
+  const handleCreateTaskPlugin = (pluginKey: string) => {
+    publish("minions.taskmodal.create", {
+      pluginKey: pluginKey,
+      taskCreateRequest: getTaskCreateRequest(),
+    });
+    onClose();
+  }
 
   useEffect(() => {
     if (taskCreateRequest?.task_template_id) {
@@ -114,6 +129,7 @@ export function TaskModal({
           taskTemplate={taskTemplate}
           taskCreateRequest={taskCreateRequest}
           onFinish={handleCreateTask}
+          onCreateTaskPlugin={handleCreateTaskPlugin}
           onChange={handleTaskForm}
           onChooseParams={handleChooseParams}
           onClose={onClose}
@@ -131,6 +147,7 @@ export function TaskModal({
           taskCreateRequest={taskCreateRequest}
           onClose={onClose}
           onFinish={handleCreateTask}
+          onCreateTaskPlugin={handleCreateTaskPlugin}
           onChange={handleTaskParamsForm}
         />
       ),

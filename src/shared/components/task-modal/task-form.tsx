@@ -6,7 +6,7 @@ import {
   TaskCreateRequestSchemaInput,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, appStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
 
@@ -26,6 +26,7 @@ type TaskFormProps = {
   onFinish?: () => void;
   onChange?: (values: TaskFormData) => void;
   onChooseParams: () => void;
+  onCreateTaskPlugin: (pluginKey: string) => void;
   saltMasters: Array<MasterViewSchema>;
 };
 
@@ -36,6 +37,7 @@ export function TaskForm({
   onFinish,
   onChange,
   onChooseParams,
+  onCreateTaskPlugin,
   saltMasters,
 }: TaskFormProps) {
   const { t } = useTranslation();
@@ -92,6 +94,21 @@ export function TaskForm({
   const handleCreateTask = () => {
     form.validateFields().then(() => onFinish?.());
   };
+
+  const handleCreateTaskPlugin = (pluginKey: string) => {
+    form.validateFields().then(() => onCreateTaskPlugin?.(pluginKey));
+  }
+
+  let minionsTaskModalCreateButtonsPlugins: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
+    const minionsTaskModalCreateButtonPlugin = <Button type="primary" onClick={() => handleCreateTaskPlugin(plugin.key)}>
+      {plugin.label}
+    </Button>;
+    minionsTaskModalCreateButtonsPlugins = <>
+      {minionsTaskModalCreateButtonsPlugins}
+      {minionsTaskModalCreateButtonPlugin}
+    </>;
+  });
 
   return (
     <Form
@@ -191,6 +208,8 @@ export function TaskForm({
             {t("task-form.choose-task-params")}
           </Button>
         )}
+
+        {!hasTaskArgs(taskTemplate) && (minionsTaskModalCreateButtonsPlugins)}
 
         {!hasTaskArgs(taskTemplate) && (
           <Button
