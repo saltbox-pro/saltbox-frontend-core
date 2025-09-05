@@ -158,8 +158,8 @@ const CollectionEditPage = observer(() => {
 
 
   useEffect(() => {
-    if (collectionStore.collection) {
-      minionsStore.mongoDBQuery = {};
+    if (collectionStore.collection?.query) {
+      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
       minionsStore.handleSearch();
     }
   }, [collectionStore.collection]);
