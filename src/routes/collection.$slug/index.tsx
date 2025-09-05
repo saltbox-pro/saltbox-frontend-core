@@ -140,6 +140,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     filterStore.loadFiltersScheme();
+    filterStore.handleResetFilters();
   }, []);
 
   useEffect(() => {
@@ -156,11 +157,9 @@ const CollectionEditPage = observer(() => {
   }, [slug]);
 
 
-
   useEffect(() => {
-    if (collectionStore.collection?.query) {
-      filterStore.initializeFromQuery(collectionStore.collection.query);
-      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+    if (collectionStore.collection) {
+      minionsStore.mongoDBQuery = {};
       minionsStore.handleSearch();
     }
   }, [collectionStore.collection]);
@@ -179,17 +178,6 @@ const CollectionEditPage = observer(() => {
     minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     minionsStore.handleSearch();
   }, [filterStore.searchMongoDBQuery]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      filterStore.handelSearch();
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [filterStore.currentFilters]);
-
-
-
   return (
     <>
       {contextHolder}

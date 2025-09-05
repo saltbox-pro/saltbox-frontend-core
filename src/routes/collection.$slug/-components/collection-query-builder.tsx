@@ -12,7 +12,7 @@ export const CollectionQueryBuilder = (props: CollectionQueryBuilderProps) => {
     return (
         <SaltBoxQueryBuilderContainer
             filterStore={props.filterStore}
-            hideButtons={true}
+            hideButtons={false}
             controlElements={{
                 valueEditor: SaltBoxMinionValueEditor(props.slug),
                 valueSelector: SaltBoxMinionValueSelector,

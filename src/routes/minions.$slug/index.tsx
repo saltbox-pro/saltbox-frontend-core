@@ -93,11 +93,16 @@ const MinionsPage = observer(() => {
   ];
 
   useEffect(() => {
+    fillMinionsTabs();
+  }, [showFilter]);
+
+  useEffect(() => {
     if (slug) {
       collectionStore.setCollectionSlug(slug);
-      minionFilterStore.handleResetFilters();
     }
-  }, [slug, minionFilterStore]);
+    fillMinionsTabs();
+  }, [slug]);
+
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -108,8 +113,7 @@ const MinionsPage = observer(() => {
   useEffect(() => {
     minionFilterStore.loadFiltersScheme();
     fillMinionsTabs();
-    minionFilterStore.handleResetFilters();
-  }, [minionFilterStore]);
+  }, []);
 
   useEffect(() => {
     fillMinionsTabs();
@@ -274,6 +278,7 @@ const MinionsPage = observer(() => {
             await collectionStore.deleteCollection();
             setIsDeleteModalOpen(false);
             messageApi.success(t("collection.collection-deleted-successfully"));
+            window.location.reload();
           } catch (error) {
             messageApi.error(t("collection.error-deleting-collection"));
           }
