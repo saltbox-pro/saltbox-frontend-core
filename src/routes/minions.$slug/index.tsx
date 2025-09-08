@@ -240,7 +240,7 @@ const MinionsPage = observer(() => {
                     </Flex>
                   )}
 
-                {tabKey !== "tasks" && (
+                {["list", "statistics"].includes(tabKey) && (
                   <>
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
