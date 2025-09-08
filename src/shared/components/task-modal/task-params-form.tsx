@@ -69,9 +69,6 @@ export const TaskParamsForm = ({
       idSeparator="-"
       showErrorList={false}
       formData={taskCreateRequest?.data}
-      experimental_defaultFormStateBehavior={{
-        allOf: 'populateDefaults',
-      }}
     >
       <Flex justify="space-between">
         <Button type="default" onClick={() => onClose?.()}>
