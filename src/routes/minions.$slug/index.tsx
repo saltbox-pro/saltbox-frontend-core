@@ -22,6 +22,7 @@ import {
   defaultCollectionStore,
   MinionFilterStore,
 } from "saltbox-core/store";
+import { subscribe } from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
@@ -103,7 +104,6 @@ const MinionsPage = observer(() => {
     fillMinionsTabs();
   }, [slug]);
 
-
   useEffect(() => {
     if (collectionStore.error) {
       navigate("/not-found");
@@ -124,6 +124,12 @@ const MinionsPage = observer(() => {
       navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
     }
   }, [collectionStore.isDeleted, navigate]);
+
+  useEffect(() => {
+    subscribe("minions.taskmodal.created", ({ detail: { activeTabKey } }) => {
+      setTabKey(activeTabKey);
+    });
+  }, []);
 
   const fillMinionsTabs = () => {
     const tabs = [
@@ -269,6 +275,7 @@ const MinionsPage = observer(() => {
         }}
         items={minionsTabs}
         onChange={setTabKey}
+        activeKey={tabKey}
       />
 
       <Modal
