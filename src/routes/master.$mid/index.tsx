@@ -161,7 +161,7 @@ const MasterPage = observer(() => {
                 pillar.name,
                 pillar.minion_id || undefined
               );
-            } catch (error) {}
+            } catch (error) { }
           }
           await pillarsStore.loadPillars(masterId);
         }
@@ -793,7 +793,7 @@ const MasterPage = observer(() => {
         open={isDeleteModalOpen}
         onOk={handleDeletePillar}
         onCancel={() => setIsDeleteModalOpen(false)}
-        okText={t("pillars.form-submit")}
+        okText={t("pillars.delete")}
         cancelText={t("pillars.form-cancel")}
         okButtonProps={{ danger: true }}
         className={styles.modalContainer}

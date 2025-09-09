@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { observer } from "mobx-react-lite"
 import { useEffect } from "react"
 import { PillarModel } from "@saltbox/saltbox-core-api-client"
+import styles from "./pillar-create-form.module.css"
 
 interface PillarCreateFormProps {
     masterId: string
@@ -102,14 +103,14 @@ export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
                 />
             </Form.Item>
             <Form.Item>
-                <Space style={{ width: "100%", justifyContent: "space-between" }}>
+                <div className={styles.buttonsContainer}>
                     <Button onClick={props.onCancel}>
                         {t("pillars.form-cancel")}
                     </Button>
                     <Button type="primary" htmlType="submit">
                         {t("pillars.form-submit")}
                     </Button>
-                </Space>
+                </div>
             </Form.Item>
         </Form>
     )
