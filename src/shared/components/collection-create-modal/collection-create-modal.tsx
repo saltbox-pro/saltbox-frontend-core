@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { Button, Form, Input, Modal, message } from "antd";
-import { SaveOutlined } from "@ant-design/icons";
 import { apiCoreStore } from "saltbox-core/store";
+import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
 
 type collectionCreateFormType = {
   title: string;
@@ -44,6 +44,12 @@ function CollectionCreateModal({
       setIsModalOpen(false);
       onClose?.();
     }
+  };
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const title = e.target.value;
+    const slug = transliterateToSlug(title);
+    form.setFieldValue('slug', slug);
   };
 
   const handleFormFinish = (formValue: collectionCreateFormType) => {
@@ -126,7 +132,7 @@ function CollectionCreateModal({
               },
             ]}
           >
-            <Input />
+            <Input onChange={handleTitleChange} />
           </Form.Item>
           <Form.Item<collectionCreateFormType>
             label={t("collection-create-modal.form-slug")}

@@ -7,9 +7,10 @@ import {
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Badge, Breadcrumb, Button, Checkbox, Flex, Input, Popover, Spin, Tag, message } from "antd";
+import { Badge, Breadcrumb, Button, Checkbox, Flex, Input, Popover, Spin, Tag, message, Typography } from "antd";
 import {
   HomeOutlined,
+  QuestionCircleOutlined,
 } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
@@ -153,7 +154,6 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
-    // Устанавливаем collectionSlug без автоматического поиска
     minionsStore.collectionSlug = collectionStore.collection?.parent_slug || slug;
   }, [slug, collectionStore.collection?.parent_slug]);
 
@@ -182,6 +182,25 @@ const CollectionEditPage = observer(() => {
       minionsStore.handleSearch();
     }
   }, [filterStore.searchMongoDBQuery, collectionStore.collection?.query]);
+
+  const handleSaveButton = async () => {
+    try {
+      if (newTitle !== originalTitle) {
+        await collectionStore.updateCollectionTitle(newTitle);
+        setOriginalTitle(newTitle);
+      }
+      const currentQueryString = JSON.stringify(filterStore.currentFilters);
+      if (currentQueryString !== originalQuery) {
+        await collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
+        setOriginalQuery(currentQueryString);
+      }
+
+      messageApi.success(t("collection.collection-has-been-changed"));
+    } catch (error) {
+      messageApi.error(t("collection.error-updating-collection"));
+    }
+  };
+
   return (
     <>
       {contextHolder}
@@ -227,33 +246,28 @@ const CollectionEditPage = observer(() => {
           >
             {t("minions.cancel")}
           </Button>
-          <Button
-            type="primary"
-            disabled={
-              (newTitle === originalTitle &&
-                JSON.stringify(filterStore.currentFilters) === originalQuery) ||
-              newTitle.trim() === ""
-            }
-            onClick={async () => {
-              try {
-                if (newTitle !== originalTitle) {
-                  await collectionStore.updateCollectionTitle(newTitle);
-                  setOriginalTitle(newTitle);
-                }
-                const currentQueryString = JSON.stringify(filterStore.currentFilters);
-                if (currentQueryString !== originalQuery) {
-                  await collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
-                  setOriginalQuery(currentQueryString);
-                }
-
-                messageApi.success(t("collection.collection-has-been-changed"));
-              } catch (error) {
-                messageApi.error(t("collection.error-updating-collection"));
+          <Flex gap={8} align="center">
+            <Button
+              type="primary"
+              disabled={
+                (newTitle === originalTitle &&
+                  JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+                newTitle.trim() === ""
               }
-            }}
-          >
-            {t("minions.save")}
-          </Button>
+              onClick={handleSaveButton}
+            >
+              {t("minions.save")}
+            </Button>
+            {filterStore.isSearchEnable && (
+              <Popover
+                style={{ width: 420 }}
+                content={t("collection.apply-search-before-save")}
+                trigger="hover"
+              >
+                <QuestionCircleOutlined />
+              </Popover>
+            )}
+          </Flex>
         </div>
         <Spin spinning={minionsStore.isLoading} className={styles.collectionSpin}>
           <MinionsTable

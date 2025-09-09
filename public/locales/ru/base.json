@@ -365,7 +365,8 @@
     "collection-has-been-changed": "Коллекция была изменена",
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
-    "error-deleting-collection": "Ошибка при удалении коллекции"
+    "error-deleting-collection": "Ошибка при удалении коллекции",
+    "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением"
   },
   "filters": {
     "search": "Поиск"
@@ -463,6 +464,7 @@
     "form-minion-id-max": "ID клиента должен быть максимум 100 символов.",
     "form-submit": "Подтвердить",
     "form-cancel": "Отмена",
+    "delete": "Удалить",
     "create-success": "Pillar успешно создан",
     "create-error": "Ошибка при создании Pillar",
     "delete-success": "Pillar успешно удален",
