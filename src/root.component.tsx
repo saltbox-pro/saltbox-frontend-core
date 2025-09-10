@@ -1,10 +1,8 @@
 import { observer } from "mobx-react";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { I18nextProvider } from "react-i18next";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import i18n from "i18next";
-import { appStore, envStore, i18nStore } from "saltbox-core/store";
-import { autorun, runInAction } from "mobx";
 import "react-querybuilder/dist/query-builder.css";
 import MinionsPage from "./routes/minions.$slug";
 import MastersPage from "./routes/masters";
