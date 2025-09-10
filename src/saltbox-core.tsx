@@ -39,6 +39,7 @@ export const saltboxModule = {
   name: "saltbox-frontend-core",
   path: "/core",
   menuConfig: {
+    priority: 20,
     key: "core-module",
     label: "Core",
     children: [
@@ -67,6 +68,7 @@ export const saltboxModule = {
     ],
   },
   settingsConfig: {
+    priority: 20,
     key: "core",
     label: "Core",
     children: [
