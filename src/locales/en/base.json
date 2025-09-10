@@ -365,7 +365,8 @@
     "collection-has-been-changed": "Collection has been changed",
     "error-updating-collection": "Error updating collection",
     "collection-deleted-successfully": "Collection deleted successfully",
-    "error-deleting-collection": "Error deleting collection"
+    "error-deleting-collection": "Error deleting collection",
+    "apply-search-before-save": "Please apply search to confirm filters before saving"
   },
   "filters": {
     "search": "Search"
@@ -463,6 +464,7 @@
     "form-minion-id-max": "Minion ID must be maximum 100 characters.",
     "form-submit": "Confirm",
     "form-cancel": "Cancel",
+    "delete": "Delete",
     "create-success": "Pillar created successfully",
     "create-error": "Failed to create pillar",
     "delete-success": "Pillar deleted successfully",
