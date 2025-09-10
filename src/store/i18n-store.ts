@@ -1,9 +1,21 @@
 import { initReactI18next } from "react-i18next";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import Backend from "i18next-http-backend";
-import { AppLanguage } from "saltbox-core/shared/conf/app-locales";
 import { setDateTimeLocale } from "saltbox-core/shared/utils/datetime";
+import { AppLanguage } from "@saltbox/saltbox-frontend-common";
+
+import enBase from "../locales/en/base.json";
+import ruBase from "../locales/ru/base.json";
+
+const resources = {
+  [AppLanguage.EN]: {
+    base: enBase,
+  },
+  [AppLanguage.RU]: {
+    base: ruBase,
+  },
+};
+
 
 class I18NStore {
   readonly supportedLanguages: Array<AppLanguage> = [
@@ -13,7 +25,6 @@ class I18NStore {
 
   constructor() {
     i18n
-      .use(Backend)
       .use(LanguageDetector)
       .use(initReactI18next)
       .init({
@@ -21,6 +32,7 @@ class I18NStore {
         ns: ["base"],
         defaultNS: "base",
         debug: false,
+        resources,
         detection: {
           order: ["localStorage", "navigator"],
           caches: ["localStorage"],
@@ -29,10 +41,6 @@ class I18NStore {
           escapeValue: false,
         },
         supportedLngs: this.supportedLanguages,
-        backend: {
-          loadPath: DEVELOPMENT ? "http://localhost:4202/locales/{{lng}}/{{ns}}.json" : "/static/core/locales/{{lng}}/{{ns}}.json",
-          allowMultiLoading: true,
-        },
         react: {
           useSuspense: true,
         },

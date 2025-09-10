@@ -11,6 +11,7 @@
     "declaration": true,
     "baseUrl": ".",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "paths": {
       "saltbox-core/*": [
         "src/*"
