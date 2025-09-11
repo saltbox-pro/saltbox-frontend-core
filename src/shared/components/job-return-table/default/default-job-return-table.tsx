@@ -14,8 +14,10 @@ const JobReturnsTable = FastTableListed<JobResult>;
 
 export const DefaultJobReturnTable = ({
   jobReturns,
+  isFullOutput = true,
 }: {
   jobReturns: JobResult[];
+  isFullOutput?: boolean;
 }) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -73,7 +75,19 @@ export const DefaultJobReturnTable = ({
     }),
   ];
 
+  const getShortOutput = (data: JobResult) => {
+    if (data.return !== undefined) {
+      return { return: data.return };
+    }
+    if (data._return !== undefined) {
+      return { _return: data._return };
+    }
+    return data;
+  };
+
   const renderJobResult = ({ row }: { row: Row<JobResult> }) => {
+    const dataToShow = isFullOutput ? row.original : getShortOutput(row.original);
+
     return (
       <Card>
         <ReactJson
@@ -81,7 +95,7 @@ export const DefaultJobReturnTable = ({
           enableClipboard={false}
           name={false}
           displayObjectSize={false}
-          src={row.original}
+          src={dataToShow}
           collapsed={1}
         />
       </Card>

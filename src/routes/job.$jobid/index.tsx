@@ -12,6 +12,7 @@ import {
   Descriptions,
   Flex,
   Skeleton,
+  Switch,
   Typography,
   message,
 } from "antd";
@@ -34,6 +35,7 @@ const JobPage = observer(() => {
   const navigate = useNavigate();
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [isFullOutput, setIsFullOutput] = useState<boolean>(true);
 
   useEffect(() => {
     jobStore.reload(jid);
@@ -169,8 +171,21 @@ const JobPage = observer(() => {
         ]}
       />
 
+      <Flex className={styles.switchContainer}>
+        <Flex className={styles.switchWrapper}>
+          <span>{t("jobs.full-output")}</span>
+          <Switch
+            checked={isFullOutput}
+            onChange={setIsFullOutput}
+          />
+        </Flex>
+      </Flex>
+
       <div className={styles.jobReturnTableWrapper}>
-        <DefaultJobReturnTable jobReturns={toJS(jobStore.jobReturns)} />
+        <DefaultJobReturnTable
+          jobReturns={toJS(jobStore.jobReturns)}
+          isFullOutput={isFullOutput}
+        />
       </div>
     </>
   );

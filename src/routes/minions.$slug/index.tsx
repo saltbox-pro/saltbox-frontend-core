@@ -185,6 +185,8 @@ const MinionsPage = observer(() => {
     setMinionsTabs(tabs);
   };
 
+  const hasFilters = minionFilterStore.currentFilters.rules.length > 0;
+
   return (
     <>
       {contextHolder}
@@ -250,7 +252,8 @@ const MinionsPage = observer(() => {
                   <>
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
-                      type={showFilter ? "primary" : "default"}
+                      color={"primary"}
+                      variant={showFilter ? "solid" : hasFilters ? "filled" : "outlined"}
                     >
                       <Flex gap={8}>
                         <FilterOutlined />

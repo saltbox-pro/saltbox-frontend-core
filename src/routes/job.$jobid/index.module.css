@@ -5,3 +5,13 @@
 .descriptionsContainer {
   margin-bottom: 0.67em;
 }
+
+.switchContainer {
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.switchWrapper {
+  align-items: center;
+  gap: 8px;
+}
