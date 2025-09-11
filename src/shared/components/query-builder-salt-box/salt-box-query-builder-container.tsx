@@ -31,7 +31,7 @@ export const SaltBoxQueryBuilderContainer = observer(
     const { t } = useTranslation();
     return (
       <div className={styles.queryBuilderContainer}>
-        <Spin spinning={props.filterStore.isLoading}>
+        <Spin spinning={props.filterStore.isLoading || props.filterStore.isApplyingFilter}>
           <QueryBuilderDnD dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
             <QueryBuilderSaltBox>
               <QueryBuilderSaltBox>

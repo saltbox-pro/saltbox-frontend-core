@@ -260,7 +260,8 @@
     "key-value-arguments": "Key-Value arguments",
     "arguments": "arguments",
     "no-arguments": "No arguments",
-    "no-key-value-arguments": "No key-value arguments"
+    "no-key-value-arguments": "No key-value arguments",
+    "full-output": "Full Output"
   },
   "job-modal": {
     "title": "Create Job",
