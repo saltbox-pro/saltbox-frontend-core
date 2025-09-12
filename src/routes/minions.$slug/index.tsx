@@ -20,6 +20,7 @@ import {
   CollectionStore,
   dashboardStore,
   defaultCollectionStore,
+  i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";
 import { subscribe } from "@saltbox/saltbox-frontend-common";
@@ -117,7 +118,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     fillMinionsTabs();
-  }, [appStore.pluginsStore?.minions?.tabs]);
+  }, [appStore.pluginsStore?.minions?.tabs, i18nStore.currentLanguage]);
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
@@ -168,7 +169,7 @@ const MinionsPage = observer(() => {
     if (appStore.pluginsStore?.plugins?.['minions.tabs']) {
       for (const pluginTab of appStore.pluginsStore.plugins['minions.tabs']) {
         tabs.push({
-          label: pluginTab.label,
+          label: pluginTab.label?.[i18nStore.currentLanguage] || pluginTab.label?.en || pluginTab.key,
           key: pluginTab.key,
           children: <Parcel
             config={pluginTab.parcel}

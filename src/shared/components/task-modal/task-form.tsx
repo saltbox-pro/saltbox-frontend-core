@@ -6,7 +6,7 @@ import {
   TaskCreateRequestSchemaInput,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore, appStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
 
@@ -102,7 +102,7 @@ export function TaskForm({
   let minionsTaskModalCreateButtonsPlugins: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
     const minionsTaskModalCreateButtonPlugin = <Button type="primary" onClick={() => handleCreateTaskPlugin(plugin.key)}>
-      {plugin.label}
+      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
     </Button>;
     minionsTaskModalCreateButtonsPlugins = <>
       {minionsTaskModalCreateButtonsPlugins}
