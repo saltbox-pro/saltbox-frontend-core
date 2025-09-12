@@ -9,11 +9,10 @@ const commonPath =  process.env.COMMON_REPO_PATH || "";
 
 module.exports = (webpackConfigEnv, argv) => {
   const config = baseConfig(webpackConfigEnv, argv);
-  
+
   return merge(config, {
     resolve: {
       alias: {
-        // Link other repositories in dev mode
         ...(commonPath && {
           "@saltbox/saltbox-frontend-common": path.resolve(__dirname, commonPath),
         }),
@@ -25,7 +24,6 @@ module.exports = (webpackConfigEnv, argv) => {
     module: {
       rules: [
         {
-          // Handle CSS from the linked packages
           test: /\.css$/,
           include: [
             commonPath && path.resolve(__dirname, commonPath),
