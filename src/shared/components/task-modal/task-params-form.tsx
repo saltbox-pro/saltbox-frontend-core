@@ -9,7 +9,7 @@ import {
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
 import styles from "./task-modal.module.css";
-import { appStore } from "saltbox-core/store";
+import { appStore, i18nStore } from "saltbox-core/store";
 
 type TaskParamsFormProps = {
   taskTemplate?: TaskTemplateModel;
@@ -48,7 +48,7 @@ export const TaskParamsForm = ({
   let minionsTaskModalCreateButtonsPlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
     const minionsTaskModalCreateButtonPlugin = <Button type="primary" onClick={() => handleCreateTaskPlugin(plugin.key)}>
-      {plugin.label}
+      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
     </Button>;
     minionsTaskModalCreateButtonsPlugin = <>
       {minionsTaskModalCreateButtonsPlugin}
