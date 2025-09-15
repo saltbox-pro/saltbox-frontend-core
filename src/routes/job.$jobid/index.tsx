@@ -35,7 +35,7 @@ const JobPage = observer(() => {
   const navigate = useNavigate();
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
-  const [isFullOutput, setIsFullOutput] = useState<boolean>(true);
+  const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
 
   useEffect(() => {
     jobStore.reload(jid);

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
-import { Button, Card, Tag } from "antd";
+import { Button, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed } from "@saltbox/saltbox-frontend-common";
@@ -14,7 +14,7 @@ const JobReturnsTable = FastTableListed<JobResult>;
 
 export const DefaultJobReturnTable = ({
   jobReturns,
-  isFullOutput = true,
+  isFullOutput = false,
 }: {
   jobReturns: JobResult[];
   isFullOutput?: boolean;
@@ -89,16 +89,16 @@ export const DefaultJobReturnTable = ({
     const dataToShow = isFullOutput ? row.original : getShortOutput(row.original);
 
     return (
-      <Card>
+      <div>
         <ReactJson
           displayDataTypes={false}
           enableClipboard={false}
           name={false}
           displayObjectSize={false}
           src={dataToShow}
-          collapsed={1}
+          collapsed={isFullOutput ? 1 : 2}
         />
-      </Card>
+      </div>
     );
   };
 

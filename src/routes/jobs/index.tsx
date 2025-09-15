@@ -190,17 +190,21 @@ const JobsPage = observer(() => {
     columnHelper.accessor("tgt", {
       header: t("jobs.table-targets"),
       cell: (data) => {
-        if ((data.getValue() as string)?.length <= 2) {
-          return data.getValue();
+        const fullValue = data.getValue() as string;
+        if (fullValue?.length <= 2) {
+          return fullValue;
         }
+
+        const truncatedValue = fullValue.length > 50
+          ? `${fullValue.substring(0, 50)}...`
+          : fullValue;
+
         return (
           <Text
-            copyable
-            ellipsis
-            style={{ maxWidth: "250px" }}
-            title={data.getValue() as string}
+            copyable={{ text: fullValue }}
+            title={fullValue}
           >
-            {data.getValue() as string}
+            {truncatedValue}
           </Text>
         );
       },
