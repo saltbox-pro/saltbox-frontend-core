@@ -330,10 +330,12 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       {contextHolder}
       <Flex vertical>
         {props.showFilter && (
-          <MinionsQueryBuilder
-            slug={props.slug}
-            filterStore={props.filterStore}
-          />
+          <Spin spinning={minionsStore.isLoading}>
+            <MinionsQueryBuilder
+              slug={props.slug}
+              filterStore={props.filterStore}
+            />
+          </Spin>
         )}
 
         <div className="page-actions-buttons">
