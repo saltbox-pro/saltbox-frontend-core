@@ -1,8 +1,7 @@
 import { initReactI18next } from "react-i18next";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import { setDateTimeLocale } from "saltbox-core/shared/utils/datetime";
-import { AppLanguage } from "@saltbox/saltbox-frontend-common";
+import { setDateTimeLocale, AppLanguage } from "@saltbox/saltbox-frontend-common";
 
 import enBase from "../locales/en/base.json";
 import ruBase from "../locales/ru/base.json";

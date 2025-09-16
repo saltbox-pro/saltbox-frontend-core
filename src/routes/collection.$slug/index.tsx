@@ -7,7 +7,7 @@ import {
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Badge, Breadcrumb, Button, Checkbox, Flex, Input, Popover, Spin, Tag, message, Typography } from "antd";
+import { Badge, Breadcrumb, Button, Flex, Input, Popover, Spin, Tag, message } from "antd";
 import {
   HomeOutlined,
   QuestionCircleOutlined,
@@ -15,15 +15,13 @@ import {
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
-import { pastTimeByUserTZ, formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import { pastTimeByUserTZ, formatTimeByUserTZ, FastTablePaginated, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { MinionFilterStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
 import { defaultCollectionStore } from "saltbox-core/store";
 import { MinionsStore } from "saltbox-core/store";
 
 import styles from "./index.module.css";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();

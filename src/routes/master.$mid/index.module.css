@@ -4,255 +4,255 @@
 .masterTabs :global(.fast-table),
 .masterTabs :global(.pillars-table-container),
 .masterTabs :global(.ant-spin-container) {
-    height: 100%;
+  height: 100%;
 }
 
 .masterTabs :global(.ant-tabs-tab) {
-    padding: 0 0 12px 0;
+  padding: 0 0 12px 0;
 }
 
 .importTableContainer {
-    max-height: 70vh;
-    overflow-y: auto;
-    border: 1px solid #f0f0f0;
-    border-radius: 6px;
+  max-height: 70vh;
+  overflow-y: auto;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
 }
 
 .importTableContainer :global(.fast-table) {
-    width: 100%;
-    table-layout: fixed;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .importTableContainer :global(.fast-table th),
 .importTableContainer :global(.fast-table td) {
-    padding: 8px 12px;
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    vertical-align: top;
-    border-bottom: 1px solid #f0f0f0;
+  padding: 8px 12px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  vertical-align: top;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .importTableContainer :global(.fast-table th:nth-child(1)),
 .importTableContainer :global(.fast-table td:nth-child(1)) {
-    width: 20%;
-    min-width: 120px;
+  width: 20%;
+  min-width: 120px;
 }
 
 .importTableContainer :global(.fast-table th:nth-child(2)),
 .importTableContainer :global(.fast-table td:nth-child(2)) {
-    width: 25%;
-    min-width: 150px;
+  width: 25%;
+  min-width: 150px;
 }
 
 .importTableContainer :global(.fast-table th:nth-child(3)),
 .importTableContainer :global(.fast-table td:nth-child(3)) {
-    width: 35%;
-    min-width: 200px;
+  width: 35%;
+  min-width: 200px;
 }
 
 .importTableContainer :global(.fast-table th:nth-child(4)),
 .importTableContainer :global(.fast-table td:nth-child(4)) {
-    width: 20%;
-    min-width: 120px;
+  width: 20%;
+  min-width: 120px;
 }
 
 .importTableContainer :global(.fast-table .ant-input) {
-    width: 100%;
-    min-height: 32px;
-    resize: vertical;
+  width: 100%;
+  min-height: 32px;
+  resize: vertical;
 }
 
 .importTableContainer :global(.fast-table .ant-input-textarea) {
-    width: 100%;
+  width: 100%;
 }
 
 .importTableContainer :global(.fast-table .ant-input-textarea textarea) {
-    resize: vertical;
-    min-height: 32px;
-    max-height: 120px;
+  resize: vertical;
+  min-height: 32px;
+  max-height: 120px;
 }
 
 .pillarsTableContainer {
-    width: 100%;
+  width: 100%;
 }
 
 .pillarsTableContainer :global(.fast-table) {
-    width: 100%;
-    table-layout: fixed;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .pillarsTableContainer :global(.fast-table th),
 .pillarsTableContainer :global(.fast-table td) {
-    padding: 8px 12px;
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    vertical-align: top;
-    border-bottom: 1px solid #f0f0f0;
+  padding: 8px 12px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  vertical-align: top;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .pillarsTableContainer :global(.fast-table th:nth-child(1)),
 .pillarsTableContainer :global(.fast-table td:nth-child(1)) {
-    width: 20%;
-    min-width: 120px;
+  width: 20%;
+  min-width: 120px;
 }
 
 .pillarsTableContainer :global(.fast-table th:nth-child(2)),
 .pillarsTableContainer :global(.fast-table td:nth-child(2)) {
-    width: 25%;
-    min-width: 150px;
+  width: 25%;
+  min-width: 150px;
 }
 
 .pillarsTableContainer :global(.fast-table th:nth-child(3)),
 .pillarsTableContainer :global(.fast-table td:nth-child(3)) {
-    width: 35%;
-    min-width: 200px;
+  width: 35%;
+  min-width: 200px;
 }
 
 .pillarsTableContainer :global(.fast-table th:nth-child(4)),
 .pillarsTableContainer :global(.fast-table td:nth-child(4)) {
-    width: 20%;
-    min-width: 120px;
+  width: 20%;
+  min-width: 120px;
 }
 
 .modalContainer {
-    max-width: 90vw;
+  max-width: 90vw;
 }
 
 .modalContainer :global(.ant-modal) {
-    max-width: 90vw;
+  max-width: 90vw;
 }
 
 .modalContainer :global(.ant-modal-content) {
-    max-height: 90vh;
-    overflow-y: auto;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modalContainer :global(.ant-modal-title) {
-    word-break: break-word;
-    white-space: normal;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .editableCell {
-    width: 100%;
-    resize: vertical;
-    min-height: 32px;
-    max-height: 120px;
+  width: 100%;
+  resize: vertical;
+  min-height: 32px;
+  max-height: 120px;
 }
 
 .editableCell :global(.ant-input) {
-    width: 100%;
-    resize: vertical;
-    min-height: 32px;
-    max-height: 120px;
+  width: 100%;
+  resize: vertical;
+  min-height: 32px;
+  max-height: 120px;
 }
 
 .clientsTableContainer {
-    width: 100%;
+  width: 100%;
 }
 
 .clientsTableContainer :global(.fast-table) {
-    width: 100%;
-    table-layout: fixed;
+  width: 100%;
+  table-layout: fixed;
 }
 
 .clientsTableContainer :global(.fast-table th),
 .clientsTableContainer :global(.fast-table td) {
-    padding: 8px 12px;
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: normal;
-    vertical-align: top;
-    border-bottom: 1px solid #f0f0f0;
+  padding: 8px 12px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  vertical-align: top;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .clientsTableContainer :global(.fast-table th:nth-child(1)),
 .clientsTableContainer :global(.fast-table td:nth-child(1)) {
-    width: 50%;
-    min-width: 200px;
+  width: 50%;
+  min-width: 200px;
 }
 
 .clientsTableContainer :global(.fast-table th:nth-child(2)),
 .clientsTableContainer :global(.fast-table td:nth-child(2)) {
-    width: 50%;
-    min-width: 200px;
+  width: 50%;
+  min-width: 200px;
 }
 
 .tableCell {
-    word-break: break-word;
-    white-space: normal;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .errorCell {
-    word-break: break-word;
-    white-space: normal;
-    color: #f9a825;
+  word-break: break-word;
+  white-space: normal;
+  color: #f9a825;
 }
 
 .modalContainer :global(.ant-input) {
-    width: 100%;
-    resize: vertical;
-    min-height: 32px;
+  width: 100%;
+  resize: vertical;
+  min-height: 32px;
 }
 
 .modalContainer :global(.ant-input-textarea) {
-    width: 100%;
+  width: 100%;
 }
 
 .modalContainer :global(.ant-input-textarea textarea) {
-    width: 100%;
-    resize: vertical;
-    min-height: 80px;
-    max-height: 300px;
-    word-wrap: break-word;
-    word-break: break-word;
-    white-space: pre-wrap;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  max-height: 300px;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .modalContainer :global(.ant-form-item:last-child) {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .modalContainer :global(.ant-space) {
-    width: 100%;
+  width: 100%;
 }
 
 .modalContainer :global(.ant-modal-body p) {
-    word-break: break-word;
-    white-space: normal;
-    margin-bottom: 8px;
+  word-break: break-word;
+  white-space: normal;
+  margin-bottom: 8px;
 }
 
 .modalContainer :global(.ant-modal-body p:last-child) {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 .deleteInfo {
-    font-size: 12px;
-    color: #666;
-    word-break: break-word;
-    white-space: normal;
+  font-size: 12px;
+  color: #666;
+  word-break: break-word;
+  white-space: normal;
 }
 
 .importFooter {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .importSpace {
-    width: 100%;
+  width: 100%;
 }
 
 .importDescription {
-    font-size: 14px;
-    color: #888;
-    margin: 0;
+  font-size: 14px;
+  color: #888;
+  margin: 0;
 }
 
 .importControls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }

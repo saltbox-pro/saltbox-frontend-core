@@ -11,16 +11,12 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   SlsFormData,
   SlsModal,
 } from "saltbox-core/shared/components/sls-modal/sls-modal";
-import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
-import { apiCoreStore } from "saltbox-core/store";
-import { settingsSlsStore } from "saltbox-core/store";
-import styles from "./index.module.css";
+import { formatTimeByUserTZ, PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
 
 type TableRowData = SettingsSlsRepoShortSchema & {
   is_active_action: JSX.Element;

@@ -15,7 +15,7 @@ import {
   TaskModel,
   TaskStatus,
 } from "@saltbox/saltbox-core-api-client";
-import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import { formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import styles from "./task-stat.module.css";
 
 interface TaskStatistics {

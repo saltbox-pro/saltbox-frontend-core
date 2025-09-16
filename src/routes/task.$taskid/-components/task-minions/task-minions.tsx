@@ -4,8 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
-import { formatTimeByUserTZ } from "saltbox-core/shared/utils/datetime";
+import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
 

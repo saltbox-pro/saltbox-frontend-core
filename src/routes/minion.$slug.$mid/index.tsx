@@ -9,9 +9,8 @@ import { Breadcrumb } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { CollectionStore } from "saltbox-core/store";
-import { MinionStore } from "saltbox-core/store";
+import { PageHeader } from "@saltbox/saltbox-frontend-common";
+import { CollectionStore, MinionStore } from "saltbox-core/store";
 
 const MinionPage = observer(() => {
   const { t } = useTranslation();

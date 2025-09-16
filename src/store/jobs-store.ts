@@ -6,9 +6,8 @@ import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import {
   DATETIME_TIMESTAMP,
   formatTimeByUserTZ,
-} from 'saltbox-core/shared/utils/datetime';
-import { apiCoreStore } from 'saltbox-core/store';
-import { JobFilterStore } from 'saltbox-core/store';
+} from '@saltbox/saltbox-frontend-common';
+import { apiCoreStore, JobFilterStore } from 'saltbox-core/store';
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
   add_operation(op, func);

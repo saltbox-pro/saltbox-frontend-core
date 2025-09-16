@@ -25,14 +25,15 @@ import {
   SaveOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { apiCoreStore } from "saltbox-core/store";
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import { PillarsStore } from "saltbox-core/store";
 import { toJS } from "mobx";
-import styles from "./index.module.css";
+import {
+  PageHeader,
+  FastTableListed
+} from "@saltbox/saltbox-frontend-common";
 import {
   GatheredMinionSchema,
   PillarModel,
@@ -40,6 +41,8 @@ import {
   PillarCSVParseResult,
   PillarCSVParseResultErrorCode,
 } from "@saltbox/saltbox-core-api-client";
+
+import styles from "./index.module.css";
 
 const pillarColumnHelper = createColumnHelper<PillarModel>();
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>();

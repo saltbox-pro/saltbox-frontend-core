@@ -14,16 +14,13 @@ import {
   Skeleton,
   Switch,
   Typography,
-  message,
 } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { appStore } from "saltbox-core/store";
-import { envStore } from "saltbox-core/store";
-import { jobStore } from "saltbox-core/store";
+import { PageHeader } from "@saltbox/saltbox-frontend-common";
+import { appStore, envStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
 import styles from "./index.module.css";
 

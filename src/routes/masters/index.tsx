@@ -7,12 +7,12 @@ import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, Popover, Tag, message } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
-} from "saltbox-core/shared/utils/datetime";
+  PageHeader,
+  FastTablePaginated,
+} from "@saltbox/saltbox-frontend-common";
 import { MastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {

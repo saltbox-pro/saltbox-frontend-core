@@ -10,10 +10,8 @@ import {
   StopOutlined,
 } from "@ant-design/icons";
 import { JobResult, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
-import { appStore } from "saltbox-core/store";
-import { envStore } from "saltbox-core/store";
-import { TaskStore } from "saltbox-core/store";
+import { PageHeader } from "@saltbox/saltbox-frontend-common";
+import { appStore, envStore, TaskStore } from "saltbox-core/store";
 import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns";
 import { TaskJobs } from "./-components/task-jobs/task-jobs";
 import { TaskMinions } from "./-components/task-minions/task-minions";

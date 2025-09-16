@@ -14,7 +14,6 @@ import {
   QuestionCircleOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
-import { PageHeader } from "saltbox-core/shared/components/page-header/page-header";
 import {
   appStore,
   CollectionStore,
@@ -23,7 +22,7 @@ import {
   i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";
-import { subscribe } from "@saltbox/saltbox-frontend-common";
+import { subscribe, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
