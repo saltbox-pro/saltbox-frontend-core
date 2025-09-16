@@ -343,7 +343,8 @@
     "success-on-sync-sls": "Success on sync configuration repository",
     "success-on-edit-sls": "Success on edit configuration repository",
     "error-on-create-sls": "Error on create configuration repository",
-    "error-on-edit-sls": "Error on edit configuration repository"
+    "error-on-edit-sls": "Error on edit configuration repository",
+    "table-no-sync": "Never"
   },
   "collection": {
     "collections": "Collections",

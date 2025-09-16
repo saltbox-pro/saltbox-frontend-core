@@ -343,7 +343,8 @@
     "success-on-sync-sls": "Репозиторий успешно синхронизирован",
     "success-on-edit-sls": "Репозиторий успешно изменен",
     "error-on-create-sls": "Ошибка при создании репозитория",
-    "error-on-edit-sls": "Ошибка при изменении репозитория"
+    "error-on-edit-sls": "Ошибка при изменении репозитория",
+    "table-no-sync": "Никогда"
   },
   "collection": {
     "collections": "Коллекции",
