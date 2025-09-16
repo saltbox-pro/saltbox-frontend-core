@@ -1,4 +1,4 @@
-import { JSX, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
@@ -18,14 +18,9 @@ import {
 import { formatTimeByUserTZ, PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
 
-type TableRowData = SettingsSlsRepoShortSchema & {
-  is_active_action: JSX.Element;
-  actions: JSX.Element;
-};
-
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
-const columnHelper = createColumnHelper<TableRowData>();
+const columnHelper = createColumnHelper<SettingsSlsRepoShortSchema>();
 
 const SettingsSlsPage = observer(() => {
   const { t } = useTranslation();
@@ -60,7 +55,23 @@ const SettingsSlsPage = observer(() => {
     columnHelper.accessor("is_last_sync_successful", {
       header: t("settings-sls.table-sync-status"),
     }),
-    columnHelper.accessor("actions", {
+    columnHelper.display({
+      header: t("settings-sls.table-is-active"),
+      cell: ({ row }) => {
+        return (
+          <Switch
+            checked={row.original.is_active}
+            onClick={() =>
+              settingsSlsStore.handleSlsActivation(
+                row.original.id,
+                row.original.is_active
+              )
+            }
+          />
+        );
+      },
+    }),
+    columnHelper.display({
       header: t("settings-sls.table-actions"),
       cell: ({ row }) => {
         return (
@@ -91,22 +102,6 @@ const SettingsSlsPage = observer(() => {
               title={t("settings-sls.table-delete")}
             />
           </div>
-        );
-      },
-    }),
-    columnHelper.accessor("is_active_action", {
-      header: t("settings-sls.table-is-active"),
-      cell: ({ row }) => {
-        return (
-          <Switch
-            checked={row.original.is_active}
-            onClick={() =>
-              settingsSlsStore.handleSlsActivation(
-                row.original.id,
-                row.original.is_active
-              )
-            }
-          />
         );
       },
     }),
@@ -187,7 +182,7 @@ const SettingsSlsPage = observer(() => {
     setIsSlsModalOpen(true);
   };
 
-  const handleDeleteSls = (repo: TableRowData) => {
+  const handleDeleteSls = (repo: SettingsSlsRepoShortSchema) => {
     setRecordToEdit(repo);
     setIsSlsDeleteModalOpen(true);
   };
@@ -302,8 +297,7 @@ const SettingsSlsPage = observer(() => {
         closable={false}
       >
         <p>
-          {t("settings-sls.modal-delete-repository-confirm-text") + " "}
-          <b>{recordToEdit ? recordToEdit.name : ""}</b>?
+          {t("settings-sls.modal-delete-repository-confirm-text", { name: recordToEdit ? recordToEdit.name : "" })}?
         </p>
       </Modal>
     </>

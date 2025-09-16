@@ -320,7 +320,7 @@
     "modal-delete-repository": "Удалить репозиторий",
     "modal-delete-repository-confirm": "Подтвердить",
     "modal-delete-repository-reject": "Отмена",
-    "modal-delete-repository-confirm-text": "Вы действительно хотите удалить репозиторий {{name}}?",
+    "modal-delete-repository-confirm-text": "Вы действительно хотите удалить репозиторий: {{name}}?",
     "modal-edit-repository": "Редактировать репозиторий",
     "modal-add-repository": "Добавить репозиторий",
     "modal-name": "Имя",

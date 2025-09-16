@@ -320,7 +320,7 @@
     "modal-delete-repository": "Delete Repository",
     "modal-delete-repository-confirm": "Confirm",
     "modal-delete-repository-reject": "Reject",
-    "modal-delete-repository-confirm-text": "You will delete the repository named {{name}}?",
+    "modal-delete-repository-confirm-text": "You will delete the repository: {{name}}?",
     "modal-edit-repository": "Edit Repository",
     "modal-add-repository": "Add Repository",
     "modal-name": "Name",
