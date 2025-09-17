@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeObservable, observable, ObservableMap } from "mobx";
 
 export interface EnvInterface {
   ws_server_url: string;
@@ -6,13 +6,14 @@ export interface EnvInterface {
 }
 
 export class EnvStore {
-  isLoading: boolean;
-  env: EnvInterface | undefined;
-  error: Error | undefined;
+  @observable isLoading: boolean;
+  @observable services: ObservableMap<string, EnvInterface>;
+  @observable error: Error | undefined;
 
   constructor() {
-    makeAutoObservable(this);
+    makeObservable(this);
     this.isLoading = false;
+    this.services = observable.map();
   }
 }
 

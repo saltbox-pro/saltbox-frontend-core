@@ -20,7 +20,7 @@ import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { PageHeader } from "@saltbox/saltbox-frontend-common";
-import { appStore, envStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
 import styles from "./index.module.css";
 
@@ -46,7 +46,7 @@ const JobPage = observer(() => {
 
   useEffect(() => {
     const webSocket = new WebSocket(
-      `${envStore.env?.ws_server_url}/jobs/${jid}/return`,
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {

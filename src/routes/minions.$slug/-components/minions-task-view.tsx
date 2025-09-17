@@ -8,7 +8,7 @@ import { Button, Flex, Tag } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTablePaginated, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
-import { appStore, envStore, TasksStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, TasksStore } from "saltbox-core/store";
 
 const TasksTable = FastTablePaginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
@@ -92,7 +92,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   ];
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${envStore.env?.ws_server_url}/tasks`);
+    const webSocket = new WebSocket(`${apiCoreStore.env?.ws_server_url}/tasks`);
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedTask = JSON.parse(event.data) as TaskListResponseSchema;

@@ -90,10 +90,12 @@ export const saltboxModule = {
       },
     ],
   },
-  init: (authStore, env, localeStore, pluginsStore) => {
+  init: (authStore, services, localeStore, pluginsStore) => {
     appStore.init(authStore, pluginsStore);
     runInAction(() => {
-      envStore.env = env;
+      for (const service of services) {
+        envStore.services.set(service.service_name, service.env);
+      }
     });
     autorun(() => {
       i18nStore.currentLanguage = localeStore.currentLocale;

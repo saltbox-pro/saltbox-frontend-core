@@ -17,7 +17,7 @@ import {
   PageHeader,
   FastTableListed
 } from "@saltbox/saltbox-frontend-common";
-import { appStore, envStore } from "saltbox-core/store";
+import { apiCoreStore, appStore } from "saltbox-core/store";
 import { JobFilterStore } from "saltbox-core/store";
 import { JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -237,7 +237,7 @@ const JobsPage = observer(() => {
   });
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${envStore.env?.ws_server_url}/jobs`);
+    const webSocket = new WebSocket(`${apiCoreStore.env?.ws_server_url}/jobs`);
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedJob = JSON.parse(event.data) as JobsListResponse;

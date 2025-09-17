@@ -37,7 +37,6 @@ import {
   apiCoreStore,
   appStore,
   CollectionStore,
-  envStore,
   MinionFilterStore,
   MinionStore,
   MinionsStore,
@@ -249,7 +248,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     try {
       setIsCSVLoading(true);
       const response = await fetch(
-        `${envStore.env?.api_base_path}/minions/export`,
+        `${apiCoreStore.env?.api_base_path}/minions/export`,
         {
           method: "POST",
           headers: {

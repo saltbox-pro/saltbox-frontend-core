@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { JobResult, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { PageHeader } from "@saltbox/saltbox-frontend-common";
-import { appStore, envStore, TaskStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns";
 import { TaskJobs } from "./-components/task-jobs/task-jobs";
 import { TaskMinions } from "./-components/task-minions/task-minions";
@@ -42,7 +42,7 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const webSocket = new WebSocket(
-      `${envStore.env?.ws_server_url}/tasks/${taskId}`,
+      `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`,
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
