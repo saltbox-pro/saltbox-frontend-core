@@ -3,7 +3,16 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Dropdown, Flex, Modal, Tabs, Popover, message } from "antd";
+import {
+  Breadcrumb,
+  Button,
+  Dropdown,
+  Flex,
+  Modal,
+  Tabs,
+  Popover,
+  message,
+} from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -28,6 +37,7 @@ import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
+import { generateIdsForQuery } from "saltbox-core/shared/utils/generateIdsForQuery";
 
 import styles from "./index.module.css";
 
@@ -44,6 +54,17 @@ const MinionsPage = observer(() => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [minionsTabs, setMinionsTabs] = useState([]);
+
+  useEffect(() => {
+    const initialFilter = JSON.parse(localStorage.getItem("minionsFilter"));
+    if (initialFilter) {
+      localStorage.removeItem("minionsFilter");
+      const initialFilterWithIds = generateIdsForQuery(initialFilter);
+      minionFilterStore.searchFilters = initialFilterWithIds;
+      minionFilterStore.currentFilters = initialFilterWithIds;
+      setShowFilter(true);
+    }
+  }, []);
 
   const addBlock = () => {
     dashboardStore.addBlock({
@@ -72,7 +93,8 @@ const MinionsPage = observer(() => {
       icon: <EditOutlined />,
       onClick: handleEditCollection,
       disabled: slug === "root",
-      title: slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
+      title:
+        slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
     },
     {
       key: "save-as-new",
@@ -80,7 +102,10 @@ const MinionsPage = observer(() => {
       icon: <SaveOutlined />,
       onClick: handleSaveAsNew,
       disabled: minionFilterStore.currentFilters.rules.length === 0,
-      title: minionFilterStore.currentFilters.rules.length === 0 ? t("minions.add-filters-to-save") : undefined,
+      title:
+        minionFilterStore.currentFilters.rules.length === 0
+          ? t("minions.add-filters-to-save")
+          : undefined,
     },
     {
       key: "delete",
@@ -89,7 +114,10 @@ const MinionsPage = observer(() => {
       onClick: handleDeleteCollection,
       danger: true,
       disabled: slug === "root",
-      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
+      title:
+        slug === "root"
+          ? t("minions.root-collection-cannot-delete")
+          : undefined,
     },
   ];
 
@@ -121,7 +149,9 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
-      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
+      navigate(
+        `/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`
+      );
     }
   }, [collectionStore.isDeleted, navigate]);
 
@@ -165,18 +195,23 @@ const MinionsPage = observer(() => {
       },
     ];
 
-    if (appStore.pluginsStore?.plugins?.['minions.tabs']) {
-      for (const pluginTab of appStore.pluginsStore.plugins['minions.tabs']) {
+    if (appStore.pluginsStore?.plugins?.["minions.tabs"]) {
+      for (const pluginTab of appStore.pluginsStore.plugins["minions.tabs"]) {
         tabs.push({
-          label: pluginTab.label?.[i18nStore.currentLanguage] || pluginTab.label?.en || pluginTab.key,
+          label:
+            pluginTab.label?.[i18nStore.currentLanguage] ||
+            pluginTab.label?.en ||
+            pluginTab.key,
           key: pluginTab.key,
-          children: <Parcel
-            config={pluginTab.parcel}
-            wrapWith="div"
-            customProps={{
-              slug,
-            }}
-          />,
+          children: (
+            <Parcel
+              config={pluginTab.parcel}
+              wrapWith="div"
+              customProps={{
+                slug,
+              }}
+            />
+          ),
           style: { height: "100%" },
         });
       }
@@ -253,7 +288,13 @@ const MinionsPage = observer(() => {
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
                       color={"primary"}
-                      variant={showFilter ? "solid" : hasFilters ? "filled" : "outlined"}
+                      variant={
+                        showFilter
+                          ? "solid"
+                          : hasFilters
+                          ? "filled"
+                          : "outlined"
+                      }
                     >
                       <Flex gap={8}>
                         <FilterOutlined />
