@@ -15,7 +15,6 @@ const resources = {
   },
 };
 
-
 class I18NStore {
   readonly supportedLanguages: Array<AppLanguage> = [
     AppLanguage.EN,

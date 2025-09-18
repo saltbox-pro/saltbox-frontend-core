@@ -97,6 +97,7 @@ export function TaskModal({
     publish("minions.taskmodal.create", {
       pluginKey: pluginKey,
       taskCreateRequest: getTaskCreateRequest(),
+      templateDescription: taskTemplate?.title ?? "",
     });
     onClose();
   }
