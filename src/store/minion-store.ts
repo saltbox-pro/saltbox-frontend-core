@@ -33,7 +33,7 @@ export class MinionStore {
     this.isMinionLoading = true;
     this.error = null;
     apiCoreStore.minionsApi
-      ?.minionRetrieveMinionsMidGet({
+      ?.minionGet({
         collection_slug: this.slug,
         mid: this.mid,
       })

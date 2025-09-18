@@ -19,7 +19,7 @@ import {
 import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import {
   CreateJobRequest,
-  GatherMinionsMinionsGatherGetTgtTypeEnum,
+  CreateJobRequestTgtTypeEnum,
   JobData,
   JobSchemaModel,
   JobSchemaShortSchema,
@@ -50,7 +50,7 @@ export function JobModal({
   targetType,
 }: {
   target: string;
-  targetType: string;
+  targetType: CreateJobRequestTgtTypeEnum;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -178,7 +178,7 @@ export function JobModal({
     setIsSchemaListLoading(true);
 
     apiCoreStore.jsonSchemasApi
-      ?.getJsonSchemasListJsonSchemasGet()
+      ?.jobsSchemasList()
       .then((result) => {
         fillSaltFunctionList(result?.data ?? []);
       })
@@ -264,7 +264,7 @@ export function JobModal({
 
     setIsSchemaLoading(true);
     apiCoreStore.jsonSchemasApi
-      ?.getJsonSchemaJsonSchemasNameGet({ name: saltFunctionName })
+      .jobsSchemasGet({ name: saltFunctionName })
       .then((result) => {
         setSaltFunction(result);
       })
@@ -528,7 +528,7 @@ export function JobModal({
         isOpen={isGatherModalOpen}
         onClose={() => setIsGatherModalOpen(false)}
         target={tgt ?? ""}
-        targetType={tgtType as GatherMinionsMinionsGatherGetTgtTypeEnum}
+        targetType={tgtType}
         master={saltMaster ?? ""}
       />
     </>

@@ -51,7 +51,7 @@ export function TaskForm({
     form.resetFields();
     setIsLoading(true);
     apiCoreStore.taskTemplatesApi
-      ?.taskTemplateListTasksTemplateGet()
+      ?.taskTemplatesList()
       .then((result) => {
         const options =
           result?.data?.reduce<Array<{ label: string; value: string }>>(

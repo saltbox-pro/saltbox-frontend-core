@@ -26,7 +26,7 @@ export class SettingsSlsStore {
     this.isLoading = true;
 
     apiCoreStore.settingsApi
-      ?.slsRepoSettingsListSettingsSlsReposGet({})
+      ?.repoList({})
       .then((response) => {
         runInAction(() => {
           this.slsreps = response.data;
@@ -47,13 +47,15 @@ export class SettingsSlsStore {
   handleSlsActivation = (id: string, isActive: boolean | undefined) => {
     if (!isActive) {
       apiCoreStore.settingsApi
-        ?.slsRepoSettingsActivateSettingsSlsReposSidActivatePost({ sid: id })
+        ?.repoActivate({
+          sid: id,
+        })
         .finally(() => {
           this.reload();
         });
     } else {
       apiCoreStore.settingsApi
-        ?.slsRepoSettingsDeactivateSettingsSlsReposSidDeactivatePostRaw({
+        ?.repoDeactivate({
           sid: id,
         })
         .finally(() => {
@@ -65,7 +67,7 @@ export class SettingsSlsStore {
   handleSlsDelete = (id: string) => {
     this.isLoading = true;
     apiCoreStore.settingsApi
-      ?.slsRepoSettingsDeleteSettingsSlsReposSidDelete({
+      ?.repoDelete({
         sid: id,
       })
       .finally(() => {

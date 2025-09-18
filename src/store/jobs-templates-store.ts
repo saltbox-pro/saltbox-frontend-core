@@ -28,7 +28,7 @@ export class JobTemplateStore {
   loadJobsTemplate = () => {
     this.isLoading = true;
     apiCoreStore.jsonSchemasApi
-      ?.getJsonSchemasListJsonSchemasGet({
+      ?.jobsSchemasList({
         limit: this.pagination.pageSize,
         skip: this.pagination.pageIndex * this.pagination.pageSize,
       })

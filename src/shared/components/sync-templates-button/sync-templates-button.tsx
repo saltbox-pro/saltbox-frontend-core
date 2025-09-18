@@ -18,7 +18,7 @@ export function SyncTemplatesButton({
   const checkTemplatesSyncTask = async (taskId: string): Promise<void> => {
     try {
       const result =
-        await apiCoreStore.settingsApi?.getSyncStatusSettingsSlsReposSyncStatusTaskIdGet(
+        await apiCoreStore.settingsApi?.repoSyncStatus(
           {
             task_id: taskId,
           },
@@ -55,7 +55,7 @@ export function SyncTemplatesButton({
   const handleSyncTemplates = () => {
     setIsSyncTemplates(true);
     apiCoreStore.jsonSchemasApi
-      ?.syncSchemasJsonSchemasSyncPost()
+      ?.jobsSchemasSync()
       .then((res) => {
         checkTemplatesSyncTask(res.task_id);
       })

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, List, Modal, Spin, Typography } from "antd";
-import { GatheredMinionSchema, GatherMinionsMinionsGatherGetTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
+import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from "saltbox-core/store";
 
 interface MinionGatherModalProps {
   isOpen: boolean;
   onClose: () => void;
   target: string;
-  targetType: GatherMinionsMinionsGatherGetTgtTypeEnum;
+  targetType: MinionsGatherTgtTypeEnum;
   master: string;
 }
 
@@ -28,7 +28,7 @@ export function MinionGatherModal({
     if (isOpen && target && targetType && master) {
       setIsLoading(true);
       apiCoreStore.minionsApi
-        ?.gatherMinionsMinionsGatherGet({
+        ?.minionsGather({
           tgt: target,
           tgt_type: targetType,
           master: master,

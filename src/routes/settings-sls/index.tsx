@@ -128,7 +128,7 @@ const SettingsSlsPage = observer(() => {
   const handleSlsSync = (id: string) => {
     setIsSyncSls(true);
     apiCoreStore.settingsApi
-      ?.slsRepoSettingsSyncSettingsSlsReposSidSyncPost({
+      ?.repoSync({
         sid: id,
       })
       .then((res) => {
@@ -144,7 +144,7 @@ const SettingsSlsPage = observer(() => {
   const checkSlsSyncTask = async (taskId: string): Promise<void> => {
     try {
       const result =
-        await apiCoreStore.settingsApi?.getSyncStatusSettingsSlsReposSyncStatusTaskIdGet(
+        await apiCoreStore.settingsApi?.repoSyncStatus(
           {
             task_id: taskId,
           }
@@ -195,7 +195,7 @@ const SettingsSlsPage = observer(() => {
 
     if (dialogMode === "create") {
       apiCoreStore.settingsApi
-        ?.slsRepoSettingsCreateSettingsSlsReposPost({
+        ?.repoCreate({
           SettingsSlsRepoCreateSchema: {
             name: formValue.name,
             description: formValue.description ? formValue.description : "",
@@ -217,7 +217,7 @@ const SettingsSlsPage = observer(() => {
     }
     if (dialogMode === "edit") {
       apiCoreStore.settingsApi
-        ?.slsRepoSettingsUpdateSettingsSlsReposSidPutRaw({
+        ?.repoUpdate({
           sid: recordToEdit ? recordToEdit?.id : "",
           SettingsSlsRepoUpdateSchema: {
             name: formValue.name,

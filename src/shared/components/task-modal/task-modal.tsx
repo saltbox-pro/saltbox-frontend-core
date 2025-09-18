@@ -105,7 +105,7 @@ export function TaskModal({
   useEffect(() => {
     if (taskCreateRequest?.task_template_id) {
       apiCoreStore.taskTemplatesApi
-        ?.taskTemplateRetrieveTasksTemplateTplIdGet({
+        ?.taskTemplateRetrieve({
           tpl_id: taskCreateRequest?.task_template_id,
         })
         .then((template) => {

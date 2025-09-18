@@ -32,7 +32,7 @@ export class TaskTemplatesStore {
   loadTaskTemplates = () => {
     this.isTaskTemplatesLoading = true;
     apiCoreStore.taskTemplatesApi
-      ?.taskTemplateListTasksTemplateGet({
+      ?.taskTemplatesList({
         limit: this.pagination.pageSize,
         skip: this.pagination.pageIndex * this.pagination.pageSize,
       })

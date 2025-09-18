@@ -128,7 +128,7 @@ const MasterPage = observer(() => {
     if (masterId) {
       setIsLoadingClients(true);
       apiCoreStore.minionsApi
-        ?.gatherMinionsMinionsGatherGet({
+        ?.minionsGather({
           tgt: "*",
           tgt_type: "glob",
           master: masterId,
