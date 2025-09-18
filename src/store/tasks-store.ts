@@ -7,6 +7,7 @@ export class TasksStore {
   tasks: Array<TaskListResponseSchema>;
   isTasksLoading: boolean;
   collectionSlug: string | null;
+  sourceType: string | null;
 
   total: number;
   pagination: PaginationState;
@@ -18,6 +19,7 @@ export class TasksStore {
     this.total = 0;
     this.isTasksLoading = false;
     this.collectionSlug = null;
+    this.sourceType = null;
 
     this.pagination = {
       pageIndex: 0,
@@ -25,9 +27,10 @@ export class TasksStore {
     };
   }
 
-  loadTasks = (collectionSlug?: string) => {
+  loadTasks = (collectionSlug?: string, sourceType?: string) => {
     if (!collectionSlug) return;
     this.collectionSlug = collectionSlug;
+    this.sourceType = sourceType;
     this.isTasksLoading = true;
     apiCoreStore.tasksApi
       ?.tasksList({
@@ -47,7 +50,7 @@ export class TasksStore {
   handleLazyLoad(pagination: PaginationState) {
     this.pagination = pagination;
     if (this.collectionSlug) {
-      this.loadTasks(this.collectionSlug);
+      this.loadTasks(this.collectionSlug, this.sourceType);
     }
   }
 

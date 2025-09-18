@@ -112,7 +112,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   useEffect(() => {
-    tasksStore.loadTasks(props.slug);
+    tasksStore.loadTasks(props.slug, "rest");
   }, [props.slug]);
 
   return (
