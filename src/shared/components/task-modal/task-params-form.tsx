@@ -47,7 +47,7 @@ export const TaskParamsForm = ({
 
   let minionsTaskModalCreateButtonsPlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
-    const minionsTaskModalCreateButtonPlugin = <Button type="primary" onClick={() => handleCreateTaskPlugin(plugin.key)}>
+    const minionsTaskModalCreateButtonPlugin = <Button type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
       {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
     </Button>;
     minionsTaskModalCreateButtonsPlugin = <>
@@ -70,7 +70,7 @@ export const TaskParamsForm = ({
       showErrorList={false}
       formData={taskCreateRequest?.data}
     >
-      <Flex justify="space-between">
+      <Flex justify="end" gap={5}>
         <Button type="default" onClick={() => onClose?.()}>
           {t("task-form.cancel")}
         </Button>

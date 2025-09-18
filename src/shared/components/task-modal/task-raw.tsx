@@ -74,7 +74,7 @@ export function TaskRaw(props: TaskRawProps) {
         <TextArea rows={10}></TextArea>
       </Form.Item>
 
-      <Flex justify="space-between">
+      <Flex justify="end" gap={5}>
         <Button type="default" onClick={() => props.onClose()}>
           {t("task-form.cancel")}
         </Button>
