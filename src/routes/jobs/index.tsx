@@ -23,6 +23,7 @@ import { JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import styles from "./index.module.css";
+import Parcel from "single-spa-react/parcel";
 
 const { Text } = Typography;
 
@@ -266,6 +267,14 @@ const JobsPage = observer(() => {
     jobsStore.handleDateRangeChange([dayjs().startOf("day"), dayjs()]);
   }, [jobsStore]);
 
+  let jobModalCreatePlugin: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.['jobs.jobmodal.create']?.forEach((plugin) => {
+    jobModalCreatePlugin = <>
+      {jobModalCreatePlugin}
+      <Parcel config={plugin.parcel} wrapWith="div" />
+    </>;
+  });
+
   return (
     <>
       <Breadcrumb
@@ -314,6 +323,8 @@ const JobsPage = observer(() => {
       >
         {jobsStore.isJobsLoading && <Spin />}
       </div>
+
+      {jobModalCreatePlugin}
     </>
   );
 });

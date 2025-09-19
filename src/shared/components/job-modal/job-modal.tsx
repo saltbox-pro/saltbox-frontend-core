@@ -20,15 +20,17 @@ import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-desig
 import {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
+  JobCreateRequest,
   JobData,
   JobSchemaModel,
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 
 import styles from "./job-modal.module.css";
+import { publish } from "@saltbox/saltbox-frontend-common";
 
 interface JobOption {
   value: string;
@@ -343,6 +345,39 @@ export function JobModal({
     setFunctionHovered(open);
   };
 
+  const handleCreateJobPlugin = (pluginKey: string) => {
+    const isFormValid = refJobParamsForm.current?.validateForm();
+    if (!isFormValid) {
+      return;
+    }
+    publish("jobs.jobmodal.create", {
+      pluginKey: pluginKey,
+      jobCreateRequest: getJobCreateRequest(),
+    });
+    handleModalCancel();
+  }
+
+  const getJobCreateRequest = (): CreateJobRequest => {
+    return {
+      tgt: form.getFieldValue("tgt"),
+      fun: form.getFieldValue("fun").at(-1),
+      tgt_type: form.getFieldValue("tgt_type"),
+      salt_master: form.getFieldValue("salt_master"),
+      data: jsonFormValue,
+    };
+  }
+
+  let jobsJobModalCreateButtonsPlugins: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.['jobs.jobmodal.create']?.forEach((plugin) => {
+    const jobsJobModalCreateButtonPlugin = <Button type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
+      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+    </Button>;
+    jobsJobModalCreateButtonsPlugins = <>
+      {jobsJobModalCreateButtonsPlugins}
+      {jobsJobModalCreateButtonPlugin}
+    </>;
+  });
+
   const isLoading =
     isSchemaListLoading ||
     isMasterListLoading ||
@@ -376,6 +411,8 @@ export function JobModal({
             >
               {t("job-modal.cancel")}
             </Button>
+
+            {jobsJobModalCreateButtonsPlugins}
 
             <Button
               loading={isLoading}
