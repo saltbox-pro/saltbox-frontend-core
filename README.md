@@ -14,7 +14,18 @@ For development with local changes to `@saltbox/saltbox-frontend-common`, you ca
    # Edit .env and set: COMMON_REPO_PATH=../saltbox-frontend-common
    ```
 
-2. **Start development server**:
+2. **Link the package** (required for build system to detect type changes):
+   ```bash
+   # In the common package directory
+   cd ../saltbox-frontend-common
+   yarn link
+
+   # Back in the core package directory
+   cd ../saltbox-frontend-core
+   yarn link @saltbox/saltbox-frontend-common
+   ```
+
+3. **Start development server**:
    ```bash
    yarn start
    ```
@@ -28,18 +39,35 @@ The development webpack configuration will automatically:
 
 To stop using the local package and return to the published version:
 
-1. **Remove the environment variable**:
+1. **Unlink the package**:
+   ```bash
+   # In the core package directory
+   yarn unlink @saltbox/saltbox-frontend-common
+
+   # In the common package directory (optional)
+   cd ../saltbox-frontend-common
+   yarn unlink
+   ```
+
+2. **Reinstall the published package**:
+   ```bash
+   # Back in the core package directory
+   cd ../saltbox-frontend-core
+   yarn --force
+   ```
+
+3. **Remove the environment variable**:
    ```bash
    # Remove COMMON_REPO_PATH from .env, set it to empty, or just comment the line like:
    #COMMON_REPO_PATH=../saltbox-frontend-common
    ```
 
-2. **Restart the development server**:
+4. **Restart the development server**:
    ```bash
    yarn start
    ```
 
-No additional cleanup is required - webpack will automatically use the published package from `node_modules`.
+The webpack configuration will automatically use the published package from `node_modules`.
 
 ### Without Local Linking
 
