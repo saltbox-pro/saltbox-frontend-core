@@ -182,6 +182,7 @@ const JobPage = observer(() => {
         <DefaultJobReturnTable
           jobReturns={toJS(jobStore.jobReturns)}
           isFullOutput={isFullOutput}
+          isLoading={jobStore.isJobReturnsLoading}
         />
       </div>
     </>

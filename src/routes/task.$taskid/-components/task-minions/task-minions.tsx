@@ -13,9 +13,11 @@ const columnHelper = createColumnHelper<TaskMinion>();
 export const TaskMinions = ({
   minions,
   collectionSlug,
+  isLoading,
 }: {
   minions: Array<TaskMinion>;
   collectionSlug: string;
+  isLoading: boolean;
 }) => {
   const { t } = useTranslation();
   const columns = [
@@ -96,6 +98,8 @@ export const TaskMinions = ({
       getRowId={(row) => row.minion_id}
       data={minions}
       total={minions.length}
+      isEmpty={!isLoading && !minions.length}
+      isLoading={isLoading && !minions.length}
     />
   );
 };

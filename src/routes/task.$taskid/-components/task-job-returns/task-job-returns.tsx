@@ -3,8 +3,10 @@ import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return
 
 export const TaskJobReturns = ({
   jobReturns,
+  isLoading,
 }: {
   jobReturns: Array<JobResult>;
+  isLoading: boolean;
 }) => {
-  return <DefaultJobReturnTable jobReturns={jobReturns} />;
+  return <DefaultJobReturnTable jobReturns={jobReturns} isLoading={isLoading} />;
 };

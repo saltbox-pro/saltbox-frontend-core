@@ -709,6 +709,7 @@ const MasterPage = observer(() => {
                 columns={pillarColumns}
                 data={toJS(pillarsStore.pillars)}
                 total={pillarsStore.total}
+                isEmpty={!pillarsStore.pillars.length}
                 getRowId={(row) => `${row.name}_${row.minion_id || "global"}`}
               />
             </div>

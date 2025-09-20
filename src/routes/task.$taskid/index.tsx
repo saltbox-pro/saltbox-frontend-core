@@ -76,6 +76,7 @@ const TaskPage = observer(() => {
         <TaskMinions
           minions={toJS(Object.values(taskStore.task?.minions ?? {}))}
           collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
+          isLoading={taskStore.isTaskLoading}
         />
       ),
     },
@@ -95,12 +96,12 @@ const TaskPage = observer(() => {
             )}
         </span>
       ),
-      children: <TaskJobs task={toJS(taskStore.task)} />,
+      children: <TaskJobs task={toJS(taskStore.task)} isLoading={taskStore.isTaskLoading} />,
     },
     {
       key: "job-returns",
       label: t("task.job-returns"),
-      children: <TaskJobReturns jobReturns={toJS(taskStore.jobReturns)} />,
+      children: <TaskJobReturns jobReturns={toJS(taskStore.jobReturns)} isLoading={taskStore.isTaskLoading} />,
     },
   ];
 

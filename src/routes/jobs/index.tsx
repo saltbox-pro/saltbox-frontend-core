@@ -315,6 +315,7 @@ const JobsPage = observer(() => {
         data={jobsStore.filteredJobs}
         sorting={sorting}
         onSortingChange={setSorting}
+        isEmpty={!jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
       />
 
       <div

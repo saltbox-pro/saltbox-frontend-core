@@ -12,8 +12,9 @@ const TaskJobsTable = FastTableListed<TaskJob>;
 
 const columnHelper = createColumnHelper<TaskJob>();
 
-export const TaskJobs = ({ task }: { task: TaskModel | null }) => {
+export const TaskJobs = ({ task, isLoading }: { task: TaskModel | null, isLoading: boolean }) => {
   const { t } = useTranslation();
+
   const columns = [
     columnHelper.accessor("jid", {
       header: t("task.jobs.table-jid"),
@@ -87,12 +88,17 @@ export const TaskJobs = ({ task }: { task: TaskModel | null }) => {
       },
     }),
   ];
+
+  const taskJobs = Object.values(task?.jobs ?? {});
+
   return (
     <TaskJobsTable
       columns={columns}
       getRowId={(row) => row.jid}
-      data={Object.values(task?.jobs ?? {})}
-      total={Object.keys(task?.jobs ?? {}).length}
-    ></TaskJobsTable>
+      data={taskJobs}
+      total={taskJobs.length}
+      isEmpty={!isLoading && !taskJobs.length}
+      isLoading={isLoading && !taskJobs.length}
+    />
   );
 };

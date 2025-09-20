@@ -14,9 +14,11 @@ const JobReturnsTable = FastTableListed<JobResult>;
 export const DefaultJobReturnTable = ({
   jobReturns,
   isFullOutput = false,
+  isLoading = false,
 }: {
   jobReturns: JobResult[];
   isFullOutput?: boolean;
+  isLoading?: boolean;
 }) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -106,10 +108,12 @@ export const DefaultJobReturnTable = ({
       getRowId={(row) => `${row.jid}-${row.id}`}
       columns={columns}
       data={jobReturns}
+      isLoading={isLoading && !jobReturns.length}
+      isEmpty={!isLoading && !jobReturns.length}
       getRowCanExpand={() => true}
       renderSubComponent={renderJobResult}
       sorting={sorting}
       onSortingChange={setSorting}
-    ></JobReturnsTable>
+    />
   );
 };
