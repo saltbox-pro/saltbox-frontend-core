@@ -34,9 +34,13 @@ export class TasksStore {
     this.isTasksLoading = true;
     apiCoreStore.tasksApi
       ?.tasksList({
-        collection_slug: this.collectionSlug,
-        limit: this.pagination.pageSize,
-        skip: this.pagination.pageIndex * this.pagination.pageSize,
+        TaskListBody: {
+          query: {
+            "target_collection.slug": this.collectionSlug,
+          },
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+        }
       })
       .then((tasks) => {
         runInAction(() => {
