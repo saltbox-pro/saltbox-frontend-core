@@ -32,39 +32,6 @@ const defaultStringOperators = [
   },
 ];
 
-const defaultNumberOperators = [
-  {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
-  {
-    name: "<",
-    value: "<",
-    label: "<",
-  },
-  {
-    name: ">",
-    value: ">",
-    label: ">",
-  },
-  {
-    name: "<=",
-    value: "<=",
-    label: "<=",
-  },
-  {
-    name: ">=",
-    value: ">=",
-    label: ">=",
-  },
-];
-
 const defaultDateTimeOperators = [
   {
     name: "<=",
@@ -79,16 +46,6 @@ const defaultDateTimeOperators = [
 ];
 
 const defaultListOperators = [
-  {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
   {
     name: "in",
     value: "in",
@@ -110,7 +67,10 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       label: t("minions.table-source-type"),
       operators: defaultListOperators,
       type: "multiselect",
-      selectOptions: [{ label: "User", value: "rest" }, { label: 'Scheduler', value: "scheduler" }],
+      selectOptions: [
+        { label: t("minions.table-soruce-type-rest"), value: "rest" },
+        { label: t('minions.table-soruce-type-scheduler'), value: "scheduler" }
+      ],
       selectFieldNames: { label: "label", value: "value" },
     },
     {
