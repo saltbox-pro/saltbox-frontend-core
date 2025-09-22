@@ -59,7 +59,7 @@
     "@rjsf/core": "^5.24.12",
     "@rjsf/utils": "^5.24.12",
     "@rjsf/validator-ajv8": "^5.24.12",
-    "@saltbox/saltbox-core-api-client": "^0.0.1-11cea0e0dbd65671f01c5989d012b06128809bfd",
+    "@saltbox/saltbox-core-api-client": "^0.0.1-798b12be2cee84adaba0dc1e15495e8c2283408c",
     "@saltbox/saltbox-frontend-common": "^0.0.13",
     "@tanstack/react-table": "^8.21.3",
     "antd": "5.26.0",

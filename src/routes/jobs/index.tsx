@@ -145,7 +145,7 @@ const filterSchema = [
     selectFieldNames: { label: "label", value: "value" },
   },
   {
-    name: "user",
+    name: "user.name",
     label: "User",
     operators: defaultStringOperators,
   },
@@ -213,7 +213,7 @@ const JobsPage = observer(() => {
     columnHelper.accessor("tgt_type", {
       header: t("jobs.table-target-type"),
     }),
-    columnHelper.accessor("user", {
+    columnHelper.accessor("user.name", {
       header: t("jobs.table-user"),
     }),
     columnHelper.accessor("fms_jid_timestamp", {

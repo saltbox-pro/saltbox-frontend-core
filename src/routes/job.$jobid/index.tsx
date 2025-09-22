@@ -118,7 +118,7 @@ const JobPage = observer(() => {
           {
             key: "user",
             label: t("jobs.table-user"),
-            children: jobStore.job?.user ?? <Skeleton.Input size="small" />,
+            children: jobStore.job?.user.name ?? <Skeleton.Input size="small" />,
           },
           {
             key: "fun",
