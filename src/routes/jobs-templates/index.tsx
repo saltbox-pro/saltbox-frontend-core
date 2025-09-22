@@ -76,9 +76,10 @@ const JobsTemplatePage = observer(() => {
         getRowId={(row) => row.id}
         data={jobTemplateStore.jobsTemplate}
         total={jobTemplateStore.totalJobsTemplate}
+        isLoading={jobTemplateStore.isLoading}
         pagination={jobTemplateStore.pagination}
         onLazyLoad={(pagination) => jobTemplateStore.handleLazyLoad(pagination)}
-      ></JobsTemplateTable>
+      />
     </>
   );
 });

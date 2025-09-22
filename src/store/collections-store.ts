@@ -5,7 +5,7 @@ import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionsStore {
   collections: Array<CollectionModel>;
-  isMinionsLoading: boolean;
+  isCollectionsLoading: boolean;
 
   total: number;
   pagination: PaginationState;
@@ -14,7 +14,7 @@ export class CollectionsStore {
     makeAutoObservable(this);
     this.collections = [];
     this.total = 0;
-    this.isMinionsLoading = false;
+    this.isCollectionsLoading = false;
 
     this.pagination = {
       pageIndex: 0,
@@ -24,7 +24,7 @@ export class CollectionsStore {
   }
 
   loadCollections = () => {
-    this.isMinionsLoading = true;
+    this.isCollectionsLoading = true;
     apiCoreStore.minionCollectionsApi
       ?.minionCollectionsList({
         skip: this.pagination.pageIndex * this.pagination.pageSize,
@@ -32,7 +32,7 @@ export class CollectionsStore {
       })
       .then((collections) => {
         runInAction(() => {
-          this.isMinionsLoading = false;
+          this.isCollectionsLoading = false;
           this.total = collections?.total ?? 0;
           this.collections = collections?.data ?? [];
         });

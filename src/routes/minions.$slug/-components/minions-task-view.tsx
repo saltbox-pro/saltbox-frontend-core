@@ -258,9 +258,10 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         getRowId={(row) => row.id}
         data={toJS(tasksStore.tasks)}
         total={tasksStore.total}
+        isLoading={tasksStore.isTasksLoading}
         pagination={tasksStore.pagination}
         onLazyLoad={(pagination) => tasksStore.handleLazyLoad(pagination)}
-      ></TasksTable>
+      />
     </Flex>
   );
 });

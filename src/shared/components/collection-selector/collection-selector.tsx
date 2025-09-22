@@ -45,9 +45,10 @@ export const CollectionSelector = observer(
             columns={collectionsColumns}
             data={collectionsStore.collections}
             total={collectionsStore.total}
+            isLoading={collectionsStore.isCollectionsLoading}
             pagination={collectionsStore.pagination}
-            onLazyLoad={() => collectionsStore.handleLazyLoad}
-          ></CollectionsTable>
+            onLazyLoad={collectionsStore.handleLazyLoad}
+          />
         </div>
       </>
     );
