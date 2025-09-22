@@ -18,7 +18,7 @@ export const SaltBoxAutocompleteValueEditor = (props: AntDValueEditorProps) => {
           collection_slug: props.slug,
           query: {
             [props.field]: {
-              $regex: `(?i)${props.value.replace(
+              $regex: `(?i)${String(props.value).replace(
                 /[.*+?^${}()|[\]\\]/g,
                 "\\$&"
               )}`,

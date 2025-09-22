@@ -1,6 +1,9 @@
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
-import { TaskListResponseSchema, TaskModel } from "@saltbox/saltbox-core-api-client";
+import {
+  TaskListResponseSchema,
+  TaskModel,
+} from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from "saltbox-core/store";
 
 export class TasksStore {
@@ -44,9 +47,13 @@ export class TasksStore {
       })
       .then((tasks) => {
         runInAction(() => {
-          this.isTasksLoading = false;
           this.total = tasks.total ?? 0;
           this.tasks = tasks.data ?? [];
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isTasksLoading = false;
         });
       });
   };

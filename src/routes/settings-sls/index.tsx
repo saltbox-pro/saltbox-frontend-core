@@ -269,9 +269,10 @@ const SettingsSlsPage = observer(() => {
       <SettingsSlsTable
         columns={columns}
         data={settingsSlsStore.slsreps}
+        isLoading={settingsSlsStore.isLoading}
         pagination={settingsSlsStore.pagination}
         onLazyLoad={(pagination) => settingsSlsStore.handleLazyLoad(pagination)}
-      ></SettingsSlsTable>
+      />
 
       {isSlsModalOpen && (
         <SlsModal

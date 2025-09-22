@@ -189,9 +189,10 @@ const MastersPage = observer(() => {
       <MastersTable
         columns={columns}
         data={toJS(mastersStore.masters)}
+        isLoading={mastersStore.isLoading}
         pagination={mastersStore.pagination}
         onLazyLoad={(pagination) => mastersStore.handleLazyLoad(pagination)}
-      ></MastersTable>
+      />
     </>
   );
 });

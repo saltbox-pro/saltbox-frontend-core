@@ -98,13 +98,14 @@ const TaskTemplatesPage = observer(() => {
         getRowId={(row) => row.id}
         data={taskTemplatesStore.taskTemplates}
         total={taskTemplatesStore.total}
+        isLoading={taskTemplatesStore.isTaskTemplatesLoading}
         pagination={taskTemplatesStore.pagination}
         onRowSelectionChange={setSelection}
         rowSelection={selection}
         onLazyLoad={(pagination) =>
           taskTemplatesStore.handleLazyLoad(pagination)
         }
-      ></TaskTemplatesTable>
+      />
     </>
   );
 });

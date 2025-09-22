@@ -1,21 +1,29 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  useNavigate,
-  useParams,
-} from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Badge, Breadcrumb, Button, Flex, Input, Popover, Spin, Tag, message } from "antd";
 import {
-  HomeOutlined,
-  QuestionCircleOutlined,
-} from "@ant-design/icons";
+  Badge,
+  Breadcrumb,
+  Button,
+  Flex,
+  Input,
+  Popover,
+  Tag,
+  message,
+} from "antd";
+import { HomeOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
-import { pastTimeByUserTZ, formatTimeByUserTZ, FastTablePaginated, PageHeader } from "@saltbox/saltbox-frontend-common";
+import {
+  pastTimeByUserTZ,
+  formatTimeByUserTZ,
+  FastTablePaginated,
+  PageHeader,
+} from "@saltbox/saltbox-frontend-common";
 import { MinionFilterStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";
 import { defaultCollectionStore } from "saltbox-core/store";
@@ -53,7 +61,11 @@ const CollectionEditPage = observer(() => {
             <Button
               type="link"
               size={"small"}
-              onClick={() => navigate(`/minion/${data.row.original.master}/${data.row.original.minion_id}`)}
+              onClick={() =>
+                navigate(
+                  `/minion/${data.row.original.master}/${data.row.original.minion_id}`
+                )
+              }
             >
               {data.row.original.minion_id}
             </Button>
@@ -108,15 +120,15 @@ const CollectionEditPage = observer(() => {
         const lastActivitySeconds = data?.row.original.last_activity_seconds;
         const componentData = lastActivitySeconds
           ? {
-            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-            badgeText: pastTimeByUserTZ(data.getValue()),
-            popoverContent: formatTimeByUserTZ(data.getValue()),
-          }
+              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+              badgeText: pastTimeByUserTZ(data.getValue()),
+              popoverContent: formatTimeByUserTZ(data.getValue()),
+            }
           : {
-            badgeColor: "orange",
-            badgeText: t("minions.never-synced"),
-            popoverContent: undefined,
-          };
+              badgeColor: "orange",
+              badgeText: t("minions.never-synced"),
+              popoverContent: undefined,
+            };
         return (
           <Popover content={componentData.popoverContent}>
             <span>
@@ -152,9 +164,9 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
-    minionsStore.collectionSlug = collectionStore.collection?.parent_slug || slug;
+    minionsStore.collectionSlug =
+      collectionStore.collection?.parent_slug || slug;
   }, [slug, collectionStore.collection?.parent_slug]);
-
 
   useEffect(() => {
     if (collectionStore.collection?.query) {
@@ -189,7 +201,9 @@ const CollectionEditPage = observer(() => {
       }
       const currentQueryString = JSON.stringify(filterStore.currentFilters);
       if (currentQueryString !== originalQuery) {
-        await collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
+        await collectionStore.updateCollectionQuery(
+          filterStore.searchMongoDBQuery
+        );
         setOriginalQuery(currentQueryString);
       }
 
@@ -220,7 +234,11 @@ const CollectionEditPage = observer(() => {
           },
         ]}
       />
-      <PageHeader title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}></PageHeader>
+      <PageHeader
+        title={`${t("collection.editing-collection")} ${
+          collectionStore.collection?.title
+        }`}
+      ></PageHeader>
       <Flex className={styles.collectionHeader} gap={8} align="center">
         <Input
           value={newTitle}
@@ -249,7 +267,8 @@ const CollectionEditPage = observer(() => {
               type="primary"
               disabled={
                 (newTitle === originalTitle &&
-                  JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+                  JSON.stringify(filterStore.currentFilters) ===
+                    originalQuery) ||
                 newTitle.trim() === ""
               }
               onClick={handleSaveButton}
@@ -267,18 +286,16 @@ const CollectionEditPage = observer(() => {
             )}
           </Flex>
         </div>
-        <Spin spinning={minionsStore.isLoading} className={styles.collectionSpin}>
-          <MinionsTable
-            columns={minionsColumns}
-            getRowId={(row) => `${row.master}-${row.minion_id}`}
-            data={toJS(minionsStore.minions)}
-            total={toJS(minionsStore.totalMinions)}
-            pagination={toJS(minionsStore.pagination)}
-            onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
-          />
-        </Spin>
+        <MinionsTable
+          columns={minionsColumns}
+          getRowId={(row) => `${row.master}-${row.minion_id}`}
+          data={toJS(minionsStore.minions)}
+          total={toJS(minionsStore.totalMinions)}
+          isLoading={minionsStore.isLoading}
+          pagination={toJS(minionsStore.pagination)}
+          onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+        />
       </Flex>
-
     </>
   );
 });

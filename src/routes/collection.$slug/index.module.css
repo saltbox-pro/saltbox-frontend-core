@@ -14,10 +14,6 @@
   max-width: 300px;
 }
 
-.collectionSpin {
-  width: 100%;
-}
-
 .customFilterBackground :global(.queryBuilder) {
   background-color: #f0f0f0 !important;
 }

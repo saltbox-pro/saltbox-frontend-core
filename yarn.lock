@@ -1607,10 +1607,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-11cea0e0dbd65671f01c5989d012b06128809bfd.tgz#0d82dc5d9aae08e078e23754bbdb639d61c48c35"
   integrity sha1-DYLcXZquCOB44jdUu9tjnWHEjDU=
 
-"@saltbox/saltbox-frontend-common@^0.0.12":
-  version "0.0.12"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.12.tgz#8c9ad2b44cdb84c0e7a84ae885d8a1a0470ba178"
-  integrity sha1-jJrStEzbhMDnqErohdihoEcLoXg=
+"@saltbox/saltbox-frontend-common@^0.0.13":
+  version "0.0.13"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.13.tgz#2f45ca6c346d023032642a1d245b73305acaf256"
+  integrity sha1-L0XKbDRtAjAyZCodJFtzMFrK8lY=
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.38"
