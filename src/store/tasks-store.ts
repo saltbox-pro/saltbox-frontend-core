@@ -7,7 +7,7 @@ export class TasksStore {
   tasks: Array<TaskListResponseSchema>;
   isTasksLoading: boolean;
   collectionSlug: string | null;
-  sourceType: string | null;
+  mongoDBQuery: object | undefined;
 
   total: number;
   pagination: PaginationState;
@@ -19,7 +19,6 @@ export class TasksStore {
     this.total = 0;
     this.isTasksLoading = false;
     this.collectionSlug = null;
-    this.sourceType = null;
 
     this.pagination = {
       pageIndex: 0,
@@ -27,16 +26,16 @@ export class TasksStore {
     };
   }
 
-  loadTasks = (collectionSlug?: string, sourceType?: string) => {
+  loadTasks = (collectionSlug?: string) => {
     if (!collectionSlug) return;
     this.collectionSlug = collectionSlug;
-    this.sourceType = sourceType;
     this.isTasksLoading = true;
     apiCoreStore.tasksApi
       ?.tasksList({
         TaskListBody: {
           query: {
             "target_collection.slug": this.collectionSlug,
+            ...this?.mongoDBQuery,
           },
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
@@ -54,9 +53,14 @@ export class TasksStore {
   handleLazyLoad(pagination: PaginationState) {
     this.pagination = pagination;
     if (this.collectionSlug) {
-      this.loadTasks(this.collectionSlug, this.sourceType);
+      this.loadTasks(this.collectionSlug);
     }
-  }
+  };
+
+  handleSearch = (collectionSlug?: string) => {
+    this.pagination.pageIndex = 0;
+    this.loadTasks(collectionSlug);
+  };
 
   updateTask = (task: TaskModel) => {
     const index = this.tasks.findIndex((item) => item.id === task.id);
