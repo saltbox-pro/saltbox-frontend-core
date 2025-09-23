@@ -10,15 +10,6 @@ import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
 
-const hasTaskArgs = (template?: TaskTemplateModel): boolean => {
-  const result =
-    // @ts-ignore
-    template?.json_schema?.["properties"]?.kwargs !== undefined ||
-    // @ts-ignore
-    template?.json_schema?.["properties"]?.args !== undefined;
-  return result;
-};
-
 type TaskFormProps = {
   taskTemplate?: TaskTemplateModel;
   taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;
@@ -199,27 +190,13 @@ export function TaskForm({
           {t("task-form.cancel")}
         </Button>
 
-        {hasTaskArgs(taskTemplate) && (
-          <Button
-            type="primary"
-            onClick={handleChooseParams}
-            disabled={isLoading}
-          >
-            {t("task-form.choose-task-params")}
-          </Button>
-        )}
-
-        {!hasTaskArgs(taskTemplate) && (minionsTaskModalCreateButtonsPlugins)}
-
-        {!hasTaskArgs(taskTemplate) && (
-          <Button
-            type="primary"
-            onClick={handleCreateTask}
-            disabled={isLoading}
-          >
-            {t("task-form.create-task")}
-          </Button>
-        )}
+        <Button
+          type="primary"
+          onClick={handleChooseParams}
+          disabled={isLoading || form.getFieldValue("task_template_id") === ""}
+        >
+          {t("task-form.choose-task-params")}
+        </Button>
       </Flex>
     </Form>
   );
