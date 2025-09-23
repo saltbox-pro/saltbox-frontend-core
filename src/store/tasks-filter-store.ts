@@ -1,19 +1,27 @@
 import { OptionList, RuleGroupType, formatQuery } from "react-querybuilder";
-import { action, computed, makeObservable } from "mobx";
+import { computed, makeObservable } from "mobx";
 import { customRuleProcessorMongoDB } from "saltbox-core/shared/utils/queryBulderUtils";
 import { FilterStore } from "./filter-store";
 
-/* const emptyFilters: RuleGroupType = {
-  rules: [{ field: "source", operator: "in", value: "rest" }],
+const defaultFilters: RuleGroupType = {
+  rules: [
+    {
+      field: "source.type",
+      operator: "in",
+      value: "rest",
+      valueSource: "value",
+    },
+  ],
   combinator: 'and',
-  not: false,
 };
- */
+
 export class TasksFilterStore extends FilterStore {
   constructor(filterSchema: OptionList) {
     super();
     makeObservable(this);
     this.filterSchema = filterSchema;
+    this.searchFilters = defaultFilters;
+    this.currentFilters = defaultFilters;
   }
 
   @computed get searchMongoDBQuery() {
@@ -24,9 +32,4 @@ export class TasksFilterStore extends FilterStore {
       })
     );
   }
-
-  /* handleResetFilters = () => {
-    this.currentFilters = emptyFilters;
-    this.handelSearch();
-  }; */
 }

@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import QueryBuilder from "react-querybuilder";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -17,7 +16,6 @@ const EmptyActionElement = () => null;
 
 export const SaltBoxReadonlyQueryBuilder = observer(
   (props: SaltBoxReadonlyQueryBuilderProps) => {
-    const { t } = useTranslation();
     return (
       <div className={styles.queryBuilderContainer}>
         <Spin spinning={props.filterStore.isLoading}>

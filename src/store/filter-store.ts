@@ -12,7 +12,6 @@ export class FilterStore {
   @observable searchFilters: RuleGroupType = emptyFilters;
   @observable isLoading: boolean = false;
   @observable filterSchema: OptionList = [];
-  @observable isApplyingFilter: boolean = false;
 
   @computed
   get isSearchEnable() {
@@ -24,13 +23,7 @@ export class FilterStore {
 
   @action
   handleFiltersChange = (filters: RuleGroupType) => {
-    const previousRulesCount = this.currentFilters.rules.length;
     this.currentFilters = filters;
-    if (filters.rules.length < previousRulesCount) {
-      this.isApplyingFilter = true;
-      this.handelSearch();
-      this.isApplyingFilter = false;
-    }
   };
 
   @action

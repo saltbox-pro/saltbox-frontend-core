@@ -24,6 +24,8 @@ type SaltBoxQueryBuilderContainerProps = {
     valueEditor?: (props: ValueEditorProps) => JSX.Element;
     valueSelector?: (props: ValueSelectorProps) => JSX.Element;
   };
+  onSearchButtonClick?: () => void;
+  onResetButtonClick?: () => void;
 };
 
 export const SaltBoxQueryBuilderContainer = observer(
@@ -31,7 +33,7 @@ export const SaltBoxQueryBuilderContainer = observer(
     const { t } = useTranslation();
     return (
       <div className={styles.queryBuilderContainer}>
-        <Spin spinning={props.filterStore.isLoading || props.filterStore.isApplyingFilter}>
+        <Spin spinning={props.filterStore.isLoading}>
           <QueryBuilderDnD dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
             <QueryBuilderSaltBox>
               <QueryBuilderSaltBox>
@@ -70,7 +72,7 @@ export const SaltBoxQueryBuilderContainer = observer(
           <Flex justify="space-between" style={{ padding: "8px" }}>
             <Button
               disabled={!props.filterStore.isSearchEnable}
-              onClick={() => props.filterStore.handelSearch()}
+              onClick={() => { props.filterStore.handelSearch(); props.onSearchButtonClick?.(); }}
               icon={<SearchOutlined />}
               type="primary"
             >
@@ -81,7 +83,7 @@ export const SaltBoxQueryBuilderContainer = observer(
                 color="danger"
                 variant="link"
                 disabled={props.filterStore.currentFilters.rules.length === 0}
-                onClick={() => props.filterStore.handleResetFilters()}
+                onClick={() => { props.filterStore.handleResetFilters(); props.onResetButtonClick?.(); }}
                 icon={<MatIcon icon="filter_alt_off" />}
                 title={t("minions.reset")}
               />

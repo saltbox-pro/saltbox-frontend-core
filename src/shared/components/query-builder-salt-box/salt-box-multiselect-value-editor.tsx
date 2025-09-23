@@ -9,7 +9,7 @@ export const SaltBoxMultiselectValueEditor = ({
   className,
   fieldData,
 }: ValueEditorProps) => {
-  const [internalValue, setInternalValue] = useState("");
+  const [internalValue, setInternalValue] = useState(value);
 
   useEffect(() => {
     handleOnChange(internalValue);
@@ -25,6 +25,7 @@ export const SaltBoxMultiselectValueEditor = ({
       mode="multiple"
       options={fieldData?.selectOptions as any}
       fieldNames={fieldData?.selectFieldNames}
+      defaultValue={value}
       allowClear={true}
       onChange={handleChange}
       className={className}

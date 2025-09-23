@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { Button, Flex, Tag } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
@@ -47,14 +46,24 @@ const defaultDateTimeOperators = [
 
 const defaultListOperators = [
   {
+    name: "=",
+    value: "=",
+    label: "=",
+  },
+  {
+    name: "!=",
+    value: "!=",
+    label: "!=",
+  },
+  {
     name: "in",
     value: "in",
-    label: "in",
+    label: "In",
   },
   {
     name: "notIn",
     value: "notIn",
-    label: "notIn",
+    label: "Not In",
   },
 ];
 
@@ -71,7 +80,6 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         { label: t("minions.table-soruce-type-rest"), value: "rest" },
         { label: t('minions.table-soruce-type-scheduler'), value: "scheduler" }
       ],
-      selectFieldNames: { label: "label", value: "value" },
     },
     {
       name: "task_template.title",
@@ -134,6 +142,19 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       header: t("minions.table-collection"),
       cell: (data) => {
         return <> {data.getValue()} </>;
+      },
+    }),
+    columnHelper.accessor("source.type", {
+      header: t("minions.table-source-type"),
+      cell: (data) => {
+        switch (data.getValue()) {
+          case "rest":
+            return t("minions.table-soruce-type-rest");
+          case "scheduler":
+            return t("minions.table-soruce-type-scheduler");
+          default:
+            return data.getValue();
+        }
       },
     }),
     columnHelper.accessor("user.name", {
@@ -200,23 +221,32 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   useEffect(() => {
-    tasksStore.loadTasks(props.slug);
-  }, [props.slug, tasksStore]);
+    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+    tasksStore.setCollectionSlug(props.slug);
+  }, [props.slug]);
 
-  useEffect(() => {
+  const handleSearchButtonClick = () => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(props.slug);
-  }, [filterStore.searchMongoDBQuery]);
+  };
+
+  const handleResetButtonClick = () => {
+    filterStore.handleResetFilters();
+    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+    tasksStore.handleSearch(props.slug);
+  };
 
   return (
     <Flex style={{ height: "100%" }} vertical>
       <TasksQueryBuilder
         filterStore={filterStore}
+        onSearchButtonClick={handleSearchButtonClick}
+        onResetButtonClick={handleResetButtonClick}
       />
       <TasksTable
         columns={columns}
         getRowId={(row) => row.id}
-        data={toJS(tasksStore.tasks)}
+        data={tasksStore.tasks}
         total={tasksStore.total}
         isLoading={tasksStore.isTasksLoading}
         pagination={tasksStore.pagination}

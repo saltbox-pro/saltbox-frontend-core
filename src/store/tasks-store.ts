@@ -38,7 +38,7 @@ export class TasksStore {
         TaskListBody: {
           query: {
             "target_collection.slug": this.collectionSlug,
-            ...this?.mongoDBQuery,
+            ...this.mongoDBQuery,
           },
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
@@ -73,6 +73,14 @@ export class TasksStore {
     const index = this.tasks.findIndex((item) => item.id === task.id);
     if (index > -1) {
       this.tasks[index] = task;
+    }
+  };
+
+  setCollectionSlug = (slug: string | undefined) => {
+    this.pagination.pageIndex = 0;
+    this.collectionSlug = slug;
+    if (this.collectionSlug) {
+      this.loadTasks(this.collectionSlug);
     }
   };
 }
