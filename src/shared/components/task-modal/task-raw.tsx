@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { Button, Flex, Form } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
+import { appStore, i18nStore } from "saltbox-core/store";
 
 type TaskRawProps = {
   taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;
   onFinish: (formData: TaskCreateRequestSchemaInput) => void;
   onChange: (formData: TaskCreateRequestSchemaInput) => void;
   onClose: () => void;
+  onCreateTaskPlugin: (pluginKey: string) => void;
 };
 
 type TaskRawForm = {
@@ -36,6 +38,21 @@ export function TaskRaw(props: TaskRawProps) {
       data: JSON.stringify(props.taskCreateRequest, null, 2),
     });
   }, [props.taskCreateRequest]);
+
+  const handleCreateTaskPlugin = (pluginKey: string) => {
+    props?.onCreateTaskPlugin?.(pluginKey);
+  }
+
+  let minionsTaskModalCreateButtonsPlugin: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
+    const minionsTaskModalCreateButtonPlugin = <Button type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
+      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+    </Button>;
+    minionsTaskModalCreateButtonsPlugin = <>
+      {minionsTaskModalCreateButtonsPlugin}
+      {minionsTaskModalCreateButtonPlugin}
+    </>;
+  });
 
   return (
     <Form
@@ -78,6 +95,8 @@ export function TaskRaw(props: TaskRawProps) {
         <Button type="default" onClick={() => props.onClose()}>
           {t("task-form.cancel")}
         </Button>
+
+        {minionsTaskModalCreateButtonsPlugin}
 
         <Button type="primary" htmlType="submit">
           {t("task-form.create-task")}

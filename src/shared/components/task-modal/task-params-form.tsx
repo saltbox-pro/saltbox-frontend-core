@@ -32,14 +32,12 @@ export const TaskParamsForm = ({
   const formRef = useRef(null);
 
   const handleCreateTask = () => {
-    //@ts-ignore
     if (formRef.current?.validateForm()) {
       onFinish?.();
     }
   };
 
   const handleCreateTaskPlugin = (pluginKey: string) => {
-    //@ts-ignore
     if (formRef.current?.validateForm()) {
       onCreateTaskPlugin?.(pluginKey);
     }

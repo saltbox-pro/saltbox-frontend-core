@@ -127,10 +127,8 @@ export function TaskModal({
       label: t("task-modal.task-info"),
       children: (
         <TaskForm
-          taskTemplate={taskTemplate}
           taskCreateRequest={taskCreateRequest}
           onFinish={handleCreateTask}
-          onCreateTaskPlugin={handleCreateTaskPlugin}
           onChange={handleTaskForm}
           onChooseParams={handleChooseParams}
           onClose={onClose}
@@ -159,6 +157,7 @@ export function TaskModal({
       children: (
         <TaskRaw
           taskCreateRequest={taskCreateRequest}
+          onCreateTaskPlugin={handleCreateTaskPlugin}
           onClose={onClose}
           onChange={handleTaskRawChange}
           onFinish={handleCreateTask}
