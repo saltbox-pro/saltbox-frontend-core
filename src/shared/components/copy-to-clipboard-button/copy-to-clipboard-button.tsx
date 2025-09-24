@@ -13,7 +13,7 @@ export function CopyToClipboardButton({ text }: { text: string }) {
       <Button
         className={styles.buttonCopyToClipboard}
         icon={<CopyOutlined />}
-        type="text"
+        type="link"
         shape="circle"
         size="small"
         title={t("base.copy-to-clipboard")}

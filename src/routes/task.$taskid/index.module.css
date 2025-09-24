@@ -6,3 +6,17 @@
 .taskTabs :global(.ant-spin-container) {
   height: 100%;
 }
+
+.jobReturnsControls {
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.jobReturnsControlsInner {
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  margin-top: -11px;
+}
