@@ -9,9 +9,11 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import {
   Breadcrumb,
-  Descriptions,
   Flex,
+  Progress,
   Skeleton,
+  Spin,
+  Statistic,
   Switch,
   Typography,
 } from "antd";
@@ -25,6 +27,7 @@ import { JsonPopover } from "./-components/json-popover";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
+const { Timer } = Statistic;
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
@@ -33,6 +36,19 @@ const JobPage = observer(() => {
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
+
+  const jobStartTime = jobStore.job?.fms_jid_timestamp
+    ? new Date(jobStore.job.fms_jid_timestamp).getTime()
+    : null;
+
+  const minionsArray = jobStore.job?.minions || [];
+  const totalMinions = minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length);
+  const successfulMinions = jobStore.jobReturns.filter(return_ => return_.success).length;
+  const failedMinions = jobStore.jobReturns.filter(return_ => !return_.success).length;
+  const pendingMinions = totalMinions - jobStore.jobReturns.length;
+
+  const progressPercent = totalMinions > 0 ? (jobStore.jobReturns.length / totalMinions) * 100 : 0;
+  const successPercent = totalMinions > 0 ? (successfulMinions / totalMinions) * 100 : 0;
 
   useEffect(() => {
     jobStore.reload(jid);
@@ -78,60 +94,54 @@ const JobPage = observer(() => {
             title: <Link to="/jobs">{t("jobs.title")}</Link>,
           },
           {
-            title: t("jobs.job-title", { jobId: jid }),
+            title: t("jobs.job-title-breadcrumb"),
           },
         ]}
       />
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
-      <Descriptions
-        className={styles.descriptionsContainer}
-        bordered
-        items={[
-          {
-            key: "tgt",
-            label: t("jobs.table-targets"),
-            children: (
+      <div className={styles.jobDetailsContainer}>
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
+          <span className={styles.jobDetailValue}>
+            {(jobStore.job?.tgt as string) ? (
               <>
-                {(jobStore.job?.tgt as string) ? (
-                  <>
-                    <Text
-                      ellipsis
-                      style={{ maxWidth: "200px" }}
-                      title={jobStore.job?.tgt as string}
-                    >
-                      {jobStore.job?.tgt as string}
-                    </Text>
-                    <CopyToClipboardButton text={jobStore.job?.tgt as string} />
-                  </>
-                ) : (
-                  <Skeleton.Input size="small" />
-                )}
+                <Text
+                  ellipsis
+                  style={{ maxWidth: "200px" }}
+                  title={jobStore.job?.tgt as string}
+                >
+                  {jobStore.job?.tgt as string}
+                </Text>
+                <CopyToClipboardButton text={jobStore.job?.tgt as string} />
               </>
-            ),
-          },
-          {
-            key: "tgt_type",
-            label: t("jobs.table-target-type"),
-            children: jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />,
-          },
-          {
-            key: "user",
-            label: t("jobs.table-user"),
-            children: jobStore.job?.user.name ?? <Skeleton.Input size="small" />,
-          },
-          {
-            key: "fun",
-            label: t("jobs.table-function"),
-            children: jobStore.job?.fun ?? <Skeleton.Input size="small" />,
-          },
-          {
-            key: "arg",
-            label: t("jobs.arguments"),
-            children: jobStore.isJobLoading ? (
+            ) : (
+              <Skeleton.Input size="small" />
+            )}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-function")}:</span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.job?.fun ?? <Skeleton.Input size="small" />}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>{t("jobs.arguments")}:</span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
             ) : jobStore.job?.arg && jobStore.job.arg.length > 0 ? (
-              <Flex align="center">
+              <Flex align="center" gap={4}>
                 <span>
                   {jobStore.job.arg.length} {t("jobs.arguments")}
                 </span>
@@ -142,12 +152,14 @@ const JobPage = observer(() => {
               </Flex>
             ) : (
               <Text type="secondary">{t("jobs.no-arguments")}</Text>
-            ),
-          },
-          {
-            key: "kwarg",
-            label: t("jobs.key-value-arguments"),
-            children: jobStore.isJobLoading ? (
+            )}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>{t("jobs.key-value-arguments")}:</span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
             ) : jobStore.job?.kwarg &&
               Object.keys(jobStore.job.kwarg).length > 0 ? (
@@ -163,28 +175,67 @@ const JobPage = observer(() => {
               </Flex>
             ) : (
               <Text type="secondary">{t("jobs.no-key-value-arguments")}</Text>
-            ),
-          },
-        ]}
-      />
+            )}
+          </span>
+        </div>
+      </div>
 
-      <Flex className={styles.switchContainer}>
-        <Flex className={styles.switchWrapper}>
-          <span>{t("jobs.full-output")}</span>
-          <Switch
-            checked={isFullOutput}
-            onChange={setIsFullOutput}
+      {totalMinions > 0 && (
+        <div className={styles.progressContainer}>
+          <Progress
+            percent={progressPercent}
+            success={{ percent: successPercent }}
+            strokeColor="#ff4d4f"
+            size={{ height: 10 }}
+            showInfo={false}
+            className={styles.progressBar}
           />
+        </div>
+      )}
+
+      <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
+        {totalMinions > 0 && (
+          <div className={styles.statsWrapper}>
+            <span className={styles.statsText}>
+              <span className={styles.statsNumber}>{successfulMinions}</span> successful / <span className={styles.statsNumber}>{failedMinions}</span> failed / <span className={styles.statsNumber}>{pendingMinions}</span> pending
+            </span>
+          </div>
+        )}
+
+        <Flex align="center" gap={16}>
+          {jobStartTime && (
+            <div className={styles.timerWrapper}>
+              <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
+              <Timer
+                type="countup"
+                value={jobStartTime}
+                format="HH:mm:ss"
+              />
+            </div>
+          )}
+          <Flex className={styles.switchWrapper}>
+            <span>{t("jobs.full-output")}</span>
+            <Switch
+              checked={isFullOutput}
+              onChange={setIsFullOutput}
+            />
+          </Flex>
         </Flex>
       </Flex>
 
-      <div className={styles.jobReturnTableWrapper}>
-        <DefaultJobReturnTable
-          jobReturns={toJS(jobStore.jobReturns)}
-          isFullOutput={isFullOutput}
-          isLoading={jobStore.isJobReturnsLoading}
-        />
-      </div>
+      {jobStore.isJobReturnsLoading ? (
+        <div className={`${styles.jobReturnTableWrapper} ${styles.spinnerContainer}`}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <div className={styles.jobReturnTableWrapper}>
+          <DefaultJobReturnTable
+            jobReturns={toJS(jobStore.jobReturns)}
+            isFullOutput={isFullOutput}
+            jobStartTimestamp={jobStore.job?._stamp || null}
+          />
+        </div>
+      )}
     </>
   );
 });

@@ -2,16 +2,109 @@
   width: 1%;
 }
 
-.descriptionsContainer {
-  margin-bottom: 0.67em;
+.jobDetailsContainer {
+  padding: 16px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.jobDetailItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.jobDetailLabel {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.88);
+  white-space: nowrap;
+}
+
+.jobDetailValue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.timerWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timerLabel {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.88);
+  white-space: nowrap;
+}
+
+.timerWrapper :global(.ant-statistic) {
+  margin-bottom: 0;
+}
+
+.timerWrapper :global(.ant-statistic-title) {
+  display: none;
+}
+
+.timerWrapper :global(.ant-statistic-content) {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.progressContainer {
+  margin-top: 8px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.progressWrapper {
+  flex: 1;
+}
+
+.progressBar {
+  margin: 0;
+}
+
+.progressBar :global(.ant-progress-bg) {
+  background-color: #d9d9d9 !important;
+}
+
+.progressBar :global(.ant-progress-success-bg) {
+  background-color: #52c41a !important;
+}
+
+.statsWrapper {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.statsText {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.statsNumber {
+  font-weight: 600;
 }
 
 .switchContainer {
-  justify-content: flex-end;
   margin-bottom: 16px;
 }
 
 .switchWrapper {
   align-items: center;
   gap: 8px;
+}
+
+.spinnerContainer {
+  text-align: center;
+  padding: 50px 0;
 }

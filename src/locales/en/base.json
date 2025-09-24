@@ -219,8 +219,15 @@
       "table-success": "Success",
       "table-return-code": "Return Code",
       "table-timestamp": "Timestamp",
+      "table-execution-time": "Execution Time",
       "table-yes": "Yes",
-      "table-no": "No"
+      "table-no": "No",
+      "time-units": {
+        "milliseconds": "ms",
+        "seconds": "s",
+        "minutes": "m",
+        "hours": "h"
+      }
     }
   },
   "masters": {
@@ -258,13 +265,15 @@
     "date-range-12-hours": "12 hours ago",
     "date-range-1-day": "1 day ago",
     "table-copy": "Copy",
+    "job-title-breadcrumb": "Job",
     "job-title": "Job #{{jobId}}",
     "table-copy-success": "Copied",
     "key-value-arguments": "Key-Value arguments",
     "arguments": "arguments",
     "no-arguments": "No arguments",
     "no-key-value-arguments": "No key-value arguments",
-    "full-output": "Full Output"
+    "full-output": "Full Output",
+    "job-duration": "Job Duration"
   },
   "job-modal": {
     "title": "Create Job",

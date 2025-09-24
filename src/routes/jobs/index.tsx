@@ -216,6 +216,7 @@ const JobsPage = observer(() => {
     columnHelper.accessor("user.name", {
       header: t("jobs.table-user"),
     }),
+
     columnHelper.accessor("fms_jid_timestamp", {
       header: t("jobs.table-created"),
       cell: (data) => {
@@ -309,20 +310,21 @@ const JobsPage = observer(() => {
         />
       </div>
 
-      <JobsTable
-        columns={columns}
-        getRowId={(row) => row.jid}
-        data={jobsStore.filteredJobs}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        isEmpty={!jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
-      />
+      <Spin spinning={jobsStore.isJobsLoading && jobsStore.filteredJobs.length === 0}>
+        <JobsTable
+          columns={columns}
+          getRowId={(row) => row.jid}
+          data={jobsStore.filteredJobs}
+          sorting={sorting}
+          onSortingChange={setSorting}
+        />
+      </Spin>
 
       <div
         ref={loadingRef}
         style={{ paddingBottom: "15px", textAlign: "center" }}
       >
-        {jobsStore.isJobsLoading && <Spin />}
+        {jobsStore.isJobsLoading && jobsStore.filteredJobs.length > 0 && <Spin />}
       </div>
 
       {jobModalCreatePlugin}

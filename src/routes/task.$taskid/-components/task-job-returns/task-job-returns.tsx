@@ -1,12 +1,15 @@
+import React from "react";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 
-export const TaskJobReturns = ({
-  jobReturns,
-  isLoading,
-}: {
+type TaskJobReturnsProps = {
   jobReturns: Array<JobResult>;
-  isLoading: boolean;
+  isFullOutput?: boolean;
+};
+
+export const TaskJobReturns: React.FC<TaskJobReturnsProps> = ({
+  jobReturns,
+  isFullOutput = false,
 }) => {
-  return <DefaultJobReturnTable jobReturns={jobReturns} isLoading={isLoading} />;
+  return <DefaultJobReturnTable jobReturns={jobReturns} isFullOutput={isFullOutput} />;
 };

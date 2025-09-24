@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { runInAction, toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Badge, Breadcrumb, Button, Tabs, TabsProps } from "antd";
+import { Badge, Breadcrumb, Button, Flex, Switch, Tabs, TabsProps } from "antd";
 import {
   CaretRightOutlined,
   HomeOutlined,
@@ -24,6 +24,7 @@ const TaskPage = observer(() => {
   const { taskid: taskId } = useParams();
   const navigate = useNavigate();
   const [taskStore] = useState(new TaskStore());
+  const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
 
   useEffect(() => {
     if (taskId) {
@@ -91,7 +92,7 @@ const TaskPage = observer(() => {
                 color="blue"
                 count={taskStore.jobsCount}
                 size="small"
-                style={{ marginTop: -11 }}
+                className={styles.badge}
               />
             )}
         </span>
@@ -101,7 +102,23 @@ const TaskPage = observer(() => {
     {
       key: "job-returns",
       label: t("task.job-returns"),
-      children: <TaskJobReturns jobReturns={toJS(taskStore.jobReturns)} isLoading={taskStore.isTaskLoading} />,
+      children: (
+        <>
+          <Flex className={styles.jobReturnsControls}>
+            <Flex className={styles.jobReturnsControlsInner}>
+              <span>{t("jobs.full-output")}</span>
+              <Switch
+                checked={isFullOutput}
+                onChange={setIsFullOutput}
+              />
+            </Flex>
+          </Flex>
+          <TaskJobReturns
+            jobReturns={toJS(taskStore.jobReturns)}
+            isFullOutput={isFullOutput}
+          />
+        </>
+      ),
     },
   ];
 
