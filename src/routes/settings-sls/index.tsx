@@ -17,6 +17,7 @@ import {
 } from "saltbox-core/shared/components/sls-modal/sls-modal";
 import { formatTimeByUserTZ, PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
+import { appStore } from "saltbox-core/store";
 
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
@@ -111,8 +112,52 @@ const SettingsSlsPage = observer(() => {
   const [isSlsDeleteModalOpen, setIsSlsDeleteModalOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [isSyncSls, setIsSyncSls] = useState(false);
-  const [recordToEdit, setRecordToEdit] =
-    useState<SettingsSlsRepoShortSchema>();
+  const [recordToEdit, setRecordToEdit] = useState<SettingsSlsRepoShortSchema>();
+  // Salt.Box modal state
+  const [isSaltBoxModalOpen, setIsSaltBoxModalOpen] = useState(false);
+  const [saltBoxProjects, setSaltBoxProjects] = useState([]);
+  const [saltBoxLoading, setSaltBoxLoading] = useState(false);
+  const [saltBoxTotal, setSaltBoxTotal] = useState(0);
+  const [saltBoxSkip, setSaltBoxSkip] = useState(0);
+  const [saltBoxLimit, setSaltBoxLimit] = useState(2);
+  // Импорт компонента SaltBoxProjectsModal
+  // @ts-ignore
+  const SaltBoxProjectsModal = require("saltbox-core/shared/components/saltbox-projects-modal/saltbox-projects-modal").SaltBoxProjectsModal;
+  const fetchSaltBoxProjects = async (skip = saltBoxSkip, limit = saltBoxLimit) => {
+    setSaltBoxLoading(true);
+    try {
+      const basePath = apiCoreStore.env?.api_base_path;
+      const token = appStore.authStore?.user?.access_token;
+      const response = await fetch(`${basePath}/settings/gitlab?skip=${skip}&limit=${limit}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Ошибка сети");
+      const data = await response.json();
+      setSaltBoxProjects(data.items || []);
+      setSaltBoxTotal(data.total || 0);
+      setSaltBoxSkip(skip);
+      setSaltBoxLimit(limit);
+    } catch (e) {
+      messageApi.error("Ошибка загрузки проектов Salt.Box");
+    }
+    setSaltBoxLoading(false);
+  };
+
+  const handleSaltBoxOpen = async () => {
+    setIsSaltBoxModalOpen(true);
+    fetchSaltBoxProjects(0, saltBoxLimit);
+  };
+
+  const handleSaltBoxPageChange = (page: number, pageSize: number) => {
+    const newSkip = (page - 1) * pageSize;
+    fetchSaltBoxProjects(newSkip, pageSize);
+  };
+  const handleSaltBoxClose = () => {
+    setIsSaltBoxModalOpen(false);
+    setSaltBoxProjects([]);
+  };
 
   useEffect(() => {
     settingsSlsStore.reload();
@@ -264,6 +309,13 @@ const SettingsSlsPage = observer(() => {
         >
           {t("settings-sls.table-add-repository")}
         </Button>
+        <Button
+          style={{ marginLeft: 8 }}
+          type="default"
+          onClick={handleSaltBoxOpen}
+        >
+          Добавить из Salt.Box
+        </Button>
       </div>
 
       <SettingsSlsTable
@@ -273,6 +325,37 @@ const SettingsSlsPage = observer(() => {
         pagination={settingsSlsStore.pagination}
         onLazyLoad={(pagination) => settingsSlsStore.handleLazyLoad(pagination)}
       />
+      {/* Модальное окно Salt.Box */}
+      {isSaltBoxModalOpen && (
+        <SaltBoxProjectsModal
+          open={isSaltBoxModalOpen}
+          onClose={handleSaltBoxClose}
+          projects={saltBoxProjects}
+          loading={saltBoxLoading}
+          total={saltBoxTotal}
+          skip={saltBoxSkip}
+          limit={saltBoxLimit}
+          onPageChange={handleSaltBoxPageChange}
+          onAdd={async (project) => {
+            try {
+              await apiCoreStore.settingsApi?.repoCreate({
+                SettingsSlsRepoCreateSchema: {
+                  name: project.name,
+                  description: project.description || "",
+                  repo_url: project.http_url_to_repo,
+                  repo_user: "",
+                  repo_pass: "",
+                },
+              });
+              messageApi.success("Репозиторий добавлен!");
+              settingsSlsStore.reload();
+              setIsSaltBoxModalOpen(false);
+            } catch (e) {
+              messageApi.error("Ошибка добавления репозитория");
+            }
+          }}
+        />
+      )}
 
       {isSlsModalOpen && (
         <SlsModal
