@@ -1,5 +1,5 @@
 import { PaginationState } from "@tanstack/react-table";
-import { makeAutoObservable, runInAction } from "mobx";
+import { action, makeAutoObservable, makeObservable, observable, runInAction } from "mobx";
 import {
   TaskListResponseSchema,
   TaskModel,
@@ -7,16 +7,16 @@ import {
 import { apiCoreStore } from "saltbox-core/store";
 
 export class TasksStore {
-  tasks: Array<TaskListResponseSchema>;
-  isTasksLoading: boolean;
-  collectionSlug: string | null;
-  mongoDBQuery: object | undefined;
+  @observable tasks: Array<TaskListResponseSchema>;
+  @observable isTasksLoading: boolean;
+  @observable collectionSlug: string | null;
+  @observable mongoDBQuery: object | undefined;
 
-  total: number;
-  pagination: PaginationState;
+  @observable total: number;
+  @observable pagination: PaginationState;
 
   constructor() {
-    makeAutoObservable(this);
+    makeObservable(this);
 
     this.tasks = [];
     this.total = 0;
@@ -29,7 +29,7 @@ export class TasksStore {
     };
   }
 
-  loadTasks = (collectionSlug?: string) => {
+  @action loadTasks = (collectionSlug?: string) => {
     if (!collectionSlug) return;
     this.collectionSlug = collectionSlug;
     this.isTasksLoading = true;
@@ -57,26 +57,27 @@ export class TasksStore {
       });
   };
 
-  handleLazyLoad(pagination: PaginationState) {
+  @action handleLazyLoad(pagination: PaginationState) {
     this.pagination = pagination;
     if (this.collectionSlug) {
       this.loadTasks(this.collectionSlug);
     }
   };
 
-  handleSearch = (collectionSlug?: string) => {
+  @action handleSearch = (collectionSlug?: string) => {
     this.pagination.pageIndex = 0;
     this.loadTasks(collectionSlug);
   };
 
-  updateTask = (task: TaskModel) => {
+  @action updateTask = (task: TaskModel) => {
     const index = this.tasks.findIndex((item) => item.id === task.id);
     if (index > -1) {
-      this.tasks[index] = task;
+      this.tasks.splice(index, 1, task);
+      this.tasks = [...this.tasks];
     }
   };
 
-  setCollectionSlug = (slug: string | undefined) => {
+  @action setCollectionSlug = (slug: string | undefined) => {
     this.pagination.pageIndex = 0;
     this.collectionSlug = slug;
     if (this.collectionSlug) {

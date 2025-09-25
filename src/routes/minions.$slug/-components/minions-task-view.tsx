@@ -228,6 +228,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedTask = JSON.parse(event.data) as TaskListResponseSchema;
+      console.log('parsedTask:', parsedTask)
       tasksStore.updateTask(parsedTask);
     });
     webSocket.addEventListener("open", () => {
