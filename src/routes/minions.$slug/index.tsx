@@ -16,7 +16,7 @@ import {
 import {
   DeleteOutlined,
   EditOutlined,
-  EllipsisOutlined,
+  SettingOutlined,
   FilterOutlined,
   HomeOutlined,
   PlusOutlined,
@@ -307,7 +307,7 @@ const MinionsPage = observer(() => {
                     >
                       <Button>
                         <Flex gap={8}>
-                          <EllipsisOutlined />
+                          <SettingOutlined />
                         </Flex>
                       </Button>
                     </Dropdown>
