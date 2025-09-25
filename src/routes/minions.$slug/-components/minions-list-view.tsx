@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { generateID } from "react-querybuilder";
 import { Link, useNavigate } from "react-router";
@@ -180,7 +180,11 @@ const MinionCompactView = observer(
     filterStore: MinionFilterStore;
     onFilterButton: () => void;
   }) => {
-    const [minionStore] = useState(new MinionStore(props.slug, props.minionId));
+    const minionStoreRef = useRef<MinionStore | undefined>(undefined);
+    if (!minionStoreRef.current) {
+      minionStoreRef.current = new MinionStore(props.slug, props.minionId);
+    }
+    const minionStore: MinionStore = minionStoreRef.current;
     return (
       <MinionDetails
         minion={minionStore.minion}

@@ -1,9 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  useNavigate,
-  useParams,
-} from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
@@ -16,7 +13,11 @@ const MinionPage = observer(() => {
   const { t } = useTranslation();
   const { mid: minionId, slug } = useParams();
   const navigate = useNavigate();
-  const [minionStore] = useState(new MinionStore(slug, minionId));
+  const minionStoreRef = useRef<MinionStore | undefined>(undefined);
+  if (!minionStoreRef.current) {
+    minionStoreRef.current = new MinionStore(slug, minionId);
+  }
+  const minionStore: MinionStore = minionStoreRef.current;
   const [collectionStore] = useState(new CollectionStore());
 
   useEffect(() => {
