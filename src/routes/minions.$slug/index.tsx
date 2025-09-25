@@ -177,12 +177,6 @@ const MinionsPage = observer(() => {
         style: { height: "100%" },
       },
       {
-        label: t("minions.tab-tasks"),
-        key: "tasks",
-        children: <MinionsTaskView slug={slug} />,
-        style: { height: "100%" },
-      },
-      {
         label: t("minions.tab-statistics"),
         key: "statistics",
         children: (
@@ -192,6 +186,12 @@ const MinionsPage = observer(() => {
             showFilter={showFilter}
           />
         ),
+      },
+      {
+        label: t("minions.tab-tasks"),
+        key: "tasks",
+        children: <MinionsTaskView slug={slug} />,
+        style: { height: "100%" },
       },
     ];
 
@@ -292,8 +292,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                          ? "filled"
-                          : "outlined"
+                            ? "filled"
+                            : "outlined"
                       }
                     >
                       <Flex gap={8}>
