@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { Button, Flex, Tag } from "antd";
+import { Button, Flex, Popover, Progress, Tag, Tooltip } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTablePaginated, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
@@ -160,35 +160,42 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     columnHelper.accessor("user.name", {
       header: t("minions.table-user"),
     }),
-    columnHelper.accessor("status", {
+    columnHelper.display({
       header: t("minions.table-status"),
       cell: (data) => {
-        if (data.getValue()) {
-          switch (data.getValue()) {
-            case "created":
-              return (
-                <Tag color="yellow">{t("minions.tasks-table-created")}</Tag>
-              );
-            case "running":
-              return <Tag color="blue">{t("minions.tasks-table-running")}</Tag>;
-            case "stopped":
-              return <Tag color="red">{t("minions.tasks-table-stopped")}</Tag>;
-            case "finished":
-              return (
-                <Tag color="green">{t("minions.tasks-table-finished")}</Tag>
-              );
-            case "stopping":
-              return (
-                <Tag color="orange">{t("minions.tasks-table-stopping")}</Tag>
-              );
-            case "postprocessing":
-              return (
-                <Tag color="purple">
-                  {t("minions.tasks-table-postprocessing")}
-                </Tag>
-              );
+        const totalMinions = data.row.original?.total_minions ?? 0;
+        const statusFailed = data.row.original?.minions_count_by_status?.failed ?? 0;
+        const statusSuccess = data.row.original?.minions_count_by_status?.success ?? 0;
+        const statusInWork = data.row.original?.minions_count_by_status?.in_work ?? 0;
+        const statusPending = data.row.original?.minions_count_by_status?.pending ?? 0;
+        const progressStrokeColors = Array.from(
+          { length: 10 },
+          (_, i) => {
+            if (i < Math.ceil(statusSuccess / totalMinions * 10)) {
+              return '#52c41a';
+            } else if (i < Math.ceil((statusSuccess + statusFailed) / totalMinions * 10)) {
+              return '#ff4d4f';
+            }
+            return '#bfbfbf';
           }
-        }
+        );
+        const popoverContent = <Flex vertical>
+          <Flex>{t('minions.tasks-table-status-in-work')}: {statusInWork}</Flex>
+          <Flex>{t('minions.tasks-table-status-pending')}: {statusPending}</Flex>
+          <Flex>{t('minions.tasks-table-status-failed')}: {statusFailed}</Flex>
+          <Flex>{t('minions.tasks-table-status-success')}: {statusSuccess}</Flex>
+          <Flex>{t('minions.tasks-table-total-minions')}: {totalMinions}</Flex>
+        </Flex>;
+
+        return <Popover content={popoverContent}>
+          <Progress
+            steps={10}
+            percent={(statusSuccess + statusFailed) / totalMinions * 100}
+            success={{ percent: statusSuccess / totalMinions * 100 }}
+            strokeColor={progressStrokeColors}
+            showInfo={false}
+          />
+        </Popover>;
       },
     }),
     columnHelper.accessor("created", {
