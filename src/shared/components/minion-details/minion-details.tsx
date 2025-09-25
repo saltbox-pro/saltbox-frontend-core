@@ -13,14 +13,19 @@ import {
   Tabs,
 } from "antd";
 import { FilterOutlined } from "@ant-design/icons";
-import { GrainsSchema, MinionDetailSchema, PillarModel } from "@saltbox/saltbox-core-api-client";
+import {
+  GrainsSchema,
+  MinionDetailSchema,
+  PillarModel,
+} from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import styles from "./minion-details.module.css";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode
-  ? K
-  : never]: GrainsSchema[K];
+    ? K
+    : never]: GrainsSchema[K];
 };
 
 interface MinionSimpleDetailView {
@@ -141,9 +146,9 @@ export function MinionDetails(props: {
   const { t } = useTranslation();
   const combinedGrains = props.minion
     ? {
-      ...props.minion.grains,
-      ...props.minion.additional_grains,
-    }
+        ...props.minion.grains,
+        ...props.minion.additional_grains,
+      }
     : {};
 
   const minionGeneralDetailViews: MinionDetailView[] = [
@@ -176,14 +181,16 @@ export function MinionDetails(props: {
           value: (s) =>
             (
               <>
-                {Array.isArray(s.grains.gpus) ? s.grains.gpus.map((gpu: any) => (
-                  <div key={gpu.model} className={styles.interfaceBlock}>
-                    <div className={styles.interfaceDetails}>
-                      <div>Vendor: {gpu.vendor || ""}</div>
-                      <div>Model: {gpu.model || ""}</div>
-                    </div>
-                  </div>
-                )) : ""}
+                {Array.isArray(s.grains.gpus)
+                  ? s.grains.gpus.map((gpu: any) => (
+                      <div key={gpu.model} className={styles.interfaceBlock}>
+                        <div className={styles.interfaceDetails}>
+                          <div>Vendor: {gpu.vendor || ""}</div>
+                          <div>Model: {gpu.model || ""}</div>
+                        </div>
+                      </div>
+                    ))
+                  : ""}
               </>
             ) || "",
         },
@@ -418,34 +425,13 @@ export function MinionDetails(props: {
         );
       })(),
     },
-    /* {
+    {
       key: "pillars",
       label: "Pillars",
       children: (() => {
-        if (props.isPillarsLoading) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
-            >
-              <Spin />
-            </Flex>
-          );
-        }
-        if (!props.pillars || props.pillars.length === 0) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
-            >
-              No pillars data available
-            </Flex>
-          );
-        }
         return (
           <FastTablePaginated
+            isLoading={props.isPillarsLoading}
             columns={pillarsColumns}
             data={props.pillars}
             total={props.pillars.length}
@@ -455,7 +441,7 @@ export function MinionDetails(props: {
           />
         );
       })(),
-    }, */
+    },
   ];
 
   return <Tabs items={items} className={styles.minionsTabs} />;
