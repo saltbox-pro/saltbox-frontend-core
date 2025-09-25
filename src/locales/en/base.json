@@ -42,6 +42,7 @@
     "tasks-table-status-pending": "Pending",
     "tasks-table-status-success": "Success",
     "tasks-table-total-minions": "Total Minions",
+    "tasks-table-status-header": "Minions Statistics",
     "minion": "Minion",
     "dashboard": "Dashboard",
     "grains": "Grains",

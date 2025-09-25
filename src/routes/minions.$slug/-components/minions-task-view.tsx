@@ -180,11 +180,27 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
           }
         );
         const popoverContent = <Flex vertical>
-          <Flex>{t('minions.tasks-table-status-in-work')}: {statusInWork}</Flex>
-          <Flex>{t('minions.tasks-table-status-pending')}: {statusPending}</Flex>
-          <Flex>{t('minions.tasks-table-status-failed')}: {statusFailed}</Flex>
-          <Flex>{t('minions.tasks-table-status-success')}: {statusSuccess}</Flex>
-          <Flex>{t('minions.tasks-table-total-minions')}: {totalMinions}</Flex>
+          <Flex><strong>{t('minions.tasks-table-status-header')}</strong></Flex>
+          <Flex justify="space-between">
+            <span>{t('minions.tasks-table-status-in-work')}:</span>
+            <span style={{ color: "#1677ff" }}>{statusInWork}</span>
+          </Flex>
+          <Flex justify="space-between">
+            <span>{t('minions.tasks-table-status-pending')}:</span>
+            <span style={{ color: "#919191" }}>{statusPending}</span>
+          </Flex>
+          <Flex justify="space-between">
+            <span>{t('minions.tasks-table-status-failed')}:</span>
+            <span style={{ color: "#ff4d4f" }}>{statusFailed}</span>
+          </Flex>
+          <Flex justify="space-between">
+            <span>{t('minions.tasks-table-status-success')}:</span>
+            <span style={{ color: "#52c41a" }}>{statusSuccess}</span>
+          </Flex>
+          <Flex justify="space-between">
+            <span>{t('minions.tasks-table-total-minions')}:</span>
+            <span style={{ fontWeight: "bold" }}>{totalMinions}</span>
+          </Flex>
         </Flex>;
 
         return <Popover content={popoverContent}>
