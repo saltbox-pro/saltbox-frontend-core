@@ -63,14 +63,25 @@ export function TaskForm({
   }, [form]);
 
   useEffect(() => {
-    form.setFieldsValue({
-      task_template_id: taskCreateRequest?.task_template_id ?? "",
-      salt_masters: taskCreateRequest?.salt_masters ?? [],
-      batch_size: taskCreateRequest?.batch_size ?? 0,
-      max_retries: taskCreateRequest?.max_retries ?? 1,
-      max_jobs_count_at_same_time:
-        taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
-    });
+    if (Object.keys(taskCreateRequest).length === 0) {
+      form.setFieldsValue({
+        task_template_id: taskCreateRequest?.task_template_id ?? "",
+        salt_masters: taskCreateRequest?.salt_masters ?? [],
+        batch_size: taskCreateRequest?.batch_size ?? 0,
+        max_retries: taskCreateRequest?.max_retries ?? 1,
+        max_jobs_count_at_same_time:
+          taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
+      });
+    } else {
+      form.setFieldsValue({
+        task_template_id: taskCreateRequest?.task_template_id,
+        salt_masters: taskCreateRequest?.salt_masters,
+        batch_size: taskCreateRequest?.batch_size,
+        max_retries: taskCreateRequest?.max_retries,
+        max_jobs_count_at_same_time:
+          taskCreateRequest?.max_jobs_count_at_same_time,
+      });
+    }
   }, [taskCreateRequest]);
 
   const handleChooseParams = () => {
