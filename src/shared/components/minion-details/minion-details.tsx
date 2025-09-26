@@ -428,6 +428,7 @@ export function MinionDetails(props: {
     {
       key: "pillars",
       label: "Pillars",
+      className: styles.pillarsTab,
       children: (() => {
         return (
           <FastTablePaginated

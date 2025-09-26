@@ -61,3 +61,8 @@
 .minionsTabs :global(.ant-tabs-tab) {
   padding: 0 0 12px 0;
 }
+
+.pillarsTab {
+  display: flex;
+  flex-direction: column;
+}
