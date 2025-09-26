@@ -9,6 +9,7 @@ import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-cl
 import { FastTablePaginated, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 import { TasksQueryBuilder } from "./tasks-query-builder";
+import styles from "./minions-task-view.module.css";
 
 const TasksTable = FastTablePaginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
@@ -261,7 +262,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   };
 
   return (
-    <Flex style={{ height: "100%" }} vertical>
+    <Flex className={styles.tabWrapper} vertical>
       <TasksQueryBuilder
         filterStore={filterStore}
         onSearchButtonClick={handleSearchButtonClick}

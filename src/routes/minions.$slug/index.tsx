@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { ComponentProps, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -40,6 +40,8 @@ import CollectionCreateModal from "saltbox-core/shared/components/collection-cre
 import { generateIdsForQuery } from "saltbox-core/shared/utils/generateIdsForQuery";
 
 import styles from "./index.module.css";
+
+type TabItems = ComponentProps<typeof Tabs>["items"];
 
 const minionFilterStore = new MinionFilterStore();
 
@@ -175,7 +177,7 @@ const MinionsPage = observer(() => {
   }, [searchParams, tabKey]);
 
   const fillMinionsTabs = () => {
-    const tabs = [
+    const tabs: TabItems = [
       {
         label: t("minions.tab-list"),
         key: "list",
@@ -187,7 +189,7 @@ const MinionsPage = observer(() => {
             collectionStore={collectionStore}
           />
         ),
-        style: { height: "100%" },
+        className: styles.flexTab,
       },
       {
         label: t("minions.tab-statistics"),
@@ -204,7 +206,7 @@ const MinionsPage = observer(() => {
         label: t("minions.tab-tasks"),
         key: "tasks",
         children: <MinionsTaskView slug={slug} />,
-        style: { height: "100%" },
+        className: styles.flexTab,
       },
     ];
 
@@ -219,13 +221,14 @@ const MinionsPage = observer(() => {
           children: (
             <Parcel
               config={pluginTab.parcel}
-              wrapWith="div"
+              wrapWith={pluginTab.wrapWith}
+              wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
               customProps={{
                 slug,
               }}
             />
           ),
-          style: { height: "100%" },
+          style: pluginTab.tabStyle,
         });
       }
     }

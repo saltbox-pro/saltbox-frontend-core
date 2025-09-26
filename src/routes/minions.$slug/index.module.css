@@ -2,3 +2,13 @@
 .minionsTabs, .minionsTabs :global(.fast-table), .minionsTabs :global(.ant-tabs-content), .minionsTabs :global(.ant-tabs-tabpane), .minionsTabs :global(.ant-spin-container) {
   height: 100%;
 }
+
+.minionsTabs {
+  min-height: 0;
+}
+
+.flexTab {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

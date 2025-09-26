@@ -46,8 +46,8 @@ import {
   MinionsStore,
   TaskStore,
 } from "saltbox-core/store";
-import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
+import styles from "./minions-list-view.module.css";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 
@@ -337,7 +337,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   return (
     <>
       {contextHolder}
-      <Flex vertical>
+      <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
             <MinionsQueryBuilder
