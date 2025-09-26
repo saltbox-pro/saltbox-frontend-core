@@ -122,7 +122,11 @@
     "save-as-new": "Сохранить как новую",
     "root-collection-cannot-edit": "Корневую коллекцию нельзя редактировать",
     "root-collection-cannot-delete": "Корневую коллекцию нельзя удалить",
-    "add-filters-to-save": "Добавьте фильтры для сохранения коллекции"
+    "add-filters-to-save": "Добавьте фильтры для сохранения коллекции",
+    "delete-confirm-title": "Удалить клиента",
+    "delete-confirm-description": "Вы уверены, что хотите удалить этого клиента? Это действие нельзя отменить.",
+    "deleted-successfully": "Клиент успешно удален",
+    "delete-failed": "Ошибка удаления клиента"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
@@ -512,5 +516,10 @@
     "import-parse-error": "Ошибка при парсинге CSV файла",
     "table-edit": "Редактировать",
     "table-delete": "Удалить"
+  },
+  "common": {
+    "yes": "Да",
+    "no": "Нет",
+    "delete": "Удалить"
   }
 }
