@@ -16,7 +16,11 @@ import {
   Select,
   message,
 } from "antd";
-import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
@@ -50,16 +54,18 @@ const searchFunctionAllowedSymbols = /[^a-zA-Z0-9._]/g;
 export function JobModal({
   target,
   targetType,
+  defaultMaster,
 }: {
   target: string;
   targetType: CreateJobRequestTgtTypeEnum;
+  defaultMaster?: string;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
   const [saltFunctionList, setSaltFunctionList] = useState<Array<JobOption>>(
-    [],
+    []
   );
   const [saltFlatFunctionList, setSaltFlatFunctionList] = useState<
     Array<string>
@@ -103,7 +109,7 @@ export function JobModal({
               value: master.master_id,
             });
             return list;
-          }, []) ?? [],
+          }, []) ?? []
         );
         setIsModalOpen(true);
       })
@@ -130,8 +136,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-          ? -1
-          : 0,
+        ? -1
+        : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -172,6 +178,7 @@ export function JobModal({
     form.setFieldsValue({
       tgt: target,
       tgt_type: targetType,
+      salt_master: defaultMaster ? defaultMaster : masterList[0]?.value,
     });
     refJobParamsForm.current?.reset();
     setSaltFunctionName(undefined);
@@ -193,7 +200,10 @@ export function JobModal({
   useEffect(() => {
     if (validationErrors.length > 0) {
       const errorField = document.querySelector(
-        `[id=job-params-form${validationErrors[0]?.property?.replaceAll(".", "-")}]`,
+        `[id=job-params-form${validationErrors[0]?.property?.replaceAll(
+          ".",
+          "-"
+        )}]`
       );
       if (errorField) {
         errorField.scrollIntoView({ block: "center" });
@@ -355,7 +365,7 @@ export function JobModal({
       jobCreateRequest: getJobCreateRequest(),
     });
     handleModalCancel();
-  }
+  };
 
   const getJobCreateRequest = (): CreateJobRequest => {
     return {
@@ -365,18 +375,29 @@ export function JobModal({
       salt_master: form.getFieldValue("salt_master"),
       data: jsonFormValue,
     };
-  }
+  };
 
   let jobsJobModalCreateButtonsPlugins: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.['jobs.jobmodal.create']?.forEach((plugin) => {
-    const jobsJobModalCreateButtonPlugin = <Button type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
-      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
-    </Button>;
-    jobsJobModalCreateButtonsPlugins = <>
-      {jobsJobModalCreateButtonsPlugins}
-      {jobsJobModalCreateButtonPlugin}
-    </>;
-  });
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
+    (plugin) => {
+      const jobsJobModalCreateButtonPlugin = (
+        <Button
+          type="default"
+          onClick={() => handleCreateJobPlugin(plugin.key)}
+        >
+          {plugin.label?.[i18nStore.currentLanguage] ||
+            plugin.label?.en ||
+            plugin.key}
+        </Button>
+      );
+      jobsJobModalCreateButtonsPlugins = (
+        <>
+          {jobsJobModalCreateButtonsPlugins}
+          {jobsJobModalCreateButtonPlugin}
+        </>
+      );
+    }
+  );
 
   const isLoading =
     isSchemaListLoading ||
@@ -521,7 +542,7 @@ export function JobModal({
                     !isValidCustomSaltFunction(value?.[0])
                   ) {
                     return Promise.reject(
-                      new Error("Function must have MODULE.FUNCTION format."),
+                      new Error("Function must have MODULE.FUNCTION format.")
                     );
                   }
                   return Promise.resolve();

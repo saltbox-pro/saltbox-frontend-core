@@ -78,6 +78,7 @@ const MinionPage = observer(() => {
         <JobModal
           target={minionStore.minion?.minion_id ?? ""}
           targetType="glob"
+          defaultMaster={minionStore.minion?.master ?? ""}
         />
         <Popconfirm
           title={t("minions.delete-confirm-title")}

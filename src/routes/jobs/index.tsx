@@ -15,7 +15,7 @@ import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   PageHeader,
-  FastTableListed
+  FastTableListed,
 } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore } from "saltbox-core/store";
 import { JobFilterStore } from "saltbox-core/store";
@@ -196,15 +196,13 @@ const JobsPage = observer(() => {
           return fullValue;
         }
 
-        const truncatedValue = fullValue.length > 50
-          ? `${fullValue.substring(0, 50)}...`
-          : fullValue;
+        const truncatedValue =
+          fullValue.length > 50
+            ? `${fullValue.substring(0, 50)}...`
+            : fullValue;
 
         return (
-          <Text
-            copyable={{ text: fullValue }}
-            title={fullValue}
-          >
+          <Text copyable={{ text: fullValue }} title={fullValue}>
             {truncatedValue}
           </Text>
         );
@@ -269,12 +267,16 @@ const JobsPage = observer(() => {
   }, [jobsStore]);
 
   let jobModalCreatePlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.['jobs.jobmodal.create']?.forEach((plugin) => {
-    jobModalCreatePlugin = <>
-      {jobModalCreatePlugin}
-      <Parcel config={plugin.parcel} wrapWith="div" />
-    </>;
-  });
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
+    (plugin) => {
+      jobModalCreatePlugin = (
+        <>
+          {jobModalCreatePlugin}
+          <Parcel config={plugin.parcel} wrapWith="div" />
+        </>
+      );
+    }
+  );
 
   return (
     <>
@@ -294,7 +296,7 @@ const JobsPage = observer(() => {
       <JobsQueryBuilder filterStore={jobFilterStore} />
 
       <div className="page-actions-buttons">
-        <JobModal target="" targetType="glob" />
+        <JobModal target="*" targetType="glob" />
 
         <JobDatetimeRangeSelector
           className={styles.jobsDateRangePicker}
@@ -310,7 +312,11 @@ const JobsPage = observer(() => {
         />
       </div>
 
-      <Spin spinning={jobsStore.isJobsLoading && jobsStore.filteredJobs.length === 0}>
+      <Spin
+        spinning={
+          jobsStore.isJobsLoading && jobsStore.filteredJobs.length === 0
+        }
+      >
         <JobsTable
           columns={columns}
           getRowId={(row) => row.jid}
@@ -324,7 +330,9 @@ const JobsPage = observer(() => {
         ref={loadingRef}
         style={{ paddingBottom: "15px", textAlign: "center" }}
       >
-        {jobsStore.isJobsLoading && jobsStore.filteredJobs.length > 0 && <Spin />}
+        {jobsStore.isJobsLoading && jobsStore.filteredJobs.length > 0 && (
+          <Spin />
+        )}
       </div>
 
       {jobModalCreatePlugin}
