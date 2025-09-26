@@ -47,7 +47,7 @@ export const CollectionSelector = observer(
             total={collectionsStore.total}
             isLoading={collectionsStore.isCollectionsLoading}
             pagination={collectionsStore.pagination}
-            onLazyLoad={collectionsStore.handleLazyLoad}
+            onLazyLoad={(pagination) => collectionsStore.handleLazyLoad(pagination)}
           />
         </div>
       </>
