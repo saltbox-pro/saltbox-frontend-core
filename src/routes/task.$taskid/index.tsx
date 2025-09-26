@@ -9,7 +9,11 @@ import {
   IssuesCloseOutlined,
   StopOutlined,
 } from "@ant-design/icons";
-import { JobResult, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  JobResult,
+  TaskModel,
+  TaskStatus,
+} from "@saltbox/saltbox-core-api-client";
 import { PageHeader } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { TaskJobReturns } from "./-components/task-job-returns/task-job-returns";
@@ -43,7 +47,7 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const webSocket = new WebSocket(
-      `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`,
+      `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`
     );
     setSocket(webSocket);
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
@@ -97,7 +101,12 @@ const TaskPage = observer(() => {
             )}
         </span>
       ),
-      children: <TaskJobs task={toJS(taskStore.task)} isLoading={taskStore.isTaskLoading} />,
+      children: (
+        <TaskJobs
+          task={toJS(taskStore.task)}
+          isLoading={taskStore.isTaskLoading}
+        />
+      ),
     },
     {
       key: "job-returns",
@@ -107,16 +116,15 @@ const TaskPage = observer(() => {
           <Flex className={styles.jobReturnsControls}>
             <Flex className={styles.jobReturnsControlsInner}>
               <span>{t("jobs.full-output")}</span>
-              <Switch
-                checked={isFullOutput}
-                onChange={setIsFullOutput}
-              />
+              <Switch checked={isFullOutput} onChange={setIsFullOutput} />
             </Flex>
           </Flex>
-          <TaskJobReturns
-            jobReturns={toJS(taskStore.jobReturns)}
-            isFullOutput={isFullOutput}
-          />
+          <div>
+            <TaskJobReturns
+              jobReturns={toJS(taskStore.jobReturns)}
+              isFullOutput={isFullOutput}
+            />
+          </div>
         </>
       ),
     },
@@ -133,31 +141,33 @@ const TaskPage = observer(() => {
           {
             title: t("minions.title"),
           },
-          ...(taskStore.task?.target_collection ? [
-            {
-              title: (
-                <Link
-                  to={{
-                    pathname: `/minions/${taskStore.task.target_collection.slug}`
-                  }}
-                >
-                  {taskStore.task.target_collection.title}
-                </Link>
-              ),
-            }
-          ] : [
-            {
-              title: (
-                <Link
-                  to={{
-                    pathname: `/minions/root`
-                  }}
-                >
-                  {taskStore.task ? t("minions.title") : "..."}
-                </Link>
-              ),
-            }
-          ]),
+          ...(taskStore.task?.target_collection
+            ? [
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                      }}
+                    >
+                      {taskStore.task.target_collection.title}
+                    </Link>
+                  ),
+                },
+              ]
+            : [
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/root`,
+                      }}
+                    >
+                      {taskStore.task ? t("minions.title") : "..."}
+                    </Link>
+                  ),
+                },
+              ]),
           {
             title: taskStore.task ? t("task.title", { taskId: taskId }) : "...",
           },
@@ -174,17 +184,17 @@ const TaskPage = observer(() => {
       <div>
         {(taskStore.task?.status === TaskStatus.Created ||
           taskStore.task?.status === TaskStatus.Stopped) && (
-            <Button
-              onClick={() => taskStore.handleRunTask()}
-              color="primary"
-              variant="solid"
-              icon={<CaretRightOutlined />}
-              disabled={taskStore.isTaskLoading}
-            >
-              {t("task.run")}
-            </Button>
-          )}
-        {(taskStore.task?.status === TaskStatus.Postprocessing) && (
+          <Button
+            onClick={() => taskStore.handleRunTask()}
+            color="primary"
+            variant="solid"
+            icon={<CaretRightOutlined />}
+            disabled={taskStore.isTaskLoading}
+          >
+            {t("task.run")}
+          </Button>
+        )}
+        {taskStore.task?.status === TaskStatus.Postprocessing && (
           <Button
             onClick={() => taskStore.handleStopTask()}
             color="default"
@@ -195,7 +205,7 @@ const TaskPage = observer(() => {
             {t("task.postprocessing")}
           </Button>
         )}
-        {(taskStore.task?.status === TaskStatus.Stopping) && (
+        {taskStore.task?.status === TaskStatus.Stopping && (
           <Button
             onClick={() => taskStore.handleStopTask()}
             color="default"
@@ -206,7 +216,7 @@ const TaskPage = observer(() => {
             {t("task.stopping")}
           </Button>
         )}
-        {(taskStore.task?.status === TaskStatus.Running) && (
+        {taskStore.task?.status === TaskStatus.Running && (
           <Button
             onClick={() => taskStore.handleStopTask()}
             color="danger"
