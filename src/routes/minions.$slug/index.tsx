@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 import { observer } from "mobx-react-lite";
 import {
@@ -47,9 +47,10 @@ const MinionsPage = observer(() => {
   const { t } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [collectionStore] = useState(new CollectionStore());
   const [showFilter, setShowFilter] = useState(false);
-  const [tabKey, setTabKey] = useState("list");
+  const [tabKey, setTabKey] = useState(() => searchParams.get("tab") || "list");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -158,8 +159,20 @@ const MinionsPage = observer(() => {
   useEffect(() => {
     subscribe("minions.taskmodal.created", ({ detail: { activeTabKey } }) => {
       setTabKey(activeTabKey);
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("tab", activeTabKey);
+        return newParams;
+      });
     });
-  }, []);
+  }, [setSearchParams]);
+
+  useEffect(() => {
+    const urlTab = searchParams.get("tab");
+    if (urlTab && urlTab !== tabKey) {
+      setTabKey(urlTab);
+    }
+  }, [searchParams, tabKey]);
 
   const fillMinionsTabs = () => {
     const tabs = [
@@ -292,8 +305,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                            ? "filled"
-                            : "outlined"
+                          ? "filled"
+                          : "outlined"
                       }
                     >
                       <Flex gap={8}>
@@ -318,7 +331,14 @@ const MinionsPage = observer(() => {
           ),
         }}
         items={minionsTabs}
-        onChange={setTabKey}
+        onChange={(newTabKey) => {
+          setTabKey(newTabKey);
+          setSearchParams((prev) => {
+            const newParams = new URLSearchParams(prev);
+            newParams.set("tab", newTabKey);
+            return newParams;
+          });
+        }}
         activeKey={tabKey}
       />
 
