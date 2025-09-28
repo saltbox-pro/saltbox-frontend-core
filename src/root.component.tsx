@@ -14,6 +14,7 @@ import SettingsSlsPage from "./routes/settings-sls";
 import TaskPage from "./routes/task.$taskid";
 import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
+import MinionRedirectPage from "./routes/master.$master_id.minion.$minion_id";
 import NotFound from "./shared/components/not-found";
 import CollectionEditPage from "./routes/collection.$slug";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
@@ -30,6 +31,10 @@ export default observer(function Root() {
             <Route path="/minions" element={<DefaultMinionsPage />} />
             <Route path="/collection/:slug" element={<CollectionEditPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
+            <Route
+              path="/master/:master_id/minion/:minion_id"
+              element={<MinionRedirectPage />}
+            />
             <Route path="/masters" element={<MastersPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/job/:jid" element={<JobPage />} />

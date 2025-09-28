@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import { observer } from "mobx-react-lite";
 import {
   Breadcrumb,
@@ -30,10 +30,7 @@ import { apiCoreStore } from "saltbox-core/store";
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import { PillarsStore } from "saltbox-core/store";
 import { toJS } from "mobx";
-import {
-  PageHeader,
-  FastTableListed
-} from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FastTableListed } from "@saltbox/saltbox-frontend-common";
 import {
   GatheredMinionSchema,
   PillarModel,
@@ -43,6 +40,7 @@ import {
 } from "@saltbox/saltbox-core-api-client";
 
 import styles from "./index.module.css";
+import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 
 const pillarColumnHelper = createColumnHelper<PillarModel>();
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>();
@@ -164,7 +162,7 @@ const MasterPage = observer(() => {
                 pillar.name,
                 pillar.minion_id || undefined
               );
-            } catch (error) { }
+            } catch (error) {}
           }
           await pillarsStore.loadPillars(masterId);
         }
@@ -514,6 +512,22 @@ const MasterPage = observer(() => {
       header: t("minions.table-minion-id"),
       meta: {
         tdClassName: "fast-table-column-nowrap",
+      },
+      cell: (data) => {
+        return (
+          <>
+            <Link
+              to={`/master/${
+                data.row.original.master
+              }/minion/${data.getValue()}`}
+            >
+              <Button type="link" size={"small"}>
+                {data.getValue()}
+              </Button>
+            </Link>
+            <CopyToClipboardButton text={data.getValue()} />
+          </>
+        );
       },
     }),
     clientColumnHelper.accessor("master", {
