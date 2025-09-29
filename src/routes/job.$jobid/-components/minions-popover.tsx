@@ -24,10 +24,10 @@ export function MinionsPopover({
     const [messageApi, contextHolder] = message.useMessage();
 
     const minionNames = minions.map(minion => typeof minion === 'string' ? minion : minion.id);
-    const minionNamesList = minionNames.join("\n");
+    const minionNamesCommaSeparated = minionNames.join(",");
 
     const handleCopyToClipboard = () => {
-        navigator.clipboard.writeText(minionNamesList);
+        navigator.clipboard.writeText(minionNamesCommaSeparated);
         messageApi.success(t("jobs.table-copy-success"));
     };
 
@@ -56,7 +56,7 @@ export function MinionsPopover({
                                 title={t("jobs.copy-list")}
                             />
                             <JobModal
-                                target={minionNames.join(",")}
+                                target={minionNamesCommaSeparated}
                                 targetType="list"
                                 buttonProps={{
                                     shape: "circle",

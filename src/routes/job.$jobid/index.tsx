@@ -87,19 +87,41 @@ const JobPage = observer(() => {
   }, [jobStore.error]);
 
   useEffect(() => {
+    if (socket) {
+      socket.close();
+      setIsSocketOpen(false);
+    }
+
+    jobStore.jobReturns = [];
+    jobStore.jobReturnsCount = 0;
+
     const webSocket = new WebSocket(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
     );
     setSocket(webSocket);
+
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedJobReturn = JSON.parse(event.data) as JobResult;
       jobStore.addJobReturn(parsedJobReturn);
     });
+
     webSocket.addEventListener("open", () => {
       setIsSocketOpen(true);
     });
-    return () => webSocket.close();
-  }, []);
+
+    webSocket.addEventListener("close", () => {
+      setIsSocketOpen(false);
+    });
+
+    webSocket.addEventListener("error", (error) => {
+      setIsSocketOpen(false);
+    });
+
+    return () => {
+      webSocket.close();
+      setIsSocketOpen(false);
+    };
+  }, [jid]);
 
   useEffect(() => {
     const accessToken = appStore.authStore?.user?.access_token;
@@ -137,6 +159,7 @@ const JobPage = observer(() => {
               icon: <ReloadOutlined />,
               type: "default",
               showText: false,
+              title: t("jobs.repeat-job"),
             }}
           />
           <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
@@ -157,7 +180,7 @@ const JobPage = observer(() => {
                 >
                   {jobStore.job?.tgt as string}
                 </Text>
-                <CopyToClipboardButton text={jobStore.job?.tgt as string} />
+                <CopyToClipboardButton text={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""} />
               </>
             ) : (
               <Skeleton.Input size="small" />
