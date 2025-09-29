@@ -68,10 +68,10 @@ const JobPage = observer(() => {
 
   const formatJobDuration = (seconds: number): string => {
     const timeUnits: TimeUnits = {
-      milliseconds: "ms",
-      seconds: "s",
-      minutes: "m",
-      hours: "h",
+      milliseconds: t("task.job-returns-table.time-units.milliseconds"),
+      seconds: t("task.job-returns-table.time-units.seconds"),
+      minutes: t("task.job-returns-table.time-units.minutes"),
+      hours: t("task.job-returns-table.time-units.hours"),
     };
     return formatExecutionTime(seconds, timeUnits);
   };
