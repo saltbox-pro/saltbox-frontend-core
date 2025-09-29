@@ -94,36 +94,38 @@ const JobPage = observer(() => {
 
     jobStore.jobReturns = [];
     jobStore.jobReturnsCount = 0;
-
-    const webSocket = new WebSocket(
-      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
-    );
-    setSocket(webSocket);
-
-    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-      const parsedJobReturn = JSON.parse(event.data) as JobResult;
-      if (!jobStore.isJobReturnsLoading) {
-        jobStore.addJobReturn(parsedJobReturn);
-      }
-    });
-
-    webSocket.addEventListener("open", () => {
-      setIsSocketOpen(true);
-    });
-
-    webSocket.addEventListener("close", () => {
-      setIsSocketOpen(false);
-    });
-
-    webSocket.addEventListener("error", (error) => {
-      setIsSocketOpen(false);
-    });
-
-    return () => {
-      webSocket.close();
-      setIsSocketOpen(false);
-    };
   }, [jid]);
+
+  useEffect(() => {
+    if (!jobStore.isJobReturnsLoading && jid && !socket && jobStore.job) {
+      const webSocket = new WebSocket(
+        `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
+      );
+      setSocket(webSocket);
+
+      webSocket.addEventListener("message", (event: MessageEvent<string>) => {
+        const parsedJobReturn = JSON.parse(event.data) as JobResult;
+        jobStore.addJobReturn(parsedJobReturn);
+      });
+
+      webSocket.addEventListener("open", () => {
+        setIsSocketOpen(true);
+      });
+
+      webSocket.addEventListener("close", () => {
+        setIsSocketOpen(false);
+      });
+
+      webSocket.addEventListener("error", (error) => {
+        setIsSocketOpen(false);
+      });
+
+      return () => {
+        webSocket.close();
+        setIsSocketOpen(false);
+      };
+    }
+  }, [jobStore.isJobReturnsLoading, jid, socket, jobStore.job]);
 
   useEffect(() => {
     const accessToken = appStore.authStore?.user?.access_token;
