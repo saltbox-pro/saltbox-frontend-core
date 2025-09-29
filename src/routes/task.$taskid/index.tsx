@@ -18,7 +18,6 @@ const TaskPage = observer(() => {
   const { taskid: taskId } = useParams();
   const navigate = useNavigate();
   const [taskStore] = useState(new TaskStore());
-  const [minionsByStatusNavItems, setMinionsByStatusNavItems] = useState<Array<StepProps>>([]);
   const [minionsSelectedStatus, setMinionsSelectedStatus] = useState(0);
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
@@ -294,6 +293,7 @@ const TaskPage = observer(() => {
           title={t("task.restart-failed")}
         ></Button>
       </div>
+
       <div className={styles.taskDetailItem}>
         <span className={styles.taskDetailLabel}>{t("task.status")}:</span>
         <span className={styles.taskDetailValue}>
@@ -322,14 +322,6 @@ const TaskPage = observer(() => {
         </span>
       </div>
     </div>
-
-    <Steps
-      items={minionsByStatusNavItems}
-      current={minionsSelectedStatus}
-      onChange={(value) => {
-        setMinionsSelectedStatus(value);
-      }}
-    />
 
     {taskStatusStats}
 
