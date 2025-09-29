@@ -23,18 +23,17 @@ const TaskPage = observer(() => {
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
   const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
-  const [selectedMinionJobs, setSelectedMinionJobs] = useState<Array<JobResult>>([]);
+  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<Array<JobResult>>([]);
 
   const taskStatus: { [key in TaskStatus | "none"]: ReactNode } = {
     [TaskStatus.Created]: (
       <span>
-        <ClockCircleOutlined />
-        {t("task.created")}
+        <ClockCircleOutlined />{" "}{t("task.created")}
       </span>
     ),
     [TaskStatus.Finished]: (
       <>
-        <CheckCircleOutlined /> {t("task.finished")}
+        <CheckCircleOutlined />{" "}{t("task.finished")}
       </>
     ),
     [TaskStatus.Running]: (
@@ -51,7 +50,7 @@ const TaskPage = observer(() => {
     ),
     [TaskStatus.Stopped]: (
       <span>
-        <StopOutlined /> {t("task.stopped")}
+        <StopOutlined />{" "}{t("task.stopped")}
       </span>
     ),
     [TaskStatus.Postprocessing]: (
@@ -62,7 +61,7 @@ const TaskPage = observer(() => {
     ),
     none: (
       <span>
-        <QuestionCircleOutlined /> {t("task.unknown")}
+        <QuestionCircleOutlined />{" "}{t("task.unknown")}
       </span>
     ),
   };
@@ -122,6 +121,20 @@ const TaskPage = observer(() => {
   }, [taskStore.task, minionsSelectedStatus]);
 
   useEffect(() => {
+    if (selectedMinion) {
+      const minion = taskStore.task?.minions?.[selectedMinion.master + "_" + selectedMinion.minion_id];
+      const minionJobIds = Object.keys(minion?.jobs ?? {}).sort().reverse();
+      const minionJobReturns = minionJobIds.map(jobId => taskStore.jobReturns?.find(
+        jobReturn => jobReturn.jid === jobId
+          && jobReturn.salt_master === minion.master
+          && jobReturn.id === minion.minion_id
+      ));
+      setSelectedMinionJobReturns(minionJobReturns);
+      setSelectedMinion(minion);
+    }
+  }, [taskStore.task, taskStore.jobReturns]);
+
+  useEffect(() => {
     if (minionsSelectedStatus === 0) {
       setMinions(Object.values(taskStore.task?.minions ?? {}));
     } else if (minionsSelectedStatus === 1) {
@@ -175,15 +188,16 @@ const TaskPage = observer(() => {
   const handleMinionClick = (minion: TaskMinion) => {
     if (selectedMinion?.minion_id === minion.minion_id) {
       setSelectedMinion(undefined);
-      setSelectedMinionJobs([]);
+      setSelectedMinionJobReturns([]);
     } else {
-      setSelectedMinion(minion);
       const minionJobIds = Object.keys(minion.jobs ?? {}).sort().reverse();
-      const minionJobs = minionJobIds.map(jobId => toJS(taskStore.jobReturns?.find(jobReturn => jobReturn.jid === jobId)));
-      setSelectedMinionJobs(minionJobs);
-      console.log(minionJobIds, minionJobs, minion, toJS(taskStore.task));
-      //const jobs = taskStore.task?.jobs?.filter(job => job.target === minion.minion_id);
-      //setSelectedMinionJobs(taskStore.task?.minions?.[minion.minion_id]?.jobs ?? []);
+      const minionJobReturns = minionJobIds.map(jobId => taskStore.jobReturns?.find(
+        jobReturn => jobReturn.jid === jobId
+          && jobReturn.salt_master === minion.master
+          && jobReturn.id === minion.minion_id
+      ));
+      setSelectedMinionJobReturns(minionJobReturns);
+      setSelectedMinion(minion);
     }
   };
 
@@ -352,7 +366,7 @@ const TaskPage = observer(() => {
 
     <MinionView
       selectedMinion={selectedMinion}
-      selectedMinionJobs={selectedMinionJobs}
+      selectedMinionJobReturns={selectedMinionJobReturns}
       onClose={() => setSelectedMinion(undefined)}
     />
   </>;

@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag } from "antd";
+import { Button, Popover, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, formatTimeByUserTZ, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
@@ -84,21 +84,19 @@ export const TaskMinions = ({
     columnHelper.accessor("start_last_dt", {
       header: t("task.minions.table-started"),
       cell: (data) => {
-        if (!data.getValue()) {
-          return <></>;
-        }
-        const started = formatTimeByUserTZ(data.getValue());
-        return <div>{started}</div>;
+        const rawStarted: string = data.getValue();
+        const started: string = formatTimeByUserTZ(rawStarted);
+        const startedPastTime: string = pastTimeByUserTZ(rawStarted);
+        return <Popover content={started}>{startedPastTime}</Popover>;
       },
     }),
     columnHelper.accessor("finished_dt", {
       header: t("task.minions.table-finished"),
       cell: (data) => {
-        if (!data.getValue()) {
-          return <></>;
-        }
-        const finished = formatTimeByUserTZ(data.getValue());
-        return <div>{finished}</div>;
+        const rawFinished: string = data.getValue();
+        const finished: string = formatTimeByUserTZ(rawFinished);
+        const finishedPastTime: string = pastTimeByUserTZ(rawFinished);
+        return <Popover content={finished}>{finishedPastTime}</Popover>;
       },
     }),
   ];

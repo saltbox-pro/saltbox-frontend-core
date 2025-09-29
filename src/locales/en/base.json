@@ -252,7 +252,13 @@
       "list-success": "Success"
     },
     "minion": {
-      "title": "Minion"
+      "title": "Minion: {{minionId}}",
+      "results": "Results",
+      "job-status": "Job Status",
+      "finished": "Finished",
+      "last-run": "Last Run",
+      "job-title": "Job (retry {{run}})",
+      "job-running": "Running"
     }
   },
   "masters": {

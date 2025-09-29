@@ -242,9 +242,6 @@
         "seconds": "с",
         "minutes": "м",
         "hours": "ч"
-      },
-      "minion": {
-        "title": "Клиент"
       }
     },
     "minions-nav": {
@@ -253,6 +250,15 @@
       "list-in-work": "В процессе",
       "list-failed": "С ошибкой",
       "list-success": "Успешно"
+    },
+    "minion": {
+      "title": "Клиент: {{minionId}}",
+      "results": "Результаты запуска",
+      "job-status": "Статус команды",
+      "finished": "Завершена",
+      "last-run": "Последний запуск",
+      "job-title": "Команда (попытка запуска №{{run}})",
+      "job-running": "Выполняется"
     }
   },
   "masters": {
