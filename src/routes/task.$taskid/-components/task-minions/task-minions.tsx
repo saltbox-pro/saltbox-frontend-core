@@ -5,6 +5,7 @@ import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { toJS } from "mobx";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
 
@@ -14,10 +15,14 @@ export const TaskMinions = ({
   minions,
   collectionSlug,
   isLoading,
+  onRowClick,
+  onMinionClick,
 }: {
   minions: Array<TaskMinion>;
   collectionSlug: string;
   isLoading: boolean;
+  onRowClick?: (minion: TaskMinion) => void;
+  onMinionClick?: (minion: TaskMinion) => void;
 }) => {
   const { t } = useTranslation();
   const columns = [
@@ -30,7 +35,13 @@ export const TaskMinions = ({
         }
         return (
           <>
-            <Link to={`/minion/${collectionSlug}/${mid}/`}>
+            <Link
+              to={`/minion/${collectionSlug}/${mid}/`}
+              onClick={(event) => {
+                event.preventDefault();
+                onMinionClick?.(toJS(data.row.original));
+              }}
+            >
               <Button type="link" size={"small"}>
                 {data.getValue()}
               </Button>
@@ -96,6 +107,7 @@ export const TaskMinions = ({
     <TaskMinionsTable
       columns={columns}
       getRowId={(row) => row.minion_id}
+      onRowClick={(minion) => onRowClick?.(minion)}
       data={minions}
       total={minions.length}
       isEmpty={!isLoading && !minions.length}

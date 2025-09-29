@@ -287,7 +287,7 @@ const TaskPage = observer(() => {
             || taskStore.task?.status === TaskStatus.Postprocessing
             || taskStore.task?.status === TaskStatus.Running
             || taskStore.task?.status === TaskStatus.Created
-            || taskStore.task?.status === TaskStatus.Stopped
+            || (taskStore.task?.status === TaskStatus.Stopped && taskStore.failedMinionsCount === 0)
             || (taskStore.task?.status === TaskStatus.Finished && taskStore.failedMinionsCount === 0)
           }
           title={t("task.restart-failed")}
@@ -329,6 +329,7 @@ const TaskPage = observer(() => {
       minions={minions}
       collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
       isLoading={taskStore.isTaskLoading}
+      onMinionClick={(minion) => { console.log(minion) }}
     />
   </>;
 });
