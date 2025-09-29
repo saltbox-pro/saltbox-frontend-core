@@ -211,8 +211,8 @@
       "table-failed": "С ошибкой",
       "table-success": "Успешно",
       "table-pending": "Ожидает",
-      "table-started": "Запущено",
-      "table-finished": "Завершено",
+      "table-started": "Запущена",
+      "table-finished": "Завершена",
       "table-count-runs": "Количество запусков"
     },
     "jobs": {
@@ -242,6 +242,9 @@
         "seconds": "с",
         "minutes": "м",
         "hours": "ч"
+      },
+      "minion": {
+        "title": "Клиент"
       }
     },
     "minions-nav": {

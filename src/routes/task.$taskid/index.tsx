@@ -1,6 +1,6 @@
 import { JobResult, TaskMinion, TaskMinionStatus, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, formatTimeByUserTZ, PageHeader } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Card, Col, Flex, Popover, Row, Skeleton, Spin, Statistic, StepProps, Steps } from "antd";
+import { Breadcrumb, Button, Card, Col, Drawer, Flex, Popover, Row, Skeleton, Spin, Statistic, StepProps, Steps } from "antd";
 import { CaretRightOutlined, CheckCircleOutlined, ClockCircleOutlined, HomeOutlined, IssuesCloseOutlined, QuestionCircleOutlined, StopOutlined, SyncOutlined } from "@ant-design/icons";
 import { runInAction } from "mobx";
 import { observer } from "mobx-react";
@@ -21,6 +21,7 @@ const TaskPage = observer(() => {
   const [minionsSelectedStatus, setMinionsSelectedStatus] = useState(0);
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
+  const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
 
   const taskStatus: { [key in TaskStatus | "none"]: ReactNode } = {
     [TaskStatus.Created]: (
@@ -168,6 +169,14 @@ const TaskPage = observer(() => {
       socket.send(accessToken);
     }
   }, [appStore.authStore?.user, socket, isSocketOpen]);
+
+  const handleMinionClick = (minion: TaskMinion) => {
+    if (selectedMinion?.minion_id === minion.minion_id) {
+      setSelectedMinion(undefined);
+    } else {
+      setSelectedMinion(minion);
+    }
+  };
 
   return <>
     <Breadcrumb
@@ -329,8 +338,17 @@ const TaskPage = observer(() => {
       minions={minions}
       collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
       isLoading={taskStore.isTaskLoading}
-      onMinionClick={(minion) => { console.log(minion) }}
+      onMinionClick={handleMinionClick}
     />
+
+    <Drawer
+      open={selectedMinion !== undefined}
+      onClose={() => setSelectedMinion(undefined)}
+      mask={false}
+      title={t("task.minion.title")}
+    >
+      {selectedMinion?.minion_id}
+    </Drawer>
   </>;
 });
 

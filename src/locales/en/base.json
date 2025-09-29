@@ -250,6 +250,9 @@
       "list-in-work": "In Work",
       "list-failed": "Failed",
       "list-success": "Success"
+    },
+    "minion": {
+      "title": "Minion"
     }
   },
   "masters": {
