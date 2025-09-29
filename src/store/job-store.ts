@@ -24,6 +24,7 @@ export class JobStore {
   }
 
   reload = (jid: string | undefined) => {
+    this.jobReturns = [];
     this.jid = jid;
     if (this.jid) {
       this.loadJob();
@@ -94,14 +95,7 @@ export class JobStore {
   };
 
   addJobReturn = (jobReturn: JobResult) => {
-    const existingReturnIndex = this.jobReturns.findIndex(
-      existingReturn => existingReturn.id === jobReturn.id
-    );
-    if (existingReturnIndex === -1) {
-      this.jobReturns = [jobReturn, ...this.jobReturns];
-    } else {
-      this.jobReturns[existingReturnIndex] = jobReturn;
-    }
+    this.jobReturns = [jobReturn, ...this.jobReturns];
   };
 }
 

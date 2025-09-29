@@ -92,40 +92,33 @@ const JobPage = observer(() => {
       setIsSocketOpen(false);
     }
 
-    jobStore.jobReturns = [];
-    jobStore.jobReturnsCount = 0;
-  }, [jid]);
+    const webSocket = new WebSocket(
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
+    );
+    setSocket(webSocket);
 
-  useEffect(() => {
-    if (!jobStore.isJobReturnsLoading && jid && !socket && jobStore.job) {
-      const webSocket = new WebSocket(
-        `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
-      );
-      setSocket(webSocket);
+    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
+      const parsedJobReturn = JSON.parse(event.data) as JobResult;
+      jobStore.addJobReturn(parsedJobReturn);
+    });
 
-      webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-        const parsedJobReturn = JSON.parse(event.data) as JobResult;
-        jobStore.addJobReturn(parsedJobReturn);
-      });
+    webSocket.addEventListener("open", () => {
+      setIsSocketOpen(true);
+    });
 
-      webSocket.addEventListener("open", () => {
-        setIsSocketOpen(true);
-      });
+    webSocket.addEventListener("close", () => {
+      setIsSocketOpen(false);
+    });
 
-      webSocket.addEventListener("close", () => {
-        setIsSocketOpen(false);
-      });
+    webSocket.addEventListener("error", (error) => {
+      setIsSocketOpen(false);
+    });
 
-      webSocket.addEventListener("error", (error) => {
-        setIsSocketOpen(false);
-      });
-
-      return () => {
-        webSocket.close();
-        setIsSocketOpen(false);
-      };
-    }
-  }, [jobStore.isJobReturnsLoading, jid, socket, jobStore.job]);
+    return () => {
+      webSocket.close();
+      setIsSocketOpen(false);
+    };
+  }, []);
 
   useEffect(() => {
     const accessToken = appStore.authStore?.user?.access_token;
@@ -244,8 +237,9 @@ const JobPage = observer(() => {
         </div>
       </div>
 
-      {totalMinions > 0 && (
-        <div className={styles.progressContainer}>
+
+      <div className={styles.progressContainer}>
+        {totalMinions > 0 && (
           <Progress
             percent={progressPercent}
             success={{ percent: successPercent }}
@@ -254,11 +248,12 @@ const JobPage = observer(() => {
             showInfo={false}
             className={styles.progressBar}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
-        {totalMinions > 0 && (
+      {totalMinions > 0 && (
+        <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
+
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
               <span className={styles.statsNumber}>{successfulMinions}</span> successful /
@@ -280,9 +275,8 @@ const JobPage = observer(() => {
               )} pending
             </span>
           </div>
-        )}
 
-        {totalMinions > 0 && (
+
           <Flex align="center" gap={16}>
             {jobStartTime && (
               <div className={styles.timerWrapper}>
@@ -308,8 +302,8 @@ const JobPage = observer(() => {
               />
             </Flex>
           </Flex>
-        )}
-      </Flex>
+        </Flex>
+      )}
 
       {jobStore.isJobReturnsLoading ? (
         <div className={`${styles.jobReturnTableWrapper} ${styles.spinnerContainer}`}>
