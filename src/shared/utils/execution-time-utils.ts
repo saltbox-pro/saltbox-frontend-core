@@ -69,11 +69,11 @@ export const calculateStatistics = (values: number[]): Statistics => {
  */
 export const getColorByNormalizedValue = (normalizedValue: number): string => {
     if (normalizedValue <= 0.5) {
-        // От зеленого к желтому (0 - 0.5)
+        // От черного к желтому (0 - 0.5)
         const ratio = normalizedValue * 2; // 0-1
-        const red = Math.round(82 + (255 - 82) * ratio); // 82 -> 255
-        const green = Math.round(196 + (255 - 196) * ratio); // 196 -> 255
-        const blue = Math.round(26 + (0 - 26) * ratio); // 26 -> 0
+        const red = Math.round(0 + (255 - 0) * ratio); // 0 -> 255
+        const green = Math.round(0 + (255 - 0) * ratio); // 0 -> 255
+        const blue = Math.round(0 + (0 - 0) * ratio); // 0 -> 0
         return `rgb(${red}, ${green}, ${blue})`;
     } else {
         // От желтого к красному (0.5 - 1)
@@ -102,7 +102,7 @@ export const getExecutionTimeColor = (
     maxValue: number
 ): string => {
     if (minValue === maxValue) {
-        return '#52c41a'; // зеленый по умолчанию
+        return '#000000'; // черный по умолчанию
     }
 
     // Если стандартное отклонение очень мало, используем простую градацию
@@ -115,20 +115,18 @@ export const getExecutionTimeColor = (
     const zScore = (value - mean) / stdDev;
 
     // Определяем цвет на основе z-score
-    // z-score от -2 до 2 покрывает ~95% нормального распределения
-    if (zScore <= -1) {
-        // Быстрее среднего на 1+ стандартных отклонений - зеленый
-        return '#52c41a';
-    } else if (zScore <= 0) {
-        // От -1 до 0 стандартных отклонений - градиент от зеленого к желтому
-        const ratio = (zScore + 1) / 1; // нормализуем от 0 до 1
-        return getColorByNormalizedValue(ratio * 0.5); // 0-0.5 диапазон
-    } else if (zScore <= 1) {
-        // От 0 до 1 стандартных отклонений - градиент от желтого к красному
-        const ratio = zScore / 1; // нормализуем от 0 до 1
-        return getColorByNormalizedValue(0.5 + ratio * 0.5); // 0.5-1 диапазон
+    if (zScore <= 1) {
+        // До 1 стандартного отклонения - черный
+        return '#000000';
+    } else if (zScore <= 2) {
+        // От 1 до 2 стандартных отклонений - градиент от желтого к красному
+        const ratio = (zScore - 1) / 1; // нормализуем от 0 до 1
+        const red = Math.round(250 + (255 - 250) * ratio); // 250 -> 255
+        const green = Math.round(173 + (77 - 173) * ratio); // 173 -> 77
+        const blue = Math.round(20 + (79 - 20) * ratio); // 20 -> 79
+        return `rgb(${red}, ${green}, ${blue})`;
     } else {
-        // Медленнее среднего на 1+ стандартных отклонений - красный
+        // От 2 и выше стандартных отклонений - красный (danger)
         return '#ff4d4f';
     }
 };

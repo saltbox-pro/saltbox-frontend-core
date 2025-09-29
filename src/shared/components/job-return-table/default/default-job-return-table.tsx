@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
@@ -7,6 +7,7 @@ import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import { calculateStatistics, getExecutionTimeColor, formatExecutionTime, TimeUnits } from "../../../utils/execution-time-utils";
+import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobResult>();
 
@@ -18,11 +19,13 @@ export const DefaultJobReturnTable = ({
   isFullOutput = false,
   isLoading = false,
   jobStartTimestamp,
+  onExecutionTimesCalculated,
 }: {
   jobReturns: JobResult[];
   isFullOutput?: boolean;
   isLoading?: boolean;
   jobStartTimestamp?: string | null;
+  onExecutionTimesCalculated?: (executionTimes: number[]) => void;
 }) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -37,14 +40,22 @@ export const DefaultJobReturnTable = ({
     return { ...row, executionTimeSeconds };
   });
 
-  // Вычисляем статистические показатели execution time для цветовой градации
   const executionTimes = jobReturnsWithExecutionTime
     .map(row => row.executionTimeSeconds)
-    .filter(time => time > 0); // Исключаем отрицательные значения
+    .filter(time => time > 0);
+
+  // Передаем максимальное execution time в родительский компонент
+  useEffect(() => {
+    if (executionTimes.length > 0) {
+      const maxExecutionTime = Math.max(...executionTimes);
+      onExecutionTimesCalculated?.([maxExecutionTime]);
+    } else {
+      // Если нет execution times, передаем null
+      onExecutionTimesCalculated?.([0]);
+    }
+  }, [executionTimes, onExecutionTimesCalculated]);
 
   const statistics = calculateStatistics(executionTimes);
-
-  // Функция для отображения некорректного времени выполнения
   const renderInvalidExecutionTime = (jobResult: JobResult) => {
     const startDate = new Date(jobStartTimestamp || 0);
     const endDate = new Date(jobResult._stamp || 0);
@@ -67,7 +78,7 @@ export const DefaultJobReturnTable = ({
     });
 
     return (
-      <div style={{ fontSize: '12px', color: '#ff4d4f' }}>
+      <div className={styles.invalidExecutionTime}>
         {startTime} - {endTime}
       </div>
     );
@@ -130,12 +141,10 @@ export const DefaultJobReturnTable = ({
         const executionTimeSeconds = getValue();
         const jobResult = row.original;
 
-        // Обработка случая с отрицательным или нулевым временем выполнения
         if (executionTimeSeconds <= 0) {
           return renderInvalidExecutionTime(jobResult);
         }
 
-        // Получаем единицы времени для локализации
         const timeUnits: TimeUnits = {
           milliseconds: t("task.job-returns-table.time-units.milliseconds"),
           seconds: t("task.job-returns-table.time-units.seconds"),
@@ -143,10 +152,7 @@ export const DefaultJobReturnTable = ({
           hours: t("task.job-returns-table.time-units.hours"),
         };
 
-        // Форматируем время с локализацией
         const formattedTime = formatExecutionTime(executionTimeSeconds, timeUnits);
-
-        // Получаем цвет на основе статистики
         const textColor = getExecutionTimeColor(
           executionTimeSeconds,
           statistics.mean,
@@ -156,7 +162,7 @@ export const DefaultJobReturnTable = ({
         );
 
         return (
-          <div style={{ color: textColor, fontWeight: 'bold' }}>
+          <div className={styles.executionTimeValue} style={{ color: textColor }}>
             {formattedTime}
           </div>
         );
@@ -174,11 +180,57 @@ export const DefaultJobReturnTable = ({
     return data;
   };
 
+  const isSimpleStringData = (data: any): boolean => {
+    if (typeof data === 'string') {
+      return true;
+    }
+
+    if (typeof data === 'object' && data !== null) {
+      const keys = Object.keys(data);
+      if (keys.length === 1) {
+        const value = data[keys[0]];
+        return typeof value === 'string';
+      }
+    }
+
+    return false;
+  };
+  const extractStringValue = (data: any): string => {
+    if (typeof data === 'string') {
+      return data;
+    }
+
+    if (typeof data === 'object' && data !== null) {
+      const keys = Object.keys(data);
+      if (keys.length === 1) {
+        const value = data[keys[0]];
+        if (typeof value === 'string') {
+          return value;
+        }
+      }
+    }
+
+    return '';
+  };
+
+  const renderStringData = (data: any) => {
+    const stringValue = extractStringValue(data);
+
+    return (
+      <div className={styles.stringDataContainer}>
+        {stringValue}
+      </div>
+    );
+  };
+
   const renderJobResult = ({ row }: { row: Row<JobResult> }) => {
     const dataToShow = isFullOutput ? row.original : getShortOutput(row.original);
 
+    if (!isFullOutput && isSimpleStringData(dataToShow)) {
+      return renderStringData(dataToShow);
+    }
     return (
-      <div>
+      <div className={styles.reactJsonContainer}>
         <ReactJson
           displayDataTypes={false}
           enableClipboard={false}

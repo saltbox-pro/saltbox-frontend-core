@@ -19,7 +19,7 @@ import {
 import {
   PlusOutlined,
   QuestionCircleOutlined,
-  SearchOutlined,
+  SearchOutlined, ReloadOutlined,
 } from "@ant-design/icons";
 import {
   CreateJobRequest,
@@ -47,6 +47,23 @@ interface MasterOption {
   label: string;
 }
 
+interface JobModalButtonProps {
+  shape?: "default" | "circle" | "round";
+  icon?: React.ReactNode;
+  text?: string;
+  type?: "primary" | "default" | "dashed" | "link" | "text";
+  showText?: boolean;
+  size?: "small" | "middle" | "large";
+}
+
+interface JobModalProps {
+  target?: string;
+  targetType?: CreateJobRequestTgtTypeEnum;
+  fun?: string;
+  defaultMaster?: string;
+  buttonProps?: JobModalButtonProps;
+}
+
 type JobFormData = CreateJobRequest & { fun: string[] | number[] };
 
 const searchFunctionAllowedSymbols = /[^a-zA-Z0-9._]/g;
@@ -54,12 +71,10 @@ const searchFunctionAllowedSymbols = /[^a-zA-Z0-9._]/g;
 export function JobModal({
   target,
   targetType,
+  fun,
   defaultMaster,
-}: {
-  target: string;
-  targetType: CreateJobRequestTgtTypeEnum;
-  defaultMaster?: string;
-}) {
+  buttonProps,
+}: JobModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,8 +151,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-        ? -1
-        : 0
+          ? -1
+          : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -178,10 +193,11 @@ export function JobModal({
     form.setFieldsValue({
       tgt: target,
       tgt_type: targetType,
-      salt_master: defaultMaster ? defaultMaster : masterList[0]?.value,
+      salt_master: defaultMaster || masterList[0]?.value,
+      fun: fun ? [fun] : undefined,
     });
     refJobParamsForm.current?.reset();
-    setSaltFunctionName(undefined);
+    setSaltFunctionName(fun ? fun : undefined);
     setSaltFunction(undefined);
     setJsonFormValue({});
     setIsSchemaListLoading(true);
@@ -195,7 +211,24 @@ export function JobModal({
         messageApi.error("Error on load salt function schemes.");
       })
       .finally(() => setIsSchemaListLoading(false));
-  }, [isModalOpen]);
+  }, [isModalOpen, target, targetType, defaultMaster]);
+
+  // Загружаем схему функции если передано имя функции
+  useEffect(() => {
+    if (fun && saltFunctionList.length > 0) {
+      setIsSchemaLoading(true);
+
+      apiCoreStore.jsonSchemasApi
+        ?.jobsSchemasGet({ name: fun })
+        .then((schema) => {
+          setSaltFunction(schema);
+        })
+        .catch(() => {
+          messageApi.error("Error on load salt function schema.");
+        })
+        .finally(() => setIsSchemaLoading(false));
+    }
+  }, [fun, saltFunctionList]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
@@ -405,16 +438,29 @@ export function JobModal({
     isSchemaLoading ||
     isJobCreating;
 
+  const defaultButtonProps: JobModalButtonProps = {
+    shape: "default",
+    icon: <PlusOutlined />,
+    text: t("job-modal.create-job"),
+    type: "primary",
+    showText: true,
+    size: "middle",
+  };
+
+  const finalButtonProps = { ...defaultButtonProps, ...buttonProps };
+
   return (
     <>
       {contextHolder}
       <Button
-        type="primary"
-        icon={<PlusOutlined />}
+        type={finalButtonProps.type}
+        shape={finalButtonProps.shape}
+        icon={finalButtonProps.icon}
+        size={finalButtonProps.size}
         onClick={showModal}
         loading={isMasterListLoading}
       >
-        {t("job-modal.create-job")}
+        {finalButtonProps.showText ? finalButtonProps.text : null}
       </Button>
 
       <Modal
