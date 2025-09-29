@@ -92,6 +92,9 @@ const JobPage = observer(() => {
       setIsSocketOpen(false);
     }
 
+    jobStore.jobReturns = [];
+    jobStore.jobReturnsCount = 0;
+
     const webSocket = new WebSocket(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
     );
