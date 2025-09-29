@@ -180,7 +180,12 @@
     "dialog-title": "Create Task"
   },
   "task": {
-    "title": "Task #{{taskId}}",
+    "page-title": "{{templateName}}: #{{taskId}}",
+    "breadcrumbs-title-template": "Task: {{templateName}}",
+    "breadcrumbs-title-empty": "Task: #{{taskId}}",
+    "breadcrumbs-tasks": "Tasks",
+    "task-more-info": "More Info",
+    "user": "User",
     "run": "Run",
     "stop": "Stop",
     "restart-failed": "Restart Failed Minions",
@@ -238,6 +243,13 @@
         "minutes": "m",
         "hours": "h"
       }
+    },
+    "minions-nav": {
+      "list-all": "All",
+      "list-pending": "Pending",
+      "list-in-work": "In Work",
+      "list-failed": "Failed",
+      "list-success": "Success"
     }
   },
   "masters": {

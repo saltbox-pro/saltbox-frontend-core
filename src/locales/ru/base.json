@@ -39,7 +39,7 @@
     "table-soruce-type-scheduler": "Планировщик",
     "tasks-table-status-failed": "С ошибками",
     "tasks-table-status-in-work": "В работе",
-    "tasks-table-status-pending": "Ожидание",
+    "tasks-table-status-pending": "Не ответили",
     "tasks-table-status-success": "Успешно",
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
@@ -180,17 +180,22 @@
     "dialog-title": "Создание задач"
   },
   "task": {
-    "title": "Задача #{{taskId}}",
+    "page-title": "{{templateName}}: #{{taskId}}",
+    "breadcrumbs-title-template": "Задача: {{templateName}}",
+    "breadcrumbs-title-empty": "Задача: #{{taskId}}",
+    "breadcrumbs-tasks": "Задачи",
+    "task-more-info": "Подробнее о задаче",
+    "user": "Пользователь",
     "run": "Запустить",
     "stop": "Остановить",
-    "restart-failed": "Перезапустить завершенные с ошибками",
+    "restart-failed": "Перезапустить завершенные с ошибкой",
     "job-returns": "Ответы команд",
     "status": "Статус",
     "pending-jobs": "Ожидающие задачи",
     "proceessed-minions": "Обработанные клиенты",
     "created": "Создана",
     "processed-jobs": "Обработанные задачи",
-    "failed-minions": "Завершено с ошибками",
+    "failed-minions": "Завершено с ошибкой",
     "running": "Выполняется",
     "stopping": "Остановка",
     "postprocessing": "Пост-обработка",
@@ -202,11 +207,11 @@
       "table-minion-id": "ID клиента",
       "table-master": "Мастер",
       "table-status": "Статус",
-      "table-in-work": "В работе",
-      "table-failed": "Неудачно",
+      "table-in-work": "В процессе",
+      "table-failed": "С ошибкой",
       "table-success": "Успешно",
-      "table-pending": "Ожидание",
-      "table-started": "Начато",
+      "table-pending": "Ожидает",
+      "table-started": "Запущено",
       "table-finished": "Завершено",
       "table-count-runs": "Количество запусков"
     },
@@ -238,6 +243,13 @@
         "minutes": "м",
         "hours": "ч"
       }
+    },
+    "minions-nav": {
+      "list-all": "Все",
+      "list-pending": "Ожидает",
+      "list-in-work": "В процессе",
+      "list-failed": "С ошибкой",
+      "list-success": "Успешно"
     }
   },
   "masters": {
