@@ -1,8 +1,8 @@
 import { JobResult, TaskMinion, TaskMinionStatus, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed, formatTimeByUserTZ, PageHeader } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Card, Col, Drawer, Flex, Popover, Row, Skeleton, Spin, Statistic, StepProps, Steps } from "antd";
+import { formatTimeByUserTZ, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { Breadcrumb, Button, Flex, Popover, Skeleton, Spin, Statistic } from "antd";
 import { CaretRightOutlined, CheckCircleOutlined, ClockCircleOutlined, HomeOutlined, IssuesCloseOutlined, QuestionCircleOutlined, StopOutlined, SyncOutlined } from "@ant-design/icons";
-import { runInAction } from "mobx";
+import { runInAction, toJS } from "mobx";
 import { observer } from "mobx-react";
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,7 @@ import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import styles from "./index.module.css";
 import { TaskMinions } from "./-components/task-minions/task-minions";
+import { MinionView } from "./-components/minion-view/minion-view";
 
 
 const TaskPage = observer(() => {
@@ -22,6 +23,7 @@ const TaskPage = observer(() => {
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
   const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
+  const [selectedMinionJobs, setSelectedMinionJobs] = useState<Array<JobResult>>([]);
 
   const taskStatus: { [key in TaskStatus | "none"]: ReactNode } = {
     [TaskStatus.Created]: (
@@ -173,8 +175,15 @@ const TaskPage = observer(() => {
   const handleMinionClick = (minion: TaskMinion) => {
     if (selectedMinion?.minion_id === minion.minion_id) {
       setSelectedMinion(undefined);
+      setSelectedMinionJobs([]);
     } else {
       setSelectedMinion(minion);
+      const minionJobIds = Object.keys(minion.jobs ?? {}).sort().reverse();
+      const minionJobs = minionJobIds.map(jobId => toJS(taskStore.jobReturns?.find(jobReturn => jobReturn.jid === jobId)));
+      setSelectedMinionJobs(minionJobs);
+      console.log(minionJobIds, minionJobs, minion, toJS(taskStore.task));
+      //const jobs = taskStore.task?.jobs?.filter(job => job.target === minion.minion_id);
+      //setSelectedMinionJobs(taskStore.task?.minions?.[minion.minion_id]?.jobs ?? []);
     }
   };
 
@@ -341,14 +350,11 @@ const TaskPage = observer(() => {
       onMinionClick={handleMinionClick}
     />
 
-    <Drawer
-      open={selectedMinion !== undefined}
+    <MinionView
+      selectedMinion={selectedMinion}
+      selectedMinionJobs={selectedMinionJobs}
       onClose={() => setSelectedMinion(undefined)}
-      mask={false}
-      title={t("task.minion.title")}
-    >
-      {selectedMinion?.minion_id}
-    </Drawer>
+    />
   </>;
 });
 
