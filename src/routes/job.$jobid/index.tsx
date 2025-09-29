@@ -17,13 +17,17 @@ import {
   Switch,
   Typography,
 } from "antd";
-import { HomeOutlined } from "@ant-design/icons";
-import { JobResult } from "@saltbox/saltbox-core-api-client";
+import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
+import { JobResult, CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
+import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { MatIcon } from "saltbox-core/shared/components/mat-icon/mat-icon";
+import { formatExecutionTime, TimeUnits } from "saltbox-core/shared/utils/execution-time-utils";
 import { PageHeader } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
+import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
@@ -36,19 +40,41 @@ const JobPage = observer(() => {
   const [socket, setSocket] = useState<WebSocket | undefined>();
   const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
+  const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
 
   const jobStartTime = jobStore.job?.fms_jid_timestamp
     ? new Date(jobStore.job.fms_jid_timestamp).getTime()
     : null;
 
   const minionsArray = jobStore.job?.minions || [];
-  const totalMinions = minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length);
-  const successfulMinions = jobStore.jobReturns.filter(return_ => return_.success).length;
-  const failedMinions = jobStore.jobReturns.filter(return_ => !return_.success).length;
-  const pendingMinions = totalMinions - jobStore.jobReturns.length;
+  const totalMinions = Math.max(0, minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length));
+
+  const successfulMinionsList = jobStore.jobReturns.filter(return_ => return_.success);
+  const failedMinionsList = jobStore.jobReturns.filter(return_ => !return_.success);
+
+  const respondedMinions = jobStore.jobReturns.map(return_ => return_.id);
+
+  const allMinions = minionsArray.length > 0 ? minionsArray : [];
+  const pendingMinionsList = allMinions.filter(minion => !respondedMinions.includes(minion));
+
+  const successfulMinions = Math.max(0, successfulMinionsList.length);
+  const failedMinions = Math.max(0, failedMinionsList.length);
+  const pendingMinions = Math.max(0, pendingMinionsList.length);
 
   const progressPercent = totalMinions > 0 ? (jobStore.jobReturns.length / totalMinions) * 100 : 0;
   const successPercent = totalMinions > 0 ? (successfulMinions / totalMinions) * 100 : 0;
+  const isJobComplete = totalMinions > 0 && pendingMinions === 0;
+  const jobDurationSeconds = isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
+
+  const formatJobDuration = (seconds: number): string => {
+    const timeUnits: TimeUnits = {
+      milliseconds: "ms",
+      seconds: "s",
+      minutes: "m",
+      hours: "h",
+    };
+    return formatExecutionTime(seconds, timeUnits);
+  };
 
   useEffect(() => {
     jobStore.reload(jid);
@@ -102,6 +128,17 @@ const JobPage = observer(() => {
 
       <div className={styles.jobDetailsContainer}>
         <div className={styles.jobDetailItem}>
+          <JobModal
+            target={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",")}
+            targetType={jobStore.job?.tgt_type as CreateJobRequestTgtTypeEnum}
+            fun={jobStore.job?.fun}
+            buttonProps={{
+              shape: "default",
+              icon: <ReloadOutlined />,
+              type: "default",
+              showText: false,
+            }}
+          />
           <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
@@ -197,7 +234,23 @@ const JobPage = observer(() => {
         {totalMinions > 0 && (
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
-              <span className={styles.statsNumber}>{successfulMinions}</span> successful / <span className={styles.statsNumber}>{failedMinions}</span> failed / <span className={styles.statsNumber}>{pendingMinions}</span> pending
+              <span className={styles.statsNumber}>{successfulMinions}</span> successful /
+              {failedMinions > 0 ? (
+                <MinionsPopover
+                  minions={failedMinionsList}
+                  title={t("jobs.failed-minions")}
+                />
+              ) : (
+                <span className={styles.statsNumber}>{failedMinions}</span>
+              )} failed /
+              {pendingMinions > 0 ? (
+                <MinionsPopover
+                  minions={pendingMinionsList}
+                  title={t("jobs.pending-minions")}
+                />
+              ) : (
+                <span className={styles.statsNumber}>{pendingMinions}</span>
+              )} pending
             </span>
           </div>
         )}
@@ -206,11 +259,17 @@ const JobPage = observer(() => {
           {jobStartTime && (
             <div className={styles.timerWrapper}>
               <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
-              <Timer
-                type="countup"
-                value={jobStartTime}
-                format="HH:mm:ss"
-              />
+              {isJobComplete && jobDurationSeconds ? (
+                <b>
+                  {formatJobDuration(jobDurationSeconds)}
+                </b>
+              ) : (
+                <Timer
+                  type="countup"
+                  value={jobStartTime}
+                  format="HH:mm:ss"
+                />
+              )}
             </div>
           )}
           <Flex className={styles.switchWrapper}>
@@ -233,6 +292,7 @@ const JobPage = observer(() => {
             jobReturns={toJS(jobStore.jobReturns)}
             isFullOutput={isFullOutput}
             jobStartTimestamp={jobStore.job?._stamp || null}
+            onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
           />
         </div>
       )}
