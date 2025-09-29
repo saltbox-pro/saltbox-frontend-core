@@ -5,14 +5,23 @@ import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobResult } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
-import { calculateStatistics, getExecutionTimeColor, formatExecutionTime, TimeUnits } from "../../../utils/execution-time-utils";
+import {
+  FastTableListed,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
+import {
+  calculateStatistics,
+  getExecutionTimeColor,
+  formatExecutionTime,
+  TimeUnits,
+} from "../../../utils/execution-time-utils";
 import styles from "./default-job-return-table.module.css";
+import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { Link } from "react-router";
 
 const columnHelper = createColumnHelper<JobResult>();
 
 const JobReturnsTable = FastTableListed<JobResult>;
-
 
 export const DefaultJobReturnTable = ({
   jobReturns,
@@ -30,7 +39,7 @@ export const DefaultJobReturnTable = ({
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const jobReturnsWithExecutionTime = jobReturns.map(row => {
+  const jobReturnsWithExecutionTime = jobReturns.map((row) => {
     const startDate = new Date(jobStartTimestamp || 0);
     const endDate = new Date(row._stamp || 0);
 
@@ -41,8 +50,8 @@ export const DefaultJobReturnTable = ({
   });
 
   const executionTimes = jobReturnsWithExecutionTime
-    .map(row => row.executionTimeSeconds)
-    .filter(time => time > 0);
+    .map((row) => row.executionTimeSeconds)
+    .filter((time) => time > 0);
 
   // Передаем максимальное execution time в родительский компонент
   useEffect(() => {
@@ -60,21 +69,21 @@ export const DefaultJobReturnTable = ({
     const startDate = new Date(jobStartTimestamp || 0);
     const endDate = new Date(jobResult._stamp || 0);
 
-    const startTime = startDate.toLocaleString('ru-RU', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    const startTime = startDate.toLocaleString("ru-RU", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
-    const endTime = endDate.toLocaleString('ru-RU', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    const endTime = endDate.toLocaleString("ru-RU", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     });
 
     return (
@@ -111,6 +120,22 @@ export const DefaultJobReturnTable = ({
     },
     columnHelper.accessor("id", {
       header: t("task.job-returns-table.table-mid"),
+      cell: (data) => {
+        return (
+          <>
+            <Link
+              to={`/master/${
+                data.row.original.salt_master
+              }/minion/${data.getValue()}`}
+            >
+              <Button type="link" size={"small"}>
+                {data.getValue()}
+              </Button>
+            </Link>
+            <CopyToClipboardButton text={data.getValue()} />
+          </>
+        );
+      },
     }),
     columnHelper.accessor("success", {
       header: t("task.job-returns-table.table-success"),
@@ -152,7 +177,10 @@ export const DefaultJobReturnTable = ({
           hours: t("task.job-returns-table.time-units.hours"),
         };
 
-        const formattedTime = formatExecutionTime(executionTimeSeconds, timeUnits);
+        const formattedTime = formatExecutionTime(
+          executionTimeSeconds,
+          timeUnits
+        );
         const textColor = getExecutionTimeColor(
           executionTimeSeconds,
           statistics.mean,
@@ -162,7 +190,10 @@ export const DefaultJobReturnTable = ({
         );
 
         return (
-          <div className={styles.executionTimeValue} style={{ color: textColor }}>
+          <div
+            className={styles.executionTimeValue}
+            style={{ color: textColor }}
+          >
             {formattedTime}
           </div>
         );
@@ -181,50 +212,48 @@ export const DefaultJobReturnTable = ({
   };
 
   const isSimpleStringData = (data: any): boolean => {
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       return true;
     }
 
-    if (typeof data === 'object' && data !== null) {
+    if (typeof data === "object" && data !== null) {
       const keys = Object.keys(data);
       if (keys.length === 1) {
         const value = data[keys[0]];
-        return typeof value === 'string';
+        return typeof value === "string";
       }
     }
 
     return false;
   };
   const extractStringValue = (data: any): string => {
-    if (typeof data === 'string') {
+    if (typeof data === "string") {
       return data;
     }
 
-    if (typeof data === 'object' && data !== null) {
+    if (typeof data === "object" && data !== null) {
       const keys = Object.keys(data);
       if (keys.length === 1) {
         const value = data[keys[0]];
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
           return value;
         }
       }
     }
 
-    return '';
+    return "";
   };
 
   const renderStringData = (data: any) => {
     const stringValue = extractStringValue(data);
 
-    return (
-      <div className={styles.stringDataContainer}>
-        {stringValue}
-      </div>
-    );
+    return <div className={styles.stringDataContainer}>{stringValue}</div>;
   };
 
   const renderJobResult = ({ row }: { row: Row<JobResult> }) => {
-    const dataToShow = isFullOutput ? row.original : getShortOutput(row.original);
+    const dataToShow = isFullOutput
+      ? row.original
+      : getShortOutput(row.original);
 
     if (!isFullOutput && isSimpleStringData(dataToShow)) {
       return renderStringData(dataToShow);
