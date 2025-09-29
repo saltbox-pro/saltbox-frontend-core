@@ -159,6 +159,7 @@ const JobPage = observer(() => {
               icon: <ReloadOutlined />,
               type: "default",
               showText: false,
+              title: t("jobs.repeat-job"),
             }}
           />
           <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
@@ -179,7 +180,7 @@ const JobPage = observer(() => {
                 >
                   {jobStore.job?.tgt as string}
                 </Text>
-                <CopyToClipboardButton text={jobStore.job?.tgt as string} />
+                <CopyToClipboardButton text={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""} />
               </>
             ) : (
               <Skeleton.Input size="small" />

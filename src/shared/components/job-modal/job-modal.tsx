@@ -54,6 +54,7 @@ interface JobModalButtonProps {
   type?: "primary" | "default" | "dashed" | "link" | "text";
   showText?: boolean;
   size?: "small" | "middle" | "large";
+  title?: string;
 }
 
 interface JobModalProps {
@@ -457,6 +458,7 @@ export function JobModal({
         shape={finalButtonProps.shape}
         icon={finalButtonProps.icon}
         size={finalButtonProps.size}
+        title={finalButtonProps.title}
         onClick={showModal}
         loading={isMasterListLoading}
       >
