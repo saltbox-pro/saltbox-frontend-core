@@ -278,31 +278,33 @@ const JobPage = observer(() => {
           </div>
         )}
 
-        <Flex align="center" gap={16}>
-          {jobStartTime && (
-            <div className={styles.timerWrapper}>
-              <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
-              {isJobComplete && jobDurationSeconds ? (
-                <b>
-                  {formatJobDuration(jobDurationSeconds)}
-                </b>
-              ) : (
-                <Timer
-                  type="countup"
-                  value={jobStartTime}
-                  format="HH:mm:ss"
-                />
-              )}
-            </div>
-          )}
-          <Flex className={styles.switchWrapper}>
-            <span>{t("jobs.full-output")}</span>
-            <Switch
-              checked={isFullOutput}
-              onChange={setIsFullOutput}
-            />
+        {totalMinions > 0 && (
+          <Flex align="center" gap={16}>
+            {jobStartTime && (
+              <div className={styles.timerWrapper}>
+                <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
+                {isJobComplete && jobDurationSeconds ? (
+                  <b>
+                    {formatJobDuration(jobDurationSeconds)}
+                  </b>
+                ) : (
+                  <Timer
+                    type="countup"
+                    value={jobStartTime}
+                    format="HH:mm:ss"
+                  />
+                )}
+              </div>
+            )}
+            <Flex className={styles.switchWrapper}>
+              <span>{t("jobs.full-output")}</span>
+              <Switch
+                checked={isFullOutput}
+                onChange={setIsFullOutput}
+              />
+            </Flex>
           </Flex>
-        </Flex>
+        )}
       </Flex>
 
       {jobStore.isJobReturnsLoading ? (
