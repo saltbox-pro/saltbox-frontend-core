@@ -94,7 +94,14 @@ export class JobStore {
   };
 
   addJobReturn = (jobReturn: JobResult) => {
-    this.jobReturns = [jobReturn, ...this.jobReturns];
+    const existingReturnIndex = this.jobReturns.findIndex(
+      existingReturn => existingReturn.id === jobReturn.id
+    );
+    if (existingReturnIndex === -1) {
+      this.jobReturns = [jobReturn, ...this.jobReturns];
+    } else {
+      this.jobReturns[existingReturnIndex] = jobReturn;
+    }
   };
 }
 

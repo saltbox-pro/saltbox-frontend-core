@@ -102,7 +102,9 @@ const JobPage = observer(() => {
 
     webSocket.addEventListener("message", (event: MessageEvent<string>) => {
       const parsedJobReturn = JSON.parse(event.data) as JobResult;
-      jobStore.addJobReturn(parsedJobReturn);
+      if (!jobStore.isJobReturnsLoading) {
+        jobStore.addJobReturn(parsedJobReturn);
+      }
     });
 
     webSocket.addEventListener("open", () => {
