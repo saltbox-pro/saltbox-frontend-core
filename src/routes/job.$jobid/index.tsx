@@ -68,10 +68,10 @@ const JobPage = observer(() => {
 
   const formatJobDuration = (seconds: number): string => {
     const timeUnits: TimeUnits = {
-      milliseconds: "ms",
-      seconds: "s",
-      minutes: "m",
-      hours: "h",
+      milliseconds: t("task.job-returns-table.time-units.milliseconds"),
+      seconds: t("task.job-returns-table.time-units.seconds"),
+      minutes: t("task.job-returns-table.time-units.minutes"),
+      hours: t("task.job-returns-table.time-units.hours"),
     };
     return formatExecutionTime(seconds, timeUnits);
   };
@@ -91,9 +91,6 @@ const JobPage = observer(() => {
       socket.close();
       setIsSocketOpen(false);
     }
-
-    jobStore.jobReturns = [];
-    jobStore.jobReturnsCount = 0;
 
     const webSocket = new WebSocket(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
@@ -121,7 +118,7 @@ const JobPage = observer(() => {
       webSocket.close();
       setIsSocketOpen(false);
     };
-  }, [jid]);
+  }, []);
 
   useEffect(() => {
     const accessToken = appStore.authStore?.user?.access_token;
@@ -240,8 +237,9 @@ const JobPage = observer(() => {
         </div>
       </div>
 
-      {totalMinions > 0 && (
-        <div className={styles.progressContainer}>
+
+      <div className={styles.progressContainer}>
+        {totalMinions > 0 && (
           <Progress
             percent={progressPercent}
             success={{ percent: successPercent }}
@@ -250,11 +248,12 @@ const JobPage = observer(() => {
             showInfo={false}
             className={styles.progressBar}
           />
-        </div>
-      )}
+        )}
+      </div>
 
-      <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
-        {totalMinions > 0 && (
+      {totalMinions > 0 && (
+        <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
+
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
               <span className={styles.statsNumber}>{successfulMinions}</span> successful /
@@ -276,34 +275,35 @@ const JobPage = observer(() => {
               )} pending
             </span>
           </div>
-        )}
 
-        <Flex align="center" gap={16}>
-          {jobStartTime && (
-            <div className={styles.timerWrapper}>
-              <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
-              {isJobComplete && jobDurationSeconds ? (
-                <b>
-                  {formatJobDuration(jobDurationSeconds)}
-                </b>
-              ) : (
-                <Timer
-                  type="countup"
-                  value={jobStartTime}
-                  format="HH:mm:ss"
-                />
-              )}
-            </div>
-          )}
-          <Flex className={styles.switchWrapper}>
-            <span>{t("jobs.full-output")}</span>
-            <Switch
-              checked={isFullOutput}
-              onChange={setIsFullOutput}
-            />
+
+          <Flex align="center" gap={16}>
+            {jobStartTime && (
+              <div className={styles.timerWrapper}>
+                <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
+                {isJobComplete && jobDurationSeconds ? (
+                  <b>
+                    {formatJobDuration(jobDurationSeconds)}
+                  </b>
+                ) : (
+                  <Timer
+                    type="countup"
+                    value={jobStartTime}
+                    format="HH:mm:ss"
+                  />
+                )}
+              </div>
+            )}
+            <Flex className={styles.switchWrapper}>
+              <span>{t("jobs.full-output")}</span>
+              <Switch
+                checked={isFullOutput}
+                onChange={setIsFullOutput}
+              />
+            </Flex>
           </Flex>
         </Flex>
-      </Flex>
+      )}
 
       {jobStore.isJobReturnsLoading ? (
         <div className={`${styles.jobReturnTableWrapper} ${styles.spinnerContainer}`}>

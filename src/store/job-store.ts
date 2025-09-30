@@ -24,6 +24,7 @@ export class JobStore {
   }
 
   reload = (jid: string | undefined) => {
+    this.jobReturns = [];
     this.jid = jid;
     if (this.jid) {
       this.loadJob();
