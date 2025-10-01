@@ -5,8 +5,10 @@ const MAX_BLOCKS = 12;
 type BlockType = {
   title: string;
   grains: string;
-  view: string;
+  view: ViewMode;
 };
+
+export type ViewMode = "table" | "graph";
 
 export class DashboardStore {
   blocks: BlockType[];
@@ -51,7 +53,7 @@ export class DashboardStore {
     this.saveToLocalStorage();
   }
 
-  updateView(index: number, newView: string) {
+  updateView(index: number, newView: ViewMode) {
     this.blocks[index].view = newView;
     this.saveToLocalStorage();
   }

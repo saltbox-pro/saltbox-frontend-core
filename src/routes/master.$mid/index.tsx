@@ -685,6 +685,7 @@ const MasterPage = observer(() => {
                 columns={clientColumns}
                 data={toJS(clients)}
                 total={clients.length}
+                isEmpty={!clients.length}
                 getRowId={(row) => row.minion_id}
               />
             </div>
@@ -935,7 +936,13 @@ const MasterPage = observer(() => {
                 key={`import-table-${isEditingImport ? "editing" : "viewing"}`}
                 columns={importColumns}
                 data={isEditingImport ? editedPillars : parsedPillars}
+                isEmpty={
+                  isEditingImport
+                    ? !editedPillars.length
+                    : !parsedPillars.length
+                }
                 getRowId={(row, idx) => String(idx)}
+                hideFooter
               />
             </div>
           </>

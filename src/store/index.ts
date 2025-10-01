@@ -15,6 +15,7 @@ export { MinionsStore } from "./minions-store";
 export { MinionStore } from "./minion-store";
 export { MinionFilterStore } from "./minion-filter-store";
 export { DashboardStore } from "./dashboard-store";
+export type { ViewMode } from "./dashboard-store";
 export { DashboardCardStore } from "./dashboard-card-store";
 export { CollectionStore } from "./collection-store";
 export { CollectionPopoverFilterStore } from "./collection-popover-filter-store";

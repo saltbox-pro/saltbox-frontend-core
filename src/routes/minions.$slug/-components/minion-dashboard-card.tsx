@@ -15,9 +15,12 @@ import {
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
-import { DashboardCardStore } from "saltbox-core/store";
-import { dashboardStore } from "saltbox-core/store";
-import { MinionFilterStore } from "saltbox-core/store";
+import {
+  DashboardCardStore,
+  dashboardStore,
+  MinionFilterStore,
+  ViewMode,
+} from "saltbox-core/store";
 import styles from "./minion-dashboard-card.module.css";
 
 const columnHelper = createColumnHelper<GrainValue>();
@@ -260,10 +263,10 @@ const renderActiveShape = (props: any) => {
 
 type MinionDashboardCardProps = {
   grains: string;
-  view: string;
+  view: ViewMode;
   onRemove?: () => void;
   onUpdateGrains: (newGrains: string) => void;
-  onChangeView: (newView: string) => void;
+  onChangeView: (newView: ViewMode) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
   isLoading?: boolean;
@@ -294,7 +297,7 @@ export const MinionDashboardCard = observer(
     const [currentGrains, setCurrentGrains] =
       useState<(typeof grainsOptions)[number]["value"]>(grains);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [viewMode, setViewMode] = useState<string>(view);
+    const [viewMode, setViewMode] = useState(view);
     const [dashboardCardStore] = useState(new DashboardCardStore());
     const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
 
@@ -435,6 +438,9 @@ export const MinionDashboardCard = observer(
           className={`${styles.dashboardTableBlock} ${
             isFullScreen && styles.fullscreen
           }`}
+          classNames={{
+            body: `${view === "table" && styles.dashboardTableBlockBody}`,
+          }}
         >
           <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
             <div className={styles.dashboardTableBlockHeader}>
@@ -479,8 +485,10 @@ export const MinionDashboardCard = observer(
               <FastTableListed
                 columns={columns}
                 data={dashboardCardStore.grainValues}
+                isEmpty={!dashboardCardStore.grainValues.length}
                 sorting={sorting}
                 onSortingChange={setSorting}
+                hideFooter
               />
             ) : (
               <div>{t("dashboard.no-information")}</div>

@@ -90,6 +90,7 @@
 
 .dashboardTableBlock :global(.ant-spin-nested-loading) {
   z-index: 1;
+  height: 100%;
 }
 
 .dashboardTableBlock :global(.ant-spin-container) {
@@ -106,6 +107,15 @@
 
 .dashboardTableBlock :global(.ant-spin-text) {
   z-index: 1;
+}
+
+.dashboardTableBlockBody {
+  height: 100%;
+}
+
+.dashboardTableBlockBody :global(.ant-spin-container) {
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboardTableBlock.fullscreen .dashboardTableBlockHeader {
