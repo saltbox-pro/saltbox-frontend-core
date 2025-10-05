@@ -7,7 +7,8 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "i18next";
 import { BrowserRouter } from "react-router";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
-import { autorun, runInAction } from "mobx";
+import { runInAction } from "mobx";
+import { SaltboxModule } from "@saltbox/saltbox-frontend-common";
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -34,7 +35,7 @@ const collectionSelectorLifecycles = singleSpaReact({
 
 //export const { bootstrap, mount, unmount } = coreLifecycles;
 
-export const saltboxModule = {
+export const saltboxModule: SaltboxModule = {
   singleSpaLifecycle: coreLifecycles,
   name: "saltbox-frontend-core",
   path: "/core",
@@ -97,7 +98,7 @@ export const saltboxModule = {
         envStore.services.set(service.service_name, service.env);
       }
     });
-    autorun(() => {
+    localeStore.subscribe(() => {
       i18nStore.currentLanguage = localeStore.currentLocale;
     });
   },

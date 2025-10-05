@@ -148,7 +148,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     fillMinionsTabs();
-  }, [appStore.pluginsStore?.minions?.tabs, i18nStore.currentLanguage]);
+  }, [appStore.pluginsStore?.plugins?.minions?.tabs, i18nStore.currentLanguage]);
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
@@ -222,7 +222,7 @@ const MinionsPage = observer(() => {
             <Parcel
               config={pluginTab.parcel}
               wrapWith={pluginTab.wrapWith}
-              wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
+              wrapStyle={pluginTab.wrapStyle}
               customProps={{
                 slug,
               }}
