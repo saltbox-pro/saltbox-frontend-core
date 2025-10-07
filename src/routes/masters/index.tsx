@@ -13,7 +13,7 @@ import {
   PageHeader,
   FastTablePaginated,
 } from "@saltbox/saltbox-frontend-common";
-import { MastersStore } from "saltbox-core/store";
+import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
   actions: JSX.Element;
@@ -23,7 +23,7 @@ const MastersTable = FastTablePaginated<MasterViewSchema>;
 
 const columnHelper = createColumnHelper<TableRowData>();
 
-const MastersPage = observer(() => {
+function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -119,10 +119,11 @@ const MastersPage = observer(() => {
     }),
   ];
 
-  const [mastersStore] = useState(new MastersStore());
-
   useEffect(() => {
     mastersStore.loadMasters();
+    return () => {
+      mastersStore.reset();
+    };
   }, []);
 
   useEffect(() => {
@@ -195,6 +196,6 @@ const MastersPage = observer(() => {
       />
     </>
   );
-});
+}
 
-export default MastersPage;
+export default observer(MastersPage);

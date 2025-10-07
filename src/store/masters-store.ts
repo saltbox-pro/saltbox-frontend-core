@@ -1,17 +1,29 @@
 import { PaginationState } from '@tanstack/react-table';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from './api-core-store';
 
 export class MastersStore {
-  isLoading: boolean;
-  error: string | null;
-  pagination: PaginationState;
-  masters: Array<MasterViewSchema>;
-  totalMasters: number;
+  @observable isLoading: boolean;
+  @observable error: string | null;
+  @observable pagination: PaginationState;
+  @observable masters: Array<MasterViewSchema>;
+  @observable totalMasters: number;
 
   constructor() {
-    makeAutoObservable(this);
+    this.isLoading = false;
+    this.error = null;
+    this.masters = [];
+    this.totalMasters = 0;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: 50,
+    };
+    makeObservable(this);
+  }
+
+  @action
+  reset = (): void => {
     this.isLoading = false;
     this.error = null;
     this.masters = [];
@@ -22,6 +34,7 @@ export class MastersStore {
     };
   }
 
+  @action
   rejectMaster = (id: string): Promise<MasterViewSchema> => {
     this.isLoading = true;
     const result = new Promise<MasterViewSchema>((resolve, reject) => {
@@ -46,6 +59,7 @@ export class MastersStore {
     return result;
   };
 
+  @action
   acceptMaster = (id: string): Promise<MasterViewSchema> => {
     this.isLoading = true;
     const result = new Promise<MasterViewSchema>((resolve, reject) => {
@@ -70,6 +84,7 @@ export class MastersStore {
     return result;
   };
 
+  @action
   loadMasters = () => {
     this.isLoading = true;
     this.error = null;
@@ -94,6 +109,7 @@ export class MastersStore {
       });
   };
 
+  @action
   updateMaster = (master: MasterViewSchema) => {
     const index = this.masters.findIndex((m) => m.id === master.id);
     if (index !== -1) {
@@ -101,8 +117,11 @@ export class MastersStore {
     }
   };
 
-  handleLazyLoad(pagination: PaginationState) {
+  @action
+  handleLazyLoad = (pagination: PaginationState) => {
     this.pagination = pagination;
     this.loadMasters();
   }
 }
+
+export const mastersStore = new MastersStore();
