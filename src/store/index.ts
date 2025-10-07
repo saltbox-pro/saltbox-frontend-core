@@ -7,6 +7,7 @@ export { taskTemplatesStore } from "./tasks-templates-store";
 export { settingsSlsStore } from "./settings-sls-store";
 export { jobStore } from "./job-store";
 export { defaultCollectionStore } from "./default-collection-store";
+export { mastersStore } from "./masters-store";
 
 export { FilterStore } from "./filter-store";
 export { TasksStore } from "./tasks-store";
