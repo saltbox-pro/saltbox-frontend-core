@@ -72,9 +72,13 @@ export class TasksStore {
   @action updateTask = (task: TaskModel) => {
     const index = this.tasks.findIndex((item) => item.id === task.id);
     if (index > -1) {
-      this.tasks.splice(index, 1, task);
+      this.tasks[index] = task;
       this.tasks = [...this.tasks];
     }
+  };
+
+  @action updateTasks = (tasks: TaskListResponseSchema[]) => {
+    tasks.map((task) => this.updateTask(task));
   };
 
   @action setCollectionSlug = (slug: string | undefined) => {

@@ -74,7 +74,7 @@ export class JobsStore {
         runInAction(() => {
           this.isJobsLoading = false;
           this.total = response.total;
-          response.data.forEach((job) => this.pushJob(job));
+          this.pushJobs(response.data);
         });
       })
       .catch((error) => {
@@ -105,6 +105,16 @@ export class JobsStore {
     } else {
       this.jobs = [this.newJobStoreItem(job), ...this.jobs];
     }
+  };
+
+  addJobs = (jobs: JobsListResponse[]) => {
+    let newJobs = jobs.map((job) => this.newJobStoreItem(job)).reverse();
+    this.jobs.unshift(...newJobs);
+  };
+
+  pushJobs = (jobs: JobsListResponse[]) => {
+    let newJobs = jobs.map((job) => this.newJobStoreItem(job));
+    this.jobs.push(...newJobs);
   };
 
   pushJob = (job: JobsListResponse) => {

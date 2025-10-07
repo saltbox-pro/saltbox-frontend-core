@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
@@ -24,6 +24,7 @@ import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selec
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import styles from "./index.module.css";
 import Parcel from "single-spa-react/parcel";
+import { WebSocketService } from "@saltbox/saltbox-frontend-common";
 
 const { Text } = Typography;
 
@@ -162,25 +163,25 @@ const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
 
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("jid", {
       header: t("jobs.table-jid"),
-      cell: (data) => (
-        <>
+      cell: (data) => {
+        const result = useMemo(() => <>
           <Link to={`/job/${data.getValue()}`}>
             <Button type="link" size={"small"}>
               {data.getValue()}
             </Button>
           </Link>
           <CopyToClipboardButton text={data.getValue()} />
-        </>
-      ),
+        </>, []);
+        return result;
+      },
       meta: {
         tdClassName: "fast-table-column-nowrap",
       },
@@ -201,11 +202,13 @@ const JobsPage = observer(() => {
             ? `${fullValue.substring(0, 50)}...`
             : fullValue;
 
-        return (
+        const result = useMemo(() => (
           <Text copyable={{ text: fullValue }} title={fullValue}>
             {truncatedValue}
           </Text>
-        );
+        ), []);
+
+        return result;
       },
     }),
     columnHelper.accessor("tgt_type", {
@@ -214,7 +217,6 @@ const JobsPage = observer(() => {
     columnHelper.accessor("user.name", {
       header: t("jobs.table-user"),
     }),
-
     columnHelper.accessor("fms_jid_timestamp", {
       header: t("jobs.table-created"),
       cell: (data) => {
@@ -224,10 +226,14 @@ const JobsPage = observer(() => {
         const created: string = formatTimeByUserTZ(rawCreated);
         const createdPastTime: string = pastTimeByUserTZ(rawCreated);
 
-        return <Popover content={created}>{createdPastTime}</Popover>;
+        const result = useMemo(() => (
+          <Popover content={created}>{createdPastTime}</Popover>
+        ), []);
+
+        return result;
       },
     }),
-  ];
+  ], []);
 
   const { loadingRef } = useInfiniteScroll({
     onLoadMore: () => jobsStore.loadNextJobs(),
@@ -237,30 +243,29 @@ const JobsPage = observer(() => {
   });
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${apiCoreStore.env?.ws_server_url}/jobs`);
-    setSocket(webSocket);
-    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-      const parsedJob = JSON.parse(event.data) as JobsListResponse;
-      jobsStore.addJob(parsedJob);
-    });
-    webSocket.addEventListener("open", () => {
-      setIsSocketOpen(true);
-    });
-    return () => webSocket.close();
+    webSocketService.connect(
+      `${apiCoreStore.env?.ws_server_url}/jobs`,
+      appStore.authStore?.user?.access_token,
+      (update: JobsListResponse[]) => {
+        if (update?.length > 0) {
+          jobsStore.addJobs(update);
+        }
+      },
+    );
+    return () => webSocketService.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (webSocketService && appStore.authStore?.user?.access_token) {
+      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
+    }
+  }, [appStore.authStore?.user]);
 
   useEffect(() => {
     if (jobsStore.error) {
       navigate("/not-found");
     }
   }, [jobsStore.error]);
-
-  useEffect(() => {
-    const accessToken = appStore.authStore?.user?.access_token;
-    if (accessToken && socket && isSocketOpen) {
-      socket.send(accessToken);
-    }
-  }, [appStore.authStore?.user, socket, isSocketOpen]);
 
   useEffect(() => {
     jobsStore.handleDateRangeChange([dayjs().startOf("day"), dayjs()]);

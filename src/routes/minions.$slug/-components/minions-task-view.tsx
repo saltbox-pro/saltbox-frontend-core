@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { Button, Flex, Popover, Progress, Tag, Tooltip } from "antd";
+import { Button, Flex, Popover, Progress } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated, pastTimeByUserTZ, WebSocketService } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 import { TasksQueryBuilder } from "./tasks-query-builder";
 import styles from "./minions-task-view.module.css";
@@ -111,24 +111,26 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     },
   ];
 
-  const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
   const [tasksStore] = useState(new TasksStore());
   const [filterStore] = useState(new TasksFilterStore(filterSchema));
 
-  const columns = [
+  const columns = useMemo(() => [
     columnHelper.accessor("id", {
       header: "ID",
-      cell: (data) => (
-        <>
-          <Link to={`/task/${data.getValue()}`}>
-            <Button type="link" size={"small"}>
-              {data.getValue()}
-            </Button>
-          </Link>
-          <CopyToClipboardButton text={data.getValue()} />
-        </>
-      ),
+      cell: (data) => {
+        const result = useMemo(() => (
+          <>
+            <Link to={`/task/${data.getValue()}`}>
+              <Button type="link" size={"small"}>
+                {data.getValue()}
+              </Button>
+            </Link>
+            <CopyToClipboardButton text={data.getValue()} />
+          </>
+        ), []);
+        return result;
+      },
       meta: {
         tdClassName: "fast-table-column-nowrap",
       },
@@ -204,15 +206,18 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
           </Flex>
         </Flex>;
 
-        return <Popover content={popoverContent}>
-          <Progress
-            steps={10}
-            percent={(statusSuccess + statusFailed) / totalMinions * 100}
-            success={{ percent: statusSuccess / totalMinions * 100 }}
-            strokeColor={progressStrokeColors}
-            showInfo={false}
-          />
-        </Popover>;
+        const result = useMemo(() => (
+          <Popover content={popoverContent}>
+            <Progress
+              steps={10}
+              percent={(statusSuccess + statusFailed) / totalMinions * 100}
+              success={{ percent: statusSuccess / totalMinions * 100 }}
+              strokeColor={progressStrokeColors}
+              showInfo={false}
+            />
+          </Popover>
+        ), [totalMinions, statusSuccess, statusFailed, statusInWork, statusPending]);
+        return result;
       },
     }),
     columnHelper.accessor("created", {
@@ -222,28 +227,26 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         return <div>{created}</div>;
       },
     }),
-  ];
+  ], []);
 
   useEffect(() => {
-    const webSocket = new WebSocket(`${apiCoreStore.env?.ws_server_url}/tasks`);
-    setSocket(webSocket);
-    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-      const parsedTask = JSON.parse(event.data) as TaskListResponseSchema;
-      console.log('parsedTask:', parsedTask)
-      tasksStore.updateTask(parsedTask);
-    });
-    webSocket.addEventListener("open", () => {
-      setIsSocketOpen(true);
-    });
-    return () => webSocket.close();
+    webSocketService.connect(
+      `${apiCoreStore.env?.ws_server_url}/tasks`,
+      appStore.authStore?.user?.access_token,
+      (update: TaskListResponseSchema[]) => {
+        if (update?.length > 0) {
+          tasksStore.updateTasks(update);
+        }
+      },
+    );
+    return () => webSocketService.disconnect();
   }, []);
 
   useEffect(() => {
-    const accessToken = appStore.authStore?.user?.access_token;
-    if (accessToken && socket && isSocketOpen) {
-      socket.send(accessToken);
+    if (webSocketService && appStore.authStore?.user?.access_token) {
+      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
-  }, [appStore.authStore?.user, socket, isSocketOpen]);
+  }, [appStore.authStore?.user]);
 
   useEffect(() => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;

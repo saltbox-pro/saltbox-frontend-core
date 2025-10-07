@@ -1,17 +1,16 @@
 import { JobResult, TaskMinion, TaskMinionStatus, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { formatTimeByUserTZ, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { formatTimeByUserTZ, PageHeader, WebSocketService } from "@saltbox/saltbox-frontend-common";
 import { Breadcrumb, Button, Flex, Popover, Skeleton, Spin, Statistic } from "antd";
 import { CaretRightOutlined, CheckCircleOutlined, ClockCircleOutlined, HomeOutlined, IssuesCloseOutlined, QuestionCircleOutlined, StopOutlined, SyncOutlined } from "@ant-design/icons";
-import { runInAction, toJS } from "mobx";
 import { observer } from "mobx-react";
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
-import styles from "./index.module.css";
 import { TaskMinions } from "./-components/task-minions/task-minions";
 import { MinionView } from "./-components/minion-view/minion-view";
+import styles from "./index.module.css";
 
 
 const TaskPage = observer(() => {
@@ -154,36 +153,26 @@ const TaskPage = observer(() => {
     }
   }, [taskStore.error]);
 
-  const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [webSocketService] = useState(new WebSocketService<Object>());
 
   useEffect(() => {
-    const webSocket = new WebSocket(
-      `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`
+    webSocketService.connect(
+      `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`,
+      appStore.authStore?.user?.access_token,
+      (update: Object[]) => {
+        if (update?.length > 0) {
+          taskStore.updateTaskData(update);
+        }
+      },
     );
-    setSocket(webSocket);
-    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-      const parsedData = JSON.parse(event.data);
-      if (parsedData?.retcode !== undefined) {
-        taskStore.addJobReturn(parsedData as JobResult);
-      } else if (parsedData?.jobs !== undefined) {
-        runInAction(() => {
-          taskStore.task = parsedData as TaskModel;
-        });
-      }
-    });
-    webSocket.addEventListener("open", () => {
-      setIsSocketOpen(true);
-    });
-    return () => webSocket.close();
+    return () => webSocketService.disconnect();
   }, []);
 
   useEffect(() => {
-    const accessToken = appStore.authStore?.user?.access_token;
-    if (accessToken && socket && isSocketOpen) {
-      socket.send(accessToken);
+    if (webSocketService && appStore.authStore?.user?.access_token) {
+      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
-  }, [appStore.authStore?.user, socket, isSocketOpen]);
+  }, [appStore.authStore?.user]);
 
   const handleMinionClick = (minion: TaskMinion) => {
     if (selectedMinion?.minion_id === minion.minion_id) {

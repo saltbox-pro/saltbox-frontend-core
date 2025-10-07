@@ -163,4 +163,16 @@ export class TaskStore {
         .catch(reject);
     });
   };
+
+  updateTaskData = (update: Object & { retcode?: number, jobs?: TaskModel }[]) => {
+    update.forEach((item) => {
+      if (item?.retcode !== undefined) {
+        this.addJobReturn(item as unknown as JobResult);
+      } else if (item?.jobs !== undefined) {
+        runInAction(() => {
+          this.task = item as unknown as TaskModel;
+        });
+      }
+    });
+  };
 }
