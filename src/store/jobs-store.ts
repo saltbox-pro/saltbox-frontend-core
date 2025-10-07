@@ -23,6 +23,7 @@ export class JobsStore {
   jobs: Array<JobStoreItem>;
   page: number;
   total: number;
+  isInitialized: boolean;
   isJobsLoading: boolean;
   error: string | null;
   dateRange: [dayjs.Dayjs, dayjs.Dayjs];
@@ -50,6 +51,7 @@ export class JobsStore {
     makeAutoObservable(this);
     this.jobFilterStore = jobFilterStore;
     this.jobs = [];
+    this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
     this.dateRange = [dayjs().startOf('day'), dayjs()];
@@ -72,6 +74,7 @@ export class JobsStore {
       })
       .then((response) => {
         runInAction(() => {
+          this.isInitialized = true;
           this.isJobsLoading = false;
           this.total = response.total;
           this.pushJobs(response.data);
@@ -79,6 +82,7 @@ export class JobsStore {
       })
       .catch((error) => {
         runInAction(() => {
+          this.isInitialized = true;
           this.isJobsLoading = false;
           this.error = "Failed to load jobs";
         });
@@ -130,6 +134,7 @@ export class JobsStore {
     this.jobs = [];
     this.page = 0;
     this.total = 0;
+    this.isInitialized = false;
     this.loadJobs(this.page);
   };
 

@@ -17,9 +17,7 @@ import {
   PageHeader,
   FastTableListed,
 } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, appStore } from "saltbox-core/store";
-import { JobFilterStore } from "saltbox-core/store";
-import { JobsStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import styles from "./index.module.css";
@@ -317,19 +315,15 @@ const JobsPage = observer(() => {
         />
       </div>
 
-      <Spin
-        spinning={
-          jobsStore.isJobsLoading && jobsStore.filteredJobs.length === 0
-        }
-      >
-        <JobsTable
-          columns={columns}
-          getRowId={(row) => row.jid}
-          data={jobsStore.filteredJobs}
-          sorting={sorting}
-          onSortingChange={setSorting}
-        />
-      </Spin>
+      <JobsTable
+        columns={columns}
+        getRowId={(row) => row.jid}
+        data={jobsStore.filteredJobs}
+        sorting={sorting}
+        onSortingChange={setSorting}
+        isLoading={jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
+        isEmpty={jobsStore.isInitialized && !jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
+      />
 
       <div
         ref={loadingRef}
