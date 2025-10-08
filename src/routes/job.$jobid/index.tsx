@@ -22,7 +22,7 @@ import { JobResult, CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-ap
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { MatIcon } from "saltbox-core/shared/components/mat-icon/mat-icon";
+import { WebSocketService } from "@saltbox/saltbox-frontend-common";
 import { formatExecutionTime, TimeUnits } from "saltbox-core/shared/utils/execution-time-utils";
 import { PageHeader } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
@@ -37,8 +37,7 @@ const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
-  const [socket, setSocket] = useState<WebSocket | undefined>();
-  const [isSocketOpen, setIsSocketOpen] = useState<boolean>(false);
+  const [webSocketService] = useState(new WebSocketService<JobResult>());
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
   const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
 
@@ -77,8 +76,13 @@ const JobPage = observer(() => {
   };
 
   useEffect(() => {
-    jobStore.reload(jid);
-  }, [jid]);
+    if (jid) {
+      jobStore.reload(jid);
+    }
+    return () => {
+      jobStore.reset();
+    };
+  }, []);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -87,45 +91,23 @@ const JobPage = observer(() => {
   }, [jobStore.error]);
 
   useEffect(() => {
-    if (socket) {
-      socket.close();
-      setIsSocketOpen(false);
-    }
-
-    const webSocket = new WebSocket(
+    webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
+      appStore.authStore?.user?.access_token,
+      (update: JobResult[]) => {
+        if (update?.length > 0) {
+          jobStore.addJobReturns(update);
+        }
+      },
     );
-    setSocket(webSocket);
-
-    webSocket.addEventListener("message", (event: MessageEvent<string>) => {
-      const parsedJobReturn = JSON.parse(event.data) as JobResult;
-      jobStore.addJobReturn(parsedJobReturn);
-    });
-
-    webSocket.addEventListener("open", () => {
-      setIsSocketOpen(true);
-    });
-
-    webSocket.addEventListener("close", () => {
-      setIsSocketOpen(false);
-    });
-
-    webSocket.addEventListener("error", (error) => {
-      setIsSocketOpen(false);
-    });
-
-    return () => {
-      webSocket.close();
-      setIsSocketOpen(false);
-    };
+    return () => webSocketService.disconnect();
   }, []);
 
   useEffect(() => {
-    const accessToken = appStore.authStore?.user?.access_token;
-    if (accessToken && socket && isSocketOpen) {
-      socket.send(accessToken);
+    if (webSocketService && appStore.authStore?.user?.access_token) {
+      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
-  }, [appStore.authStore?.user, socket, isSocketOpen]);
+  }, [appStore.authStore?.user]);
 
   return (
     <>
@@ -143,6 +125,7 @@ const JobPage = observer(() => {
           },
         ]}
       />
+
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
       <div className={styles.jobDetailsContainer}>
