@@ -34,6 +34,8 @@ import {
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
+  UiEvent,
+  useUiCleanupEvent,
 } from "@saltbox/saltbox-frontend-common";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
@@ -124,119 +126,139 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const minionColumns = useMemo(() => [
-    {
-      id: "select-minion",
-      header: ({ table }: { table: Table<MinionShortSchema> }) => {
-        return <Checkbox
-          checked={table.getIsAllRowsSelected()}
-          indeterminate={table.getIsSomeRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-        />;
+  const minionColumns = useMemo(
+    () => [
+      {
+        id: "select-minion",
+        header: ({ table }: { table: Table<MinionShortSchema> }) => {
+          return (
+            <Checkbox
+              checked={table.getIsAllRowsSelected()}
+              indeterminate={table.getIsSomeRowsSelected()}
+              onChange={table.getToggleAllRowsSelectedHandler()}
+            />
+          );
+        },
+        cell: ({ row }: { row: Row<MinionShortSchema> }) => {
+          return (
+            <Checkbox
+              checked={row.getIsSelected()}
+              disabled={!row.getCanSelect()}
+              onChange={row.getToggleSelectedHandler()}
+            />
+          );
+        },
       },
-      cell: ({ row }: { row: Row<MinionShortSchema> }) => {
-        return <Checkbox
-          checked={row.getIsSelected()}
-          disabled={!row.getCanSelect()}
-          onChange={row.getToggleSelectedHandler()}
-        />;
-      },
-    },
-    minionsColumnHelper.accessor("minion_id", {
-      header: t("minions.table-minion-id"),
-      cell: (data) => {
-        const minionId = data.row.original.minion_id;
-        const result = useMemo(() => (
-          <>
-            <Button
-              type="link"
-              size={"small"}
-              onClick={() => { setDrawerMinionId(minionId); }}
-            >
-              {minionId}
-            </Button>
-            <CopyToClipboardButton text={minionId} />
-          </>
-        ), []);
-        return result;
-      },
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-    minionsColumnHelper.accessor("grains.fqdn", {
-      header: t("minions.table-fqdn"),
-    }),
-    minionsColumnHelper.accessor("grains.osfullname", {
-      header: t("minions.table-os-full-name"),
-    }),
-    minionsColumnHelper.accessor("grains.domain", {
-      header: t("minions.table-domain"),
-    }),
-    minionsColumnHelper.accessor("grains.efi", {
-      header: t("minions.table-efi"),
-      cell: (data) => {
-        const result = useMemo(() => (
-          <Tag color={data.getValue() ? "green" : "red"}>
-            {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
-          </Tag>
-        ), []);
-        return result;
-      },
-    }),
-    minionsColumnHelper.accessor("grains.cpu_model", {
-      header: t("minions.table-cpu-model"),
-    }),
-    minionsColumnHelper.accessor("grains.mem_total", {
-      header: t("minions.table-total-memory"),
-      cell: (data) => {
-        if (!data || data?.getValue() === undefined) return "";
-        return <>{data.getValue()} Mb</>;
-      },
-    }),
-    minionsColumnHelper.accessor("created", {
-      header: t("minions.table-created"),
-      cell: (data) => {
-        const rawCreated: string = data.getValue();
-        const created: string = formatTimeByUserTZ(rawCreated);
-        const createdPastTime: string = pastTimeByUserTZ(rawCreated);
+      minionsColumnHelper.accessor("minion_id", {
+        header: t("minions.table-minion-id"),
+        cell: (data) => {
+          const minionId = data.row.original.minion_id;
+          const result = useMemo(
+            () => (
+              <>
+                <Button
+                  type="link"
+                  size={"small"}
+                  onClick={() => {
+                    setDrawerMinionId(minionId);
+                  }}
+                >
+                  {minionId}
+                </Button>
+                <CopyToClipboardButton text={minionId} />
+              </>
+            ),
+            []
+          );
+          return result;
+        },
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
+        },
+      }),
+      minionsColumnHelper.accessor("grains.fqdn", {
+        header: t("minions.table-fqdn"),
+      }),
+      minionsColumnHelper.accessor("grains.osfullname", {
+        header: t("minions.table-os-full-name"),
+      }),
+      minionsColumnHelper.accessor("grains.domain", {
+        header: t("minions.table-domain"),
+      }),
+      minionsColumnHelper.accessor("grains.efi", {
+        header: t("minions.table-efi"),
+        cell: (data) => {
+          const result = useMemo(
+            () => (
+              <Tag color={data.getValue() ? "green" : "red"}>
+                {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
+              </Tag>
+            ),
+            []
+          );
+          return result;
+        },
+      }),
+      minionsColumnHelper.accessor("grains.cpu_model", {
+        header: t("minions.table-cpu-model"),
+      }),
+      minionsColumnHelper.accessor("grains.mem_total", {
+        header: t("minions.table-total-memory"),
+        cell: (data) => {
+          if (!data || data?.getValue() === undefined) return "";
+          return <>{data.getValue()} Mb</>;
+        },
+      }),
+      minionsColumnHelper.accessor("created", {
+        header: t("minions.table-created"),
+        cell: (data) => {
+          const rawCreated: string = data.getValue();
+          const created: string = formatTimeByUserTZ(rawCreated);
+          const createdPastTime: string = pastTimeByUserTZ(rawCreated);
 
-        const result = useMemo(() => (
-          <Popover content={created}>{createdPastTime}</Popover>
-        ), []);
-        return result;
-      },
-    }),
-    minionsColumnHelper.accessor("last_activity", {
-      header: t("minions.table-last-activity"),
-      cell: (data) => {
-        const lastActivitySeconds = data?.row.original.last_activity_seconds;
-        const componentData = lastActivitySeconds
-          ? {
-            badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-            badgeText: pastTimeByUserTZ(data.getValue()),
-            popoverContent: formatTimeByUserTZ(data.getValue()),
-          }
-          : {
-            badgeColor: "orange",
-            badgeText: t("minions.never-synced"),
-            popoverContent: undefined,
-          };
-        const result = useMemo(() => (
-          <Popover content={componentData.popoverContent}>
-            <span>
-              <Badge
-                className={styles.lastActivityBadge}
-                color={componentData.badgeColor}
-                text={componentData.badgeText}
-              />
-            </span>
-          </Popover>
-        ), []);
-        return result;
-      },
-    }),
-  ], []);
+          const result = useMemo(
+            () => <Popover content={created}>{createdPastTime}</Popover>,
+            []
+          );
+          return result;
+        },
+      }),
+      minionsColumnHelper.accessor("last_activity", {
+        header: t("minions.table-last-activity"),
+        cell: (data) => {
+          const lastActivitySeconds = data?.row.original.last_activity_seconds;
+          const componentData = lastActivitySeconds
+            ? {
+                badgeColor:
+                  lastActivitySecondsToBadgeColor(lastActivitySeconds),
+                badgeText: pastTimeByUserTZ(data.getValue()),
+                popoverContent: formatTimeByUserTZ(data.getValue()),
+              }
+            : {
+                badgeColor: "orange",
+                badgeText: t("minions.never-synced"),
+                popoverContent: undefined,
+              };
+          const result = useMemo(
+            () => (
+              <Popover content={componentData.popoverContent}>
+                <span>
+                  <Badge
+                    className={styles.lastActivityBadge}
+                    color={componentData.badgeColor}
+                    text={componentData.badgeText}
+                  />
+                </span>
+              </Popover>
+            ),
+            []
+          );
+          return result;
+        },
+      }),
+    ],
+    []
+  );
 
   useEffect(() => {
     minionsStore.setCollectionSlug(props.slug);
@@ -340,6 +362,10 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       );
     }
   );
+
+  useUiCleanupEvent(() => {
+    setDrawerMinionId(undefined);
+  }, [UiEvent.CloseAllOverlays, UiEvent.CloseAllDrawers]);
 
   return (
     <>

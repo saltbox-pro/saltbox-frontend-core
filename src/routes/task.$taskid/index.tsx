@@ -1,7 +1,34 @@
-import { JobResult, TaskMinion, TaskMinionStatus, TaskModel, TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { formatTimeByUserTZ, PageHeader, WebSocketService } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Flex, Popover, Skeleton, Spin, Statistic } from "antd";
-import { CaretRightOutlined, CheckCircleOutlined, ClockCircleOutlined, HomeOutlined, IssuesCloseOutlined, QuestionCircleOutlined, StopOutlined, SyncOutlined } from "@ant-design/icons";
+import {
+  JobResult,
+  TaskMinion,
+  TaskMinionStatus,
+  TaskModel,
+  TaskStatus,
+} from "@saltbox/saltbox-core-api-client";
+import {
+  formatTimeByUserTZ,
+  PageHeader,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
+import {
+  Breadcrumb,
+  Button,
+  Flex,
+  Popover,
+  Skeleton,
+  Spin,
+  Statistic,
+} from "antd";
+import {
+  CaretRightOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  HomeOutlined,
+  IssuesCloseOutlined,
+  QuestionCircleOutlined,
+  StopOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,7 +39,6 @@ import { TaskMinions } from "./-components/task-minions/task-minions";
 import { MinionView } from "./-components/minion-view/minion-view";
 import styles from "./index.module.css";
 
-
 const TaskPage = observer(() => {
   const { t } = useTranslation();
   const { taskid: taskId } = useParams();
@@ -21,18 +47,22 @@ const TaskPage = observer(() => {
   const [minionsSelectedStatus, setMinionsSelectedStatus] = useState(0);
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
-  const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
-  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<Array<JobResult>>([]);
+  const [selectedMinion, setSelectedMinion] = useState<
+    TaskMinion | undefined
+  >();
+  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<
+    Array<JobResult>
+  >([]);
 
   const taskStatus: { [key in TaskStatus | "none"]: ReactNode } = {
     [TaskStatus.Created]: (
       <span>
-        <ClockCircleOutlined />{" "}{t("task.created")}
+        <ClockCircleOutlined /> {t("task.created")}
       </span>
     ),
     [TaskStatus.Finished]: (
       <>
-        <CheckCircleOutlined />{" "}{t("task.finished")}
+        <CheckCircleOutlined /> {t("task.finished")}
       </>
     ),
     [TaskStatus.Running]: (
@@ -49,7 +79,7 @@ const TaskPage = observer(() => {
     ),
     [TaskStatus.Stopped]: (
       <span>
-        <StopOutlined />{" "}{t("task.stopped")}
+        <StopOutlined /> {t("task.stopped")}
       </span>
     ),
     [TaskStatus.Postprocessing]: (
@@ -60,7 +90,7 @@ const TaskPage = observer(() => {
     ),
     none: (
       <span>
-        <QuestionCircleOutlined />{" "}{t("task.unknown")}
+        <QuestionCircleOutlined /> {t("task.unknown")}
       </span>
     ),
   };
@@ -73,46 +103,96 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const countMinionsAll = Object.keys(taskStore.task?.minions ?? {}).length;
-    const countMinionsPending = Object.keys(taskStore.task?.minions ?? {}).filter(mid => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Pending).length;
-    const countMinionsInWork = Object.keys(taskStore.task?.minions ?? {}).filter(mid => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.InWork).length;
-    const countMinionsFailed = Object.keys(taskStore.task?.minions ?? {}).filter(mid => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Failed).length;
-    const countMinionsSuccess = Object.keys(taskStore.task?.minions ?? {}).filter(mid => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Success).length;
+    const countMinionsPending = Object.keys(
+      taskStore.task?.minions ?? {}
+    ).filter(
+      (mid) =>
+        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Pending
+    ).length;
+    const countMinionsInWork = Object.keys(
+      taskStore.task?.minions ?? {}
+    ).filter(
+      (mid) =>
+        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.InWork
+    ).length;
+    const countMinionsFailed = Object.keys(
+      taskStore.task?.minions ?? {}
+    ).filter(
+      (mid) =>
+        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Failed
+    ).length;
+    const countMinionsSuccess = Object.keys(
+      taskStore.task?.minions ?? {}
+    ).filter(
+      (mid) =>
+        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Success
+    ).length;
 
     setTaskStatusStats(
       <Flex gap={5} align="justify" className={styles.taskStatContainer}>
-        <div className={styles.taskStatItem + (minionsSelectedStatus === 0 ? " " + styles.taskStatItemActive : "")} onClick={() => setMinionsSelectedStatus(0)}>
+        <div
+          className={
+            styles.taskStatItem +
+            (minionsSelectedStatus === 0 ? " " + styles.taskStatItemActive : "")
+          }
+          onClick={() => setMinionsSelectedStatus(0)}
+        >
           <Statistic
             title={t("task.minions-nav.list-all")}
             value={countMinionsAll}
-            valueStyle={{ color: '#3f8600' }}
+            valueStyle={{ color: "#3f8600" }}
           />
         </div>
-        <div className={styles.taskStatItem + (minionsSelectedStatus === 1 ? " " + styles.taskStatItemActive : "")} onClick={() => setMinionsSelectedStatus(1)}>
+        <div
+          className={
+            styles.taskStatItem +
+            (minionsSelectedStatus === 1 ? " " + styles.taskStatItemActive : "")
+          }
+          onClick={() => setMinionsSelectedStatus(1)}
+        >
           <Statistic
             title={t("task.minions-nav.list-pending")}
             value={countMinionsPending}
-            valueStyle={{ color: '#faad14' }}
+            valueStyle={{ color: "#faad14" }}
           />
         </div>
-        <div className={styles.taskStatItem + (minionsSelectedStatus === 2 ? " " + styles.taskStatItemActive : "")} onClick={() => setMinionsSelectedStatus(2)}>
+        <div
+          className={
+            styles.taskStatItem +
+            (minionsSelectedStatus === 2 ? " " + styles.taskStatItemActive : "")
+          }
+          onClick={() => setMinionsSelectedStatus(2)}
+        >
           <Statistic
             title={t("task.minions-nav.list-in-work")}
             value={countMinionsInWork}
-            valueStyle={{ color: '#1964db' }}
+            valueStyle={{ color: "#1964db" }}
           />
         </div>
-        <div className={styles.taskStatItem + (minionsSelectedStatus === 3 ? " " + styles.taskStatItemActive : "")} onClick={() => setMinionsSelectedStatus(3)}>
+        <div
+          className={
+            styles.taskStatItem +
+            (minionsSelectedStatus === 3 ? " " + styles.taskStatItemActive : "")
+          }
+          onClick={() => setMinionsSelectedStatus(3)}
+        >
           <Statistic
             title={t("task.minions-nav.list-failed")}
             value={countMinionsFailed}
-            valueStyle={{ color: '#ff4d4f' }}
+            valueStyle={{ color: "#ff4d4f" }}
           />
         </div>
-        <div className={styles.taskStatItem + (minionsSelectedStatus === 4 ? " " + styles.taskStatItemActive : "")} onClick={() => setMinionsSelectedStatus(4)}>
+        <div
+          className={
+            styles.taskStatItem +
+            (minionsSelectedStatus === 4 ? " " + styles.taskStatItemActive : "")
+          }
+          onClick={() => setMinionsSelectedStatus(4)}
+        >
           <Statistic
             title={t("task.minions-nav.list-success")}
             value={countMinionsSuccess}
-            valueStyle={{ color: '#3f8600' }}
+            valueStyle={{ color: "#3f8600" }}
           />
         </div>
       </Flex>
@@ -121,13 +201,21 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     if (selectedMinion) {
-      const minion = taskStore.task?.minions?.[selectedMinion.master + "_" + selectedMinion.minion_id];
-      const minionJobIds = Object.keys(minion?.jobs ?? {}).sort().reverse();
-      const minionJobReturns = minionJobIds.map(jobId => taskStore.jobReturns?.find(
-        jobReturn => jobReturn.jid === jobId
-          && jobReturn.salt_master === minion.master
-          && jobReturn.id === minion.minion_id
-      ));
+      const minion =
+        taskStore.task?.minions?.[
+          selectedMinion.master + "_" + selectedMinion.minion_id
+        ];
+      const minionJobIds = Object.keys(minion?.jobs ?? {})
+        .sort()
+        .reverse();
+      const minionJobReturns = minionJobIds.map((jobId) =>
+        taskStore.jobReturns?.find(
+          (jobReturn) =>
+            jobReturn.jid === jobId &&
+            jobReturn.salt_master === minion.master &&
+            jobReturn.id === minion.minion_id
+        )
+      );
       setSelectedMinionJobReturns(minionJobReturns);
       setSelectedMinion(minion);
     }
@@ -137,13 +225,29 @@ const TaskPage = observer(() => {
     if (minionsSelectedStatus === 0) {
       setMinions(Object.values(taskStore.task?.minions ?? {}));
     } else if (minionsSelectedStatus === 1) {
-      setMinions(Object.values(taskStore.task?.minions ?? {}).filter(minion => minion.status === TaskMinionStatus.Pending));
+      setMinions(
+        Object.values(taskStore.task?.minions ?? {}).filter(
+          (minion) => minion.status === TaskMinionStatus.Pending
+        )
+      );
     } else if (minionsSelectedStatus === 2) {
-      setMinions(Object.values(taskStore.task?.minions ?? {}).filter(minion => minion.status === TaskMinionStatus.InWork));
+      setMinions(
+        Object.values(taskStore.task?.minions ?? {}).filter(
+          (minion) => minion.status === TaskMinionStatus.InWork
+        )
+      );
     } else if (minionsSelectedStatus === 3) {
-      setMinions(Object.values(taskStore.task?.minions ?? {}).filter(minion => minion.status === TaskMinionStatus.Failed));
+      setMinions(
+        Object.values(taskStore.task?.minions ?? {}).filter(
+          (minion) => minion.status === TaskMinionStatus.Failed
+        )
+      );
     } else if (minionsSelectedStatus === 4) {
-      setMinions(Object.values(taskStore.task?.minions ?? {}).filter(minion => minion.status === TaskMinionStatus.Success));
+      setMinions(
+        Object.values(taskStore.task?.minions ?? {}).filter(
+          (minion) => minion.status === TaskMinionStatus.Success
+        )
+      );
     }
   }, [taskStore.task?.minions, minionsSelectedStatus]);
 
@@ -163,7 +267,7 @@ const TaskPage = observer(() => {
         if (update?.length > 0) {
           taskStore.updateTaskData(update);
         }
-      },
+      }
     );
     return () => webSocketService.disconnect();
   }, []);
@@ -179,186 +283,202 @@ const TaskPage = observer(() => {
       setSelectedMinion(undefined);
       setSelectedMinionJobReturns([]);
     } else {
-      const minionJobIds = Object.keys(minion.jobs ?? {}).sort().reverse();
-      const minionJobReturns = minionJobIds.map(jobId => taskStore.jobReturns?.find(
-        jobReturn => jobReturn.jid === jobId
-          && jobReturn.salt_master === minion.master
-          && jobReturn.id === minion.minion_id
-      ));
+      const minionJobIds = Object.keys(minion.jobs ?? {})
+        .sort()
+        .reverse();
+      const minionJobReturns = minionJobIds.map((jobId) =>
+        taskStore.jobReturns?.find(
+          (jobReturn) =>
+            jobReturn.jid === jobId &&
+            jobReturn.salt_master === minion.master &&
+            jobReturn.id === minion.minion_id
+        )
+      );
       setSelectedMinionJobReturns(minionJobReturns);
       setSelectedMinion(minion);
     }
   };
 
-  return <>
-    <Breadcrumb
-      items={[
-        {
-          href: "/",
-          title: <HomeOutlined />,
-        },
-        {
-          title: t("minions.title"),
-        },
-        ...(taskStore.task?.target_collection ? [
+  return (
+    <>
+      <Breadcrumb
+        items={[
           {
-            title: (
-              <Link
-                to={{
-                  pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                }}
-              >
-                {taskStore.task.target_collection.title}
-              </Link>
-            ),
+            href: "/",
+            title: <HomeOutlined />,
           },
           {
-            title: (
-              <Link
-                to={{
-                  pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                  search: `?tab=tasks`,
-                }}
-              >
-                {t("task.breadcrumbs-tasks")}
-              </Link>
-            ),
-          }
-        ] : [
-          {
-            title: (
-              <Link
-                to={{
-                  pathname: `/minions/root`,
-                }}
-              >
-                {taskStore.task ? t("minions.title") : "..."}
-              </Link>
-            ),
+            title: t("minions.title"),
           },
+          ...(taskStore.task?.target_collection
+            ? [
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                      }}
+                    >
+                      {taskStore.task.target_collection.title}
+                    </Link>
+                  ),
+                },
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                        search: `?tab=tasks`,
+                      }}
+                    >
+                      {t("task.breadcrumbs-tasks")}
+                    </Link>
+                  ),
+                },
+              ]
+            : [
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/root`,
+                      }}
+                    >
+                      {taskStore.task ? t("minions.title") : "..."}
+                    </Link>
+                  ),
+                },
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/root`,
+                        search: `?tab=tasks`,
+                      }}
+                    >
+                      {t("task.breadcrumbs-tasks")}
+                    </Link>
+                  ),
+                },
+              ]),
           {
-            title: (
-              <Link
-                to={{
-                  pathname: `/minions/root`,
-                  search: `?tab=tasks`,
-                }}
-              >
-                {t("task.breadcrumbs-tasks")}
-              </Link>
-            ),
-          }
-        ]),
-        {
-          title: taskStore.task?.task_template?.title
-            ? t("task.breadcrumbs-title-template", { templateName: taskStore.task.task_template.title?.toLowerCase(), taskId: taskId })
-            : t("task.breadcrumbs-title-empty", { taskId: taskId ?? "..." }),
-        },
-      ]}
-    />
+            title: taskStore.task?.task_template?.title
+              ? t("task.breadcrumbs-title-template", {
+                  templateName:
+                    taskStore.task.task_template.title?.toLowerCase(),
+                  taskId: taskId,
+                })
+              : t("task.breadcrumbs-title-empty", { taskId: taskId ?? "..." }),
+          },
+        ]}
+      />
 
-    <PageHeader
-      title={t("task.page-title", {
-        templateName: taskStore.task?.task_template?.title ?? "...",
-        taskId: taskId ?? "..."
-      })}
-    />
+      <PageHeader
+        title={t("task.page-title", {
+          templateName: taskStore.task?.task_template?.title ?? "...",
+          taskId: taskId ?? "...",
+        })}
+      />
 
-    <div className={styles.taskDetailsContainer}>
+      <div className={styles.taskDetailsContainer}>
+        <div className={styles.taskActionButtonsContainer}>
+          <Button
+            onClick={() => taskStore.handleRunTask()}
+            color="primary"
+            variant="solid"
+            icon={<CaretRightOutlined />}
+            disabled={
+              taskStore.isTaskLoading ||
+              taskStore.task?.status === TaskStatus.Finished ||
+              taskStore.task?.status === TaskStatus.Postprocessing ||
+              taskStore.task?.status === TaskStatus.Running ||
+              taskStore.task?.status === TaskStatus.Stopping
+            }
+            title={t("task.run")}
+          ></Button>
 
-      <div className={styles.taskActionButtonsContainer}>
-        <Button
-          onClick={() => taskStore.handleRunTask()}
-          color="primary"
-          variant="solid"
-          icon={<CaretRightOutlined />}
-          disabled={
-            taskStore.isTaskLoading
-            || taskStore.task?.status === TaskStatus.Finished
-            || taskStore.task?.status === TaskStatus.Postprocessing
-            || taskStore.task?.status === TaskStatus.Running
-            || taskStore.task?.status === TaskStatus.Stopping
-          }
-          title={t("task.run")}
-        ></Button>
+          <Button
+            onClick={() => taskStore.handleStopTask()}
+            color="danger"
+            variant="solid"
+            icon={<StopOutlined />}
+            disabled={
+              taskStore.isTaskLoading ||
+              taskStore.task?.status === TaskStatus.Created ||
+              taskStore.task?.status === TaskStatus.Finished ||
+              taskStore.task?.status === TaskStatus.Stopping ||
+              taskStore.task?.status === TaskStatus.Stopped
+            }
+            title={t("task.stop")}
+          ></Button>
 
-        <Button
-          onClick={() => taskStore.handleStopTask()}
-          color="danger"
-          variant="solid"
-          icon={<StopOutlined />}
-          disabled={
-            taskStore.isTaskLoading
-            || taskStore.task?.status === TaskStatus.Created
-            || taskStore.task?.status === TaskStatus.Finished
-            || taskStore.task?.status === TaskStatus.Stopping
-            || taskStore.task?.status === TaskStatus.Stopped
-          }
-          title={t("task.stop")}
-        ></Button>
+          <Button
+            onClick={() => taskStore.handleRestartFailed()}
+            color="orange"
+            variant="solid"
+            icon={<IssuesCloseOutlined />}
+            disabled={
+              taskStore.isTaskLoading ||
+              taskStore.task?.status === TaskStatus.Stopping ||
+              taskStore.task?.status === TaskStatus.Postprocessing ||
+              taskStore.task?.status === TaskStatus.Running ||
+              taskStore.task?.status === TaskStatus.Created ||
+              (taskStore.task?.status === TaskStatus.Stopped &&
+                taskStore.failedMinionsCount === 0) ||
+              (taskStore.task?.status === TaskStatus.Finished &&
+                taskStore.failedMinionsCount === 0)
+            }
+            title={t("task.restart-failed")}
+          ></Button>
+        </div>
 
-        <Button
-          onClick={() => taskStore.handleRestartFailed()}
-          color="orange"
-          variant="solid"
-          icon={<IssuesCloseOutlined />}
-          disabled={
-            taskStore.isTaskLoading
-            || taskStore.task?.status === TaskStatus.Stopping
-            || taskStore.task?.status === TaskStatus.Postprocessing
-            || taskStore.task?.status === TaskStatus.Running
-            || taskStore.task?.status === TaskStatus.Created
-            || (taskStore.task?.status === TaskStatus.Stopped && taskStore.failedMinionsCount === 0)
-            || (taskStore.task?.status === TaskStatus.Finished && taskStore.failedMinionsCount === 0)
-          }
-          title={t("task.restart-failed")}
-        ></Button>
+        <div className={styles.taskDetailItem}>
+          <span className={styles.taskDetailLabel}>{t("task.status")}:</span>
+          <span className={styles.taskDetailValue}>
+            {taskStatus[taskStore.task?.status ?? "none"] ?? (
+              <Skeleton.Input size="small" />
+            )}
+          </span>
+        </div>
+        <div className={styles.taskDetailItem}>
+          <span className={styles.taskDetailLabel}>{t("task.created")}:</span>
+          <span className={styles.taskDetailValue}>
+            <Popover content={formatTimeByUserTZ(taskStore.task?.created ?? 0)}>
+              {pastTimeByUserTZ(taskStore.task?.created ?? 0) ?? (
+                <Skeleton.Input size="small" />
+              )}
+            </Popover>
+          </span>
+        </div>
+        <div className={styles.taskDetailItem}>
+          <span className={styles.taskDetailLabel}>{t("task.user")}:</span>
+          <span className={styles.taskDetailValue}>
+            {taskStore.task?.user?.email ?? <Skeleton.Input size="small" />}
+          </span>
+        </div>
+        <div className={styles.taskDetailItem}>
+          <span className={styles.taskDetailLabel}>
+            {t("task.task-more-info")}
+          </span>
+        </div>
       </div>
 
-      <div className={styles.taskDetailItem}>
-        <span className={styles.taskDetailLabel}>{t("task.status")}:</span>
-        <span className={styles.taskDetailValue}>
-          {taskStatus[taskStore.task?.status ?? "none"] ?? <Skeleton.Input size="small" />}
-        </span>
-      </div>
-      <div className={styles.taskDetailItem}>
-        <span className={styles.taskDetailLabel}>{t("task.created")}:</span>
-        <span className={styles.taskDetailValue}>
-          <Popover
-            content={formatTimeByUserTZ(taskStore.task?.created ?? 0)}
-          >
-            {pastTimeByUserTZ(taskStore.task?.created ?? 0) ?? <Skeleton.Input size="small" />}
-          </Popover>
-        </span>
-      </div>
-      <div className={styles.taskDetailItem}>
-        <span className={styles.taskDetailLabel}>{t("task.user")}:</span>
-        <span className={styles.taskDetailValue}>
-          {taskStore.task?.user?.email ?? <Skeleton.Input size="small" />}
-        </span>
-      </div>
-      <div className={styles.taskDetailItem}>
-        <span className={styles.taskDetailLabel}>
-          {t("task.task-more-info")}
-        </span>
-      </div>
-    </div>
+      {taskStatusStats}
 
-    {taskStatusStats}
+      <TaskMinions
+        minions={minions}
+        collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
+        isLoading={taskStore.isTaskLoading}
+        onMinionClick={handleMinionClick}
+      />
 
-    <TaskMinions
-      minions={minions}
-      collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
-      isLoading={taskStore.isTaskLoading}
-      onMinionClick={handleMinionClick}
-    />
-
-    <MinionView
-      selectedMinion={selectedMinion}
-      selectedMinionJobReturns={selectedMinionJobReturns}
-      onClose={() => setSelectedMinion(undefined)}
-    />
-  </>;
+      <MinionView
+        selectedMinion={selectedMinion}
+        selectedMinionJobReturns={selectedMinionJobReturns}
+        onClose={() => setSelectedMinion(undefined)}
+      />
+    </>
+  );
 });
 
 export default TaskPage;
