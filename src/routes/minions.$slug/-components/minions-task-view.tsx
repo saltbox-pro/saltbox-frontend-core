@@ -118,6 +118,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   const columns = useMemo(() => [
     columnHelper.accessor("id", {
       header: "ID",
+      enableSorting: false,
       cell: (data) => {
         const result = useMemo(() => (
           <>
@@ -137,18 +138,22 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     }),
     columnHelper.accessor("task_template.title", {
       header: t("minions.table-task-template-title"),
+      enableSorting: false,
     }),
     columnHelper.accessor("task_template.name", {
       header: t("minions.table-task-template-name"),
+      enableSorting: false,
     }),
     columnHelper.accessor("target_collection.title", {
       header: t("minions.table-collection"),
+      enableSorting: false,
       cell: (data) => {
         return <> {data.getValue()} </>;
       },
     }),
     columnHelper.accessor("source.type", {
       header: t("minions.table-source-type"),
+      enableSorting: false,
       cell: (data) => {
         switch (data.getValue()) {
           case "rest":
@@ -162,9 +167,11 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     }),
     columnHelper.accessor("user.name", {
       header: t("minions.table-user"),
+      enableSorting: false,
     }),
     columnHelper.display({
       header: t("minions.table-status"),
+      enableSorting: false,
       cell: (data) => {
         const totalMinions = data.row.original?.total_minions ?? 0;
         const statusFailed = data.row.original?.minions_count_by_status?.failed ?? 0;
@@ -278,7 +285,8 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         total={tasksStore.total}
         isLoading={tasksStore.isTasksLoading}
         pagination={tasksStore.pagination}
-        onLazyLoad={(pagination) => tasksStore.handleLazyLoad(pagination)}
+        sorting={tasksStore.sorting}
+        onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
       />
     </Flex>
   );

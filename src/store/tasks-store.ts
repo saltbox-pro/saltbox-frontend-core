@@ -1,10 +1,13 @@
-import { PaginationState } from "@tanstack/react-table";
-import { action, makeAutoObservable, makeObservable, observable, runInAction } from "mobx";
+import { PaginationState, SortingState } from "@tanstack/react-table";
+import { action, makeObservable, observable, runInAction } from "mobx";
 import {
   TaskListResponseSchema,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from "saltbox-core/store";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class TasksStore {
   @observable tasks: Array<TaskListResponseSchema>;
@@ -14,6 +17,7 @@ export class TasksStore {
 
   @observable total: number;
   @observable pagination: PaginationState;
+  @observable sorting: SortingState;
 
   constructor() {
     makeObservable(this);
@@ -27,6 +31,7 @@ export class TasksStore {
       pageIndex: 0,
       pageSize: 50,
     };
+    this.sorting = [...DEFAULT_SORTING];
   }
 
   @action loadTasks = (collectionSlug?: string) => {
@@ -42,6 +47,7 @@ export class TasksStore {
           },
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
         }
       })
       .then((tasks) => {
@@ -57,8 +63,9 @@ export class TasksStore {
       });
   };
 
-  @action handleLazyLoad(pagination: PaginationState) {
+  @action handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
     this.pagination = pagination;
+    this.sorting = sorting;
     if (this.collectionSlug) {
       this.loadTasks(this.collectionSlug);
     }
@@ -83,6 +90,7 @@ export class TasksStore {
 
   @action setCollectionSlug = (slug: string | undefined) => {
     this.pagination.pageIndex = 0;
+    this.sorting = [...DEFAULT_SORTING];
     this.collectionSlug = slug;
     if (this.collectionSlug) {
       this.loadTasks(this.collectionSlug);
