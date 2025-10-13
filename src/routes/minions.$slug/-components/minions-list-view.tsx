@@ -149,10 +149,11 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           );
         },
       },
-      minionsColumnHelper.accessor("minion_id", {
+      minionsColumnHelper.accessor("id", {
         header: t("minions.table-minion-id"),
         cell: (data) => {
-          const minionId = data.row.original.minion_id;
+          const minionId = data.row.original.id;
+          const showMinionId = data.row.original.minion_id ?? minionId;
           const result = useMemo(
             () => (
               <>
@@ -163,9 +164,9 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
                     setDrawerMinionId(minionId);
                   }}
                 >
-                  {minionId}
+                  {showMinionId}
                 </Button>
-                <CopyToClipboardButton text={minionId} />
+                <CopyToClipboardButton text={showMinionId} />
               </>
             ),
             []
@@ -229,16 +230,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const lastActivitySeconds = data?.row.original.last_activity_seconds;
           const componentData = lastActivitySeconds
             ? {
-                badgeColor:
-                  lastActivitySecondsToBadgeColor(lastActivitySeconds),
-                badgeText: pastTimeByUserTZ(data.getValue()),
-                popoverContent: formatTimeByUserTZ(data.getValue()),
-              }
+              badgeColor:
+                lastActivitySecondsToBadgeColor(lastActivitySeconds),
+              badgeText: pastTimeByUserTZ(data.getValue()),
+              popoverContent: formatTimeByUserTZ(data.getValue()),
+            }
             : {
-                badgeColor: "orange",
-                badgeText: t("minions.never-synced"),
-                popoverContent: undefined,
-              };
+              badgeColor: "orange",
+              badgeText: t("minions.never-synced"),
+              popoverContent: undefined,
+            };
           const result = useMemo(
             () => (
               <Popover content={componentData.popoverContent}>
