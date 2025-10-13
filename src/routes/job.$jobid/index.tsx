@@ -82,7 +82,7 @@ const JobPage = observer(() => {
     return () => {
       jobStore.reset();
     };
-  }, []);
+  }, [jid]);
 
   useEffect(() => {
     if (jobStore.error) {

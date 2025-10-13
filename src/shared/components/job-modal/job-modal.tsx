@@ -19,12 +19,11 @@ import {
 import {
   PlusOutlined,
   QuestionCircleOutlined,
-  SearchOutlined, ReloadOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
-  JobCreateRequest,
   JobData,
   JobSchemaModel,
   JobSchemaShortSchema,
@@ -32,9 +31,9 @@ import {
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
+import { publish } from "@saltbox/saltbox-frontend-common";
 
 import styles from "./job-modal.module.css";
-import { publish } from "@saltbox/saltbox-frontend-common";
 
 interface JobOption {
   value: string;
