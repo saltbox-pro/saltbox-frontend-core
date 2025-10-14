@@ -111,18 +111,17 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const allMinions = Object.keys(taskStore.task?.minions ?? {});
-    const byStatus = (minionStatus: TaskMinionStatus) => (mid: string) =>
-      taskStore.task?.minions?.[mid]?.status === minionStatus;
+    const getStatusCount = (status: TaskMinionStatus) => {
+      return allMinions.filter(
+        (mid: string) => taskStore.task?.minions?.[mid]?.status === status
+      ).length;
+    };
 
     const countMinionsAll = allMinions.length;
-    // prettier-ignore
-    const countMinionsPending = allMinions.filter(byStatus(TaskMinionStatus.Pending)).length;
-    // prettier-ignore
-    const countMinionsInWork = allMinions.filter(byStatus(TaskMinionStatus.InWork)).length;
-    // prettier-ignore
-    const countMinionsFailed = allMinions.filter(byStatus(TaskMinionStatus.Failed)).length;
-    // prettier-ignore
-    const countMinionsSuccess = allMinions.filter(byStatus(TaskMinionStatus.Success)).length;
+    const countMinionsPending = getStatusCount(TaskMinionStatus.Pending);
+    const countMinionsInWork = getStatusCount(TaskMinionStatus.InWork);
+    const countMinionsFailed = getStatusCount(TaskMinionStatus.Failed);
+    const countMinionsSuccess = getStatusCount(TaskMinionStatus.Success);
 
     const getStatItemClass = (category: MinionCategory) => {
       const isActiveClass =
@@ -210,20 +209,19 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const allMinions = Object.values(taskStore.task?.minions ?? {});
+    const getMinionsByStatus = (status: TaskMinionStatus) =>
+      allMinions.filter((minion) => minion.status === status);
+
     if (selectedCategory === MinionCategory.All) {
       setMinions(allMinions);
     } else if (selectedCategory === MinionCategory.Pending) {
-      // prettier-ignore
-      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Pending));
+      setMinions(getMinionsByStatus(TaskMinionStatus.Pending));
     } else if (selectedCategory === MinionCategory.InWork) {
-      // prettier-ignore
-      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.InWork));
+      setMinions(getMinionsByStatus(TaskMinionStatus.InWork));
     } else if (selectedCategory === MinionCategory.Failed) {
-      // prettier-ignore
-      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Failed));
+      setMinions(getMinionsByStatus(TaskMinionStatus.Failed));
     } else if (selectedCategory === MinionCategory.Success) {
-      // prettier-ignore
-      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Success));
+      setMinions(getMinionsByStatus(TaskMinionStatus.Success));
     }
   }, [taskStore.task?.minions, selectedCategory]);
 
