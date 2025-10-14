@@ -48,27 +48,31 @@ enum MinionCategory {
 
 const useMinions = (taskStore: TaskStore) => {
   const { t } = useTranslation();
-  const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [selectedMinionCategory, setSelectedMinionCategory] = useState(
     MinionCategory.All
   );
 
-  useEffect(() => {
+  const minionsOfCategory = useMemo(() => {
     const allMinions = Object.values(taskStore.task?.minions ?? {});
     const getMinionsByStatus = (status: TaskMinionStatus) =>
       allMinions.filter((minion) => minion.status === status);
 
     if (selectedMinionCategory === MinionCategory.All) {
-      setMinions(allMinions);
-    } else if (selectedMinionCategory === MinionCategory.Pending) {
-      setMinions(getMinionsByStatus(TaskMinionStatus.Pending));
-    } else if (selectedMinionCategory === MinionCategory.InWork) {
-      setMinions(getMinionsByStatus(TaskMinionStatus.InWork));
-    } else if (selectedMinionCategory === MinionCategory.Failed) {
-      setMinions(getMinionsByStatus(TaskMinionStatus.Failed));
-    } else if (selectedMinionCategory === MinionCategory.Success) {
-      setMinions(getMinionsByStatus(TaskMinionStatus.Success));
+      return allMinions;
     }
+    if (selectedMinionCategory === MinionCategory.Pending) {
+      return getMinionsByStatus(TaskMinionStatus.Pending);
+    }
+    if (selectedMinionCategory === MinionCategory.InWork) {
+      return getMinionsByStatus(TaskMinionStatus.InWork);
+    }
+    if (selectedMinionCategory === MinionCategory.Failed) {
+      return getMinionsByStatus(TaskMinionStatus.Failed);
+    }
+    if (selectedMinionCategory === MinionCategory.Success) {
+      return getMinionsByStatus(TaskMinionStatus.Success);
+    }
+    return [];
   }, [taskStore.task?.minions, selectedMinionCategory]);
 
   const minionCategoryStats = useMemo(() => {
@@ -151,7 +155,7 @@ const useMinions = (taskStore: TaskStore) => {
 
   return {
     minions: {
-      value: minions,
+      value: minionsOfCategory,
       selectedCategory: selectedMinionCategory,
       updateSelectedCategory: setSelectedMinionCategory,
     },
@@ -212,7 +216,7 @@ const useSelectedMinion = (taskStore: TaskStore) => {
   return {
     value: selectedMinion,
     jobReturns: selectedMinionJobReturns,
-    updateBy: updateSelectedMinion,
+    update: updateSelectedMinion,
     clear,
   };
 };
@@ -494,7 +498,7 @@ const TaskPage = observer(() => {
         minions={minions.value}
         collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
         isLoading={taskStore.isTaskLoading}
-        onMinionClick={selectedMinion.updateBy}
+        onMinionClick={selectedMinion.update}
       />
 
       <MinionView
