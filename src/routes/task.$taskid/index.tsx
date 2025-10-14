@@ -39,12 +39,20 @@ import { TaskMinions } from "./-components/task-minions/task-minions";
 import { MinionView } from "./-components/minion-view/minion-view";
 import styles from "./index.module.css";
 
+enum MinionCategory {
+  All,
+  Pending,
+  InWork,
+  Failed,
+  Success,
+}
+
 const TaskPage = observer(() => {
   const { t } = useTranslation();
   const { taskid: taskId } = useParams();
   const navigate = useNavigate();
   const [taskStore] = useState(new TaskStore());
-  const [minionsSelectedStatus, setMinionsSelectedStatus] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState(MinionCategory.All);
   const [minions, setMinions] = useState<Array<TaskMinion>>([]);
   const [taskStatusStats, setTaskStatusStats] = useState<ReactNode>(null);
   const [selectedMinion, setSelectedMinion] = useState<
@@ -103,39 +111,35 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     const countMinionsAll = Object.keys(taskStore.task?.minions ?? {}).length;
-    const countMinionsPending = Object.keys(
-      taskStore.task?.minions ?? {}
-    ).filter(
-      (mid) =>
-        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Pending
-    ).length;
-    const countMinionsInWork = Object.keys(
-      taskStore.task?.minions ?? {}
-    ).filter(
-      (mid) =>
-        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.InWork
-    ).length;
-    const countMinionsFailed = Object.keys(
-      taskStore.task?.minions ?? {}
-    ).filter(
-      (mid) =>
-        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Failed
-    ).length;
-    const countMinionsSuccess = Object.keys(
-      taskStore.task?.minions ?? {}
-    ).filter(
-      (mid) =>
-        taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Success
-    ).length;
+    // prettier-ignore
+    const countMinionsPending = Object.keys(taskStore.task?.minions ?? {})
+      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Pending)
+      .length;
+    // prettier-ignore
+    const countMinionsInWork = Object.keys(taskStore.task?.minions ?? {})
+      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.InWork)
+      .length;
+    // prettier-ignore
+    const countMinionsFailed = Object.keys(taskStore.task?.minions ?? {})
+      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Failed)
+      .length;
+    // prettier-ignore
+    const countMinionsSuccess = Object.keys(taskStore.task?.minions ?? {})
+      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Success)
+      .length;
+
+    const getStatItemClass = (category: MinionCategory) => {
+      return (
+        styles.taskStatItem +
+        (selectedCategory === category ? " " + styles.taskStatItemActive : "")
+      );
+    };
 
     setTaskStatusStats(
       <Flex gap={5} align="justify" className={styles.taskStatContainer}>
         <div
-          className={
-            styles.taskStatItem +
-            (minionsSelectedStatus === 0 ? " " + styles.taskStatItemActive : "")
-          }
-          onClick={() => setMinionsSelectedStatus(0)}
+          className={getStatItemClass(MinionCategory.All)}
+          onClick={() => setSelectedCategory(MinionCategory.All)}
         >
           <Statistic
             title={t("task.minions-nav.list-all")}
@@ -144,11 +148,8 @@ const TaskPage = observer(() => {
           />
         </div>
         <div
-          className={
-            styles.taskStatItem +
-            (minionsSelectedStatus === 1 ? " " + styles.taskStatItemActive : "")
-          }
-          onClick={() => setMinionsSelectedStatus(1)}
+          className={getStatItemClass(MinionCategory.Pending)}
+          onClick={() => setSelectedCategory(MinionCategory.Pending)}
         >
           <Statistic
             title={t("task.minions-nav.list-pending")}
@@ -157,11 +158,8 @@ const TaskPage = observer(() => {
           />
         </div>
         <div
-          className={
-            styles.taskStatItem +
-            (minionsSelectedStatus === 2 ? " " + styles.taskStatItemActive : "")
-          }
-          onClick={() => setMinionsSelectedStatus(2)}
+          className={getStatItemClass(MinionCategory.InWork)}
+          onClick={() => setSelectedCategory(MinionCategory.InWork)}
         >
           <Statistic
             title={t("task.minions-nav.list-in-work")}
@@ -170,11 +168,8 @@ const TaskPage = observer(() => {
           />
         </div>
         <div
-          className={
-            styles.taskStatItem +
-            (minionsSelectedStatus === 3 ? " " + styles.taskStatItemActive : "")
-          }
-          onClick={() => setMinionsSelectedStatus(3)}
+          className={getStatItemClass(MinionCategory.Failed)}
+          onClick={() => setSelectedCategory(MinionCategory.Failed)}
         >
           <Statistic
             title={t("task.minions-nav.list-failed")}
@@ -183,11 +178,8 @@ const TaskPage = observer(() => {
           />
         </div>
         <div
-          className={
-            styles.taskStatItem +
-            (minionsSelectedStatus === 4 ? " " + styles.taskStatItemActive : "")
-          }
-          onClick={() => setMinionsSelectedStatus(4)}
+          className={getStatItemClass(MinionCategory.Success)}
+          onClick={() => setSelectedCategory(MinionCategory.Success)}
         >
           <Statistic
             title={t("task.minions-nav.list-success")}
@@ -197,7 +189,7 @@ const TaskPage = observer(() => {
         </div>
       </Flex>
     );
-  }, [taskStore.task, minionsSelectedStatus]);
+  }, [taskStore.task, selectedCategory]);
 
   useEffect(() => {
     if (selectedMinion) {
@@ -222,34 +214,23 @@ const TaskPage = observer(() => {
   }, [taskStore.task, taskStore.jobReturns]);
 
   useEffect(() => {
-    if (minionsSelectedStatus === 0) {
-      setMinions(Object.values(taskStore.task?.minions ?? {}));
-    } else if (minionsSelectedStatus === 1) {
-      setMinions(
-        Object.values(taskStore.task?.minions ?? {}).filter(
-          (minion) => minion.status === TaskMinionStatus.Pending
-        )
-      );
-    } else if (minionsSelectedStatus === 2) {
-      setMinions(
-        Object.values(taskStore.task?.minions ?? {}).filter(
-          (minion) => minion.status === TaskMinionStatus.InWork
-        )
-      );
-    } else if (minionsSelectedStatus === 3) {
-      setMinions(
-        Object.values(taskStore.task?.minions ?? {}).filter(
-          (minion) => minion.status === TaskMinionStatus.Failed
-        )
-      );
-    } else if (minionsSelectedStatus === 4) {
-      setMinions(
-        Object.values(taskStore.task?.minions ?? {}).filter(
-          (minion) => minion.status === TaskMinionStatus.Success
-        )
-      );
+    const allMinions = Object.values(taskStore.task?.minions ?? {});
+    if (selectedCategory === MinionCategory.All) {
+      setMinions(allMinions);
+    } else if (selectedCategory === MinionCategory.Pending) {
+      // prettier-ignore
+      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Pending));
+    } else if (selectedCategory === MinionCategory.InWork) {
+      // prettier-ignore
+      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.InWork));
+    } else if (selectedCategory === MinionCategory.Failed) {
+      // prettier-ignore
+      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Failed));
+    } else if (selectedCategory === MinionCategory.Success) {
+      // prettier-ignore
+      setMinions(allMinions.filter((minion) => minion.status === TaskMinionStatus.Success));
     }
-  }, [taskStore.task?.minions, minionsSelectedStatus]);
+  }, [taskStore.task?.minions, selectedCategory]);
 
   useEffect(() => {
     if (taskStore.error) {
