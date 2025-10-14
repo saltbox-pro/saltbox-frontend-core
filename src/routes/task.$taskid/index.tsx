@@ -110,29 +110,24 @@ const TaskPage = observer(() => {
   }, [taskId]);
 
   useEffect(() => {
-    const countMinionsAll = Object.keys(taskStore.task?.minions ?? {}).length;
+    const allMinions = Object.keys(taskStore.task?.minions ?? {});
+    const byStatus = (minionStatus: TaskMinionStatus) => (mid: string) =>
+      taskStore.task?.minions?.[mid]?.status === minionStatus;
+
+    const countMinionsAll = allMinions.length;
     // prettier-ignore
-    const countMinionsPending = Object.keys(taskStore.task?.minions ?? {})
-      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Pending)
-      .length;
+    const countMinionsPending = allMinions.filter(byStatus(TaskMinionStatus.Pending)).length;
     // prettier-ignore
-    const countMinionsInWork = Object.keys(taskStore.task?.minions ?? {})
-      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.InWork)
-      .length;
+    const countMinionsInWork = allMinions.filter(byStatus(TaskMinionStatus.InWork)).length;
     // prettier-ignore
-    const countMinionsFailed = Object.keys(taskStore.task?.minions ?? {})
-      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Failed)
-      .length;
+    const countMinionsFailed = allMinions.filter(byStatus(TaskMinionStatus.Failed)).length;
     // prettier-ignore
-    const countMinionsSuccess = Object.keys(taskStore.task?.minions ?? {})
-      .filter((mid) => taskStore.task?.minions?.[mid]?.status === TaskMinionStatus.Success)
-      .length;
+    const countMinionsSuccess = allMinions.filter(byStatus(TaskMinionStatus.Success)).length;
 
     const getStatItemClass = (category: MinionCategory) => {
-      return (
-        styles.taskStatItem +
-        (selectedCategory === category ? " " + styles.taskStatItemActive : "")
-      );
+      const isActiveClass =
+        selectedCategory === category ? " " + styles.taskStatItemActive : "";
+      return styles.taskStatItem + isActiveClass;
     };
 
     setTaskStatusStats(
