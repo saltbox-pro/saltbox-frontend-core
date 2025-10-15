@@ -8,6 +8,7 @@ export { settingsSlsStore } from "./settings-sls-store";
 export { jobStore } from "./job-store";
 export { defaultCollectionStore } from "./default-collection-store";
 export { mastersStore } from "./masters-store";
+export { tasksStore } from "./tasks-store";
 
 export { FilterStore } from "./filter-store";
 export { TasksStore } from "./tasks-store";

@@ -7,7 +7,7 @@ import { Button, Flex, Popover, Progress } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { FastTablePaginated, pastTimeByUserTZ, WebSocketService } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
 import { TasksQueryBuilder } from "./tasks-query-builder";
 import styles from "./minions-task-view.module.css";
 
@@ -112,8 +112,6 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   ];
 
   const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
-  const [tasksStore] = useState(new TasksStore());
-  const [filterStore] = useState(new TasksFilterStore(filterSchema));
 
   const columns = useMemo(() => [
     columnHelper.accessor("id", {
@@ -234,7 +232,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         return <div>{created}</div>;
       },
     }),
-  ], []);
+  ], [t]);
 
   useEffect(() => {
     webSocketService.connect(
@@ -246,7 +244,10 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         }
       },
     );
-    return () => webSocketService.disconnect();
+    return () => {
+      webSocketService.disconnect();
+      tasksStore.init(filterSchema);
+    };
   }, []);
 
   useEffect(() => {
@@ -256,28 +257,31 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
   }, [appStore.authStore?.user]);
 
   useEffect(() => {
-    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-    tasksStore.setCollectionSlug(props.slug);
+    if (props.slug) {
+      tasksStore.init(filterSchema);
+      tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
+      tasksStore.setCollectionSlug(props.slug);
+    }
   }, [props.slug]);
 
   const handleSearchButtonClick = () => {
-    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+    tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(props.slug);
   };
 
   const handleResetButtonClick = () => {
-    filterStore.handleResetFilters();
-    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
+    tasksStore.filterStore.handleResetFilters();
+    tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(props.slug);
   };
 
   return (
     <Flex className={styles.tabWrapper} vertical>
-      <TasksQueryBuilder
-        filterStore={filterStore}
+      {tasksStore.filterStore && <TasksQueryBuilder
+        filterStore={tasksStore.filterStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
-      />
+      />}
       <TasksTable
         columns={columns}
         getRowId={(row) => row.id}
@@ -287,6 +291,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
         onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
+        enableVirtualScroll={true}
       />
     </Flex>
   );

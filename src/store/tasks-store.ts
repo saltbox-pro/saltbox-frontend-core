@@ -4,8 +4,9 @@ import {
   TaskListResponseSchema,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, TasksFilterStore } from "saltbox-core/store";
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { OptionList } from "react-querybuilder";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
@@ -18,19 +19,29 @@ export class TasksStore {
   @observable total: number;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
+  @observable filterStore: TasksFilterStore;
 
   constructor() {
-    makeObservable(this);
-
     this.tasks = [];
     this.total = 0;
     this.isTasksLoading = false;
     this.collectionSlug = null;
-
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
     };
+    this.sorting = [...DEFAULT_SORTING];
+    makeObservable(this);
+  }
+
+  @action init = (filterSchema: OptionList) => {
+    this.filterStore = new TasksFilterStore(filterSchema);
+    this.tasks = [];
+    this.total = 0;
+    this.isTasksLoading = false;
+    this.collectionSlug = null;
+    this.pagination.pageIndex = 0;
+    this.pagination.pageSize = 50;
     this.sorting = [...DEFAULT_SORTING];
   }
 
@@ -64,7 +75,8 @@ export class TasksStore {
   };
 
   @action handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
-    this.pagination = pagination;
+    this.pagination.pageIndex = pagination.pageIndex;
+    this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;
     if (this.collectionSlug) {
       this.loadTasks(this.collectionSlug);
@@ -97,3 +109,5 @@ export class TasksStore {
     }
   };
 }
+
+export const tasksStore = new TasksStore();

@@ -18,10 +18,10 @@ const defaultFilters: RuleGroupType = {
 export class TasksFilterStore extends FilterStore {
   constructor(filterSchema: OptionList) {
     super();
-    makeObservable(this);
     this.filterSchema = filterSchema;
     this.searchFilters = defaultFilters;
     this.currentFilters = defaultFilters;
+    makeObservable(this);
   }
 
   @computed get searchMongoDBQuery() {
