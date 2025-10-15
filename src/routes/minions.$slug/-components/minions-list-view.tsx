@@ -258,7 +258,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         },
       }),
     ],
-    []
+    [t]
   );
 
   useEffect(() => {
@@ -429,6 +429,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           onRowSelectionChange={setSelection}
           rowSelection={selection}
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          enableVirtualScroll={true}
         />
 
         {isCreateTaskModalOpen && (
