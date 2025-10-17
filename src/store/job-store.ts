@@ -1,12 +1,12 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
-import { JobModel, JobResult } from "@saltbox/saltbox-core-api-client";
+import { JobModel, JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from 'saltbox-core/store';
 
 export class JobStore {
   @observable jid: string;
   @observable job: JobModel | null;
   @observable jobReturnsCount: number;
-  @observable jobReturns: Array<JobResult>;
+  @observable jobReturns: Array<JobReturnModel>;
   @observable isJobLoading: boolean;
   @observable isJobReturnsLoading: boolean;
   @observable error: string | null;
@@ -123,7 +123,7 @@ export class JobStore {
   };
 
   @action
-  addJobReturn = (jobReturn: JobResult) => {
+  addJobReturn = (jobReturn: JobReturnModel) => {
     const index = this.jobReturns.findIndex((jb) => jb.id === jobReturn.id);
     if (index > -1) {
       this.jobReturns[index] = jobReturn;
@@ -133,7 +133,7 @@ export class JobStore {
   };
 
   @action
-  addJobReturns = (jobReturns: JobResult[]) => {
+  addJobReturns = (jobReturns: JobReturnModel[]) => {
     jobReturns.map((jobReturn) => this.addJobReturn(jobReturn));
   };
 }

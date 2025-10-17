@@ -24,7 +24,7 @@ import {
 import {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
-  JobData,
+  JobReturnModel,
   JobSchemaModel,
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
@@ -92,7 +92,7 @@ export function JobModal({
   const [isMasterListLoading, setIsMasterListLoading] = useState(false);
   const [isSchemaLoading, setIsSchemaLoading] = useState(false);
   const [isJobCreating, setIsJobCreating] = useState(false);
-  const [jsonFormValue, setJsonFormValue] = useState<JobData>({});
+  const [jsonFormValue, setJsonFormValue] = useState<any>({});
   const [searchFunctionName, setSearchFunctionName] = useState("");
   const [validationErrors, setValidationErrors] = useState<
     RJSFValidationError[]
@@ -263,7 +263,7 @@ export function JobModal({
           fun: formValue.fun.at(-1),
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
-          data: jsonFormValue,
+          //arg: jsonFormValu,
         },
       })
       .then((response) => {
@@ -406,7 +406,7 @@ export function JobModal({
       fun: form.getFieldValue("fun").at(-1),
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
-      data: jsonFormValue,
+      //data: jsonFormValue,
     };
   };
 
@@ -632,7 +632,8 @@ export function JobModal({
       <MinionGatherModal
         isOpen={isGatherModalOpen}
         onClose={() => setIsGatherModalOpen(false)}
-        target={tgt ?? ""}
+        //target={tgt ?? ""}
+        target={undefined}
         targetType={tgtType}
         master={saltMaster ?? ""}
       />

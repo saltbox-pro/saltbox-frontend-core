@@ -1,6 +1,6 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import {
-  JobResult,
+  JobReturnModel,
   TaskCreateRequestSchemaInput,
   TaskMinionStatus,
   TaskModel,
@@ -9,7 +9,7 @@ import { apiCoreStore } from "saltbox-core/store";
 
 export class TaskStore {
   task: TaskModel | null;
-  jobReturns: Array<JobResult>;
+  jobReturns: Array<JobReturnModel>;
   isTaskLoading: boolean;
   error: string | null;
 
@@ -86,7 +86,7 @@ export class TaskStore {
       });
   };
 
-  addJobReturn = (jobReturn: JobResult) => {
+  addJobReturn = (jobReturn: JobReturnModel) => {
     this.jobReturns = [...this.jobReturns, jobReturn];
   };
 
@@ -167,7 +167,7 @@ export class TaskStore {
   updateTaskData = (update: Object & { retcode?: number, jobs?: TaskModel }[]) => {
     update.forEach((item) => {
       if (item?.retcode !== undefined) {
-        this.addJobReturn(item as unknown as JobResult);
+        this.addJobReturn(item as unknown as JobReturnModel);
       } else if (item?.jobs !== undefined) {
         runInAction(() => {
           this.task = item as unknown as TaskModel;

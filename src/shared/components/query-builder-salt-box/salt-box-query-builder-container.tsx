@@ -17,7 +17,7 @@ import styles from "./salt-box-query-builder-container.module.css";
 import { MatIcon } from "saltbox-core/shared/components/mat-icon/mat-icon";
 
 type SaltBoxQueryBuilderContainerProps = {
-  filterStore: FilterStore;
+  filterStore?: FilterStore;
   additionalButtons?: ReactElement;
   hideButtons?: boolean;
   controlElements?: {
@@ -32,6 +32,7 @@ export const SaltBoxQueryBuilderContainer = observer(
   (props: SaltBoxQueryBuilderContainerProps) => {
     const { t } = useTranslation();
     return (
+      props?.filterStore &&
       <div className={styles.queryBuilderContainer}>
         <Spin spinning={props.filterStore.isLoading}>
           <QueryBuilderDnD dnd={{ ...ReactDnD, ...ReactDndHtml5Backend }}>
@@ -39,7 +40,7 @@ export const SaltBoxQueryBuilderContainer = observer(
               <QueryBuilderSaltBox>
                 <QueryBuilder
                   fields={toJS(props.filterStore.filterSchema)}
-                  query={toJS(props.filterStore.currentFilters)}
+                  defaultQuery={toJS(props.filterStore.currentFilters)}
                   onQueryChange={props.filterStore.handleFiltersChange}
                   controlClassnames={{
                     queryBuilder: `${styles.queryBuilder} queryBuilder-branches`,

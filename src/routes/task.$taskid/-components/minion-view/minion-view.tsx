@@ -1,5 +1,5 @@
 import {
-  JobResult,
+  JobReturnModel,
   TaskMinion,
   TaskMinionStatus,
 } from "@saltbox/saltbox-core-api-client";
@@ -19,12 +19,12 @@ import { useEffect, useState } from "react";
 
 type MinionViewProps = {
   selectedMinion: TaskMinion;
-  selectedMinionJobReturns: JobResult[];
+  selectedMinionJobReturns: JobReturnModel[];
   onClose: () => void;
 };
 
 type JobReturnViewProps = {
-  jobReturn: JobResult;
+  jobReturn: JobReturnModel;
 };
 
 type JobReturnItem = {
@@ -109,9 +109,8 @@ export const MinionView = observer(
     const [tabs, setTabs] = useState<TabsProps["items"]>([]);
 
     let minionStatus = (
-      <Tag>{`${t("task.minions.table-unknown-code")}: ${
-        selectedMinion?.status
-      }`}</Tag>
+      <Tag>{`${t("task.minions.table-unknown-code")}: ${selectedMinion?.status
+        }`}</Tag>
     );
     if (selectedMinion?.status === TaskMinionStatus.InWork) {
       minionStatus = <Tag color="blue">{t("task.minions.table-in-work")}</Tag>;
@@ -169,7 +168,7 @@ export const MinionView = observer(
                         <CopyToClipboardButton text={jobResult?.jid ?? ""} />
                       </div>
                       <div className={styles.jobReturnContent}>
-                        <JobReturnView jobReturn={jobResult?.return ?? {}} />
+                        <JobReturnView jobReturn={jobResult?.data ?? {}} />
                       </div>
                     </div>
                   );

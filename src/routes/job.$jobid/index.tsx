@@ -18,7 +18,7 @@ import {
   Typography,
 } from "antd";
 import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
-import { JobResult, CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
+import { CreateJobRequestTgtTypeEnum, JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -37,7 +37,7 @@ const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
-  const [webSocketService] = useState(new WebSocketService<JobResult>());
+  const [webSocketService] = useState(new WebSocketService<JobReturnModel>());
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
   const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
 
@@ -48,10 +48,10 @@ const JobPage = observer(() => {
   const minionsArray = jobStore.job?.minions || [];
   const totalMinions = Math.max(0, minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length));
 
-  const successfulMinionsList = jobStore.jobReturns.filter(return_ => return_.success);
-  const failedMinionsList = jobStore.jobReturns.filter(return_ => !return_.success);
+  const successfulMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode === 0);
+  const failedMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode !== 0);
 
-  const respondedMinions = jobStore.jobReturns.map(return_ => return_.id);
+  const respondedMinions = jobStore.jobReturns.map(jobReturn => jobReturn.id);
 
   const allMinions = minionsArray.length > 0 ? minionsArray : [];
   const pendingMinionsList = allMinions.filter(minion => !respondedMinions.includes(minion));
@@ -94,7 +94,7 @@ const JobPage = observer(() => {
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
       appStore.authStore?.user?.access_token,
-      (update: JobResult[]) => {
+      (update: JobReturnModel[]) => {
         if (update?.length > 0) {
           jobStore.addJobReturns(update);
         }
@@ -297,7 +297,7 @@ const JobPage = observer(() => {
           <DefaultJobReturnTable
             jobReturns={toJS(jobStore.jobReturns)}
             isFullOutput={isFullOutput}
-            jobStartTimestamp={jobStore.job?._stamp || null}
+            jobStartTimestamp={jobStore.job?.stamp || null}
             onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
           />
         </div>

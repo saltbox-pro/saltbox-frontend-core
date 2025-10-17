@@ -4,12 +4,12 @@ import { SaltBoxQueryBuilderContainer } from "saltbox-core/shared/components/que
 import { JobFilterStore } from "saltbox-core/store";
 
 export const JobsQueryBuilder = observer(
-  (props: { filterStore: JobFilterStore }) => {
+  (props: { filterStore: JobFilterStore, onSearchButtonClick?: () => void, onResetButtonClick?: () => void }) => {
     return (
       <SaltBoxQueryBuilderContainer
         filterStore={props.filterStore}
         controlElements={{
-          valueEditor: SaltBoxJobValueEditor(),
+          valueEditor: SaltBoxJobValueEditor,
         }}
       />
     );

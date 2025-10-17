@@ -4,7 +4,7 @@ import ReactJson from "react-json-view";
 import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
-import { JobResult } from "@saltbox/saltbox-core-api-client";
+import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
   FastTableListed,
   formatTimeByUserTZ,
@@ -19,9 +19,9 @@ import styles from "./default-job-return-table.module.css";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { Link } from "react-router";
 
-const columnHelper = createColumnHelper<JobResult>();
+const columnHelper = createColumnHelper<JobReturnModel>();
 
-const JobReturnsTable = FastTableListed<JobResult>;
+const JobReturnsTable = FastTableListed<JobReturnModel>;
 
 export const DefaultJobReturnTable = ({
   jobReturns,
@@ -30,7 +30,7 @@ export const DefaultJobReturnTable = ({
   jobStartTimestamp,
   onExecutionTimesCalculated,
 }: {
-  jobReturns: JobResult[];
+  jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
   isLoading?: boolean;
   jobStartTimestamp?: string | null;
@@ -39,9 +39,9 @@ export const DefaultJobReturnTable = ({
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const jobReturnsWithExecutionTime = jobReturns.map((row) => {
+  /* const jobReturnsWithExecutionTime = jobReturns.map((row) => {
     const startDate = new Date(jobStartTimestamp || 0);
-    const endDate = new Date(row._stamp || 0);
+    const endDate = new Date(row.stamp || 0);
 
     const executionTimeMs = endDate.getTime() - startDate.getTime();
     const executionTimeSeconds = executionTimeMs / 1000;
@@ -51,23 +51,21 @@ export const DefaultJobReturnTable = ({
 
   const executionTimes = jobReturnsWithExecutionTime
     .map((row) => row.executionTimeSeconds)
-    .filter((time) => time > 0);
+    .filter((time) => time > 0); */
 
-  // Передаем максимальное execution time в родительский компонент
-  useEffect(() => {
+  /* useEffect(() => {
     if (executionTimes.length > 0) {
       const maxExecutionTime = Math.max(...executionTimes);
       onExecutionTimesCalculated?.([maxExecutionTime]);
     } else {
-      // Если нет execution times, передаем null
       onExecutionTimesCalculated?.([0]);
     }
-  }, [executionTimes, onExecutionTimesCalculated]);
+  }, [executionTimes, onExecutionTimesCalculated]); */
 
-  const statistics = calculateStatistics(executionTimes);
-  const renderInvalidExecutionTime = (jobResult: JobResult) => {
+  /* const statistics = calculateStatistics(executionTimes); */
+  const renderInvalidExecutionTime = (jobResult: JobReturnModel) => {
     const startDate = new Date(jobStartTimestamp || 0);
-    const endDate = new Date(jobResult._stamp || 0);
+    const endDate = new Date(jobResult.stamp || 0);
 
     const startTime = startDate.toLocaleString("ru-RU", {
       year: "numeric",
@@ -97,7 +95,7 @@ export const DefaultJobReturnTable = ({
     {
       id: "expander",
       header: () => null,
-      cell: ({ row }: { row: Row<JobResult> }) => {
+      cell: ({ row }: { row: Row<JobReturnModel> }) => {
         if (!row.getCanExpand()) {
           return <></>;
         }
@@ -124,9 +122,8 @@ export const DefaultJobReturnTable = ({
         return (
           <>
             <Link
-              to={`/master/${
-                data.row.original.salt_master
-              }/minion/${data.getValue()}`}
+              to={`/master/${data.row.original.salt_master
+                }/minion/${data.getValue()}`}
             >
               <Button type="link" size={"small"}>
                 {data.getValue()}
@@ -137,11 +134,11 @@ export const DefaultJobReturnTable = ({
         );
       },
     }),
-    columnHelper.accessor("success", {
+    columnHelper.accessor("retcode", {
       header: t("task.job-returns-table.table-success"),
       cell: (data) => (
         <Tag color={data.getValue() ? "green" : "red"}>
-          {data.getValue()
+          {data.getValue() === 0
             ? t("task.job-returns-table.table-yes")
             : t("task.job-returns-table.table-no")}
         </Tag>
@@ -150,7 +147,7 @@ export const DefaultJobReturnTable = ({
     columnHelper.accessor("retcode", {
       header: t("task.job-returns-table.table-return-code"),
     }),
-    columnHelper.accessor("_stamp", {
+    columnHelper.accessor("stamp", {
       header: t("task.job-returns-table.table-timestamp"),
       cell: (data) => {
         if (!data.getValue()) {
@@ -160,7 +157,7 @@ export const DefaultJobReturnTable = ({
         return <div>{timestamp}</div>;
       },
     }),
-    columnHelper.accessor("executionTimeSeconds", {
+    /* columnHelper.display({
       header: t("task.job-returns-table.table-execution-time"),
       cell: ({ getValue, row }) => {
         const executionTimeSeconds = getValue();
@@ -198,17 +195,11 @@ export const DefaultJobReturnTable = ({
           </div>
         );
       },
-    }),
+    }), */
   ];
 
-  const getShortOutput = (data: JobResult) => {
-    if (data.return !== undefined) {
-      return { return: data.return };
-    }
-    if (data._return !== undefined) {
-      return { _return: data._return };
-    }
-    return data;
+  const getShortOutput = (jobReturn: JobReturnModel) => {
+    return jobReturn?.data ? jobReturn.data : jobReturn;
   };
 
   const isSimpleStringData = (data: any): boolean => {
@@ -250,7 +241,7 @@ export const DefaultJobReturnTable = ({
     return <div className={styles.stringDataContainer}>{stringValue}</div>;
   };
 
-  const renderJobResult = ({ row }: { row: Row<JobResult> }) => {
+  const renderJobResult = ({ row }: { row: Row<JobReturnModel> }) => {
     const dataToShow = isFullOutput
       ? row.original
       : getShortOutput(row.original);
@@ -276,7 +267,7 @@ export const DefaultJobReturnTable = ({
     <JobReturnsTable
       getRowId={(row) => `${row.jid}-${row.id}`}
       columns={columns}
-      data={jobReturnsWithExecutionTime}
+      data={jobReturns}
       isLoading={isLoading && !jobReturns.length}
       isEmpty={!isLoading && !jobReturns.length}
       getRowCanExpand={() => true}

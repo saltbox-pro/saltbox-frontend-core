@@ -1,5 +1,5 @@
 import {
-  JobResult,
+  JobReturnModel,
   TaskMinion,
   TaskMinionStatus,
   TaskStatus,
@@ -168,7 +168,7 @@ const useSelectedMinion = (taskStore: TaskStore) => {
     TaskMinion | undefined
   >();
   const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<
-    Array<JobResult>
+    Array<JobReturnModel>
   >([]);
 
   const getStoredMinion = (minion: TaskMinion) => {
@@ -365,62 +365,62 @@ const TaskPage = observer(() => {
           },
           ...(taskStore.task?.target_collection
             ? [
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                      }}
-                    >
-                      {taskStore.task.target_collection.title}
-                    </Link>
-                  ),
-                },
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                        search: `?tab=tasks`,
-                      }}
-                    >
-                      {t("task.breadcrumbs-tasks")}
-                    </Link>
-                  ),
-                },
-              ]
+              {
+                title: (
+                  <Link
+                    to={{
+                      pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                    }}
+                  >
+                    {taskStore.task.target_collection.title}
+                  </Link>
+                ),
+              },
+              {
+                title: (
+                  <Link
+                    to={{
+                      pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                      search: `?tab=tasks`,
+                    }}
+                  >
+                    {t("task.breadcrumbs-tasks")}
+                  </Link>
+                ),
+              },
+            ]
             : [
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/root`,
-                      }}
-                    >
-                      {taskStore.task ? t("minions.title") : "..."}
-                    </Link>
-                  ),
-                },
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/root`,
-                        search: `?tab=tasks`,
-                      }}
-                    >
-                      {t("task.breadcrumbs-tasks")}
-                    </Link>
-                  ),
-                },
-              ]),
+              {
+                title: (
+                  <Link
+                    to={{
+                      pathname: `/minions/root`,
+                    }}
+                  >
+                    {taskStore.task ? t("minions.title") : "..."}
+                  </Link>
+                ),
+              },
+              {
+                title: (
+                  <Link
+                    to={{
+                      pathname: `/minions/root`,
+                      search: `?tab=tasks`,
+                    }}
+                  >
+                    {t("task.breadcrumbs-tasks")}
+                  </Link>
+                ),
+              },
+            ]),
           {
             title: taskStore.task?.task_template?.title
               ? t("task.breadcrumbs-title-template", {
-                  templateName:
-                    taskStore.task.task_template.title?.toLowerCase(),
-                  taskId: taskId,
-                })
+                templateName:
+                  taskStore.task.task_template.title?.toLowerCase(),
+                taskId: taskId,
+              })
               : t("task.breadcrumbs-title-empty", { taskId: taskId ?? "..." }),
           },
         ]}

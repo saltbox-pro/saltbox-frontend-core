@@ -308,8 +308,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                          ? "filled"
-                          : "outlined"
+                            ? "filled"
+                            : "outlined"
                       }
                     >
                       <Flex gap={8}>
@@ -343,6 +343,7 @@ const MinionsPage = observer(() => {
           });
         }}
         activeKey={tabKey}
+        destroyOnHidden={true}
       />
 
       <Modal
