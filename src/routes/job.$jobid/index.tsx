@@ -144,6 +144,8 @@ const JobPage = observer(() => {
             target={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",")}
             targetType={jobStore.job?.tgt_type as CreateJobRequestTgtTypeEnum}
             fun={jobStore.job?.fun}
+            arg={toJS(jobStore.job?.arg)}
+            kwarg={toJS(jobStore.job?.kwarg)}
             buttonProps={{
               shape: "default",
               icon: <ReloadOutlined />,

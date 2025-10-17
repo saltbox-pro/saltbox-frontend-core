@@ -60,6 +60,8 @@ interface JobModalProps {
   target?: string;
   targetType?: CreateJobRequestTgtTypeEnum;
   fun?: string;
+  arg?: any[];
+  kwarg?: Record<string, any>;
   defaultMaster?: string;
   buttonProps?: JobModalButtonProps;
 }
@@ -72,6 +74,8 @@ export function JobModal({
   target,
   targetType,
   fun,
+  arg,
+  kwarg,
   defaultMaster,
   buttonProps,
 }: JobModalProps) {
@@ -225,14 +229,14 @@ export function JobModal({
         ?.jobsSchemasGet({ name: fun })
         .then((schema) => {
           setSaltFunction(schema);
-          setJsonFormValue({});
+          setJsonFormValue({ arg, kwargs: kwarg });
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
         })
         .finally(() => setIsSchemaLoading(false));
     }
-  }, [fun, saltFunctionList]);
+  }, [fun, arg, kwarg, saltFunctionList]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
@@ -268,7 +272,7 @@ export function JobModal({
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
           arg: jsonFormValue?.arg,
-          kwarg: jsonFormValue?.kwarg,
+          kwarg: jsonFormValue?.kwargs,
         },
       })
       .then((response) => {
@@ -414,7 +418,7 @@ export function JobModal({
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
       arg: jsonFormValue?.arg,
-      kwarg: jsonFormValue?.kwarg,
+      kwarg: jsonFormValue?.kwargs,
     };
   };
 
