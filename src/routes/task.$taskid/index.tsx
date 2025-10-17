@@ -37,6 +37,7 @@ import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { TaskMinions } from "./-components/task-minions/task-minions";
 import { MinionView } from "./-components/minion-view/minion-view";
 import styles from "./index.module.css";
+import { toJS } from "mobx";
 
 enum MinionCategory {
   All,
@@ -181,11 +182,10 @@ const useSelectedMinion = (taskStore: TaskStore) => {
       .reverse();
     return minionJobIds.map((jobId) =>
       taskStore.jobReturns?.find(
-        (jobReturn) =>
-          jobReturn.jid === jobId &&
+        (jobReturn) => jobReturn.jid === jobId &&
           jobReturn.salt_master === minion.master &&
-          jobReturn.id === minion.minion_id
-      )
+          jobReturn.minion_id === minion.minion_id
+      )?.data
     );
   };
 

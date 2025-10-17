@@ -24,7 +24,7 @@ type MinionViewProps = {
 };
 
 type JobReturnViewProps = {
-  jobReturn: JobReturnModel;
+  jobReturn?: JobReturnModel | undefined;
 };
 
 type JobReturnItem = {
@@ -39,7 +39,7 @@ const JobReturnView = ({ jobReturn }: JobReturnViewProps) => {
   const jobReturnData: Array<JobReturnItem | Object> = [];
   if (Array.isArray(jobReturn)) {
     jobReturnData.push(jobReturn);
-  } else if (Object.keys(jobReturn).length > 0) {
+  } else if (jobReturn && Object.keys(jobReturn).length > 0) {
     Object.entries(jobReturn).forEach(([key, value]) => {
       jobReturnData.push({
         objectKey: key,
@@ -168,7 +168,7 @@ export const MinionView = observer(
                         <CopyToClipboardButton text={jobResult?.jid ?? ""} />
                       </div>
                       <div className={styles.jobReturnContent}>
-                        <JobReturnView jobReturn={jobResult?.data ?? {}} />
+                        <JobReturnView jobReturn={jobResult} />
                       </div>
                     </div>
                   );
