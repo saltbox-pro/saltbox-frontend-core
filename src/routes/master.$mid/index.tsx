@@ -162,7 +162,7 @@ const MasterPage = observer(() => {
                 pillar.name,
                 pillar.minion_id || undefined
               );
-            } catch (error) {}
+            } catch (error) { }
           }
           await pillarsStore.loadPillars(masterId);
         }
@@ -517,9 +517,8 @@ const MasterPage = observer(() => {
         return (
           <>
             <Link
-              to={`/master/${
-                data.row.original.master
-              }/minion/${data.getValue()}`}
+              to={`/master/${data.row.original.master
+                }/minion/${data.getValue()}`}
             >
               <Button type="link" size={"small"}>
                 {data.getValue()}
@@ -673,8 +672,9 @@ const MasterPage = observer(() => {
     {
       key: "clients",
       label: t("minions.title"),
+      className: styles.flexTab,
       children: (
-        <Flex vertical gap="large" className={styles.masterTabs}>
+        <Flex vertical gap="large" className={styles.tabWrapper}>
           {isLoadingClients ? (
             <Flex justify="center" align="center" style={{ height: 200 }}>
               <Spin />
@@ -696,8 +696,9 @@ const MasterPage = observer(() => {
     {
       key: "pillars",
       label: t("pillars.title"),
+      className: styles.flexTab,
       children: (
-        <Flex vertical className={styles.masterTabs}>
+        <Flex vertical className={styles.tabWrapper}>
           <Flex className="page-actions-buttons">
             <Button
               type="primary"

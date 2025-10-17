@@ -213,15 +213,19 @@ export function JobModal({
       .finally(() => setIsSchemaListLoading(false));
   }, [isModalOpen, target, targetType, defaultMaster]);
 
-  // Загружаем схему функции если передано имя функции
   useEffect(() => {
     if (fun && saltFunctionList.length > 0) {
+      setSaltFunction(undefined);
+      setJsonFormValue({});
+      refJobParamsForm.current?.reset();
+
       setIsSchemaLoading(true);
 
       apiCoreStore.jsonSchemasApi
         ?.jobsSchemasGet({ name: fun })
         .then((schema) => {
           setSaltFunction(schema);
+          setJsonFormValue({});
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
@@ -293,8 +297,9 @@ export function JobModal({
   };
 
   useEffect(() => {
-    setJsonFormValue({});
     setSaltFunction(undefined);
+    setJsonFormValue({});
+    refJobParamsForm.current?.reset();
 
     if (saltFunctionName === undefined) {
       return;
@@ -312,6 +317,7 @@ export function JobModal({
       .jobsSchemasGet({ name: saltFunctionName })
       .then((result) => {
         setSaltFunction(result);
+        setJsonFormValue({});
       })
       .catch(() => {
         messageApi.error("Error on load salt function schema.");
