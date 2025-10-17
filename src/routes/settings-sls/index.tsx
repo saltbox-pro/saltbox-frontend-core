@@ -88,8 +88,8 @@ const SettingsSlsPage = observer(() => {
               type="default"
               icon={<SyncOutlined />}
               shape="circle"
-              loading={row.original.is_active && isSyncSls}
-              disabled={!row.original.is_active}
+              loading={syncingSlsId === row.original.id}
+              disabled={!row.original.is_active || syncingSlsId !== null}
               onClick={() => handleSlsSync(row.original.id)}
               title={t("settings-sls.table-sync")}
             />
@@ -110,7 +110,7 @@ const SettingsSlsPage = observer(() => {
   const [isSlsModalOpen, setIsSlsModalOpen] = useState(false);
   const [isSlsDeleteModalOpen, setIsSlsDeleteModalOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
-  const [isSyncSls, setIsSyncSls] = useState(false);
+  const [syncingSlsId, setSyncingSlsId] = useState<string | null>(null);
   const [recordToEdit, setRecordToEdit] =
     useState<SettingsSlsRepoShortSchema>();
 
@@ -126,7 +126,7 @@ const SettingsSlsPage = observer(() => {
   };
 
   const handleSlsSync = (id: string) => {
-    setIsSyncSls(true);
+    setSyncingSlsId(id);
     apiCoreStore.settingsApi
       ?.repoSync({
         sid: id,
@@ -137,7 +137,7 @@ const SettingsSlsPage = observer(() => {
       .catch(() => {
         messageApi.error(t("settings-sls.error-on-sync"));
         settingsSlsStore.reload();
-        setIsSyncSls(false);
+        setSyncingSlsId(null);
       });
   };
 
@@ -151,19 +151,19 @@ const SettingsSlsPage = observer(() => {
         );
 
       if (!result) {
-        setIsSyncSls(false);
+        setSyncingSlsId(null);
         messageApi.error(t("settings-sls.error-on-check-task-status"));
         return;
       }
 
       if (result.progress === "FAILURE") {
-        setIsSyncSls(false);
+        setSyncingSlsId(null);
         messageApi.error(t("settings-sls.task-failed"));
         return;
       }
 
       if (result.progress === "SUCCESS") {
-        setIsSyncSls(false);
+        setSyncingSlsId(null);
         messageApi.success(t("settings-sls.success-on-sync-sls"));
         return;
       }
@@ -172,7 +172,7 @@ const SettingsSlsPage = observer(() => {
       await checkSlsSyncTask(taskId);
     } catch {
       messageApi.error(t("settings-sls.error-on-check-task-status"));
-      setIsSyncSls(false);
+      setSyncingSlsId(null);
     }
     settingsSlsStore.reload();
   };

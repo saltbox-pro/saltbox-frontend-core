@@ -1,14 +1,24 @@
 .masterTabs,
+.masterTabs :global(.fast-table),
 .masterTabs :global(.ant-tabs-content),
 .masterTabs :global(.ant-tabs-tabpane),
-.masterTabs :global(.fast-table),
-.masterTabs :global(.pillars-table-container),
 .masterTabs :global(.ant-spin-container) {
   height: 100%;
 }
 
-.masterTabs :global(.ant-tabs-tab) {
-  padding: 0 0 12px 0;
+.masterTabs {
+  min-height: 0;
+}
+
+.flexTab {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabWrapper {
+  flex: 1;
+  min-height: 0;
 }
 
 .importTableContainer {
@@ -74,8 +84,10 @@
 }
 
 .pillarsTableContainer {
-  height: 100%;
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .pillarsTableContainer :global(.fast-table) {
@@ -154,8 +166,10 @@
 }
 
 .clientsTableContainer {
-  height: 100%;
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .clientsTableContainer :global(.fast-table) {
