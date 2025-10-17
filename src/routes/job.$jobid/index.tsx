@@ -41,9 +41,19 @@ const JobPage = observer(() => {
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
   const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
 
-  const jobStartTime = jobStore.job?.fms_jid_timestamp
-    ? new Date(jobStore.job.fms_jid_timestamp).getTime()
-    : null;
+  const getJobStartTimestamp = () => {
+    if (!jobStore.job?.fms_jid_timestamp) {
+      return null;
+    }
+    const timestamp = jobStore.job.fms_jid_timestamp;
+    const timestampStr = timestamp instanceof Date
+      ? timestamp.toISOString()
+      : String(timestamp);
+    return timestampStr.replace(/([+-]\d{2}:\d{2}|Z)$/, '');
+  };
+
+  const jobStartTimestamp = getJobStartTimestamp();
+  const jobStartTime = jobStartTimestamp ? new Date(jobStartTimestamp).getTime() : null;
 
   const minionsArray = jobStore.job?.minions || [];
   const totalMinions = Math.max(0, minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length));
@@ -297,7 +307,7 @@ const JobPage = observer(() => {
           <DefaultJobReturnTable
             jobReturns={toJS(jobStore.jobReturns)}
             isFullOutput={isFullOutput}
-            jobStartTimestamp={jobStore.job?._stamp || null}
+            jobStartTimestamp={jobStartTimestamp}
             onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
           />
         </div>
