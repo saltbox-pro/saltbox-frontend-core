@@ -3,16 +3,12 @@ import {
   TaskMinion,
   TaskMinionStatus,
 } from "@saltbox/saltbox-core-api-client";
-import { Drawer, Flex, Spin, Tabs, TabsProps, Tag } from "antd";
+import { Flex, Spin, Tabs, TabsProps, Tag } from "antd";
 import { SyncOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import {
-  pastTimeByUserTZ,
-  UiEvent,
-  useUiCleanupEvent,
-} from "@saltbox/saltbox-frontend-common";
+import { pastTimeByUserTZ, Drawer } from "@saltbox/saltbox-frontend-common";
 import styles from "./minion-view.module.css";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { useEffect, useState } from "react";
@@ -109,8 +105,9 @@ export const MinionView = observer(
     const [tabs, setTabs] = useState<TabsProps["items"]>([]);
 
     let minionStatus = (
-      <Tag>{`${t("task.minions.table-unknown-code")}: ${selectedMinion?.status
-        }`}</Tag>
+      <Tag>{`${t("task.minions.table-unknown-code")}: ${
+        selectedMinion?.status
+      }`}</Tag>
     );
     if (selectedMinion?.status === TaskMinionStatus.InWork) {
       minionStatus = <Tag color="blue">{t("task.minions.table-in-work")}</Tag>;
@@ -179,10 +176,6 @@ export const MinionView = observer(
         },
       ]);
     }, [selectedMinionJobReturns]);
-
-    useUiCleanupEvent(() => {
-      onClose();
-    }, [UiEvent.CloseAllOverlays, UiEvent.CloseAllDrawers]);
 
     return (
       <Drawer

@@ -15,7 +15,6 @@ import {
   Badge,
   Button,
   Checkbox,
-  Drawer,
   Flex,
   Popover,
   Spin,
@@ -34,8 +33,7 @@ import {
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
-  UiEvent,
-  useUiCleanupEvent,
+  Drawer,
 } from "@saltbox/saltbox-frontend-common";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
@@ -363,10 +361,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       );
     }
   );
-
-  useUiCleanupEvent(() => {
-    setDrawerMinionId(undefined);
-  }, [UiEvent.CloseAllOverlays, UiEvent.CloseAllDrawers]);
 
   return (
     <>
