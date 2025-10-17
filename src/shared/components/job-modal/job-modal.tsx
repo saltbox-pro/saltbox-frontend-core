@@ -267,7 +267,8 @@ export function JobModal({
           fun: formValue.fun.at(-1),
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
-          //arg: jsonFormValu,
+          arg: jsonFormValue?.arg,
+          kwarg: jsonFormValue?.kwarg,
         },
       })
       .then((response) => {
@@ -412,7 +413,8 @@ export function JobModal({
       fun: form.getFieldValue("fun").at(-1),
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
-      //data: jsonFormValue,
+      arg: jsonFormValue?.arg,
+      kwarg: jsonFormValue?.kwarg,
     };
   };
 
