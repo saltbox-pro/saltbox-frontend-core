@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, List, Modal, Spin, Typography } from "antd";
+import { Button, List, Spin, Typography } from "antd";
 import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from "saltbox-core/store";
+import { Modal } from "@saltbox/saltbox-frontend-common";
 
 interface MinionGatherModalProps {
   isOpen: boolean;

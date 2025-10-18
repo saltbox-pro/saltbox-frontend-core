@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Modal, Switch, message } from "antd";
+import { Breadcrumb, Button, Switch, message } from "antd";
 import {
   HomeOutlined,
   PlusOutlined,
@@ -15,7 +15,7 @@ import {
   SlsFormData,
   SlsModal,
 } from "saltbox-core/shared/components/sls-modal/sls-modal";
-import { formatTimeByUserTZ, PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { formatTimeByUserTZ, PageHeader, FastTablePaginated, Modal } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
 
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;

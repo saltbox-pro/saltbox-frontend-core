@@ -1,46 +1,44 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
-import { useTranslation } from "react-i18next";
-import { useParams, useNavigate, Link } from "react-router";
-import { observer } from "mobx-react-lite";
 import {
-  Breadcrumb,
-  Flex,
-  Tabs,
-  Spin,
-  Button,
-  Modal,
-  message,
-  Upload,
-  Space,
-  Input as AntdInput,
-  Checkbox,
-} from "antd";
-import {
+  CloseOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  EditOutlined,
   HomeOutlined,
   PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  UploadOutlined,
-  DownloadOutlined,
   SaveOutlined,
-  CloseOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
-import { createColumnHelper } from "@tanstack/react-table";
-import { apiCoreStore } from "saltbox-core/store";
-import { PillarCreateForm } from "./-components/pillar-create-form";
-import { PillarsStore } from "saltbox-core/store";
-import { toJS } from "mobx";
-import { PageHeader, FastTableListed } from "@saltbox/saltbox-frontend-common";
 import {
   GatheredMinionSchema,
-  PillarModel,
-  PillarSelector,
   PillarCSVParseResult,
   PillarCSVParseResultErrorCode,
+  PillarModel,
+  PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
+import { FastTableListed, Modal, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import {
+  Input as AntdInput,
+  Breadcrumb,
+  Button,
+  Checkbox,
+  Flex,
+  message,
+  Space,
+  Spin,
+  Tabs,
+  Upload,
+} from "antd";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router";
+import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { apiCoreStore, PillarsStore } from "saltbox-core/store";
+import { PillarCreateForm } from "./-components/pillar-create-form";
 
 import styles from "./index.module.css";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 
 const pillarColumnHelper = createColumnHelper<PillarModel>();
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>();

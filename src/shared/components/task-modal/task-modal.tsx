@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Ajv from "ajv";
-import { Modal, Tabs, message } from "antd";
+import { Tabs, message } from "antd";
 import {
   CollectionModel,
   MasterViewSchema,
@@ -14,7 +14,7 @@ import { apiCoreStore } from "saltbox-core/store";
 import { TaskForm, TaskFormData } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";
-import { publish } from "@saltbox/saltbox-frontend-common";
+import { publish, Modal } from "@saltbox/saltbox-frontend-common";
 
 const filterAdditionalParams = (
   formData: Partial<TaskCreateRequestSchemaInput>,

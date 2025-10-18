@@ -8,7 +8,6 @@ import {
   Button,
   Dropdown,
   Flex,
-  Modal,
   Tabs,
   Popover,
   message,
@@ -31,7 +30,7 @@ import {
   i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";
-import { subscribe, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { subscribe, PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
@@ -308,8 +307,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                            ? "filled"
-                            : "outlined"
+                          ? "filled"
+                          : "outlined"
                       }
                     >
                       <Flex gap={8}>

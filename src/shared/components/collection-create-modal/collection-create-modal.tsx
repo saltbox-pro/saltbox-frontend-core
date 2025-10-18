@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Button, Form, Input, Modal, message } from "antd";
+import { Button, Form, Input, message } from "antd";
 import { apiCoreStore } from "saltbox-core/store";
 import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
+import { Modal } from "@saltbox/saltbox-frontend-common";
 
 type collectionCreateFormType = {
   title: string;
