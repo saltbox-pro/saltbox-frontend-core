@@ -84,6 +84,9 @@ export const TaskMinions = ({
     columnHelper.accessor("start_last_dt", {
       header: t("task.minions.table-started"),
       cell: (data) => {
+        if (!data.getValue()) {
+          return <>{t("task.minions.table-not-started")}</>;
+        }
         const rawStarted: string = data.getValue();
         const started: string = formatTimeByUserTZ(rawStarted);
         const startedPastTime: string = pastTimeByUserTZ(rawStarted);
@@ -93,6 +96,9 @@ export const TaskMinions = ({
     columnHelper.accessor("finished_dt", {
       header: t("task.minions.table-finished"),
       cell: (data) => {
+        if (!data.getValue()) {
+          return <>{t("task.minions.table-not-started")}</>;
+        }
         const rawFinished: string = data.getValue();
         const finished: string = formatTimeByUserTZ(rawFinished);
         const finishedPastTime: string = pastTimeByUserTZ(rawFinished);

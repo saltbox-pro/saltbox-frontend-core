@@ -213,7 +213,8 @@
       "table-pending": "Ожидает",
       "table-started": "Запущена",
       "table-finished": "Завершена",
-      "table-count-runs": "Количество запусков"
+      "table-count-runs": "Количество запусков",
+      "table-not-started": "Не запускалась"
     },
     "jobs": {
       "table-jid": "JID",

@@ -213,7 +213,8 @@
       "table-pending": "Pending",
       "table-started": "Started",
       "table-finished": "Finished",
-      "table-count-runs": "Count Runs"
+      "table-count-runs": "Count Runs",
+      "table-not-started": "Not Started"
     },
     "jobs": {
       "table-jid": "JID",
