@@ -3,15 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 import { observer } from "mobx-react-lite";
-import {
-  Breadcrumb,
-  Button,
-  Dropdown,
-  Flex,
-  Tabs,
-  Popover,
-  message,
-} from "antd";
+import { Breadcrumb, Button, Flex, Tabs, Popover, message } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -30,7 +22,12 @@ import {
   i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";
-import { subscribe, PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
+import {
+  subscribe,
+  PageHeader,
+  Modal,
+  Dropdown,
+} from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
@@ -162,26 +159,28 @@ const MinionsPage = observer(() => {
       {
         label: t("minions.tab-list"),
         key: "list",
-        children: tabKey === "list" ? (
-          <MinionsListView
-            slug={slug}
-            filterStore={minionFilterStore}
-            showFilter={showFilter}
-            collectionStore={collectionStore}
-          />
-        ) : null,
+        children:
+          tabKey === "list" ? (
+            <MinionsListView
+              slug={slug}
+              filterStore={minionFilterStore}
+              showFilter={showFilter}
+              collectionStore={collectionStore}
+            />
+          ) : null,
         className: styles.flexTab,
       },
       {
         label: t("minions.tab-statistics"),
         key: "statistics",
-        children: tabKey === "statistics" ? (
-          <MinionsDashboardView
-            slug={slug}
-            filterStore={minionFilterStore}
-            showFilter={showFilter}
-          />
-        ) : null,
+        children:
+          tabKey === "statistics" ? (
+            <MinionsDashboardView
+              slug={slug}
+              filterStore={minionFilterStore}
+              showFilter={showFilter}
+            />
+          ) : null,
       },
       {
         label: t("minions.tab-tasks"),
@@ -199,16 +198,17 @@ const MinionsPage = observer(() => {
             pluginTab.label?.en ||
             pluginTab.key,
           key: pluginTab.key,
-          children: tabKey === pluginTab.key ? (
-            <Parcel
-              config={pluginTab.parcel}
-              wrapWith={pluginTab.wrapWith}
-              wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
-              customProps={{
-                slug,
-              }}
-            />
-          ) : null,
+          children:
+            tabKey === pluginTab.key ? (
+              <Parcel
+                config={pluginTab.parcel}
+                wrapWith={pluginTab.wrapWith}
+                wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
+                customProps={{
+                  slug,
+                }}
+              />
+            ) : null,
           style: pluginTab.tabStyle,
         });
       }
@@ -219,7 +219,7 @@ const MinionsPage = observer(() => {
     showFilter,
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
-    tabKey
+    tabKey,
   ]);
 
   const hasFilters = minionFilterStore.currentFilters.rules.length > 0;
@@ -294,8 +294,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                            ? "filled"
-                            : "outlined"
+                          ? "filled"
+                          : "outlined"
                       }
                     >
                       <Flex gap={8}>
