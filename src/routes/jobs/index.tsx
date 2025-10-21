@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import dayjs from "dayjs";
+import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Popover, Typography } from "antd";
+import { Breadcrumb, Button, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
@@ -15,6 +14,7 @@ import {
   pastTimeByUserTZ,
   PageHeader,
   FastTablePaginated,
+  Popover
 } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -159,7 +159,6 @@ const filterSchema = [
 const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [sorting, setSorting] = useState<SortingState>([]);
   const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
 
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema));

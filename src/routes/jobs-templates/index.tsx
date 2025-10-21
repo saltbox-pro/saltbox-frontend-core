@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb } from "antd";
-import { Popover } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
@@ -11,7 +10,8 @@ import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   PageHeader,
-  FastTablePaginated
+  FastTablePaginated,
+  Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { JobTemplateStore } from "saltbox-core/store";
 

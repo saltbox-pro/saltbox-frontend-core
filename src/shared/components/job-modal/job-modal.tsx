@@ -11,7 +11,6 @@ import {
   Flex,
   Form,
   Input,
-  Popover,
   Select,
   message,
 } from "antd";
@@ -29,7 +28,7 @@ import {
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
-import { publish, Modal } from "@saltbox/saltbox-frontend-common";
+import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
 
 import styles from "./job-modal.module.css";
 

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Tabs, Popover, message } from "antd";
+import { Breadcrumb, Button, Flex, Tabs, message } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -27,6 +27,7 @@ import {
   PageHeader,
   Modal,
   Dropdown,
+  Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";

@@ -16,7 +16,6 @@ import {
   Button,
   Checkbox,
   Flex,
-  Popover,
   Spin,
   Tag,
   message,
@@ -34,6 +33,7 @@ import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   Drawer,
+  Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";

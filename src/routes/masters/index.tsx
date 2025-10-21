@@ -4,7 +4,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Link, useNavigate } from "react-router";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Popover, Tag, message } from "antd";
+import { Breadcrumb, Button, Flex, Tag, message } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
@@ -12,6 +12,7 @@ import {
   pastTimeByUserTZ,
   PageHeader,
   FastTablePaginated,
+  Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { mastersStore } from "saltbox-core/store";
 
