@@ -71,7 +71,7 @@ const defaultListOperators = [
 export const MinionsTaskView = observer((props: { slug?: string }) => {
   const { t } = useTranslation();
 
-  const filterSchema = [
+  const filterSchema = useMemo(() => [
     {
       name: "source.type",
       label: t("minions.table-source-type"),
@@ -109,7 +109,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       inputType: "datetime-local",
       valueEditorType: "datetime-local",
     },
-  ];
+  ], [t]);
 
   const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
 
@@ -262,7 +262,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
       tasksStore.setCollectionSlug(props.slug);
     }
-  }, [props.slug]);
+  }, [props.slug, filterSchema]);
 
   const handleSearchButtonClick = () => {
     tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;

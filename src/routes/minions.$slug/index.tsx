@@ -1,4 +1,4 @@
-import { ComponentProps, useEffect, useState } from "react";
+import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -55,7 +55,6 @@ const MinionsPage = observer(() => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const [minionsTabs, setMinionsTabs] = useState([]);
 
   useEffect(() => {
     const initialFilter = JSON.parse(localStorage.getItem("minionsFilter"));
@@ -124,14 +123,9 @@ const MinionsPage = observer(() => {
   ];
 
   useEffect(() => {
-    fillMinionsTabs();
-  }, [showFilter]);
-
-  useEffect(() => {
     if (slug) {
       collectionStore.setCollectionSlug(slug);
     }
-    fillMinionsTabs();
   }, [slug]);
 
   useEffect(() => {
@@ -142,12 +136,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     minionFilterStore.loadFiltersScheme();
-    fillMinionsTabs();
   }, []);
-
-  useEffect(() => {
-    fillMinionsTabs();
-  }, [appStore.pluginsStore?.minions?.tabs, i18nStore.currentLanguage]);
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
@@ -168,43 +157,36 @@ const MinionsPage = observer(() => {
     });
   }, [setSearchParams]);
 
-  useEffect(() => {
-    const urlTab = searchParams.get("tab");
-    if (urlTab && urlTab !== tabKey) {
-      setTabKey(urlTab);
-    }
-  }, [searchParams, tabKey]);
-
-  const fillMinionsTabs = () => {
+  const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
       {
         label: t("minions.tab-list"),
         key: "list",
-        children: (
+        children: tabKey === "list" ? (
           <MinionsListView
             slug={slug}
             filterStore={minionFilterStore}
             showFilter={showFilter}
             collectionStore={collectionStore}
           />
-        ),
+        ) : null,
         className: styles.flexTab,
       },
       {
         label: t("minions.tab-statistics"),
         key: "statistics",
-        children: (
+        children: tabKey === "statistics" ? (
           <MinionsDashboardView
             slug={slug}
             filterStore={minionFilterStore}
             showFilter={showFilter}
           />
-        ),
+        ) : null,
       },
       {
         label: t("minions.tab-tasks"),
         key: "tasks",
-        children: <MinionsTaskView slug={slug} />,
+        children: tabKey === "tasks" ? <MinionsTaskView slug={slug} /> : null,
         className: styles.flexTab,
       },
     ];
@@ -217,7 +199,7 @@ const MinionsPage = observer(() => {
             pluginTab.label?.en ||
             pluginTab.key,
           key: pluginTab.key,
-          children: (
+          children: tabKey === pluginTab.key ? (
             <Parcel
               config={pluginTab.parcel}
               wrapWith={pluginTab.wrapWith}
@@ -226,14 +208,19 @@ const MinionsPage = observer(() => {
                 slug,
               }}
             />
-          ),
+          ) : null,
           style: pluginTab.tabStyle,
         });
       }
     }
-
-    setMinionsTabs(tabs);
-  };
+    return tabs;
+  }, [
+    slug,
+    showFilter,
+    appStore.pluginsStore?.plugins?.["minions.tabs"],
+    i18nStore.currentLanguage,
+    tabKey
+  ]);
 
   const hasFilters = minionFilterStore.currentFilters.rules.length > 0;
 
@@ -307,8 +294,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                          ? "filled"
-                          : "outlined"
+                            ? "filled"
+                            : "outlined"
                       }
                     >
                       <Flex gap={8}>
