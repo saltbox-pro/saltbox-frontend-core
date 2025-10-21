@@ -75,6 +75,8 @@ const JobPage = observer(() => {
   const isJobComplete = totalMinions > 0 && pendingMinions === 0;
   const jobDurationSeconds = isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
 
+  const isSingleJobReturn = jobStore.jobReturns?.length === 1;
+
   const formatJobDuration = (seconds: number): string => {
     const timeUnits: TimeUnits = {
       milliseconds: t("task.job-returns-table.time-units.milliseconds"),
@@ -309,6 +311,7 @@ const JobPage = observer(() => {
           <DefaultJobReturnTable
             jobReturns={toJS(jobStore.jobReturns)}
             isFullOutput={isFullOutput}
+            forceExpand={isSingleJobReturn}
             jobStartTimestamp={jobStartTimestamp}
             onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
           />

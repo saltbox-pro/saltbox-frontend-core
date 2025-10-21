@@ -27,12 +27,14 @@ export const DefaultJobReturnTable = ({
   jobReturns,
   isFullOutput = false,
   isLoading = false,
+  forceExpand,
   jobStartTimestamp,
   onExecutionTimesCalculated,
 }: {
   jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
   isLoading?: boolean;
+  forceExpand?: boolean;
   jobStartTimestamp?: string | null;
   onExecutionTimesCalculated?: (executionTimes: number[]) => void;
 }) => {
@@ -122,8 +124,9 @@ export const DefaultJobReturnTable = ({
         return (
           <>
             <Link
-              to={`/master/${data.row.original.salt_master
-                }/minion/${data.getValue()}`}
+              to={`/master/${
+                data.row.original.salt_master
+              }/minion/${data.getValue()}`}
             >
               <Button type="link" size={"small"}>
                 {data.getValue()}
@@ -271,6 +274,7 @@ export const DefaultJobReturnTable = ({
       data={jobReturns}
       isLoading={isLoading && !jobReturns.length}
       isEmpty={!isLoading && !jobReturns.length}
+      forceExpandAll={forceExpand}
       getRowCanExpand={() => true}
       renderSubComponent={renderJobResult}
       sorting={sorting}
