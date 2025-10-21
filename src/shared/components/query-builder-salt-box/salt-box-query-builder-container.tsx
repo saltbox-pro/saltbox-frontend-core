@@ -1,4 +1,4 @@
-import { JSX, ReactElement } from "react";
+import { JSX, ReactElement, useState } from "react";
 import * as ReactDnD from "react-dnd";
 import * as ReactDndHtml5Backend from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
@@ -31,6 +31,7 @@ type SaltBoxQueryBuilderContainerProps = {
 export const SaltBoxQueryBuilderContainer = observer(
   (props: SaltBoxQueryBuilderContainerProps) => {
     const { t } = useTranslation();
+    const [queryBuilderKey, setQueryBuilderKey] = useState(0);
     return (
       props?.filterStore &&
       <div className={styles.queryBuilderContainer}>
@@ -39,6 +40,7 @@ export const SaltBoxQueryBuilderContainer = observer(
             <QueryBuilderSaltBox>
               <QueryBuilderSaltBox>
                 <QueryBuilder
+                  key={queryBuilderKey}
                   fields={toJS(props.filterStore.filterSchema)}
                   defaultQuery={toJS(props.filterStore.currentFilters)}
                   onQueryChange={props.filterStore.handleFiltersChange}
@@ -84,7 +86,7 @@ export const SaltBoxQueryBuilderContainer = observer(
                 color="danger"
                 variant="link"
                 disabled={props.filterStore.currentFilters.rules.length === 0}
-                onClick={() => { props.filterStore.handleResetFilters(); props.onResetButtonClick?.(); }}
+                onClick={() => { props.filterStore.handleResetFilters(); props.onResetButtonClick?.(); setQueryBuilderKey(queryBuilderKey + 1); }}
                 icon={<MatIcon icon="filter_alt_off" />}
                 title={t("minions.reset")}
               />

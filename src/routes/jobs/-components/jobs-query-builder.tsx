@@ -8,6 +8,8 @@ export const JobsQueryBuilder = observer(
     return (
       <SaltBoxQueryBuilderContainer
         filterStore={props.filterStore}
+        onSearchButtonClick={props.onSearchButtonClick}
+        onResetButtonClick={props.onResetButtonClick}
         controlElements={{
           valueEditor: SaltBoxJobValueEditor,
         }}

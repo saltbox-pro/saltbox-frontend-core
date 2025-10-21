@@ -1,11 +1,9 @@
 import { jsonLogicAdditionalOperators } from 'react-querybuilder';
 import dayjs from 'dayjs';
-import { add_operation, apply } from 'json-logic-js';
-import { action, computed, makeObservable, observable, runInAction } from 'mobx';
+import { add_operation } from 'json-logic-js';
+import { action, makeObservable, observable, runInAction } from 'mobx';
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import {
-  DATETIME_TIMESTAMP,
-  formatTimeByUserTZ,
   toBackendSorting,
 } from '@saltbox/saltbox-frontend-common';
 import { apiCoreStore, JobFilterStore } from 'saltbox-core/store';
@@ -31,30 +29,9 @@ export class JobsStore {
   @observable isInitialized: boolean;
   @observable isJobsLoading: boolean;
   @observable error: string | null;
+  @observable mongoDBQuery: object | undefined;
   @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs];
   @observable jobFilterStore: JobFilterStore;
-
-  @computed
-  get filteredJobs(): Array<JobStoreItem> {
-    return this.jobs.filter((job) =>
-      apply(this.jobFilterStore.searchJsonLogicQuery, job),
-    );
-  }
-
-  @computed
-  get hasMoreJobs(): boolean {
-    return this.jobs.length < this.total;
-  }
-
-  @computed
-  get countLoadedJobs(): number {
-    return this.jobs?.length ?? 0;
-  }
-
-  @computed
-  get countFilteredJobs(): number {
-    return this.filteredJobs?.length ?? 0;
-  }
 
   constructor(jobFilterStore: JobFilterStore) {
     this.jobFilterStore = jobFilterStore;
@@ -89,16 +66,25 @@ export class JobsStore {
 
   @action
   loadJobs = () => {
-    if (this.isJobsLoading) return;
-
+    if (this.isJobsLoading) {
+      return;
+    }
     this.isJobsLoading = true;
     this.error = null;
     apiCoreStore.jobsApi
       ?.jobsList({
-        start_datetime: this.dateRange[0].toDate(),
-        end_datetime: this.dateRange[1].toDate(),
-        limit: this.pagination.pageSize,
-        skip: this.pagination.pageIndex * this.pagination.pageSize,
+        JobListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+          query: {
+            created: {
+              $gte: this.dateRange[0].toDate(),
+              $lte: this.dateRange[1].toDate(),
+            },
+            ...this.mongoDBQuery,
+          },
+        }
       })
       .then((response) => {
         runInAction(() => {
@@ -146,7 +132,18 @@ export class JobsStore {
   @action
   handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs]) => {
     this.dateRange = range;
-    this.resetJobs();
+    this.pagination.pageIndex = 0;
+    this.loadJobs();
+  };
+
+  @action handleSearch = () => {
+    this.pagination.pageIndex = 0;
+    this.loadJobs();
+  };
+
+  @action handleReset = () => {
+    this.jobFilterStore.handleResetFilters();
+    this.pagination.pageIndex = 0;
     this.loadJobs();
   };
 }

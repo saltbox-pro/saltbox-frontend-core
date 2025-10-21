@@ -258,8 +258,8 @@ const JobsPage = observer(() => {
   }, [jobsStore.error]);
 
   useEffect(() => {
-    jobsStore.handleDateRangeChange([dayjs().startOf("day"), dayjs()]);
-  }, [jobsStore]);
+    jobsStore.loadJobs();
+  }, []);
 
   let jobModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
@@ -272,6 +272,17 @@ const JobsPage = observer(() => {
       );
     }
   );
+
+  const handleSearchButtonClick = () => {
+    jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
+    jobsStore.handleSearch();
+  };
+
+  const handleResetButtonClick = () => {
+    jobFilterStore.handleResetFilters();
+    jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
+    jobsStore.handleSearch();
+  };
 
   return (
     <>
@@ -288,7 +299,11 @@ const JobsPage = observer(() => {
       />
       <PageHeader title={t("jobs.title")} />
 
-      <JobsQueryBuilder filterStore={jobFilterStore} />
+      <JobsQueryBuilder
+        filterStore={jobFilterStore}
+        onSearchButtonClick={handleSearchButtonClick}
+        onResetButtonClick={handleResetButtonClick}
+      />
 
       <div className="page-actions-buttons">
         <JobModal target="*" targetType="glob" />
