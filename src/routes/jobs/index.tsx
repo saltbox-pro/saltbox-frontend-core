@@ -4,18 +4,17 @@ import { Link, useNavigate } from "react-router";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Popover, Spin, Typography } from "antd";
+import { Breadcrumb, Button, Popover, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
-import { useInfiniteScroll } from "saltbox-core/shared/hooks/useInfiniteScroll";
 import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   PageHeader,
-  FastTableListed,
+  FastTablePaginated,
 } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -26,7 +25,7 @@ import { WebSocketService } from "@saltbox/saltbox-frontend-common";
 
 const { Text } = Typography;
 
-const JobsTable = FastTableListed<JobsListResponse>;
+const JobsTable = FastTablePaginated<JobsListResponse>;
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
@@ -231,14 +230,7 @@ const JobsPage = observer(() => {
         return result;
       },
     }),
-  ], []);
-
-  const { loadingRef } = useInfiniteScroll({
-    onLoadMore: () => jobsStore.loadNextJobs(),
-    hasMore: jobsStore.hasMoreJobs,
-    isLoading: jobsStore.isJobsLoading,
-    rootMargin: "10px",
-  });
+  ], [t]);
 
   useEffect(() => {
     webSocketService.connect(
@@ -246,7 +238,7 @@ const JobsPage = observer(() => {
       appStore.authStore?.user?.access_token,
       (update: JobsListResponse[]) => {
         if (update?.length > 0) {
-          jobsStore.addJobs(update);
+          jobsStore.updateJobs(update);
         }
       },
     );
@@ -303,11 +295,7 @@ const JobsPage = observer(() => {
 
         <JobDatetimeRangeSelector
           className={styles.jobsDateRangePicker}
-          label={t("jobs.date-range-label", {
-            filtered: jobsStore.countFilteredJobs,
-            loaded: jobsStore.countLoadedJobs,
-            total: jobsStore.total,
-          })}
+          label={t("jobs.date-range-label")}
           disabled={jobsStore.isJobsLoading}
           onChange={(value) => {
             jobsStore.handleDateRangeChange(value);
@@ -318,21 +306,14 @@ const JobsPage = observer(() => {
       <JobsTable
         columns={columns}
         getRowId={(row) => row.jid}
-        data={jobsStore.filteredJobs}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        isLoading={jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
-        isEmpty={jobsStore.isInitialized && !jobsStore.isJobsLoading && !jobsStore.filteredJobs.length}
+        data={jobsStore.jobs}
+        total={jobsStore.total}
+        isLoading={jobsStore.isJobsLoading}
+        pagination={jobsStore.pagination}
+        sorting={jobsStore.sorting}
+        onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
+        enableVirtualScroll={true}
       />
-
-      <div
-        ref={loadingRef}
-        style={{ paddingBottom: "15px", textAlign: "center" }}
-      >
-        {jobsStore.isJobsLoading && jobsStore.filteredJobs.length > 0 && (
-          <Spin />
-        )}
-      </div>
 
       {jobModalCreatePlugin}
     </>

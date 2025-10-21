@@ -1,13 +1,15 @@
 import { jsonLogicAdditionalOperators } from 'react-querybuilder';
 import dayjs from 'dayjs';
 import { add_operation, apply } from 'json-logic-js';
-import { makeAutoObservable, runInAction } from 'mobx';
+import { action, computed, makeObservable, observable, runInAction } from 'mobx';
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import {
   DATETIME_TIMESTAMP,
   formatTimeByUserTZ,
+  toBackendSorting,
 } from '@saltbox/saltbox-frontend-common';
 import { apiCoreStore, JobFilterStore } from 'saltbox-core/store';
+import { PaginationState, SortingState } from '@tanstack/react-table';
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
   add_operation(op, func);
@@ -19,65 +21,91 @@ export type JobStoreItem = JobsListResponse & {
   created?: string;
 };
 
-export class JobsStore {
-  jobs: Array<JobStoreItem>;
-  page: number;
-  total: number;
-  isInitialized: boolean;
-  isJobsLoading: boolean;
-  error: string | null;
-  dateRange: [dayjs.Dayjs, dayjs.Dayjs];
-  jobFilterStore: JobFilterStore;
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
+export class JobsStore {
+  @observable jobs: Array<JobStoreItem>;
+  @observable total: number;
+  @observable pagination: PaginationState;
+  @observable sorting: SortingState;
+  @observable isInitialized: boolean;
+  @observable isJobsLoading: boolean;
+  @observable error: string | null;
+  @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs];
+  @observable jobFilterStore: JobFilterStore;
+
+  @computed
   get filteredJobs(): Array<JobStoreItem> {
     return this.jobs.filter((job) =>
       apply(this.jobFilterStore.searchJsonLogicQuery, job),
     );
   }
 
+  @computed
   get hasMoreJobs(): boolean {
     return this.jobs.length < this.total;
   }
 
+  @computed
   get countLoadedJobs(): number {
     return this.jobs?.length ?? 0;
   }
 
+  @computed
   get countFilteredJobs(): number {
     return this.filteredJobs?.length ?? 0;
   }
 
   constructor(jobFilterStore: JobFilterStore) {
-    makeAutoObservable(this);
     this.jobFilterStore = jobFilterStore;
     this.jobs = [];
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
     this.dateRange = [dayjs().startOf('day'), dayjs()];
-    this.page = 0;
+    this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
+    makeObservable(this);
   }
 
-  loadJobs = (page: number) => {
+  @action
+  resetJobs = () => {
+    this.jobs = [];
+    this.isInitialized = false;
+    this.isJobsLoading = false;
+    this.error = null;
+    this.dateRange = [dayjs().startOf('day'), dayjs()];
+    this.sorting = [...DEFAULT_SORTING];
+    this.total = 0;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
+  };
+
+  @action
+  loadJobs = () => {
     if (this.isJobsLoading) return;
 
     this.isJobsLoading = true;
     this.error = null;
-    this.page = page;
     apiCoreStore.jobsApi
       ?.jobsList({
         start_datetime: this.dateRange[0].toDate(),
         end_datetime: this.dateRange[1].toDate(),
-        limit: PAGE_SIZE,
-        skip: this.page * PAGE_SIZE,
+        limit: this.pagination.pageSize,
+        skip: this.pagination.pageIndex * this.pagination.pageSize,
       })
       .then((response) => {
         runInAction(() => {
           this.isInitialized = true;
           this.isJobsLoading = false;
-          this.total = response.total;
-          this.pushJobs(response.data);
+          this.total = response?.total ?? 0;
+          this.jobs = response?.data ?? [];
         });
       })
       .catch((error) => {
@@ -89,57 +117,36 @@ export class JobsStore {
       });
   };
 
-  loadNextJobs = () => {
-    if (this.page < this.total / PAGE_SIZE) {
-      this.loadJobs(this.page + 1);
-    }
+  @action handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
+    this.pagination.pageIndex = pagination.pageIndex;
+    this.pagination.pageSize = pagination.pageSize;
+    this.sorting = sorting;
+    this.loadJobs();
   };
 
-  newJobStoreItem(job: JobsListResponse): JobStoreItem {
-    return {
-      ...job,
-      created: formatTimeByUserTZ(job.fms_jid_timestamp, DATETIME_TIMESTAMP),
-    };
-  }
-
-  addJob = (job: JobsListResponse) => {
-    const jobIndex = this.jobs.findIndex((j) => j.jid === job.jid);
-    if (jobIndex > -1) {
-      this.jobs[jobIndex] = this.newJobStoreItem(job);
+  @action updateJob = (job: JobsListResponse) => {
+    const index = this.jobs.findIndex((item) => item.jid === job.jid);
+    if (index > -1) {
+      this.jobs[index] = job;
+      this.jobs = [...this.jobs];
     } else {
-      this.jobs = [this.newJobStoreItem(job), ...this.jobs];
+      let newJobs = [job, ...this.jobs];
+      if (newJobs.length > this.pagination.pageSize) {
+        newJobs = newJobs.slice(0, this.pagination.pageSize);
+      }
+      this.jobs = newJobs;
+      this.total++;
     }
   };
 
-  addJobs = (jobs: JobsListResponse[]) => {
-    let newJobs = jobs.map((job) => this.newJobStoreItem(job)).reverse();
-    this.jobs.unshift(...newJobs);
+  @action updateJobs = (jobs: JobsListResponse[]) => {
+    jobs.map((job) => this.updateJob(job));
   };
 
-  pushJobs = (jobs: JobsListResponse[]) => {
-    let newJobs = jobs.map((job) => this.newJobStoreItem(job));
-    this.jobs.push(...newJobs);
-  };
-
-  pushJob = (job: JobsListResponse) => {
-    const jobIndex = this.jobs.findIndex((j) => j.jid === job.jid);
-    if (jobIndex > -1) {
-      this.jobs[jobIndex] = this.newJobStoreItem(job);
-    } else {
-      this.jobs = [...this.jobs, this.newJobStoreItem(job)];
-    }
-  };
-
-  resetJobs = () => {
-    this.jobs = [];
-    this.page = 0;
-    this.total = 0;
-    this.isInitialized = false;
-    this.loadJobs(this.page);
-  };
-
+  @action
   handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs]) => {
     this.dateRange = range;
     this.resetJobs();
+    this.loadJobs();
   };
 }

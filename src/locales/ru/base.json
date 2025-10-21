@@ -288,7 +288,7 @@
     "table-targets": "Цели",
     "table-user": "Пользователь",
     "table-jid": "JID",
-    "date-range-label": "Показано {{filtered}} (загружено {{loaded}}) из {{total}} команд за период",
+    "date-range-label": "Фильтрация за период",
     "date-range-today": "Сегодня",
     "date-range-10-minutes": "10 минут назад",
     "date-range-30-minutes": "30 минут назад",
