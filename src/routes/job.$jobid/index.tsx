@@ -56,7 +56,7 @@ const JobPage = observer(() => {
   const jobStartTime = jobStartTimestamp ? new Date(jobStartTimestamp).getTime() : null;
 
   const minionsArray = jobStore.job?.minions || [];
-  const totalMinions = Math.max(0, minionsArray.length > 0 ? minionsArray.length : (jobStore.jobReturnsCount || jobStore.jobReturns.length));
+  const totalMinions = jobStore.job?.minions?.length ?? 0;
 
   const successfulMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode === 0);
   const failedMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode !== 0);
@@ -74,8 +74,6 @@ const JobPage = observer(() => {
   const successPercent = totalMinions > 0 ? (successfulMinions / totalMinions) * 100 : 0;
   const isJobComplete = totalMinions > 0 && pendingMinions === 0;
   const jobDurationSeconds = isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
-
-  const isSingleJobReturn = jobStore.jobReturns?.length === 1;
 
   const formatJobDuration = (seconds: number): string => {
     const timeUnits: TimeUnits = {
@@ -302,21 +300,19 @@ const JobPage = observer(() => {
         </Flex>
       )}
 
-      {jobStore.isJobReturnsLoading ? (
-        <div className={`${styles.jobReturnTableWrapper} ${styles.spinnerContainer}`}>
-          <Spin size="large" />
-        </div>
-      ) : (
-        <div className={styles.jobReturnTableWrapper}>
-          <DefaultJobReturnTable
-            jobReturns={toJS(jobStore.jobReturns)}
-            isFullOutput={isFullOutput}
-            forceExpand={isSingleJobReturn}
-            jobStartTimestamp={jobStartTimestamp}
-            onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
-          />
-        </div>
-      )}
+      <div className={styles.jobReturnTableWrapper}>
+        <DefaultJobReturnTable
+          jobReturns={jobStore.jobReturns}
+          isFullOutput={isFullOutput}
+          //jobStartTimestamp={jobStartTimestamp}
+          //onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
+          pagination={jobStore.pagination}
+          sorting={jobStore.sorting}
+          total={jobStore.total}
+          onLazyLoad={jobStore.handleLazyLoad}
+          isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
+        />
+      </div>
     </>
   );
 });

@@ -103,7 +103,7 @@ export class JobsStore {
       });
   };
 
-  @action handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
+  @action handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
     this.pagination.pageIndex = pagination.pageIndex;
     this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;

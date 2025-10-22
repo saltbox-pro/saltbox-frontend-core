@@ -4,9 +4,9 @@ import { Link, useNavigate } from "react-router";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Popover, Typography } from "antd";
+import { Breadcrumb, Button, Popover, Tag, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
+import { JobsListResponse, JobStatus, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
@@ -214,6 +214,30 @@ const JobsPage = observer(() => {
     columnHelper.accessor("user.name", {
       header: t("jobs.table-user"),
     }),
+    columnHelper.accessor("status", {
+      header: t("jobs.table-status"),
+      cell: (data) => {
+        const result = useMemo(() => {
+          switch (data.getValue()) {
+            case JobStatus.InQueue:
+              return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
+            case JobStatus.Started:
+              return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
+            case JobStatus.WaitingReturns:
+              return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
+            case JobStatus.Finished:
+              return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
+            default:
+              return (
+                <Tag>{`${t(
+                  "jobs.table-status-unknown"
+                )}: ${data.getValue()}`}</Tag>
+              );
+          }
+        }, []);
+        return result;
+      }
+    }),
     columnHelper.accessor("fms_jid_timestamp", {
       header: t("jobs.table-created"),
       cell: (data) => {
@@ -320,7 +344,7 @@ const JobsPage = observer(() => {
 
       <JobsTable
         columns={columns}
-        getRowId={(row) => row.jid}
+        getRowId={(row) => row.id}
         data={jobsStore.jobs}
         total={jobsStore.total}
         isLoading={jobsStore.isJobsLoading}

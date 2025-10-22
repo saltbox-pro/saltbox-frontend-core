@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { Row, SortingState, createColumnHelper } from "@tanstack/react-table";
+import { PaginationState, Row, SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
-  FastTableListed,
+  FastTablePaginated,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -21,7 +21,7 @@ import { Link } from "react-router";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
 
-const JobReturnsTable = FastTableListed<JobReturnModel>;
+const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
 export const DefaultJobReturnTable = ({
   jobReturns,
@@ -30,6 +30,10 @@ export const DefaultJobReturnTable = ({
   forceExpand,
   jobStartTimestamp,
   onExecutionTimesCalculated,
+  pagination,
+  sorting,
+  total,
+  onLazyLoad,
 }: {
   jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
@@ -37,9 +41,12 @@ export const DefaultJobReturnTable = ({
   forceExpand?: boolean;
   jobStartTimestamp?: string | null;
   onExecutionTimesCalculated?: (executionTimes: number[]) => void;
+  pagination: PaginationState;
+  sorting: SortingState;
+  total: number;
+  onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
 }) => {
   const { t } = useTranslation();
-  const [sorting, setSorting] = useState<SortingState>([]);
 
   /* const jobReturnsWithExecutionTime = jobReturns.map((row) => {
     const startDate = new Date(jobStartTimestamp || 0);
@@ -93,7 +100,7 @@ export const DefaultJobReturnTable = ({
     );
   };
 
-  const columns = [
+  const columns = useMemo(() => [
     {
       id: "expander",
       header: () => null,
@@ -101,7 +108,6 @@ export const DefaultJobReturnTable = ({
         if (!row.getCanExpand()) {
           return <></>;
         }
-
         return (
           <Button
             icon={
@@ -123,16 +129,10 @@ export const DefaultJobReturnTable = ({
       cell: (data) => {
         return (
           <>
-            <Link
-              to={`/master/${
-                data.row.original.salt_master
-              }/minion/${data.getValue()}`}
-            >
-              <Button type="link" size={"small"}>
-                {data.getValue()}
-              </Button>
-            </Link>
-            <CopyToClipboardButton text={data.getValue()} />
+            <Button type="link" size={"small"}>
+              {data.row.original.minion_id}
+            </Button>
+            <CopyToClipboardButton text={data.row.original.minion_id} />
           </>
         );
       },
@@ -140,7 +140,7 @@ export const DefaultJobReturnTable = ({
     columnHelper.accessor("retcode", {
       header: t("task.job-returns-table.table-success"),
       cell: (data) => (
-        <Tag color={data.getValue() ? "green" : "red"}>
+        <Tag color={data.getValue() === 0 ? "green" : "red"}>
           {data.getValue() === 0
             ? t("task.job-returns-table.table-yes")
             : t("task.job-returns-table.table-no")}
@@ -149,7 +149,7 @@ export const DefaultJobReturnTable = ({
     }),
     columnHelper.display({
       header: t("task.job-returns-table.table-return-code"),
-      cell: (data) => data.getValue(),
+      cell: (data) => data.row.original.retcode,
     }),
     columnHelper.accessor("stamp", {
       header: t("task.job-returns-table.table-timestamp"),
@@ -200,7 +200,7 @@ export const DefaultJobReturnTable = ({
         );
       },
     }), */
-  ];
+  ], [t]);
 
   const getShortOutput = (jobReturn: JobReturnModel) => {
     return jobReturn?.data ? jobReturn.data : jobReturn;
@@ -221,6 +221,7 @@ export const DefaultJobReturnTable = ({
 
     return false;
   };
+
   const extractStringValue = (data: any): string => {
     if (typeof data === "string") {
       return data;
@@ -269,16 +270,18 @@ export const DefaultJobReturnTable = ({
 
   return (
     <JobReturnsTable
-      getRowId={(row) => `${row.jid}-${row.id}`}
       columns={columns}
+      getRowId={(row) => row.id}
       data={jobReturns}
-      isLoading={isLoading && !jobReturns.length}
-      isEmpty={!isLoading && !jobReturns.length}
+      total={total}
+      isLoading={isLoading}
+      pagination={pagination}
+      sorting={sorting}
+      onLazyLoad={onLazyLoad}
+      enableVirtualScroll={true}
       forceExpandAll={forceExpand}
       getRowCanExpand={() => true}
       renderSubComponent={renderJobResult}
-      sorting={sorting}
-      onSortingChange={setSorting}
     />
   );
 };

@@ -1,15 +1,22 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
 import { JobModel, JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from 'saltbox-core/store';
+import { PaginationState, SortingState } from '@tanstack/react-table';
+import { toBackendSorting } from '@saltbox/saltbox-frontend-common';
 
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
+const PAGE_SIZE = 50;
 export class JobStore {
   @observable jid: string;
   @observable job: JobModel | null;
-  @observable jobReturnsCount: number;
+  @observable total: number;
+  @observable pagination: PaginationState;
+  @observable sorting: SortingState;
   @observable jobReturns: Array<JobReturnModel>;
   @observable isJobLoading: boolean;
   @observable isJobReturnsLoading: boolean;
   @observable error: string | null;
+  @observable mongoDBQuery: object | undefined;
 
   constructor() {
     this.jid = '';
@@ -17,7 +24,13 @@ export class JobStore {
     this.isJobReturnsLoading = false;
     this.job = null;
     this.jobReturns = [];
-    this.jobReturnsCount = 0;
+    this.total = 0;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
+    this.sorting = [...DEFAULT_SORTING];
+    this.mongoDBQuery = undefined;
     this.error = null;
     makeObservable(this);
   }
@@ -29,7 +42,13 @@ export class JobStore {
     this.isJobReturnsLoading = false;
     this.job = null;
     this.jobReturns = [];
-    this.jobReturnsCount = 0;
+    this.total = 0;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
+    this.sorting = [...DEFAULT_SORTING];
+    this.mongoDBQuery = undefined;
     this.error = null;
   };
 
@@ -60,7 +79,7 @@ export class JobStore {
           runInAction(() => {
             this.job = job;
           });
-          this.loadJobReturnsCount();
+          this.loadJobReturns();
         }
       })
       .catch((error) => {
@@ -77,16 +96,6 @@ export class JobStore {
   };
 
   @action
-  loadJobReturnsCount = () => {
-    apiCoreStore.jobsApi?.jobReturnsCount({ jid: this.jid as any }).then((val) => {
-      runInAction(() => {
-        this.jobReturnsCount = val;
-      });
-      this.loadJobReturns();
-    });
-  };
-
-  @action
   loadJobReturns = (cursor: number | undefined = undefined) => {
     if (cursor === undefined) {
       this.jobReturns = [];
@@ -94,41 +103,46 @@ export class JobStore {
     }
     apiCoreStore.jobsApi
       ?.jobReturnsList({
-        jid: this.jid as any,
-        cursor,
+        JobListBody: {
+          query: {
+            jid: this.jid,
+            ...this.mongoDBQuery,
+          },
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        }
       })
       .then((jobReturns) => {
-        // fixed for <StrictMode> in dev
         runInAction(() => {
-          if (DEVELOPMENT) {
-            const filtredJobReturns = jobReturns.result.filter(
-              (jobReturn) =>
-                this.jobReturns.findIndex(
-                  (existsJobResult) => existsJobResult.id === jobReturn.id,
-                ) === -1,
-            );
-            this.jobReturns = [...filtredJobReturns, ...this.jobReturns];
-          } else {
-            this.jobReturns = [...jobReturns.result, ...this.jobReturns];
-          }
+          this.jobReturns = jobReturns.data;
+          this.total = jobReturns.total;
+          this.isJobReturnsLoading = false;
         });
-        if (jobReturns.cursor > 0) {
-          this.loadJobReturns(jobReturns.cursor);
-        } else {
-          runInAction(() => {
-            this.isJobReturnsLoading = false;
-          });
-        }
       });
   };
 
   @action
+  handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
+    this.pagination.pageIndex = pagination.pageIndex;
+    this.pagination.pageSize = pagination.pageSize;
+    this.sorting = sorting;
+    this.loadJobReturns();
+  };
+
+  @action
   addJobReturn = (jobReturn: JobReturnModel) => {
-    const index = this.jobReturns.findIndex((jb) => jb.id === jobReturn.id);
+    const index = this.jobReturns.findIndex((jb) => jb.jid === jobReturn.jid);
     if (index > -1) {
       this.jobReturns[index] = jobReturn;
-    } else {
-      this.jobReturns = [jobReturn, ...this.jobReturns];
+      this.jobReturns = [...this.jobReturns];
+    } else if (this.pagination.pageIndex === 0 && jobReturn.jid === this.jid) {
+      let newJobReturns = [jobReturn, ...this.jobReturns];
+      if (newJobReturns.length > this.pagination.pageSize) {
+        newJobReturns = newJobReturns.slice(0, this.pagination.pageSize);
+      }
+      this.jobReturns = newJobReturns;
+      this.total++;
     }
   };
 
