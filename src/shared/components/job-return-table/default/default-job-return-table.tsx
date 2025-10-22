@@ -246,6 +246,10 @@ export const DefaultJobReturnTable = ({
     return <div className={styles.stringDataContainer}>{stringValue}</div>;
   };
 
+  const renderBooleanData = (data: any) => {
+    return <div className={styles.stringDataContainer}>{data ? 'True' : 'False'}</div>;
+  }
+
   const renderJobResult = ({ row }: { row: Row<JobReturnModel> }) => {
     const dataToShow = isFullOutput
       ? row.original
@@ -254,6 +258,11 @@ export const DefaultJobReturnTable = ({
     if (!isFullOutput && isSimpleStringData(dataToShow)) {
       return renderStringData(dataToShow);
     }
+
+    if (typeof dataToShow === 'boolean') {
+      return renderBooleanData(dataToShow);
+    }
+
     return (
       <div className={styles.reactJsonContainer}>
         <ReactJson

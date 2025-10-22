@@ -1602,10 +1602,10 @@
     lodash "^4.17.21"
     lodash-es "^4.17.21"
 
-"@saltbox/saltbox-core-api-client@^0.0.1-fd6921a9f5c7e138051252ae3430e27a35ef326a":
-  version "0.0.1-fd6921a9f5c7e138051252ae3430e27a35ef326a"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-fd6921a9f5c7e138051252ae3430e27a35ef326a.tgz#a8acd1091a1e9eec4137666c337d0b6abf9948a3"
-  integrity sha1-qKzRCRoenuxBN2ZsM30Lar+ZSKM=
+"@saltbox/saltbox-core-api-client@^0.0.1-1dfe2ebb5cec0a073251fb8a4ae3c53ac59d6e89":
+  version "0.0.1-1dfe2ebb5cec0a073251fb8a4ae3c53ac59d6e89"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-1dfe2ebb5cec0a073251fb8a4ae3c53ac59d6e89.tgz#7e05326f77031d9bc9413482983c1916b049fb8e"
+  integrity sha1-fgUyb3cDHZvJQTSCmDwZFrBJ+44=
 
 "@saltbox/saltbox-frontend-common@^0.0.33":
   version "0.0.33"
