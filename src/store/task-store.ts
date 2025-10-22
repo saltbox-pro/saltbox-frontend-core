@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import {
   JobReturnModel,
   TaskCreateRequestSchemaInput,
@@ -8,24 +8,25 @@ import {
 import { apiCoreStore } from "saltbox-core/store";
 
 export class TaskStore {
-  task: TaskModel | null;
-  jobReturns: Array<JobReturnModel>;
-  isTaskLoading: boolean;
-  error: string | null;
+  @observable task: TaskModel | null;
+  @observable jobReturns: Array<JobReturnModel>;
+  @observable isTaskLoading: boolean;
+  @observable error: string | null;
 
   constructor() {
-    makeAutoObservable(this);
-
     this.task = null;
     this.jobReturns = [];
     this.isTaskLoading = false;
     this.error = null;
+    makeObservable(this);
   }
 
+  @computed
   get jobsCount() {
     return Object.keys(this.task?.jobs ?? {}).length;
   }
 
+  @computed
   get failedMinionsCount() {
     let count = 0;
     Object.entries(this.task?.minions ?? {}).forEach(([_, task]) => {
@@ -36,10 +37,12 @@ export class TaskStore {
     return count;
   }
 
+  @action
   reload = (taskId: string) => {
     this.loadTask(taskId);
   };
 
+  @action
   loadTask = (taskId: string) => {
     this.isTaskLoading = true;
     this.error = null;
@@ -70,6 +73,7 @@ export class TaskStore {
       });
   };
 
+  @action
   loadJobReturns = (taskId: string) => {
     this.isTaskLoading = true;
     apiCoreStore.tasksApi
@@ -86,10 +90,12 @@ export class TaskStore {
       });
   };
 
+  @action
   addJobReturn = (jobReturn: JobReturnModel) => {
     this.jobReturns = [...this.jobReturns, jobReturn];
   };
 
+  @action
   handleRunTask = () => {
     if (!this.task) {
       return;
@@ -111,6 +117,7 @@ export class TaskStore {
       });
   };
 
+  @action
   handleStopTask = () => {
     if (!this.task) {
       return;
@@ -132,6 +139,7 @@ export class TaskStore {
       });
   };
 
+  @action
   handleRestartFailed = () => {
     if (!this.task) {
       return;
@@ -151,6 +159,7 @@ export class TaskStore {
       });
   };
 
+  @action
   createTask = (form: TaskCreateRequestSchemaInput): Promise<TaskModel> => {
     return new Promise<TaskModel>((resolve, reject) => {
       apiCoreStore.tasksApi
@@ -164,6 +173,7 @@ export class TaskStore {
     });
   };
 
+  @action
   updateTaskData = (update: Object & { retcode?: number, jobs?: TaskModel }[]) => {
     update.forEach((item) => {
       if (item?.retcode !== undefined) {
