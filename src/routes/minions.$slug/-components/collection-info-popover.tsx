@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
-import { Button, Popover } from "antd";
+import { Button } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
+import { Popover } from "@saltbox/saltbox-frontend-common";
 import { SaltBoxReadonlyQueryBuilder } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-readonly-query-builder";
-import { CollectionPopoverFilterStore } from "saltbox-core/store";
-import { CollectionStore } from "saltbox-core/store";
+import { CollectionPopoverFilterStore, CollectionStore } from "saltbox-core/store";
 
 interface CollectionInfoPopoverProps {
   slug: string;

@@ -11,7 +11,6 @@ import {
   Flex,
   Form,
   Input,
-  Popover,
   Select,
   message,
 } from "antd";
@@ -29,7 +28,7 @@ import {
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
-import { publish, Modal } from "@saltbox/saltbox-frontend-common";
+import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
 
 import styles from "./job-modal.module.css";
 
@@ -227,7 +226,7 @@ export function JobModal({
         ?.jobsSchemasGet({ name: fun })
         .then((schema) => {
           setSaltFunction(schema);
-          setJsonFormValue({ arg, kwargs: kwarg });
+          setJsonFormValue({ args: arg, kwargs: kwarg });
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
@@ -269,7 +268,7 @@ export function JobModal({
           fun: formValue.fun.at(-1),
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
-          arg: jsonFormValue?.arg,
+          arg: jsonFormValue?.args,
           kwarg: jsonFormValue?.kwargs,
         },
       })
@@ -415,7 +414,7 @@ export function JobModal({
       fun: form.getFieldValue("fun").at(-1),
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
-      arg: jsonFormValue?.arg,
+      arg: jsonFormValue?.args,
       kwarg: jsonFormValue?.kwargs,
     };
   };
@@ -632,6 +631,7 @@ export function JobModal({
               formData={jsonFormValue}
               onChange={(d) => setJsonFormValue(d?.formData)}
               onError={(errors) => setValidationErrors(errors)}
+              omitExtraData
             >
               <Fragment />
             </JsonForm>

@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Flex, Popover, message, Typography } from "antd";
+import { Button, Flex, message, Typography } from "antd";
 import { CloseOutlined, CopyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { Popover } from "@saltbox/saltbox-frontend-common";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+
 import styles from "./minions-popover.module.css";
 
 const { Text } = Typography;
@@ -23,7 +25,9 @@ export function MinionsPopover({
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const minionNames = minions.map(minion => typeof minion === 'string' ? minion : minion.id);
+  const minionNames = minions.map((minion) =>
+    typeof minion === "string" ? minion : minion.id
+  );
   const minionNamesCommaSeparated = minionNames.join(",");
 
   const handleCopyToClipboard = () => {
@@ -37,7 +41,7 @@ export function MinionsPopover({
       <Popover
         content={
           <div className={styles.content}>
-            {minionNames.map(minionName => (
+            {minionNames.map((minionName) => (
               <div key={minionName} className={styles.minionItem}>
                 <Text code>{minionName}</Text>
               </div>
@@ -81,9 +85,7 @@ export function MinionsPopover({
         open={isPopoverOpen}
         onOpenChange={setIsPopoverOpen}
       >
-        <span className={styles.trigger}>
-          {minions.length}
-        </span>
+        <span className={styles.trigger}>{minions.length}</span>
       </Popover>
     </>
   );

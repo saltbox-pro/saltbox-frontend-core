@@ -10,7 +10,6 @@ import {
   Button,
   Flex,
   Input,
-  Popover,
   Tag,
   message,
 } from "antd";
@@ -23,6 +22,7 @@ import {
   formatTimeByUserTZ,
   FastTablePaginated,
   PageHeader,
+  Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { MinionFilterStore } from "saltbox-core/store";
 import { CollectionStore } from "saltbox-core/store";

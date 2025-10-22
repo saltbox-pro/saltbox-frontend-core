@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Popover, Tag } from "antd";
+import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed, formatTimeByUserTZ, pastTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, formatTimeByUserTZ, pastTimeByUserTZ, Popover } from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;

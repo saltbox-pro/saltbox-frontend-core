@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { ComponentProps, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { generateID } from "react-querybuilder";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-import { Button, Card, Dropdown, Flex, MenuProps, Spin } from "antd";
+import { Button, Card, Flex, Spin } from "antd";
 import {
   DashOutlined,
   DeleteOutlined,
@@ -13,7 +13,7 @@ import {
   FullscreenOutlined,
 } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { Dropdown, FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
 import {
   DashboardCardStore,
@@ -22,6 +22,8 @@ import {
   ViewMode,
 } from "saltbox-core/store";
 import styles from "./minion-dashboard-card.module.css";
+
+type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 const columnHelper = createColumnHelper<GrainValue>();
 
@@ -394,7 +396,7 @@ export const MinionDashboardCard = observer(
       onChangeView(nextViewMode);
     };
 
-    const items: MenuProps["items"] = [
+    const items: MenuItems = [
       {
         icon: <EditOutlined />,
         label: t("dashboard.change-view"),
