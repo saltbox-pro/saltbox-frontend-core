@@ -437,24 +437,8 @@
     "change-grains": "Change Grains",
     "apply-value-to-filters": "Apply Value to Filters",
     "no-information": "No Information",
-    "table-value": "Value"
-  },
-  "fast-table-listed": {
-    "total": "Total",
-    "sort-ascending": "Sort ascending",
-    "sort-descending": "Sort descending",
-    "clear-sort": "Clear sort"
-  },
-  "fast-table-paginated": {
-    "total": "Total",
-    "items-per-page": "/ page",
-    "jump-to": "Jump to",
-    "jump-to-confirm": "confirm",
-    "page": "Page",
-    "prev-page": "Previous page",
-    "next-page": "Next page",
-    "prev-5": "Previous 5 pages",
-    "next-5": "Next 5 pages"
+    "table-value": "Value",
+    "empty-name": "Empty Name"
   },
   "collection-create-modal": {
     "dialog-title": "Create Collection",

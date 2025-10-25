@@ -437,24 +437,8 @@
     "change-grains": "Изменить данные grains",
     "apply-value-to-filters": "Применить значение к фильтрам",
     "no-information": "Нет информации",
-    "table-value": "Значение"
-  },
-  "fast-table-listed": {
-    "total": "Всего",
-    "sort-ascending": "Сортировка по возрастанию",
-    "sort-descending": "Сортировка по убыванию",
-    "clear-sort": "Сбросить сортировку"
-  },
-  "fast-table-paginated": {
-    "total": "Всего",
-    "items-per-page": "/ стр.",
-    "jump-to": "Перейти",
-    "jump-to-confirm": "подтвердить",
-    "page": "Страница",
-    "prev-page": "Предыдущая страница",
-    "next-page": "Следующая страница",
-    "prev-5": "Предыдущие 5 страниц",
-    "next-5": "Следующие 5 страниц"
+    "table-value": "Значение",
+    "empty-name": "Empty Name"
   },
   "collection-create-modal": {
     "dialog-title": "Создание коллекции",

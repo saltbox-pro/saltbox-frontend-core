@@ -325,7 +325,7 @@ export const MinionDashboardCard = observer(
         cell: (data) => {
           let fieldName = data.getValue() as string | null | undefined;
           if (fieldName === null || fieldName === undefined) {
-            fieldName = "Emtpy Name";
+            fieldName = t("dashboard.empty-name");
           }
           return (
             <Flex justify="space-between">
