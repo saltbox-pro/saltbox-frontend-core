@@ -129,9 +129,14 @@ export const DefaultJobReturnTable = ({
       cell: (data) => {
         return (
           <>
-            <Button type="link" size={"small"}>
-              {data.row.original.minion_id}
-            </Button>
+            <Link
+              to={`/master/${data.row.original.salt_master
+                }/minion/${data.row.original.minion_id}`}
+            >
+              <Button type="link" size={"small"}>
+                {data.row.original.minion_id}
+              </Button>
+            </Link>
             <CopyToClipboardButton text={data.row.original.minion_id} />
           </>
         );
