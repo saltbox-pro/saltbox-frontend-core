@@ -227,15 +227,12 @@ const JobPage = observer(() => {
         )}
       </div>
 
-      <div>
-        Total minions: {jobStore.totalMinions}</div>
-
       {jobStore.totalMinions > 0 && (
         <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
 
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
-              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span> successful
+              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span> {t("job.successful-minions")}
               {" / "}
               {jobStore.failedMinions > 0 ? (
                 <MinionsPopover
@@ -244,16 +241,16 @@ const JobPage = observer(() => {
                 />
               ) : (
                 <span className={styles.statsNumber}>{jobStore.failedMinions}</span>
-              )} failed
+              )} {t("job.failed-minions")}
               {" / "}
               {jobStore.pendingMinions > 0 ? (
                 <MinionsPopover
                   minions={jobStore.pendingMinionsList}
-                  title={t("jobs.pending-minions")}
+                  title={t("job.pending-minions")}
                 />
               ) : (
                 <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>
-              )} pending
+              )} {t("job.pending-minions")}
             </span>
           </div>
 

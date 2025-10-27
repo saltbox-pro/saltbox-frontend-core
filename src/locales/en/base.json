@@ -318,6 +318,11 @@
     "full-output": "Full Output",
     "job-duration": "Job Duration"
   },
+  "job": {
+    "successful-minions": "successful",
+    "failed-minions": "failed",
+    "pending-minions": "pending"
+  },
   "job-modal": {
     "title": "Create Job",
     "create-job": "Create Job",

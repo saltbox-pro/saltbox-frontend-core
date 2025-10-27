@@ -318,6 +318,11 @@
     "job-duration": "Время выполнения",
     "job-title-breadcrumb": "Команда"
   },
+  "job": {
+    "successful-minions": "успешно",
+    "failed-minions": "с ошибками",
+    "pending-minions": "ожидает"
+  },
   "job-modal": {
     "title": "Создание команды",
     "create-job": "Создать команду",
