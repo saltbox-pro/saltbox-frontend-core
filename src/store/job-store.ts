@@ -97,7 +97,7 @@ export class JobStore {
 
   @action
   loadJobReturns = (isSilentLoading: boolean = false) => {
-    if (isSilentLoading) {
+    if (!isSilentLoading) {
       this.isJobReturnsLoading = true;
     }
     apiCoreStore.jobsApi
@@ -116,7 +116,7 @@ export class JobStore {
         runInAction(() => {
           this.jobReturns = jobReturns.data;
           this.total = jobReturns.total;
-          if (isSilentLoading) {
+          if (!isSilentLoading) {
             this.isJobReturnsLoading = false;
           }
         });
@@ -161,7 +161,7 @@ export class JobStore {
   updateFromJobs = (jobs: JobModel[]) => {
     const sortedJobs = jobs.sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime());
     this.job = sortedJobs[0];
-    this.loadJobReturns(false);
+    this.loadJobReturns(true);
   }
 
   @computed
