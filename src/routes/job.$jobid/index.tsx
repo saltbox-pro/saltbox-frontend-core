@@ -54,7 +54,7 @@ const JobPage = observer(() => {
   const jobStartTimestamp = getJobStartTimestamp();
   const jobStartTime = jobStartTimestamp ? new Date(jobStartTimestamp).getTime() : null;
 
-  const progressPercent = jobStore.totalMinions > 0 ? (jobStore.jobReturns.length / jobStore.totalMinions) * 100 : 0;
+  const progressPercent = jobStore.totalMinions > 0 ? ((jobStore.failedMinions + jobStore.successfulMinions) / jobStore.totalMinions) * 100 : 0;
   const successPercent = jobStore.totalMinions > 0 ? (jobStore.successfulMinions / jobStore.totalMinions) * 100 : 0;
   const jobDurationSeconds = jobStore.isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
 
