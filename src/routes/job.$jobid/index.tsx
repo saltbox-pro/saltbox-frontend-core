@@ -12,13 +12,12 @@ import {
   Flex,
   Progress,
   Skeleton,
-  Spin,
   Statistic,
   Switch,
   Typography,
 } from "antd";
 import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
-import { CreateJobRequestTgtTypeEnum, JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -37,7 +36,7 @@ const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
-  const [webSocketService] = useState(new WebSocketService<JobReturnModel>());
+  const [webSocketService] = useState(new WebSocketService<JobModel>());
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
   const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
 
@@ -55,25 +54,9 @@ const JobPage = observer(() => {
   const jobStartTimestamp = getJobStartTimestamp();
   const jobStartTime = jobStartTimestamp ? new Date(jobStartTimestamp).getTime() : null;
 
-  const minionsArray = jobStore.job?.minions || [];
-  const totalMinions = jobStore.job?.minions?.length ?? 0;
-
-  const successfulMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode === 0);
-  const failedMinionsList = jobStore.jobReturns.filter(jobReturn => jobReturn.retcode !== 0);
-
-  const respondedMinions = jobStore.jobReturns.map(jobReturn => jobReturn.id);
-
-  const allMinions = minionsArray.length > 0 ? minionsArray : [];
-  const pendingMinionsList = allMinions.filter(minion => !respondedMinions.includes(minion));
-
-  const successfulMinions = Math.max(0, successfulMinionsList.length);
-  const failedMinions = Math.max(0, failedMinionsList.length);
-  const pendingMinions = Math.max(0, pendingMinionsList.length);
-
-  const progressPercent = totalMinions > 0 ? (jobStore.jobReturns.length / totalMinions) * 100 : 0;
-  const successPercent = totalMinions > 0 ? (successfulMinions / totalMinions) * 100 : 0;
-  const isJobComplete = totalMinions > 0 && pendingMinions === 0;
-  const jobDurationSeconds = isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
+  const progressPercent = jobStore.totalMinions > 0 ? (jobStore.jobReturns.length / jobStore.totalMinions) * 100 : 0;
+  const successPercent = jobStore.totalMinions > 0 ? (jobStore.successfulMinions / jobStore.totalMinions) * 100 : 0;
+  const jobDurationSeconds = jobStore.isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
 
   const formatJobDuration = (seconds: number): string => {
     const timeUnits: TimeUnits = {
@@ -102,12 +85,10 @@ const JobPage = observer(() => {
 
   useEffect(() => {
     webSocketService.connect(
-      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/return`,
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
-      (update: JobReturnModel[]) => {
-        if (update?.length > 0) {
-          jobStore.addJobReturns(update);
-        }
+      (jobs: JobModel[]) => {
+        jobStore.updateFromJobs(jobs);
       },
     );
     return () => webSocketService.disconnect();
@@ -234,7 +215,7 @@ const JobPage = observer(() => {
 
 
       <div className={styles.progressContainer}>
-        {totalMinions > 0 && (
+        {jobStore.totalMinions > 0 && (
           <Progress
             percent={progressPercent}
             success={{ percent: successPercent }}
@@ -246,27 +227,32 @@ const JobPage = observer(() => {
         )}
       </div>
 
-      {totalMinions > 0 && (
+      <div>
+        Total minions: {jobStore.totalMinions}</div>
+
+      {jobStore.totalMinions > 0 && (
         <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
 
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
-              <span className={styles.statsNumber}>{successfulMinions}</span> successful /
-              {failedMinions > 0 ? (
+              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span> successful
+              {" / "}
+              {jobStore.failedMinions > 0 ? (
                 <MinionsPopover
-                  minions={failedMinionsList}
+                  minions={jobStore.failedMinionsList}
                   title={t("jobs.failed-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>{failedMinions}</span>
-              )} failed /
-              {pendingMinions > 0 ? (
+                <span className={styles.statsNumber}>{jobStore.failedMinions}</span>
+              )} failed
+              {" / "}
+              {jobStore.pendingMinions > 0 ? (
                 <MinionsPopover
-                  minions={pendingMinionsList}
+                  minions={jobStore.pendingMinionsList}
                   title={t("jobs.pending-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>{pendingMinions}</span>
+                <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>
               )} pending
             </span>
           </div>
@@ -276,7 +262,7 @@ const JobPage = observer(() => {
             {jobStartTime && (
               <div className={styles.timerWrapper}>
                 <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
-                {isJobComplete && jobDurationSeconds ? (
+                {jobStore.isJobComplete && jobDurationSeconds ? (
                   <b>
                     {formatJobDuration(jobDurationSeconds)}
                   </b>

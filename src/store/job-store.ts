@@ -1,5 +1,5 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
-import { JobModel, JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { action, computed, makeObservable, observable, runInAction } from 'mobx';
+import { JobModel, JobReturnModel, JobStatus } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from 'saltbox-core/store';
 import { PaginationState, SortingState } from '@tanstack/react-table';
 import { toBackendSorting } from '@saltbox/saltbox-frontend-common';
@@ -96,9 +96,8 @@ export class JobStore {
   };
 
   @action
-  loadJobReturns = (cursor: number | undefined = undefined) => {
-    if (cursor === undefined) {
-      this.jobReturns = [];
+  loadJobReturns = (isSilentLoading: boolean = false) => {
+    if (isSilentLoading) {
       this.isJobReturnsLoading = true;
     }
     apiCoreStore.jobsApi
@@ -117,7 +116,9 @@ export class JobStore {
         runInAction(() => {
           this.jobReturns = jobReturns.data;
           this.total = jobReturns.total;
-          this.isJobReturnsLoading = false;
+          if (isSilentLoading) {
+            this.isJobReturnsLoading = false;
+          }
         });
       });
   };
@@ -150,6 +151,60 @@ export class JobStore {
   addJobReturns = (jobReturns: JobReturnModel[]) => {
     jobReturns.map((jobReturn) => this.addJobReturn(jobReturn));
   };
+
+  @action
+  updateJob = (job: JobModel) => {
+    this.job = job;
+  }
+
+  @action
+  updateFromJobs = (jobs: JobModel[]) => {
+    const sortedJobs = jobs.sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime());
+    this.job = sortedJobs[0];
+    this.loadJobReturns(false);
+  }
+
+  @computed
+  get successfulMinions() {
+    const minions = Object.keys(this.job?.returning);
+    return minions?.filter((minion) => this.job?.returning[minion] === true)?.length ?? 0;
+  }
+
+  @computed
+  get successfulMinionsList() {
+    return this.job?.minions?.filter((minion) => this.job?.returning[minion] === true) ?? [];
+  }
+
+  @computed
+  get failedMinions() {
+    const minions = Object.keys(this.job?.returning);
+    return minions?.filter((minion) => this.job?.returning[minion] === false)?.length ?? 0;
+  }
+
+  @computed
+  get failedMinionsList() {
+    return this.job?.minions?.filter((minion) => this.job?.returning[minion] === false) ?? [];
+  }
+
+  @computed
+  get pendingMinions() {
+    return this.job?.minions?.length ?? 0 - this.successfulMinions - this.failedMinions;
+  }
+
+  @computed
+  get pendingMinionsList() {
+    return this.job?.minions?.filter((minion) => !this.job?.returning[minion]) ?? [];
+  }
+
+  @computed
+  get totalMinions() {
+    return this.job?.minions?.length ?? 0;
+  }
+
+  @computed
+  get isJobComplete() {
+    return this.job?.status === JobStatus.Finished;
+  }
 }
 
 export const jobStore = new JobStore();
