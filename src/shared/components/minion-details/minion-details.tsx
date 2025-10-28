@@ -18,9 +18,8 @@ import {
   MinionDetailSchema,
   PillarModel,
 } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { CopyToClipboardButton, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import styles from "./minion-details.module.css";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode

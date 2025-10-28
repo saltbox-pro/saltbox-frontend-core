@@ -15,9 +15,9 @@ import {
 } from "antd";
 import { HomeOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import {
+  CopyToClipboardButton,
   pastTimeByUserTZ,
   formatTimeByUserTZ,
   FastTablePaginated,
@@ -170,7 +170,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.collection?.query) {
-      filterStore.initializeFromQuery(collectionStore.collection.query);
+      filterStore.initializeByQuery(collectionStore.collection.query);
       minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
       minionsStore.handleSearch();
     }
@@ -275,7 +275,7 @@ const CollectionEditPage = observer(() => {
             >
               {t("minions.save")}
             </Button>
-            {filterStore.isSearchEnable && (
+            {filterStore.isSearchEnabled && (
               <Popover
                 style={{ width: 420 }}
                 content={t("collection.apply-search-before-save")}

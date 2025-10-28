@@ -4,8 +4,10 @@ import ReactJson from "react-json-view";
 import { PaginationState, Row, SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import { Link } from "react-router";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
+  CopyToClipboardButton,
   FastTablePaginated,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
@@ -16,8 +18,6 @@ import {
   TimeUnits,
 } from "../../../utils/execution-time-utils";
 import styles from "./default-job-return-table.module.css";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { Link } from "react-router";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
 

@@ -4,8 +4,7 @@ import { Link } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Button } from "antd";
 import { InfoCircleOutlined } from "@ant-design/icons";
-import { Popover } from "@saltbox/saltbox-frontend-common";
-import { SaltBoxReadonlyQueryBuilder } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-readonly-query-builder";
+import { Popover, SaltBoxReadonlyQueryBuilder } from "@saltbox/saltbox-frontend-common";
 import { CollectionPopoverFilterStore, CollectionStore } from "saltbox-core/store";
 
 interface CollectionInfoPopoverProps {
@@ -20,7 +19,7 @@ export const CollectionInfoPopover = observer(
 
     useEffect(() => {
       if (collectionStore.collection?.query) {
-        filterStore.initializeFromQuery(collectionStore.collection.query);
+        filterStore.initializeByQuery(collectionStore.collection.query);
       }
     }, [collectionStore.collection]);
 

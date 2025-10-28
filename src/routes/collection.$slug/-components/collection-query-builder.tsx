@@ -1,6 +1,5 @@
-import { SaltBoxQueryBuilderContainer } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-query-builder-container";
-import { SaltBoxMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-editor";
-import { SaltBoxMinionValueSelector } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-selector";
+import { SaltBoxMinionValueSelector, SaltBoxQueryBuilderContainer } from "@saltbox/saltbox-frontend-common";
+import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-editor";
 import { MinionFilterStore } from "saltbox-core/store";
 
 type CollectionQueryBuilderProps = {
@@ -14,7 +13,7 @@ export const CollectionQueryBuilder = (props: CollectionQueryBuilderProps) => {
             filterStore={props.filterStore}
             hideButtons={false}
             controlElements={{
-                valueEditor: SaltBoxMinionValueEditor(props.slug),
+                valueEditor: CoreMinionValueEditor(props.slug),
                 valueSelector: SaltBoxMinionValueSelector,
             }}
         />

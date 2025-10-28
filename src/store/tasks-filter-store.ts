@@ -1,7 +1,6 @@
-import { OptionList, RuleGroupType, formatQuery } from "react-querybuilder";
-import { computed, makeObservable } from "mobx";
-import { customRuleProcessorMongoDB } from "saltbox-core/shared/utils/queryBulderUtils";
-import { FilterStore } from "./filter-store";
+import { OptionList, RuleGroupType } from "react-querybuilder";
+import { makeObservable } from "mobx";
+import { FilterStore } from "@saltbox/saltbox-frontend-common";
 
 const defaultFilters: RuleGroupType = {
   rules: [
@@ -22,14 +21,5 @@ export class TasksFilterStore extends FilterStore {
     this.searchFilters = defaultFilters;
     this.currentFilters = defaultFilters;
     makeObservable(this);
-  }
-
-  @computed get searchMongoDBQuery() {
-    return JSON.parse(
-      formatQuery(this.searchFilters, {
-        format: "mongodb",
-        valueProcessor: customRuleProcessorMongoDB,
-      })
-    );
   }
 }

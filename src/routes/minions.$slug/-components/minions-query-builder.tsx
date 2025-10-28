@@ -1,7 +1,6 @@
+import { SaltBoxMinionValueSelector, SaltBoxQueryBuilderContainer } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
-import { SaltBoxMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-editor";
-import { SaltBoxMinionValueSelector } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-minion-value-selector";
-import { SaltBoxQueryBuilderContainer } from "saltbox-core/shared/components/query-builder-salt-box/salt-box-query-builder-container";
+import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-editor";
 import { MinionFilterStore } from "saltbox-core/store";
 
 export const MinionsQueryBuilder = observer(
@@ -11,7 +10,7 @@ export const MinionsQueryBuilder = observer(
         filterStore={props.filterStore}
         additionalButtons={null}
         controlElements={{
-          valueEditor: SaltBoxMinionValueEditor(props.slug),
+          valueEditor: CoreMinionValueEditor(props.slug),
           valueSelector: SaltBoxMinionValueSelector,
         }}
       />

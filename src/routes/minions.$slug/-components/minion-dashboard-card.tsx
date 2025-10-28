@@ -353,7 +353,7 @@ export const MinionDashboardCard = observer(
                         },
                       ],
                     };
-                    filterStore.handelSearch();
+                    filterStore.handleSearch();
                   }}
                 ></Button>
               </Flex>

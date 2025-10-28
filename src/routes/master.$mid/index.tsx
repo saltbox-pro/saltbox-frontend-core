@@ -15,7 +15,12 @@ import {
   PillarModel,
   PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed, Modal, PageHeader } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  FastTableListed,
+  Modal,
+  PageHeader,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   Input as AntdInput,
@@ -34,7 +39,6 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { apiCoreStore, PillarsStore } from "saltbox-core/store";
 import { PillarCreateForm } from "./-components/pillar-create-form";
 
@@ -160,7 +164,7 @@ const MasterPage = observer(() => {
                 pillar.name,
                 pillar.minion_id || undefined
               );
-            } catch (error) { }
+            } catch (error) {}
           }
           await pillarsStore.loadPillars(masterId);
         }
@@ -515,8 +519,9 @@ const MasterPage = observer(() => {
         return (
           <>
             <Link
-              to={`/master/${data.row.original.master
-                }/minion/${data.getValue()}`}
+              to={`/master/${
+                data.row.original.master
+              }/minion/${data.getValue()}`}
             >
               <Button type="link" size={"small"}>
                 {data.getValue()}

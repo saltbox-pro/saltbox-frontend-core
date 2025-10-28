@@ -3,8 +3,13 @@ import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed, formatTimeByUserTZ, pastTimeByUserTZ, Popover } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  FastTableListed,
+  formatTimeByUserTZ,
+  pastTimeByUserTZ,
+  Popover,
+} from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;

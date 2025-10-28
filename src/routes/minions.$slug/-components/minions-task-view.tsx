@@ -5,8 +5,13 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Button, Flex, Progress } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTablePaginated, pastTimeByUserTZ, Popover, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  FastTablePaginated,
+  pastTimeByUserTZ,
+  Popover,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
 import { TasksQueryBuilder } from "./tasks-query-builder";
 import styles from "./minions-task-view.module.css";
@@ -71,168 +76,201 @@ const defaultListOperators = [
 export const MinionsTaskView = observer((props: { slug?: string }) => {
   const { t } = useTranslation();
 
-  const filterSchema = useMemo(() => [
-    {
-      name: "source.type",
-      label: t("minions.table-source-type"),
-      operators: defaultListOperators,
-      type: "multiselect",
-      selectOptions: [
-        { label: t("minions.table-soruce-type-rest"), value: "rest" },
-        { label: t('minions.table-soruce-type-scheduler'), value: "scheduler" }
-      ],
-    },
-    {
-      name: "task_template.title",
-      label: t("minions.table-task-template-title"),
-      operators: defaultStringOperators,
-    },
-    {
-      name: "task_template.name",
-      label: t("minions.table-task-template-name"),
-      operators: defaultStringOperators,
-    },
-    {
-      name: "user.name",
-      label: t("minions.table-user"),
-      operators: defaultStringOperators,
-    },
-    {
-      name: "status",
-      label: t("minions.table-status"),
-      operators: defaultStringOperators,
-    },
-    {
-      name: "created",
-      label: t("minions.table-created"),
-      operators: defaultDateTimeOperators,
-      inputType: "datetime-local",
-      valueEditorType: "datetime-local",
-    },
-  ], [t]);
+  const filterSchema = useMemo(
+    () => [
+      {
+        name: "source.type",
+        label: t("minions.table-source-type"),
+        operators: defaultListOperators,
+        type: "multiselect",
+        selectOptions: [
+          { label: t("minions.table-soruce-type-rest"), value: "rest" },
+          {
+            label: t("minions.table-soruce-type-scheduler"),
+            value: "scheduler",
+          },
+        ],
+      },
+      {
+        name: "task_template.title",
+        label: t("minions.table-task-template-title"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "task_template.name",
+        label: t("minions.table-task-template-name"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "user.name",
+        label: t("minions.table-user"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "status",
+        label: t("minions.table-status"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "created",
+        label: t("minions.table-created"),
+        operators: defaultDateTimeOperators,
+        inputType: "datetime-local",
+        valueEditorType: "datetime-local",
+      },
+    ],
+    [t]
+  );
 
-  const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
+  const [webSocketService] = useState(
+    new WebSocketService<TaskListResponseSchema>()
+  );
 
-  const columns = useMemo(() => [
-    columnHelper.accessor("id", {
-      header: "ID",
-      enableSorting: false,
-      cell: (data) => {
-        const result = useMemo(() => (
-          <>
-            <Link to={`/task/${data.getValue()}`}>
-              <Button type="link" size={"small"}>
-                {data.getValue()}
-              </Button>
-            </Link>
-            <CopyToClipboardButton text={data.getValue()} />
-          </>
-        ), []);
-        return result;
-      },
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-    columnHelper.accessor("task_template.title", {
-      header: t("minions.table-task-template-title"),
-      enableSorting: false,
-    }),
-    columnHelper.accessor("task_template.name", {
-      header: t("minions.table-task-template-name"),
-      enableSorting: false,
-    }),
-    columnHelper.accessor("target_collection.title", {
-      header: t("minions.table-collection"),
-      enableSorting: false,
-      cell: (data) => {
-        return <> {data.getValue()} </>;
-      },
-    }),
-    columnHelper.accessor("source.type", {
-      header: t("minions.table-source-type"),
-      enableSorting: false,
-      cell: (data) => {
-        switch (data.getValue()) {
-          case "rest":
-            return t("minions.table-soruce-type-rest");
-          case "scheduler":
-            return t("minions.table-soruce-type-scheduler");
-          default:
-            return data.getValue();
-        }
-      },
-    }),
-    columnHelper.accessor("user.name", {
-      header: t("minions.table-user"),
-      enableSorting: false,
-    }),
-    columnHelper.display({
-      header: t("minions.table-status"),
-      enableSorting: false,
-      cell: (data) => {
-        const totalMinions = data.row.original?.total_minions ?? 0;
-        const statusFailed = data.row.original?.minions_count_by_status?.failed ?? 0;
-        const statusSuccess = data.row.original?.minions_count_by_status?.success ?? 0;
-        const statusInWork = data.row.original?.minions_count_by_status?.in_work ?? 0;
-        const statusPending = data.row.original?.minions_count_by_status?.pending ?? 0;
-        const progressStrokeColors = Array.from(
-          { length: 10 },
-          (_, i) => {
-            if (i < Math.ceil(statusSuccess / totalMinions * 10)) {
-              return '#52c41a';
-            } else if (i < Math.ceil((statusSuccess + statusFailed) / totalMinions * 10)) {
-              return '#ff4d4f';
-            }
-            return '#bfbfbf';
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("id", {
+        header: "ID",
+        enableSorting: false,
+        cell: (data) => {
+          const result = useMemo(
+            () => (
+              <>
+                <Link to={`/task/${data.getValue()}`}>
+                  <Button type="link" size={"small"}>
+                    {data.getValue()}
+                  </Button>
+                </Link>
+                <CopyToClipboardButton text={data.getValue()} />
+              </>
+            ),
+            []
+          );
+          return result;
+        },
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
+        },
+      }),
+      columnHelper.accessor("task_template.title", {
+        header: t("minions.table-task-template-title"),
+        enableSorting: false,
+      }),
+      columnHelper.accessor("task_template.name", {
+        header: t("minions.table-task-template-name"),
+        enableSorting: false,
+      }),
+      columnHelper.accessor("target_collection.title", {
+        header: t("minions.table-collection"),
+        enableSorting: false,
+        cell: (data) => {
+          return <> {data.getValue()} </>;
+        },
+      }),
+      columnHelper.accessor("source.type", {
+        header: t("minions.table-source-type"),
+        enableSorting: false,
+        cell: (data) => {
+          switch (data.getValue()) {
+            case "rest":
+              return t("minions.table-soruce-type-rest");
+            case "scheduler":
+              return t("minions.table-soruce-type-scheduler");
+            default:
+              return data.getValue();
           }
-        );
-        const popoverContent = <Flex vertical>
-          <Flex><strong>{t('minions.tasks-table-status-header')}</strong></Flex>
-          <Flex justify="space-between">
-            <span>{t('minions.tasks-table-status-in-work')}:</span>
-            <span style={{ color: "#1677ff" }}>{statusInWork}</span>
-          </Flex>
-          <Flex justify="space-between">
-            <span>{t('minions.tasks-table-status-pending')}:</span>
-            <span style={{ color: "#919191" }}>{statusPending}</span>
-          </Flex>
-          <Flex justify="space-between">
-            <span>{t('minions.tasks-table-status-failed')}:</span>
-            <span style={{ color: "#ff4d4f" }}>{statusFailed}</span>
-          </Flex>
-          <Flex justify="space-between">
-            <span>{t('minions.tasks-table-status-success')}:</span>
-            <span style={{ color: "#52c41a" }}>{statusSuccess}</span>
-          </Flex>
-          <Flex justify="space-between">
-            <span>{t('minions.tasks-table-total-minions')}:</span>
-            <span style={{ fontWeight: "bold" }}>{totalMinions}</span>
-          </Flex>
-        </Flex>;
+        },
+      }),
+      columnHelper.accessor("user.name", {
+        header: t("minions.table-user"),
+        enableSorting: false,
+      }),
+      columnHelper.display({
+        header: t("minions.table-status"),
+        enableSorting: false,
+        cell: (data) => {
+          const totalMinions = data.row.original?.total_minions ?? 0;
+          const statusFailed =
+            data.row.original?.minions_count_by_status?.failed ?? 0;
+          const statusSuccess =
+            data.row.original?.minions_count_by_status?.success ?? 0;
+          const statusInWork =
+            data.row.original?.minions_count_by_status?.in_work ?? 0;
+          const statusPending =
+            data.row.original?.minions_count_by_status?.pending ?? 0;
+          const progressStrokeColors = Array.from({ length: 10 }, (_, i) => {
+            if (i < Math.ceil((statusSuccess / totalMinions) * 10)) {
+              return "#52c41a";
+            } else if (
+              i <
+              Math.ceil(((statusSuccess + statusFailed) / totalMinions) * 10)
+            ) {
+              return "#ff4d4f";
+            }
+            return "#bfbfbf";
+          });
+          const popoverContent = (
+            <Flex vertical>
+              <Flex>
+                <strong>{t("minions.tasks-table-status-header")}</strong>
+              </Flex>
+              <Flex justify="space-between">
+                <span>{t("minions.tasks-table-status-in-work")}:</span>
+                <span style={{ color: "#1677ff" }}>{statusInWork}</span>
+              </Flex>
+              <Flex justify="space-between">
+                <span>{t("minions.tasks-table-status-pending")}:</span>
+                <span style={{ color: "#919191" }}>{statusPending}</span>
+              </Flex>
+              <Flex justify="space-between">
+                <span>{t("minions.tasks-table-status-failed")}:</span>
+                <span style={{ color: "#ff4d4f" }}>{statusFailed}</span>
+              </Flex>
+              <Flex justify="space-between">
+                <span>{t("minions.tasks-table-status-success")}:</span>
+                <span style={{ color: "#52c41a" }}>{statusSuccess}</span>
+              </Flex>
+              <Flex justify="space-between">
+                <span>{t("minions.tasks-table-total-minions")}:</span>
+                <span style={{ fontWeight: "bold" }}>{totalMinions}</span>
+              </Flex>
+            </Flex>
+          );
 
-        const result = useMemo(() => (
-          <Popover content={popoverContent}>
-            <Progress
-              steps={10}
-              percent={(statusSuccess + statusFailed) / totalMinions * 100}
-              success={{ percent: statusSuccess / totalMinions * 100 }}
-              strokeColor={progressStrokeColors}
-              showInfo={false}
-            />
-          </Popover>
-        ), [totalMinions, statusSuccess, statusFailed, statusInWork, statusPending]);
-        return result;
-      },
-    }),
-    columnHelper.accessor("created", {
-      header: t("minions.table-created"),
-      cell: (data) => {
-        const created: string = pastTimeByUserTZ(data.getValue());
-        return <div>{created}</div>;
-      },
-    }),
-  ], [t]);
+          const result = useMemo(
+            () => (
+              <Popover content={popoverContent}>
+                <Progress
+                  steps={10}
+                  percent={
+                    ((statusSuccess + statusFailed) / totalMinions) * 100
+                  }
+                  success={{ percent: (statusSuccess / totalMinions) * 100 }}
+                  strokeColor={progressStrokeColors}
+                  showInfo={false}
+                />
+              </Popover>
+            ),
+            [
+              totalMinions,
+              statusSuccess,
+              statusFailed,
+              statusInWork,
+              statusPending,
+            ]
+          );
+          return result;
+        },
+      }),
+      columnHelper.accessor("created", {
+        header: t("minions.table-created"),
+        cell: (data) => {
+          const created: string = pastTimeByUserTZ(data.getValue());
+          return <div>{created}</div>;
+        },
+      }),
+    ],
+    [t]
+  );
 
   useEffect(() => {
     webSocketService.connect(
@@ -242,7 +280,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         if (update?.length > 0) {
           tasksStore.updateTasks(update);
         }
-      },
+      }
     );
     return () => {
       webSocketService.disconnect();
@@ -277,11 +315,13 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
 
   return (
     <Flex className={styles.tabWrapper} vertical>
-      {tasksStore.filterStore && <TasksQueryBuilder
-        filterStore={tasksStore.filterStore}
-        onSearchButtonClick={handleSearchButtonClick}
-        onResetButtonClick={handleResetButtonClick}
-      />}
+      {tasksStore.filterStore && (
+        <TasksQueryBuilder
+          filterStore={tasksStore.filterStore}
+          onSearchButtonClick={handleSearchButtonClick}
+          onResetButtonClick={handleResetButtonClick}
+        />
+      )}
       <TasksTable
         columns={columns}
         getRowId={(row) => row.id}
@@ -290,7 +330,9 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         isLoading={tasksStore.isTasksLoading}
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
-        onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
+        onLazyLoad={(pagination, sorting) =>
+          tasksStore.handleLazyLoad(pagination, sorting)
+        }
         enableVirtualScroll={true}
       />
     </Flex>

@@ -3,8 +3,11 @@ import { Link } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag, Typography } from "antd";
 import { TaskJob, TaskModel } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
-import { FastTableListed, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  FastTableListed,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 
 const { Text } = Typography;
 
@@ -12,7 +15,13 @@ const TaskJobsTable = FastTableListed<TaskJob>;
 
 const columnHelper = createColumnHelper<TaskJob>();
 
-export const TaskJobs = ({ task, isLoading }: { task: TaskModel | null, isLoading: boolean }) => {
+export const TaskJobs = ({
+  task,
+  isLoading,
+}: {
+  task: TaskModel | null;
+  isLoading: boolean;
+}) => {
   const { t } = useTranslation();
 
   const columns = [

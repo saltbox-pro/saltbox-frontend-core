@@ -10,7 +10,6 @@ export { defaultCollectionStore } from "./default-collection-store";
 export { mastersStore } from "./masters-store";
 export { tasksStore } from "./tasks-store";
 
-export { FilterStore } from "./filter-store";
 export { TasksStore } from "./tasks-store";
 export { TaskStore } from "./task-store";
 export { MinionsStore } from "./minions-store";

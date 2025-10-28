@@ -5,8 +5,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Tag, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
-import { JobsListResponse, JobStatus, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
+import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import {
@@ -14,14 +13,15 @@ import {
   pastTimeByUserTZ,
   PageHeader,
   FastTablePaginated,
-  Popover
+  Popover,
+  CopyToClipboardButton,
 } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
-import styles from "./index.module.css";
 import Parcel from "single-spa-react/parcel";
 import { WebSocketService } from "@saltbox/saltbox-frontend-common";
+import styles from "./index.module.css";
 
 const { Text } = Typography;
 

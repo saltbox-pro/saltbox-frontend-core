@@ -1,25 +1,13 @@
 
-import { formatQuery } from 'react-querybuilder';
-import { parseMongoDB } from 'react-querybuilder/parseMongoDB';
-import { action, computed, makeObservable, runInAction } from 'mobx';
-import { customRuleProcessorMongoDB } from 'saltbox-core/shared/utils/queryBulderUtils';
-import { generateIdsForQuery } from 'saltbox-core/shared/utils/generateIdsForQuery';
+import { action,  makeObservable, runInAction } from 'mobx';
 import { apiCoreStore } from 'saltbox-core/store';
-import { FilterStore } from 'saltbox-core/store';
+import { FilterStore } from '@saltbox/saltbox-frontend-common';
 export class MinionFilterStore extends FilterStore {
   constructor() {
     super();
     makeObservable(this);
   }
-  @computed
-  get searchMongoDBQuery(): object {
-    return JSON.parse(
-      formatQuery(this.searchFilters, {
-        format: 'mongodb',
-        valueProcessor: customRuleProcessorMongoDB,
-      }),
-    );
-  }
+
   @action
   loadFiltersScheme = () => {
     this.isLoading = true;
@@ -33,10 +21,5 @@ export class MinionFilterStore extends FilterStore {
       .finally(() => {
         this.isLoading = false;
       });
-  };
-  @action
-  initializeFromQuery = (query: object) => {
-    this.currentFilters = generateIdsForQuery(parseMongoDB(query));
-    this.handelSearch();
   };
 }

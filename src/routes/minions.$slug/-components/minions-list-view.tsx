@@ -27,8 +27,8 @@ import {
   TaskCreateRequestSchemaInput,
   TaskTargetMinion,
 } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import {
+  CopyToClipboardButton,
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
@@ -98,7 +98,7 @@ const MinionCompactView = observer(
               },
             ],
           };
-          props.filterStore.handelSearch();
+          props.filterStore.handleSearch();
           props.onFilterButton();
         }}
       />

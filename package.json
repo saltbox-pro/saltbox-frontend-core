@@ -23,6 +23,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "@types/jest": "^30.0.0",
+    "@types/json-logic-js": "^2.0.8",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@types/systemjs": "^6.15.3",
@@ -52,15 +53,12 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@material-symbols/font-300": "^0.31.8",
-    "@react-querybuilder/antd": "^8.7.1",
-    "@react-querybuilder/dnd": "^8.7.1",
     "@rjsf/antd": "^5.24.12",
     "@rjsf/core": "^5.24.12",
     "@rjsf/utils": "^5.24.12",
     "@rjsf/validator-ajv8": "^5.24.12",
     "@saltbox/saltbox-core-api-client": "^0.0.1-3d9eb64efe182a08383df76ef057d75256dd2ac4",
-    "@saltbox/saltbox-frontend-common": "^0.0.34",
+    "@saltbox/saltbox-frontend-common": "^0.0.35",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
     "antd": "5.26.0",
@@ -70,16 +68,16 @@
     "mobx": "^6.13.7",
     "mobx-react": "^9.1.0",
     "react": "19.2.0",
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "19.2.0",
     "react-i18next": "^15.5.3",
     "react-json-view": "^1.21.3",
-    "react-querybuilder": "^8.7.1",
     "react-router": "^7.6.3",
     "recharts": "^2.15.3",
     "single-spa": "^5.9.3",
     "single-spa-react": "^6.0.2"
+  },
+  "peerDependencies": {
+    "react-querybuilder": "^8.11.1"
   },
   "types": "dist/saltbox-core.d.ts"
 }

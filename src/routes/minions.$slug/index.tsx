@@ -28,13 +28,13 @@ import {
   Modal,
   Dropdown,
   Popover,
+  generateIdsForQuery,
 } from "@saltbox/saltbox-frontend-common";
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
-import { generateIdsForQuery } from "saltbox-core/shared/utils/generateIdsForQuery";
 
 import styles from "./index.module.css";
 

@@ -17,12 +17,10 @@ import {
 } from "antd";
 import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
 import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "saltbox-core/shared/components/copy-to-clipboard-button/copy-to-clipboard-button";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { WebSocketService } from "@saltbox/saltbox-frontend-common";
+import { CopyToClipboardButton, PageHeader, WebSocketService } from "@saltbox/saltbox-frontend-common";
 import { formatExecutionTime, TimeUnits } from "saltbox-core/shared/utils/execution-time-utils";
-import { PageHeader } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
 import { MinionsPopover } from "./-components/minions-popover";
