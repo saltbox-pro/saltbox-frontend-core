@@ -190,6 +190,10 @@ export function JobModal({
   };
 
   useEffect(() => {
+    if (!isModalOpen) {
+      return;
+    }
+
     form.resetFields();
     form.setFieldsValue({
       tgt: target,
@@ -215,6 +219,10 @@ export function JobModal({
   }, [isModalOpen, target, targetType, defaultMaster]);
 
   useEffect(() => {
+    if (!isModalOpen) {
+      return;
+    }
+
     if (fun && saltFunctionList.length > 0) {
       setSaltFunction(undefined);
       setJsonFormValue({});
@@ -233,7 +241,7 @@ export function JobModal({
         })
         .finally(() => setIsSchemaLoading(false));
     }
-  }, [fun, arg, kwarg, saltFunctionList]);
+  }, [fun, arg, kwarg, saltFunctionList, isModalOpen]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
