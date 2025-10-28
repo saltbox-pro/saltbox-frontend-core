@@ -34,7 +34,7 @@ export const CoreMinionValueEditor = (
       .catch(() => {
         setOptions([]);
       });
-  }, []);
+  }, [slug, props.field, props.value]);
 
   return <SaltBoxMinionValueEditor onValueChange={handleValueChange} {...props}  />
 };
