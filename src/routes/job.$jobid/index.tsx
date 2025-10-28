@@ -83,6 +83,12 @@ const JobPage = observer(() => {
   }, [jobStore.error]);
 
   useEffect(() => {
+    if (!jid) {
+      return;
+    }
+    if (webSocketService.isConnected) {
+      webSocketService.disconnect();
+    }
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
@@ -91,7 +97,7 @@ const JobPage = observer(() => {
       },
     );
     return () => webSocketService.disconnect();
-  }, []);
+  }, [jid]);
 
   useEffect(() => {
     if (webSocketService && appStore.authStore?.user?.access_token) {
