@@ -160,14 +160,13 @@ export class JobStore {
   @action
   updateFromJobs = (jobs: JobModel[]) => {
     const sortedJobs = jobs.sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime());
-    this.job = sortedJobs[0];
+    this.job = sortedJobs.at(0);
     this.loadJobReturns(true);
   }
 
   @computed
   get successfulMinions() {
-    const minions = Object.keys(this.job?.returning);
-    return minions?.filter((minion) => this.job?.returning[minion] === true)?.length ?? 0;
+    return Object.keys(this.job?.returning)?.filter((minion) => this.job?.returning[minion] === true)?.length ?? 0;
   }
 
   @computed

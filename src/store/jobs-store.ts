@@ -103,14 +103,16 @@ export class JobsStore {
       });
   };
 
-  @action handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
+  @action
+  handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
     this.pagination.pageIndex = pagination.pageIndex;
     this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;
     this.loadJobs();
   };
 
-  @action updateJob = (job: JobsListResponse) => {
+  @action
+  updateJob = (job: JobsListResponse) => {
     const index = this.jobs.findIndex((item) => item.jid === job.jid);
     if (index > -1) {
       this.jobs[index] = job;
@@ -125,8 +127,10 @@ export class JobsStore {
     }
   };
 
-  @action updateJobs = (jobs: JobsListResponse[]) => {
-    jobs.map((job) => this.updateJob(job));
+  @action
+  updateJobs = (jobs: JobsListResponse[]) => {
+    const sortedJobs = jobs.sort((a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime());
+    sortedJobs.map((job) => this.updateJob(job));
   };
 
   @action
@@ -136,12 +140,14 @@ export class JobsStore {
     this.loadJobs();
   };
 
-  @action handleSearch = () => {
+  @action
+  handleSearch = () => {
     this.pagination.pageIndex = 0;
     this.loadJobs();
   };
 
-  @action handleReset = () => {
+  @action
+  handleReset = () => {
     this.jobFilterStore.handleResetFilters();
     this.pagination.pageIndex = 0;
     this.loadJobs();

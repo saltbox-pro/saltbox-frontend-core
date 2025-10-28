@@ -216,25 +216,22 @@ const JobsPage = observer(() => {
     columnHelper.accessor("status", {
       header: t("jobs.table-status"),
       cell: (data) => {
-        const result = useMemo(() => {
-          switch (data.getValue()) {
-            case JobStatus.InQueue:
-              return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
-            case JobStatus.Started:
-              return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
-            case JobStatus.WaitingReturns:
-              return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
-            case JobStatus.Finished:
-              return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            default:
-              return (
-                <Tag>{`${t(
-                  "jobs.table-status-unknown"
-                )}: ${data.getValue()}`}</Tag>
-              );
-          }
-        }, []);
-        return result;
+        switch (data.getValue()) {
+          case JobStatus.InQueue:
+            return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
+          case JobStatus.Started:
+            return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
+          case JobStatus.WaitingReturns:
+            return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
+          case JobStatus.Finished:
+            return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
+          default:
+            return (
+              <Tag>{`${t(
+                "jobs.table-status-unknown"
+              )}: ${data.getValue()}`}</Tag>
+            );
+        }
       }
     }),
     columnHelper.accessor("fms_jid_timestamp", {
