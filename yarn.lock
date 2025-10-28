@@ -1622,14 +1622,16 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-3d9eb64efe182a08383df76ef057d75256dd2ac4.tgz#b6f1d608a6161ded1d8d7e97fdb08f75fd29f6ef"
   integrity sha1-tvHWCKYWHe0djX6X/bCPdf0p9u8=
 
-"@saltbox/saltbox-frontend-common@^0.0.35":
-  version "0.0.35"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.35.tgz#e09b5af55e08fb93118a2cd0f946a0eef11d019a"
-  integrity sha1-4Jta9V4I+5MRiizQ+Uag7vEdAZo=
+"@saltbox/saltbox-frontend-common@^0.0.37":
+  version "0.0.37"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.37.tgz#de86181461d38cd7424360ac4a7d4f2fed710a8f"
+  integrity sha1-3oYYFGHTjNdCQ2CsSn1PL+1xCo8=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@react-querybuilder/antd" "^8.11.1"
     "@react-querybuilder/dnd" "^8.11.1"
+    "@tanstack/react-table" "^8.21.3"
+    "@tanstack/react-virtual" "^3.13.12"
     react-dnd "^16.0.1"
     react-dnd-html5-backend "^16.0.1"
     react-querybuilder "^8.11.1"

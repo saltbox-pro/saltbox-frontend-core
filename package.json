@@ -58,9 +58,7 @@
     "@rjsf/utils": "^5.24.12",
     "@rjsf/validator-ajv8": "^5.24.12",
     "@saltbox/saltbox-core-api-client": "^0.0.1-3d9eb64efe182a08383df76ef057d75256dd2ac4",
-    "@saltbox/saltbox-frontend-common": "^0.0.35",
-    "@tanstack/react-table": "^8.21.3",
-    "@tanstack/react-virtual": "^3.13.12",
+    "@saltbox/saltbox-frontend-common": "^0.0.37",
     "antd": "5.26.0",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.2.0",
@@ -77,7 +75,9 @@
     "single-spa-react": "^6.0.2"
   },
   "peerDependencies": {
-    "react-querybuilder": "^8.11.1"
+    "react-querybuilder": "^8.11.1",
+    "@tanstack/react-table": "^8.21.3",
+    "@tanstack/react-virtual": "^3.13.12"
   },
   "types": "dist/saltbox-core.d.ts"
 }
