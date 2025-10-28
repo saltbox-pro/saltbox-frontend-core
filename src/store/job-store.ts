@@ -4,7 +4,7 @@ import { apiCoreStore } from 'saltbox-core/store';
 import { PaginationState, SortingState } from '@tanstack/react-table';
 import { toBackendSorting } from '@saltbox/saltbox-frontend-common';
 
-const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
 const PAGE_SIZE = 50;
 export class JobStore {
   @observable jid: string;
