@@ -114,7 +114,6 @@
     "subcollection-info": "This collection is a subcollection of",
     "refresh": "Refresh",
     "save": "Save",
-    "reset": "Reset",
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -445,9 +444,6 @@
     "error-deleting-collection": "Error deleting collection",
     "apply-search-before-save": "Please apply search to confirm filters before saving"
   },
-  "filters": {
-    "search": "Search"
-  },
   "dashboard": {
     "table-count": "Count",
     "change-view": "Change View",
@@ -479,19 +475,7 @@
     "close": "Close",
     "total-minions": "Total minions: {{count}}"
   },
-  "querybuilder-filters": {
-    "add-group": "+ Group",
-    "add-rule": "+ Rule",
-    "remove-rule": "Remove Rule",
-    "remove-group": "Remove Group",
-    "add-group-title": "Add Filters Group",
-    "add-rule-title": "Add Filters Rule",
-    "remove-rule-title": "Remove Filters Rule",
-    "remove-group-title": "Remove Filters Group"
-  },
   "base": {
-    "copied-to-clipboard": "Copied to clipboard",
-    "copy-to-clipboard": "Copy to clipboard",
     "back-home": "Back Home",
     "not-found": "Sorry, the page you visited does not exist.",
     "failed-to-load-default-collection": "Failed to load default collection",

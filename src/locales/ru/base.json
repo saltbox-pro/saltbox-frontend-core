@@ -445,9 +445,6 @@
     "error-deleting-collection": "Ошибка при удалении коллекции",
     "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением"
   },
-  "filters": {
-    "search": "Поиск"
-  },
   "dashboard": {
     "table-count": "Количество",
     "change-view": "Изменить вид",
@@ -479,19 +476,7 @@
     "close": "Закрыть",
     "total-minions": "Всего клиентов: {{count}}"
   },
-  "querybuilder-filters": {
-    "add-group": "+ Группу фильтров",
-    "add-rule": "+ Фильтр",
-    "remove-rule": "Удалить фильтр",
-    "remove-group": "Удалить группу фильтров",
-    "add-group-title": "Добавить группу фильтров",
-    "add-rule-title": "Добавить фильтр",
-    "remove-rule-title": "Удалить фильтр",
-    "remove-group-title": "Удалить группу фильтров"
-  },
   "base": {
-    "copied-to-clipboard": "Скопировано в буфер обмена",
-    "copy-to-clipboard": "Скопировать в буфер обмена",
     "back-home": "На главную",
     "not-found": "Извините, страница, которую вы посетили, не существует.",
     "failed-to-load-default-collection": "Не удалось загрузить коллекцию по умолчанию",

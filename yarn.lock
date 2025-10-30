@@ -1622,10 +1622,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-3d9eb64efe182a08383df76ef057d75256dd2ac4.tgz#b6f1d608a6161ded1d8d7e97fdb08f75fd29f6ef"
   integrity sha1-tvHWCKYWHe0djX6X/bCPdf0p9u8=
 
-"@saltbox/saltbox-frontend-common@^0.0.38":
-  version "0.0.38"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.38.tgz#78da4f4c1a0890f4777e9c5857149ed3c4a2a2bd"
-  integrity sha1-eNpPTBoIkPR3fpxYVxSe08Sior0=
+"@saltbox/saltbox-frontend-common@^0.0.39":
+  version "0.0.39"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.39.tgz#8ba1b2ff6a19dc4344f2a9f26458df8da5947ab9"
+  integrity sha1-i6Gy/2oZ3ENE8qnyZFjfjaWUerk=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@react-querybuilder/antd" "^8.11.1"
@@ -6971,10 +6971,10 @@ react-dom@19.2.0:
   dependencies:
     scheduler "^0.27.0"
 
-react-i18next@^15.5.3:
-  version "15.6.0"
-  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-15.6.0.tgz#f1705587621bd3cc1c92af0145949cdad8fd2e15"
-  integrity sha512-W135dB0rDfiFmbMipC17nOhGdttO5mzH8BivY+2ybsQBbXvxWIwl3cmeH3T9d+YPBSJu/ouyJKFJTtkK7rJofw==
+react-i18next@^15.7.4:
+  version "15.7.4"
+  resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-15.7.4.tgz#146e50f220d204b842e22c75d1a3d23c6c589a30"
+  integrity sha512-nyU8iKNrI5uDJch0z9+Y5XEr34b0wkyYj3Rp+tfbahxtlswxSCjcUL9H0nqXo9IR3/t5Y5PKIA3fx3MfUyR9Xw==
   dependencies:
     "@babel/runtime" "^7.27.6"
     html-parse-stringify "^3.0.1"

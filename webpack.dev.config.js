@@ -16,9 +16,11 @@ module.exports = (webpackConfigEnv, argv) => {
         ...(commonPath && {
           "@saltbox/saltbox-frontend-common": path.resolve(__dirname, commonPath),
         }),
-        // Force single React instance for the link compatibility
+        // Force single dependency instance for the link compatibility
         "react": path.resolve(__dirname, "./node_modules/react"),
         "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+        "i18next": path.resolve(__dirname, "./node_modules/i18next"),
+        "react-i18next": path.resolve(__dirname, "./node_modules/react-i18next"),
       },
     },
     module: {
