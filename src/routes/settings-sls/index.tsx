@@ -22,6 +22,8 @@ const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
 const columnHelper = createColumnHelper<SettingsSlsRepoShortSchema>();
 
+type ModalType = 'slsCreate' | 'slsEdit' | 'slsDelete' | null;
+
 const SettingsSlsPage = observer(() => {
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
@@ -107,9 +109,7 @@ const SettingsSlsPage = observer(() => {
     }),
   ];
 
-  const [isSlsModalOpen, setIsSlsModalOpen] = useState(false);
-  const [isSlsDeleteModalOpen, setIsSlsDeleteModalOpen] = useState(false);
-  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [syncingSlsId, setSyncingSlsId] = useState<string | null>(null);
   const [recordToEdit, setRecordToEdit] =
     useState<SettingsSlsRepoShortSchema>();
@@ -121,8 +121,7 @@ const SettingsSlsPage = observer(() => {
   const handleEditSls = (id: string) => {
     const record = settingsSlsStore.slsreps.find((item) => item.id === id);
     setRecordToEdit(record);
-    setDialogMode("edit");
-    setIsSlsModalOpen(true);
+    setActiveModal('slsEdit');
   };
 
   const handleSlsSync = (id: string) => {
@@ -178,22 +177,21 @@ const SettingsSlsPage = observer(() => {
   };
 
   const handleCreateSls = () => {
-    setDialogMode("create");
-    setIsSlsModalOpen(true);
+    setActiveModal('slsCreate');
   };
 
   const handleDeleteSls = (repo: SettingsSlsRepoShortSchema) => {
     setRecordToEdit(repo);
-    setIsSlsDeleteModalOpen(true);
+    setActiveModal('slsDelete');
   };
 
   const handleSlsModalClose = (formValue?: SlsFormData) => {
     if (formValue === undefined) {
-      setIsSlsModalOpen(false);
+      setActiveModal(null);
       return;
     }
 
-    if (dialogMode === "create") {
+    if (activeModal === "slsCreate") {
       apiCoreStore.settingsApi
         ?.repoCreate({
           SettingsSlsRepoCreateSchema: {
@@ -212,10 +210,11 @@ const SettingsSlsPage = observer(() => {
         })
         .finally(() => {
           settingsSlsStore.reload();
-          setIsSlsModalOpen(false);
+          setActiveModal(null);
         });
     }
-    if (dialogMode === "edit") {
+
+    if (activeModal === "slsEdit") {
       apiCoreStore.settingsApi
         ?.repoUpdate({
           sid: recordToEdit ? recordToEdit?.id : "",
@@ -234,7 +233,7 @@ const SettingsSlsPage = observer(() => {
         })
         .finally(() => {
           settingsSlsStore.reload();
-          setIsSlsModalOpen(false);
+          setActiveModal(null);
         });
     }
   };
@@ -274,33 +273,36 @@ const SettingsSlsPage = observer(() => {
         onLazyLoad={(pagination) => settingsSlsStore.handleLazyLoad(pagination)}
       />
 
-      {isSlsModalOpen && (
+      {(activeModal === 'slsCreate' || activeModal === 'slsEdit') && (
         <SlsModal
-          isOpen={isSlsModalOpen}
+          isOpen={true}
           onClose={handleSlsModalClose}
-          mode={dialogMode}
+          mode={activeModal === 'slsCreate' ? 'create' : 'edit'}
           record={recordToEdit}
         />
       )}
-      <Modal
-        title={t("settings-sls.modal-delete-repository")}
-        open={isSlsDeleteModalOpen}
-        onOk={() => {
-          if (recordToEdit) {
-            settingsSlsStore.handleSlsDelete(recordToEdit.id);
-            setIsSlsDeleteModalOpen(false);
-          }
-        }}
-        onCancel={() => setIsSlsDeleteModalOpen(false)}
-        okText={t("settings-sls.modal-delete-repository-confirm")}
-        cancelText={t("settings-sls.modal-delete-repository-reject")}
-        okButtonProps={{ danger: true }}
-        closable={false}
-      >
-        <p>
-          {t("settings-sls.modal-delete-repository-confirm-text", { name: recordToEdit ? recordToEdit.name : "" })}?
-        </p>
-      </Modal>
+
+      {activeModal === 'slsDelete' && (
+        <Modal
+          title={t("settings-sls.modal-delete-repository")}
+          open={true}
+          onOk={() => {
+            if (recordToEdit) {
+              settingsSlsStore.handleSlsDelete(recordToEdit.id);
+              setActiveModal(null);
+            }
+          }}
+          onCancel={() => setActiveModal(null)}
+          okText={t("settings-sls.modal-delete-repository-confirm")}
+          cancelText={t("settings-sls.modal-delete-repository-reject")}
+          okButtonProps={{ danger: true }}
+          closable={false}
+        >
+          <p>
+            {t("settings-sls.modal-delete-repository-confirm-text", { name: recordToEdit ? recordToEdit.name : "" })}?
+          </p>
+        </Modal>
+      )}
     </>
   );
 });
