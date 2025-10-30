@@ -404,7 +404,21 @@
     "success-on-edit-sls": "Success on edit configuration repository",
     "error-on-create-sls": "Error on create configuration repository",
     "error-on-edit-sls": "Error on edit configuration repository",
-    "table-no-sync": "Never"
+    "table-no-sync": "Never",
+    "success-on-create-sls-from-gitlab": "Repository from GitLab successfully added",
+    "error-on-create-sls-from-gitlab": "Error on create configuration repository from GitLab",
+    "add-repository-from-gitlab": "Get Repository From GitLab"
+  },
+  "sls-gitlab-modal": {
+    "modal-title": "Get Repository From GitLab",
+    "load-button-text": "Get Repository",
+    "description": "Description",
+    "full-name": "Full Name",
+    "path": "Path",
+    "url": "URL",
+    "created": "Created",
+    "last-activity": "Last Activity",
+    "updated": "Updated"
   },
   "collection": {
     "collections": "Collections",

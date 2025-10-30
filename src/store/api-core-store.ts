@@ -10,6 +10,7 @@ import {
   SettingsApi,
   TaskTemplatesApi,
   TasksApi,
+  GitLabApi,
 } from "@saltbox/saltbox-core-api-client";
 import { Configuration } from "@saltbox/saltbox-core-api-client";
 import { appStore } from "saltbox-core/store";
@@ -78,6 +79,10 @@ class ApiCoreStore {
 
   @computed get pillarsApi() {
     return this.apiConfig && new PillarsApi(this.apiConfig);
+  }
+
+  @computed get gitLabApi() {
+    return this.apiConfig && new GitLabApi(this.apiConfig);
   }
 }
 

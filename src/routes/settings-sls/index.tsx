@@ -9,20 +9,22 @@ import {
   SyncOutlined,
   EditOutlined,
   DeleteOutlined,
+  CloudDownloadOutlined,
 } from "@ant-design/icons";
-import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
+import { SettingsSlsRepoCreateSchema, SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   SlsFormData,
   SlsModal,
 } from "saltbox-core/shared/components/sls-modal/sls-modal";
 import { formatTimeByUserTZ, PageHeader, FastTablePaginated, Modal } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
+import { SlsGitLabModal } from "./-components/sls-gitlab-modal/sls-gitlab-modal";
 
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
 const columnHelper = createColumnHelper<SettingsSlsRepoShortSchema>();
 
-type ModalType = 'slsCreate' | 'slsEdit' | 'slsDelete' | null;
+type ModalType = 'slsCreate' | 'slsEdit' | 'slsDelete' | 'slsGitLab' | null;
 
 const SettingsSlsPage = observer(() => {
   const { t } = useTranslation();
@@ -238,6 +240,31 @@ const SettingsSlsPage = observer(() => {
     }
   };
 
+  const handleLoadSlsRepositories = () => {
+    setActiveModal('slsGitLab');
+  };
+
+  const handleSlsGitLabModalClose = (request?: SettingsSlsRepoCreateSchema) => {
+    if (request) {
+      apiCoreStore.settingsApi
+        ?.repoCreate({
+          SettingsSlsRepoCreateSchema: request,
+        })
+        .then(() => {
+          messageApi.success(t("settings-sls.success-on-create-sls-from-gitlab"));
+        })
+        .catch(() => {
+          messageApi.error(t("settings-sls.error-on-create-sls-from-gitlab"));
+        })
+        .finally(() => {
+          settingsSlsStore.reload();
+          setActiveModal(null);
+        });
+    } else {
+      setActiveModal(null);
+    }
+  };
+
   return (
     <>
       {contextHolder}
@@ -262,6 +289,14 @@ const SettingsSlsPage = observer(() => {
           onClick={handleCreateSls}
         >
           {t("settings-sls.table-add-repository")}
+        </Button>
+
+        <Button
+          type="default"
+          icon={<CloudDownloadOutlined />}
+          onClick={handleLoadSlsRepositories}
+        >
+          {t("settings-sls.add-repository-from-gitlab")}
         </Button>
       </div>
 
@@ -302,6 +337,13 @@ const SettingsSlsPage = observer(() => {
             {t("settings-sls.modal-delete-repository-confirm-text", { name: recordToEdit ? recordToEdit.name : "" })}?
           </p>
         </Modal>
+      )}
+
+      {activeModal === 'slsGitLab' && (
+        <SlsGitLabModal
+          isOpen={true}
+          onClose={handleSlsGitLabModalClose}
+        />
       )}
     </>
   );

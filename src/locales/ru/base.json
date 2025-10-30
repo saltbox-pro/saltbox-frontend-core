@@ -404,7 +404,21 @@
     "success-on-edit-sls": "Репозиторий успешно изменен",
     "error-on-create-sls": "Ошибка при создании репозитория",
     "error-on-edit-sls": "Ошибка при изменении репозитория",
-    "table-no-sync": "Никогда"
+    "table-no-sync": "Никогда",
+    "success-on-create-sls-from-gitlab": "Репозиторий из GitLab успешно добавлен",
+    "error-on-create-sls-from-gitlab": "Ошибка при добавлении репозитория из GitLab",
+    "add-repository-from-gitlab": "Добавить из GitLab"
+  },
+  "sls-gitlab-modal": {
+    "modal-title": "Добавить репозиторий из GitLab",
+    "load-button-text": "Добавить",
+    "description": "Описание",
+    "full-name": "Полное название",
+    "path": "Путь",
+    "url": "URL",
+    "created": "Создан",
+    "last-activity": "Последняя активность",
+    "updated": "Обновлен"
   },
   "collection": {
     "collections": "Коллекции",
