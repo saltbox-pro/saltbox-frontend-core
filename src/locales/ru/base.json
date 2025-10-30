@@ -418,7 +418,8 @@
     "url": "URL",
     "created": "Создан",
     "last-activity": "Последняя активность",
-    "updated": "Обновлен"
+    "updated": "Обновлен",
+    "empty-state": "Нет доступных репозиториев для добавления"
   },
   "collection": {
     "collections": "Коллекции",

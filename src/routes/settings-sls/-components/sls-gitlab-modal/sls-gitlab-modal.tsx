@@ -21,8 +21,15 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
   useEffect(() => {
     setIsLoading(true);
     apiCoreStore.gitLabApi.projectList({
-    }).then((response) => {
-      setProjects(response.items);
+    }).then(({ items: projects }) => {
+      setProjects(projects);
+      apiCoreStore.settingsApi.repoList({}).then(({ data: slsRepos }) => {
+        const projectsWithoutSlsRepos = projects.filter((project) => !slsRepos.some((slsRepo) => slsRepo.repo_url === project.http_url_to_repo));
+        setProjects(projectsWithoutSlsRepos);
+      }).finally(() => {
+        setIsLoading(false);
+      });
+    }).catch(() => {
       setIsLoading(false);
     });
   }, [props.isOpen]);
@@ -59,7 +66,13 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
         </Flex>
       }
 
-      {!isLoading &&
+      {!isLoading && projects.length === 0 && (
+        <Flex justify="center" align="center" style={{ height: "10rem" }}>
+          <Text>{t("sls-gitlab-modal.empty-state")}</Text>
+        </Flex>
+      )}
+
+      {!isLoading && projects.length > 0 && (
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           {projects.map((project) => (
             <Card
@@ -135,7 +148,7 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
             </Card>
           ))}
         </Space>
-      }
+      )}
     </Modal>
   );
 }

@@ -418,7 +418,8 @@
     "url": "URL",
     "created": "Created",
     "last-activity": "Last Activity",
-    "updated": "Updated"
+    "updated": "Updated",
+    "empty-state": "No available repositories to get"
   },
   "collection": {
     "collections": "Collections",
