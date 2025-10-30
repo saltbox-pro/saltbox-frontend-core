@@ -1622,10 +1622,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.0.1-3d9eb64efe182a08383df76ef057d75256dd2ac4.tgz#b6f1d608a6161ded1d8d7e97fdb08f75fd29f6ef"
   integrity sha1-tvHWCKYWHe0djX6X/bCPdf0p9u8=
 
-"@saltbox/saltbox-frontend-common@^0.0.39":
-  version "0.0.39"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.39.tgz#8ba1b2ff6a19dc4344f2a9f26458df8da5947ab9"
-  integrity sha1-i6Gy/2oZ3ENE8qnyZFjfjaWUerk=
+"@saltbox/saltbox-frontend-common@^0.0.40":
+  version "0.0.40"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.40.tgz#08e00650359cb6b192fe61c5a1c1639e51e90b81"
+  integrity sha1-COAGUDWctrGS/mHFocFjnlHpC4E=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@react-querybuilder/antd" "^8.11.1"
