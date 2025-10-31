@@ -238,6 +238,7 @@
       "table-execution-time": "Время выполнения",
       "table-yes": "Да",
       "table-no": "Нет",
+      "invalid-execution-time": "Недопустимое время выполнения",
       "time-units": {
         "milliseconds": "мс",
         "seconds": "с",

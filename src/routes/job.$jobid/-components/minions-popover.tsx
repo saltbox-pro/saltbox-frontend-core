@@ -5,6 +5,8 @@ import { CloseOutlined, CopyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { Popover } from "@saltbox/saltbox-frontend-common";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { toJS } from "mobx";
+import { jobStore } from "saltbox-core/store";
 
 import styles from "./minions-popover.module.css";
 
@@ -35,6 +37,10 @@ export function MinionsPopover({
     messageApi.success(t("jobs.table-copy-success"));
   };
 
+  if (minions.length === 0) {
+    return <span className={styles.trigger}>{minions.length}</span>;
+  }
+
   return (
     <>
       {contextHolder}
@@ -62,6 +68,9 @@ export function MinionsPopover({
               <JobModal
                 target={minionNamesCommaSeparated}
                 targetType="list"
+                fun={jobStore.job?.fun}
+                arg={jobStore.job?.arg}
+                kwarg={jobStore.job?.kwarg}
                 buttonProps={{
                   shape: "circle",
                   icon: <ReloadOutlined />,

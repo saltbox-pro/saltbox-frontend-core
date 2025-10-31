@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { PaginationState, Row, SortingState, createColumnHelper } from "@tanstack/react-table";
@@ -12,10 +12,7 @@ import {
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import {
-  calculateStatistics,
-  getExecutionTimeColor,
-  formatExecutionTime,
-  TimeUnits,
+  useFormatAndGetExecutionTimeColor
 } from "../../../utils/execution-time-utils";
 import styles from "./default-job-return-table.module.css";
 
@@ -29,7 +26,6 @@ export const DefaultJobReturnTable = ({
   isLoading = false,
   forceExpand,
   jobStartTimestamp,
-  onExecutionTimesCalculated,
   pagination,
   sorting,
   total,
@@ -39,66 +35,13 @@ export const DefaultJobReturnTable = ({
   isFullOutput?: boolean;
   isLoading?: boolean;
   forceExpand?: boolean;
-  jobStartTimestamp?: string | null;
-  onExecutionTimesCalculated?: (executionTimes: number[]) => void;
+  jobStartTimestamp?: Date | null;
   pagination: PaginationState;
   sorting: SortingState;
   total: number;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
 }) => {
   const { t } = useTranslation();
-
-  /* const jobReturnsWithExecutionTime = jobReturns.map((row) => {
-    const startDate = new Date(jobStartTimestamp || 0);
-    const endDate = new Date(row.stamp || 0);
-
-    const executionTimeMs = endDate.getTime() - startDate.getTime();
-    const executionTimeSeconds = executionTimeMs / 1000;
-
-    return { ...row, executionTimeSeconds };
-  });
-
-  const executionTimes = jobReturnsWithExecutionTime
-    .map((row) => row.executionTimeSeconds)
-    .filter((time) => time > 0); */
-
-  /* useEffect(() => {
-    if (executionTimes.length > 0) {
-      const maxExecutionTime = Math.max(...executionTimes);
-      onExecutionTimesCalculated?.([maxExecutionTime]);
-    } else {
-      onExecutionTimesCalculated?.([0]);
-    }
-  }, [executionTimes, onExecutionTimesCalculated]); */
-
-  /* const statistics = calculateStatistics(executionTimes); */
-  const renderInvalidExecutionTime = (jobResult: JobReturnModel) => {
-    const startDate = new Date(jobStartTimestamp || 0);
-    const endDate = new Date(jobResult.stamp || 0);
-
-    const startTime = startDate.toLocaleString("ru-RU", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-    const endTime = endDate.toLocaleString("ru-RU", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
-
-    return (
-      <div className={styles.invalidExecutionTime}>
-        {startTime} - {endTime}
-      </div>
-    );
-  };
 
   const columns = useMemo(() => [
     {
@@ -166,46 +109,28 @@ export const DefaultJobReturnTable = ({
         return <div>{timestamp}</div>;
       },
     }),
-    /* columnHelper.display({
+    columnHelper.display({
       header: t("task.job-returns-table.table-execution-time"),
-      cell: ({ getValue, row }) => {
-        const executionTimeSeconds = getValue();
-        const jobResult = row.original;
-
-        if (executionTimeSeconds <= 0) {
-          return renderInvalidExecutionTime(jobResult);
-        }
-
-        const timeUnits: TimeUnits = {
-          milliseconds: t("task.job-returns-table.time-units.milliseconds"),
-          seconds: t("task.job-returns-table.time-units.seconds"),
-          minutes: t("task.job-returns-table.time-units.minutes"),
-          hours: t("task.job-returns-table.time-units.hours"),
-        };
-
-        const formattedTime = formatExecutionTime(
-          executionTimeSeconds,
-          timeUnits
-        );
-        const textColor = getExecutionTimeColor(
-          executionTimeSeconds,
-          statistics.mean,
-          statistics.stdDev,
-          statistics.min,
-          statistics.max
+      cell: ({ row }) => {
+        const stamp = row.original.stamp;
+        const { formattedTime, color } = useFormatAndGetExecutionTimeColor(
+          jobStartTimestamp?.toISOString() || null,
+          stamp || null,
+          jobReturns,
+          t
         );
 
         return (
           <div
             className={styles.executionTimeValue}
-            style={{ color: textColor }}
+            style={{ color }}
           >
             {formattedTime}
           </div>
         );
       },
-    }), */
-  ], [t]);
+    }),
+  ], [t, jobStartTimestamp, jobReturns]);
 
   const getShortOutput = (jobReturn: JobReturnModel) => {
     return jobReturn?.data ? jobReturn.data : jobReturn;

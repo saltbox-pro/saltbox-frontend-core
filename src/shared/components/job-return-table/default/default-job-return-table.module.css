@@ -3,7 +3,10 @@
     color: #ff4d4f;
 }
 
-.executionTimeValue {}
+.executionTimeValue {
+    font-weight: bold;
+    font-size: 14px;
+}
 
 .stringDataContainer {
     margin-left: 40px;
