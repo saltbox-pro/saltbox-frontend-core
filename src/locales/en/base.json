@@ -418,7 +418,9 @@
     "created": "Created",
     "last-activity": "Last Activity",
     "updated": "Updated",
-    "empty-state": "No available repositories to get"
+    "empty-state": "No available repositories to get",
+    "no-content": "No file available in the repository",
+    "error-loading": "Error loading content"
   },
   "collection": {
     "collections": "Collections",
