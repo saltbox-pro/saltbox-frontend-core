@@ -20,11 +20,12 @@ import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { CopyToClipboardButton, PageHeader, WebSocketService } from "@saltbox/saltbox-frontend-common";
-import { formatExecutionTime, TimeUnits } from "saltbox-core/shared/utils/execution-time-utils";
+import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
 import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
+import Parcel from "single-spa-react/parcel";
 
 const { Text } = Typography;
 const { Timer } = Statistic;
@@ -35,34 +36,9 @@ const JobPage = observer(() => {
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobModel>());
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
-  const [maxExecutionTime, setMaxExecutionTime] = useState<number | null>(null);
-
-  const getJobStartTimestamp = () => {
-    if (!jobStore.job?.fms_jid_timestamp) {
-      return null;
-    }
-    const timestamp = jobStore.job.fms_jid_timestamp;
-    const timestampStr = timestamp instanceof Date
-      ? timestamp.toISOString()
-      : String(timestamp);
-    return timestampStr.replace(/([+-]\d{2}:\d{2}|Z)$/, '');
-  };
-
-  const jobStartTimestamp = getJobStartTimestamp();
-  const jobStartTime = jobStartTimestamp ? new Date(jobStartTimestamp).getTime() : null;
-
-  const progressPercent = jobStore.totalMinions > 0 ? ((jobStore.failedMinions + jobStore.successfulMinions) / jobStore.totalMinions) * 100 : 0;
-  const successPercent = jobStore.totalMinions > 0 ? (jobStore.successfulMinions / jobStore.totalMinions) * 100 : 0;
-  const jobDurationSeconds = jobStore.isJobComplete && maxExecutionTime && maxExecutionTime > 0 ? maxExecutionTime : null;
 
   const formatJobDuration = (seconds: number): string => {
-    const timeUnits: TimeUnits = {
-      milliseconds: t("task.job-returns-table.time-units.milliseconds"),
-      seconds: t("task.job-returns-table.time-units.seconds"),
-      minutes: t("task.job-returns-table.time-units.minutes"),
-      hours: t("task.job-returns-table.time-units.hours"),
-    };
-    return formatExecutionTime(seconds, timeUnits);
+    return formatExecutionTime(seconds, t);
   };
 
   useEffect(() => {
@@ -102,6 +78,18 @@ const JobPage = observer(() => {
       webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
   }, [appStore.authStore?.user]);
+
+  let jobModalCreatePlugin: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
+    (plugin) => {
+      jobModalCreatePlugin = (
+        <>
+          {jobModalCreatePlugin}
+          <Parcel config={plugin.parcel} wrapWith="div" />
+        </>
+      );
+    }
+  );
 
   return (
     <>
@@ -220,8 +208,8 @@ const JobPage = observer(() => {
       <div className={styles.progressContainer}>
         {jobStore.totalMinions > 0 && (
           <Progress
-            percent={progressPercent}
-            success={{ percent: successPercent }}
+            percent={jobStore.progressPercent}
+            success={{ percent: jobStore.successPercent }}
             strokeColor="#ff4d4f"
             size={{ height: 10 }}
             showInfo={false}
@@ -259,17 +247,17 @@ const JobPage = observer(() => {
 
 
           <Flex align="center" gap={16}>
-            {jobStartTime && (
+            {jobStore.jobStartTime && (
               <div className={styles.timerWrapper}>
                 <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
-                {jobStore.isJobComplete && jobDurationSeconds ? (
+                {jobStore.isJobComplete && jobStore.actualJobDuration ? (
                   <b>
-                    {formatJobDuration(jobDurationSeconds)}
+                    {formatJobDuration(jobStore.actualJobDuration)}
                   </b>
                 ) : (
                   <Timer
                     type="countup"
-                    value={jobStartTime}
+                    value={jobStore.jobStartTime}
                     format="HH:mm:ss"
                   />
                 )}
@@ -286,12 +274,12 @@ const JobPage = observer(() => {
         </Flex>
       )}
 
+
       <div className={styles.jobReturnTableWrapper}>
         <DefaultJobReturnTable
           jobReturns={jobStore.jobReturns}
           isFullOutput={isFullOutput}
-          //jobStartTimestamp={jobStartTimestamp}
-          //onExecutionTimesCalculated={(times) => setMaxExecutionTime(times[0] || null)}
+          jobStartTimestamp={jobStore.jobStartTimestamp}
           pagination={jobStore.pagination}
           sorting={jobStore.sorting}
           total={jobStore.total}
@@ -299,6 +287,9 @@ const JobPage = observer(() => {
           isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
         />
       </div>
+
+
+      {jobModalCreatePlugin}
     </>
   );
 });

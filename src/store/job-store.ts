@@ -1,8 +1,10 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx';
+import dayjs from 'dayjs';
 import { JobModel, JobReturnModel, JobStatus } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from 'saltbox-core/store';
 import { PaginationState, SortingState } from '@tanstack/react-table';
 import { toBackendSorting } from '@saltbox/saltbox-frontend-common';
+import { getMaxExecutionTime } from '../shared/utils/execution-time-utils';
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
 const PAGE_SIZE = 50;
@@ -187,12 +189,44 @@ export class JobStore {
 
   @computed
   get pendingMinions() {
-    return this.job?.minions?.length ?? 0 - this.successfulMinions - this.failedMinions;
+    const totalMinions = this.job?.minions?.length ?? 0;
+    return totalMinions - this.successfulMinions - this.failedMinions;
   }
 
   @computed
   get pendingMinionsList() {
     return this.job?.minions?.filter((minion) => !this.job?.returning[minion]) ?? [];
+  }
+
+  @computed
+  get jobStartTimestamp() {
+    let timestamp = null;
+    if (this.job?.fms_jid_timestamp) {
+      timestamp = this.job.fms_jid_timestamp;
+    } else if (this.job?.created) {
+      timestamp = this.job.created;
+    } else return null;
+
+    const date = dayjs(timestamp);
+    if (!date.isValid()) {
+      return null;
+    }
+    return date.toDate();
+  }
+
+  @computed
+  get jobStartTime() {
+    return this.jobStartTimestamp ? this.jobStartTimestamp.getTime() : null;
+  }
+
+  @computed
+  get progressPercent() {
+    return this.totalMinions > 0 ? ((this.failedMinions + this.successfulMinions) / this.totalMinions) * 100 : 0;
+  }
+
+  @computed
+  get successPercent() {
+    return this.totalMinions > 0 ? (this.successfulMinions / this.totalMinions) * 100 : 0;
   }
 
   @computed
@@ -202,7 +236,13 @@ export class JobStore {
 
   @computed
   get isJobComplete() {
-    return this.job?.status === JobStatus.Finished;
+    return this.job?.status === JobStatus.Finished ||
+      (this.totalMinions > 0 && this.pendingMinions === 0);
+  }
+
+  @computed
+  get actualJobDuration() {
+    return getMaxExecutionTime(this.jobReturns, this.jobStartTime);
   }
 }
 

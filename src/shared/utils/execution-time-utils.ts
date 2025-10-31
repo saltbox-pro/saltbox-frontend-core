@@ -1,38 +1,29 @@
-/**
- * Утилиты для работы с execution time и цветовой градацией
- */
+import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 
-export interface TimeUnits {
-    milliseconds: string;
-    seconds: string;
-    minutes: string;
-    hours: string;
-}
+dayjs.extend(duration);
 
-/**
- * Форматирует время выполнения в читаемый вид с локализацией
- * @param executionTimeSeconds - время выполнения в секундах
- * @param timeUnits - объект с единицами времени для локализации
- * @returns отформатированная строка времени
- */
 export const formatExecutionTime = (
     executionTimeSeconds: number,
-    timeUnits: TimeUnits
+    t: (key: string) => string
 ): string => {
+    const durationObj = dayjs.duration(executionTimeSeconds, "seconds");
+
     if (executionTimeSeconds < 1) {
         const milliseconds = Math.round(executionTimeSeconds * 1000);
-        return `${milliseconds}${timeUnits.milliseconds}`;
+        return `${milliseconds}${t("task.job-returns-table.time-units.milliseconds")}`;
     } else if (executionTimeSeconds < 60) {
-        return `${executionTimeSeconds.toFixed(2)}${timeUnits.seconds}`;
+        return `${executionTimeSeconds.toFixed(2)}${t("task.job-returns-table.time-units.seconds")}`;
     } else if (executionTimeSeconds < 3600) {
-        const minutes = Math.floor(executionTimeSeconds / 60);
-        const seconds = (executionTimeSeconds % 60).toFixed(2);
-        return `${minutes}${timeUnits.minutes} ${seconds}${timeUnits.seconds}`;
+        const minutes = durationObj.minutes();
+        const seconds = durationObj.seconds() + durationObj.milliseconds() / 1000;
+        return `${minutes}${t("task.job-returns-table.time-units.minutes")} ${seconds.toFixed(2)}${t("task.job-returns-table.time-units.seconds")}`;
     } else {
-        const hours = Math.floor(executionTimeSeconds / 3600);
-        const minutes = Math.floor((executionTimeSeconds % 3600) / 60);
-        const seconds = (executionTimeSeconds % 60).toFixed(2);
-        return `${hours}${timeUnits.hours} ${minutes}${timeUnits.minutes} ${seconds}${timeUnits.seconds}`;
+        const hours = durationObj.hours();
+        const minutes = durationObj.minutes();
+        const seconds = durationObj.seconds() + durationObj.milliseconds() / 1000;
+        return `${hours}${t("task.job-returns-table.time-units.hours")} ${minutes}${t("task.job-returns-table.time-units.minutes")} ${seconds.toFixed(2)}${t("task.job-returns-table.time-units.seconds")}`;
     }
 };
 
@@ -43,57 +34,39 @@ export interface Statistics {
     max: number;
 }
 
-/**
- * Функция для расчета статистических показателей
- * @param values - массив числовых значений
- * @returns объект со статистическими показателями
- */
-export const calculateStatistics = (values: number[]): Statistics => {
-    if (values.length === 0) {
-        return { mean: 0, stdDev: 0, min: 0, max: 0 };
+export const calculateStatistics = (values: number[]): Statistics | null => {
+    if (!values.length) {
+        return null;
     }
 
     const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
     const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
 
-    return { mean, stdDev, min, max };
+    return {
+        mean,
+        stdDev,
+        min: Math.min(...values),
+        max: Math.max(...values),
+    };
 };
 
-/**
- * Вспомогательная функция для получения цвета по нормализованному значению
- * @param normalizedValue - нормализованное значение от 0 до 1
- * @returns RGB цвет в формате строки
- */
 export const getColorByNormalizedValue = (normalizedValue: number): string => {
     if (normalizedValue <= 0.5) {
-        // От черного к желтому (0 - 0.5)
-        const ratio = normalizedValue * 2; // 0-1
-        const red = Math.round(0 + (255 - 0) * ratio); // 0 -> 255
-        const green = Math.round(0 + (255 - 0) * ratio); // 0 -> 255
-        const blue = Math.round(0 + (0 - 0) * ratio); // 0 -> 0
+        const ratio = normalizedValue * 2;
+        const red = Math.round(0 + (255 - 0) * ratio);
+        const green = Math.round(0 + (255 - 0) * ratio);
+        const blue = Math.round(0 + (0 - 0) * ratio);
         return `rgb(${red}, ${green}, ${blue})`;
     } else {
-        // От желтого к красному (0.5 - 1)
-        const ratio = (normalizedValue - 0.5) * 2; // 0-1
-        const red = 255; // остается 255
-        const green = Math.round(255 - (255 - 0) * ratio); // 255 -> 0
-        const blue = 0; // остается 0
+        const ratio = (normalizedValue - 0.5) * 2;
+        const red = 255;
+        const green = Math.round(255 - (255 - 0) * ratio);
+        const blue = 0;
         return `rgb(${red}, ${green}, ${blue})`;
     }
 };
 
-/**
- * Функция для расчета цвета на основе значения execution time с учетом дисперсии
- * @param value - значение execution time
- * @param mean - среднее значение
- * @param stdDev - стандартное отклонение
- * @param minValue - минимальное значение
- * @param maxValue - максимальное значение
- * @returns RGB цвет в формате строки
- */
 export const getExecutionTimeColor = (
     value: number,
     mean: number,
@@ -102,31 +75,103 @@ export const getExecutionTimeColor = (
     maxValue: number
 ): string => {
     if (minValue === maxValue) {
-        return '#000000'; // черный по умолчанию
+        return '#000000';
     }
 
-    // Если стандартное отклонение очень мало, используем простую градацию
     if (stdDev < 0.001) {
         const normalizedValue = (value - minValue) / (maxValue - minValue);
         return getColorByNormalizedValue(normalizedValue);
     }
 
-    // Вычисляем z-score (количество стандартных отклонений от среднего)
     const zScore = (value - mean) / stdDev;
 
-    // Определяем цвет на основе z-score
     if (zScore <= 1) {
-        // До 1 стандартного отклонения - черный
         return '#000000';
     } else if (zScore <= 2) {
-        // От 1 до 2 стандартных отклонений - градиент от желтого к красному
-        const ratio = (zScore - 1) / 1; // нормализуем от 0 до 1
-        const red = Math.round(250 + (255 - 250) * ratio); // 250 -> 255
-        const green = Math.round(173 + (77 - 173) * ratio); // 173 -> 77
-        const blue = Math.round(20 + (79 - 20) * ratio); // 20 -> 79
+        const ratio = (zScore - 1) / 1;
+        const red = Math.round(250 + (255 - 250) * ratio);
+        const green = Math.round(173 + (77 - 173) * ratio);
+        const blue = Math.round(20 + (79 - 20) * ratio);
         return `rgb(${red}, ${green}, ${blue})`;
     } else {
-        // От 2 и выше стандартных отклонений - красный (danger)
         return '#ff4d4f';
     }
+};
+
+export const calculateExecutionTime = (
+    jobStartTime: number,
+    jobReturnStamp: string
+): number | null => {
+    if (!jobReturnStamp) return null;
+
+    const jobReturnTime = dayjs(jobReturnStamp + 'Z');
+    if (!jobReturnTime.isValid()) return null;
+
+    const executionTimeMs = jobReturnTime.valueOf() - jobStartTime;
+    const executionTimeSeconds = executionTimeMs / 1000;
+
+    if (isNaN(executionTimeSeconds) || !isFinite(executionTimeSeconds) || executionTimeSeconds < 0) {
+        return null;
+    }
+
+    return executionTimeSeconds;
+};
+
+export const getMaxExecutionTime = (
+    jobReturns: JobReturnModel[],
+    jobStartTime: number
+): number | null => {
+    if (!jobReturns?.length || !jobStartTime) {
+        return null;
+    }
+
+    const executionTimes = jobReturns
+        .map(returnItem => calculateExecutionTime(jobStartTime, returnItem.stamp))
+        .filter((time): time is number => time !== null);
+
+    return executionTimes.length > 0 ? Math.max(...executionTimes) : null;
+};
+
+export const useFormatAndGetExecutionTimeColor = (
+    jobStartTimestamp: string | null,
+    stamp: string | null,
+    allJobReturns: JobReturnModel[],
+    t: (key: string) => string
+): { formattedTime: string; color: string } => {
+    if (!jobStartTimestamp || !stamp) {
+        return {
+            formattedTime: t("task.job-returns-table.invalid-execution-time"),
+            color: '#000000'
+        };
+    }
+
+    const jobStartTime = dayjs(jobStartTimestamp).valueOf();
+    const executionTimeSeconds = calculateExecutionTime(jobStartTime, stamp);
+
+    if (executionTimeSeconds === null || executionTimeSeconds <= 0 || isNaN(executionTimeSeconds) || !isFinite(executionTimeSeconds)) {
+        return {
+            formattedTime: t("task.job-returns-table.invalid-execution-time"),
+            color: '#000000'
+        };
+    }
+
+    const formattedTime = formatExecutionTime(executionTimeSeconds, t);
+
+    const allExecutionTimes = allJobReturns
+        .map(returnItem => calculateExecutionTime(jobStartTime, returnItem.stamp))
+        .filter((time): time is number => time !== null && time > 0);
+
+    const statistics = calculateStatistics(allExecutionTimes);
+    const color = statistics ? getExecutionTimeColor(
+        executionTimeSeconds,
+        statistics.mean,
+        statistics.stdDev,
+        statistics.min,
+        statistics.max
+    ) : '#000000';
+
+    return {
+        formattedTime,
+        color
+    };
 };

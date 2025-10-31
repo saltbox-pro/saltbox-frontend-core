@@ -237,6 +237,7 @@
       "table-execution-time": "Execution Time",
       "table-yes": "Yes",
       "table-no": "No",
+      "invalid-execution-time": "Invalid execution time",
       "time-units": {
         "milliseconds": "ms",
         "seconds": "s",

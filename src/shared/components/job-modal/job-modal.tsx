@@ -29,6 +29,7 @@ import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
+import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
 
 import styles from "./job-modal.module.css";
 
@@ -234,7 +235,7 @@ export function JobModal({
         ?.jobsSchemasGet({ name: fun })
         .then((schema) => {
           setSaltFunction(schema);
-          setJsonFormValue({ args: arg, kwargs: kwarg });
+          setJsonFormValue({ args: arg, kwargs: cleanNullsFromKwargs(kwarg) });
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
