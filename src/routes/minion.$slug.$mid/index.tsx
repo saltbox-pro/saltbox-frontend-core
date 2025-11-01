@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Popconfirm, message } from "antd";
+import { Breadcrumb, Button, Space, message } from "antd";
 import { HomeOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
@@ -22,6 +22,7 @@ const MinionPage = observer(() => {
   const minionStore: MinionStore = minionStoreRef.current;
   const [collectionStore] = useState(new CollectionStore());
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -42,7 +43,9 @@ const MinionPage = observer(() => {
         mid: minionId,
         collection_slug: slug,
       });
-      messageApi.success(t("minions.deleted-successfully"));
+      // using `message` instead `messageApi` here to show the feedback even when the page is changed
+      message.success(t("minions.deleted-successfully"));
+      setIsDeleteModalOpen(false);
       navigate(`/minions/${slug}`);
     } catch (error) {
       messageApi.error(t("minions.delete-failed"));
@@ -106,7 +109,7 @@ const MinionPage = observer(() => {
         className="page-actions-buttons"
         style={{ justifyContent: "space-between" }}
       >
-        <div style={{ display: "flex", gap: "8px" }}>
+        <Space>
           <JobModal
             target={minionStore.minion?.minion_id ?? ""}
             targetType="glob"
@@ -120,22 +123,14 @@ const MinionPage = observer(() => {
           >
             {t("pillars.create-pillar")}
           </Button>
-        </div>
-        <Popconfirm
-          title={t("minions.delete-confirm-title")}
-          description={t("minions.delete-confirm-description")}
-          onConfirm={handleDeleteMinion}
-          okText={t("common.yes")}
-          cancelText={t("common.no")}
-          placement="topRight"
-        >
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            disabled={!minionStore.minion}
-          />
-        </Popconfirm>
+        </Space>
+        <Button
+          type="primary"
+          danger
+          icon={<DeleteOutlined />}
+          disabled={!minionStore.minion}
+          onClick={() => setIsDeleteModalOpen(true)}
+        />
       </div>
 
       <MinionDetails
@@ -144,6 +139,18 @@ const MinionPage = observer(() => {
         pillars={minionStore.pillars}
         isPillarsLoading={minionStore.isPillarsLoading}
       />
+
+      <Modal
+        title={t("minions.delete-confirm-title")}
+        open={isDeleteModalOpen}
+        onOk={handleDeleteMinion}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        okText={t("common.yes")}
+        cancelText={t("common.cancel")}
+        okButtonProps={{ danger: true }}
+      >
+        <p>{t("minions.delete-confirm-description")}</p>
+      </Modal>
 
       {isCreateModalOpen && (
         <Modal
@@ -159,6 +166,7 @@ const MinionPage = observer(() => {
           />
         </Modal>
       )}
+
       {contextHolder}
     </>
   );

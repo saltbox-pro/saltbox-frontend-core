@@ -53,6 +53,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@rjsf/antd": "^5.24.12",
     "@rjsf/core": "^5.24.12",
     "@rjsf/utils": "^5.24.12",

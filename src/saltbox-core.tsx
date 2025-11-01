@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import ReactDOMClient from "react-dom/client";
+import '@ant-design/v5-patch-for-react-19';
 import singleSpaReact from "single-spa-react";
 import Root from "./root.component";
 import { CollectionSelector } from "saltbox-core/shared/components/collection-selector/collection-selector";

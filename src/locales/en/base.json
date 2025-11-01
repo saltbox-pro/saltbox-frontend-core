@@ -544,6 +544,7 @@
   "common": {
     "yes": "Yes",
     "no": "No",
+    "cancel": "Cancel",
     "delete": "Delete"
   }
 }
