@@ -1,6 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ComponentProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
-import { generateID } from "react-querybuilder";
 import { Link, useNavigate } from "react-router";
 import {
   Row,
@@ -11,15 +17,7 @@ import {
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import Parcel from "single-spa-react/parcel";
-import {
-  Badge,
-  Button,
-  Checkbox,
-  Flex,
-  Spin,
-  Tag,
-  message,
-} from "antd";
+import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
 import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import {
   MasterViewSchema,
@@ -64,6 +62,7 @@ type MinionListViewProps = {
   filterStore: MinionFilterStore;
   collectionStore: CollectionStore;
   showFilter: boolean;
+  onAddFilter: () => void;
 };
 
 const MinionCompactView = observer(
@@ -71,7 +70,7 @@ const MinionCompactView = observer(
     minionId: string;
     slug: string;
     filterStore: MinionFilterStore;
-    onFilterButton: () => void;
+    onFilterButton: ComponentProps<typeof MinionDetails>["onFilterButton"];
   }) => {
     const minionStoreRef = useRef<MinionStore | undefined>(undefined);
     if (!minionStoreRef.current) {
@@ -84,23 +83,7 @@ const MinionCompactView = observer(
         isMinionLoading={minionStore.isMinionLoading}
         pillars={minionStore.pillars}
         isPillarsLoading={minionStore.isPillarsLoading}
-        onFilterButton={(params) => {
-          props.filterStore.currentFilters = {
-            ...props.filterStore.currentFilters,
-            rules: [
-              ...props.filterStore.currentFilters.rules,
-              {
-                field: `grains.${params.name}`,
-                operator: "=",
-                valueSource: "value",
-                value: params.value,
-                id: generateID(),
-              },
-            ],
-          };
-          props.filterStore.handleSearch();
-          props.onFilterButton();
-        }}
+        onFilterButton={props.onFilterButton}
       />
     );
   }
@@ -228,16 +211,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const lastActivitySeconds = data?.row.original.last_activity_seconds;
           const componentData = lastActivitySeconds
             ? {
-              badgeColor:
-                lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
+                badgeColor:
+                  lastActivitySecondsToBadgeColor(lastActivitySeconds),
+                badgeText: pastTimeByUserTZ(data.getValue()),
+                popoverContent: formatTimeByUserTZ(data.getValue()),
+              }
             : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
+                badgeColor: "orange",
+                badgeText: t("minions.never-synced"),
+                popoverContent: undefined,
+              };
           const result = useMemo(
             () => (
               <Popover content={componentData.popoverContent}>
@@ -334,6 +317,24 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     }
   };
 
+  const handleCreateTaskClick = useCallback(() => {
+    setIsCreateTaskLoading(true);
+    apiCoreStore.mastersApi
+      ?.mastersList({ status: "accepted" })
+      .then((result) => {
+        if (result?.data?.length === 0) {
+          messageApi.warning(t("minions.warning-on-create-task"));
+          return;
+        }
+        setSaltMasters(result.data);
+        setIsCreateTaskModalOpen(true);
+      })
+      .catch(() => {
+        messageApi.error(t("minions.error-on-load-salt-masters"));
+      })
+      .finally(() => setIsCreateTaskLoading(false));
+  }, [messageApi, t]);
+
   const handleCreateTaskModalClose = (form?: TaskCreateRequestSchemaInput) => {
     if (form === undefined) {
       setIsCreateTaskModalOpen(false);
@@ -349,6 +350,24 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         messageApi.error(t("minions.error-on-task-create"));
       });
   };
+
+  const handleDrawerClose = useCallback(() => {
+    setDrawerMinionId(undefined);
+  }, []);
+
+  const handleDrawerFilterButtonClick = useCallback<
+    ComponentProps<typeof MinionCompactView>["onFilterButton"]
+  >((params) => {
+    props.filterStore.addFilter({
+      field: `grains.${params.name}`,
+      operator: "=",
+      valueSource: "value",
+      value: params.value,
+    });
+    props.filterStore.handleSearch();
+    props.onAddFilter();
+    setDrawerMinionId(undefined);
+  }, []);
 
   let taskModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach(
@@ -379,23 +398,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => {
-              setIsCreateTaskLoading(true);
-              apiCoreStore.mastersApi
-                ?.mastersList({ status: "accepted" })
-                .then((result) => {
-                  if (result?.data?.length === 0) {
-                    messageApi.warning(t("minions.warning-on-create-task"));
-                    return;
-                  }
-                  setSaltMasters(result.data);
-                  setIsCreateTaskModalOpen(true);
-                })
-                .catch(() => {
-                  messageApi.error(t("minions.error-on-load-salt-masters"));
-                })
-                .finally(() => setIsCreateTaskLoading(false));
-            }}
+            onClick={handleCreateTaskClick}
             loading={isCreateTaskLoading}
           >
             {t("minions.create-task")}
@@ -439,7 +442,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       </Flex>
 
       <Drawer
-        onClose={() => setDrawerMinionId(undefined)}
+        onClose={handleDrawerClose}
         open={Boolean(drawerMinionId)}
         size={"large"}
         title={t("minions.minion")}
@@ -454,7 +457,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             slug={props.slug}
             minionId={drawerMinionId}
             filterStore={props.filterStore}
-            onFilterButton={() => setDrawerMinionId(undefined)}
+            onFilterButton={handleDrawerFilterButtonClick}
           />
         )}
       </Drawer>

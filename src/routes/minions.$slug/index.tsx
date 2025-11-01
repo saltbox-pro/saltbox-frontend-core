@@ -85,6 +85,10 @@ const MinionsPage = observer(() => {
     setIsDeleteModalOpen(true);
   };
 
+  const handleAddFilter = () => {
+    setShowFilter(true);
+  };
+
   const collectionMenuItems = [
     {
       key: "edit",
@@ -167,6 +171,7 @@ const MinionsPage = observer(() => {
               filterStore={minionFilterStore}
               showFilter={showFilter}
               collectionStore={collectionStore}
+              onAddFilter={handleAddFilter}
             />
           ) : null,
         className: styles.flexTab,

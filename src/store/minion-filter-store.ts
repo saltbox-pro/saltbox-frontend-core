@@ -1,7 +1,10 @@
+import { action, makeObservable, runInAction } from "mobx";
+import { apiCoreStore } from "saltbox-core/store";
+import { FilterStore } from "@saltbox/saltbox-frontend-common";
+import { generateID, RuleGroupType } from "react-querybuilder";
 
-import { action,  makeObservable, runInAction } from 'mobx';
-import { apiCoreStore } from 'saltbox-core/store';
-import { FilterStore } from '@saltbox/saltbox-frontend-common';
+type RuleType = RuleGroupType["rules"][number];
+
 export class MinionFilterStore extends FilterStore {
   constructor() {
     super();
@@ -21,5 +24,19 @@ export class MinionFilterStore extends FilterStore {
       .finally(() => {
         this.isLoading = false;
       });
+  };
+
+  @action
+  addFilter = (rule: RuleType) => {
+    this.currentFilters = {
+      ...this.currentFilters,
+      rules: [
+        ...this.currentFilters.rules,
+        {
+          ...rule,
+          id: rule.id || generateID(),
+        },
+      ],
+    };
   };
 }
