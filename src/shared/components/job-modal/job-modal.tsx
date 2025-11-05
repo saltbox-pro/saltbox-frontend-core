@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import JsonForm from "@rjsf/antd";
 import RjsfForm from "@rjsf/core";
@@ -254,6 +254,16 @@ export function JobModal({
         .finally(() => setIsSchemaLoading(false));
     }
   }, [fun, arg, kwarg, saltFunctionList, isModalOpen]);
+
+  useLayoutEffect(() => {
+    if (!saltFunction || !isModalOpen) {
+      return;
+    }
+    const jsonInputSelector =
+      "#job-params-form input, #job-params-form textarea, #job-params-form select";
+    const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
+    firstInput?.focus();
+  }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
