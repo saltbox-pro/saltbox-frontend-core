@@ -99,6 +99,7 @@ export function JobModal({
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<RjsfForm>(null);
+  const hasLoadedInitialSchema = useRef<boolean>(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
@@ -148,8 +149,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-        ? -1
-        : 0
+          ? -1
+          : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -218,6 +219,7 @@ export function JobModal({
     setSaltFunction(undefined);
     setJsonFormValue({});
     setIsSchemaListLoading(true);
+    hasLoadedInitialSchema.current = false;
 
     apiCoreStore.jsonSchemasApi
       ?.jobsSchemasList()
@@ -235,12 +237,13 @@ export function JobModal({
       return;
     }
 
-    if (fun && saltFunctionList.length > 0) {
+    if (fun && saltFunctionList.length > 0 && !hasLoadedInitialSchema.current) {
       setSaltFunction(undefined);
       setJsonFormValue({});
       refJobParamsForm.current?.reset();
 
       setIsSchemaLoading(true);
+      hasLoadedInitialSchema.current = true;
 
       apiCoreStore.jsonSchemasApi
         ?.jobsSchemasGet({ name: fun })
