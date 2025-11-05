@@ -263,6 +263,7 @@ export function JobModal({
       "#job-params-form input, #job-params-form textarea, #job-params-form select";
     const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
     firstInput?.focus();
+    firstInput?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
