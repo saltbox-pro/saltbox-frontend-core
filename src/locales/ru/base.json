@@ -123,7 +123,7 @@
     "root-collection-cannot-delete": "Корневую коллекцию нельзя удалить",
     "add-filters-to-save": "Добавьте фильтры для сохранения коллекции",
     "delete-confirm-title": "Удалить клиента",
-    "delete-confirm-description": "Вы уверены, что хотите удалить этого клиента? Это действие нельзя отменить.",
+    "delete-confirm-description": "Вы действительно хотите удалить клиента <b>{{minionId}}</b>?",
     "deleted-successfully": "Клиент успешно удален",
     "delete-failed": "Ошибка удаления клиента"
   },

@@ -43,7 +43,7 @@ const MinionPage = observer(() => {
         mid: minionId,
         collection_slug: slug,
       });
-      // using `message` instead `messageApi` here to show the feedback even when the page is changed
+      // using `message` instead of `messageApi` here to show the feedback even when the page is changed
       message.success(t("minions.deleted-successfully"));
       setIsDeleteModalOpen(false);
       navigate(`/minions/${slug}`);
@@ -149,7 +149,13 @@ const MinionPage = observer(() => {
         cancelText={t("common.cancel")}
         okButtonProps={{ danger: true }}
       >
-        <p>{t("minions.delete-confirm-description")}</p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: t("minions.delete-confirm-description", {
+              minionId: minionStore.minion?.minion_id,
+            }),
+          }}
+        />
       </Modal>
 
       {isCreateModalOpen && (
