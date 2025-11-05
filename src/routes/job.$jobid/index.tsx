@@ -285,6 +285,7 @@ const JobPage = observer(() => {
           total={jobStore.total}
           onLazyLoad={jobStore.handleLazyLoad}
           isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
+          forceExpand={jobStore.isSingleJobReturn}
         />
       </div>
 

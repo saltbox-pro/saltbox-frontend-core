@@ -244,6 +244,11 @@ export class JobStore {
   get actualJobDuration() {
     return getMaxExecutionTime(this.jobReturns, this.jobStartTime);
   }
+
+  @computed
+  get isSingleJobReturn() {
+    return this.total === 1;
+  }
 }
 
 export const jobStore = new JobStore();
