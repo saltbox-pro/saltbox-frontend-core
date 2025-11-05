@@ -5,15 +5,7 @@ import RjsfForm from "@rjsf/core";
 import { RJSFValidationError } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import { useNavigate } from "react-router";
-import {
-  Button,
-  Cascader,
-  Flex,
-  Form,
-  Input,
-  Select,
-  message,
-} from "antd";
+import { Button, Cascader, Flex, Form, Input, Select, message } from "antd";
 import {
   PlusOutlined,
   QuestionCircleOutlined,
@@ -30,6 +22,7 @@ import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
+import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 
 import styles from "./job-modal.module.css";
 
@@ -61,6 +54,7 @@ interface JobModalProps {
   arg?: any[];
   kwarg?: Record<string, any>;
   defaultMaster?: string;
+  shouldShowModalByKeyboardEvent?: (event: KeyboardEvent) => boolean;
   buttonProps?: JobModalButtonProps;
 }
 
@@ -75,6 +69,7 @@ export function JobModal({
   arg,
   kwarg,
   defaultMaster,
+  shouldShowModalByKeyboardEvent,
   buttonProps,
 }: JobModalProps) {
   const { t } = useTranslation();
@@ -153,8 +148,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-          ? -1
-          : 0
+        ? -1
+        : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -189,6 +184,22 @@ export function JobModal({
     setSaltFunctionList(list);
     setSaltFlatFunctionList(flatList);
   };
+
+  useDocumentEvent(
+    "keydown",
+    () => {
+      if (isModalOpen || !shouldShowModalByKeyboardEvent) {
+        return;
+      }
+      return (event) => {
+        if (shouldShowModalByKeyboardEvent(event)) {
+          event.preventDefault();
+          showModal();
+        }
+      };
+    },
+    [isModalOpen, shouldShowModalByKeyboardEvent]
+  );
 
   useEffect(() => {
     if (!isModalOpen) {

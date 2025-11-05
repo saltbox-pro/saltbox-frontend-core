@@ -1,10 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Link,
-  useNavigate,
-  useParams,
-} from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
 import {
   Breadcrumb,
@@ -16,10 +12,17 @@ import {
   Typography,
 } from "antd";
 import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
-import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
+import {
+  CreateJobRequestTgtTypeEnum,
+  JobModel,
+} from "@saltbox/saltbox-core-api-client";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { CopyToClipboardButton, PageHeader, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  PageHeader,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
@@ -68,7 +71,7 @@ const JobPage = observer(() => {
       appStore.authStore?.user?.access_token,
       (jobs: JobModel[]) => {
         jobStore.updateFromJobs(jobs);
-      },
+      }
     );
     return () => webSocketService.disconnect();
   }, [jid]);
@@ -78,6 +81,10 @@ const JobPage = observer(() => {
       webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
   }, [appStore.authStore?.user]);
+
+  const shouldRepeat = useCallback((event: KeyboardEvent) => {
+    return event.altKey && event.code === "KeyR";
+  }, []);
 
   let jobModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
@@ -118,6 +125,7 @@ const JobPage = observer(() => {
             fun={jobStore.job?.fun}
             arg={jobStore.job?.arg}
             kwarg={jobStore.job?.kwarg}
+            shouldShowModalByKeyboardEvent={shouldRepeat}
             buttonProps={{
               shape: "default",
               icon: <ReloadOutlined />,
@@ -126,14 +134,18 @@ const JobPage = observer(() => {
               title: t("jobs.repeat-job"),
             }}
           />
-          <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.table-target-type")}:
+          </span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
           </span>
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.table-targets")}:
+          </span>
           <span className={styles.jobDetailValue}>
             {(jobStore.job?.tgt as string) ? (
               <>
@@ -144,7 +156,11 @@ const JobPage = observer(() => {
                 >
                   {jobStore.job?.tgt as string}
                 </Text>
-                <CopyToClipboardButton text={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""} />
+                <CopyToClipboardButton
+                  text={
+                    (jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""
+                  }
+                />
               </>
             ) : (
               <Skeleton.Input size="small" />
@@ -153,7 +169,9 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>{t("jobs.table-function")}:</span>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.table-function")}:
+          </span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.fun ?? <Skeleton.Input size="small" />}
           </span>
@@ -181,7 +199,9 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>{t("jobs.key-value-arguments")}:</span>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.key-value-arguments")}:
+          </span>
           <span className={styles.jobDetailValue}>
             {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
@@ -204,7 +224,6 @@ const JobPage = observer(() => {
         </div>
       </div>
 
-
       <div className={styles.progressContainer}>
         {jobStore.totalMinions > 0 && (
           <Progress
@@ -219,11 +238,18 @@ const JobPage = observer(() => {
       </div>
 
       {jobStore.totalMinions > 0 && (
-        <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
-
+        <Flex
+          className={styles.switchContainer}
+          justify="space-between"
+          align="center"
+          gap={16}
+        >
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
-              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span> {t("job.successful-minions")}
+              <span className={styles.statsNumber}>
+                {jobStore.successfulMinions}
+              </span>{" "}
+              {t("job.successful-minions")}
               {" / "}
               {jobStore.failedMinions > 0 ? (
                 <MinionsPopover
@@ -231,8 +257,11 @@ const JobPage = observer(() => {
                   title={t("jobs.failed-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>{jobStore.failedMinions}</span>
-              )} {t("job.failed-minions")}
+                <span className={styles.statsNumber}>
+                  {jobStore.failedMinions}
+                </span>
+              )}{" "}
+              {t("job.failed-minions")}
               {" / "}
               {jobStore.pendingMinions > 0 ? (
                 <MinionsPopover
@@ -240,20 +269,22 @@ const JobPage = observer(() => {
                   title={t("job.pending-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>
-              )} {t("job.pending-minions")}
+                <span className={styles.statsNumber}>
+                  {jobStore.pendingMinions}
+                </span>
+              )}{" "}
+              {t("job.pending-minions")}
             </span>
           </div>
-
 
           <Flex align="center" gap={16}>
             {jobStore.jobStartTime && (
               <div className={styles.timerWrapper}>
-                <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
+                <span className={styles.timerLabel}>
+                  {t("jobs.job-duration")}:
+                </span>
                 {jobStore.isJobComplete && jobStore.actualJobDuration ? (
-                  <b>
-                    {formatJobDuration(jobStore.actualJobDuration)}
-                  </b>
+                  <b>{formatJobDuration(jobStore.actualJobDuration)}</b>
                 ) : (
                   <Timer
                     type="countup"
@@ -265,15 +296,11 @@ const JobPage = observer(() => {
             )}
             <Flex className={styles.switchWrapper}>
               <span>{t("jobs.full-output")}</span>
-              <Switch
-                checked={isFullOutput}
-                onChange={setIsFullOutput}
-              />
+              <Switch checked={isFullOutput} onChange={setIsFullOutput} />
             </Flex>
           </Flex>
         </Flex>
       )}
-
 
       <div className={styles.jobReturnTableWrapper}>
         <DefaultJobReturnTable
@@ -288,7 +315,6 @@ const JobPage = observer(() => {
           forceExpand={jobStore.isSingleJobReturn}
         />
       </div>
-
 
       {jobModalCreatePlugin}
     </>
