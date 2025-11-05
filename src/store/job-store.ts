@@ -247,7 +247,7 @@ export class JobStore {
 
   @computed
   get isSingleJobReturn() {
-    return Math.max(this.totalMinions, this.total) === 1;
+    return this.totalMinions === 1;
   }
 }
 
