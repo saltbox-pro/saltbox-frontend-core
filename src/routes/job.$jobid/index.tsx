@@ -45,15 +45,6 @@ const JobPage = observer(() => {
   };
 
   useEffect(() => {
-    if (jid) {
-      jobStore.reload(jid);
-    }
-    return () => {
-      jobStore.reset();
-    };
-  }, [jid]);
-
-  useEffect(() => {
     if (jobStore.error) {
       navigate("/not-found");
     }
@@ -69,11 +60,19 @@ const JobPage = observer(() => {
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
-      (jobs: JobModel[]) => {
-        jobStore.updateFromJobs(jobs);
+      {
+        onMessage: (jobs: JobModel[]) => {
+          jobStore.updateFromJobs(jobs);
+        },
+        onOpen: () => {
+          jobStore.reload(jid);
+        },
       }
     );
-    return () => webSocketService.disconnect();
+    return () => {
+      jobStore.reset();
+      webSocketService.disconnect();
+    };
   }, [jid]);
 
   useEffect(() => {

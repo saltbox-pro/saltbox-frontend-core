@@ -8,6 +8,7 @@ import { getMaxExecutionTime } from '../shared/utils/execution-time-utils';
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
 const PAGE_SIZE = 50;
+
 export class JobStore {
   @observable jid: string;
   @observable job: JobModel | null;
@@ -156,7 +157,9 @@ export class JobStore {
 
   @action
   updateJob = (job: JobModel) => {
-    this.job = job;
+    if (this.job?.modified < job.modified) {
+      this.job = job;
+    }
   }
 
   @action

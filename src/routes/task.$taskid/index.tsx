@@ -259,7 +259,9 @@ const useWebSocket = (taskId: string, onUpdate: (update: Object[]) => void) => {
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`,
       appStore.authStore?.user?.access_token,
-      onUpdate
+      {
+        onMessage: onUpdate
+      }
     );
     return () => webSocketService.disconnect();
   }, []);

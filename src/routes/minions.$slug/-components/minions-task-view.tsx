@@ -276,9 +276,11 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/tasks`,
       appStore.authStore?.user?.access_token,
-      (update: TaskListResponseSchema[]) => {
-        if (update?.length > 0) {
-          tasksStore.updateTasks(update);
+      {
+        onMessage: (update: TaskListResponseSchema[]) => {
+          if (update?.length > 0) {
+            tasksStore.updateTasks(update);
+          }
         }
       }
     );

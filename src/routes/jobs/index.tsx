@@ -256,11 +256,13 @@ const JobsPage = observer(() => {
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs`,
       appStore.authStore?.user?.access_token,
-      (update: JobsListResponse[]) => {
-        if (update?.length > 0) {
-          jobsStore.updateJobs(update);
-        }
-      },
+      {
+        onMessage: (update: JobsListResponse[]) => {
+          if (update?.length > 0) {
+            jobsStore.updateJobs(update);
+          }
+        },
+      }
     );
     return () => webSocketService.disconnect();
   }, []);
