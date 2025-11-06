@@ -157,7 +157,7 @@ export class JobStore {
 
   @action
   updateJob = (job: JobModel) => {
-    if (this.job?.modified < job.modified) {
+    if (new Date(this.job?.modified).getTime() < new Date(job?.modified).getTime()) {
       this.job = job;
     }
   }
