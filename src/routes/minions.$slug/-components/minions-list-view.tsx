@@ -14,7 +14,6 @@ import {
   Table,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import Parcel from "single-spa-react/parcel";
 import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
@@ -211,16 +210,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const lastActivitySeconds = data?.row.original.last_activity_seconds;
           const componentData = lastActivitySeconds
             ? {
-                badgeColor:
-                  lastActivitySecondsToBadgeColor(lastActivitySeconds),
-                badgeText: pastTimeByUserTZ(data.getValue()),
-                popoverContent: formatTimeByUserTZ(data.getValue()),
-              }
+              badgeColor:
+                lastActivitySecondsToBadgeColor(lastActivitySeconds),
+              badgeText: pastTimeByUserTZ(data.getValue()),
+              popoverContent: formatTimeByUserTZ(data.getValue()),
+            }
             : {
-                badgeColor: "orange",
-                badgeText: t("minions.never-synced"),
-                popoverContent: undefined,
-              };
+              badgeColor: "orange",
+              badgeText: t("minions.never-synced"),
+              popoverContent: undefined,
+            };
           const result = useMemo(
             () => (
               <Popover content={componentData.popoverContent}>
@@ -419,7 +418,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         <MinionsTable
           columns={minionColumns}
           getRowId={(row) => row.id}
-          data={toJS(minionsStore.minions)}
+          data={minionsStore.minions}
           total={minionsStore.totalMinions}
           isLoading={minionsStore.isLoading}
           pagination={minionsStore.pagination}
@@ -432,7 +431,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         {isCreateTaskModalOpen && (
           <TaskModal
             isOpen={isCreateTaskModalOpen}
-            collection={toJS(props.collectionStore.collection)}
+            collection={props.collectionStore.collection}
             minionList={selectedMinionIds}
             query={props.filterStore?.searchMongoDBQuery ?? {}}
             onClose={handleCreateTaskModalClose}
