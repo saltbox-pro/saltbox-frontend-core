@@ -149,8 +149,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-          ? -1
-          : 0
+        ? -1
+        : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -265,8 +265,7 @@ export function JobModal({
     const jsonInputSelector =
       "#job-params-form input, #job-params-form textarea, #job-params-form select";
     const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
-    firstInput?.focus();
-    firstInput?.scrollIntoView({ block: "center", behavior: "smooth" });
+    firstInput?.focus({ preventScroll: true });
   }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
