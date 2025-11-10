@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { createColumnHelper } from "@tanstack/react-table";
+import {
+  ColumnDef,
+  PaginationState,
+  Row,
+  SortingState,
+  createColumnHelper,
+} from "@tanstack/react-table";
 import {
   Button,
   Collapse,
@@ -11,20 +17,23 @@ import {
   Flex,
   Spin,
   Tabs,
+  Tag,
 } from "antd";
-import { FilterOutlined } from "@ant-design/icons";
+import { FilterOutlined, MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import {
   GrainsSchema,
   MinionDetailSchema,
   PillarModel,
 } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { Link } from "react-router";
+import { CopyToClipboardButton, FastTablePaginated, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import styles from "./minion-details.module.css";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode
-    ? K
-    : never]: GrainsSchema[K];
+  ? K
+  : never]: GrainsSchema[K];
 };
 
 interface MinionSimpleDetailView {
@@ -49,6 +58,148 @@ interface OnFilterButtonParams {
   name: string;
   value: any;
 }
+
+type JobReturnsConfig = {
+  jobReturns: JobReturnModel[];
+  isLoading: boolean;
+  pagination: PaginationState;
+  sorting: SortingState;
+  total: number;
+  onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
+};
+
+const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
+const JobReturnsTable = FastTablePaginated<JobReturnModel>;
+
+const MinionJobReturnsTable = (props: JobReturnsConfig) => {
+  const { t } = useTranslation();
+
+  const columns = useMemo<ColumnDef<JobReturnModel>[]>(
+    () => [
+      {
+        id: "expander",
+        header: () => null,
+        cell: ({ row }: { row: Row<JobReturnModel> }) => {
+          if (!row.getCanExpand()) {
+            return null;
+          }
+          return (
+            <Button
+              icon={
+                row.getIsExpanded() ? (
+                  <MinusSquareOutlined />
+                ) : (
+                  <PlusSquareOutlined />
+                )
+              }
+              size="small"
+              type="link"
+              onClick={row.getToggleExpandedHandler()}
+            />
+          );
+        },
+      },
+      jobReturnsColumnHelper.accessor("jid", {
+        header: t("jobs.table-jid"),
+        cell: (data) => {
+          const jid = data.getValue();
+          if (!jid) {
+            return "";
+          }
+
+          return (
+            <Flex gap={4} align="center">
+              <Link to={`/job/${jid}`}>
+                <Button type="link" size="small">
+                  {jid}
+                </Button>
+              </Link>
+              <CopyToClipboardButton text={jid} />
+            </Flex>
+          );
+        },
+      }),
+      jobReturnsColumnHelper.accessor("retcode", {
+        header: t("task.job-returns-table.table-success"),
+        cell: (data) => (
+          <Tag color={data.getValue() === 0 ? "green" : "red"}>
+            {data.getValue() === 0
+              ? t("task.job-returns-table.table-yes")
+              : t("task.job-returns-table.table-no")}
+          </Tag>
+        ),
+      }),
+      jobReturnsColumnHelper.accessor("fun", {
+        header: t("task.job-returns-table.table-fun"),
+        cell: (data) => {
+          const fun = data.getValue();
+          if (!fun) {
+            return "";
+          }
+          return fun;
+        },
+      }),
+      jobReturnsColumnHelper.display({
+        id: "return-code",
+        header: t("task.job-returns-table.table-return-code"),
+        cell: ({ row }) => row.original.retcode,
+      }),
+      jobReturnsColumnHelper.accessor("stamp", {
+        header: t("task.job-returns-table.table-timestamp"),
+        cell: (data) => {
+          const stamp = data.getValue();
+          if (!stamp) {
+            return "";
+          }
+          return formatTimeByUserTZ(stamp);
+        },
+      }),
+    ],
+    [t]
+  );
+
+  const renderJobResult = useCallback(
+    ({ row }: { row: Row<JobReturnModel> }) => {
+      const rawValue = row.original.data ?? row.original;
+      const jsonValue =
+        typeof rawValue === "object" && rawValue !== null
+          ? rawValue
+          : { result: rawValue };
+
+      return (
+        <div style={{ padding: 16 }}>
+          <ReactJson
+            displayDataTypes={false}
+            enableClipboard={false}
+            name={false}
+            displayObjectSize={false}
+            src={jsonValue}
+            collapsed={1}
+          />
+        </div>
+      );
+    },
+    []
+  );
+
+  return (
+    <JobReturnsTable
+      columns={columns}
+      data={props.jobReturns}
+      total={props.total}
+      isLoading={props.isLoading}
+      pagination={props.pagination}
+      sorting={props.sorting}
+      onLazyLoad={props.onLazyLoad}
+      getRowId={(row) =>
+        row.id
+      }
+      enableVirtualScroll={false}
+      renderSubComponent={renderJobResult}
+      getRowCanExpand={() => true}
+    />
+  );
+};
 
 const minionDetailsViewsToDescriptionItems = (
   t: any,
@@ -141,13 +292,14 @@ export function MinionDetails(props: {
   pillars: PillarModel[] | null;
   isPillarsLoading: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
+  jobReturnsConfig?: JobReturnsConfig;
 }) {
   const { t } = useTranslation();
   const combinedGrains = props.minion
     ? {
-        ...props.minion.grains,
-        ...props.minion.additional_grains,
-      }
+      ...props.minion.grains,
+      ...props.minion.additional_grains,
+    }
     : {};
 
   const minionGeneralDetailViews: MinionDetailView[] = [
@@ -182,13 +334,13 @@ export function MinionDetails(props: {
               <>
                 {Array.isArray(s.grains.gpus)
                   ? s.grains.gpus.map((gpu: any) => (
-                      <div key={gpu.model} className={styles.interfaceBlock}>
-                        <div className={styles.interfaceDetails}>
-                          <div>Vendor: {gpu.vendor || ""}</div>
-                          <div>Model: {gpu.model || ""}</div>
-                        </div>
+                    <div key={gpu.model} className={styles.interfaceBlock}>
+                      <div className={styles.interfaceDetails}>
+                        <div>Vendor: {gpu.vendor || ""}</div>
+                        <div>Model: {gpu.model || ""}</div>
                       </div>
-                    ))
+                    </div>
+                  ))
                   : ""}
               </>
             ) || "",
@@ -437,12 +589,24 @@ export function MinionDetails(props: {
             total={props.pillars.length}
             pagination={{ pageSize: 10, pageIndex: 0 }}
             getRowId={(row) => row.name}
-            onLazyLoad={() => {}}
+            onLazyLoad={() => { }}
           />
         );
       })(),
     },
   ];
+
+  if (props.jobReturnsConfig) {
+    items.push({
+      key: "job-returns",
+      label: t("minions.job-returns"),
+      children: (
+        <div className={styles.jobReturnsWrapper}>
+          <MinionJobReturnsTable {...props.jobReturnsConfig} />
+        </div>
+      ),
+    });
+  }
 
   return <Tabs items={items} className={styles.minionsTabs} />;
 }

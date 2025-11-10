@@ -125,7 +125,8 @@
     "delete-confirm-title": "Удалить клиент",
     "delete-confirm-description": "Вы действительно хотите удалить клиент <b>{{minionId}}</b>?",
     "deleted-successfully": "Клиент успешно удален",
-    "delete-failed": "Ошибка удаления клиента"
+    "delete-failed": "Ошибка удаления клиента",
+    "job-returns": "Ответы команд"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
@@ -237,6 +238,7 @@
       "table-execution-time": "Время выполнения",
       "table-yes": "Да",
       "table-no": "Нет",
+      "table-fun": "Функция",
       "invalid-execution-time": "Недопустимое время выполнения",
       "time-units": {
         "milliseconds": "мс",
