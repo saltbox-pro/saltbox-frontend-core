@@ -93,6 +93,7 @@ export function MinionsPopover({
         placement="bottomRight"
         open={isPopoverOpen}
         onOpenChange={setIsPopoverOpen}
+        zIndex={500}
       >
         <span className={styles.trigger}>{minions.length}</span>
       </Popover>
