@@ -7,7 +7,7 @@ import { HomeOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
-import { CollectionStore, MinionStore } from "saltbox-core/store";
+import { CollectionStore, MinionStore, jobStore } from "saltbox-core/store";
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
 import { PillarCreateForm } from "./-components/pillar-create-form";
 
@@ -34,6 +34,24 @@ const MinionPage = observer(() => {
       navigate("/not-found");
     }
   }, [minionStore.error]);
+
+  useEffect(() => {
+    const minionId = minionStore.minion?.minion_id;
+    const masterId = minionStore.minion?.master;
+
+    if (!minionId || !masterId || !slug) {
+      jobStore.reset();
+      return;
+    }
+
+    jobStore.reset();
+    jobStore.mongoDBQuery = {
+      minion_id: minionId,
+      salt_master: masterId,
+    };
+    jobStore.loadJobReturns();
+  }, [minionStore.minion?.minion_id, minionStore.minion?.master, slug]);
+
 
   const handleDeleteMinion = useCallback(async () => {
     if (!minionId || !slug) return;
@@ -138,6 +156,18 @@ const MinionPage = observer(() => {
         isMinionLoading={minionStore.isMinionLoading}
         pillars={minionStore.pillars}
         isPillarsLoading={minionStore.isPillarsLoading}
+        jobReturnsConfig={
+          jobStore
+            ? {
+              jobReturns: jobStore.jobReturns,
+              isLoading: jobStore.isJobReturnsLoading,
+              pagination: jobStore.pagination,
+              sorting: jobStore.sorting,
+              total: jobStore.total,
+              onLazyLoad: jobStore.handleLazyLoad,
+            }
+            : undefined
+        }
       />
 
       <Modal

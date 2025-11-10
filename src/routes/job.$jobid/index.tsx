@@ -177,6 +177,15 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.table-user")}:
+          </span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.job?.user.name ?? <Skeleton.Input size="small" />}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
           <span className={styles.jobDetailLabel}>{t("jobs.arguments")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.isJobLoading ? (

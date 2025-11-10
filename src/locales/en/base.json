@@ -125,7 +125,8 @@
     "delete-confirm-title": "Delete Minion",
     "delete-confirm-description": "Are you sure you want to delete minion <b>{{minionId}}</b>?",
     "deleted-successfully": "Minion deleted successfully",
-    "delete-failed": "Failed to delete minion"
+    "delete-failed": "Failed to delete minion",
+    "job-returns": "Job Returns"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",
@@ -237,6 +238,7 @@
       "table-execution-time": "Execution Time",
       "table-yes": "Yes",
       "table-no": "No",
+      "table-fun": "Function",
       "invalid-execution-time": "Invalid execution time",
       "time-units": {
         "milliseconds": "ms",

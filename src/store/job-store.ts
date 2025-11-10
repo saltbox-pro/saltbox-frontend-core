@@ -103,26 +103,34 @@ export class JobStore {
     if (!isSilentLoading) {
       this.isJobReturnsLoading = true;
     }
+
     apiCoreStore.jobsApi
       ?.jobReturnsList({
         JobListBody: {
           query: {
-            jid: this.jid,
             ...this.mongoDBQuery,
+            ...(this.jid ? { jid: this?.jid } : {}),
           },
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-        }
+        },
       })
       .then((jobReturns) => {
         runInAction(() => {
           this.jobReturns = jobReturns.data;
           this.total = jobReturns.total;
-          if (!isSilentLoading) {
-            this.isJobReturnsLoading = false;
-          }
         });
+      })
+      .catch((error) => {
+        console.error("Error loading job returns:", error);
+      })
+      .finally(() => {
+        if (!isSilentLoading) {
+          runInAction(() => {
+            this.isJobReturnsLoading = false;
+          });
+        }
       });
   };
 
