@@ -14,6 +14,11 @@ import {
 import {
   useFormatAndGetExecutionTimeColor
 } from "../../../utils/execution-time-utils";
+import {
+  extractStringValue,
+  getShortJobReturnOutput,
+  isSimpleStringData,
+} from "../utils/job-return-utils";
 import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
@@ -132,44 +137,6 @@ export const DefaultJobReturnTable = ({
     }),
   ], [t, jobStartTimestamp, jobReturns]);
 
-  const getShortOutput = (jobReturn: JobReturnModel) => {
-    return jobReturn?.data ? jobReturn.data : jobReturn;
-  };
-
-  const isSimpleStringData = (data: any): boolean => {
-    if (typeof data === "string") {
-      return true;
-    }
-
-    if (typeof data === "object" && data !== null) {
-      const keys = Object.keys(data);
-      if (keys.length === 1) {
-        const value = data[keys[0]];
-        return typeof value === "string";
-      }
-    }
-
-    return false;
-  };
-
-  const extractStringValue = (data: any): string => {
-    if (typeof data === "string") {
-      return data;
-    }
-
-    if (typeof data === "object" && data !== null) {
-      const keys = Object.keys(data);
-      if (keys.length === 1) {
-        const value = data[keys[0]];
-        if (typeof value === "string") {
-          return value;
-        }
-      }
-    }
-
-    return "";
-  };
-
   const renderStringData = (data: any) => {
     const stringValue = extractStringValue(data);
 
@@ -183,7 +150,7 @@ export const DefaultJobReturnTable = ({
   const renderJobResult = ({ row }: { row: Row<JobReturnModel> }) => {
     const dataToShow = isFullOutput
       ? row.original
-      : getShortOutput(row.original);
+      : getShortJobReturnOutput(row.original);
 
     if (!isFullOutput && isSimpleStringData(dataToShow)) {
       return renderStringData(dataToShow);
@@ -193,6 +160,11 @@ export const DefaultJobReturnTable = ({
       return renderBooleanData(dataToShow);
     }
 
+    const jsonValue =
+      typeof dataToShow === "object" && dataToShow !== null
+        ? dataToShow
+        : { result: dataToShow };
+
     return (
       <div className={styles.reactJsonContainer}>
         <ReactJson
@@ -200,7 +172,7 @@ export const DefaultJobReturnTable = ({
           enableClipboard={false}
           name={false}
           displayObjectSize={false}
-          src={dataToShow}
+          src={jsonValue as Record<string, unknown>}
           collapsed={isFullOutput ? 1 : 2}
         />
       </div>

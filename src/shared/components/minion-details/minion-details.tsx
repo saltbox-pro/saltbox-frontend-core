@@ -25,10 +25,20 @@ import {
   MinionDetailSchema,
   PillarModel,
 } from "@saltbox/saltbox-core-api-client";
-import { Link } from "react-router";
-import { CopyToClipboardButton, FastTablePaginated, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { useNavigate } from "react-router";
+import {
+  CopyToClipboardButton,
+  FastTablePaginated,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { jobStore } from "saltbox-core/store";
 import styles from "./minion-details.module.css";
+import {
+  extractStringValue,
+  getShortJobReturnOutput,
+  isSimpleStringData,
+} from "../job-return-table/utils/job-return-utils";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode
@@ -73,6 +83,19 @@ const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
 const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  const handleNavigateToJob = useCallback(
+    (jobId: string | null | undefined) => {
+      if (!jobId) {
+        return;
+      }
+
+      jobStore.mongoDBQuery = undefined;
+      navigate(`/job/${jobId}`);
+    },
+    [navigate]
+  );
 
   const columns = useMemo<ColumnDef<JobReturnModel>[]>(
     () => [
@@ -109,11 +132,13 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
 
           return (
             <Flex gap={4} align="center">
-              <Link to={`/job/${jid}`}>
-                <Button type="link" size="small">
-                  {jid}
-                </Button>
-              </Link>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => handleNavigateToJob(jid)}
+              >
+                {jid}
+              </Button>
               <CopyToClipboardButton text={jid} />
             </Flex>
           );
@@ -155,25 +180,43 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         },
       }),
     ],
-    [t]
+    [handleNavigateToJob, t]
   );
 
   const renderJobResult = useCallback(
     ({ row }: { row: Row<JobReturnModel> }) => {
-      const rawValue = row.original.data ?? row.original;
+      const dataToShow = getShortJobReturnOutput(row.original);
+
+      if (isSimpleStringData(dataToShow)) {
+        const stringValue = extractStringValue(dataToShow);
+        return (
+          <div className={styles.stringDataContainer}>
+            {stringValue}
+          </div>
+        );
+      }
+
+      if (typeof dataToShow === "boolean") {
+        return (
+          <div className={styles.stringDataContainer}>
+            {dataToShow ? "True" : "False"}
+          </div>
+        );
+      }
+
       const jsonValue =
-        typeof rawValue === "object" && rawValue !== null
-          ? rawValue
-          : { result: rawValue };
+        typeof dataToShow === "object" && dataToShow !== null
+          ? dataToShow
+          : { result: dataToShow };
 
       return (
-        <div style={{ padding: 16 }}>
+        <div className={styles.reactJsonContainer}>
           <ReactJson
             displayDataTypes={false}
             enableClipboard={false}
             name={false}
             displayObjectSize={false}
-            src={jsonValue}
+            src={jsonValue as Record<string, unknown>}
             collapsed={1}
           />
         </div>
