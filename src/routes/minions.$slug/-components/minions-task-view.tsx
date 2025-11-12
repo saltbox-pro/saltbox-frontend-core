@@ -335,7 +335,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         onLazyLoad={(pagination, sorting) =>
           tasksStore.handleLazyLoad(pagination, sorting)
         }
-        enableVirtualScroll={true}
+        useVirtualScroll={true}
       />
     </Flex>
   );
