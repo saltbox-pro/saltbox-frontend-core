@@ -295,7 +295,7 @@
     "table-status-waiting-returns": "Ждёт ответа",
     "table-status-finished": "Завершена",
     "table-status-unknown": "Unknown",
-    "table-status": "Статут задачи",
+    "table-status": "Статус команды",
     "date-range-label": "Фильтрация за период",
     "date-range-today": "Сегодня",
     "date-range-10-minutes": "10 минут назад",
