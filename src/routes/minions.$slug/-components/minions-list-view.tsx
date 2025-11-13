@@ -27,6 +27,7 @@ import {
 import {
   CopyToClipboardButton,
   FastTablePaginated,
+  NavigationIconLink,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   Drawer,
@@ -143,10 +144,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
                   onClick={() => {
                     setDrawerMinionId(minionId);
                   }}
+                  className={styles.minionIdButton}
                 >
                   {showMinionId}
                 </Button>
-                <CopyToClipboardButton text={showMinionId} />
+                <div className={styles.minionIdCopyToClipboardButton}>
+                  <CopyToClipboardButton text={showMinionId} />
+                </div>
+                <div className={styles.minionIdNavigationLink}>
+                  <NavigationIconLink to={`/core/minion/${props.slug}/${minionId}`} target="_blank" />
+                </div>
               </>
             ),
             []

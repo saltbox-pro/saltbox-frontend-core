@@ -1,0 +1,9 @@
+.minionIdNavigationLink {
+  display: inline-block;
+  margin-left: -6px;
+}
+
+.minionIdCopyToClipboardButton {
+  display: inline-block;
+  margin-left: -9px;
+}

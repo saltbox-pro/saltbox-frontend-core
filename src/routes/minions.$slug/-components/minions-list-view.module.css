@@ -7,3 +7,17 @@
   width: 10px !important;
   height: 10px !important;
 }
+
+.minionIdButton {
+  padding: 0;
+}
+
+.minionIdNavigationLink {
+  display: inline-block;
+  margin-left: -6px;
+}
+
+.minionIdCopyToClipboardButton {
+  display: inline-block;
+  margin-left: -1px;
+}

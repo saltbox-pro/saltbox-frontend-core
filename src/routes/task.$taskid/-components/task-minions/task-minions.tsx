@@ -7,10 +7,12 @@ import {
   CopyToClipboardButton,
   FastTableListed,
   formatTimeByUserTZ,
+  NavigationIconLink,
   pastTimeByUserTZ,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
+import styles from "./task-minions.module.css";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
 
@@ -51,7 +53,12 @@ export const TaskMinions = ({
                 {data.getValue()}
               </Button>
             </Link>
-            <CopyToClipboardButton text={data.getValue()} />
+            <div className={styles.minionIdCopyToClipboardButton}>
+              <CopyToClipboardButton text={data.getValue()} />
+            </div>
+            <div className={styles.minionIdNavigationLink}>
+              <NavigationIconLink to={`/core/minion/${collectionSlug}/${mid}`} target="_blank" />
+            </div>
           </>
         );
       },
