@@ -1,4 +1,4 @@
-import { ComponentProps, useCallback, useMemo, useState } from "react";
+import { ComponentProps, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import {
@@ -187,10 +187,7 @@ export const DefaultJobReturnTable = ({
     );
   };
 
-  const overscan = useMemo(
-    () => (pagination.pageSize > 100 ? 10 : 100),
-    [pagination.pageSize]
-  );
+  const overscan = pagination.pageSize > 100 ? 10 : 100;
 
   return (
     <JobReturnsTable
