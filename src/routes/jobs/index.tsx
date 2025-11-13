@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Tag, Typography } from "antd";
@@ -16,7 +16,7 @@ import {
   Popover,
   CopyToClipboardButton,
 } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, JobFilterStore, JobsStore, jobStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import Parcel from "single-spa-react/parcel";
@@ -164,19 +164,39 @@ const JobsPage = observer(() => {
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
 
+  const handleNavigateToJob = useCallback(
+    (jobId: string | null | undefined) => {
+      if (!jobId) {
+        return;
+      }
+
+      jobStore.mongoDBQuery = undefined;
+      navigate(`/job/${jobId}`);
+    },
+    [navigate]
+  );
+
   const columns = useMemo(() => [
     columnHelper.accessor("jid", {
       header: t("jobs.table-jid"),
       cell: (data) => {
-        const result = useMemo(() => <>
-          <Link to={`/job/${data.getValue()}`}>
-            <Button type="link" size={"small"}>
-              {data.getValue()}
+        const jid = data.getValue();
+        if (!jid) {
+          return "";
+        }
+
+        return (
+          <>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => handleNavigateToJob(jid)}
+            >
+              {jid}
             </Button>
-          </Link>
-          <CopyToClipboardButton text={data.getValue()} />
-        </>, []);
-        return result;
+            <CopyToClipboardButton text={jid} />
+          </>
+        );
       },
       meta: {
         tdClassName: "fast-table-column-nowrap",
@@ -250,7 +270,7 @@ const JobsPage = observer(() => {
         return result;
       },
     }),
-  ], [t]);
+  ], [handleNavigateToJob, t]);
 
   useEffect(() => {
     webSocketService.connect(
