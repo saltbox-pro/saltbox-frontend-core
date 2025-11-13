@@ -349,7 +349,7 @@ const JobsPage = observer(() => {
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
-        enableVirtualScroll={true}
+        useVirtualScroll={true}
       />
 
       {jobModalCreatePlugin}

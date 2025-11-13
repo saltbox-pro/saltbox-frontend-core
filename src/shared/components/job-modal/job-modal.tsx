@@ -675,8 +675,7 @@ export function JobModal({
       <MinionGatherModal
         isOpen={isGatherModalOpen}
         onClose={() => setIsGatherModalOpen(false)}
-        //target={tgt ?? ""}
-        target={undefined}
+        target={tgt as string}
         targetType={tgtType}
         master={saltMaster ?? ""}
       />

@@ -237,7 +237,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
       getRowId={(row) =>
         row.id
       }
-      enableVirtualScroll={false}
+      useVirtualScroll={false}
       renderSubComponent={renderJobResult}
       getRowCanExpand={() => true}
     />
