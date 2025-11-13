@@ -117,11 +117,6 @@ export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
                   required: true,
                   message: t("settings-sls.modal-repo-url-required"),
                 },
-                {
-                  type: "url",
-                  message: t("settings-sls.modal-repo-url-invalid"),
-                },
-                { max: 255, message: t("settings-sls.modal-repo-url-max") },
               ]}
               initialValue={""}
             >
