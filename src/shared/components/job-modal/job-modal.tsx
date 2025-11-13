@@ -1,4 +1,11 @@
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  KeyboardEventHandler,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import JsonForm from "@rjsf/antd";
 import RjsfForm from "@rjsf/core";
@@ -262,10 +269,22 @@ export function JobModal({
     if (!saltFunction || !isModalOpen) {
       return;
     }
-    const jsonInputSelector =
-      "#job-params-form input, #job-params-form textarea, #job-params-form select";
-    const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
-    firstInput?.focus({ preventScroll: true });
+
+    const focusFirstJsonInput = () => {
+      const jsonInputSelector =
+        "#job-params-form input, #job-params-form textarea, #job-params-form select";
+      const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
+      firstInput?.focus({ preventScroll: true });
+    };
+
+    const hasJsonFields = !!Object.keys(
+      saltFunction.json_schema?.properties || {}
+    ).length;
+    if (hasJsonFields) {
+      focusFirstJsonInput();
+    } else {
+      form.focusField("tgt");
+    }
   }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
@@ -328,6 +347,13 @@ export function JobModal({
           });
         }, 100);
       }
+    }
+  };
+
+  const handleFormKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.code === "Enter") {
+      event.preventDefault();
+      form.submit();
     }
   };
 
@@ -530,6 +556,7 @@ export function JobModal({
               form="job-form"
               key="submit"
               htmlType="submit"
+              title="Ctrl+Enter"
             >
               {t("job-modal.create")}
             </Button>
@@ -543,6 +570,7 @@ export function JobModal({
           layout={"vertical"}
           onFinish={handleFormFinish}
           onFinishFailed={handleFormFinishFailed}
+          onKeyDown={handleFormKeyDown}
           autoComplete="off"
           id="job-form"
         >
