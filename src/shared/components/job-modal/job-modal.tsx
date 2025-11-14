@@ -352,6 +352,7 @@ export function JobModal({
 
   const handleFormKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
     if ((event.ctrlKey || event.metaKey) && event.code === "Enter") {
+      if (isLoading) return;
       event.preventDefault();
       form.submit();
     }
