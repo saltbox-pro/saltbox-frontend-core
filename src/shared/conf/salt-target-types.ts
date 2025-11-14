@@ -22,10 +22,6 @@ export const saltTargetTypes: SelectProps["options"] = [
   },
   { value: "nodegroup", label: "nodegroup - Match on nodegroup" },
   {
-    value: "range",
-    label: "range - Use a Range server for matching",
-  },
-  {
     value: "compound",
     label: "compound - Pass a compound match string",
   },
