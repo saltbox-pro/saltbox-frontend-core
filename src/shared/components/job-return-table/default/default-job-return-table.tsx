@@ -199,7 +199,7 @@ export const DefaultJobReturnTable = ({
       pagination={pagination}
       sorting={sorting}
       onLazyLoad={onLazyLoad}
-      useVirtualScroll={true}
+      useVirtualScroll={false}
       overscan={overscan}
       forceExpandAll={forceExpand}
       getRowCanExpand={() => true}
