@@ -115,12 +115,12 @@ const MinionPage = observer(() => {
             href: `/core/minions/${slug}`,
           },
           {
-            title: `${t("minions.minion")} #${minionStore.minion?.minion_id}`,
+            title: `${t("minions.minion")} ${minionStore.minion?.minion_id}`,
           },
         ]}
       />
       <PageHeader
-        title={`${t("minions.minion")} #${minionStore.minion?.minion_id}`}
+        title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`}
       />
 
       <div

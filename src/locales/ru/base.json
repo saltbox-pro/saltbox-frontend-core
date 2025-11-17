@@ -305,7 +305,7 @@
     "date-range-12-hours": "12 часов назад",
     "date-range-1-day": "1 день назад",
     "table-copy": "Скопировать",
-    "job-title": "Команда #{{jobId}}",
+    "job-title": "Команда {{jobId}}",
     "table-copy-success": "Скопировано",
     "key-value-arguments": "Аргументы в формате ключ-значение",
     "failed-minions": "Неудачные миньоны",
