@@ -58,13 +58,87 @@
   height: 100%;
 }
 
-.minionsTabs :global(.ant-tabs-tab) {
-  padding: 0 0 12px 0;
+.minionsTabs {
+  margin-top: 8px;
 }
 
 .pillarsTab {
   display: flex;
   flex-direction: column;
+}
+
+.pillarsTabContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.tabExtraActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+.kwargsCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.kwargsPreview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.kwargsEllipsis {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+.kwargsTag {
+  margin-inline: 0;
+  background-color: #f0f5ff !important;
+  border-color: #d6e4ff !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.kwargsKey {
+  color: #1890ff;
+}
+
+.kwargsSeparator {
+  color: #1890ff;
+}
+
+.kwargsValue {
+  color: #722ed1;
+}
+
+.kwargsBrace {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.kwargsEmpty {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+.kwargsPopoverContent {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.kwargsPopoverButton {
+  padding: 0;
+  height: auto;
 }
 
 .jobReturnsWrapper {
@@ -85,6 +159,20 @@
 .jobReturnsWrapper :global(.fast-table table > thead > tr > th:first-child) {
   width: 1%;
   white-space: nowrap;
+}
+
+.jobReturnsWrapper :global(.fast-table table > thead > tr > th:nth-child(2)),
+.jobReturnsWrapper :global(.fast-table table > tbody > tr > td:nth-child(2)) {
+  width: 260px;
+  min-width: 260px;
+  max-width: 260px;
+}
+
+.jobReturnsWrapper :global(.fast-table table > thead > tr > th:nth-child(3)),
+.jobReturnsWrapper :global(.fast-table table > tbody > tr > td:nth-child(3)) {
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
 }
 
 .stringDataContainer {

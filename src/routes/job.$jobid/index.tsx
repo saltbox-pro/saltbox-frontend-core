@@ -192,9 +192,7 @@ const JobPage = observer(() => {
               <Skeleton.Input size="small" />
             ) : jobStore.job?.arg && jobStore.job.arg.length > 0 ? (
               <Flex align="center" gap={4}>
-                <span>
-                  {jobStore.job.arg.length} {t("jobs.arguments")}
-                </span>
+                <span>{jobStore.job.arg.length}</span>
                 <JsonPopover
                   data={jobStore.job.arg}
                   title={t("jobs.arguments")}
@@ -216,10 +214,7 @@ const JobPage = observer(() => {
             ) : jobStore.job?.kwarg &&
               Object.keys(jobStore.job.kwarg).length > 0 ? (
               <Flex align="center" gap={4}>
-                <span>
-                  {t("jobs.arguments")}:{" "}
-                  {Object.keys(jobStore.job.kwarg).length}
-                </span>
+                <span>{Object.keys(jobStore.job.kwarg).length}</span>
                 <JsonPopover
                   data={jobStore.job.kwarg}
                   title={t("jobs.key-value-arguments")}
