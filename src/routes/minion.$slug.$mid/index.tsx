@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Space, message } from "antd";
+import { Breadcrumb, Button, Flex, message } from "antd";
 import { HomeOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import type { MenuProps } from "antd";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
@@ -99,6 +100,45 @@ const MinionPage = observer(() => {
     [minionStore, messageApi, t]
   );
 
+  const pillarsTabActions = (
+    <Button
+      type="primary"
+      icon={<PlusOutlined />}
+      onClick={() => setIsCreateModalOpen(true)}
+      disabled={!minionStore.minion}
+    >
+      {t("pillars.create-pillar")}
+    </Button>
+  );
+
+  const jobReturnsTabActions = (
+    <JobModal
+      target={minionStore.minion?.minion_id ?? ""}
+      targetType="glob"
+      defaultMaster={minionStore.minion?.master ?? ""}
+    />
+  );
+
+  const handleFullViewActionsMenuClick: MenuProps["onClick"] = (info) => {
+    if (info.key === "delete-minion") {
+      setIsDeleteModalOpen(true);
+    }
+  };
+
+  const minionsActionsMenuItems: MenuProps["items"] = [
+    {
+      key: "delete-minion",
+      label: (
+        <Flex align="center" gap={8}>
+          <DeleteOutlined />
+          {t("minions.delete")}
+        </Flex>
+      ),
+      danger: true,
+      disabled: !minionStore.minion,
+    },
+  ];
+
   return (
     <>
       <Breadcrumb
@@ -123,39 +163,16 @@ const MinionPage = observer(() => {
         title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`}
       />
 
-      <div
-        className="page-actions-buttons"
-        style={{ justifyContent: "space-between" }}
-      >
-        <Space>
-          <JobModal
-            target={minionStore.minion?.minion_id ?? ""}
-            targetType="glob"
-            defaultMaster={minionStore.minion?.master ?? ""}
-          />
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setIsCreateModalOpen(true)}
-            disabled={!minionStore.minion}
-          >
-            {t("pillars.create-pillar")}
-          </Button>
-        </Space>
-        <Button
-          type="primary"
-          danger
-          icon={<DeleteOutlined />}
-          disabled={!minionStore.minion}
-          onClick={() => setIsDeleteModalOpen(true)}
-        />
-      </div>
-
       <MinionDetails
         minion={minionStore.minion}
         isMinionLoading={minionStore.isMinionLoading}
         pillars={minionStore.pillars}
         isPillarsLoading={minionStore.isPillarsLoading}
+        isFullView
+        pillarsTabActions={pillarsTabActions}
+        jobReturnsTabActions={jobReturnsTabActions}
+        fullViewActionsMenuItems={minionsActionsMenuItems}
+        onFullViewActionsMenuClick={handleFullViewActionsMenuClick}
         jobReturnsConfig={
           jobStore
             ? {

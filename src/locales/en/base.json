@@ -308,7 +308,7 @@
     "job-title-breadcrumb": "Job",
     "job-title": "Job #{{jobId}}",
     "table-copy-success": "Copied",
-    "key-value-arguments": "Key-Value arguments",
+    "key-value-arguments": "kwargs",
     "failed-minions": "Failed Minions",
     "pending-minions": "Pending Minions",
     "copy-list": "Copy List",

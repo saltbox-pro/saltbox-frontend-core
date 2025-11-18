@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import {
@@ -14,12 +14,14 @@ import {
   CollapseProps,
   Descriptions,
   DescriptionsProps,
+  Dropdown,
   Flex,
   Spin,
   Tabs,
   Tag,
+  message,
 } from "antd";
-import { FilterOutlined, MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import { FilterOutlined, MinusSquareOutlined, PlusSquareOutlined, SettingOutlined, CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import {
   GrainsSchema,
   MinionDetailSchema,
@@ -29,11 +31,15 @@ import { useNavigate } from "react-router";
 import {
   CopyToClipboardButton,
   FastTablePaginated,
+  MatIcon,
+  Popover,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { jobStore } from "saltbox-core/store";
+import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import styles from "./minion-details.module.css";
+import type { MenuProps, TabsProps } from "antd";
 import {
   extractStringValue,
   getShortJobReturnOutput,
@@ -80,6 +86,69 @@ type JobReturnsConfig = {
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
 const JobReturnsTable = FastTablePaginated<JobReturnModel>;
+
+const KwargsPopoverButton = ({
+  data,
+  title,
+  copySuccessMessage,
+}: {
+  data: Record<string, unknown>;
+  title: string;
+  copySuccessMessage: string;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    messageApi.success(copySuccessMessage);
+  }, [copySuccessMessage, data, messageApi]);
+
+  return (
+    <>
+      {contextHolder}
+      <Popover
+        content={
+          <div className={styles.kwargsPopoverContent}>
+            <ReactJson
+              displayDataTypes={false}
+              enableClipboard={false}
+              name={false}
+              displayObjectSize={false}
+              src={data}
+              collapsed={1}
+            />
+          </div>
+        }
+        title={
+          <Flex justify="space-between" align="center">
+            <span>{title}</span>
+            <Flex gap={8}>
+              <Button type="link" icon={<CopyOutlined />} onClick={handleCopy} />
+              <Button
+                type="link"
+                icon={<CloseOutlined />}
+                onClick={() => setIsOpen(false)}
+              />
+            </Flex>
+          </Flex>
+        }
+        trigger="click"
+        overlayStyle={{ maxWidth: 700 }}
+        placement="bottomRight"
+        open={isOpen}
+        onOpenChange={setIsOpen}
+      >
+        <Button
+          type="link"
+          size="small"
+          icon={<MatIcon icon="search" />}
+          className={styles.kwargsPopoverButton}
+        />
+      </Popover>
+    </>
+  );
+};
 
 const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   const { t } = useTranslation();
@@ -130,6 +199,8 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
             return "";
           }
 
+          const jobReturn = data.row.original;
+
           return (
             <Flex gap={4} align="center">
               <Button
@@ -140,6 +211,21 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
                 {jid}
               </Button>
               <CopyToClipboardButton text={jid} />
+              <JobModal
+                target={jobReturn.minion_id}
+                targetType="glob"
+                fun={jobReturn.fun}
+                arg={jobReturn.fun_args || undefined}
+                kwarg={jobReturn.fun_kwarg || undefined}
+                defaultMaster={jobReturn.salt_master}
+                buttonProps={{
+                  type: "link",
+                  size: "small",
+                  icon: <ReloadOutlined />,
+                  showText: false,
+                  title: t("jobs.repeat-job"),
+                }}
+              />
             </Flex>
           );
         },
@@ -165,9 +251,93 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         },
       }),
       jobReturnsColumnHelper.display({
-        id: "return-code",
-        header: t("task.job-returns-table.table-return-code"),
-        cell: ({ row }) => row.original.retcode,
+        id: "kwargs",
+        header: t("jobs.key-value-arguments"),
+        cell: ({ row }) => {
+          const rawKwargs = row.original.fun_kwarg;
+
+          const isObjectKwargs =
+            rawKwargs &&
+            typeof rawKwargs === "object" &&
+            !Array.isArray(rawKwargs);
+
+          const kwargs = isObjectKwargs
+            ? (rawKwargs as Record<string, unknown>)
+            : undefined;
+          const entries = kwargs ? Object.entries(kwargs) : [];
+          const previewEntries = entries.slice(0, 3);
+          const hasMore = entries.length > 3;
+
+          const formatValue = (value: unknown) => {
+            if (
+              value === null ||
+              typeof value === "number" ||
+              typeof value === "boolean"
+            ) {
+              return String(value);
+            }
+
+            if (typeof value === "string") {
+              return value.length > 24 ? `${value.slice(0, 21)}…` : value;
+            }
+
+            if (Array.isArray(value)) {
+              const items = value.slice(0, 3).map((item) => {
+                if (typeof item === "string") {
+                  return item.length > 12 ? `${item.slice(0, 9)}…` : item;
+                }
+                if (typeof item === "number" || typeof item === "boolean") {
+                  return String(item);
+                }
+                return "…";
+              });
+              return `[${items.join(", ")}${value.length > 3 ? ", …" : ""}]`;
+            }
+
+            if (typeof value === "object") {
+              return "{…}";
+            }
+
+            return "";
+          };
+
+          return (
+            <Flex align="center" gap={8} wrap className={styles.kwargsCell}>
+              <Flex align="center" gap={4} wrap className={styles.kwargsPreview}>
+                <Tag className={styles.kwargsTag}>
+                  <span className={styles.kwargsBrace}>{"{"}</span>
+                  {previewEntries.length > 0 ? (
+                    previewEntries.map(([key, value], index) => (
+                      <React.Fragment key={key}>
+                        <span className={styles.kwargsKey}>{key}</span>
+                        <span className={styles.kwargsSeparator}>: </span>
+                        <span className={styles.kwargsValue}>{formatValue(value)}</span>
+                        {index < previewEntries.length - 1 && (
+                          <span className={styles.kwargsSeparator}>, </span>
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <span className={styles.kwargsEmpty}>
+                      {t("jobs.no-key-value-arguments")}
+                    </span>
+                  )}
+                  {hasMore ? (
+                    <span className={styles.kwargsEllipsis}>…</span>
+                  ) : null}
+                  <span className={styles.kwargsBrace}>{"}"}</span>
+                </Tag>
+              </Flex>
+              {entries.length > 3 ? (
+                <KwargsPopoverButton
+                  data={kwargs as Record<string, unknown>}
+                  title={t("jobs.key-value-arguments")}
+                  copySuccessMessage={t("jobs.table-copy-success")}
+                />
+              ) : null}
+            </Flex>
+          );
+        },
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-timestamp"),
@@ -336,6 +506,11 @@ export function MinionDetails(props: {
   isPillarsLoading: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
   jobReturnsConfig?: JobReturnsConfig;
+  isFullView?: boolean;
+  pillarsTabActions?: React.ReactNode;
+  jobReturnsTabActions?: React.ReactNode;
+  fullViewActionsMenuItems?: MenuProps["items"];
+  onFullViewActionsMenuClick?: MenuProps["onClick"];
 }) {
   const { t } = useTranslation();
   const combinedGrains = props.minion
@@ -524,120 +699,83 @@ export function MinionDetails(props: {
     },
   ];
 
-  const items = [
-    {
-      key: "dashboard",
-      label: t("minions.dashboard"),
-      children: (() => {
-        if (props.isMinionLoading) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
+  const isFullView = props.isFullView ?? false;
+  const pillarsData = props.pillars ?? [];
+  const pillarsTotal = props.pillars?.length ?? 0;
+  const fullViewActions =
+    isFullView && props.fullViewActionsMenuItems
+      ? {
+        right: (
+          <div className={styles.tabExtraActions}>
+            <Dropdown
+              menu={{
+                items: props.fullViewActionsMenuItems,
+                onClick: props.onFullViewActionsMenuClick,
+              }}
+              trigger={["click"]}
             >
-              <Spin />
-            </Flex>
-          );
-        }
-        if (!props.minion) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
-            >
-              {t("minions.no-minion-data-available")}
-            </Flex>
-          );
-        }
-        return (
-          <div className={styles.minionDetailsDashboard}>
-            <Descriptions
-              items={minionDetailsViewsToDescriptionItems(
-                t,
-                minionGeneralDetailViews,
-                props.minion,
-                props.onFilterButton
-              )}
-              bordered
-            />
-            <Collapse
-              items={minionDetailViewGroupsToCollapseItems(
-                t,
-                minionGroupDetailsViews,
-                props.minion,
-                props.onFilterButton
-              )}
-            />
+              <Button>
+                <Flex gap={8} align="center">
+                  <SettingOutlined />
+                </Flex>
+              </Button>
+            </Dropdown>
           </div>
-        );
-      })(),
-    },
-    {
-      key: "grains",
-      label: t("minions.grains"),
-      children: (() => {
-        if (props.isMinionLoading) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
-            >
-              <Spin />
-            </Flex>
-          );
-        }
-        if (!props.minion) {
-          return (
-            <Flex
-              justify={"center"}
-              align={"center"}
-              style={{ height: "100%" }}
-            >
-              {t("minions.no-minion-data-available")}
-            </Flex>
-          );
-        }
+        ),
+      }
+      : undefined;
+
+  const items: TabsProps["items"] = [];
+
+  items.push({
+    key: "dashboard",
+    label: t("minions.dashboard"),
+    children: (() => {
+      if (props.isMinionLoading) {
         return (
-          <div>
-            <Flex justify="flex-end" style={{ marginBottom: 8 }}>
-              <CopyToClipboardButton
-                text={JSON.stringify(combinedGrains, null, 2)}
-              />
-            </Flex>
-            <ReactJson
-              displayDataTypes={false}
-              enableClipboard={false}
-              name={false}
-              displayObjectSize={false}
-              src={combinedGrains}
-              collapsed={1}
-            />
-          </div>
+          <Flex
+            justify={"center"}
+            align={"center"}
+            style={{ height: "100%" }}
+          >
+            <Spin />
+          </Flex>
         );
-      })(),
-    },
-    {
-      key: "pillars",
-      label: "Pillars",
-      className: styles.pillarsTab,
-      children: (() => {
+      }
+      if (!props.minion) {
         return (
-          <FastTablePaginated
-            isLoading={props.isPillarsLoading}
-            columns={pillarsColumns}
-            data={props.pillars}
-            total={props.pillars.length}
-            pagination={{ pageSize: 10, pageIndex: 0 }}
-            getRowId={(row) => row.name}
-            onLazyLoad={() => { }}
+          <Flex
+            justify={"center"}
+            align={"center"}
+            style={{ height: "100%" }}
+          >
+            {t("minions.no-minion-data-available")}
+          </Flex>
+        );
+      }
+      return (
+        <div className={styles.minionDetailsDashboard}>
+          <Descriptions
+            items={minionDetailsViewsToDescriptionItems(
+              t,
+              minionGeneralDetailViews,
+              props.minion,
+              props.onFilterButton
+            )}
+            bordered
           />
-        );
-      })(),
-    },
-  ];
+          <Collapse
+            items={minionDetailViewGroupsToCollapseItems(
+              t,
+              minionGroupDetailsViews,
+              props.minion,
+              props.onFilterButton
+            )}
+          />
+        </div>
+      );
+    })(),
+  });
 
   if (props.jobReturnsConfig) {
     items.push({
@@ -645,11 +783,90 @@ export function MinionDetails(props: {
       label: t("minions.job-returns"),
       children: (
         <div className={styles.jobReturnsWrapper}>
+          {isFullView && props.jobReturnsTabActions ? (
+            <div className="page-actions-buttons">{props.jobReturnsTabActions}</div>
+          ) : null}
           <MinionJobReturnsTable {...props.jobReturnsConfig} />
         </div>
       ),
     });
   }
 
-  return <Tabs items={items} className={styles.minionsTabs} />;
+  items.push({
+    key: "pillars",
+    label: "Pillars",
+    className: styles.pillarsTab,
+    children: (() => {
+      return (
+        <div className={styles.pillarsTabContent}>
+          {isFullView && props.pillarsTabActions ? (
+            <div className="page-actions-buttons">{props.pillarsTabActions}</div>
+          ) : null}
+          <FastTablePaginated
+            isLoading={props.isPillarsLoading}
+            columns={pillarsColumns}
+            data={pillarsData}
+            total={pillarsTotal}
+            pagination={{ pageSize: 10, pageIndex: 0 }}
+            getRowId={(row) => row.name}
+            onLazyLoad={() => { }}
+          />
+        </div>
+      );
+    })(),
+  });
+
+  items.push({
+    key: "grains",
+    label: t("minions.grains"),
+    children: (() => {
+      if (props.isMinionLoading) {
+        return (
+          <Flex
+            justify={"center"}
+            align={"center"}
+            style={{ height: "100%" }}
+          >
+            <Spin />
+          </Flex>
+        );
+      }
+      if (!props.minion) {
+        return (
+          <Flex
+            justify={"center"}
+            align={"center"}
+            style={{ height: "100%" }}
+          >
+            {t("minions.no-minion-data-available")}
+          </Flex>
+        );
+      }
+      return (
+        <div>
+          <Flex justify="flex-end" style={{ marginBottom: 8 }}>
+            <CopyToClipboardButton
+              text={JSON.stringify(combinedGrains, null, 2)}
+            />
+          </Flex>
+          <ReactJson
+            displayDataTypes={false}
+            enableClipboard={false}
+            name={false}
+            displayObjectSize={false}
+            src={combinedGrains}
+            collapsed={1}
+          />
+        </div>
+      );
+    })(),
+  });
+
+  return (
+    <Tabs
+      items={items}
+      className={styles.minionsTabs}
+      tabBarExtraContent={fullViewActions}
+    />
+  );
 }
