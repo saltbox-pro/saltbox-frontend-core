@@ -422,10 +422,23 @@ const minionDetailsViewsToDescriptionItems = (
 ): DescriptionsProps["items"] => {
   return minionDetailViews.map((minionDetailView) => {
     if ("value" in minionDetailView) {
+      const grainValue = minionDetailView.value(schema);
+
       return {
         key: minionDetailView.key,
         label: minionDetailView.name,
-        children: minionDetailView.value(schema),
+        children: (
+          <Flex justify="space-between" className="minion-details-grain">
+            <Flex className="minion-details-grain-name">
+              {grainValue}
+            </Flex>
+            {grainValue && (
+              <Flex className={styles.minionDetailsGrainButtons}>
+                <CopyToClipboardButton text={String(grainValue)} />
+              </Flex>
+            )}
+          </Flex>
+        ),
         span: 3,
       };
     }
