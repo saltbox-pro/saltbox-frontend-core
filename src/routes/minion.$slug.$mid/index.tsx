@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, message } from "antd";
 import { HomeOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
@@ -151,8 +151,7 @@ const MinionPage = observer(() => {
             title: t("minions.title"),
           },
           {
-            title: collectionStore.collection?.title ?? "",
-            href: `/core/minions/${slug}`,
+            title: <Link to={`/minions/${slug}`}>{collectionStore.collection?.title ?? ""}</Link>,
           },
           {
             title: `${t("minions.minion")} ${minionStore.minion?.minion_id}`,
