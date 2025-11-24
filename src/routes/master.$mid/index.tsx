@@ -748,8 +748,7 @@ const MasterPage = observer(() => {
             title: <HomeOutlined />,
           },
           {
-            href: "/masters",
-            title: t("masters.title"),
+            title: <Link to="/masters">{t("masters.title")}</Link>,
           },
           {
             title: masterId,
