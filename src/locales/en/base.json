@@ -306,7 +306,7 @@
     "date-range-1-day": "1 day ago",
     "table-copy": "Copy",
     "job-title-breadcrumb": "Job",
-    "job-title": "Job #{{jobId}}",
+    "job-title": "Job {{jobId}}",
     "table-copy-success": "Copied",
     "key-value-arguments": "kwargs",
     "failed-minions": "Failed Minions",
