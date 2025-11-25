@@ -313,7 +313,7 @@
     "copy-list": "Скопировать список",
     "replay-job": "Повторить команду",
     "repeat-job": "Повторить команду (Alt+R)",
-    "arguments": "Количество аргументов",
+    "arguments": "Аргументы",
     "no-arguments": "Нет аргументов",
     "no-key-value-arguments": "Нет именованных аргументов",
     "full-output": "Полный вывод",

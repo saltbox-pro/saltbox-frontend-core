@@ -60,6 +60,15 @@
 
 .minionsTabs {
   margin-top: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.minionsTabs :global(.ant-tabs-content-holder) {
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .pillarsTab {
