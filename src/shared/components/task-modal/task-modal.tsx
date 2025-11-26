@@ -95,6 +95,7 @@ export function TaskModal({
 
   const handleCreateTaskPlugin = (pluginKey: string) => {
     publish("minions.taskmodal.create", {
+      action: "create",
       pluginKey: pluginKey,
       taskCreateRequest: getTaskCreateRequest(),
       templateDescription: taskTemplate?.title ?? "",
