@@ -27,6 +27,8 @@ import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-ut
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 import { JsonPopover } from "./-components/json-popover";
 import { MinionsPopover } from "./-components/minions-popover";
+import { ArgumentsPreview } from "./-components/arguments-preview";
+import { KwargsPreview } from "./-components/kwargs-preview";
 import styles from "./index.module.css";
 import Parcel from "single-spa-react/parcel";
 
@@ -54,6 +56,7 @@ const JobPage = observer(() => {
     if (!jid) {
       return;
     }
+    jobStore.mongoDBQuery = undefined;
     if (webSocketService.isConnected) {
       webSocketService.disconnect();
     }
@@ -177,27 +180,15 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.table-user")}:
-          </span>
-          <span className={styles.jobDetailValue}>
-            {jobStore.job?.user.name ?? <Skeleton.Input size="small" />}
-          </span>
-        </div>
-
-        <div className={styles.jobDetailItem}>
           <span className={styles.jobDetailLabel}>{t("jobs.arguments")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
             ) : jobStore.job?.arg && jobStore.job.arg.length > 0 ? (
-              <Flex align="center" gap={4}>
-                <span>{jobStore.job.arg.length}</span>
-                <JsonPopover
-                  data={jobStore.job.arg}
-                  title={t("jobs.arguments")}
-                />
-              </Flex>
+              <ArgumentsPreview
+                args={jobStore.job.arg}
+                title={t("jobs.arguments")}
+              />
             ) : (
               <Text type="secondary">{t("jobs.no-arguments")}</Text>
             )}
@@ -213,16 +204,22 @@ const JobPage = observer(() => {
               <Skeleton.Input size="small" />
             ) : jobStore.job?.kwarg &&
               Object.keys(jobStore.job.kwarg).length > 0 ? (
-              <Flex align="center" gap={4}>
-                <span>{Object.keys(jobStore.job.kwarg).length}</span>
-                <JsonPopover
-                  data={jobStore.job.kwarg}
-                  title={t("jobs.key-value-arguments")}
-                />
-              </Flex>
+              <KwargsPreview
+                kwargs={jobStore.job.kwarg}
+                title={t("jobs.key-value-arguments")}
+              />
             ) : (
               <Text type="secondary">{t("jobs.no-key-value-arguments")}</Text>
             )}
+          </span>
+        </div>
+
+        <div className={styles.jobDetailItem}>
+          <span className={styles.jobDetailLabel}>
+            {t("jobs.table-user")}:
+          </span>
+          <span className={styles.jobDetailValue}>
+            {jobStore.job?.user.name ?? <Skeleton.Input size="small" />}
           </span>
         </div>
       </div>

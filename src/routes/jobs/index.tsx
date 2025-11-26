@@ -16,7 +16,7 @@ import {
   Popover,
   CopyToClipboardButton,
 } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, appStore, JobFilterStore, JobsStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import Parcel from "single-spa-react/parcel";
@@ -169,8 +169,6 @@ const JobsPage = observer(() => {
       if (!jobId) {
         return;
       }
-
-      jobStore.mongoDBQuery = undefined;
       navigate(`/job/${jobId}`);
     },
     [navigate]

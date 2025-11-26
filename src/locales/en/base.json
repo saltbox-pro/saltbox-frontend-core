@@ -312,7 +312,7 @@
     "failed-minions": "Failed Minions",
     "pending-minions": "Pending Minions",
     "copy-list": "Copy List",
-    "replay-job": "Replay Job",
+    "replay-job": "Repeat Job",
     "repeat-job": "Repeat Job (Alt+R)",
     "arguments": "arguments",
     "no-arguments": "No arguments",

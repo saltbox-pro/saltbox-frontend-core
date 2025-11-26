@@ -36,7 +36,6 @@ import {
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { jobStore } from "saltbox-core/store";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import styles from "./minion-details.module.css";
 import type { MenuProps, TabsProps } from "antd";
@@ -159,8 +158,6 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
       if (!jobId) {
         return;
       }
-
-      jobStore.mongoDBQuery = undefined;
       navigate(`/job/${jobId}`);
     },
     [navigate]
@@ -223,7 +220,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
                   size: "small",
                   icon: <ReloadOutlined />,
                   showText: false,
-                  title: t("jobs.repeat-job"),
+                  title: t("jobs.replay-job"),
                 }}
               />
             </Flex>
@@ -328,7 +325,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
                   <span className={styles.kwargsBrace}>{"}"}</span>
                 </Tag>
               </Flex>
-              {entries.length > 3 ? (
+              {entries.length > 0 ? (
                 <KwargsPopoverButton
                   data={kwargs as Record<string, unknown>}
                   title={t("jobs.key-value-arguments")}

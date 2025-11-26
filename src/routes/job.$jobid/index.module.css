@@ -25,6 +25,7 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .jobDetailLabel {
@@ -38,6 +39,8 @@
   align-items: center;
   gap: 4px;
   font-weight: 600;
+  flex: 1;
+  min-width: 0;
 }
 
 .timerWrapper {
@@ -116,4 +119,102 @@
 .spinnerContainer {
   text-align: center;
   padding: 50px 0;
+}
+
+/* Arguments preview styles */
+.argumentsCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.argumentsPreview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.argumentsTag {
+  margin-inline: 0;
+  background-color: #f0f5ff !important;
+  border-color: #d6e4ff !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.argumentsValue {
+  color: #722ed1;
+}
+
+.argumentsSeparator {
+  color: #1890ff;
+}
+
+.argumentsBrace {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.argumentsEllipsis {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+.argumentsEmpty {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+/* Kwargs preview styles */
+.kwargsCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.kwargsPreview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.kwargsTag {
+  margin-inline: 0;
+  background-color: #f0f5ff !important;
+  border-color: #d6e4ff !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.kwargsKey {
+  color: #1890ff;
+}
+
+.kwargsSeparator {
+  color: #1890ff;
+}
+
+.kwargsValue {
+  color: #722ed1;
+}
+
+.kwargsBrace {
+  color: #1890ff;
+  font-weight: 500;
+}
+
+.kwargsEllipsis {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+.kwargsEmpty {
+  color: var(--ant-color-text-tertiary, #8c8c8c);
 }
