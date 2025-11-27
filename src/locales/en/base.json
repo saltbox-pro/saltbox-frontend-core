@@ -339,7 +339,8 @@
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
     "function-error-required": "Function is required",
-    "warning-message": "To create a job, activate the master on the Masters page"
+    "warning-message": "To create a job, activate the master on the Masters page",
+    "hint-example-label": "Example:"
   },
   "jobs-templates": {
     "title": "Job Templates",
@@ -477,6 +478,98 @@
     "title": "Gathered Minions",
     "close": "Close",
     "total-minions": "Total minions: {{count}}"
+  },
+  "salt-target-types": {
+    "glob": {
+      "label": "glob - Bash glob completion",
+      "hint": {
+        "title": "glob - Bash glob completion",
+        "description": "Uses Bash-style glob patterns to select minions by name.",
+        "example": "web*",
+        "exampleDescription": "Selects all minions whose name starts with web."
+      }
+    },
+    "pcre": {
+      "label": "pcre - Perl style regular expression",
+      "hint": {
+        "title": "pcre - Perl style regular expression",
+        "description": "Allows using PCRE (Perl Compatible Regular Expressions) for matching minion names.",
+        "example": "web[0-9]{2}",
+        "exampleDescription": "Selects all minions with names like web01, web02, etc."
+      }
+    },
+    "list": {
+      "label": "list - Python list of hosts",
+      "hint": {
+        "title": "list - Python list of hosts",
+        "description": "Allows specifying a list of specific minions.",
+        "example": "web01,web02,db01",
+        "exampleDescription": "The command will be executed only on the specified nodes."
+      }
+    },
+    "grain": {
+      "label": "grain - Match based on a grain comparison",
+      "hint": {
+        "title": "grain - Match based on a grain comparison",
+        "description": "Compares the value of a specified grain with a given value.",
+        "example": "os:Ubuntu",
+        "exampleDescription": "Selects all minions where the os grain equals Ubuntu."
+      }
+    },
+    "grain_pcre": {
+      "label": "grain_pcre - Grain comparison with a regex",
+      "hint": {
+        "title": "grain_pcre - Grain comparison with a regex",
+        "description": "Similar to grain, but allows using regular expressions.",
+        "example": "os:Cent.*",
+        "exampleDescription": "Selects all systems where the os grain starts with Cent (e.g., CentOS)."
+      }
+    },
+    "pillar": {
+      "label": "pillar - Pillar data comparison",
+      "hint": {
+        "title": "pillar - Pillar data comparison",
+        "description": "Matches based on values from pillar data.",
+        "example": "role:db",
+        "exampleDescription": "Selects minions that have the role db specified in their pillar."
+      }
+    },
+    "pillar_pcre": {
+      "label": "pillar_pcre - Pillar data comparison with a regex",
+      "hint": {
+        "title": "pillar_pcre - Pillar data comparison with a regex",
+        "description": "Similar to pillar, but allows using regular expressions.",
+        "example": "role:.*server",
+        "exampleDescription": "Selects all minions where the role value ends with server."
+      }
+    },
+    "nodegroup": {
+      "label": "nodegroup - Match on nodegroup",
+      "hint": {
+        "title": "nodegroup - Match on nodegroup",
+        "description": "Uses predefined node groups from the Salt Master configuration.",
+        "example": "webservers",
+        "exampleDescription": "Executes the command on all nodes in the webservers group."
+      }
+    },
+    "compound": {
+      "label": "compound - Pass a compound match string",
+      "hint": {
+        "title": "compound - Pass a compound match string",
+        "description": "Allows combining different matching methods in a single query.",
+        "example": "G@os:Ubuntu and L@web01,web02",
+        "exampleDescription": "Selects minions with Ubuntu OS and names web01 or web02."
+      }
+    },
+    "ipcidr": {
+      "label": "ipcidr - Match based on Subnet (CIDR notation) or IPv4 address.",
+      "hint": {
+        "title": "ipcidr - Match based on Subnet (CIDR notation) or IPv4 address",
+        "description": "Allows selecting minions by IP address or membership in a specific subnet specified in CIDR format. This is useful when you need to run commands only on nodes from a specific network range.",
+        "example": "192.168.0.0/24",
+        "exampleDescription": "Selects all minions whose IP address is within the 192.168.0.0/24 subnet."
+      }
+    }
   },
   "base": {
     "back-home": "Back Home",

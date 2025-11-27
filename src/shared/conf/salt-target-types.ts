@@ -1,32 +1,49 @@
 import { SelectProps } from "antd";
+import { DefaultOptionType } from "antd/es/select";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
-export const saltTargetTypes: SelectProps["options"] = [
-  { value: "glob", label: "glob - Bash glob completion" },
-  {
-    value: "pcre",
-    label: "pcre - Perl style regular expression",
-  },
-  { value: "list", label: "list - Python list of hosts" },
-  {
-    value: "grain",
-    label: "grain - Match based on a grain comparison",
-  },
-  {
-    value: "grain_pcre",
-    label: "grain_pcre - Grain comparison with a regex",
-  },
-  { value: "pillar", label: "pillar - Pillar data comparison" },
-  {
-    value: "pillar_pcre",
-    label: "pillar_pcre - Pillar data comparison with a regex",
-  },
-  { value: "nodegroup", label: "nodegroup - Match on nodegroup" },
-  {
-    value: "compound",
-    label: "compound - Pass a compound match string",
-  },
-  {
-    value: "ipcidr",
-    label: "ipcidr - Match based on Subnet (CIDR notation) or IPv4 address.",
-  },
+export type TargetTypeHint = {
+  title: string;
+  description: string;
+  example: string;
+  exampleDescription: string;
+};
+
+const targetTypes = [
+  "glob",
+  "pcre",
+  "list",
+  "grain",
+  "grain_pcre",
+  "pillar",
+  "pillar_pcre",
+  "nodegroup",
+  "compound",
+  "ipcidr",
 ];
+
+export const useSaltTargetTypes = () => {
+  const { t } = useTranslation();
+
+  return useMemo(
+    (): SelectProps<
+      (typeof targetTypes)[number],
+      DefaultOptionType & { hint?: TargetTypeHint }
+    >["options"] =>
+      targetTypes.map((type) => ({
+        value: type,
+        label: t(`salt-target-types.${type}.label`),
+        title: "", // to remove the standard option hint
+        hint: {
+          title: t(`salt-target-types.${type}.hint.title`),
+          description: t(`salt-target-types.${type}.hint.description`),
+          example: t(`salt-target-types.${type}.hint.example`),
+          exampleDescription: t(
+            `salt-target-types.${type}.hint.exampleDescription`
+          ),
+        },
+      })),
+    [t]
+  );
+};

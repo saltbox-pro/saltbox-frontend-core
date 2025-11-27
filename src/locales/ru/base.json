@@ -339,7 +339,8 @@
     "tgt-type-error-required": "Тип цели обязателен",
     "tgt-error-required": "Цель обязательна",
     "function-error-required": "Функция обязательна",
-    "warning-message": "Для создания команды, активируйте мастера на странице Мастера"
+    "warning-message": "Для создания команды, активируйте мастера на странице Мастера",
+    "hint-example-label": "Пример:"
   },
   "jobs-templates": {
     "title": "Шаблоны команд",
@@ -477,6 +478,98 @@
     "title": "Предварительное нацеливание",
     "close": "Закрыть",
     "total-minions": "Всего клиентов: {{count}}"
+  },
+  "salt-target-types": {
+    "glob": {
+      "label": "glob – Сопоставление по шаблону Bash (glob)",
+      "hint": {
+        "title": "glob – Сопоставление по шаблону Bash (glob)",
+        "description": "Использует шаблонные выражения в стиле Bash для выбора minion'ов по имени.",
+        "example": "web*",
+        "exampleDescription": "Выберет всех minion'ов, имя которых начинается на web."
+      }
+    },
+    "pcre": {
+      "label": "pcre – Регулярное выражение в стиле Perl",
+      "hint": {
+        "title": "pcre – Регулярное выражение в стиле Perl",
+        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени minion'а.",
+        "example": "web[0-9]{2}",
+        "exampleDescription": "Выберет всех minion'ов с именами web01, web02 и т. д."
+      }
+    },
+    "list": {
+      "label": "list – Список хостов в формате Python",
+      "hint": {
+        "title": "list – Список хостов в формате Python",
+        "description": "Позволяет указать список конкретных minion'ов.",
+        "example": "web01,web02,db01",
+        "exampleDescription": "Команда будет выполнена только на указанных узлах."
+      }
+    },
+    "grain": {
+      "label": "grain – Сопоставление на основе сравнения grain",
+      "hint": {
+        "title": "grain – Сопоставление на основе сравнения grain",
+        "description": "Сравнивает значение указанного grain с заданным.",
+        "example": "os:Ubuntu",
+        "exampleDescription": "Выберет всех minion'ов, у которых grain os равен Ubuntu."
+      }
+    },
+    "grain_pcre": {
+      "label": "grain_pcre – Сравнение grain с использованием регулярного выражения",
+      "hint": {
+        "title": "grain_pcre – Сравнение grain с использованием регулярного выражения",
+        "description": "Аналогично grain, но с возможностью применять регулярные выражения.",
+        "example": "os:Cent.*",
+        "exampleDescription": "Выберет все системы, где grain os начинается на Cent (например, CentOS)."
+      }
+    },
+    "pillar": {
+      "label": "pillar – Сравнение данных pillar",
+      "hint": {
+        "title": "pillar – Сравнение данных pillar",
+        "description": "Сопоставление на основе значений из pillar.",
+        "example": "role:db",
+        "exampleDescription": "Выберет minion'ов, у которых в pillar указана роль db."
+      }
+    },
+    "pillar_pcre": {
+      "label": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
+      "hint": {
+        "title": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
+        "description": "Аналогично pillar, но позволяет применять regex.",
+        "example": "role:.*server",
+        "exampleDescription": "Выберет всех minion'ов, у которых значение role оканчивается на server."
+      }
+    },
+    "nodegroup": {
+      "label": "nodegroup – Сопоставление по nodegroup",
+      "hint": {
+        "title": "nodegroup – Сопоставление по nodegroup",
+        "description": "Использует заранее определённые группы узлов из конфигурации Salt Master.",
+        "example": "webservers",
+        "exampleDescription": "Выполнит команду для всех узлов из группы webservers."
+      }
+    },
+    "compound": {
+      "label": "compound – Составное условие сопоставления",
+      "hint": {
+        "title": "compound – Составное условие сопоставления",
+        "description": "Позволяет комбинировать разные методы в одном запросе.",
+        "example": "G@os:Ubuntu and L@web01,web02",
+        "exampleDescription": "Выберет minion'ов с ОС Ubuntu и именами web01 или web02."
+      }
+    },
+    "ipcidr": {
+      "label": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
+      "hint": {
+        "title": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
+        "description": "Позволяет выбрать minion'ов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
+        "example": "192.168.0.0/24",
+        "exampleDescription": "Выберет всех minion'ов, IP-адрес которых находится в подсети 192.168.0.0/24."
+      }
+    }
   },
   "base": {
     "back-home": "На главную",

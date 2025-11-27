@@ -25,7 +25,6 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
-import { JsonPopover } from "./-components/json-popover";
 import { MinionsPopover } from "./-components/minions-popover";
 import { ArgumentsPreview } from "./-components/arguments-preview";
 import { KwargsPreview } from "./-components/kwargs-preview";

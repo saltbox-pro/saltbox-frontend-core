@@ -1,0 +1,9 @@
+.optionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hintRoot {
+  max-width: min(40vw, 600px);
+}

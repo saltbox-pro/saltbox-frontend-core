@@ -3,11 +3,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Tag, Typography } from "antd";
+import { Breadcrumb, Button, SelectProps, Tag, Typography } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
+import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
@@ -16,7 +16,12 @@ import {
   Popover,
   CopyToClipboardButton,
 } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+import {
+  apiCoreStore,
+  appStore,
+  JobFilterStore,
+  JobsStore,
+} from "saltbox-core/store";
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import Parcel from "single-spa-react/parcel";
@@ -118,7 +123,7 @@ const defaultDateTimeOperators = [
   },
 ];
 
-const filterSchema = [
+const getFilterSchema = (saltTargetTypes: SelectProps["options"]) => [
   {
     name: "jid",
     label: "JID",
@@ -156,12 +161,31 @@ const filterSchema = [
   },
 ];
 
+const useJobFilters = () => {
+  const saltTargetTypes = useSaltTargetTypes();
+
+  const filterSchema = useMemo(
+    () => getFilterSchema(saltTargetTypes),
+    [saltTargetTypes]
+  );
+
+  const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
+
+  useEffect(() => {
+    jobFilterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema]);
+
+  return {
+    jobFilterStore,
+  };
+};
+
 const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
 
-  const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
+  const { jobFilterStore } = useJobFilters();
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
 
   const handleNavigateToJob = useCallback(
@@ -174,101 +198,112 @@ const JobsPage = observer(() => {
     [navigate]
   );
 
-  const columns = useMemo(() => [
-    columnHelper.accessor("jid", {
-      header: t("jobs.table-jid"),
-      cell: (data) => {
-        const jid = data.getValue();
-        if (!jid) {
-          return "";
-        }
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("jid", {
+        header: t("jobs.table-jid"),
+        cell: (data) => {
+          const jid = data.getValue();
+          if (!jid) {
+            return "";
+          }
 
-        return (
-          <>
-            <Button
-              type="link"
-              size="small"
-              onClick={() => handleNavigateToJob(jid)}
-            >
-              {jid}
-            </Button>
-            <CopyToClipboardButton text={jid} />
-          </>
-        );
-      },
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-    columnHelper.accessor("fun", {
-      header: t("jobs.table-function"),
-    }),
-    columnHelper.accessor("tgt", {
-      header: t("jobs.table-targets"),
-      cell: (data) => {
-        const fullValue = data.getValue() as string;
-        if (fullValue?.length <= 2) {
-          return fullValue;
-        }
+          return (
+            <>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => handleNavigateToJob(jid)}
+              >
+                {jid}
+              </Button>
+              <CopyToClipboardButton text={jid} />
+            </>
+          );
+        },
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
+        },
+      }),
+      columnHelper.accessor("fun", {
+        header: t("jobs.table-function"),
+      }),
+      columnHelper.accessor("tgt", {
+        header: t("jobs.table-targets"),
+        cell: (data) => {
+          const fullValue = data.getValue() as string;
+          if (fullValue?.length <= 2) {
+            return fullValue;
+          }
 
-        const truncatedValue =
-          fullValue.length > 50
-            ? `${fullValue.substring(0, 50)}...`
-            : fullValue;
+          const truncatedValue =
+            fullValue.length > 50
+              ? `${fullValue.substring(0, 50)}...`
+              : fullValue;
 
-        const result = useMemo(() => (
-          <Text copyable={{ text: fullValue }} title={fullValue}>
-            {truncatedValue}
-          </Text>
-        ), []);
+          const result = useMemo(
+            () => (
+              <Text copyable={{ text: fullValue }} title={fullValue}>
+                {truncatedValue}
+              </Text>
+            ),
+            []
+          );
 
-        return result;
-      },
-    }),
-    columnHelper.accessor("tgt_type", {
-      header: t("jobs.table-target-type"),
-    }),
-    columnHelper.accessor("user.name", {
-      header: t("jobs.table-user"),
-    }),
-    columnHelper.accessor("status", {
-      header: t("jobs.table-status"),
-      cell: (data) => {
-        switch (data.getValue()) {
-          case JobStatus.InQueue:
-            return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
-          case JobStatus.Started:
-            return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
-          case JobStatus.WaitingReturns:
-            return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
-          case JobStatus.Finished:
-            return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-          default:
-            return (
-              <Tag>{`${t(
-                "jobs.table-status-unknown"
-              )}: ${data.getValue()}`}</Tag>
-            );
-        }
-      }
-    }),
-    columnHelper.accessor("fms_jid_timestamp", {
-      header: t("jobs.table-created"),
-      cell: (data) => {
-        if (!data.getValue()) return "";
+          return result;
+        },
+      }),
+      columnHelper.accessor("tgt_type", {
+        header: t("jobs.table-target-type"),
+      }),
+      columnHelper.accessor("user.name", {
+        header: t("jobs.table-user"),
+      }),
+      columnHelper.accessor("status", {
+        header: t("jobs.table-status"),
+        cell: (data) => {
+          switch (data.getValue()) {
+            case JobStatus.InQueue:
+              return (
+                <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>
+              );
+            case JobStatus.Started:
+              return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
+            case JobStatus.WaitingReturns:
+              return (
+                <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>
+              );
+            case JobStatus.Finished:
+              return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
+            default:
+              return (
+                <Tag>{`${t(
+                  "jobs.table-status-unknown"
+                )}: ${data.getValue()}`}</Tag>
+              );
+          }
+        },
+      }),
+      columnHelper.accessor("fms_jid_timestamp", {
+        header: t("jobs.table-created"),
+        cell: (data) => {
+          if (!data.getValue()) return "";
 
-        const rawCreated = data.getValue();
-        const created: string = formatTimeByUserTZ(rawCreated);
-        const createdPastTime: string = pastTimeByUserTZ(rawCreated);
+          const rawCreated = data.getValue();
+          const created: string = formatTimeByUserTZ(rawCreated);
+          const createdPastTime: string = pastTimeByUserTZ(rawCreated);
 
-        const result = useMemo(() => (
-          <Popover content={created}>{createdPastTime}</Popover>
-        ), []);
+          const result = useMemo(
+            () => <Popover content={created}>{createdPastTime}</Popover>,
+            []
+          );
 
-        return result;
-      },
-    }),
-  ], [handleNavigateToJob, t]);
+          return result;
+        },
+      }),
+    ],
+    [handleNavigateToJob, t]
+  );
 
   useEffect(() => {
     webSocketService.connect(
@@ -366,7 +401,9 @@ const JobsPage = observer(() => {
         isLoading={jobsStore.isJobsLoading}
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
-        onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
+        onLazyLoad={(pagination, sorting) =>
+          jobsStore.handleLazyLoad(pagination, sorting)
+        }
         useVirtualScroll={false}
       />
 

@@ -24,12 +24,12 @@ import {
   JobSchemaModel,
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
-import { saltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
+import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 
 import styles from "./job-modal.module.css";
 
@@ -599,17 +599,7 @@ export function JobModal({
               ]}
               className={styles.jobFormTgtType}
             >
-              <Select
-                options={saltTargetTypes}
-                optionLabelProp="value"
-                styles={{
-                  popup: {
-                    root: {
-                      minWidth: 450,
-                    },
-                  },
-                }}
-              />
+              <TargetTypeSelect />
             </Form.Item>
 
             <Form.Item<JobFormData>
