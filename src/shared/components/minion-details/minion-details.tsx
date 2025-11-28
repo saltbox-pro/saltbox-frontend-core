@@ -421,6 +421,15 @@ const minionDetailsViewsToDescriptionItems = (
     if ("value" in minionDetailView) {
       const grainValue = minionDetailView.value(schema);
 
+      if (typeof grainValue === "object") {
+        return {
+          key: minionDetailView.key,
+          label: minionDetailView.name,
+          children: grainValue,
+          span: 3,
+        }
+      }
+
       return {
         key: minionDetailView.key,
         label: minionDetailView.name,
