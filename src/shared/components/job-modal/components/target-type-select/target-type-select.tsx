@@ -1,4 +1,4 @@
-import { forwardRef, FC } from "react";
+import { forwardRef, useState, FC } from "react";
 import { Flex, Select, Typography } from "antd";
 import type { SelectProps, RefSelectProps } from "antd/es/select";
 import { QuestionCircleOutlined } from "@ant-design/icons";
@@ -18,17 +18,41 @@ type TargetTypeHintProps = {
 
 const TargetTypeHint: FC<TargetTypeHintProps> = ({ data }) => {
   const { t } = useTranslation();
+  const [isHintOpen, setIsHintOpen] = useState(false);
+
+  const handleHintClick = () => {
+    setIsHintOpen(false);
+  };
+
+  const handleOpenChange = (value: boolean) => {
+    setIsHintOpen(value);
+  };
 
   return (
-    <Flex vertical gap={4} className={styles.hintRoot}>
-      <Typography.Text strong>{data.title}</Typography.Text>
-      <Typography.Text>{data.description}</Typography.Text>
-      <Typography.Text strong>
-        {t("job-modal.hint-example-label")}
-      </Typography.Text>
-      <CodeBlock canCopy content={data.example} />
-      <Typography.Text>{data.exampleDescription}</Typography.Text>
-    </Flex>
+    <Popover
+      content={
+        <Flex
+          vertical
+          gap={4}
+          className={styles.hintRoot}
+          onClick={handleHintClick}
+        >
+          <Typography.Text strong>{data.title}</Typography.Text>
+          <Typography.Text>{data.description}</Typography.Text>
+          <Typography.Text strong>
+            {t("job-modal.hint-example-label")}
+          </Typography.Text>
+          <CodeBlock canCopy content={data.example} />
+          <Typography.Text>{data.exampleDescription}</Typography.Text>
+        </Flex>
+      }
+      trigger="hover"
+      placement="right"
+      open={isHintOpen}
+      onOpenChange={handleOpenChange}
+    >
+      <QuestionCircleOutlined />
+    </Popover>
   );
 };
 
@@ -48,17 +72,7 @@ export const TargetTypeSelect = forwardRef<RefSelectProps, SelectProps>(
               <span className={styles.optionLabel} title={String(option.label)}>
                 {option.label}
               </span>
-              <Popover
-                content={
-                  <TargetTypeHint
-                    data={option.data.hint}
-                  />
-                }
-                trigger="hover"
-                placement="right"
-              >
-                <QuestionCircleOutlined />
-              </Popover>
+              <TargetTypeHint data={option.data.hint} />
             </Flex>
           );
         }}
