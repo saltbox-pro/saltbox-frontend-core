@@ -4,15 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import {
-  Badge,
-  Breadcrumb,
-  Button,
-  Flex,
-  Input,
-  Tag,
-  message,
-} from "antd";
+import { Badge, Breadcrumb, Button, Flex, Input, Tag, message } from "antd";
 import { HomeOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
@@ -201,6 +193,7 @@ const CollectionEditPage = observer(() => {
       }
       const currentQueryString = JSON.stringify(filterStore.currentFilters);
       if (currentQueryString !== originalQuery) {
+        filterStore.handleSearch();
         await collectionStore.updateCollectionQuery(
           filterStore.searchMongoDBQuery
         );
@@ -212,6 +205,11 @@ const CollectionEditPage = observer(() => {
       messageApi.error(t("collection.error-updating-collection"));
     }
   };
+
+  const isSaveDisabled =
+    (newTitle === originalTitle &&
+      JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+    newTitle.trim() === "";
 
   return (
     <>
@@ -265,12 +263,7 @@ const CollectionEditPage = observer(() => {
           <Flex gap={8} align="center">
             <Button
               type="primary"
-              disabled={
-                (newTitle === originalTitle &&
-                  JSON.stringify(filterStore.currentFilters) ===
-                    originalQuery) ||
-                newTitle.trim() === ""
-              }
+              disabled={isSaveDisabled}
               onClick={handleSaveButton}
             >
               {t("minions.save")}
