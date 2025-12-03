@@ -4,6 +4,7 @@
   flex-direction: column;
   min-height: 0;
   justify-content: center;
+  overflow: hidden;
 }
 
 .jobReturnTableWrapper :global(.fast-table table > thead > tr > th:first-child) {

@@ -1,0 +1,107 @@
+.tableContainer {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tableContainer :global(.fast-table) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.tableContainer :global(.fast-table-wrapper) {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.tableContainer :global(.fast-table-sorter) {
+  margin-left: 8px;
+}
+
+.errorMessage {
+  padding: 16px;
+  color: #ff4d4f;
+  text-align: center;
+}
+
+.emptyMessage {
+  padding: 16px;
+  color: #8c8c8c;
+  text-align: center;
+}
+
+.emptyCell {
+  color: #d9d9d9;
+  font-style: italic;
+}
+
+.errorsContainer {
+  margin-bottom: 16px;
+}
+
+.errorsAlert {
+  margin-bottom: 0;
+  padding: 8px 12px;
+}
+
+.errorsAlert :global(.ant-alert-message) {
+  margin-bottom: 0;
+}
+
+.errorsAlert :global(.ant-alert-description) {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.collapseButton {
+  color: rgba(0, 0, 0, 0.45);
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapseButton:hover {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+
+.errorsList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 0;
+}
+
+.errorsListHidden {
+  display: none;
+}
+
+.errorItem {
+  display: flex;
+  gap: 4px;
+  word-break: break-word;
+}
+
+.errorMinionId {
+  font-weight: 600;
+  color: #faad14;
+  flex-shrink: 0;
+}
+
+.errorText {
+  color: #8c8c8c;
+  flex: 1;
+}
+
+

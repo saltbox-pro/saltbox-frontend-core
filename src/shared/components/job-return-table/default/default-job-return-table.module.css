@@ -23,3 +23,19 @@
 .reactJsonContainer {
     margin-left: 34px;
 }
+
+.jobReturnTableContainer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.jobReturnTableHeader {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 0;
+    margin-bottom: 8px;
+}

@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
+import { createColumnHelper, getCoreRowModel, getSortedRowModel, SortingState, useReactTable } from "@tanstack/react-table";
 import {
   Breadcrumb,
+  Button,
   Flex,
   Progress,
   Skeleton,
   Statistic,
   Switch,
+  Tooltip,
   Typography,
 } from "antd";
-import { HomeOutlined, ReloadOutlined } from "@ant-design/icons";
+import { HomeOutlined, ReloadOutlined, DownloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
 } from "@saltbox/saltbox-core-api-client";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
+import { mergeJobReturnsToTable, canConvertToTable, exportToCSV } from "saltbox-core/shared/components/job-return-table/utils/table-converter";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import {
   CopyToClipboardButton,
@@ -40,10 +44,64 @@ const JobPage = observer(() => {
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobModel>());
   const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
+  const [isTableViewMode, setIsTableViewMode] = useState<boolean>(false);
+  const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
+
+  const mergedTableData = useMemo(() => {
+    if (!isTableViewMode) {
+      return null;
+    }
+
+    const jobReturnsData = jobStore.jobReturns.map((jobReturn) => ({
+      data: jobReturn.data ?? null,
+      minion_id: jobReturn.minion_id || "",
+    }));
+
+    return mergeJobReturnsToTable(jobReturnsData);
+  }, [isTableViewMode, jobStore.jobReturns]);
+
+  const tableColumnsForExport = useMemo(() => {
+    if (!mergedTableData || !mergedTableData.canConvert) {
+      return [];
+    }
+    const columnHelper = createColumnHelper<Record<string, unknown>>();
+    return mergedTableData.columns
+      .filter((col) => col !== "key")
+      .map((colName) =>
+        columnHelper.accessor(colName as keyof Record<string, unknown>, {
+          header: colName,
+        })
+      );
+  }, [mergedTableData]);
+
+  const exportTable = useReactTable({
+    data: mergedTableData?.canConvert ? mergedTableData.rows : [],
+    columns: tableColumnsForExport,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    state: {
+      sorting: tableViewSorting,
+    },
+    enableSorting: true,
+  });
+
+  const handleExportToCSV = useCallback(() => {
+    if (!mergedTableData || !mergedTableData.canConvert || mergedTableData.rows.length === 0) {
+      return;
+    }
+    const filename = `job-returns-${jid}-${Date.now()}.csv`;
+
+    const sortedRows = exportTable.getRowModel().rows.map((row) => row.original);
+    const sortedTableData = {
+      ...mergedTableData,
+      rows: sortedRows,
+    };
+    exportToCSV(sortedTableData, filename);
+  }, [mergedTableData, jid, exportTable, tableViewSorting]);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -297,6 +355,30 @@ const JobPage = observer(() => {
               <span>{t("jobs.full-output")}</span>
               <Switch checked={isFullOutput} onChange={setIsFullOutput} />
             </Flex>
+            <Flex className={styles.switchWrapper}>
+              <span>{t("jobs.json-table-view")}</span>
+              <Switch checked={isTableViewMode} onChange={setIsTableViewMode} />
+            </Flex>
+            <Flex align="center" gap={8}>
+              <Button
+                type="primary"
+                icon={<DownloadOutlined />}
+                onClick={handleExportToCSV}
+                disabled={
+                  !isTableViewMode ||
+                  !mergedTableData ||
+                  !mergedTableData.canConvert ||
+                  mergedTableData.rows.length === 0
+                }
+              >
+                {t("jobs.export-to-csv")}
+              </Button>
+              {isTableViewMode && mergedTableData && (!mergedTableData.canConvert || mergedTableData.rows.length === 0) && (
+                <Tooltip title={mergedTableData.reason || t("jobs.table-conversion-not-possible")}>
+                  <QuestionCircleOutlined style={{ color: "#8c8c8c", cursor: "help" }} />
+                </Tooltip>
+              )}
+            </Flex>
           </Flex>
         </Flex>
       )}
@@ -305,6 +387,7 @@ const JobPage = observer(() => {
         <DefaultJobReturnTable
           jobReturns={jobStore.jobReturns}
           isFullOutput={isFullOutput}
+          isTableViewMode={isTableViewMode}
           jobStartTimestamp={jobStore.jobStartTimestamp}
           pagination={jobStore.pagination}
           sorting={jobStore.sorting}
@@ -312,6 +395,7 @@ const JobPage = observer(() => {
           onLazyLoad={jobStore.handleLazyLoad}
           isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
           forceExpand={jobStore.isSingleJobReturn}
+          onTableViewSortingChange={setTableViewSorting}
         />
       </div>
 
