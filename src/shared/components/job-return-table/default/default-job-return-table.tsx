@@ -1,7 +1,8 @@
-import { ComponentProps, useMemo } from "react";
+import { ComponentProps, useMemo, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import {
+  OnChangeFn,
   PaginationState,
   Row,
   SortingState,
@@ -22,6 +23,8 @@ import {
   getShortJobReturnOutput,
   isSimpleStringData,
 } from "../utils/job-return-utils";
+import { TableView } from "../table-view/table-view";
+import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
@@ -33,6 +36,7 @@ type OnLazyLoad = ComponentProps<typeof JobReturnsTable>["onLazyLoad"];
 export const DefaultJobReturnTable = ({
   jobReturns,
   isFullOutput = false,
+  isTableViewMode = false,
   isLoading = false,
   forceExpand,
   jobStartTimestamp,
@@ -40,9 +44,11 @@ export const DefaultJobReturnTable = ({
   sorting,
   total,
   onLazyLoad,
+  onTableViewSortingChange,
 }: {
   jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
+  isTableViewMode?: boolean;
   isLoading?: boolean;
   forceExpand?: boolean;
   jobStartTimestamp?: Date | null;
@@ -50,6 +56,7 @@ export const DefaultJobReturnTable = ({
   sorting: SortingState;
   total: number;
   onLazyLoad: OnLazyLoad;
+  onTableViewSortingChange?: OnChangeFn<SortingState>;
 }) => {
   const { t } = useTranslation();
 
@@ -155,55 +162,90 @@ export const DefaultJobReturnTable = ({
     );
   };
 
-  const renderJobResult = ({ row }: { row: Row<JobReturnModel> }) => {
-    const dataToShow = isFullOutput
-      ? row.original
-      : getShortJobReturnOutput(row.original);
+  const renderJobResult = useCallback(
+    ({ row }: { row: Row<JobReturnModel> }) => {
+      const dataToShow = isFullOutput
+        ? row.original
+        : getShortJobReturnOutput(row.original);
 
-    if (!isFullOutput && isSimpleStringData(dataToShow)) {
-      return renderStringData(dataToShow);
+      if (!isFullOutput && isSimpleStringData(dataToShow)) {
+        return renderStringData(dataToShow);
+      }
+
+      if (typeof dataToShow === "boolean") {
+        return renderBooleanData(dataToShow);
+      }
+
+      const jsonValue =
+        typeof dataToShow === "object" && dataToShow !== null
+          ? dataToShow
+          : { result: dataToShow };
+
+      return (
+        <div className={styles.reactJsonContainer}>
+          <ReactJson
+            displayDataTypes={false}
+            enableClipboard={false}
+            name={false}
+            displayObjectSize={false}
+            src={jsonValue as Record<string, unknown>}
+            collapsed={isFullOutput ? 1 : 2}
+          />
+        </div>
+      );
+    },
+    [isFullOutput]
+  );
+
+  const mergedTableData = useMemo(() => {
+    if (!isTableViewMode) {
+      return null;
     }
 
-    if (typeof dataToShow === "boolean") {
-      return renderBooleanData(dataToShow);
+    const jobReturnsData = jobReturns.map((jobReturn) => ({
+      data: jobReturn.data ?? null,
+      minion_id: jobReturn.minion_id || "",
+    }));
+
+    const canConvertAny = jobReturnsData.some((jr) => canConvertToTable(jr.data));
+    if (!canConvertAny) {
+      return null;
     }
 
-    const jsonValue =
-      typeof dataToShow === "object" && dataToShow !== null
-        ? dataToShow
-        : { result: dataToShow };
-
-    return (
-      <div className={styles.reactJsonContainer}>
-        <ReactJson
-          displayDataTypes={false}
-          enableClipboard={false}
-          name={false}
-          displayObjectSize={false}
-          src={jsonValue as Record<string, unknown>}
-          collapsed={isFullOutput ? 1 : 2}
-        />
-      </div>
-    );
-  };
+    return mergeJobReturnsToTable(jobReturnsData);
+  }, [isTableViewMode, jobReturns]);
 
   const overscan = pagination.pageSize > 100 ? 10 : 100;
 
+  if (isTableViewMode && mergedTableData && mergedTableData.canConvert && mergedTableData.rows.length > 0) {
+    return (
+      <div className={styles.jobReturnTableContainer}>
+        <TableView
+          data={mergedTableData}
+          minionId=""
+          onSortingChange={onTableViewSortingChange}
+        />
+      </div>
+    );
+  }
+
   return (
-    <JobReturnsTable
-      columns={columns}
-      getRowId={(row) => row.id}
-      data={jobReturns}
-      total={total}
-      isLoading={isLoading}
-      pagination={pagination}
-      sorting={sorting}
-      onLazyLoad={onLazyLoad}
-      useVirtualScroll={false}
-      overscan={overscan}
-      forceExpandAll={forceExpand}
-      getRowCanExpand={() => true}
-      renderSubComponent={renderJobResult}
-    />
+    <div className={styles.jobReturnTableContainer}>
+      <JobReturnsTable
+        columns={columns}
+        getRowId={(row) => row.id}
+        data={jobReturns}
+        total={total}
+        isLoading={isLoading}
+        pagination={pagination}
+        sorting={sorting}
+        onLazyLoad={onLazyLoad}
+        useVirtualScroll={false}
+        overscan={overscan}
+        forceExpandAll={forceExpand}
+        getRowCanExpand={() => !isTableViewMode}
+        renderSubComponent={renderJobResult}
+      />
+    </div>
   );
 };

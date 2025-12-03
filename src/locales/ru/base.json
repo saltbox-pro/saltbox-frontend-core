@@ -318,7 +318,15 @@
     "no-key-value-arguments": "Нет именованных аргументов",
     "full-output": "Полный вывод",
     "job-duration": "Время выполнения",
-    "job-title-breadcrumb": "Команда"
+    "job-title-breadcrumb": "Команда",
+    "json-table-view": "JSON / Таблица",
+    "export-to-csv": "Экспорт в CSV",
+    "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
+    "table-conversion-error": "Невозможно преобразовать данные в таблицу: {{reason}}",
+    "table-empty": "Нет данных",
+    "table-errors-found": "Найдены ошибки для {{count}} миньон(ов)",
+    "table-errors-collapse": "Свернуть",
+    "table-errors-expand": "Развернуть"
   },
   "job": {
     "successful-minions": "успешно",

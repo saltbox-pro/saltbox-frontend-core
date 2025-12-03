@@ -318,7 +318,15 @@
     "no-arguments": "No arguments",
     "no-key-value-arguments": "No key-value arguments",
     "full-output": "Full Output",
-    "job-duration": "Job Duration"
+    "job-duration": "Job Duration",
+    "json-table-view": "JSON / Table",
+    "export-to-csv": "Export to CSV",
+    "table-conversion-not-possible": "Table view is not available for current data",
+    "table-conversion-error": "Cannot convert data to table: {{reason}}",
+    "table-empty": "No data available",
+    "table-errors-found": "Errors found for {{count}} minion(s)",
+    "table-errors-collapse": "Collapse",
+    "table-errors-expand": "Expand"
   },
   "job": {
     "successful-minions": "successful",

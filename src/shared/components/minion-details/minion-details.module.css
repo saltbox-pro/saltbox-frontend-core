@@ -60,15 +60,19 @@
 
 .minionsTabs {
   margin-top: 8px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .minionsTabs :global(.ant-tabs-content-holder) {
-  overflow: hidden;
   flex: 1;
   min-height: 0;
+}
+
+.flexTab {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .pillarsTab {
@@ -80,7 +84,15 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  height: 100%;
+}
+
+.pillarsTabContent :global(.fast-table) {
+  display: flex;
+  flex-direction: column;
+}
+
+.pillarsTabContent :global(.fast-table-wrapper) {
+  overflow: visible;
 }
 
 .tabExtraActions {
@@ -151,6 +163,11 @@
 }
 
 .jobReturnsWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.jobReturnsTableWrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -158,11 +175,20 @@
   height: 100%;
 }
 
+.jobReturnsTableHeader {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+
 .jobReturnsWrapper :global(.fast-table) {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+}
+
+.jobReturnsWrapper :global(.fast-table-wrapper) {
+  overflow: visible;
 }
 
 .jobReturnsWrapper :global(.fast-table table > thead > tr > th:first-child) {

@@ -19,6 +19,7 @@ import {
   Spin,
   Tabs,
   Tag,
+  Tooltip,
   message,
 } from "antd";
 import { FilterOutlined, MinusSquareOutlined, PlusSquareOutlined, SettingOutlined, CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
@@ -354,6 +355,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
     ({ row }: { row: Row<JobReturnModel> }) => {
       const dataToShow = getShortJobReturnOutput(row.original);
 
+      // Режим JSON (по умолчанию)
       if (isSimpleStringData(dataToShow)) {
         const stringValue = extractStringValue(dataToShow);
         return (
@@ -393,21 +395,23 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   );
 
   return (
-    <JobReturnsTable
-      columns={columns}
-      data={props.jobReturns}
-      total={props.total}
-      isLoading={props.isLoading}
-      pagination={props.pagination}
-      sorting={props.sorting}
-      onLazyLoad={props.onLazyLoad}
-      getRowId={(row) =>
-        row.id
-      }
-      useVirtualScroll={false}
-      renderSubComponent={renderJobResult}
-      getRowCanExpand={() => true}
-    />
+    <div className={styles.jobReturnsTableWrapper}>
+      <JobReturnsTable
+        columns={columns}
+        data={props.jobReturns}
+        total={props.total}
+        isLoading={props.isLoading}
+        pagination={props.pagination}
+        sorting={props.sorting}
+        onLazyLoad={props.onLazyLoad}
+        getRowId={(row) =>
+          row.id
+        }
+        useVirtualScroll={false}
+        renderSubComponent={renderJobResult}
+        getRowCanExpand={() => true}
+      />
+    </div>
   );
 };
 
