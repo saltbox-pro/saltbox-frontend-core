@@ -14,6 +14,7 @@ import {
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { JobTemplateStore } from "saltbox-core/store";
+import { Link } from "react-router";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;
 
@@ -59,8 +60,7 @@ const JobsTemplatePage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("jobs-templates.title"),

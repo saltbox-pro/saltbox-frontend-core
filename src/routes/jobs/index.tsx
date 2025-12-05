@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, SelectProps, Tag, Typography } from "antd";
@@ -364,8 +364,7 @@ const JobsPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("jobs.title"),

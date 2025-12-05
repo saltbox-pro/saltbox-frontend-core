@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -217,8 +217,7 @@ const CollectionEditPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("collection.collections"),

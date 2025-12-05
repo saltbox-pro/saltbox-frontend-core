@@ -144,8 +144,7 @@ const MinionPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("minions.title"),
