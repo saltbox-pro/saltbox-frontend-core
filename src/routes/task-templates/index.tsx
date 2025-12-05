@@ -11,6 +11,7 @@ import {
   PageHeader,
 } from "@saltbox/saltbox-frontend-common";
 import { taskTemplatesStore } from "saltbox-core/store";
+import { Link } from "react-router";
 
 const { Text } = Typography;
 
@@ -85,8 +86,7 @@ const TaskTemplatesPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("task-templates.title"),

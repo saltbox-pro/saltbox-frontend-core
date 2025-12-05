@@ -19,6 +19,7 @@ import {
 import { formatTimeByUserTZ, PageHeader, FastTablePaginated, Modal } from "@saltbox/saltbox-frontend-common";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
 import { SlsGitLabModal } from "./-components/sls-gitlab-modal/sls-gitlab-modal";
+import { Link } from "react-router";
 
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
@@ -271,8 +272,7 @@ const SettingsSlsPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: t("settings-sls.title"),

@@ -744,8 +744,7 @@ const MasterPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            href: "/",
-            title: <HomeOutlined />,
+            title: <Link to="/minions"><HomeOutlined /></Link>,
           },
           {
             title: <Link to="/masters">{t("masters.title")}</Link>,
