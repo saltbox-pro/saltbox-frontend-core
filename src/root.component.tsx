@@ -11,7 +11,7 @@ import JobPage from "./routes/job.$jobid";
 import JobsTemplatesPage from "./routes/jobs-templates";
 import TaskTemplatesPage from "./routes/task-templates";
 import SettingsSlsPage from "./routes/settings-sls";
-import SlsEditorPage from "./routes/sls-editor-page";
+import SlsEditorPage from "./routes/sls-editor";
 import TaskPage from "./routes/task.$taskid";
 import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
