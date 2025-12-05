@@ -167,7 +167,7 @@ export const MinionView = observer(
                         <CopyToClipboardButton text={jobResult?.jid ?? ""} />
                       </div>
                       <div className={styles.jobReturnContent}>
-                        <JobReturnView jobReturn={jobResult} />
+                        <JobReturnView jobReturn={jobResult?.data ?? jobResult} />
                       </div>
                     </div>
                   );

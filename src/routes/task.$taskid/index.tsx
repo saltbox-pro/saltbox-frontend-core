@@ -185,9 +185,8 @@ const useSelectedMinion = (taskStore: TaskStore) => {
           (jobReturn) => jobReturn.jid === jobId &&
             jobReturn.salt_master === minion.master &&
             jobReturn.minion_id === minion.minion_id
-        )?.data
-      )
-      .filter((data) => data !== undefined);
+        )
+      ).filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
   };
 
   useEffect(() => {
