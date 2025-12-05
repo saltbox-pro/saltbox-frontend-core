@@ -11,6 +11,7 @@ import JobPage from "./routes/job.$jobid";
 import JobsTemplatesPage from "./routes/jobs-templates";
 import TaskTemplatesPage from "./routes/task-templates";
 import SettingsSlsPage from "./routes/settings-sls";
+import SlsEditorPage from "./routes/sls-editor-page";
 import TaskPage from "./routes/task.$taskid";
 import MinionPage from "./routes/minion.$slug.$mid";
 import MasterPage from "./routes/master.$mid";
@@ -42,6 +43,7 @@ export default observer(function Root() {
             <Route path="/jobs-templates" element={<JobsTemplatesPage />} />
             <Route path="/task-templates" element={<TaskTemplatesPage />} />
             <Route path="/settings-sls" element={<SettingsSlsPage />} />
+            <Route path="/sls-editor" element={<SlsEditorPage />} />
             <Route path="/task/:taskid" element={<TaskPage />} />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
