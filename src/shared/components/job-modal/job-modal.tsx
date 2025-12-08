@@ -257,7 +257,7 @@ export function JobModal({
         ?.jobsSchemasGet({ name: fun })
         .then((schema) => {
           setSaltFunction(schema);
-          setJsonFormValue({ args: arg, kwargs: cleanNullsFromKwargs(kwarg) });
+          setJsonFormValue({ args: arg || [], kwargs: cleanNullsFromKwargs(kwarg) });
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
