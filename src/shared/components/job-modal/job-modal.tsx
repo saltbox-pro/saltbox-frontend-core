@@ -28,7 +28,6 @@ import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
-import { last } from "saltbox-core/shared/utils/array-utils";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 
@@ -667,7 +666,7 @@ export function JobModal({
               searchValue={searchFunctionName}
               onChange={handleSaltFunctionChange}
               displayRender={(label) => {
-                return <span>{last(label) ?? ''}</span>;
+                return <span>{label?.at(-1) ?? ''}</span>;
               }}
             />
           </Form.Item>
