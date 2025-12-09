@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { observer } from "mobx-react-lite";
-import { Breadcrumb, message, Modal, MenuProps } from "antd";
+import { Breadcrumb, message, MenuProps } from "antd";
 import {
   HomeOutlined,
   DownloadOutlined,
@@ -17,14 +17,13 @@ import styles from "./index.module.css";
 const SlsEditorPage = observer(() => {
   const { t } = useTranslation();
   const [slsContent, setSlsContent] = useState<string>("");
-  const [originalSlsContent, setOriginalSlsContent] = useState<string>("");
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const handleSlsChange = (newSls: string) => {
     setSlsContent(newSls);
   };
 
-  const hasUnsavedChanges = slsContent !== originalSlsContent;
+  const hasUnsavedChanges = slsContent !== "";
 
   const handleDownload = () => {
     if (!slsContent) {
@@ -65,25 +64,11 @@ const SlsEditorPage = observer(() => {
   };
 
   const handleOpenImportModal = () => {
-    if (hasUnsavedChanges) {
-      Modal.confirm({
-        title: "Unsaved Changes",
-        content:
-          "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
-        okText: "Yes, Import",
-        cancelText: "Cancel",
-        onOk: () => {
-          setImportModalOpen(true);
-        },
-      });
-    } else {
-      setImportModalOpen(true);
-    }
+    setImportModalOpen(true);
   };
 
   const handleImportSls = (importedSls: string) => {
     setSlsContent(importedSls);
-    setOriginalSlsContent(importedSls);
   };
 
   const menuItems: MenuProps["items"] = [
@@ -153,6 +138,7 @@ const SlsEditorPage = observer(() => {
         open={importModalOpen}
         onCancel={() => setImportModalOpen(false)}
         onImport={handleImportSls}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
     </>
   );

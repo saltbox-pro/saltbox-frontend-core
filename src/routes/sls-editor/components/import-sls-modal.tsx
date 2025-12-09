@@ -12,13 +12,14 @@ interface ImportSlsModalProps {
   open: boolean;
   onCancel: () => void;
   onImport: (slsContent: string) => void;
+  hasUnsavedChanges: boolean;
 }
 
 const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
 const columnHelper = createColumnHelper<TaskTemplateShortSchema>();
 
 export const ImportSlsModal = observer(
-  ({ open, onCancel, onImport }: ImportSlsModalProps) => {
+  ({ open, onCancel, onImport, hasUnsavedChanges }: ImportSlsModalProps) => {
     const [templates, setTemplates] = useState<TaskTemplateShortSchema[]>([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -70,22 +71,37 @@ export const ImportSlsModal = observer(
     };
 
     const handleRowClick = async (template: TaskTemplateShortSchema) => {
-      try {
-        const fullTemplate =
-          await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
-            tpl_id: template.id,
-          });
+      const performImport = async () => {
+        try {
+          const fullTemplate =
+            await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
+              tpl_id: template.id,
+            });
 
-        if (fullTemplate?.sls_content) {
-          onImport(fullTemplate.sls_content);
-          message.success("Template imported successfully");
-          onCancel();
-        } else {
-          message.error("Template has no SLS content");
+          if (fullTemplate?.sls_content) {
+            onImport(fullTemplate.sls_content);
+            message.success("Template imported successfully");
+            onCancel();
+          } else {
+            message.error("Template has no SLS content");
+          }
+        } catch (error) {
+          console.error("Failed to import template:", error);
+          message.error("Failed to import template");
         }
-      } catch (error) {
-        console.error("Failed to import template:", error);
-        message.error("Failed to import template");
+      };
+
+      if (hasUnsavedChanges) {
+        Modal.confirm({
+          title: "Unsaved Changes",
+          content:
+            "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
+          okText: "Yes, Import",
+          cancelText: "Cancel",
+          onOk: performImport,
+        });
+      } else {
+        await performImport();
       }
     };
 
