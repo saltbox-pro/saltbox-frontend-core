@@ -159,13 +159,15 @@ export const MinionView = observer(
                       key={jobResult?.jid ?? jobIndex}
                       className={styles.jobResult}
                     >
-                      <div className={styles.jobResultTitle}>
+                      <Flex gap={4} wrap={"wrap"} className={styles.jobResultTitle}>
                         {t("task.minion.job-title", {
                           run: jobResults.length - jobIndex,
-                        })}
-                        : JID {jobResult?.jid ?? ""}
-                        <CopyToClipboardButton text={jobResult?.jid ?? ""} />
-                      </div>
+                        })}: JID
+                        <Flex>
+                          {jobResult?.jid ?? ""}
+                          <CopyToClipboardButton text={jobResult?.jid ?? ""} />
+                        </Flex>
+                      </Flex>
                       <div className={styles.jobReturnContent}>
                         <JobReturnView jobReturn={jobResult?.data ?? jobResult} />
                       </div>
