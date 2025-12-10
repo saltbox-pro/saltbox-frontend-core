@@ -229,7 +229,7 @@ const convertDictOfDicts = (
           if (isPrimitive(cellValue)) {
             row[col] = formatValue(cellValue);
           } else {
-            row[col] = formatValue(cellValue);
+            row[col] = JSON.stringify(cellValue);
           }
         }
       });
@@ -342,7 +342,7 @@ const convertListOfObjects = (
           if (isPrimitive(cellValue)) {
             row[col] = formatValue(cellValue);
           } else {
-            row[col] = formatValue(cellValue);
+            row[col] = JSON.stringify(cellValue);
           }
         }
       });
@@ -362,8 +362,7 @@ const convertSimpleObject = (
   data: Record<string, unknown>,
   minionId: string
 ): TableData => {
-  const flattened = flattenObject(data);
-  const columns = ["minion_id", ...Object.keys(flattened).sort()];
+  const columns = ["minion_id", ...Object.keys(data).sort()];
 
   if (columns.length > MAX_TABLE_COLUMNS) {
     return {
@@ -376,8 +375,15 @@ const convertSimpleObject = (
 
   const row: TableRow = {
     minion_id: minionId,
-    ...flattened,
   };
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (isPrimitive(value)) {
+      row[key] = formatValue(value);
+    } else {
+      row[key] = JSON.stringify(value);
+    }
+  });
 
   const normalizedRow: TableRow = {};
   columns.forEach((col) => {

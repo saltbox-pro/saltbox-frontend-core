@@ -534,8 +534,11 @@ export function MinionDetails(props: {
   jobReturnsTabActions?: React.ReactNode;
   fullViewActionsMenuItems?: MenuProps["items"];
   onFullViewActionsMenuClick?: MenuProps["onClick"];
+  jobReturnsFilter?: React.ReactNode;
+  jobReturnsFilterButton?: React.ReactNode;
 }) {
   const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
   const combinedGrains = props.minion
     ? {
       ...props.minion.grains,
@@ -725,24 +728,30 @@ export function MinionDetails(props: {
   const isFullView = props.isFullView ?? false;
   const pillarsData = props.pillars ?? [];
   const pillarsTotal = props.pillars?.length ?? 0;
+
   const fullViewActions =
-    isFullView && props.fullViewActionsMenuItems
+    isFullView
       ? {
         right: (
           <div className={styles.tabExtraActions}>
-            <Dropdown
-              menu={{
-                items: props.fullViewActionsMenuItems,
-                onClick: props.onFullViewActionsMenuClick,
-              }}
-              trigger={["click"]}
-            >
-              <Button>
-                <Flex gap={8} align="center">
-                  <SettingOutlined />
-                </Flex>
-              </Button>
-            </Dropdown>
+            <Flex gap={8}>
+              {activeTab === "job-returns" && props.jobReturnsFilterButton}
+              {props.fullViewActionsMenuItems && (
+                <Dropdown
+                  menu={{
+                    items: props.fullViewActionsMenuItems,
+                    onClick: props.onFullViewActionsMenuClick,
+                  }}
+                  trigger={["click"]}
+                >
+                  <Button>
+                    <Flex gap={8} align="center">
+                      <SettingOutlined />
+                    </Flex>
+                  </Button>
+                </Dropdown>
+              )}
+            </Flex>
           </div>
         ),
       }
@@ -806,6 +815,11 @@ export function MinionDetails(props: {
       label: t("minions.job-returns"),
       children: (
         <div className={styles.jobReturnsWrapper}>
+          {props.jobReturnsFilter && (
+            <div className={styles.jobReturnsFilterWrapper}>
+              {props.jobReturnsFilter}
+            </div>
+          )}
           {isFullView && props.jobReturnsTabActions ? (
             <div className="page-actions-buttons">{props.jobReturnsTabActions}</div>
           ) : null}
@@ -890,6 +904,8 @@ export function MinionDetails(props: {
       items={items}
       className={styles.minionsTabs}
       tabBarExtraContent={fullViewActions}
+      onChange={(key) => setActiveTab(key)}
+      activeKey={activeTab}
     />
   );
 }

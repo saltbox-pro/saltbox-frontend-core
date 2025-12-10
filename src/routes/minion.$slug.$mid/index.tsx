@@ -1,16 +1,40 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { observer } from "mobx-react-lite";
 import { Breadcrumb, Button, Flex, message } from "antd";
-import { HomeOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { HomeOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
+import { formatQuery } from "react-querybuilder";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
-import { CollectionStore, MinionStore, jobStore } from "saltbox-core/store";
+import { CollectionStore, MinionStore, jobStore, JobFilterStore } from "saltbox-core/store";
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
 import { PillarCreateForm } from "./-components/pillar-create-form";
+
+const jobReturnsFilterSchema = [
+  {
+    name: "jid",
+    label: "JID",
+  },
+  {
+    name: "fun",
+    label: "Function",
+  },
+  {
+    name: "retcode",
+    label: "Return Code",
+    inputType: "number",
+  },
+  {
+    name: "stamp",
+    label: "Timestamp",
+    inputType: "datetime-local",
+    valueEditorType: "datetime-local",
+  },
+];
 
 const MinionPage = observer(() => {
   const { t } = useTranslation();
@@ -24,7 +48,10 @@ const MinionPage = observer(() => {
   const [collectionStore] = useState(new CollectionStore());
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [showJobReturnsFilter, setShowJobReturnsFilter] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const jobReturnsFilterStore = useMemo(() => new JobFilterStore(jobReturnsFilterSchema), []);
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
@@ -45,13 +72,20 @@ const MinionPage = observer(() => {
       return;
     }
 
-    jobStore.reset();
-    jobStore.mongoDBQuery = {
+    const baseQuery = {
       minion_id: minionId,
       salt_master: masterId,
     };
+
+    const filterQuery = jobReturnsFilterStore.searchMongoDBQuery;
+    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
+
+    jobStore.reset();
+    jobStore.mongoDBQuery = hasFilters
+      ? { ...baseQuery, ...filterQuery }
+      : baseQuery;
     jobStore.loadJobReturns();
-  }, [minionStore.minion?.minion_id, minionStore.minion?.master, slug]);
+  }, [minionStore.minion?.minion_id, minionStore.minion?.master, slug, jobReturnsFilterStore]);
 
 
   const handleDeleteMinion = useCallback(async () => {
@@ -139,6 +173,68 @@ const MinionPage = observer(() => {
     },
   ];
 
+  const handleJobReturnsFilterSearch = useCallback(() => {
+    const minionId = minionStore.minion?.minion_id;
+    const masterId = minionStore.minion?.master;
+
+    if (!minionId || !masterId) {
+      return;
+    }
+
+    const baseQuery = {
+      minion_id: minionId,
+      salt_master: masterId,
+    };
+
+    const filterQuery = jobReturnsFilterStore.searchMongoDBQuery;
+    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
+
+    jobStore.mongoDBQuery = hasFilters
+      ? { ...baseQuery, ...filterQuery }
+      : baseQuery;
+    jobStore.pagination.pageIndex = 0;
+    jobStore.loadJobReturns();
+  }, [minionStore.minion?.minion_id, minionStore.minion?.master, jobReturnsFilterStore]);
+
+  const handleJobReturnsFilterReset = useCallback(() => {
+    jobReturnsFilterStore.handleResetFilters();
+    handleJobReturnsFilterSearch();
+  }, [jobReturnsFilterStore, handleJobReturnsFilterSearch]);
+
+  const hasJobReturnsFilters = useMemo(() => {
+    return (
+      formatQuery(jobReturnsFilterStore.searchFilters, "json_without_ids") !==
+      formatQuery({ rules: [], combinator: "and", not: false }, "json_without_ids")
+    );
+  }, [jobReturnsFilterStore.searchFilters]);
+
+  const jobReturnsFilterButton = (
+    <Button
+      onClick={() => setShowJobReturnsFilter(!showJobReturnsFilter)}
+      color={"primary"}
+      variant={
+        showJobReturnsFilter
+          ? "solid"
+          : hasJobReturnsFilters
+            ? "filled"
+            : "outlined"
+      }
+    >
+      <Flex gap={8}>
+        <FilterOutlined />
+        {t("minions.filters-button")}
+      </Flex>
+    </Button>
+  );
+
+  const jobReturnsFilter = showJobReturnsFilter ? (
+    <JobReturnsQueryBuilder
+      filterStore={jobReturnsFilterStore}
+      onSearchButtonClick={handleJobReturnsFilterSearch}
+      onResetButtonClick={handleJobReturnsFilterReset}
+    />
+  ) : null;
+
   return (
     <>
       <Breadcrumb
@@ -183,6 +279,8 @@ const MinionPage = observer(() => {
             }
             : undefined
         }
+        jobReturnsFilter={jobReturnsFilter}
+        jobReturnsFilterButton={jobReturnsFilterButton}
       />
 
       <Modal
