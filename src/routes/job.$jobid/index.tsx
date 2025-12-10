@@ -8,13 +8,14 @@ import {
   Button,
   Flex,
   Progress,
+  Radio,
   Skeleton,
   Statistic,
-  Switch,
   Tooltip,
   Typography,
 } from "antd";
-import { HomeOutlined, ReloadOutlined, DownloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { HomeOutlined, ReloadOutlined, DownloadOutlined, QuestionCircleOutlined, FilterOutlined } from "@ant-design/icons";
+import { formatQuery } from "react-querybuilder";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -28,28 +29,82 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
-import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore, JobFilterStore } from "saltbox-core/store";
 import { MinionsPopover } from "./-components/minions-popover";
 import { ArgumentsPreview } from "./-components/arguments-preview";
 import { KwargsPreview } from "./-components/kwargs-preview";
+import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import styles from "./index.module.css";
 import Parcel from "single-spa-react/parcel";
 
 const { Text } = Typography;
 const { Timer } = Statistic;
 
+const jobReturnsFilterSchema = [
+  {
+    name: "jid",
+    label: "JID",
+  },
+  {
+    name: "fun",
+    label: "Function",
+  },
+  {
+    name: "retcode",
+    label: "Return Code",
+    inputType: "number",
+  },
+  {
+    name: "stamp",
+    label: "Timestamp",
+    inputType: "datetime-local",
+    valueEditorType: "datetime-local",
+  },
+  {
+    name: "minion_id",
+    label: "Minion ID",
+  },
+];
+
 const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobModel>());
-  const [isFullOutput, setIsFullOutput] = useState<boolean>(false);
-  const [isTableViewMode, setIsTableViewMode] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
+  const [showJsonFilter, setShowJsonFilter] = useState<boolean>(false);
+
+  const isFullOutput = viewMode === "detailed";
+  const isTableViewMode = viewMode === "table";
+
+  const jsonFilterStore = useMemo(() => new JobFilterStore(jobReturnsFilterSchema), []);
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
+
+  const handleJsonFilterSearch = useCallback(() => {
+    const filterQuery = jsonFilterStore.searchMongoDBQuery;
+    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
+
+    jobStore.mongoDBQuery = hasFilters ? filterQuery : undefined;
+    jobStore.pagination.pageIndex = 0;
+    jobStore.loadJobReturns();
+  }, [jsonFilterStore]);
+
+  const handleJsonFilterReset = useCallback(() => {
+    jsonFilterStore.handleResetFilters();
+    handleJsonFilterSearch();
+  }, [jsonFilterStore, handleJsonFilterSearch]);
+
+  const hasActiveJsonFilters = useMemo(() => {
+    const emptyFilters = { rules: [], combinator: "and" as const, not: false };
+    return (
+      formatQuery(jsonFilterStore.searchFilters, "json_without_ids") !==
+      formatQuery(emptyFilters, "json_without_ids")
+    );
+  }, [jsonFilterStore.searchFilters]);
 
   const mergedTableData = useMemo(() => {
     if (!isTableViewMode) {
@@ -134,6 +189,7 @@ const JobPage = observer(() => {
       webSocketService.disconnect();
     };
   }, [jid]);
+
 
   useEffect(() => {
     if (webSocketService && appStore.authStore?.user?.access_token) {
@@ -350,14 +406,39 @@ const JobPage = observer(() => {
                 )}
               </div>
             )}
-            <Flex className={styles.switchWrapper}>
-              <span>{t("jobs.full-output")}</span>
-              <Switch checked={isFullOutput} onChange={setIsFullOutput} />
-            </Flex>
-            <Flex className={styles.switchWrapper}>
-              <span>{t("jobs.json-table-view")}</span>
-              <Switch checked={isTableViewMode} onChange={setIsTableViewMode} />
-            </Flex>
+            <Radio.Group
+              value={viewMode}
+              onChange={(e) => setViewMode(e.target.value)}
+              options={[
+                { label: t("jobs.standard-view"), value: "standard" },
+                { label: t("jobs.detailed-view"), value: "detailed" },
+                { label: t("jobs.table-view"), value: "table" },
+              ]}
+              optionType="button"
+              buttonStyle="solid"
+            />
+            {isTableViewMode && mergedTableData && (!mergedTableData.canConvert || mergedTableData.rows.length === 0) && (
+              <Tooltip title={mergedTableData.reason || t("jobs.table-conversion-not-possible")}>
+                <QuestionCircleOutlined className={styles.helpIcon} />
+              </Tooltip>
+            )}
+            <Button
+              onClick={() => setShowJsonFilter(!showJsonFilter)}
+              disabled={isTableViewMode}
+              color={"primary"}
+              variant={
+                showJsonFilter
+                  ? "solid"
+                  : hasActiveJsonFilters
+                    ? "filled"
+                    : "outlined"
+              }
+            >
+              <Flex gap={8}>
+                <FilterOutlined />
+                {t("minions.filters-button")}
+              </Flex>
+            </Button>
             <Flex align="center" gap={8}>
               <Button
                 type="primary"
@@ -372,15 +453,21 @@ const JobPage = observer(() => {
               >
                 {t("jobs.export-to-csv")}
               </Button>
-              {isTableViewMode && mergedTableData && (!mergedTableData.canConvert || mergedTableData.rows.length === 0) && (
-                <Tooltip title={mergedTableData.reason || t("jobs.table-conversion-not-possible")}>
-                  <QuestionCircleOutlined style={{ color: "#8c8c8c", cursor: "help" }} />
-                </Tooltip>
-              )}
             </Flex>
           </Flex>
         </Flex>
       )}
+
+      {!isTableViewMode && showJsonFilter && (
+        <div className={styles.filterWrapper}>
+          <JobReturnsQueryBuilder
+            filterStore={jsonFilterStore}
+            onSearchButtonClick={handleJsonFilterSearch}
+            onResetButtonClick={handleJsonFilterReset}
+          />
+        </div>
+      )}
+
 
       <div className={styles.jobReturnTableWrapper}>
         <DefaultJobReturnTable

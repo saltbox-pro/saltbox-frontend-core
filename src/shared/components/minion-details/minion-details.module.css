@@ -167,6 +167,10 @@
   flex-direction: column;
 }
 
+.jobReturnsFilterWrapper {
+  margin-bottom: 16px;
+}
+
 .jobReturnsTableWrapper {
   flex: 1;
   display: flex;
