@@ -103,6 +103,20 @@ export function TaskModal({
     onClose();
   }
 
+  const taskBuildTemplateSchema = (templateSchema: TaskTemplateModel["json_schema"]) => {
+    if (!templateSchema) return {};
+    if (templateSchema.default !== undefined) return templateSchema.default;
+    if (templateSchema.type === "object" && templateSchema.properties) {
+      return Object.fromEntries(
+        Object.entries(templateSchema.properties).map(([k, v]) => [k, taskBuildTemplateSchema(v)])
+      );
+    }
+    if (templateSchema.type === "array" && templateSchema.items) {
+      return [taskBuildTemplateSchema(templateSchema.items)];
+    }
+    return {};
+  }
+
   useEffect(() => {
     if (taskCreateRequest?.task_template_id) {
       apiCoreStore.taskTemplatesApi
@@ -111,7 +125,11 @@ export function TaskModal({
         })
         .then((template) => {
           setTaskTemplate(template);
-          setTaskCreateRequest({ ...taskCreateRequest, data: {} });
+          const defaultData = taskBuildTemplateSchema(template.json_schema);
+          setTaskCreateRequest(prev => ({
+            ...prev,
+            data: defaultData,
+          }));
         })
         .catch(() => {
           setTaskTemplate(undefined);
