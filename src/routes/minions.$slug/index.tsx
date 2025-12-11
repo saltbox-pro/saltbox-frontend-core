@@ -23,7 +23,6 @@ import {
   MinionFilterStore,
 } from "saltbox-core/store";
 import {
-  subscribe,
   PageHeader,
   Modal,
   Dropdown,
@@ -147,17 +146,6 @@ const MinionsPage = observer(() => {
       );
     }
   }, [collectionStore.isDeleted, navigate]);
-
-  useEffect(() => {
-    subscribe("minions.taskmodal.created", ({ detail: { activeTabKey } }) => {
-      setTabKey(activeTabKey);
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
-        newParams.set("tab", activeTabKey);
-        return newParams;
-      });
-    });
-  }, [setSearchParams]);
 
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
@@ -299,8 +287,8 @@ const MinionsPage = observer(() => {
                         showFilter
                           ? "solid"
                           : hasFilters
-                          ? "filled"
-                          : "outlined"
+                            ? "filled"
+                            : "outlined"
                       }
                     >
                       <Flex gap={8}>
