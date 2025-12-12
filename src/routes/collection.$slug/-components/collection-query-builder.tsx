@@ -3,6 +3,7 @@ import {
   SaltBoxQueryBuilderContainer,
 } from "@saltbox/saltbox-frontend-common";
 import { useMemo } from "react";
+
 import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-editor";
 import { MinionFilterStore } from "saltbox-core/store";
 
@@ -12,10 +13,7 @@ type CollectionQueryBuilderProps = {
 };
 
 export const CollectionQueryBuilder = (props: CollectionQueryBuilderProps) => {
-  const valueEditor = useMemo(
-    () => CoreMinionValueEditor(props.slug),
-    [props.slug]
-  );
+  const valueEditor = useMemo(() => CoreMinionValueEditor(props.slug), [props.slug]);
 
   return (
     <SaltBoxQueryBuilderContainer

@@ -1,5 +1,6 @@
-import React from "react";
 import Editor from "@monaco-editor/react";
+import React from "react";
+
 import styles from "./raw-sls-editor.module.css";
 
 export interface RawSlsEditorProps {
@@ -37,11 +38,7 @@ export interface RawSlsEditorProps {
  * />
  * ```
  */
-export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({
-  sls,
-  onSlsChange,
-  className,
-}) => {
+export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, className }) => {
   const handleChange = (value: string | undefined) => {
     if (value !== undefined && onSlsChange) {
       onSlsChange(value);

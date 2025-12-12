@@ -1,10 +1,11 @@
-import { GitlabProjectSchema, SettingsSlsRepoCreateSchema } from "@saltbox/saltbox-core-api-client";
-import { Flex, Spin, Card, Button, Typography, Space, Popover } from "antd";
 import { ClockCircleOutlined, FileTextOutlined, PlusOutlined } from "@ant-design/icons";
+import { GitlabProjectSchema, SettingsSlsRepoCreateSchema } from "@saltbox/saltbox-core-api-client";
 import { Modal, pastTimeByUserTZ, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { Flex, Spin, Card, Button, Typography, Space, Popover } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 import styles from "./sls-gitlab-modal.module.css";
@@ -31,18 +32,26 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
 
   useEffect(() => {
     setIsLoading(true);
-    apiCoreStore.gitLabApi.projectList({
-    }).then(({ items: projects }) => {
-      setProjects(projects);
-      apiCoreStore.settingsApi.repoList({}).then(({ data: slsRepos }) => {
-        const projectsWithoutSlsRepos = projects.filter((project) => !slsRepos.some((slsRepo) => slsRepo.repo_url === project.http_url_to_repo));
-        setProjects(projectsWithoutSlsRepos);
-      }).finally(() => {
+    apiCoreStore.gitLabApi
+      .projectList({})
+      .then(({ items: projects }) => {
+        setProjects(projects);
+        apiCoreStore.settingsApi
+          .repoList({})
+          .then(({ data: slsRepos }) => {
+            const projectsWithoutSlsRepos = projects.filter(
+              (project) =>
+                !slsRepos.some((slsRepo) => slsRepo.repo_url === project.http_url_to_repo)
+            );
+            setProjects(projectsWithoutSlsRepos);
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      })
+      .catch(() => {
         setIsLoading(false);
       });
-    }).catch(() => {
-      setIsLoading(false);
-    });
   }, [props.isOpen]);
 
   const handleModalCancel = () => {
@@ -70,21 +79,24 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
       isLoading: true,
     });
 
-    apiCoreStore.gitLabApi.projectReadme({ project_id: project.id }).then(async (response) => {
-      setContentModal({
-        isOpen: true,
-        title: `README - ${project.name}`,
-        content: (response?.content || t("sls-gitlab-modal.no-content")) as string,
-        isLoading: false,
+    apiCoreStore.gitLabApi
+      .projectReadme({ project_id: project.id })
+      .then(async (response) => {
+        setContentModal({
+          isOpen: true,
+          title: `README - ${project.name}`,
+          content: (response?.content || t("sls-gitlab-modal.no-content")) as string,
+          isLoading: false,
+        });
+      })
+      .catch(() => {
+        setContentModal({
+          isOpen: true,
+          title: `README - ${project.name}`,
+          content: t("sls-gitlab-modal.error-loading"),
+          isLoading: false,
+        });
       });
-    }).catch(() => {
-      setContentModal({
-        isOpen: true,
-        title: `README - ${project.name}`,
-        content: t("sls-gitlab-modal.error-loading"),
-        isLoading: false,
-      });
-    });
   };
 
   const handleShowManifest = async (project: GitlabProjectSchema) => {
@@ -95,21 +107,24 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
       isLoading: true,
     });
 
-    apiCoreStore.gitLabApi.projectManifest({ project_id: project.id }).then(async (response) => {
-      setContentModal({
-        isOpen: true,
-        title: `Manifest - ${project.name}`,
-        content: (response?.content || t("sls-gitlab-modal.no-content")) as string,
-        isLoading: false,
+    apiCoreStore.gitLabApi
+      .projectManifest({ project_id: project.id })
+      .then(async (response) => {
+        setContentModal({
+          isOpen: true,
+          title: `Manifest - ${project.name}`,
+          content: (response?.content || t("sls-gitlab-modal.no-content")) as string,
+          isLoading: false,
+        });
+      })
+      .catch(() => {
+        setContentModal({
+          isOpen: true,
+          title: `Manifest - ${project.name}`,
+          content: t("sls-gitlab-modal.error-loading"),
+          isLoading: false,
+        });
       });
-    }).catch(() => {
-      setContentModal({
-        isOpen: true,
-        title: `Manifest - ${project.name}`,
-        content: t("sls-gitlab-modal.error-loading"),
-        isLoading: false,
-      });
-    });
   };
 
   const handleCloseContentModal = () => {
@@ -126,11 +141,11 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
         height={"80vh"}
         footer={""}
       >
-        {isLoading &&
+        {isLoading && (
           <Flex justify="center" align="center" style={{ height: "10rem" }}>
             <Spin spinning={true} />
           </Flex>
-        }
+        )}
 
         {!isLoading && projects.length === 0 && (
           <Flex justify="center" align="center" style={{ height: "10rem" }}>
@@ -139,7 +154,7 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
         )}
 
         {!isLoading && projects.length > 0 && (
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             {projects.map((project) => (
               <Card
                 key={project.id}
@@ -157,7 +172,7 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
                   </Button>
                 }
               >
-                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Space direction="vertical" size="small" style={{ width: "100%" }}>
                   {project.description && (
                     <div>
                       <Text type="secondary">{t("sls-gitlab-modal.description")}: </Text>
@@ -190,7 +205,9 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
                           {t("sls-gitlab-modal.created")}:
                         </Text>
                         <Popover content={formatTimeByUserTZ(project.created_at)}>
-                          <Text style={{ cursor: 'pointer' }}>{pastTimeByUserTZ(project.created_at)}</Text>
+                          <Text style={{ cursor: "pointer" }}>
+                            {pastTimeByUserTZ(project.created_at)}
+                          </Text>
                         </Popover>
                       </Flex>
                     )}
@@ -202,7 +219,9 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
                           {t("sls-gitlab-modal.last-activity")}:
                         </Text>
                         <Popover content={formatTimeByUserTZ(project.last_activity_at)}>
-                          <Text style={{ cursor: 'pointer' }}>{pastTimeByUserTZ(project.last_activity_at)}</Text>
+                          <Text style={{ cursor: "pointer" }}>
+                            {pastTimeByUserTZ(project.last_activity_at)}
+                          </Text>
                         </Popover>
                       </Flex>
                     )}
@@ -214,7 +233,9 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
                           {t("sls-gitlab-modal.updated")}:
                         </Text>
                         <Popover content={formatTimeByUserTZ(project.updated_at)}>
-                          <Text style={{ cursor: 'pointer' }}>{pastTimeByUserTZ(project.updated_at)}</Text>
+                          <Text style={{ cursor: "pointer" }}>
+                            {pastTimeByUserTZ(project.updated_at)}
+                          </Text>
                         </Popover>
                       </Flex>
                     )}
@@ -252,7 +273,7 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
             </Flex>
           ) : (
             <div className={styles.markdownContent}>
-              <Markdown >{contentModal.content}</Markdown>
+              <Markdown>{contentModal.content}</Markdown>
             </div>
           )}
         </Modal>

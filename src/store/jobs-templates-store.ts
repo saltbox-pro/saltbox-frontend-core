@@ -1,7 +1,8 @@
-import { PaginationState } from '@tanstack/react-table';
-import { makeAutoObservable, runInAction } from 'mobx';
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from './api-core-store';
+import { PaginationState } from "@tanstack/react-table";
+import { makeAutoObservable, runInAction } from "mobx";
+
+import { apiCoreStore } from "./api-core-store";
 
 export class JobTemplateStore {
   jobsTemplate: Array<JobSchemaShortSchema>;

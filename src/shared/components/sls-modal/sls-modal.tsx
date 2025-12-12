@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Button, Flex, Form, Input } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
 import { Modal, Popover } from "@saltbox/saltbox-frontend-common";
+import { Button, Flex, Form, Input } from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export type SlsFormData = {
   name: string;

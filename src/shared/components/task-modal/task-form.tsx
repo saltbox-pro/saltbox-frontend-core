@@ -1,10 +1,8 @@
+import { MasterViewSchema, TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
+import { Button, Flex, Form, InputNumber, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Flex, Form, InputNumber, Select } from "antd";
-import {
-  MasterViewSchema,
-  TaskCreateRequestSchemaInput,
-} from "@saltbox/saltbox-core-api-client";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export type TaskFormData = TaskCreateRequestSchemaInput;
@@ -40,16 +38,13 @@ export function TaskForm({
       ?.taskTemplatesList()
       .then((result) => {
         const options =
-          result?.data?.reduce<Array<{ label: string; value: string }>>(
-            (options, item) => {
-              options.push({
-                label: item.title,
-                value: item.id,
-              });
-              return options;
-            },
-            []
-          ) ?? [];
+          result?.data?.reduce<Array<{ label: string; value: string }>>((options, item) => {
+            options.push({
+              label: item.title,
+              value: item.id,
+            });
+            return options;
+          }, []) ?? [];
         options.sort((a, b) =>
           a.label.toLowerCase() > b.label.toLowerCase()
             ? 1
@@ -69,8 +64,7 @@ export function TaskForm({
         salt_masters: taskCreateRequest?.salt_masters ?? [],
         batch_size: taskCreateRequest?.batch_size ?? 0,
         max_retries: taskCreateRequest?.max_retries ?? 1,
-        max_jobs_count_at_same_time:
-          taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
+        max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
       });
     } else {
       form.setFieldsValue({
@@ -78,8 +72,7 @@ export function TaskForm({
         salt_masters: taskCreateRequest?.salt_masters,
         batch_size: taskCreateRequest?.batch_size,
         max_retries: taskCreateRequest?.max_retries,
-        max_jobs_count_at_same_time:
-          taskCreateRequest?.max_jobs_count_at_same_time,
+        max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time,
       });
     }
   }, [taskCreateRequest]);
@@ -136,9 +129,7 @@ export function TaskForm({
       <Form.Item<TaskFormData>
         label={t("task-form.batch-size")}
         name="batch_size"
-        rules={[
-          { required: true, message: t("task-form.batch-size-error-required") },
-        ]}
+        rules={[{ required: true, message: t("task-form.batch-size-error-required") }]}
         initialValue={0}
       >
         <InputNumber style={{ width: "100%" }} controls={false} />

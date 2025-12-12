@@ -1,8 +1,10 @@
+import { Flex, Tag } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Flex, Tag } from "antd";
-import { JsonPopover } from "./json-popover";
+
 import styles from "../index.module.css";
+
+import { JsonPopover } from "./json-popover";
 
 interface ArgumentsPreviewProps {
   args: unknown[];
@@ -58,20 +60,13 @@ export const ArgumentsPreview = ({ args, title }: ArgumentsPreviewProps) => {
               </React.Fragment>
             ))
           ) : (
-            <span className={styles.argumentsEmpty}>
-              {t("jobs.no-arguments")}
-            </span>
+            <span className={styles.argumentsEmpty}>{t("jobs.no-arguments")}</span>
           )}
-          {hasMore ? (
-            <span className={styles.argumentsEllipsis}>…</span>
-          ) : null}
+          {hasMore ? <span className={styles.argumentsEllipsis}>…</span> : null}
           <span className={styles.argumentsBrace}>]</span>
         </Tag>
       </Flex>
-      {args.length > 0 ? (
-        <JsonPopover data={args} title={title} />
-      ) : null}
+      {args.length > 0 ? <JsonPopover data={args} title={title} /> : null}
     </Flex>
   );
 };
-

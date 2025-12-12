@@ -1,58 +1,59 @@
-import { Form, Input, Button } from "antd"
-import { useTranslation } from "react-i18next"
-import { observer } from "mobx-react-lite"
-import { useEffect } from "react"
-import styles from "./pillar-create-form.module.css"
+import { Form, Input, Button } from "antd";
+import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
+import styles from "./pillar-create-form.module.css";
 
 interface PillarCreateFormProps {
-  masterId: string
-  onSubmit: (values: { name: string; value: string; minionId?: string }) => Promise<boolean>
-  onCancel: () => void
+  masterId: string;
+  onSubmit: (values: { name: string; value: string; minionId?: string }) => Promise<boolean>;
+  onCancel: () => void;
   initialValues?: {
-    name: string
-    value: string
-    minionId?: string
-  }
-  onlyValueField?: boolean
+    name: string;
+    value: string;
+    minionId?: string;
+  };
+  onlyValueField?: boolean;
 }
 
 interface FormValues {
-  name: string
-  value: string
-  minionId?: string
+  name: string;
+  value: string;
+  minionId?: string;
 }
 
 export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
-  const { t } = useTranslation()
-  const [form] = Form.useForm<FormValues>()
-  const { onlyValueField } = props
+  const { t } = useTranslation();
+  const [form] = Form.useForm<FormValues>();
+  const { onlyValueField } = props;
 
   useEffect(() => {
     if (props.initialValues) {
-      form.setFieldsValue(props.initialValues)
+      form.setFieldsValue(props.initialValues);
     }
-  }, [props.initialValues, form])
+  }, [props.initialValues, form]);
 
   const handleSubmit = async (values: FormValues) => {
     let submitValues = { ...values };
 
     if (submitValues.name) {
-      submitValues.name = submitValues.name.trim().replace(/\t/g, '');
+      submitValues.name = submitValues.name.trim().replace(/\t/g, "");
     }
 
     if (submitValues.value) {
-      submitValues.value = submitValues.value.trim().replace(/\t/g, '');
+      submitValues.value = submitValues.value.trim().replace(/\t/g, "");
     }
 
     if (onlyValueField && props.initialValues) {
       if (!submitValues.name) submitValues.name = props.initialValues.name;
       if (submitValues.minionId === undefined) submitValues.minionId = props.initialValues.minionId;
     }
-    const success = await props.onSubmit(submitValues)
+    const success = await props.onSubmit(submitValues);
     if (success) {
-      props.onCancel()
+      props.onCancel();
     }
-  }
+  };
 
   return (
     <Form
@@ -96,21 +97,16 @@ export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
           },
         ]}
       >
-        <Input.TextArea
-          rows={4}
-          placeholder={t("pillars.form-value-placeholder")}
-        />
+        <Input.TextArea rows={4} placeholder={t("pillars.form-value-placeholder")} />
       </Form.Item>
       <Form.Item>
         <div className={styles.buttonsContainer}>
-          <Button onClick={props.onCancel}>
-            {t("pillars.form-cancel")}
-          </Button>
+          <Button onClick={props.onCancel}>{t("pillars.form-cancel")}</Button>
           <Button type="primary" htmlType="submit">
             {t("pillars.form-submit")}
           </Button>
         </div>
       </Form.Item>
     </Form>
-  )
-})
+  );
+});

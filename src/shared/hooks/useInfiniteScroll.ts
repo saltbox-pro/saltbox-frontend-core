@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from "react";
 
 export type UseInfiniteScrollProps = {
   hasMore: boolean;
@@ -18,7 +18,7 @@ export const useInfiniteScroll = (props: UseInfiniteScrollProps) => {
         props.onLoadMore();
       }
     },
-    [props.hasMore, props.isLoading, props.onLoadMore],
+    [props.hasMore, props.isLoading, props.onLoadMore]
   );
 
   useEffect(() => {

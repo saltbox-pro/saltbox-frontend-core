@@ -1,8 +1,10 @@
+import { Flex, Tag } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Flex, Tag } from "antd";
-import { JsonPopover } from "./json-popover";
+
 import styles from "../index.module.css";
+
+import { JsonPopover } from "./json-popover";
 
 interface KwargsPreviewProps {
   kwargs: Record<string, unknown>;
@@ -61,20 +63,13 @@ export const KwargsPreview = ({ kwargs, title }: KwargsPreviewProps) => {
               </React.Fragment>
             ))
           ) : (
-            <span className={styles.kwargsEmpty}>
-              {t("jobs.no-key-value-arguments")}
-            </span>
+            <span className={styles.kwargsEmpty}>{t("jobs.no-key-value-arguments")}</span>
           )}
-          {hasMore ? (
-            <span className={styles.kwargsEllipsis}>…</span>
-          ) : null}
+          {hasMore ? <span className={styles.kwargsEllipsis}>…</span> : null}
           <span className={styles.kwargsBrace}>{"}"}</span>
         </Tag>
       </Flex>
-      {entries.length > 0 ? (
-        <JsonPopover data={kwargs} title={title} />
-      ) : null}
+      {entries.length > 0 ? <JsonPopover data={kwargs} title={title} /> : null}
     </Flex>
   );
 };
-

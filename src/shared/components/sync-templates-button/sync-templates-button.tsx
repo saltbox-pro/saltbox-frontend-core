@@ -1,28 +1,24 @@
+import { SyncOutlined } from "@ant-design/icons";
+import { Button, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, message } from "antd";
-import { SyncOutlined } from "@ant-design/icons";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 interface SyncTemplatesButtonProps {
   onSyncComplete?: () => void;
 }
 
-export function SyncTemplatesButton({
-  onSyncComplete,
-}: SyncTemplatesButtonProps) {
+export function SyncTemplatesButton({ onSyncComplete }: SyncTemplatesButtonProps) {
   const { t } = useTranslation();
   const [isSyncTemplates, setIsSyncTemplates] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
   const checkTemplatesSyncTask = async (taskId: string): Promise<void> => {
     try {
-      const result =
-        await apiCoreStore.settingsApi?.repoSyncStatus(
-          {
-            task_id: taskId,
-          },
-        );
+      const result = await apiCoreStore.settingsApi?.repoSyncStatus({
+        task_id: taskId,
+      });
 
       if (!result) {
         setIsSyncTemplates(false);

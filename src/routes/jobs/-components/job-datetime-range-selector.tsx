@@ -1,6 +1,6 @@
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
 import { Flex, Select } from "antd";
+import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 type JobDatetimeRangeSelectorProps = {
   className?: string;
@@ -41,10 +41,7 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
   ];
   const handleChangeRange = (value: number) => {
     if (value === optionsDefaultValue) {
-      const range: [dayjs.Dayjs, dayjs.Dayjs] = [
-        dayjs().startOf("day"),
-        dayjs(),
-      ];
+      const range: [dayjs.Dayjs, dayjs.Dayjs] = [dayjs().startOf("day"), dayjs()];
       props.onChange(range);
     } else {
       const option = options.find((option) => option.value === value);

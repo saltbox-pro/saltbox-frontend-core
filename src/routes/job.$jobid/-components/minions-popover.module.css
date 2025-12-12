@@ -1,15 +1,15 @@
 .content {
-    max-height: 200px;
-    overflow: auto;
-    min-width: 300px;
+  max-height: 200px;
+  overflow: auto;
+  min-width: 300px;
 }
 
 .minionItem {
-    margin-bottom: 4px;
+  margin-bottom: 4px;
 }
 
 .trigger {
-    cursor: pointer;
-    text-decoration: underline;
-    font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 600;
 }

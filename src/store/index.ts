@@ -28,4 +28,4 @@ export { JobTemplateStore } from "./jobs-templates-store";
 export { JobFilterStore } from "./job-filter-store";
 export { JobsStore } from "./jobs-store";
 export { DefaultCollectionStore } from "./default-collection-store";
-export { TasksFilterStore } from "./tasks-filter-store"
+export { TasksFilterStore } from "./tasks-filter-store";

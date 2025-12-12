@@ -1,10 +1,3 @@
-import { JSX, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { createColumnHelper } from "@tanstack/react-table";
-import { Link, useNavigate } from "react-router";
-import { toJS } from "mobx";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Tag, message } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
@@ -14,6 +7,14 @@ import {
   FastTablePaginated,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Breadcrumb, Button, Flex, Tag, message } from "antd";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { JSX, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router";
+
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -52,11 +53,7 @@ function MastersPage() {
           case "accepted":
             return <Tag color="green">{t("masters.table-accepted")}</Tag>;
           default:
-            return (
-              <Tag>{`${t(
-                "masters.table-unknown-status"
-              )}: ${data.getValue()}`}</Tag>
-            );
+            return <Tag>{`${t("masters.table-unknown-status")}: ${data.getValue()}`}</Tag>;
         }
       },
     }),
@@ -177,7 +174,11 @@ function MastersPage() {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("masters.title"),

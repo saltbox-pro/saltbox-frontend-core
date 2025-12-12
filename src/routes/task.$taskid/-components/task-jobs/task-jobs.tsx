@@ -1,13 +1,13 @@
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag, Typography } from "antd";
 import { TaskJob, TaskModel } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   FastTableListed,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Button, Tag, Typography } from "antd";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
 const { Text } = Typography;
 
@@ -15,13 +15,7 @@ const TaskJobsTable = FastTableListed<TaskJob>;
 
 const columnHelper = createColumnHelper<TaskJob>();
 
-export const TaskJobs = ({
-  task,
-  isLoading,
-}: {
-  task: TaskModel | null;
-  isLoading: boolean;
-}) => {
+export const TaskJobs = ({ task, isLoading }: { task: TaskModel | null; isLoading: boolean }) => {
   const { t } = useTranslation();
 
   const columns = [
@@ -54,11 +48,7 @@ export const TaskJobs = ({
           case "pending":
             return <Tag color="yellow">{t("task.jobs.table-pending")}</Tag>;
           default:
-            return (
-              <Tag>{`${t(
-                "task.jobs.table-unknown-code"
-              )}: ${data.getValue()}`}</Tag>
-            );
+            return <Tag>{`${t("task.jobs.table-unknown-code")}: ${data.getValue()}`}</Tag>;
         }
       },
     }),

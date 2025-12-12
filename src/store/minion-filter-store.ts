@@ -1,7 +1,8 @@
-import { action, makeObservable, runInAction } from "mobx";
-import { apiCoreStore } from "saltbox-core/store";
 import { FilterStore } from "@saltbox/saltbox-frontend-common";
+import { action, makeObservable, runInAction } from "mobx";
 import { generateID, RuleGroupType } from "react-querybuilder";
+
+import { apiCoreStore } from "saltbox-core/store";
 
 type RuleType = RuleGroupType["rules"][number];
 

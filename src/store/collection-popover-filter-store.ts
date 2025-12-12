@@ -1,6 +1,7 @@
-import { action, makeObservable, runInAction } from "mobx";
-import { apiCoreStore } from "saltbox-core/store";
 import { FilterStore } from "@saltbox/saltbox-frontend-common";
+import { action, makeObservable, runInAction } from "mobx";
+
+import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionPopoverFilterStore extends FilterStore {
   constructor() {

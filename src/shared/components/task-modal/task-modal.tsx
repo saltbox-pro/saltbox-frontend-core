@@ -1,7 +1,3 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import Ajv from "ajv";
-import { Tabs, message } from "antd";
 import {
   CollectionModel,
   MasterViewSchema,
@@ -10,11 +6,17 @@ import {
   TaskTargetMinion,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
+import { publish, Modal } from "@saltbox/saltbox-frontend-common";
+import Ajv from "ajv";
+import { Tabs, message } from "antd";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { apiCoreStore } from "saltbox-core/store";
+
 import { TaskForm, TaskFormData } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";
-import { publish, Modal } from "@saltbox/saltbox-frontend-common";
 
 const filterAdditionalParams = (
   formData: Partial<TaskCreateRequestSchemaInput>,
@@ -35,7 +37,7 @@ export type TaskModalProps = {
   query?: object;
   onClose: (form?: TaskCreateRequestSchemaInput) => void;
   saltMasters: Array<MasterViewSchema>;
-}
+};
 
 export function TaskModal({
   isOpen,
@@ -50,9 +52,9 @@ export function TaskModal({
   const [activeTabKey, setActiveTabKey] = useState<string>("task-info");
   const [messageApi] = message.useMessage();
 
-  const [taskCreateRequest, setTaskCreateRequest] = useState<
-    Partial<TaskCreateRequestSchemaInput>
-  >({});
+  const [taskCreateRequest, setTaskCreateRequest] = useState<Partial<TaskCreateRequestSchemaInput>>(
+    {}
+  );
 
   const handleModalCancel = () => {
     onClose();
@@ -83,11 +85,10 @@ export function TaskModal({
       query: query ?? {},
       batch_size: taskCreateRequest?.batch_size ?? 0,
       max_retries: taskCreateRequest?.max_retries ?? 3,
-      max_jobs_count_at_same_time:
-        taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
+      max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
       data: filterAdditionalParams(taskCreateRequest, taskTemplate),
     };
-  }
+  };
 
   const handleCreateTask = () => {
     onClose(getTaskCreateRequest());
@@ -101,7 +102,7 @@ export function TaskModal({
       templateDescription: taskTemplate?.title ?? "",
     });
     onClose();
-  }
+  };
 
   useEffect(() => {
     if (taskCreateRequest?.task_template_id) {

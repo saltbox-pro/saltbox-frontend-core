@@ -1,10 +1,12 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ColumnDef, createColumnHelper, OnChangeFn, SortingState } from "@tanstack/react-table";
-import { Alert, Button, Flex } from "antd";
 import { ExclamationCircleOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { ColumnDef, createColumnHelper, OnChangeFn, SortingState } from "@tanstack/react-table";
+import { Alert, Button, Flex } from "antd";
+import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { convertToTable, TableData } from "../utils/table-converter";
+
 import styles from "./table-view.module.css";
 
 const columnHelper = createColumnHelper<Record<string, unknown>>();
@@ -24,7 +26,8 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
   const handleSortingChange: OnChangeFn<SortingState> = useCallback(
     (updaterOrValue) => {
       setSorting((prevSorting) => {
-        const nextSorting = typeof updaterOrValue === "function" ? updaterOrValue(prevSorting) : updaterOrValue;
+        const nextSorting =
+          typeof updaterOrValue === "function" ? updaterOrValue(prevSorting) : updaterOrValue;
         onSortingChange?.(nextSorting);
         return nextSorting;
       });
@@ -33,7 +36,13 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
   );
 
   const tableData = useMemo(() => {
-    if (data && typeof data === "object" && "canConvert" in data && "columns" in data && "rows" in data) {
+    if (
+      data &&
+      typeof data === "object" &&
+      "canConvert" in data &&
+      "columns" in data &&
+      "rows" in data
+    ) {
       return data as TableData;
     }
     return convertToTable(data, minionId);
@@ -56,18 +65,11 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
             }
             const stringValue = String(value);
             if (stringValue.length > 100) {
-              return (
-                <span title={stringValue}>
-                  {stringValue.slice(0, 97)}...
-                </span>
-              );
+              return <span title={stringValue}>{stringValue.slice(0, 97)}...</span>;
             }
             return <span>{stringValue}</span>;
           },
-          meta:
-            colName === "minion_id"
-              ? { tdClassName: "fast-table-column-nowrap" }
-              : undefined,
+          meta: colName === "minion_id" ? { tdClassName: "fast-table-column-nowrap" } : undefined,
         })
       );
   }, [tableData]);
@@ -81,11 +83,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
   }
 
   if (tableData.rows.length === 0) {
-    return (
-      <div className={styles.emptyMessage}>
-        {t("jobs.table-empty")}
-      </div>
-    );
+    return <div className={styles.emptyMessage}>{t("jobs.table-empty")}</div>;
   }
 
   const hasErrors = tableData.errors && tableData.errors.length > 0;
@@ -104,12 +102,20 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
                   icon={isErrorsCollapsed ? <DownOutlined /> : <UpOutlined />}
                   onClick={() => setIsErrorsCollapsed(!isErrorsCollapsed)}
                   className={styles.collapseButton}
-                  title={isErrorsCollapsed ? t("jobs.table-errors-expand") : t("jobs.table-errors-collapse")}
+                  title={
+                    isErrorsCollapsed
+                      ? t("jobs.table-errors-expand")
+                      : t("jobs.table-errors-collapse")
+                  }
                 />
               </Flex>
             }
             description={
-              <div className={`${styles.errorsList} ${isErrorsCollapsed ? styles.errorsListHidden : ""}`}>
+              <div
+                className={`${styles.errorsList} ${
+                  isErrorsCollapsed ? styles.errorsListHidden : ""
+                }`}
+              >
                 {tableData.errors!.map((error, index) => (
                   <div key={index} className={styles.errorItem}>
                     <span className={styles.errorMinionId}>{error.minion_id}:</span>
@@ -138,4 +144,3 @@ export const TableView: React.FC<TableViewProps> = ({ data, minionId, onSortingC
     </div>
   );
 };
-

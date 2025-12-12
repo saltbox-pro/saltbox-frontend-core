@@ -1,31 +1,28 @@
+import { HomeOutlined } from "@ant-design/icons";
+import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  CopyToClipboardButton,
+  FastTablePaginated,
+  formatTimeByUserTZ,
+  PageHeader,
+  pastTimeByUserTZ,
+  Popover,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Breadcrumb, Button, SelectProps, Tag, Typography } from "antd";
+import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
-import { createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, SelectProps, Tag, Typography } from "antd";
-import { HomeOutlined } from "@ant-design/icons";
-import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import Parcel from "single-spa-react/parcel";
+
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
-import {
-  formatTimeByUserTZ,
-  pastTimeByUserTZ,
-  PageHeader,
-  FastTablePaginated,
-  Popover,
-  CopyToClipboardButton,
-} from "@saltbox/saltbox-frontend-common";
-import {
-  apiCoreStore,
-  appStore,
-  JobFilterStore,
-  JobsStore,
-} from "saltbox-core/store";
+import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
-import Parcel from "single-spa-react/parcel";
-import { WebSocketService } from "@saltbox/saltbox-frontend-common";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
@@ -164,10 +161,7 @@ const getFilterSchema = (saltTargetTypes: SelectProps["options"]) => [
 const useJobFilters = () => {
   const saltTargetTypes = useSaltTargetTypes();
 
-  const filterSchema = useMemo(
-    () => getFilterSchema(saltTargetTypes),
-    [saltTargetTypes]
-  );
+  const filterSchema = useMemo(() => getFilterSchema(saltTargetTypes), [saltTargetTypes]);
 
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
 
@@ -210,11 +204,7 @@ const JobsPage = observer(() => {
 
           return (
             <>
-              <Button
-                type="link"
-                size="small"
-                onClick={() => handleNavigateToJob(jid)}
-              >
+              <Button type="link" size="small" onClick={() => handleNavigateToJob(jid)}>
                 {jid}
               </Button>
               <CopyToClipboardButton text={jid} />
@@ -237,20 +227,13 @@ const JobsPage = observer(() => {
           }
 
           const truncatedValue =
-            fullValue.length > 50
-              ? `${fullValue.substring(0, 50)}...`
-              : fullValue;
+            fullValue.length > 50 ? `${fullValue.substring(0, 50)}...` : fullValue;
 
-          const result = useMemo(
-            () => (
-              <Text copyable={{ text: fullValue }} title={fullValue}>
-                {truncatedValue}
-              </Text>
-            ),
-            []
+          return (
+            <Text copyable={{ text: fullValue }} title={fullValue}>
+              {truncatedValue}
+            </Text>
           );
-
-          return result;
         },
       }),
       columnHelper.accessor("tgt_type", {
@@ -264,23 +247,15 @@ const JobsPage = observer(() => {
         cell: (data) => {
           switch (data.getValue()) {
             case JobStatus.InQueue:
-              return (
-                <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>
-              );
+              return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
             case JobStatus.Started:
               return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
             case JobStatus.WaitingReturns:
-              return (
-                <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>
-              );
+              return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
             case JobStatus.Finished:
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
             default:
-              return (
-                <Tag>{`${t(
-                  "jobs.table-status-unknown"
-                )}: ${data.getValue()}`}</Tag>
-              );
+              return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
         },
       }),
@@ -293,12 +268,7 @@ const JobsPage = observer(() => {
           const created: string = formatTimeByUserTZ(rawCreated);
           const createdPastTime: string = pastTimeByUserTZ(rawCreated);
 
-          const result = useMemo(
-            () => <Popover content={created}>{createdPastTime}</Popover>,
-            []
-          );
-
-          return result;
+          return <Popover content={created}>{createdPastTime}</Popover>;
         },
       }),
     ],
@@ -337,16 +307,14 @@ const JobsPage = observer(() => {
   }, []);
 
   let jobModalCreatePlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
-    (plugin) => {
-      jobModalCreatePlugin = (
-        <>
-          {jobModalCreatePlugin}
-          <Parcel config={plugin.parcel} wrapWith="div" />
-        </>
-      );
-    }
-  );
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
+    jobModalCreatePlugin = (
+      <>
+        {jobModalCreatePlugin}
+        <Parcel config={plugin.parcel} wrapWith="div" />
+      </>
+    );
+  });
 
   const handleSearchButtonClick = () => {
     jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
@@ -364,7 +332,11 @@ const JobsPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("jobs.title"),
@@ -400,9 +372,7 @@ const JobsPage = observer(() => {
         isLoading={jobsStore.isJobsLoading}
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
-        onLazyLoad={(pagination, sorting) =>
-          jobsStore.handleLazyLoad(pagination, sorting)
-        }
+        onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
         useVirtualScroll={false}
       />
 

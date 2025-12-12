@@ -1,5 +1,6 @@
-import { makeAutoObservable, runInAction } from "mobx";
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { makeAutoObservable, runInAction } from "mobx";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionStore {
@@ -56,14 +57,13 @@ export class CollectionStore {
 
     this.isLoading = true;
     try {
-      const updatedCollection =
-        await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-          slug: this.collectionSlug,
-          CollectionUpdateSchema: {
-            title: this.collection.title,
-            query: query,
-          },
-        });
+      const updatedCollection = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
+        slug: this.collectionSlug,
+        CollectionUpdateSchema: {
+          title: this.collection.title,
+          query: query,
+        },
+      });
 
       runInAction(() => {
         this.collection = updatedCollection;
@@ -80,14 +80,13 @@ export class CollectionStore {
 
     this.isLoading = true;
     try {
-      const updatedCollection =
-        await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-          slug: this.collectionSlug,
-          CollectionUpdateSchema: {
-            query: this.collection.query,
-            title: title,
-          },
-        });
+      const updatedCollection = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
+        slug: this.collectionSlug,
+        CollectionUpdateSchema: {
+          query: this.collection.query,
+          title: title,
+        },
+      });
 
       runInAction(() => {
         this.collection = updatedCollection;

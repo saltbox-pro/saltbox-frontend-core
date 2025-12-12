@@ -1,6 +1,25 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import ReactJson from "react-json-view";
+import {
+  FilterOutlined,
+  MinusSquareOutlined,
+  PlusSquareOutlined,
+  SettingOutlined,
+  CopyOutlined,
+  CloseOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
+import {
+  GrainsSchema,
+  JobReturnModel,
+  MinionDetailSchema,
+  PillarModel,
+} from "@saltbox/saltbox-core-api-client";
+import {
+  CopyToClipboardButton,
+  FastTablePaginated,
+  MatIcon,
+  Popover,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
   PaginationState,
@@ -21,35 +40,29 @@ import {
   Tag,
   Tooltip,
   message,
+  type MenuProps,
+  type TabsProps,
 } from "antd";
-import { FilterOutlined, MinusSquareOutlined, PlusSquareOutlined, SettingOutlined, CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
-import {
-  GrainsSchema,
-  MinionDetailSchema,
-  PillarModel,
-} from "@saltbox/saltbox-core-api-client";
+import React, { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import ReactJson from "react-json-view";
+import { formatQuery } from "react-querybuilder";
 import { useNavigate } from "react-router";
-import {
-  CopyToClipboardButton,
-  FastTablePaginated,
-  MatIcon,
-  Popover,
-  formatTimeByUserTZ,
-} from "@saltbox/saltbox-frontend-common";
-import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import styles from "./minion-details.module.css";
-import type { MenuProps, TabsProps } from "antd";
+import { JobFilterStore } from "saltbox-core/store";
+
 import {
   extractStringValue,
   getShortJobReturnOutput,
   isSimpleStringData,
 } from "../job-return-table/utils/job-return-utils";
 
+import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
+import styles from "./minion-details.module.css";
+
 type SimpleGrainKeys = {
-  [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode
-  ? K
-  : never]: GrainsSchema[K];
+  [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode ? K : never]: GrainsSchema[K];
 };
 
 interface MinionSimpleDetailView {
@@ -125,11 +138,7 @@ const KwargsPopoverButton = ({
             <span>{title}</span>
             <Flex gap={8}>
               <Button type="link" icon={<CopyOutlined />} onClick={handleCopy} />
-              <Button
-                type="link"
-                icon={<CloseOutlined />}
-                onClick={() => setIsOpen(false)}
-              />
+              <Button type="link" icon={<CloseOutlined />} onClick={() => setIsOpen(false)} />
             </Flex>
           </Flex>
         }
@@ -175,13 +184,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           }
           return (
             <Button
-              icon={
-                row.getIsExpanded() ? (
-                  <MinusSquareOutlined />
-                ) : (
-                  <PlusSquareOutlined />
-                )
-              }
+              icon={row.getIsExpanded() ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
               size="small"
               type="link"
               onClick={row.getToggleExpandedHandler()}
@@ -201,11 +204,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
 
           return (
             <Flex gap={4} align="center">
-              <Button
-                type="link"
-                size="small"
-                onClick={() => handleNavigateToJob(jid)}
-              >
+              <Button type="link" size="small" onClick={() => handleNavigateToJob(jid)}>
                 {jid}
               </Button>
               <CopyToClipboardButton text={jid} />
@@ -255,23 +254,15 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           const rawKwargs = row.original.fun_kwarg;
 
           const isObjectKwargs =
-            rawKwargs &&
-            typeof rawKwargs === "object" &&
-            !Array.isArray(rawKwargs);
+            rawKwargs && typeof rawKwargs === "object" && !Array.isArray(rawKwargs);
 
-          const kwargs = isObjectKwargs
-            ? (rawKwargs as Record<string, unknown>)
-            : undefined;
+          const kwargs = isObjectKwargs ? (rawKwargs as Record<string, unknown>) : undefined;
           const entries = kwargs ? Object.entries(kwargs) : [];
           const previewEntries = entries.slice(0, 3);
           const hasMore = entries.length > 3;
 
           const formatValue = (value: unknown) => {
-            if (
-              value === null ||
-              typeof value === "number" ||
-              typeof value === "boolean"
-            ) {
+            if (value === null || typeof value === "number" || typeof value === "boolean") {
               return String(value);
             }
 
@@ -316,13 +307,9 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
                       </React.Fragment>
                     ))
                   ) : (
-                    <span className={styles.kwargsEmpty}>
-                      {t("jobs.no-key-value-arguments")}
-                    </span>
+                    <span className={styles.kwargsEmpty}>{t("jobs.no-key-value-arguments")}</span>
                   )}
-                  {hasMore ? (
-                    <span className={styles.kwargsEllipsis}>…</span>
-                  ) : null}
+                  {hasMore ? <span className={styles.kwargsEllipsis}>…</span> : null}
                   <span className={styles.kwargsBrace}>{"}"}</span>
                 </Tag>
               </Flex>
@@ -351,48 +338,35 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
     [handleNavigateToJob, t]
   );
 
-  const renderJobResult = useCallback(
-    ({ row }: { row: Row<JobReturnModel> }) => {
-      const dataToShow = getShortJobReturnOutput(row.original);
+  const renderJobResult = useCallback(({ row }: { row: Row<JobReturnModel> }) => {
+    const dataToShow = getShortJobReturnOutput(row.original);
 
-      // Режим JSON (по умолчанию)
-      if (isSimpleStringData(dataToShow)) {
-        const stringValue = extractStringValue(dataToShow);
-        return (
-          <div className={styles.stringDataContainer}>
-            {stringValue}
-          </div>
-        );
-      }
+    // Режим JSON (по умолчанию)
+    if (isSimpleStringData(dataToShow)) {
+      const stringValue = extractStringValue(dataToShow);
+      return <div className={styles.stringDataContainer}>{stringValue}</div>;
+    }
 
-      if (typeof dataToShow === "boolean") {
-        return (
-          <div className={styles.stringDataContainer}>
-            {dataToShow ? "True" : "False"}
-          </div>
-        );
-      }
+    if (typeof dataToShow === "boolean") {
+      return <div className={styles.stringDataContainer}>{dataToShow ? "True" : "False"}</div>;
+    }
 
-      const jsonValue =
-        typeof dataToShow === "object" && dataToShow !== null
-          ? dataToShow
-          : { result: dataToShow };
+    const jsonValue =
+      typeof dataToShow === "object" && dataToShow !== null ? dataToShow : { result: dataToShow };
 
-      return (
-        <div className={styles.reactJsonContainer}>
-          <ReactJson
-            displayDataTypes={false}
-            enableClipboard={false}
-            name={false}
-            displayObjectSize={false}
-            src={jsonValue as Record<string, unknown>}
-            collapsed={1}
-          />
-        </div>
-      );
-    },
-    []
-  );
+    return (
+      <div className={styles.reactJsonContainer}>
+        <ReactJson
+          displayDataTypes={false}
+          enableClipboard={false}
+          name={false}
+          displayObjectSize={false}
+          src={jsonValue as Record<string, unknown>}
+          collapsed={1}
+        />
+      </div>
+    );
+  }, []);
 
   return (
     <div className={styles.jobReturnsTableWrapper}>
@@ -404,9 +378,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         pagination={props.pagination}
         sorting={props.sorting}
         onLazyLoad={props.onLazyLoad}
-        getRowId={(row) =>
-          row.id
-        }
+        getRowId={(row) => row.id}
         useVirtualScroll={false}
         renderSubComponent={renderJobResult}
         getRowCanExpand={() => true}
@@ -431,7 +403,7 @@ const minionDetailsViewsToDescriptionItems = (
           label: minionDetailView.name,
           children: grainValue,
           span: 3,
-        }
+        };
       }
 
       return {
@@ -439,9 +411,7 @@ const minionDetailsViewsToDescriptionItems = (
         label: minionDetailView.name,
         children: (
           <Flex justify="space-between" className="minion-details-grain">
-            <Flex className="minion-details-grain-name">
-              {grainValue}
-            </Flex>
+            <Flex className="minion-details-grain-name">{grainValue}</Flex>
             {grainValue && (
               <Flex className={styles.minionDetailsGrainButtons}>
                 <CopyToClipboardButton text={String(grainValue)} />
@@ -541,9 +511,9 @@ export function MinionDetails(props: {
   const [activeTab, setActiveTab] = useState<string>("dashboard");
   const combinedGrains = props.minion
     ? {
-      ...props.minion.grains,
-      ...props.minion.additional_grains,
-    }
+        ...props.minion.grains,
+        ...props.minion.additional_grains,
+      }
     : {};
 
   const minionGeneralDetailViews: MinionDetailView[] = [
@@ -578,13 +548,13 @@ export function MinionDetails(props: {
               <>
                 {Array.isArray(s.grains.gpus)
                   ? s.grains.gpus.map((gpu: any) => (
-                    <div key={gpu.model} className={styles.interfaceBlock}>
-                      <div className={styles.interfaceDetails}>
-                        <div>Vendor: {gpu.vendor || ""}</div>
-                        <div>Model: {gpu.model || ""}</div>
+                      <div key={gpu.model} className={styles.interfaceBlock}>
+                        <div className={styles.interfaceDetails}>
+                          <div>Vendor: {gpu.vendor || ""}</div>
+                          <div>Model: {gpu.model || ""}</div>
+                        </div>
                       </div>
-                    </div>
-                  ))
+                    ))
                   : ""}
               </>
             ) || "",
@@ -704,17 +674,9 @@ export function MinionDetails(props: {
                 <div key={iface} className={styles.interfaceBlock}>
                   <div>{iface}</div>
                   <div className={styles.interfaceDetails}>
-                    <div>
-                      MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}
-                    </div>
-                    <div>
-                      IPv4:{" "}
-                      {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}
-                    </div>
-                    <div>
-                      IPv6:{" "}
-                      {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}
-                    </div>
+                    <div>MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}</div>
+                    <div>IPv4: {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}</div>
+                    <div>IPv6: {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}</div>
                   </div>
                 </div>
               ))}
@@ -729,9 +691,8 @@ export function MinionDetails(props: {
   const pillarsData = props.pillars ?? [];
   const pillarsTotal = props.pillars?.length ?? 0;
 
-  const fullViewActions =
-    isFullView
-      ? {
+  const fullViewActions = isFullView
+    ? {
         right: (
           <div className={styles.tabExtraActions}>
             <Flex gap={8}>
@@ -755,7 +716,7 @@ export function MinionDetails(props: {
           </div>
         ),
       }
-      : undefined;
+    : undefined;
 
   const items: TabsProps["items"] = [];
 
@@ -765,22 +726,14 @@ export function MinionDetails(props: {
     children: (() => {
       if (props.isMinionLoading) {
         return (
-          <Flex
-            justify={"center"}
-            align={"center"}
-            style={{ height: "100%" }}
-          >
+          <Flex justify={"center"} align={"center"} style={{ height: "100%" }}>
             <Spin />
           </Flex>
         );
       }
       if (!props.minion) {
         return (
-          <Flex
-            justify={"center"}
-            align={"center"}
-            style={{ height: "100%" }}
-          >
+          <Flex justify={"center"} align={"center"} style={{ height: "100%" }}>
             {t("minions.no-minion-data-available")}
           </Flex>
         );
@@ -816,9 +769,7 @@ export function MinionDetails(props: {
       children: (
         <div className={styles.jobReturnsWrapper}>
           {props.jobReturnsFilter && (
-            <div className={styles.jobReturnsFilterWrapper}>
-              {props.jobReturnsFilter}
-            </div>
+            <div className={styles.jobReturnsFilterWrapper}>{props.jobReturnsFilter}</div>
           )}
           {isFullView && props.jobReturnsTabActions ? (
             <div className="page-actions-buttons">{props.jobReturnsTabActions}</div>
@@ -846,7 +797,7 @@ export function MinionDetails(props: {
             total={pillarsTotal}
             pagination={{ pageSize: 10, pageIndex: 0 }}
             getRowId={(row) => row.name}
-            onLazyLoad={() => { }}
+            onLazyLoad={() => {}}
           />
         </div>
       );
@@ -859,22 +810,14 @@ export function MinionDetails(props: {
     children: (() => {
       if (props.isMinionLoading) {
         return (
-          <Flex
-            justify={"center"}
-            align={"center"}
-            style={{ height: "100%" }}
-          >
+          <Flex justify={"center"} align={"center"} style={{ height: "100%" }}>
             <Spin />
           </Flex>
         );
       }
       if (!props.minion) {
         return (
-          <Flex
-            justify={"center"}
-            align={"center"}
-            style={{ height: "100%" }}
-          >
+          <Flex justify={"center"} align={"center"} style={{ height: "100%" }}>
             {t("minions.no-minion-data-available")}
           </Flex>
         );
@@ -882,9 +825,7 @@ export function MinionDetails(props: {
       return (
         <div>
           <Flex justify="flex-end" style={{ marginBottom: 8 }}>
-            <CopyToClipboardButton
-              text={JSON.stringify(combinedGrains, null, 2)}
-            />
+            <CopyToClipboardButton text={JSON.stringify(combinedGrains, null, 2)} />
           </Flex>
           <ReactJson
             displayDataTypes={false}

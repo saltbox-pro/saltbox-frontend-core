@@ -1,7 +1,3 @@
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag } from "antd";
 import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
@@ -11,7 +7,12 @@ import {
   pastTimeByUserTZ,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Button, Tag } from "antd";
 import { toJS } from "mobx";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+
 import styles from "./task-minions.module.css";
 
 const TaskMinionsTable = FastTableListed<TaskMinion>;
@@ -82,11 +83,7 @@ export const TaskMinions = ({
           case TaskMinionStatus.Pending:
             return <Tag color="yellow">{t("task.minions.table-pending")}</Tag>;
           default:
-            return (
-              <Tag>{`${t(
-                "task.minions.table-unknown-code"
-              )}: ${data.getValue()}`}</Tag>
-            );
+            return <Tag>{`${t("task.minions.table-unknown-code")}: ${data.getValue()}`}</Tag>;
         }
       },
     }),

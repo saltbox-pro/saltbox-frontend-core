@@ -1,9 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
-import { createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Button, Flex, Progress } from "antd";
 import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
@@ -12,9 +6,17 @@ import {
   Popover,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Button, Flex, Progress } from "antd";
+import { observer } from "mobx-react-lite";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
-import { TasksQueryBuilder } from "./tasks-query-builder";
+
 import styles from "./minions-task-view.module.css";
+import { TasksQueryBuilder } from "./tasks-query-builder";
 
 const TasksTable = FastTablePaginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
@@ -122,9 +124,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     [t]
   );
 
-  const [webSocketService] = useState(
-    new WebSocketService<TaskListResponseSchema>()
-  );
+  const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
 
   const columns = useMemo(
     () => [
@@ -132,20 +132,16 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: "ID",
         enableSorting: false,
         cell: (data) => {
-          const result = useMemo(
-            () => (
-              <>
-                <Link to={`/task/${data.getValue()}`}>
-                  <Button type="link" size={"small"}>
-                    {data.getValue()}
-                  </Button>
-                </Link>
-                <CopyToClipboardButton text={data.getValue()} />
-              </>
-            ),
-            []
+          return (
+            <>
+              <Link to={`/task/${data.getValue()}`}>
+                <Button type="link" size={"small"}>
+                  {data.getValue()}
+                </Button>
+              </Link>
+              <CopyToClipboardButton text={data.getValue()} />
+            </>
           );
-          return result;
         },
         meta: {
           tdClassName: "fast-table-column-nowrap",
@@ -189,21 +185,14 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         enableSorting: false,
         cell: (data) => {
           const totalMinions = data.row.original?.total_minions ?? 0;
-          const statusFailed =
-            data.row.original?.minions_count_by_status?.failed ?? 0;
-          const statusSuccess =
-            data.row.original?.minions_count_by_status?.success ?? 0;
-          const statusInWork =
-            data.row.original?.minions_count_by_status?.in_work ?? 0;
-          const statusPending =
-            data.row.original?.minions_count_by_status?.pending ?? 0;
+          const statusFailed = data.row.original?.minions_count_by_status?.failed ?? 0;
+          const statusSuccess = data.row.original?.minions_count_by_status?.success ?? 0;
+          const statusInWork = data.row.original?.minions_count_by_status?.in_work ?? 0;
+          const statusPending = data.row.original?.minions_count_by_status?.pending ?? 0;
           const progressStrokeColors = Array.from({ length: 10 }, (_, i) => {
             if (i < Math.ceil((statusSuccess / totalMinions) * 10)) {
               return "#52c41a";
-            } else if (
-              i <
-              Math.ceil(((statusSuccess + statusFailed) / totalMinions) * 10)
-            ) {
+            } else if (i < Math.ceil(((statusSuccess + statusFailed) / totalMinions) * 10)) {
               return "#ff4d4f";
             }
             return "#bfbfbf";
@@ -236,29 +225,17 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
             </Flex>
           );
 
-          const result = useMemo(
-            () => (
-              <Popover content={popoverContent}>
-                <Progress
-                  steps={10}
-                  percent={
-                    ((statusSuccess + statusFailed) / totalMinions) * 100
-                  }
-                  success={{ percent: (statusSuccess / totalMinions) * 100 }}
-                  strokeColor={progressStrokeColors}
-                  showInfo={false}
-                />
-              </Popover>
-            ),
-            [
-              totalMinions,
-              statusSuccess,
-              statusFailed,
-              statusInWork,
-              statusPending,
-            ]
+          return (
+            <Popover content={popoverContent}>
+              <Progress
+                steps={10}
+                percent={((statusSuccess + statusFailed) / totalMinions) * 100}
+                success={{ percent: (statusSuccess / totalMinions) * 100 }}
+                strokeColor={progressStrokeColors}
+                showInfo={false}
+              />
+            </Popover>
           );
-          return result;
         },
       }),
       columnHelper.accessor("created", {
@@ -281,7 +258,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
           if (update?.length > 0) {
             tasksStore.updateTasks(update);
           }
-        }
+        },
       }
     );
     return () => {
@@ -332,9 +309,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         isLoading={tasksStore.isTasksLoading}
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
-        onLazyLoad={(pagination, sorting) =>
-          tasksStore.handleLazyLoad(pagination, sorting)
-        }
+        onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
         useVirtualScroll={false}
       />
     </Flex>

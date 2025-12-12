@@ -1,10 +1,17 @@
+import {
+  SaltBoxQueryBuilderContainer,
+  SaltBoxJobValueEditor,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
-import { SaltBoxQueryBuilderContainer, SaltBoxJobValueEditor } from "@saltbox/saltbox-frontend-common";
+
 import { TasksFilterStore } from "saltbox-core/store";
 
 export const TasksQueryBuilder = observer(
-  (props: { filterStore: TasksFilterStore, onSearchButtonClick?: () => void, onResetButtonClick?: () => void }) => {
-
+  (props: {
+    filterStore: TasksFilterStore;
+    onSearchButtonClick?: () => void;
+    onResetButtonClick?: () => void;
+  }) => {
     return (
       <SaltBoxQueryBuilderContainer
         filterStore={props.filterStore}
@@ -15,5 +22,5 @@ export const TasksQueryBuilder = observer(
         }}
       />
     );
-  },
+  }
 );

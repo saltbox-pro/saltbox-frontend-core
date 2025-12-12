@@ -1,6 +1,10 @@
-import { ComponentProps, useMemo, useState, useCallback } from "react";
-import { useTranslation } from "react-i18next";
-import ReactJson from "react-json-view";
+import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import {
+  CopyToClipboardButton,
+  FastTablePaginated,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import {
   OnChangeFn,
   PaginationState,
@@ -9,25 +13,48 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
-import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import { ComponentProps, useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import ReactJson from "react-json-view";
 import { Link } from "react-router";
-import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import {
-  CopyToClipboardButton,
-  FastTablePaginated,
-  formatTimeByUserTZ,
-} from "@saltbox/saltbox-frontend-common";
+
 import { useFormatAndGetExecutionTimeColor } from "../../../utils/execution-time-utils";
+import { TableView } from "../table-view/table-view";
 import {
   extractStringValue,
   getShortJobReturnOutput,
   isSimpleStringData,
 } from "../utils/job-return-utils";
-import { TableView } from "../table-view/table-view";
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
+
 import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
+
+const ExecutionTimeCell = ({
+  jobStartTimestamp,
+  stamp,
+  jobReturns,
+  t,
+}: {
+  jobStartTimestamp: string | null;
+  stamp: string | null;
+  jobReturns: JobReturnModel[];
+  t: (key: string) => string;
+}) => {
+  const { formattedTime, color } = useFormatAndGetExecutionTimeColor(
+    jobStartTimestamp,
+    stamp,
+    jobReturns,
+    t
+  );
+
+  return (
+    <div className={styles.executionTimeValue} style={{ color }}>
+      {formattedTime}
+    </div>
+  );
+};
 
 const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
@@ -71,13 +98,7 @@ export const DefaultJobReturnTable = ({
           }
           return (
             <Button
-              icon={
-                row.getIsExpanded() ? (
-                  <MinusSquareOutlined />
-                ) : (
-                  <PlusSquareOutlined />
-                )
-              }
+              icon={row.getIsExpanded() ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
               size="small"
               type="link"
               onClick={row.getToggleExpandedHandler()}
@@ -129,18 +150,13 @@ export const DefaultJobReturnTable = ({
       columnHelper.display({
         header: t("task.job-returns-table.table-execution-time"),
         cell: ({ row }) => {
-          const stamp = row.original.stamp;
-          const { formattedTime, color } = useFormatAndGetExecutionTimeColor(
-            jobStartTimestamp?.toISOString() || null,
-            stamp || null,
-            jobReturns,
-            t
-          );
-
           return (
-            <div className={styles.executionTimeValue} style={{ color }}>
-              {formattedTime}
-            </div>
+            <ExecutionTimeCell
+              jobStartTimestamp={jobStartTimestamp?.toISOString() || null}
+              stamp={row.original.stamp || null}
+              jobReturns={jobReturns}
+              t={t}
+            />
           );
         },
       }),
@@ -155,18 +171,12 @@ export const DefaultJobReturnTable = ({
   };
 
   const renderBooleanData = (data: any) => {
-    return (
-      <div className={styles.stringDataContainer}>
-        {data ? "True" : "False"}
-      </div>
-    );
+    return <div className={styles.stringDataContainer}>{data ? "True" : "False"}</div>;
   };
 
   const renderJobResult = useCallback(
     ({ row }: { row: Row<JobReturnModel> }) => {
-      const dataToShow = isFullOutput
-        ? row.original
-        : getShortJobReturnOutput(row.original);
+      const dataToShow = isFullOutput ? row.original : getShortJobReturnOutput(row.original);
 
       if (!isFullOutput && isSimpleStringData(dataToShow)) {
         return renderStringData(dataToShow);
@@ -177,9 +187,7 @@ export const DefaultJobReturnTable = ({
       }
 
       const jsonValue =
-        typeof dataToShow === "object" && dataToShow !== null
-          ? dataToShow
-          : { result: dataToShow };
+        typeof dataToShow === "object" && dataToShow !== null ? dataToShow : { result: dataToShow };
 
       return (
         <div className={styles.reactJsonContainer}>
@@ -217,14 +225,15 @@ export const DefaultJobReturnTable = ({
 
   const overscan = pagination.pageSize > 100 ? 10 : 100;
 
-  if (isTableViewMode && mergedTableData && mergedTableData.canConvert && mergedTableData.rows.length > 0) {
+  if (
+    isTableViewMode &&
+    mergedTableData &&
+    mergedTableData.canConvert &&
+    mergedTableData.rows.length > 0
+  ) {
     return (
       <div className={styles.jobReturnTableContainer}>
-        <TableView
-          data={mergedTableData}
-          minionId=""
-          onSortingChange={onTableViewSortingChange}
-        />
+        <TableView data={mergedTableData} minionId="" onSortingChange={onTableViewSortingChange} />
       </div>
     );
   }

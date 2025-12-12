@@ -1,22 +1,3 @@
-import {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
-import {
-  Row,
-  RowSelectionState,
-  Table,
-  createColumnHelper,
-} from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import Parcel from "single-spa-react/parcel";
-import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
 import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import {
   MasterViewSchema,
@@ -33,6 +14,14 @@ import {
   Drawer,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
+import { Row, RowSelectionState, Table, createColumnHelper } from "@tanstack/react-table";
+import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
+import { observer } from "mobx-react-lite";
+import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router";
+import Parcel from "single-spa-react/parcel";
+
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
 import {
@@ -44,8 +33,9 @@ import {
   MinionsStore,
   TaskStore,
 } from "saltbox-core/store";
-import { MinionsQueryBuilder } from "./minions-query-builder";
+
 import styles from "./minions-list-view.module.css";
+import { MinionsQueryBuilder } from "./minions-query-builder";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 
@@ -101,9 +91,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
   const [isCreateTaskLoading, setIsCreateTaskLoading] = useState(false);
   const [saltMasters, setSaltMasters] = useState<Array<MasterViewSchema>>([]);
-  const [selectedMinionIds, setSelectedMinionIds] = useState<
-    TaskTargetMinion[]
-  >([]);
+  const [selectedMinionIds, setSelectedMinionIds] = useState<TaskTargetMinion[]>([]);
   const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -135,30 +123,26 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         cell: (data) => {
           const minionId = data.row.original.id;
           const showMinionId = data.row.original.minion_id ?? minionId;
-          const result = useMemo(
-            () => (
-              <>
-                <Button
-                  type="link"
-                  size={"small"}
-                  onClick={() => {
-                    setDrawerMinionId(minionId);
-                  }}
-                  className={styles.minionIdButton}
-                >
-                  {showMinionId}
-                </Button>
-                <div className={styles.minionIdCopyToClipboardButton}>
-                  <CopyToClipboardButton text={showMinionId} />
-                </div>
-                <div className={styles.minionIdNavigationLink}>
-                  <NavigationIconLink to={`/core/minion/${props.slug}/${minionId}`} target="_blank" />
-                </div>
-              </>
-            ),
-            []
+          return (
+            <>
+              <Button
+                type="link"
+                size={"small"}
+                onClick={() => {
+                  setDrawerMinionId(minionId);
+                }}
+                className={styles.minionIdButton}
+              >
+                {showMinionId}
+              </Button>
+              <div className={styles.minionIdCopyToClipboardButton}>
+                <CopyToClipboardButton text={showMinionId} />
+              </div>
+              <div className={styles.minionIdNavigationLink}>
+                <NavigationIconLink to={`/core/minion/${props.slug}/${minionId}`} target="_blank" />
+              </div>
+            </>
           );
-          return result;
         },
         meta: {
           tdClassName: "fast-table-column-nowrap",
@@ -176,15 +160,11 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       minionsColumnHelper.accessor("grains.efi", {
         header: t("minions.table-efi"),
         cell: (data) => {
-          const result = useMemo(
-            () => (
-              <Tag color={data.getValue() ? "green" : "red"}>
-                {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
-              </Tag>
-            ),
-            []
+          return (
+            <Tag color={data.getValue() ? "green" : "red"}>
+              {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
+            </Tag>
           );
-          return result;
         },
       }),
       minionsColumnHelper.accessor("grains.cpu_model", {
@@ -204,11 +184,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const created: string = formatTimeByUserTZ(rawCreated);
           const createdPastTime: string = pastTimeByUserTZ(rawCreated);
 
-          const result = useMemo(
-            () => <Popover content={created}>{createdPastTime}</Popover>,
-            []
-          );
-          return result;
+          return <Popover content={created}>{createdPastTime}</Popover>;
         },
       }),
       minionsColumnHelper.accessor("last_activity", {
@@ -217,31 +193,26 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const lastActivitySeconds = data?.row.original.last_activity_seconds;
           const componentData = lastActivitySeconds
             ? {
-              badgeColor:
-                lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
+                badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
+                badgeText: pastTimeByUserTZ(data.getValue()),
+                popoverContent: formatTimeByUserTZ(data.getValue()),
+              }
             : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
-          const result = useMemo(
-            () => (
-              <Popover content={componentData.popoverContent}>
-                <span>
-                  <Badge
-                    className={styles.lastActivityBadge}
-                    color={componentData.badgeColor}
-                    text={componentData.badgeText}
-                  />
-                </span>
-              </Popover>
-            ),
-            []
+                badgeColor: "orange",
+                badgeText: t("minions.never-synced"),
+                popoverContent: undefined,
+              };
+          return (
+            <Popover content={componentData.popoverContent}>
+              <span>
+                <Badge
+                  className={styles.lastActivityBadge}
+                  color={componentData.badgeColor}
+                  text={componentData.badgeText}
+                />
+              </span>
+            </Popover>
           );
-          return result;
         },
       }),
     ],
@@ -259,9 +230,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   useEffect(() => {
     const selectedMinions: TaskTargetMinion[] = Object.keys(selection)
-      .map((minionId: string) =>
-        minionsStore.minions.find((minion) => minion.id === minionId)
-      )
+      .map((minionId: string) => minionsStore.minions.find((minion) => minion.id === minionId))
       .filter((minion) => !!minion)
       .map((minion) => {
         return { master: minion.master, minion_id: minion.minion_id };
@@ -272,27 +241,22 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const handelCSVDownload = async () => {
     try {
       setIsCSVLoading(true);
-      const response = await fetch(
-        `${apiCoreStore.env?.api_base_path}/minions/export`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${appStore.authStore.user?.access_token}`,
-          },
-          body: JSON.stringify({
-            query: props.filterStore.searchMongoDBQuery,
-            collection_slug: props.slug,
-          }),
-        }
-      );
+      const response = await fetch(`${apiCoreStore.env?.api_base_path}/minions/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${appStore.authStore.user?.access_token}`,
+        },
+        body: JSON.stringify({
+          query: props.filterStore.searchMongoDBQuery,
+          collection_slug: props.slug,
+        }),
+      });
 
       if (!response.ok) throw new Error("Loading Error");
 
       let filename =
-        "export_minions_" +
-        new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] +
-        ".csv";
+        "export_minions_" + new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] + ".csv";
       const contentDisposition = response.headers.get("Content-Disposition");
       if (contentDisposition) {
         const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
@@ -376,16 +340,14 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   }, []);
 
   let taskModalCreatePlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach(
-    (plugin) => {
-      taskModalCreatePlugin = (
-        <>
-          {taskModalCreatePlugin}
-          <Parcel config={plugin.parcel} wrapWith="div" />
-        </>
-      );
-    }
-  );
+  appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
+    taskModalCreatePlugin = (
+      <>
+        {taskModalCreatePlugin}
+        <Parcel config={plugin.parcel} wrapWith="div" />
+      </>
+    );
+  });
 
   return (
     <>
@@ -393,10 +355,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
-            <MinionsQueryBuilder
-              slug={props.slug}
-              filterStore={props.filterStore}
-            />
+            <MinionsQueryBuilder slug={props.slug} filterStore={props.filterStore} />
           </Spin>
         )}
 

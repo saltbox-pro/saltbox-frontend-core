@@ -1,6 +1,6 @@
-import { OptionList, RuleGroupType } from "react-querybuilder";
-import { makeObservable } from "mobx";
 import { FilterStore } from "@saltbox/saltbox-frontend-common";
+import { makeObservable } from "mobx";
+import { OptionList, RuleGroupType } from "react-querybuilder";
 
 const defaultFilters: RuleGroupType = {
   rules: [
@@ -11,7 +11,7 @@ const defaultFilters: RuleGroupType = {
       valueSource: "value",
     },
   ],
-  combinator: 'and',
+  combinator: "and",
 };
 
 export class TasksFilterStore extends FilterStore {

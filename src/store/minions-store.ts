@@ -1,6 +1,7 @@
+import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
-import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class MinionsStore {
@@ -11,10 +12,7 @@ export class MinionsStore {
   mongoDBQuery: object | undefined;
   pagination: PaginationState;
 
-  constructor(
-    mongoDBQueryInit: object | undefined,
-    collectionSlug: string | undefined
-  ) {
+  constructor(mongoDBQueryInit: object | undefined, collectionSlug: string | undefined) {
     makeAutoObservable(this);
     this.isLoading = false;
     this.minions = [];

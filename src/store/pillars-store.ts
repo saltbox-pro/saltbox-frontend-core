@@ -1,5 +1,6 @@
-import { makeAutoObservable } from "mobx";
 import { PillarModel, PillarSelector } from "@saltbox/saltbox-core-api-client";
+import { makeAutoObservable } from "mobx";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class PillarsStore {
@@ -61,7 +62,7 @@ export class PillarsStore {
     masterId: string,
     name: string,
     value: string,
-    minionId?: string,
+    minionId?: string
   ): Promise<boolean> => {
     if (!apiCoreStore.pillarsApi) return false;
 
@@ -85,7 +86,7 @@ export class PillarsStore {
     masterId: string,
     name: string,
     value: string,
-    minionId?: string,
+    minionId?: string
   ): Promise<boolean> => {
     if (!apiCoreStore.pillarsApi) return false;
 
@@ -105,11 +106,7 @@ export class PillarsStore {
     }
   };
 
-  deletePillar = async (
-    masterId: string,
-    name: string,
-    minionId?: string,
-  ): Promise<boolean> => {
+  deletePillar = async (masterId: string, name: string, minionId?: string): Promise<boolean> => {
     if (!apiCoreStore.pillarsApi) return false;
 
     try {
@@ -129,5 +126,4 @@ export class PillarsStore {
       throw error;
     }
   };
-
 }

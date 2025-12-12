@@ -1,3 +1,16 @@
+import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import JsonForm from "@rjsf/antd";
+import RjsfForm from "@rjsf/core";
+import { RJSFValidationError } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
+import {
+  CreateJobRequest,
+  CreateJobRequestTgtTypeEnum,
+  JobSchemaModel,
+  JobSchemaShortSchema,
+} from "@saltbox/saltbox-core-api-client";
+import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
+import { Button, Cascader, Flex, Form, Input, Select, message, type FormProps } from "antd";
 import {
   Fragment,
   KeyboardEventHandler,
@@ -7,30 +20,14 @@ import {
   useState,
 } from "react";
 import { useTranslation } from "react-i18next";
-import JsonForm from "@rjsf/antd";
-import RjsfForm from "@rjsf/core";
-import { RJSFValidationError } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import { useNavigate } from "react-router";
-import { Button, Cascader, Flex, Form, Input, Select, message } from "antd";
-import {
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import {
-  CreateJobRequest,
-  CreateJobRequestTgtTypeEnum,
-  JobSchemaModel,
-  JobSchemaShortSchema,
-} from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
-import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
-import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
-import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
-import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
-import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 
+import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
+import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
+import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
+import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
+
+import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 import styles from "./job-modal.module.css";
 
 interface JobOption {
@@ -58,8 +55,8 @@ interface JobModalProps {
   target?: string;
   targetType?: CreateJobRequestTgtTypeEnum;
   fun?: string;
-  arg?: any[];
-  kwarg?: Record<string, any>;
+  arg?: unknown[];
+  kwarg?: Record<string, unknown>;
   defaultMaster?: string;
   shouldShowModalByKeyboardEvent?: (event: KeyboardEvent) => boolean;
   buttonProps?: JobModalButtonProps;
@@ -83,12 +80,8 @@ export function JobModal({
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
-  const [saltFunctionList, setSaltFunctionList] = useState<Array<JobOption>>(
-    []
-  );
-  const [saltFlatFunctionList, setSaltFlatFunctionList] = useState<
-    Array<string>
-  >([]);
+  const [saltFunctionList, setSaltFunctionList] = useState<Array<JobOption>>([]);
+  const [saltFlatFunctionList, setSaltFlatFunctionList] = useState<Array<string>>([]);
   const [saltFunctionName, setSaltFunctionName] = useState<string>();
   const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
@@ -98,9 +91,7 @@ export function JobModal({
   const [isJobCreating, setIsJobCreating] = useState(false);
   const [jsonFormValue, setJsonFormValue] = useState<any>({});
   const [searchFunctionName, setSearchFunctionName] = useState("");
-  const [validationErrors, setValidationErrors] = useState<
-    RJSFValidationError[]
-  >([]);
+  const [validationErrors, setValidationErrors] = useState<RJSFValidationError[]>([]);
   const [functionHovered, setFunctionHovered] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -156,8 +147,8 @@ export function JobModal({
       a.label.toLowerCase() > b.label.toLowerCase()
         ? 1
         : a.label.toLowerCase() < b.label.toLowerCase()
-        ? -1
-        : 0
+          ? -1
+          : 0
     );
 
     jobList.forEach((saltFunction) => {
@@ -277,9 +268,7 @@ export function JobModal({
       firstInput?.focus({ preventScroll: true });
     };
 
-    const hasJsonFields = !!Object.keys(
-      saltFunction.json_schema?.properties || {}
-    ).length;
+    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
     if (hasJsonFields) {
       focusFirstJsonInput();
     } else {
@@ -290,10 +279,7 @@ export function JobModal({
   useEffect(() => {
     if (validationErrors.length > 0) {
       const errorField = document.querySelector(
-        `[id=job-params-form${validationErrors[0]?.property?.replaceAll(
-          ".",
-          "-"
-        )}]`
+        `[id=job-params-form${validationErrors[0]?.property?.replaceAll(".", "-")}]`
       );
       if (errorField) {
         errorField.scrollIntoView({ block: "center" });
@@ -336,7 +322,7 @@ export function JobModal({
       .finally(() => setIsJobCreating(false));
   };
 
-  const handleFormFinishFailed = (errorInfo: any) => {
+  const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
     if (errorInfo.errorFields.length) {
       const fieldName = errorInfo.errorFields[0].name.join("_");
       const element = document.querySelector(`[id="job-form_${fieldName}"]`);
@@ -367,10 +353,7 @@ export function JobModal({
       return;
     }
 
-    if (
-      isCustomSaltFunction(saltFunctionName) &&
-      !isValidCustomSaltFunction(saltFunctionName)
-    ) {
+    if (isCustomSaltFunction(saltFunctionName) && !isValidCustomSaltFunction(saltFunctionName)) {
       return;
     }
 
@@ -396,10 +379,7 @@ export function JobModal({
       setSaltFunctionList(saltFunctionList.slice(1));
     } else if (filteredSearchText === "" && hasCustomSaltFunction()) {
       setSaltFunctionList(saltFunctionList.slice(1));
-    } else if (
-      isCustomSaltFunction(filteredSearchText) &&
-      !hasCustomSaltFunction()
-    ) {
+    } else if (isCustomSaltFunction(filteredSearchText) && !hasCustomSaltFunction()) {
       setSaltFunctionList([
         {
           label: filteredSearchText,
@@ -407,10 +387,7 @@ export function JobModal({
         },
         ...saltFunctionList,
       ]);
-    } else if (
-      isCustomSaltFunction(filteredSearchText) &&
-      hasCustomSaltFunction()
-    ) {
+    } else if (isCustomSaltFunction(filteredSearchText) && hasCustomSaltFunction()) {
       setSaltFunctionList([
         {
           label: filteredSearchText,
@@ -442,7 +419,7 @@ export function JobModal({
 
   const hasCustomSaltFunction = (): boolean => {
     const funcName = saltFunctionList?.[0]?.value;
-    if (saltFunctionList?.[0]?.children?.length ?? 0 > 0) {
+    if ((saltFunctionList?.[0]?.children?.length ?? 0) > 0) {
       return false;
     }
     return isCustomSaltFunction(funcName);
@@ -480,32 +457,21 @@ export function JobModal({
   };
 
   let jobsJobModalCreateButtonsPlugins: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
-    (plugin) => {
-      const jobsJobModalCreateButtonPlugin = (
-        <Button
-          type="default"
-          onClick={() => handleCreateJobPlugin(plugin.key)}
-        >
-          {plugin.label?.[i18nStore.currentLanguage] ||
-            plugin.label?.en ||
-            plugin.key}
-        </Button>
-      );
-      jobsJobModalCreateButtonsPlugins = (
-        <>
-          {jobsJobModalCreateButtonsPlugins}
-          {jobsJobModalCreateButtonPlugin}
-        </>
-      );
-    }
-  );
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
+    const jobsJobModalCreateButtonPlugin = (
+      <Button type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
+        {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+      </Button>
+    );
+    jobsJobModalCreateButtonsPlugins = (
+      <>
+        {jobsJobModalCreateButtonsPlugins}
+        {jobsJobModalCreateButtonPlugin}
+      </>
+    );
+  });
 
-  const isLoading =
-    isSchemaListLoading ||
-    isMasterListLoading ||
-    isSchemaLoading ||
-    isJobCreating;
+  const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
 
   const defaultButtonProps: JobModalButtonProps = {
     shape: "default",
@@ -541,11 +507,7 @@ export function JobModal({
         maskClosable={false}
         footer={
           <>
-            <Button
-              type="default"
-              disabled={isLoading}
-              onClick={handleModalCancel}
-            >
+            <Button type="default" disabled={isLoading} onClick={handleModalCancel}>
               {t("job-modal.cancel")}
             </Button>
 
@@ -605,9 +567,7 @@ export function JobModal({
             <Form.Item<JobFormData>
               label={t("job-modal.target")}
               name="tgt"
-              rules={[
-                { required: true, message: t("job-modal.tgt-error-required") },
-              ]}
+              rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
               className={styles.jobFormTgt}
             >
               <Input />
@@ -649,9 +609,7 @@ export function JobModal({
                     isCustomSaltFunction(value?.[0]) &&
                     !isValidCustomSaltFunction(value?.[0])
                   ) {
-                    return Promise.reject(
-                      new Error("Function must have MODULE.FUNCTION format.")
-                    );
+                    return Promise.reject(new Error("Function must have MODULE.FUNCTION format."));
                   }
                   return Promise.resolve();
                 },
@@ -666,7 +624,7 @@ export function JobModal({
               searchValue={searchFunctionName}
               onChange={handleSaltFunctionChange}
               displayRender={(label) => {
-                return <span>{label?.at(-1) ?? ''}</span>;
+                return <span>{label?.at(-1) ?? ""}</span>;
               }}
             />
           </Form.Item>

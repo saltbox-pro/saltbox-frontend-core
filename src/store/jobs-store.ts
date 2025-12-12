@@ -1,13 +1,12 @@
-import { jsonLogicAdditionalOperators } from 'react-querybuilder';
-import dayjs from 'dayjs';
-import { add_operation } from 'json-logic-js';
-import { action, makeObservable, observable, runInAction } from 'mobx';
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import {
-  toBackendSorting,
-} from '@saltbox/saltbox-frontend-common';
-import { apiCoreStore, JobFilterStore } from 'saltbox-core/store';
-import { PaginationState, SortingState } from '@tanstack/react-table';
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
+import dayjs from "dayjs";
+import { add_operation } from "json-logic-js";
+import { action, makeObservable, observable, runInAction } from "mobx";
+import { jsonLogicAdditionalOperators } from "react-querybuilder";
+
+import { apiCoreStore, JobFilterStore } from "saltbox-core/store";
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
   add_operation(op, func);
@@ -39,7 +38,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().startOf('day'), dayjs()];
+    this.dateRange = [dayjs().startOf("day"), dayjs()];
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
@@ -55,7 +54,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().startOf('day'), dayjs()];
+    this.dateRange = [dayjs().startOf("day"), dayjs()];
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
@@ -84,7 +83,7 @@ export class JobsStore {
             },
             ...this.mongoDBQuery,
           },
-        }
+        },
       })
       .then((response) => {
         runInAction(() => {
@@ -129,7 +128,9 @@ export class JobsStore {
 
   @action
   updateJobs = (jobs: JobsListResponse[]) => {
-    const sortedJobs = jobs.sort((a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime());
+    const sortedJobs = jobs.sort(
+      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
+    );
     sortedJobs.map((job) => this.updateJob(job));
   };
 

@@ -1,13 +1,5 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
-import { createColumnHelper } from "@tanstack/react-table";
-import { toJS } from "mobx";
-import { observer } from "mobx-react-lite";
-import { Badge, Breadcrumb, Button, Flex, Input, Tag, message } from "antd";
 import { HomeOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import {
   CopyToClipboardButton,
   pastTimeByUserTZ,
@@ -16,11 +8,22 @@ import {
   PageHeader,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
-import { MinionFilterStore } from "saltbox-core/store";
-import { CollectionStore } from "saltbox-core/store";
-import { defaultCollectionStore } from "saltbox-core/store";
-import { MinionsStore } from "saltbox-core/store";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Badge, Breadcrumb, Button, Flex, Input, Tag, message } from "antd";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams } from "react-router";
 
+import {
+  CollectionStore,
+  defaultCollectionStore,
+  MinionFilterStore,
+  MinionsStore,
+} from "saltbox-core/store";
+
+import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
@@ -54,9 +57,7 @@ const CollectionEditPage = observer(() => {
               type="link"
               size={"small"}
               onClick={() =>
-                navigate(
-                  `/minion/${data.row.original.master}/${data.row.original.minion_id}`
-                )
+                navigate(`/minion/${data.row.original.master}/${data.row.original.minion_id}`)
               }
             >
               {data.row.original.minion_id}
@@ -124,10 +125,7 @@ const CollectionEditPage = observer(() => {
         return (
           <Popover content={componentData.popoverContent}>
             <span>
-              <Badge
-                color={componentData.badgeColor}
-                text={componentData.badgeText}
-              />
+              <Badge color={componentData.badgeColor} text={componentData.badgeText} />
             </span>
           </Popover>
         );
@@ -148,16 +146,13 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (slug === "root") {
-      navigate(
-        `/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`
-      );
+      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
     }
   }, [slug]);
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
-    minionsStore.collectionSlug =
-      collectionStore.collection?.parent_slug || slug;
+    minionsStore.collectionSlug = collectionStore.collection?.parent_slug || slug;
   }, [slug, collectionStore.collection?.parent_slug]);
 
   useEffect(() => {
@@ -194,9 +189,7 @@ const CollectionEditPage = observer(() => {
       const currentQueryString = JSON.stringify(filterStore.currentFilters);
       if (currentQueryString !== originalQuery) {
         filterStore.handleSearch();
-        await collectionStore.updateCollectionQuery(
-          filterStore.searchMongoDBQuery
-        );
+        await collectionStore.updateCollectionQuery(filterStore.searchMongoDBQuery);
         setOriginalQuery(currentQueryString);
       }
 
@@ -207,8 +200,7 @@ const CollectionEditPage = observer(() => {
   };
 
   const isSaveDisabled =
-    (newTitle === originalTitle &&
-      JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+    (newTitle === originalTitle && JSON.stringify(filterStore.currentFilters) === originalQuery) ||
     newTitle.trim() === "";
 
   return (
@@ -217,7 +209,11 @@ const CollectionEditPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("collection.collections"),
@@ -232,9 +228,7 @@ const CollectionEditPage = observer(() => {
         ]}
       />
       <PageHeader
-        title={`${t("collection.editing-collection")} ${
-          collectionStore.collection?.title
-        }`}
+        title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
       ></PageHeader>
       <Flex className={styles.collectionHeader} gap={8} align="center">
         <Input
@@ -260,11 +254,7 @@ const CollectionEditPage = observer(() => {
             {t("minions.cancel")}
           </Button>
           <Flex gap={8} align="center">
-            <Button
-              type="primary"
-              disabled={isSaveDisabled}
-              onClick={handleSaveButton}
-            >
+            <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
               {t("minions.save")}
             </Button>
             {filterStore.isSearchEnabled && (

@@ -1,10 +1,11 @@
-import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import {
   JobReturnModel,
   TaskCreateRequestSchemaInput,
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class TaskStore {
@@ -174,7 +175,7 @@ export class TaskStore {
   };
 
   @action
-  updateTaskData = (update: Object & { retcode?: number, jobs?: TaskModel }[]) => {
+  updateTaskData = (update: Object & { retcode?: number; jobs?: TaskModel }[]) => {
     update.forEach((item) => {
       if (item?.retcode !== undefined) {
         this.addJobReturn(item as unknown as JobReturnModel);

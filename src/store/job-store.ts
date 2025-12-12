@@ -1,10 +1,12 @@
-import { action, computed, makeObservable, observable, runInAction } from 'mobx';
-import dayjs from 'dayjs';
 import { JobModel, JobReturnModel, JobStatus } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from 'saltbox-core/store';
-import { PaginationState, SortingState } from '@tanstack/react-table';
-import { toBackendSorting } from '@saltbox/saltbox-frontend-common';
-import { getMaxExecutionTime } from '../shared/utils/execution-time-utils';
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
+import dayjs from "dayjs";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
+
+import { apiCoreStore } from "saltbox-core/store";
+
+import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
 const PAGE_SIZE = 50;
@@ -22,7 +24,7 @@ export class JobStore {
   @observable mongoDBQuery: object | undefined;
 
   constructor() {
-    this.jid = '';
+    this.jid = "";
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
@@ -40,7 +42,7 @@ export class JobStore {
 
   @action
   reset = () => {
-    this.jid = '';
+    this.jid = "";
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
@@ -76,7 +78,7 @@ export class JobStore {
       .then((job) => {
         if (!job) {
           runInAction(() => {
-            this.error = 'Job not found';
+            this.error = "Job not found";
           });
         } else {
           runInAction(() => {
@@ -86,9 +88,9 @@ export class JobStore {
         }
       })
       .catch((error) => {
-        console.error('Error loading job:', error);
+        console.error("Error loading job:", error);
         runInAction(() => {
-          this.error = 'Failed to load job';
+          this.error = "Failed to load job";
         });
       })
       .finally(() => {
@@ -168,18 +170,23 @@ export class JobStore {
     if (new Date(this.job?.modified).getTime() < new Date(job?.modified).getTime()) {
       this.job = job;
     }
-  }
+  };
 
   @action
   updateFromJobs = (jobs: JobModel[]) => {
-    const sortedJobs = jobs.sort((a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime());
+    const sortedJobs = jobs.sort(
+      (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
+    );
     this.job = sortedJobs.at(0);
     this.loadJobReturns(true);
-  }
+  };
 
   @computed
   get successfulMinions() {
-    return Object.keys(this.job?.returning)?.filter((minion) => this.job?.returning[minion] === true)?.length ?? 0;
+    return (
+      Object.keys(this.job?.returning)?.filter((minion) => this.job?.returning[minion] === true)
+        ?.length ?? 0
+    );
   }
 
   @computed
@@ -232,7 +239,9 @@ export class JobStore {
 
   @computed
   get progressPercent() {
-    return this.totalMinions > 0 ? ((this.failedMinions + this.successfulMinions) / this.totalMinions) * 100 : 0;
+    return this.totalMinions > 0
+      ? ((this.failedMinions + this.successfulMinions) / this.totalMinions) * 100
+      : 0;
   }
 
   @computed
@@ -247,8 +256,10 @@ export class JobStore {
 
   @computed
   get isJobComplete() {
-    return this.job?.status === JobStatus.Finished ||
-      (this.totalMinions > 0 && this.pendingMinions === 0);
+    return (
+      this.job?.status === JobStatus.Finished ||
+      (this.totalMinions > 0 && this.pendingMinions === 0)
+    );
   }
 
   @computed

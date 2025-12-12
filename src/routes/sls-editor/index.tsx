@@ -1,17 +1,12 @@
+import { HomeOutlined, DownloadOutlined, CopyOutlined, ImportOutlined } from "@ant-design/icons";
+import { PageHeader, SlsEditor } from "@saltbox/saltbox-frontend-common";
+import { Breadcrumb, message, MenuProps } from "antd";
+import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, message, MenuProps } from "antd";
-import {
-  HomeOutlined,
-  DownloadOutlined,
-  CopyOutlined,
-  ImportOutlined,
-} from "@ant-design/icons";
-import { PageHeader, SlsEditor } from "@saltbox/saltbox-frontend-common";
-import { RawSlsEditor } from "./components/raw-sls-editor";
-import { ImportSlsModal } from "./components/import-sls-modal";
 
+import { ImportSlsModal } from "./components/import-sls-modal";
+import { RawSlsEditor } from "./components/raw-sls-editor";
 import styles from "./index.module.css";
 
 const SlsEditorPage = observer(() => {
@@ -100,11 +95,7 @@ const SlsEditorPage = observer(() => {
       key: "raw-sls",
       title: "Raw SLS",
       content: (
-        <RawSlsEditor
-          sls={slsContent}
-          onSlsChange={handleSlsChange}
-          className={styles.rawEditor}
-        />
+        <RawSlsEditor sls={slsContent} onSlsChange={handleSlsChange} className={styles.rawEditor} />
       ),
     },
   ];
