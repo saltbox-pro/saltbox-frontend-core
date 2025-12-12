@@ -1,7 +1,8 @@
-import { observer } from "mobx-react-lite";
 import { Flex, Spin } from "antd";
+import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
 
 const MinionRedirectPage = observer(() => {

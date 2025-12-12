@@ -224,6 +224,10 @@
   margin-bottom: 16px;
 }
 
+.filterWrapper {
+  margin-bottom: 16px;
+}
+
 .helpIcon {
   color: var(--ant-color-text-tertiary, #8c8c8c);
   cursor: help;

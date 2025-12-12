@@ -1,17 +1,18 @@
+import { HomeOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
+import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
+import { Breadcrumb, Button, Flex, message, type MenuProps } from "antd";
+import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, message } from "antd";
-import { HomeOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
-import type { MenuProps } from "antd";
 import { formatQuery } from "react-querybuilder";
+import { Link, useNavigate, useParams } from "react-router";
+
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
-import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
+import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { CollectionStore, MinionStore, jobStore, JobFilterStore } from "saltbox-core/store";
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
+
 import { PillarCreateForm } from "./-components/pillar-create-form";
 
 const jobReturnsFilterSchema = [
@@ -81,12 +82,9 @@ const MinionPage = observer(() => {
     const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
 
     jobStore.reset();
-    jobStore.mongoDBQuery = hasFilters
-      ? { ...baseQuery, ...filterQuery }
-      : baseQuery;
+    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
     jobStore.loadJobReturns();
   }, [minionStore.minion?.minion_id, minionStore.minion?.master, slug, jobReturnsFilterStore]);
-
 
   const handleDeleteMinion = useCallback(async () => {
     if (!minionId || !slug) return;
@@ -189,9 +187,7 @@ const MinionPage = observer(() => {
     const filterQuery = jobReturnsFilterStore.searchMongoDBQuery;
     const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
 
-    jobStore.mongoDBQuery = hasFilters
-      ? { ...baseQuery, ...filterQuery }
-      : baseQuery;
+    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
     jobStore.pagination.pageIndex = 0;
     jobStore.loadJobReturns();
   }, [minionStore.minion?.minion_id, minionStore.minion?.master, jobReturnsFilterStore]);
@@ -212,13 +208,7 @@ const MinionPage = observer(() => {
     <Button
       onClick={() => setShowJobReturnsFilter(!showJobReturnsFilter)}
       color={"primary"}
-      variant={
-        showJobReturnsFilter
-          ? "solid"
-          : hasJobReturnsFilters
-            ? "filled"
-            : "outlined"
-      }
+      variant={showJobReturnsFilter ? "solid" : hasJobReturnsFilters ? "filled" : "outlined"}
     >
       <Flex gap={8}>
         <FilterOutlined />
@@ -240,7 +230,11 @@ const MinionPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("minions.title"),
@@ -253,9 +247,7 @@ const MinionPage = observer(() => {
           },
         ]}
       />
-      <PageHeader
-        title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`}
-      />
+      <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
         minion={minionStore.minion}
@@ -270,13 +262,13 @@ const MinionPage = observer(() => {
         jobReturnsConfig={
           jobStore
             ? {
-              jobReturns: jobStore.jobReturns,
-              isLoading: jobStore.isJobReturnsLoading,
-              pagination: jobStore.pagination,
-              sorting: jobStore.sorting,
-              total: jobStore.total,
-              onLazyLoad: jobStore.handleLazyLoad,
-            }
+                jobReturns: jobStore.jobReturns,
+                isLoading: jobStore.isJobReturnsLoading,
+                pagination: jobStore.pagination,
+                sorting: jobStore.sorting,
+                total: jobStore.total,
+                onLazyLoad: jobStore.handleLazyLoad,
+              }
             : undefined
         }
         jobReturnsFilter={jobReturnsFilter}

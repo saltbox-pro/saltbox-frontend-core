@@ -1,11 +1,5 @@
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb } from "antd";
 import { HomeOutlined } from "@ant-design/icons";
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
 import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
@@ -13,8 +7,15 @@ import {
   FastTablePaginated,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
-import { JobTemplateStore } from "saltbox-core/store";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Breadcrumb } from "antd";
+import { observer } from "mobx-react-lite";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+
+import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
+import { JobTemplateStore } from "saltbox-core/store";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;
 
@@ -60,7 +61,11 @@ const JobsTemplatePage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("jobs-templates.title"),

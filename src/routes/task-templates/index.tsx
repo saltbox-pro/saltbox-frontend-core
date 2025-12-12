@@ -1,8 +1,3 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Typography } from "antd";
 import { ExportOutlined, HomeOutlined } from "@ant-design/icons";
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
@@ -10,8 +5,14 @@ import {
   FastTablePaginated,
   PageHeader,
 } from "@saltbox/saltbox-frontend-common";
-import { taskTemplatesStore } from "saltbox-core/store";
+import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { Breadcrumb, Button, Typography } from "antd";
+import { observer } from "mobx-react-lite";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+
+import { taskTemplatesStore } from "saltbox-core/store";
 
 const { Text } = Typography;
 
@@ -86,7 +87,11 @@ const TaskTemplatesPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("task-templates.title"),
@@ -105,9 +110,7 @@ const TaskTemplatesPage = observer(() => {
         pagination={taskTemplatesStore.pagination}
         onRowSelectionChange={setSelection}
         rowSelection={selection}
-        onLazyLoad={(pagination) =>
-          taskTemplatesStore.handleLazyLoad(pagination)
-        }
+        onLazyLoad={(pagination) => taskTemplatesStore.handleLazyLoad(pagination)}
       />
     </>
   );

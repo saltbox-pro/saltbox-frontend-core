@@ -1,6 +1,7 @@
-import { computed, makeObservable, observable } from "mobx";
 import {
+  Configuration,
   FiltersApi,
+  GitLabApi,
   JSONSchemasApi,
   JobsApi,
   MastersApi,
@@ -10,11 +11,10 @@ import {
   SettingsApi,
   TaskTemplatesApi,
   TasksApi,
-  GitLabApi,
 } from "@saltbox/saltbox-core-api-client";
-import { Configuration } from "@saltbox/saltbox-core-api-client";
-import { appStore } from "saltbox-core/store";
-import { envStore } from "saltbox-core/store";
+import { computed, makeObservable, observable } from "mobx";
+
+import { appStore, envStore } from "saltbox-core/store";
 
 class ApiCoreStore {
   @observable public serviceName: string;

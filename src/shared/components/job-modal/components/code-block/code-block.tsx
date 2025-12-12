@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { Flex } from "antd";
 import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
+import { Flex } from "antd";
+import { FC } from "react";
 
 import styles from "./code-block.module.css";
 

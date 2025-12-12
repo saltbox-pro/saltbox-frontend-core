@@ -1,8 +1,3 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Switch, message } from "antd";
 import {
   HomeOutlined,
   PlusOutlined,
@@ -11,21 +6,33 @@ import {
   DeleteOutlined,
   CloudDownloadOutlined,
 } from "@ant-design/icons";
-import { SettingsSlsRepoCreateSchema, SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
-  SlsFormData,
-  SlsModal,
-} from "saltbox-core/shared/components/sls-modal/sls-modal";
-import { formatTimeByUserTZ, PageHeader, FastTablePaginated, Modal } from "@saltbox/saltbox-frontend-common";
-import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
-import { SlsGitLabModal } from "./-components/sls-gitlab-modal/sls-gitlab-modal";
+  SettingsSlsRepoCreateSchema,
+  SettingsSlsRepoShortSchema,
+} from "@saltbox/saltbox-core-api-client";
+import {
+  formatTimeByUserTZ,
+  PageHeader,
+  FastTablePaginated,
+  Modal,
+} from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Breadcrumb, Button, Switch, message } from "antd";
+import { observer } from "mobx-react-lite";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
+
+import { SlsFormData, SlsModal } from "saltbox-core/shared/components/sls-modal/sls-modal";
+import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
+
+import { SlsGitLabModal } from "./-components/sls-gitlab-modal/sls-gitlab-modal";
 
 const SettingsSlsTable = FastTablePaginated<SettingsSlsRepoShortSchema>;
 
 const columnHelper = createColumnHelper<SettingsSlsRepoShortSchema>();
 
-type ModalType = 'slsCreate' | 'slsEdit' | 'slsDelete' | 'slsGitLab' | null;
+type ModalType = "slsCreate" | "slsEdit" | "slsDelete" | "slsGitLab" | null;
 
 const SettingsSlsPage = observer(() => {
   const { t } = useTranslation();
@@ -67,10 +74,7 @@ const SettingsSlsPage = observer(() => {
           <Switch
             checked={row.original.is_active}
             onClick={() =>
-              settingsSlsStore.handleSlsActivation(
-                row.original.id,
-                row.original.is_active
-              )
+              settingsSlsStore.handleSlsActivation(row.original.id, row.original.is_active)
             }
           />
         );
@@ -114,8 +118,7 @@ const SettingsSlsPage = observer(() => {
 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [syncingSlsId, setSyncingSlsId] = useState<string | null>(null);
-  const [recordToEdit, setRecordToEdit] =
-    useState<SettingsSlsRepoShortSchema>();
+  const [recordToEdit, setRecordToEdit] = useState<SettingsSlsRepoShortSchema>();
 
   useEffect(() => {
     settingsSlsStore.reload();
@@ -124,7 +127,7 @@ const SettingsSlsPage = observer(() => {
   const handleEditSls = (id: string) => {
     const record = settingsSlsStore.slsreps.find((item) => item.id === id);
     setRecordToEdit(record);
-    setActiveModal('slsEdit');
+    setActiveModal("slsEdit");
   };
 
   const handleSlsSync = (id: string) => {
@@ -145,12 +148,9 @@ const SettingsSlsPage = observer(() => {
 
   const checkSlsSyncTask = async (taskId: string): Promise<void> => {
     try {
-      const result =
-        await apiCoreStore.settingsApi?.repoSyncStatus(
-          {
-            task_id: taskId,
-          }
-        );
+      const result = await apiCoreStore.settingsApi?.repoSyncStatus({
+        task_id: taskId,
+      });
 
       if (!result) {
         setSyncingSlsId(null);
@@ -180,12 +180,12 @@ const SettingsSlsPage = observer(() => {
   };
 
   const handleCreateSls = () => {
-    setActiveModal('slsCreate');
+    setActiveModal("slsCreate");
   };
 
   const handleDeleteSls = (repo: SettingsSlsRepoShortSchema) => {
     setRecordToEdit(repo);
-    setActiveModal('slsDelete');
+    setActiveModal("slsDelete");
   };
 
   const handleSlsModalClose = (formValue?: SlsFormData) => {
@@ -242,7 +242,7 @@ const SettingsSlsPage = observer(() => {
   };
 
   const handleLoadSlsRepositories = () => {
-    setActiveModal('slsGitLab');
+    setActiveModal("slsGitLab");
   };
 
   const handleSlsGitLabModalClose = (request?: SettingsSlsRepoCreateSchema) => {
@@ -272,7 +272,11 @@ const SettingsSlsPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("settings-sls.title"),
@@ -283,19 +287,11 @@ const SettingsSlsPage = observer(() => {
       <PageHeader title={t("settings-sls.title")}></PageHeader>
 
       <div className="page-actions-buttons">
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleCreateSls}
-        >
+        <Button type="primary" icon={<PlusOutlined />} onClick={handleCreateSls}>
           {t("settings-sls.table-add-repository")}
         </Button>
 
-        <Button
-          type="default"
-          icon={<CloudDownloadOutlined />}
-          onClick={handleLoadSlsRepositories}
-        >
+        <Button type="default" icon={<CloudDownloadOutlined />} onClick={handleLoadSlsRepositories}>
           {t("settings-sls.add-repository-from-gitlab")}
         </Button>
       </div>
@@ -308,16 +304,16 @@ const SettingsSlsPage = observer(() => {
         onLazyLoad={(pagination) => settingsSlsStore.handleLazyLoad(pagination)}
       />
 
-      {(activeModal === 'slsCreate' || activeModal === 'slsEdit') && (
+      {(activeModal === "slsCreate" || activeModal === "slsEdit") && (
         <SlsModal
           isOpen={true}
           onClose={handleSlsModalClose}
-          mode={activeModal === 'slsCreate' ? 'create' : 'edit'}
+          mode={activeModal === "slsCreate" ? "create" : "edit"}
           record={recordToEdit}
         />
       )}
 
-      {activeModal === 'slsDelete' && (
+      {activeModal === "slsDelete" && (
         <Modal
           title={t("settings-sls.modal-delete-repository")}
           open={true}
@@ -334,16 +330,16 @@ const SettingsSlsPage = observer(() => {
           closable={false}
         >
           <p>
-            {t("settings-sls.modal-delete-repository-confirm-text", { name: recordToEdit ? recordToEdit.name : "" })}?
+            {t("settings-sls.modal-delete-repository-confirm-text", {
+              name: recordToEdit ? recordToEdit.name : "",
+            })}
+            ?
           </p>
         </Modal>
       )}
 
-      {activeModal === 'slsGitLab' && (
-        <SlsGitLabModal
-          isOpen={true}
-          onClose={handleSlsGitLabModalClose}
-        />
+      {activeModal === "slsGitLab" && (
+        <SlsGitLabModal isOpen={true} onClose={handleSlsGitLabModalClose} />
       )}
     </>
   );

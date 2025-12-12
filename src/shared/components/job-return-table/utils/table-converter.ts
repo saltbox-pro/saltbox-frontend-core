@@ -145,11 +145,7 @@ const countRows = (data: unknown, depth = 0): number => {
   return 1;
 };
 
-const collectKeys = (
-  data: unknown,
-  depth = 0,
-  maxDepth = MAX_NESTED_DEPTH
-): Set<string> => {
+const collectKeys = (data: unknown, depth = 0, maxDepth = MAX_NESTED_DEPTH): Set<string> => {
   const keys = new Set<string>();
 
   if (depth > maxDepth) {
@@ -180,10 +176,7 @@ const collectKeys = (
   return keys;
 };
 
-const convertDictOfDicts = (
-  data: Record<string, unknown>,
-  minionId: string
-): TableData => {
+const convertDictOfDicts = (data: Record<string, unknown>, minionId: string): TableData => {
   const rows: TableRow[] = [];
   const allKeys = new Set<string>();
 
@@ -245,10 +238,7 @@ const convertDictOfDicts = (
   };
 };
 
-const convertSimpleValue = (
-  data: string | number | boolean,
-  minionId: string
-): TableData => {
+const convertSimpleValue = (data: string | number | boolean, minionId: string): TableData => {
   const rowKey = `${minionId}-${formatValue(data).substring(0, 50)}`;
   return {
     columns: ["minion_id", "value"],
@@ -263,10 +253,7 @@ const convertSimpleValue = (
   };
 };
 
-const convertSimpleList = (
-  data: unknown[],
-  minionId: string
-): TableData => {
+const convertSimpleList = (data: unknown[], minionId: string): TableData => {
   const rows: TableRow[] = [];
 
   if (data.length > MAX_TABLE_ROWS) {
@@ -294,10 +281,7 @@ const convertSimpleList = (
   };
 };
 
-const convertListOfObjects = (
-  data: unknown[],
-  minionId: string
-): TableData => {
+const convertListOfObjects = (data: unknown[], minionId: string): TableData => {
   const rows: TableRow[] = [];
   const allKeys = new Set<string>();
 
@@ -358,10 +342,7 @@ const convertListOfObjects = (
   };
 };
 
-const convertSimpleObject = (
-  data: Record<string, unknown>,
-  minionId: string
-): TableData => {
+const convertSimpleObject = (data: Record<string, unknown>, minionId: string): TableData => {
   const columns = ["minion_id", ...Object.keys(data).sort()];
 
   if (columns.length > MAX_TABLE_COLUMNS) {
@@ -440,10 +421,7 @@ export const canConvertToTable = (data: unknown): boolean => {
   return false;
 };
 
-export const convertToTable = (
-  data: unknown,
-  minionId: string
-): TableData => {
+export const convertToTable = (data: unknown, minionId: string): TableData => {
   if (!canConvertToTable(data)) {
     return {
       columns: [],
@@ -602,9 +580,10 @@ export const mergeJobReturnsToTable = (
       columns: [],
       rows: [],
       canConvert: false,
-      reason: conversionReasons.length === 1
-        ? conversionReasons[0]
-        : `Cannot convert data for ${conversionReasons.length} minion(s). First reason: ${conversionReasons[0]}`,
+      reason:
+        conversionReasons.length === 1
+          ? conversionReasons[0]
+          : `Cannot convert data for ${conversionReasons.length} minion(s). First reason: ${conversionReasons[0]}`,
       errors: errors.length > 0 ? errors : undefined,
     };
   }
@@ -703,7 +682,10 @@ export const exportToCSV = (
         const aStr = aValue == null ? "" : String(aValue);
         const bStr = bValue == null ? "" : String(bValue);
 
-        const comparison = aStr.localeCompare(bStr, undefined, { numeric: true, sensitivity: "base" });
+        const comparison = aStr.localeCompare(bStr, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
 
         if (comparison !== 0) {
           return sort.desc ? -comparison : comparison;
@@ -741,5 +723,3 @@ export const exportToCSV = (
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 };
-
-

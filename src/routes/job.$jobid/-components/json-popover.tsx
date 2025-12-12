@@ -1,9 +1,9 @@
+import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
+import { Popover, MatIcon } from "@saltbox/saltbox-frontend-common";
+import { Button, Flex, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { Button, Flex, message } from "antd";
-import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
-import { Popover, MatIcon } from "@saltbox/saltbox-frontend-common";
 
 interface JsonPopoverProps {
   data: any;

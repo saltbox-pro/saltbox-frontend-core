@@ -1,4 +1,14 @@
 import {
+  CaretRightOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  HomeOutlined,
+  IssuesCloseOutlined,
+  QuestionCircleOutlined,
+  StopOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
+import {
   JobReturnModel,
   TaskMinion,
   TaskMinionStatus,
@@ -11,31 +21,16 @@ import {
   pastTimeByUserTZ,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
-import {
-  Breadcrumb,
-  Button,
-  Flex,
-  Skeleton,
-  Spin,
-  Statistic,
-} from "antd";
-import {
-  CaretRightOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  HomeOutlined,
-  IssuesCloseOutlined,
-  QuestionCircleOutlined,
-  StopOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { Breadcrumb, Button, Flex, Skeleton, Spin, Statistic } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
+
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
-import { TaskMinions } from "./-components/task-minions/task-minions";
+
 import { MinionView } from "./-components/minion-view/minion-view";
+import { TaskMinions } from "./-components/task-minions/task-minions";
 import styles from "./index.module.css";
 
 enum MinionCategory {
@@ -48,9 +43,7 @@ enum MinionCategory {
 
 const useMinions = (taskStore: TaskStore) => {
   const { t } = useTranslation();
-  const [selectedMinionCategory, setSelectedMinionCategory] = useState(
-    MinionCategory.All
-  );
+  const [selectedMinionCategory, setSelectedMinionCategory] = useState(MinionCategory.All);
 
   const minionsOfCategory = useMemo(() => {
     const allMinions = Object.values(taskStore.task?.minions ?? {});
@@ -78,9 +71,8 @@ const useMinions = (taskStore: TaskStore) => {
   const minionCategoryStats = useMemo(() => {
     const allMinions = Object.keys(taskStore.task?.minions ?? {});
     const getStatusCount = (status: TaskMinionStatus) => {
-      return allMinions.filter(
-        (mid: string) => taskStore.task?.minions?.[mid]?.status === status
-      ).length;
+      return allMinions.filter((mid: string) => taskStore.task?.minions?.[mid]?.status === status)
+        .length;
     };
 
     const countMinionsAll = allMinions.length;
@@ -91,9 +83,7 @@ const useMinions = (taskStore: TaskStore) => {
 
     const getStatItemClass = (category: MinionCategory) => {
       const isActiveClass =
-        selectedMinionCategory === category
-          ? " " + styles.taskStatItemActive
-          : "";
+        selectedMinionCategory === category ? " " + styles.taskStatItemActive : "";
       return styles.taskStatItem + isActiveClass;
     };
 
@@ -102,6 +92,14 @@ const useMinions = (taskStore: TaskStore) => {
         <div
           className={getStatItemClass(MinionCategory.All)}
           onClick={() => setSelectedMinionCategory(MinionCategory.All)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMinionCategory(MinionCategory.All);
+            }
+          }}
         >
           <Statistic
             title={t("task.minions-nav.list-all")}
@@ -112,6 +110,14 @@ const useMinions = (taskStore: TaskStore) => {
         <div
           className={getStatItemClass(MinionCategory.Pending)}
           onClick={() => setSelectedMinionCategory(MinionCategory.Pending)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMinionCategory(MinionCategory.Pending);
+            }
+          }}
         >
           <Statistic
             title={t("task.minions-nav.list-pending")}
@@ -122,6 +128,14 @@ const useMinions = (taskStore: TaskStore) => {
         <div
           className={getStatItemClass(MinionCategory.InWork)}
           onClick={() => setSelectedMinionCategory(MinionCategory.InWork)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMinionCategory(MinionCategory.InWork);
+            }
+          }}
         >
           <Statistic
             title={t("task.minions-nav.list-in-work")}
@@ -132,6 +146,14 @@ const useMinions = (taskStore: TaskStore) => {
         <div
           className={getStatItemClass(MinionCategory.Failed)}
           onClick={() => setSelectedMinionCategory(MinionCategory.Failed)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMinionCategory(MinionCategory.Failed);
+            }
+          }}
         >
           <Statistic
             title={t("task.minions-nav.list-failed")}
@@ -142,6 +164,14 @@ const useMinions = (taskStore: TaskStore) => {
         <div
           className={getStatItemClass(MinionCategory.Success)}
           onClick={() => setSelectedMinionCategory(MinionCategory.Success)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setSelectedMinionCategory(MinionCategory.Success);
+            }
+          }}
         >
           <Statistic
             title={t("task.minions-nav.list-success")}
@@ -164,12 +194,10 @@ const useMinions = (taskStore: TaskStore) => {
 };
 
 const useSelectedMinion = (taskStore: TaskStore) => {
-  const [selectedMinion, setSelectedMinion] = useState<
-    TaskMinion | undefined
-  >();
-  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<
-    Array<JobReturnModel>
-  >([]);
+  const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
+  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<Array<JobReturnModel>>(
+    []
+  );
 
   const getStoredMinion = (minion: TaskMinion) => {
     return taskStore.task?.minions?.[minion.master + "_" + minion.minion_id];
@@ -182,11 +210,13 @@ const useSelectedMinion = (taskStore: TaskStore) => {
     return minionJobIds
       .map((jobId) =>
         taskStore.jobReturns?.find(
-          (jobReturn) => jobReturn.jid === jobId &&
+          (jobReturn) =>
+            jobReturn.jid === jobId &&
             jobReturn.salt_master === minion.master &&
             jobReturn.minion_id === minion.minion_id
         )
-      ).filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
+      )
+      .filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
   };
 
   useEffect(() => {
@@ -259,7 +289,7 @@ const useWebSocket = (taskId: string, onUpdate: (update: Object[]) => void) => {
       `${apiCoreStore.env?.ws_server_url}/tasks/${taskId}`,
       appStore.authStore?.user?.access_token,
       {
-        onMessage: onUpdate
+        onMessage: onUpdate,
       }
     );
     return () => webSocketService.disconnect();
@@ -291,15 +321,13 @@ const TaskStatusIndicator = ({ status }: { status?: TaskStatus | "none" }) => {
     case TaskStatus.Running:
       return (
         <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" />{" "}
-          {t("task.running")}
+          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.running")}
         </span>
       );
     case TaskStatus.Stopping:
       return (
         <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" />{" "}
-          {t("task.stopping")}
+          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.stopping")}
         </span>
       );
     case TaskStatus.Stopped:
@@ -311,8 +339,7 @@ const TaskStatusIndicator = ({ status }: { status?: TaskStatus | "none" }) => {
     case TaskStatus.Postprocessing:
       return (
         <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" />{" "}
-          {t("task.post-processing")}
+          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.post-processing")}
         </span>
       );
     case "none":
@@ -359,69 +386,72 @@ const TaskPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("minions.title"),
           },
           ...(taskStore.task?.target_collection
             ? [
-              {
-                title: (
-                  <Link
-                    to={{
-                      pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                    }}
-                  >
-                    {taskStore.task.target_collection.title}
-                  </Link>
-                ),
-              },
-              {
-                title: (
-                  <Link
-                    to={{
-                      pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                      search: `?tab=tasks`,
-                    }}
-                  >
-                    {t("task.breadcrumbs-tasks")}
-                  </Link>
-                ),
-              },
-            ]
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                      }}
+                    >
+                      {taskStore.task.target_collection.title}
+                    </Link>
+                  ),
+                },
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
+                        search: `?tab=tasks`,
+                      }}
+                    >
+                      {t("task.breadcrumbs-tasks")}
+                    </Link>
+                  ),
+                },
+              ]
             : [
-              {
-                title: (
-                  <Link
-                    to={{
-                      pathname: `/minions/root`,
-                    }}
-                  >
-                    {taskStore.task ? t("minions.title") : "..."}
-                  </Link>
-                ),
-              },
-              {
-                title: (
-                  <Link
-                    to={{
-                      pathname: `/minions/root`,
-                      search: `?tab=tasks`,
-                    }}
-                  >
-                    {t("task.breadcrumbs-tasks")}
-                  </Link>
-                ),
-              },
-            ]),
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/root`,
+                      }}
+                    >
+                      {taskStore.task ? t("minions.title") : "..."}
+                    </Link>
+                  ),
+                },
+                {
+                  title: (
+                    <Link
+                      to={{
+                        pathname: `/minions/root`,
+                        search: `?tab=tasks`,
+                      }}
+                    >
+                      {t("task.breadcrumbs-tasks")}
+                    </Link>
+                  ),
+                },
+              ]),
           {
             title: taskStore.task?.task_template?.title
               ? t("task.breadcrumbs-title-template", {
-                templateName:
-                  taskStore.task.task_template.title?.toLowerCase(),
-                taskId: taskId,
-              })
+                  templateName: taskStore.task.task_template.title?.toLowerCase(),
+                  taskId: taskId,
+                })
               : t("task.breadcrumbs-title-empty", { taskId: taskId ?? "..." }),
           },
         ]}
@@ -474,9 +504,7 @@ const TaskPage = observer(() => {
           <span className={styles.taskDetailLabel}>{t("task.created")}:</span>
           <span className={styles.taskDetailValue}>
             <Popover content={formatTimeByUserTZ(taskStore.task?.created ?? 0)}>
-              {pastTimeByUserTZ(taskStore.task?.created ?? 0) ?? (
-                <Skeleton.Input size="small" />
-              )}
+              {pastTimeByUserTZ(taskStore.task?.created ?? 0) ?? <Skeleton.Input size="small" />}
             </Popover>
           </span>
         </div>
@@ -487,9 +515,7 @@ const TaskPage = observer(() => {
           </span>
         </div>
         <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>
-            {t("task.task-more-info")}
-          </span>
+          <span className={styles.taskDetailLabel}>{t("task.task-more-info")}</span>
         </div>
       </div>
 

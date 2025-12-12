@@ -1,10 +1,11 @@
+import { InfoCircleOutlined } from "@ant-design/icons";
+import { Popover, SaltBoxReadonlyQueryBuilder } from "@saltbox/saltbox-frontend-common";
+import { Button } from "antd";
+import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
-import { observer } from "mobx-react-lite";
-import { Button } from "antd";
-import { InfoCircleOutlined } from "@ant-design/icons";
-import { Popover, SaltBoxReadonlyQueryBuilder } from "@saltbox/saltbox-frontend-common";
+
 import { CollectionPopoverFilterStore, CollectionStore } from "saltbox-core/store";
 
 interface CollectionInfoPopoverProps {
@@ -31,9 +32,7 @@ export const CollectionInfoPopover = observer(
       <Popover
         content={
           slug === "root" ? (
-            <div style={{ maxWidth: 300 }}>
-              {t("minions.root-collection-info")}
-            </div>
+            <div style={{ maxWidth: 300 }}>{t("minions.root-collection-info")}</div>
           ) : (
             <div>
               <div
@@ -42,10 +41,7 @@ export const CollectionInfoPopover = observer(
                 }}
               >
                 {t("minions.subcollection-info")}
-                <Link
-                  to={`/minions/${collectionStore.collection?.parent_slug || ""
-                    }`}
-                >
+                <Link to={`/minions/${collectionStore.collection?.parent_slug || ""}`}>
                   <Button type="link" size={"small"}>
                     {collectionStore.collection?.parent_title}
                   </Button>

@@ -1,8 +1,23 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
-import { observer } from "mobx-react-lite";
-import { createColumnHelper, getCoreRowModel, getSortedRowModel, SortingState, useReactTable } from "@tanstack/react-table";
+import {
+  HomeOutlined,
+  ReloadOutlined,
+  DownloadOutlined,
+  QuestionCircleOutlined,
+  FilterOutlined,
+} from "@ant-design/icons";
+import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
+import {
+  CopyToClipboardButton,
+  PageHeader,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
+import {
+  createColumnHelper,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 import {
   Breadcrumb,
   Button,
@@ -14,28 +29,28 @@ import {
   Tooltip,
   Typography,
 } from "antd";
-import { HomeOutlined, ReloadOutlined, DownloadOutlined, QuestionCircleOutlined, FilterOutlined } from "@ant-design/icons";
+import { observer } from "mobx-react-lite";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatQuery } from "react-querybuilder";
-import {
-  CreateJobRequestTgtTypeEnum,
-  JobModel,
-} from "@saltbox/saltbox-core-api-client";
-import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
-import { mergeJobReturnsToTable, canConvertToTable, exportToCSV } from "saltbox-core/shared/components/job-return-table/utils/table-converter";
+import { Link, useNavigate, useParams } from "react-router";
+import Parcel from "single-spa-react/parcel";
+
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import {
-  CopyToClipboardButton,
-  PageHeader,
-  WebSocketService,
-} from "@saltbox/saltbox-frontend-common";
+  mergeJobReturnsToTable,
+  canConvertToTable,
+  exportToCSV,
+} from "saltbox-core/shared/components/job-return-table/utils/table-converter";
+import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore, JobFilterStore } from "saltbox-core/store";
-import { MinionsPopover } from "./-components/minions-popover";
+
 import { ArgumentsPreview } from "./-components/arguments-preview";
 import { KwargsPreview } from "./-components/kwargs-preview";
-import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
+import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
-import Parcel from "single-spa-react/parcel";
 
 const { Text } = Typography;
 const { Timer } = Statistic;
@@ -190,7 +205,6 @@ const JobPage = observer(() => {
     };
   }, [jid]);
 
-
   useEffect(() => {
     if (webSocketService && appStore.authStore?.user?.access_token) {
       webSocketService.sendAccessToken(appStore.authStore.user.access_token);
@@ -202,23 +216,25 @@ const JobPage = observer(() => {
   }, []);
 
   let jobModalCreatePlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach(
-    (plugin) => {
-      jobModalCreatePlugin = (
-        <>
-          {jobModalCreatePlugin}
-          <Parcel config={plugin.parcel} wrapWith="div" />
-        </>
-      );
-    }
-  );
+  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
+    jobModalCreatePlugin = (
+      <>
+        {jobModalCreatePlugin}
+        <Parcel config={plugin.parcel} wrapWith="div" />
+      </>
+    );
+  });
 
   return (
     <>
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: <Link to="/jobs">{t("jobs.title")}</Link>,
@@ -248,32 +264,22 @@ const JobPage = observer(() => {
               title: t("jobs.repeat-job"),
             }}
           />
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.table-target-type")}:
-          </span>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
           </span>
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.table-targets")}:
-          </span>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
           <span className={styles.jobDetailValue}>
             {(jobStore.job?.tgt as string) ? (
               <>
-                <Text
-                  ellipsis
-                  style={{ maxWidth: "200px" }}
-                  title={jobStore.job?.tgt as string}
-                >
+                <Text ellipsis style={{ maxWidth: "200px" }} title={jobStore.job?.tgt as string}>
                   {jobStore.job?.tgt as string}
                 </Text>
                 <CopyToClipboardButton
-                  text={
-                    (jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""
-                  }
+                  text={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""}
                 />
               </>
             ) : (
@@ -283,9 +289,7 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.table-function")}:
-          </span>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-function")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.fun ?? <Skeleton.Input size="small" />}
           </span>
@@ -297,10 +301,7 @@ const JobPage = observer(() => {
             {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
             ) : jobStore.job?.arg && jobStore.job.arg.length > 0 ? (
-              <ArgumentsPreview
-                args={jobStore.job.arg}
-                title={t("jobs.arguments")}
-              />
+              <ArgumentsPreview args={jobStore.job.arg} title={t("jobs.arguments")} />
             ) : (
               <Text type="secondary">{t("jobs.no-arguments")}</Text>
             )}
@@ -308,18 +309,12 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.key-value-arguments")}:
-          </span>
+          <span className={styles.jobDetailLabel}>{t("jobs.key-value-arguments")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.isJobLoading ? (
               <Skeleton.Input size="small" />
-            ) : jobStore.job?.kwarg &&
-              Object.keys(jobStore.job.kwarg).length > 0 ? (
-              <KwargsPreview
-                kwargs={jobStore.job.kwarg}
-                title={t("jobs.key-value-arguments")}
-              />
+            ) : jobStore.job?.kwarg && Object.keys(jobStore.job.kwarg).length > 0 ? (
+              <KwargsPreview kwargs={jobStore.job.kwarg} title={t("jobs.key-value-arguments")} />
             ) : (
               <Text type="secondary">{t("jobs.no-key-value-arguments")}</Text>
             )}
@@ -327,9 +322,7 @@ const JobPage = observer(() => {
         </div>
 
         <div className={styles.jobDetailItem}>
-          <span className={styles.jobDetailLabel}>
-            {t("jobs.table-user")}:
-          </span>
+          <span className={styles.jobDetailLabel}>{t("jobs.table-user")}:</span>
           <span className={styles.jobDetailValue}>
             {jobStore.job?.user.name ?? <Skeleton.Input size="small" />}
           </span>
@@ -350,17 +343,10 @@ const JobPage = observer(() => {
       </div>
 
       {jobStore.totalMinions > 0 && (
-        <Flex
-          className={styles.switchContainer}
-          justify="space-between"
-          align="center"
-          gap={16}
-        >
+        <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
           <div className={styles.statsWrapper}>
             <span className={styles.statsText}>
-              <span className={styles.statsNumber}>
-                {jobStore.successfulMinions}
-              </span>{" "}
+              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span>{" "}
               {t("job.successful-minions")}
               {" / "}
               {jobStore.failedMinions > 0 ? (
@@ -369,9 +355,7 @@ const JobPage = observer(() => {
                   title={t("jobs.failed-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>
-                  {jobStore.failedMinions}
-                </span>
+                <span className={styles.statsNumber}>{jobStore.failedMinions}</span>
               )}{" "}
               {t("job.failed-minions")}
               {" / "}
@@ -381,9 +365,7 @@ const JobPage = observer(() => {
                   title={t("job.pending-minions")}
                 />
               ) : (
-                <span className={styles.statsNumber}>
-                  {jobStore.pendingMinions}
-                </span>
+                <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>
               )}{" "}
               {t("job.pending-minions")}
             </span>
@@ -392,17 +374,11 @@ const JobPage = observer(() => {
           <Flex align="center" gap={16}>
             {jobStore.jobStartTime && (
               <div className={styles.timerWrapper}>
-                <span className={styles.timerLabel}>
-                  {t("jobs.job-duration")}:
-                </span>
+                <span className={styles.timerLabel}>{t("jobs.job-duration")}:</span>
                 {jobStore.isJobComplete && jobStore.actualJobDuration ? (
                   <b>{formatJobDuration(jobStore.actualJobDuration)}</b>
                 ) : (
-                  <Timer
-                    type="countup"
-                    value={jobStore.jobStartTime}
-                    format="HH:mm:ss"
-                  />
+                  <Timer type="countup" value={jobStore.jobStartTime} format="HH:mm:ss" />
                 )}
               </div>
             )}
@@ -417,22 +393,18 @@ const JobPage = observer(() => {
               optionType="button"
               buttonStyle="solid"
             />
-            {isTableViewMode && mergedTableData && (!mergedTableData.canConvert || mergedTableData.rows.length === 0) && (
-              <Tooltip title={mergedTableData.reason || t("jobs.table-conversion-not-possible")}>
-                <QuestionCircleOutlined className={styles.helpIcon} />
-              </Tooltip>
-            )}
+            {isTableViewMode &&
+              mergedTableData &&
+              (!mergedTableData.canConvert || mergedTableData.rows.length === 0) && (
+                <Tooltip title={mergedTableData.reason || t("jobs.table-conversion-not-possible")}>
+                  <QuestionCircleOutlined className={styles.helpIcon} />
+                </Tooltip>
+              )}
             <Button
               onClick={() => setShowJsonFilter(!showJsonFilter)}
               disabled={isTableViewMode}
               color={"primary"}
-              variant={
-                showJsonFilter
-                  ? "solid"
-                  : hasActiveJsonFilters
-                    ? "filled"
-                    : "outlined"
-              }
+              variant={showJsonFilter ? "solid" : hasActiveJsonFilters ? "filled" : "outlined"}
             >
               <Flex gap={8}>
                 <FilterOutlined />
@@ -467,7 +439,6 @@ const JobPage = observer(() => {
           />
         </div>
       )}
-
 
       <div className={styles.jobReturnTableWrapper}>
         <DefaultJobReturnTable

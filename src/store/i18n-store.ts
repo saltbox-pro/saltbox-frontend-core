@@ -1,7 +1,12 @@
-import { initReactI18next } from "react-i18next";
+import {
+  setDateTimeLocale,
+  AppLanguage,
+  enCommon,
+  ruCommon,
+} from "@saltbox/saltbox-frontend-common";
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
-import { setDateTimeLocale, AppLanguage, enCommon, ruCommon } from "@saltbox/saltbox-frontend-common";
+import { initReactI18next } from "react-i18next";
 
 import enBase from "../locales/en/base.json";
 import ruBase from "../locales/ru/base.json";
@@ -18,10 +23,7 @@ const resources = {
 };
 
 class I18NStore {
-  readonly supportedLanguages: Array<AppLanguage> = [
-    AppLanguage.EN,
-    AppLanguage.RU,
-  ];
+  readonly supportedLanguages: Array<AppLanguage> = [AppLanguage.EN, AppLanguage.RU];
 
   constructor() {
     i18n

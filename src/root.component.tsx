@@ -1,24 +1,27 @@
-import { observer } from "mobx-react";
-import { BrowserRouter, Routes, Route } from "react-router";
-import { I18nextProvider } from "react-i18next";
-import { Suspense } from "react";
 import i18n from "i18next";
+import { observer } from "mobx-react";
+import { Suspense } from "react";
+import { I18nextProvider } from "react-i18next";
+import { BrowserRouter, Routes, Route } from "react-router";
+
 import "react-querybuilder/dist/query-builder.css";
-import MinionsPage from "./routes/minions.$slug";
-import MastersPage from "./routes/masters";
-import JobsPage from "./routes/jobs";
+import DefaultMinionsPage from "saltbox-core/routes/minions";
+
+import CollectionEditPage from "./routes/collection.$slug";
 import JobPage from "./routes/job.$jobid";
+import JobsPage from "./routes/jobs";
 import JobsTemplatesPage from "./routes/jobs-templates";
-import TaskTemplatesPage from "./routes/task-templates";
+import MinionRedirectPage from "./routes/master.$master_id.minion.$minion_id";
+import MasterPage from "./routes/master.$mid";
+import MastersPage from "./routes/masters";
+import MinionPage from "./routes/minion.$slug.$mid";
+import MinionsPage from "./routes/minions.$slug";
 import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
+import TaskTemplatesPage from "./routes/task-templates";
 import TaskPage from "./routes/task.$taskid";
-import MinionPage from "./routes/minion.$slug.$mid";
-import MasterPage from "./routes/master.$mid";
-import MinionRedirectPage from "./routes/master.$master_id.minion.$minion_id";
 import NotFound from "./shared/components/not-found";
-import CollectionEditPage from "./routes/collection.$slug";
-import DefaultMinionsPage from "saltbox-core/routes/minions";
+
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
 export default observer(function Root() {
@@ -32,10 +35,7 @@ export default observer(function Root() {
             <Route path="/minions" element={<DefaultMinionsPage />} />
             <Route path="/collection/:slug" element={<CollectionEditPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
-            <Route
-              path="/master/:master_id/minion/:minion_id"
-              element={<MinionRedirectPage />}
-            />
+            <Route path="/master/:master_id/minion/:minion_id" element={<MinionRedirectPage />} />
             <Route path="/masters" element={<MastersPage />} />
             <Route path="/master/:mid" element={<MasterPage />} />
             <Route path="/job/:jid" element={<JobPage />} />

@@ -1,7 +1,8 @@
 import { Form, Input, Button } from "antd";
-import { useTranslation } from "react-i18next";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
 import styles from "./pillar-create-form.module.css";
 
 interface PillarCreateFormProps {
@@ -83,10 +84,7 @@ export const PillarCreateForm = observer((props: PillarCreateFormProps) => {
           },
         ]}
       >
-        <Input.TextArea
-          rows={4}
-          placeholder={t("pillars.form-value-placeholder")}
-        />
+        <Input.TextArea rows={4} placeholder={t("pillars.form-value-placeholder")} />
       </Form.Item>
       <Form.Item>
         <div className={styles.buttonsContainer}>

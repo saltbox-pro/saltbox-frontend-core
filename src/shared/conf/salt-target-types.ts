@@ -39,9 +39,7 @@ export const useSaltTargetTypes = () => {
           title: t(`salt-target-types.${type}.hint.title`),
           description: t(`salt-target-types.${type}.hint.description`),
           example: t(`salt-target-types.${type}.hint.example`),
-          exampleDescription: t(
-            `salt-target-types.${type}.hint.exampleDescription`
-          ),
+          exampleDescription: t(`salt-target-types.${type}.hint.exampleDescription`),
         },
       })),
     [t]

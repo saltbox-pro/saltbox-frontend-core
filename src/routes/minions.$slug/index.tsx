@@ -1,9 +1,3 @@
-import { ComponentProps, useEffect, useMemo, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
-import Parcel from "single-spa-react/parcel";
-import { observer } from "mobx-react-lite";
-import { Breadcrumb, Button, Flex, Tabs, message } from "antd";
 import {
   DeleteOutlined,
   EditOutlined,
@@ -15,6 +9,22 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import {
+  subscribe,
+  PageHeader,
+  Modal,
+  Dropdown,
+  Popover,
+  generateIdsForQuery,
+} from "@saltbox/saltbox-frontend-common";
+import { Breadcrumb, Button, Flex, Tabs, message } from "antd";
+import { observer } from "mobx-react-lite";
+import { ComponentProps, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import Parcel from "single-spa-react/parcel";
+
+import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
+import {
   appStore,
   CollectionStore,
   dashboardStore,
@@ -22,19 +32,11 @@ import {
   i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";
-import {
-  PageHeader,
-  Modal,
-  Dropdown,
-  Popover,
-  generateIdsForQuery,
-} from "@saltbox/saltbox-frontend-common";
+
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
-import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
-
 import styles from "./index.module.css";
 
 type TabItems = ComponentProps<typeof Tabs>["items"];
@@ -95,8 +97,7 @@ const MinionsPage = observer(() => {
       icon: <EditOutlined />,
       onClick: handleEditCollection,
       disabled: slug === "root",
-      title:
-        slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
+      title: slug === "root" ? t("minions.root-collection-cannot-edit") : undefined,
     },
     {
       key: "save-as-new",
@@ -116,10 +117,7 @@ const MinionsPage = observer(() => {
       onClick: handleDeleteCollection,
       danger: true,
       disabled: slug === "root",
-      title:
-        slug === "root"
-          ? t("minions.root-collection-cannot-delete")
-          : undefined,
+      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
     },
   ];
 
@@ -141,9 +139,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.isDeleted) {
-      navigate(
-        `/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`
-      );
+      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
     }
   }, [collectionStore.isDeleted, navigate]);
 
@@ -188,9 +184,7 @@ const MinionsPage = observer(() => {
       for (const pluginTab of appStore.pluginsStore.plugins["minions.tabs"]) {
         tabs.push({
           label:
-            pluginTab.label?.[i18nStore.currentLanguage] ||
-            pluginTab.label?.en ||
-            pluginTab.key,
+            pluginTab.label?.[i18nStore.currentLanguage] || pluginTab.label?.en || pluginTab.key,
           key: pluginTab.key,
           children:
             tabKey === pluginTab.key ? (
@@ -224,7 +218,11 @@ const MinionsPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: t("minions.title"),
@@ -233,10 +231,7 @@ const MinionsPage = observer(() => {
             title: (
               <Flex gap={8} align="center">
                 {collectionStore.collection?.title}
-                <CollectionInfoPopover
-                  slug={slug}
-                  collectionStore={collectionStore}
-                />
+                <CollectionInfoPopover slug={slug} collectionStore={collectionStore} />
               </Flex>
             ),
           },
@@ -251,55 +246,43 @@ const MinionsPage = observer(() => {
           right: (
             <>
               <Flex gap={8}>
-                {tabKey === "statistics" &&
-                  !dashboardStore.isCardFullScreen && (
-                    <Flex gap={8} align="center">
-                      <Button
-                        onClick={addBlock}
-                        type="default"
-                        disabled={!dashboardStore.canAddBlock}
+                {tabKey === "statistics" && !dashboardStore.isCardFullScreen && (
+                  <Flex gap={8} align="center">
+                    <Button
+                      onClick={addBlock}
+                      type="default"
+                      disabled={!dashboardStore.canAddBlock}
+                    >
+                      <Flex gap={8}>
+                        <PlusOutlined />
+                        {t("minions.add-block-button")}
+                      </Flex>
+                    </Button>
+                    {!dashboardStore.canAddBlock && (
+                      <Popover
+                        style={{ width: 300 }}
+                        content={t("minions.blocks-limit-tooltip")}
+                        trigger="hover"
                       >
-                        <Flex gap={8}>
-                          <PlusOutlined />
-                          {t("minions.add-block-button")}
-                        </Flex>
-                      </Button>
-                      {!dashboardStore.canAddBlock && (
-                        <Popover
-                          style={{ width: 300 }}
-                          content={t("minions.blocks-limit-tooltip")}
-                          trigger="hover"
-                        >
-                          <QuestionCircleOutlined
-                            style={{ color: "#8c8c8c" }}
-                          />
-                        </Popover>
-                      )}
-                    </Flex>
-                  )}
+                        <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
+                      </Popover>
+                    )}
+                  </Flex>
+                )}
 
                 {["list", "statistics"].includes(tabKey) && (
                   <>
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
                       color={"primary"}
-                      variant={
-                        showFilter
-                          ? "solid"
-                          : hasFilters
-                            ? "filled"
-                            : "outlined"
-                      }
+                      variant={showFilter ? "solid" : hasFilters ? "filled" : "outlined"}
                     >
                       <Flex gap={8}>
                         <FilterOutlined />
                         {t("minions.filters-button")}
                       </Flex>
                     </Button>
-                    <Dropdown
-                      menu={{ items: collectionMenuItems }}
-                      trigger={["click"]}
-                    >
+                    <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
                       <Button>
                         <Flex gap={8}>
                           <SettingOutlined />

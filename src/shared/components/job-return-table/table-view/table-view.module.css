@@ -75,7 +75,6 @@
   color: rgba(0, 0, 0, 0.75);
 }
 
-
 .errorsList {
   display: flex;
   flex-direction: column;
@@ -103,5 +102,3 @@
   color: #8c8c8c;
   flex: 1;
 }
-
-

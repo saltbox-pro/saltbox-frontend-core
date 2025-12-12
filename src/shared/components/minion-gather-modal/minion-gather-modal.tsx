@@ -1,10 +1,12 @@
+import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
+import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Button, List, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, List, Spin, Typography } from "antd";
-import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
+
 import { apiCoreStore } from "saltbox-core/store";
-import { Modal } from "@saltbox/saltbox-frontend-common";
-import styles from "./minion-gather-modal.module.css"
+
+import styles from "./minion-gather-modal.module.css";
 
 interface MinionGatherModalProps {
   isOpen: boolean;
@@ -66,7 +68,9 @@ export function MinionGatherModal({
         </Typography.Text>
         <List
           dataSource={minions}
-          renderItem={(item) => <List.Item className={styles.minionGatherName}>{item.minion_id}</List.Item>}
+          renderItem={(item) => (
+            <List.Item className={styles.minionGatherName}>{item.minion_id}</List.Item>
+          )}
         />
       </Spin>
     </Modal>

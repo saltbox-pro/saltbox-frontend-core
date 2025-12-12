@@ -1,5 +1,6 @@
-import { makeAutoObservable } from "mobx";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
+import { makeAutoObservable } from "mobx";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class DashboardCardStore {
@@ -13,9 +14,7 @@ export class DashboardCardStore {
     return [
       ...grainsTop,
       {
-        count: this.grainValues
-          .slice(5)
-          .reduce((acc, item) => acc + item.count, 0),
+        count: this.grainValues.slice(5).reduce((acc, item) => acc + item.count, 0),
         value: "other",
       },
     ];
@@ -27,11 +26,7 @@ export class DashboardCardStore {
     this.isFilterLoading = false;
   }
 
-  loadGrain = (
-    currentGrains: string,
-    slug: string,
-    mongoDBQuery: object | undefined
-  ) => {
+  loadGrain = (currentGrains: string, slug: string, mongoDBQuery: object | undefined) => {
     this.isFilterLoading = true;
 
     apiCoreStore.filtersApi

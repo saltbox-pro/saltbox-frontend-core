@@ -21,7 +21,7 @@ import {
   Modal,
   PageHeader,
 } from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper } from "@tanstack/react-table";
+import { createColumnHelper, type CellContext } from "@tanstack/react-table";
 import {
   Input as AntdInput,
   Breadcrumb,
@@ -33,19 +33,36 @@ import {
   Spin,
   Tabs,
   Upload,
+  type UploadFile,
+  type UploadProps,
 } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
-import { apiCoreStore, PillarsStore } from "saltbox-core/store";
-import { PillarCreateForm } from "./-components/pillar-create-form";
 
+import { apiCoreStore, PillarsStore } from "saltbox-core/store";
+
+import { PillarCreateForm } from "./-components/pillar-create-form";
 import styles from "./index.module.css";
 
 const pillarColumnHelper = createColumnHelper<PillarModel>();
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>();
+
+interface ParsedPillarRow {
+  master_id: string;
+  minion_id: string | null;
+  name: string;
+  value: string;
+  error_codes?: PillarCSVParseResultErrorCode[];
+}
+
+interface CsvRow {
+  name?: string;
+  value?: string;
+  minion_id?: string;
+}
 
 const EditableCell = ({
   value,
@@ -80,9 +97,7 @@ const MasterPage = observer(() => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedPillar, setSelectedPillar] = useState<PillarModel | null>(
-    null
-  );
+  const [selectedPillar, setSelectedPillar] = useState<PillarModel | null>(null);
   const isFirstRender = useRef(true);
   const [isImporting, setIsImporting] = useState(false);
   const [parsedPillars, setParsedPillars] = useState<any[]>([]);
@@ -103,9 +118,7 @@ const MasterPage = observer(() => {
     return text.substring(0, maxLength) + "...";
   };
 
-  const translateErrorCode = (
-    errorCode: PillarCSVParseResultErrorCode
-  ): string => {
+  const translateErrorCode = (errorCode: PillarCSVParseResultErrorCode): string => {
     switch (errorCode) {
       case PillarCSVParseResultErrorCode.MinionDoesNotExist:
         return t("pillars.error-minion-does-not-exist");
@@ -159,11 +172,7 @@ const MasterPage = observer(() => {
         if (servicePillars.length > 0) {
           for (const pillar of servicePillars) {
             try {
-              await pillarsStore.deletePillar(
-                masterId,
-                pillar.name,
-                pillar.minion_id || undefined
-              );
+              await pillarsStore.deletePillar(masterId, pillar.name, pillar.minion_id || undefined);
             } catch (error) {}
           }
           await pillarsStore.loadPillars(masterId);
@@ -179,23 +188,14 @@ const MasterPage = observer(() => {
     loadPillars();
   }, [masterId]);
 
-  const handleCreatePillar = async (values: {
-    name: string;
-    value: string;
-    minionId?: string;
-  }) => {
+  const handleCreatePillar = async (values: { name: string; value: string; minionId?: string }) => {
     if (!masterId) {
       messageApi.error(t("pillars.select-master-error"));
       return false;
     }
 
     try {
-      await pillarsStore.createPillar(
-        masterId,
-        values.name,
-        values.value,
-        values.minionId
-      );
+      await pillarsStore.createPillar(masterId, values.name, values.value, values.minionId);
       setIsCreateModalOpen(false);
       messageApi.success(t("pillars.create-success"));
       return true;
@@ -205,23 +205,14 @@ const MasterPage = observer(() => {
     }
   };
 
-  const handleEditPillar = async (values: {
-    name: string;
-    value: string;
-    minionId?: string;
-  }) => {
+  const handleEditPillar = async (values: { name: string; value: string; minionId?: string }) => {
     if (!masterId || !selectedPillar) {
       messageApi.error(t("pillars.select-master-error"));
       return false;
     }
 
     try {
-      await pillarsStore.updatePillar(
-        masterId,
-        values.name,
-        values.value,
-        values.minionId
-      );
+      await pillarsStore.updatePillar(masterId, values.name, values.value, values.minionId);
       setIsEditModalOpen(false);
       messageApi.success(t("pillars.edit-success"));
       return true;
@@ -267,7 +258,7 @@ const MasterPage = observer(() => {
 
       if (!pillars) return;
 
-      const escapeCsv = (value: any) => {
+      const escapeCsv = (value: unknown) => {
         if (value === null || value === undefined) return "";
         const str = String(value);
         if (/[",\n]/.test(str)) {
@@ -279,8 +270,7 @@ const MasterPage = observer(() => {
       const header = "target minions,pillar name,pillar value";
       const rows = pillars
         .filter((pillar) => {
-          const isServiceRecord =
-            pillar.name === "name" || pillar.name === "value";
+          const isServiceRecord = pillar.name === "name" || pillar.name === "value";
           return !isServiceRecord;
         })
         .map((pillar) => {
@@ -315,14 +305,13 @@ const MasterPage = observer(() => {
       const sourceData = isEditingImport ? editedPillars : parsedPillars;
 
       const items = sourceData
-        .filter((row: any) => {
+        .filter((row: ParsedPillarRow) => {
           const name = row.name?.trim?.() || "";
           const value = row.value?.trim?.() || "";
-          const shouldInclude =
-            name && value && name !== "name" && name !== "value";
+          const shouldInclude = name && value && name !== "name" && name !== "value";
           return shouldInclude;
         })
-        .map((row: any) => ({
+        .map((row: ParsedPillarRow) => ({
           master_id: masterId,
           minion_id: row.minion_id?.trim?.() || null,
           name: row.name?.trim?.() || "",
@@ -363,15 +352,17 @@ const MasterPage = observer(() => {
     setUpdateExisting(true);
   };
 
-  const handleImportFileChange = (info: any) => {
+  const handleImportFileChange: UploadProps["onChange"] = (info) => {
     if (info.file.status === "removed") {
       setImportFile(null);
       setImportFileList([]);
       setParsedPillars([]);
       return;
     }
-    const fileObj = info.file.originFileObj || info.file;
-    setImportFile(fileObj);
+    const fileObj = info.file.originFileObj || (info.file instanceof File ? info.file : null);
+    if (fileObj) {
+      setImportFile(fileObj);
+    }
     setImportFileList([info.file]);
   };
 
@@ -382,10 +373,7 @@ const MasterPage = observer(() => {
     try {
       const text = await fileToParse.text();
       let lines = text.split("\n");
-      if (
-        lines[0].toLowerCase().replace(/\s+/g, "") ===
-        "targetminions,pillarname,pillarvalue"
-      ) {
+      if (lines[0].toLowerCase().replace(/\s+/g, "") === "targetminions,pillarname,pillarvalue") {
         lines[0] = "minion_id,name,value";
       }
       const fixedText = lines.join("\n");
@@ -397,7 +385,7 @@ const MasterPage = observer(() => {
       });
       const rawData = await response?.value();
 
-      const correctedData: any[] = [];
+      const correctedData: ParsedPillarRow[] = [];
       for (let i = 0; i < rawData.length; i += 2) {
         const nameRecord = rawData[i];
         const valueRecord = rawData[i + 1];
@@ -449,33 +437,30 @@ const MasterPage = observer(() => {
     setIsValidating(true);
     try {
       const pillarsForValidation = editedPillars
-        .filter((row: any) => {
+        .filter((row: ParsedPillarRow) => {
           const name = row.name?.trim?.() || "";
           const value = row.value?.trim?.() || "";
           return name && value && name !== "name" && name !== "value";
         })
-        .map((row: any) => ({
+        .map((row: ParsedPillarRow) => ({
           master_id: masterId,
           minion_id: row.minion_id?.trim?.() || null,
           name: row.name?.trim?.() || "",
           value: row.value?.trim?.() || "",
         }));
 
-      const validationResults =
-        await apiCoreStore.pillarsApi?.pillarImportValidate({
-          PillarModel: pillarsForValidation,
-        });
+      const validationResults = await apiCoreStore.pillarsApi?.pillarImportValidate({
+        PillarModel: pillarsForValidation,
+      });
 
       if (validationResults) {
-        const validatedData = validationResults.map(
-          (result: PillarCSVParseResult) => ({
-            master_id: result.master_id,
-            minion_id: result.minion_id,
-            name: result.name,
-            value: result.value,
-            error_codes: result.error_codes || [],
-          })
-        );
+        const validatedData = validationResults.map((result: PillarCSVParseResult) => ({
+          master_id: result.master_id,
+          minion_id: result.minion_id,
+          name: result.name,
+          value: result.value,
+          error_codes: result.error_codes || [],
+        }));
 
         setParsedPillars(validatedData);
         setEditedPillars(JSON.parse(JSON.stringify(validatedData)));
@@ -489,25 +474,22 @@ const MasterPage = observer(() => {
     }
   };
 
-  const handleCellChange = useCallback(
-    (rowIdx: number, dataIndex: string, value: string) => {
-      setEditedPillars((prev) => {
-        if (!prev[rowIdx]) {
-          return prev;
-        }
+  const handleCellChange = useCallback((rowIdx: number, dataIndex: string, value: string) => {
+    setEditedPillars((prev) => {
+      if (!prev[rowIdx]) {
+        return prev;
+      }
 
-        const currentValue = prev[rowIdx][dataIndex];
-        if (currentValue === value) {
-          return prev;
-        }
+      const currentValue = prev[rowIdx][dataIndex];
+      if (currentValue === value) {
+        return prev;
+      }
 
-        const next = [...prev];
-        next[rowIdx] = { ...next[rowIdx], [dataIndex]: value };
-        return next;
-      });
-    },
-    []
-  );
+      const next = [...prev];
+      next[rowIdx] = { ...next[rowIdx], [dataIndex]: value };
+      return next;
+    });
+  }, []);
 
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
@@ -518,11 +500,7 @@ const MasterPage = observer(() => {
       cell: (data) => {
         return (
           <>
-            <Link
-              to={`/master/${
-                data.row.original.master
-              }/minion/${data.getValue()}`}
-            >
+            <Link to={`/master/${data.row.original.master}/minion/${data.getValue()}`}>
               <Button type="link" size={"small"}>
                 {data.getValue()}
               </Button>
@@ -599,12 +577,12 @@ const MasterPage = observer(() => {
       {
         accessorKey: "minion_id",
         header: t("pillars.table-minion-id"),
-        cell: ({ row, getValue }: any) => {
-          const text = getValue();
+        cell: ({ row, getValue }: CellContext<ParsedPillarRow, string | null>) => {
+          const text = getValue() ?? "";
           return isEditingImport ? (
             <div key={`minion_id_${row.index}`}>
               <EditableCell
-                value={text || ""}
+                value={text}
                 onChange={handleCellChange}
                 rowIndex={row.index}
                 fieldName="minion_id"
@@ -618,12 +596,12 @@ const MasterPage = observer(() => {
       {
         accessorKey: "name",
         header: t("pillars.table-name"),
-        cell: ({ row, getValue }: any) => {
+        cell: ({ row, getValue }: CellContext<ParsedPillarRow, string>) => {
           const text = getValue();
           return isEditingImport ? (
             <div key={`name_${row.index}`}>
               <EditableCell
-                value={text || ""}
+                value={text}
                 onChange={handleCellChange}
                 rowIndex={row.index}
                 fieldName="name"
@@ -637,12 +615,12 @@ const MasterPage = observer(() => {
       {
         accessorKey: "value",
         header: t("pillars.table-value"),
-        cell: ({ row, getValue }: any) => {
+        cell: ({ row, getValue }: CellContext<ParsedPillarRow, string>) => {
           const text = getValue();
           return isEditingImport ? (
             <div key={`value_${row.index}`}>
               <EditableCell
-                value={text || ""}
+                value={text}
                 onChange={handleCellChange}
                 rowIndex={row.index}
                 fieldName="value"
@@ -656,7 +634,9 @@ const MasterPage = observer(() => {
       {
         accessorKey: "error_codes",
         header: t("pillars.table-errors"),
-        cell: ({ getValue }: any) => {
+        cell: ({
+          getValue,
+        }: CellContext<ParsedPillarRow, PillarCSVParseResultErrorCode[] | undefined>) => {
           const codes = getValue();
           if (!Array.isArray(codes) || codes.length === 0) {
             return "";
@@ -744,7 +724,11 @@ const MasterPage = observer(() => {
       <Breadcrumb
         items={[
           {
-            title: <Link to="/minions"><HomeOutlined /></Link>,
+            title: (
+              <Link to="/minions">
+                <HomeOutlined />
+              </Link>
+            ),
           },
           {
             title: <Link to="/masters">{t("masters.title")}</Link>,
@@ -785,9 +769,7 @@ const MasterPage = observer(() => {
         <Modal
           title={
             t("pillars.edit-pillar-modal-title") +
-            (selectedPillar.name
-              ? `: ${truncateText(selectedPillar.name)}`
-              : "")
+            (selectedPillar.name ? `: ${truncateText(selectedPillar.name)}` : "")
           }
           open={isEditModalOpen}
           onCancel={() => setIsEditModalOpen(false)}
@@ -826,8 +808,7 @@ const MasterPage = observer(() => {
         </p>
         {selectedPillar && (
           <p className={styles.deleteInfo}>
-            Master: {selectedPillar.master_id}, Minion:{" "}
-            {selectedPillar.minion_id || "global"}
+            Master: {selectedPillar.master_id}, Minion: {selectedPillar.minion_id || "global"}
           </p>
         )}
       </Modal>
@@ -876,9 +857,7 @@ const MasterPage = observer(() => {
                 <UploadOutlined />
               </p>
               <p>{t("pillars.import-description")}</p>
-              <p className={styles.importDescription}>
-                {t("pillars.import-single-upload")}
-              </p>
+              <p className={styles.importDescription}>{t("pillars.import-single-upload")}</p>
             </Upload.Dragger>
           </Space>
         )}
@@ -898,11 +877,7 @@ const MasterPage = observer(() => {
                   type="primary"
                   onClick={handleImportConfirm}
                   loading={isImporting}
-                  disabled={
-                    !(isEditingImport
-                      ? editedPillars.length
-                      : parsedPillars.length)
-                  }
+                  disabled={!(isEditingImport ? editedPillars.length : parsedPillars.length)}
                 >
                   {t("pillars.import")}
                 </Button>
@@ -938,11 +913,7 @@ const MasterPage = observer(() => {
                 key={`import-table-${isEditingImport ? "editing" : "viewing"}`}
                 columns={importColumns}
                 data={isEditingImport ? editedPillars : parsedPillars}
-                isEmpty={
-                  isEditingImport
-                    ? !editedPillars.length
-                    : !parsedPillars.length
-                }
+                isEmpty={isEditingImport ? !editedPillars.length : !parsedPillars.length}
                 getRowId={(row, idx) => String(idx)}
                 hideFooter
               />

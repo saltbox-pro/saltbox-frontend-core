@@ -1,19 +1,12 @@
-import {
-  JobReturnModel,
-  TaskMinion,
-  TaskMinionStatus,
-} from "@saltbox/saltbox-core-api-client";
-import { Flex, Spin, Tabs, Tag } from "antd";
 import { SyncOutlined } from "@ant-design/icons";
+import { JobReturnModel, TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import { CopyToClipboardButton, pastTimeByUserTZ, Drawer } from "@saltbox/saltbox-frontend-common";
+import { Flex, Spin, Tabs, Tag } from "antd";
 import { observer } from "mobx-react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { useMemo } from "react";
-import {
-  CopyToClipboardButton,
-  pastTimeByUserTZ,
-  Drawer,
-} from "@saltbox/saltbox-frontend-common";
+
 import styles from "./minion-view.module.css";
 
 type MinionViewProps = {
@@ -30,7 +23,7 @@ type JobReturnItem = {
   objectKey?: string;
   __run_num__?: number;
   result?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 const JobReturnView = ({ jobReturn }: JobReturnViewProps) => {
@@ -46,14 +39,12 @@ const JobReturnView = ({ jobReturn }: JobReturnViewProps) => {
       });
     });
     jobReturnData?.sort(
-      (a, b) =>
-        (b as JobReturnItem)?.__run_num__ - (a as JobReturnItem)?.__run_num__
+      (a, b) => (b as JobReturnItem)?.__run_num__ - (a as JobReturnItem)?.__run_num__
     );
   } else {
     return (
       <span>
-        <Spin indicator={<SyncOutlined spin />} size="small" />{" "}
-        {t("task.minion.job-running")}
+        <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.minion.job-running")}
       </span>
     );
   }
@@ -62,9 +53,7 @@ const JobReturnView = ({ jobReturn }: JobReturnViewProps) => {
     <>
       {jobReturnData.map((item) => {
         const commandTitle = (item as JobReturnItem)?.objectKey && (
-          <div className={styles.jobReturnCommand}>
-            {(item as JobReturnItem)?.objectKey}
-          </div>
+          <div className={styles.jobReturnCommand}>{(item as JobReturnItem)?.objectKey}</div>
         );
         let commandContent = item;
 
@@ -83,10 +72,7 @@ const JobReturnView = ({ jobReturn }: JobReturnViewProps) => {
         }
 
         return (
-          <div
-            className={containerStyles}
-            key={(item as JobReturnItem)?.__run_num__}
-          >
+          <div className={containerStyles} key={(item as JobReturnItem)?.__run_num__}>
             {commandTitle}
             <ReactJson
               displayDataTypes={false}
@@ -107,9 +93,7 @@ export const MinionView = observer(
     const { t } = useTranslation();
 
     let minionStatus = (
-      <Tag>{`${t("task.minions.table-unknown-code")}: ${
-        selectedMinion?.status
-      }`}</Tag>
+      <Tag>{`${t("task.minions.table-unknown-code")}: ${selectedMinion?.status}`}</Tag>
     );
     if (selectedMinion?.status === TaskMinionStatus.InWork) {
       minionStatus = <Tag color="blue">{t("task.minions.table-in-work")}</Tag>;
@@ -121,9 +105,7 @@ export const MinionView = observer(
       minionStatus = <Tag color="green">{t("task.minions.table-success")}</Tag>;
     }
     if (selectedMinion?.status === TaskMinionStatus.Pending) {
-      minionStatus = (
-        <Tag color="yellow">{t("task.minions.table-pending")}</Tag>
-      );
+      minionStatus = <Tag color="yellow">{t("task.minions.table-pending")}</Tag>;
     }
 
     const tabs = useMemo(
@@ -141,9 +123,7 @@ export const MinionView = observer(
               <Flex gap={8} className={styles.minionStatusContainer}>
                 <span>
                   <strong>{t("task.minion.finished")}:</strong>{" "}
-                  {selectedMinion?.finished_dt
-                    ? pastTimeByUserTZ(selectedMinion.finished_dt)
-                    : "-"}
+                  {selectedMinion?.finished_dt ? pastTimeByUserTZ(selectedMinion.finished_dt) : "-"}
                 </span>
                 <span>
                   <strong>{t("task.minion.last-run")}:</strong>{" "}
@@ -152,29 +132,25 @@ export const MinionView = observer(
                     : "never"}
                 </span>
               </Flex>
-              {selectedMinionJobReturns.map(
-                (jobResult, jobIndex, jobResults) => {
-                  return (
-                    <div
-                      key={jobResult?.jid ?? jobIndex}
-                      className={styles.jobResult}
-                    >
-                      <Flex gap={4} wrap={"wrap"} className={styles.jobResultTitle}>
-                        {t("task.minion.job-title", {
-                          run: jobResults.length - jobIndex,
-                        })}: JID
-                        <Flex>
-                          {jobResult?.jid ?? ""}
-                          <CopyToClipboardButton text={jobResult?.jid ?? ""} />
-                        </Flex>
+              {selectedMinionJobReturns.map((jobResult, jobIndex, jobResults) => {
+                return (
+                  <div key={jobResult?.jid ?? jobIndex} className={styles.jobResult}>
+                    <Flex gap={4} wrap={"wrap"} className={styles.jobResultTitle}>
+                      {t("task.minion.job-title", {
+                        run: jobResults.length - jobIndex,
+                      })}
+                      : JID
+                      <Flex>
+                        {jobResult?.jid ?? ""}
+                        <CopyToClipboardButton text={jobResult?.jid ?? ""} />
                       </Flex>
-                      <div className={styles.jobReturnContent}>
-                        <JobReturnView jobReturn={jobResult?.data ?? jobResult} />
-                      </div>
+                    </Flex>
+                    <div className={styles.jobReturnContent}>
+                      <JobReturnView jobReturn={jobResult?.data ?? jobResult} />
                     </div>
-                  );
-                }
-              )}
+                  </div>
+                );
+              })}
             </>
           ),
         },

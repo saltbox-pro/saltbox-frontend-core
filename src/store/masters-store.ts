@@ -1,7 +1,8 @@
-import { PaginationState } from '@tanstack/react-table';
-import { action, makeObservable, observable, runInAction } from 'mobx';
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from './api-core-store';
+import { PaginationState } from "@tanstack/react-table";
+import { action, makeObservable, observable, runInAction } from "mobx";
+
+import { apiCoreStore } from "./api-core-store";
 
 export class MastersStore {
   @observable isLoading: boolean;
@@ -32,7 +33,7 @@ export class MastersStore {
       pageIndex: 0,
       pageSize: 50,
     };
-  }
+  };
 
   @action
   rejectMaster = (id: string): Promise<MasterViewSchema> => {
@@ -121,7 +122,7 @@ export class MastersStore {
   handleLazyLoad = (pagination: PaginationState) => {
     this.pagination = pagination;
     this.loadMasters();
-  }
+  };
 }
 
 export const mastersStore = new MastersStore();

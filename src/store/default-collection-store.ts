@@ -1,6 +1,7 @@
-import { autorun, makeAutoObservable } from 'mobx';
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from './api-core-store';
+import { autorun, makeAutoObservable } from "mobx";
+
+import { apiCoreStore } from "./api-core-store";
 
 export class DefaultCollectionStore {
   isLoading = false;
@@ -21,10 +22,7 @@ export class DefaultCollectionStore {
       //  this.defaultCollection =
       //    await apiCoreStore.minionCollectionsApi.minionCollectionDefault();
     } catch (err) {
-      this.error =
-        err instanceof Error
-          ? err.message
-          : 'Failed to fetch default collection';
+      this.error = err instanceof Error ? err.message : "Failed to fetch default collection";
     } finally {
       this.isLoading = false;
     }
@@ -32,11 +30,7 @@ export class DefaultCollectionStore {
 }
 
 autorun(() => {
-  if (
-    !apiCoreStore.minionCollectionsApi ||
-    defaultCollectionStore.defaultCollection
-  )
-    return;
+  if (!apiCoreStore.minionCollectionsApi || defaultCollectionStore.defaultCollection) return;
   defaultCollectionStore.fetchDefaultCollection();
 });
 

@@ -1,8 +1,9 @@
-import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
 import { Button, Flex, Form } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import { TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+
 import { appStore, i18nStore } from "saltbox-core/store";
 
 type TaskRawProps = {
@@ -41,17 +42,21 @@ export function TaskRaw(props: TaskRawProps) {
 
   const handleCreateTaskPlugin = (pluginKey: string) => {
     props?.onCreateTaskPlugin?.(pluginKey);
-  }
+  };
 
   let minionsTaskModalCreateButtonsPlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.['minions.taskmodal.create']?.forEach((plugin) => {
-    const minionsTaskModalCreateButtonPlugin = <Button type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
-      {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
-    </Button>;
-    minionsTaskModalCreateButtonsPlugin = <>
-      {minionsTaskModalCreateButtonsPlugin}
-      {minionsTaskModalCreateButtonPlugin}
-    </>;
+  appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
+    const minionsTaskModalCreateButtonPlugin = (
+      <Button type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
+        {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+      </Button>
+    );
+    minionsTaskModalCreateButtonsPlugin = (
+      <>
+        {minionsTaskModalCreateButtonsPlugin}
+        {minionsTaskModalCreateButtonPlugin}
+      </>
+    );
   });
 
   return (
@@ -80,9 +85,7 @@ export function TaskRaw(props: TaskRawProps) {
               try {
                 JSON.parse(value);
               } catch (e) {
-                throw new Error(
-                  t("task-form.task-raw-data-error-invalid-json"),
-                );
+                throw new Error(t("task-form.task-raw-data-error-invalid-json"));
               }
             },
           },

@@ -1,10 +1,11 @@
+import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Button, Form, Input, message } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
-import { Button, Form, Input, message } from "antd";
-import { apiCoreStore } from "saltbox-core/store";
+
 import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { apiCoreStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
@@ -50,7 +51,7 @@ function CollectionCreateModal({
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const title = e.target.value;
     const slug = transliterateToSlug(title);
-    form.setFieldValue('slug', slug);
+    form.setFieldValue("slug", slug);
   };
 
   const handleFormFinish = (formValue: collectionCreateFormType) => {
@@ -90,11 +91,7 @@ function CollectionCreateModal({
         onCancel={handleModalCancel}
         footer={
           <>
-            <Button
-              type="default"
-              disabled={isCollectionCreating}
-              onClick={handleModalCancel}
-            >
+            <Button type="default" disabled={isCollectionCreating} onClick={handleModalCancel}>
               {t("collection-create-modal.cancel")}
             </Button>
 

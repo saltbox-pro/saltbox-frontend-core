@@ -1,10 +1,3 @@
-import { ComponentProps, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { generateID } from "react-querybuilder";
-import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import { observer } from "mobx-react-lite";
-import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
-import { Button, Card, Flex, Spin } from "antd";
 import {
   DashOutlined,
   DeleteOutlined,
@@ -14,6 +7,14 @@ import {
 } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { Dropdown, FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { SortingState, createColumnHelper } from "@tanstack/react-table";
+import { Button, Card, Flex, Spin } from "antd";
+import { observer } from "mobx-react-lite";
+import { ComponentProps, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { generateID } from "react-querybuilder";
+import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
+
 import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
 import {
   DashboardCardStore,
@@ -21,6 +22,7 @@ import {
   MinionFilterStore,
   ViewMode,
 } from "saltbox-core/store";
+
 import styles from "./minion-dashboard-card.module.css";
 
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
@@ -238,11 +240,7 @@ const renderActiveShape = (props: any) => {
         outerRadius={outerRadius + 10}
         fill={fill}
       />
-      <path
-        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-        stroke={fill}
-        fill="none"
-      />
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
       <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
       <text
         x={ex + (cos >= 0 ? 1 : -1) * 12}
@@ -250,13 +248,7 @@ const renderActiveShape = (props: any) => {
         textAnchor={textAnchor}
         fill="#333"
       >{`${value}`}</text>
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        dy={18}
-        textAnchor={textAnchor}
-        fill="#999"
-      >
+      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999">
         {`(${(percent * 100).toFixed(2)}%)`}
       </text>
     </g>
@@ -307,13 +299,7 @@ export const MinionDashboardCard = observer(
       if (isLoaded && !isLoading) {
         updateCard();
       }
-    }, [
-      filterStore.searchMongoDBQuery,
-      isLoaded,
-      isLoading,
-      currentGrains,
-      slug,
-    ]);
+    }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
 
     const columns = [
       columnHelper.accessor("value", {
@@ -329,9 +315,7 @@ export const MinionDashboardCard = observer(
           }
           return (
             <Flex justify="space-between">
-              <Flex className={styles.minionDashboardCardGrainTitle}>
-                {fieldName}
-              </Flex>
+              <Flex className={styles.minionDashboardCardGrainTitle}>{fieldName}</Flex>
               <Flex className={styles.minionDashboardCardGrainFilter}>
                 <Button
                   shape="circle"
@@ -373,11 +357,7 @@ export const MinionDashboardCard = observer(
 
     const updateCard = () => {
       if (!slug) return;
-      dashboardCardStore.loadGrain(
-        currentGrains,
-        slug,
-        filterStore?.searchMongoDBQuery
-      );
+      dashboardCardStore.loadGrain(currentGrains, slug, filterStore?.searchMongoDBQuery);
     };
 
     const handleGrainsChange = (newGrains: string) => {
@@ -406,9 +386,7 @@ export const MinionDashboardCard = observer(
       },
       {
         icon: <FullscreenOutlined />,
-        label: isFullScreen
-          ? t("dashboard.windowed")
-          : t("dashboard.fullscreen"),
+        label: isFullScreen ? t("dashboard.windowed") : t("dashboard.fullscreen"),
         onClick: toggleFullscreen,
         key: "1",
         disabled: !isFullScreen && view === "graph",
@@ -437,9 +415,7 @@ export const MinionDashboardCard = observer(
       <>
         <Card
           size="small"
-          className={`${styles.dashboardTableBlock} ${
-            isFullScreen && styles.fullscreen
-          }`}
+          className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen}`}
           classNames={{
             body: `${view === "table" && styles.dashboardTableBlockBody}`,
           }}
@@ -472,14 +448,9 @@ export const MinionDashboardCard = observer(
                     dataKey="count"
                     onMouseEnter={onPieEnter}
                   >
-                    {dashboardCardStore.roundedGrainValues.map(
-                      (entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      )
-                    )}
+                    {dashboardCardStore.roundedGrainValues.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>

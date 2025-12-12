@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { observer } from "mobx-react-lite";
-import { Modal, message } from "antd";
-import { PaginationState, createColumnHelper } from "@tanstack/react-table";
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, createColumnHelper } from "@tanstack/react-table";
+import { Modal, message } from "antd";
+import { observer } from "mobx-react-lite";
+import { useState, useEffect } from "react";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 import styles from "./import-sls-modal.module.css";
@@ -52,12 +53,10 @@ export const ImportSlsModal = observer(
     const loadTemplates = async () => {
       setLoading(true);
       try {
-        const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList(
-          {
-            limit: pagination.pageSize,
-            skip: pagination.pageIndex * pagination.pageSize,
-          }
-        );
+        const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
+          limit: pagination.pageSize,
+          skip: pagination.pageIndex * pagination.pageSize,
+        });
         if (response?.data) {
           setTemplates(response.data);
           setTotal(response.total || 0);
@@ -73,10 +72,9 @@ export const ImportSlsModal = observer(
     const handleRowClick = async (template: TaskTemplateShortSchema) => {
       const performImport = async () => {
         try {
-          const fullTemplate =
-            await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
-              tpl_id: template.id,
-            });
+          const fullTemplate = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
+            tpl_id: template.id,
+          });
 
           if (fullTemplate?.sls_content) {
             onImport(fullTemplate.sls_content);

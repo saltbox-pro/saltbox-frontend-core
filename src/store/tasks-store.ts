@@ -1,12 +1,10 @@
+import { TaskListResponseSchema, TaskModel } from "@saltbox/saltbox-core-api-client";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
-import {
-  TaskListResponseSchema,
-  TaskModel,
-} from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore, TasksFilterStore } from "saltbox-core/store";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { OptionList } from "react-querybuilder";
+
+import { apiCoreStore, TasksFilterStore } from "saltbox-core/store";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
@@ -43,7 +41,7 @@ export class TasksStore {
     this.pagination.pageIndex = 0;
     this.pagination.pageSize = 50;
     this.sorting = [...DEFAULT_SORTING];
-  }
+  };
 
   @action loadTasks = (collectionSlug?: string) => {
     if (!collectionSlug) return;
@@ -59,7 +57,7 @@ export class TasksStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-        }
+        },
       })
       .then((tasks) => {
         runInAction(() => {
@@ -81,7 +79,7 @@ export class TasksStore {
     if (this.collectionSlug) {
       this.loadTasks(this.collectionSlug);
     }
-  };
+  }
 
   @action handleSearch = (collectionSlug?: string) => {
     this.pagination.pageIndex = 0;

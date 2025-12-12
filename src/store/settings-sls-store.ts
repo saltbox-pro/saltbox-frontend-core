@@ -1,7 +1,8 @@
-import { PaginationState } from '@tanstack/react-table';
-import { makeAutoObservable, runInAction } from 'mobx';
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { apiCoreStore } from './api-core-store';
+import { PaginationState } from "@tanstack/react-table";
+import { makeAutoObservable, runInAction } from "mobx";
+
+import { apiCoreStore } from "./api-core-store";
 
 export class SettingsSlsStore {
   isLoading: boolean;

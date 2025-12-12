@@ -1,6 +1,7 @@
+import { CollectionModel } from "@saltbox/saltbox-core-api-client";
 import { PaginationState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
-import { CollectionModel } from "@saltbox/saltbox-core-api-client";
+
 import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionsStore {
