@@ -1,13 +1,18 @@
 import { HomeOutlined, DownloadOutlined, CopyOutlined, ImportOutlined } from "@ant-design/icons";
-import { PageHeader, SlsEditor } from "@saltbox/saltbox-frontend-common";
+import { loader } from "@monaco-editor/react";
+import { PageHeader, SlsEditor, slsEditorMonacoLoader } from "@saltbox/saltbox-frontend-common";
 import { Breadcrumb, message, MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
+import * as monaco from "monaco-editor";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ImportSlsModal } from "./components/import-sls-modal";
 import { RawSlsEditor } from "./components/raw-sls-editor";
 import styles from "./index.module.css";
+
+loader.config({ monaco });
+slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
   const { t } = useTranslation();
