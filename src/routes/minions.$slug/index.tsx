@@ -228,12 +228,7 @@ const MinionsPage = observer(() => {
             title: t("minions.title"),
           },
           {
-            title: (
-              <Flex gap={8} align="center">
-                {collectionStore.collection?.title}
-                <CollectionInfoPopover slug={slug} collectionStore={collectionStore} />
-              </Flex>
-            ),
+            title: collectionStore.collection?.title,
           },
         ]}
       />
@@ -272,6 +267,7 @@ const MinionsPage = observer(() => {
 
                 {["list", "statistics"].includes(tabKey) && (
                   <>
+                    <CollectionInfoPopover slug={slug} collectionStore={collectionStore} />
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
                       color={"primary"}
