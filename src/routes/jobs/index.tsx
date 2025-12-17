@@ -1,4 +1,4 @@
-import { HomeOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
@@ -10,11 +10,11 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Breadcrumb, Button, SelectProps, Tag, Typography } from "antd";
+import { Button, SelectProps, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -329,20 +329,7 @@ const JobsPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("jobs.title"),
-          },
-        ]}
-      />
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
       <PageHeader title={t("jobs.title")} />
 
       <JobsQueryBuilder

@@ -3,7 +3,6 @@ import {
   EditOutlined,
   SettingOutlined,
   FilterOutlined,
-  HomeOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
@@ -16,11 +15,11 @@ import {
   Popover,
   generateIdsForQuery,
 } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Flex, Tabs, message } from "antd";
+import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
@@ -215,23 +214,6 @@ const MinionsPage = observer(() => {
   return (
     <>
       {contextHolder}
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("minions.title"),
-          },
-          {
-            title: collectionStore.collection?.title,
-          },
-        ]}
-      />
 
       <PageHeader title={t("minions.title")}></PageHeader>
 

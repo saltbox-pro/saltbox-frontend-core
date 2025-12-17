@@ -1,9 +1,9 @@
 import {
+  ArrowLeftOutlined,
   CloseOutlined,
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
-  HomeOutlined,
   PlusOutlined,
   SaveOutlined,
   UploadOutlined,
@@ -24,7 +24,6 @@ import {
 import { createColumnHelper, type CellContext } from "@tanstack/react-table";
 import {
   Input as AntdInput,
-  Breadcrumb,
   Button,
   Checkbox,
   Flex,
@@ -721,23 +720,7 @@ const MasterPage = observer(() => {
   return (
     <>
       {contextHolder}
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: <Link to="/masters">{t("masters.title")}</Link>,
-          },
-          {
-            title: masterId,
-          },
-        ]}
-      />
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/masters")}></Button>
 
       <PageHeader title={masterId} />
 

@@ -1,5 +1,4 @@
 import {
-  HomeOutlined,
   PlusOutlined,
   SyncOutlined,
   EditOutlined,
@@ -17,11 +16,10 @@ import {
   Modal,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Breadcrumb, Button, Switch, message } from "antd";
+import { Button, Switch, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { SlsFormData, SlsModal } from "saltbox-core/shared/components/sls-modal/sls-modal";
 import { apiCoreStore, settingsSlsStore } from "saltbox-core/store";
@@ -269,20 +267,6 @@ const SettingsSlsPage = observer(() => {
   return (
     <>
       {contextHolder}
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("settings-sls.title"),
-          },
-        ]}
-      />
 
       <PageHeader title={t("settings-sls.title")}></PageHeader>
 

@@ -1,4 +1,4 @@
-import { ExportOutlined, HomeOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, ExportOutlined } from "@ant-design/icons";
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
@@ -6,11 +6,10 @@ import {
   PageHeader,
 } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { Breadcrumb, Button, Typography } from "antd";
+import { Button, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { taskTemplatesStore } from "saltbox-core/store";
 
@@ -84,21 +83,6 @@ const TaskTemplatesPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("task-templates.title"),
-          },
-        ]}
-      />
-
       <PageHeader title={t("task-templates.title")} />
 
       <TaskTemplatesTable

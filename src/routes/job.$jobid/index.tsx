@@ -1,9 +1,9 @@
 import {
-  HomeOutlined,
   ReloadOutlined,
   DownloadOutlined,
   QuestionCircleOutlined,
   FilterOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
 import {
@@ -18,22 +18,12 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Breadcrumb,
-  Button,
-  Flex,
-  Progress,
-  Radio,
-  Skeleton,
-  Statistic,
-  Tooltip,
-  Typography,
-} from "antd";
+import { Button, Flex, Progress, Radio, Skeleton, Statistic, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatQuery } from "react-querybuilder";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -227,23 +217,7 @@ const JobPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: <Link to="/jobs">{t("jobs.title")}</Link>,
-          },
-          {
-            title: t("jobs.job-title-breadcrumb"),
-          },
-        ]}
-      />
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/jobs")}></Button>
 
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 

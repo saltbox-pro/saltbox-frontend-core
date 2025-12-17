@@ -1,4 +1,5 @@
 import {
+  ArrowLeftOutlined,
   CaretRightOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -383,79 +384,10 @@ const TaskPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("minions.title"),
-          },
-          ...(taskStore.task?.target_collection
-            ? [
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                      }}
-                    >
-                      {taskStore.task.target_collection.title}
-                    </Link>
-                  ),
-                },
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/${taskStore.task.target_collection.slug}`,
-                        search: `?tab=tasks`,
-                      }}
-                    >
-                      {t("task.breadcrumbs-tasks")}
-                    </Link>
-                  ),
-                },
-              ]
-            : [
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/root`,
-                      }}
-                    >
-                      {taskStore.task ? t("minions.title") : "..."}
-                    </Link>
-                  ),
-                },
-                {
-                  title: (
-                    <Link
-                      to={{
-                        pathname: `/minions/root`,
-                        search: `?tab=tasks`,
-                      }}
-                    >
-                      {t("task.breadcrumbs-tasks")}
-                    </Link>
-                  ),
-                },
-              ]),
-          {
-            title: taskStore.task?.task_template?.title
-              ? t("task.breadcrumbs-title-template", {
-                  templateName: taskStore.task.task_template.title?.toLowerCase(),
-                  taskId: taskId,
-                })
-              : t("task.breadcrumbs-title-empty", { taskId: taskId ?? "..." }),
-          },
-        ]}
-      />
+      <Button
+        icon={<ArrowLeftOutlined />}
+        onClick={() => navigate("/minions/root?tab=tasks")}
+      ></Button>
 
       <PageHeader
         title={t("task.page-title", {

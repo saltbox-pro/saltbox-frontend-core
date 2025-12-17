@@ -1,7 +1,12 @@
-import { HomeOutlined, DownloadOutlined, CopyOutlined, ImportOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  CopyOutlined,
+  ImportOutlined,
+  ArrowLeftOutlined,
+} from "@ant-design/icons";
 import { loader } from "@monaco-editor/react";
 import { PageHeader, SlsEditor, slsEditorMonacoLoader } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, message, MenuProps } from "antd";
+import { message, MenuProps, Button } from "antd";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
@@ -10,11 +15,13 @@ import { useTranslation } from "react-i18next";
 import { ImportSlsModal } from "./components/import-sls-modal";
 import { RawSlsEditor } from "./components/raw-sls-editor";
 import styles from "./index.module.css";
+import { useNavigate } from "react-router";
 
 loader.config({ monaco });
 slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [slsContent, setSlsContent] = useState<string>("");
   const [importModalOpen, setImportModalOpen] = useState(false);
@@ -107,18 +114,6 @@ const SlsEditorPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            href: "/",
-            title: <HomeOutlined />,
-          },
-          {
-            title: "SLS Editor",
-          },
-        ]}
-      />
-
       <PageHeader title="SLS Editor" />
 
       <SlsEditor

@@ -1,11 +1,11 @@
-import { HomeOutlined, DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined, FilterOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Flex, message, type MenuProps } from "antd";
+import { Button, Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatQuery } from "react-querybuilder";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
@@ -227,26 +227,8 @@ const MinionPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("minions.title"),
-          },
-          {
-            title: <Link to={`/minions/${slug}`}>{collectionStore.collection?.title ?? ""}</Link>,
-          },
-          {
-            title: `${t("minions.minion")} ${minionStore.minion?.minion_id}`,
-          },
-        ]}
-      />
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
+
       <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
