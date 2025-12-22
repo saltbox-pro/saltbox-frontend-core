@@ -222,7 +222,7 @@ const JobPage = observer(() => {
 
         <div className={styles.jobDetailItem}>
           <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
-          <span className={styles.jobDetailValue}>
+          <span className={`${styles.jobDetailValue} ${styles.jobDetailValueTargets}`}>
             {(jobStore.job?.tgt as string) ? (
               <>
                 <Text ellipsis className={styles.targetText} title={jobStore.job?.tgt as string}>
