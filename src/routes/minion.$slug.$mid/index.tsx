@@ -15,23 +15,138 @@ import { apiCoreStore } from "saltbox-core/store/api-core-store";
 
 import { PillarCreateForm } from "./-components/pillar-create-form";
 
+const defaultStringOperators = [
+  {
+    name: "=",
+    value: "=",
+    label: "=",
+  },
+  {
+    name: "!=",
+    value: "!=",
+    label: "!=",
+  },
+  {
+    name: "contains",
+    value: "contains",
+    label: "contains",
+  },
+  {
+    name: "beginsWith",
+    value: "beginsWith",
+    label: "begins with",
+  },
+  {
+    name: "endsWith",
+    value: "endsWith",
+    label: "ends with",
+  },
+  {
+    name: "doesNotContain",
+    value: "doesNotContain",
+    label: "does not contain",
+  },
+  {
+    name: "doesNotBeginWith",
+    value: "doesNotBeginWith",
+    label: "does not begin with",
+  },
+  {
+    name: "doesNotEndWith",
+    value: "doesNotEndWith",
+    label: "does not end with",
+  },
+];
+
+const defaultDateTimeOperators = [
+  {
+    name: "<",
+    value: "<",
+    label: "<",
+  },
+  {
+    name: ">",
+    value: ">",
+    label: ">",
+  },
+  {
+    name: "<=",
+    value: "<=",
+    label: "<=",
+  },
+  {
+    name: ">=",
+    value: ">=",
+    label: ">=",
+  },
+];
+
+type MongoDBQuery = Record<string, unknown> & {
+  retcode?: { $in?: Array<number | string> } | number | { $ne: number };
+};
+
+const transformRetcodeFilter = (query: object): MongoDBQuery => {
+  const mongoQuery = query as MongoDBQuery;
+  if (
+    !mongoQuery?.retcode ||
+    typeof mongoQuery.retcode !== "object" ||
+    !("$in" in mongoQuery.retcode)
+  ) {
+    return mongoQuery;
+  }
+
+  const retcodeIn = mongoQuery.retcode.$in;
+  if (!Array.isArray(retcodeIn)) {
+    return mongoQuery;
+  }
+
+  const [hasZero, hasNotSuccess] = [retcodeIn.includes(0), retcodeIn.includes("NOT_SUCCESS")];
+
+  const { retcode, ...rest } = mongoQuery;
+
+  if ((hasZero && hasNotSuccess) || (!hasZero && !hasNotSuccess)) {
+    return rest as MongoDBQuery;
+  }
+
+  if (hasNotSuccess) {
+    return { ...rest, retcode: { $ne: 0 } } as MongoDBQuery;
+  }
+
+  return { ...rest, retcode: 0 } as MongoDBQuery;
+};
+
 const jobReturnsFilterSchema = [
   {
     name: "jid",
     label: "JID",
+    operators: defaultStringOperators,
   },
   {
     name: "fun",
     label: "Function",
+    operators: defaultStringOperators,
   },
   {
     name: "retcode",
     label: "Return Code",
-    inputType: "number",
+    operators: [
+      {
+        name: "in",
+        value: "in",
+        label: "in",
+      },
+    ],
+    type: "multiselect",
+    defaultValue: [],
+    selectOptions: [
+      { label: "ДА", value: 0 },
+      { label: "НЕТ", value: "NOT_SUCCESS" },
+    ],
   },
   {
     name: "stamp",
     label: "Timestamp",
+    operators: defaultDateTimeOperators,
     inputType: "datetime-local",
     valueEditorType: "datetime-local",
   },
@@ -78,7 +193,7 @@ const MinionPage = observer(() => {
       salt_master: masterId,
     };
 
-    const filterQuery = jobReturnsFilterStore.searchMongoDBQuery;
+    let filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
     const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
 
     jobStore.reset();
@@ -184,7 +299,7 @@ const MinionPage = observer(() => {
       salt_master: masterId,
     };
 
-    const filterQuery = jobReturnsFilterStore.searchMongoDBQuery;
+    let filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
     const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
 
     jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
