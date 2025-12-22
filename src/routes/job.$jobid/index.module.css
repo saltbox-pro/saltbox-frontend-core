@@ -29,6 +29,10 @@
   min-width: 0;
 }
 
+.jobDetailItemRight {
+  margin-left: auto;
+}
+
 .jobDetailLabel {
   font-weight: 500;
   color: rgba(0, 0, 0, 0.88);
@@ -42,6 +46,20 @@
   font-weight: 600;
   flex: 1;
   min-width: 0;
+}
+
+.jobDetailValue :global(.ant-statistic) {
+  margin-bottom: 0;
+}
+
+.jobDetailValue :global(.ant-statistic-title) {
+  display: none;
+}
+
+.jobDetailValue :global(.ant-statistic-content) {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .timerWrapper {
@@ -231,4 +249,8 @@
 .helpIcon {
   color: var(--ant-color-text-tertiary, #8c8c8c);
   cursor: help;
+}
+
+.targetText {
+  max-width: 200px;
 }
