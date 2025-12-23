@@ -1,6 +1,8 @@
 import {
   JobReturnModel,
-  TaskCreateRequestSchemaInput,
+  JobsListResponse,
+  TaskCreateRequestSchema,
+  TaskMinionModel,
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
@@ -11,12 +13,16 @@ import { apiCoreStore } from "saltbox-core/store";
 export class TaskStore {
   @observable task: TaskModel | null;
   @observable jobReturns: Array<JobReturnModel>;
+  @observable minions: Array<TaskMinionModel>;
+  @observable jobs: Array<JobsListResponse>;
   @observable isTaskLoading: boolean;
   @observable error: string | null;
 
   constructor() {
     this.task = null;
     this.jobReturns = [];
+    this.minions = [];
+    this.jobs = [];
     this.isTaskLoading = false;
     this.error = null;
     makeObservable(this);
@@ -24,18 +30,12 @@ export class TaskStore {
 
   @computed
   get jobsCount() {
-    return Object.keys(this.task?.jobs ?? {}).length;
+    return this.jobs.length;
   }
 
   @computed
   get failedMinionsCount() {
-    let count = 0;
-    Object.entries(this.task?.minions ?? {}).forEach(([_, task]) => {
-      if (task?.status === TaskMinionStatus.Failed) {
-        count++;
-      }
-    });
-    return count;
+    return this.minions?.filter((minion) => minion.status === TaskMinionStatus.Failed).length ?? 0;
   }
 
   @action
@@ -58,13 +58,14 @@ export class TaskStore {
         }
         runInAction(() => {
           this.task = task;
-          this.loadJobReturns(taskId);
+          this.loadMinions(taskId);
         });
       })
       .catch((error) => {
         console.error("Error loading task:", error);
         runInAction(() => {
           this.error = "Failed to load task";
+          this.isTaskLoading = false;
         });
       })
       .finally(() => {
@@ -77,11 +78,75 @@ export class TaskStore {
   @action
   loadJobReturns = (taskId: string) => {
     this.isTaskLoading = true;
-    apiCoreStore.tasksApi
-      ?.taskReturns({ tid: taskId })
-      .then((jobReturns) => {
+    apiCoreStore.jobsApi
+      ?.jobReturnsList({
+        JobReturnsListBody: {
+          query: { "source.type": "task", "source.id": taskId },
+        },
+      })
+      .then((response) => {
         runInAction(() => {
-          this.jobReturns = jobReturns;
+          this.jobReturns = response.data;
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isTaskLoading = false;
+        });
+      });
+  };
+
+  @action
+  loadMinions = (taskId: string) => {
+    this.isTaskLoading = true;
+    apiCoreStore.tasksApi
+      ?.tasksMinions({
+        tid: taskId,
+        TaskMinionListBody: {},
+      })
+      .then((response) => {
+        runInAction(() => {
+          this.minions = response.data;
+          this.loadJobs(taskId);
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading task minions:", error);
+        runInAction(() => {
+          this.error = "Failed to load task minions";
+          this.isTaskLoading = false;
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isTaskLoading = false;
+        });
+      });
+  };
+
+  @action
+  loadJobs = (taskId: string) => {
+    this.isTaskLoading = true;
+    apiCoreStore.jobsApi
+      .jobsList({
+        JobListBody: {
+          query: {
+            "source.type": "task",
+            "source.id": taskId,
+          },
+        },
+      })
+      .then((response) => {
+        runInAction(() => {
+          this.jobs = response?.data ?? [];
+          this.loadJobReturns(taskId);
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading task jobs:", error);
+        runInAction(() => {
+          this.error = "Failed to load task jobs";
+          this.isTaskLoading = false;
         });
       })
       .finally(() => {
@@ -161,11 +226,11 @@ export class TaskStore {
   };
 
   @action
-  createTask = (form: TaskCreateRequestSchemaInput): Promise<TaskModel> => {
+  createTask = (form: TaskCreateRequestSchema): Promise<TaskModel> => {
     return new Promise<TaskModel>((resolve, reject) => {
       apiCoreStore.tasksApi
         ?.taskCreate({
-          TaskCreateRequestSchemaInput: form,
+          TaskCreateRequestSchema: form,
         })
         .then((taskTemplate) => {
           resolve(taskTemplate);

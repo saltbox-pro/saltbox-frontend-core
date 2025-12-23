@@ -1,4 +1,4 @@
-import { TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
+import { TaskCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
 import { Button, Flex, Form } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { useEffect } from "react";
@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 import { appStore, i18nStore } from "saltbox-core/store";
 
 type TaskRawProps = {
-  taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;
-  onFinish: (formData: TaskCreateRequestSchemaInput) => void;
-  onChange: (formData: TaskCreateRequestSchemaInput) => void;
+  taskCreateRequest: Partial<TaskCreateRequestSchema>;
+  onFinish: (formData: TaskCreateRequestSchema) => void;
+  onChange: (formData: TaskCreateRequestSchema) => void;
   onClose: () => void;
   onCreateTaskPlugin: (pluginKey: string) => void;
 };
@@ -23,12 +23,12 @@ export function TaskRaw(props: TaskRawProps) {
   const [form] = Form.useForm<TaskRawForm>();
 
   const handleFinish = (formData: TaskRawForm) => {
-    props.onFinish(JSON.parse(formData.data) as TaskCreateRequestSchemaInput);
+    props.onFinish(JSON.parse(formData.data) as TaskCreateRequestSchema);
   };
 
   const handleChange = (formData: any) => {
     try {
-      props.onChange(JSON.parse(formData.data) as TaskCreateRequestSchemaInput);
+      props.onChange(JSON.parse(formData.data) as TaskCreateRequestSchema);
     } catch (e) {
       console.error(e);
     }

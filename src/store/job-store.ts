@@ -108,7 +108,7 @@ export class JobStore {
 
     apiCoreStore.jobsApi
       ?.jobReturnsList({
-        JobListBody: {
+        JobReturnsListBody: {
           query: {
             ...this.mongoDBQuery,
             ...(this.jid ? { jid: this?.jid } : {}),

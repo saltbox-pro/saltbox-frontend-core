@@ -168,7 +168,11 @@
     "max-retries-error-required": "Max retries is required",
     "max-jobs-count-at-same-time-error-required": "Max jobs count at same time is required",
     "task-raw-data-error-required": "Task in JSON format is required",
-    "task-raw-data-error-invalid-json": "Task in JSON format is invalid"
+    "task-raw-data-error-invalid-json": "Task in JSON format is invalid",
+    "task-type": "Task Type",
+    "task-type-error-required": "Task type is required",
+    "task-type-classic": "Classic",
+    "task-type-policy": "Policy"
   },
   "task-modal": {
     "task-info": "Task Info",
@@ -198,11 +202,14 @@
     "failed-minions": "Failed Minions",
     "running": "Running",
     "stopping": "Stopping",
-    "postprocessing": "Post-processing",
+    "wait-minions": "Wait Minions",
     "unknown": "Unknown",
     "finished": "Finished",
     "stopped": "Stopped",
     "job-tgt-count": "{{count}} minions",
+    "type": "Task Type",
+    "type-classic": "Classic",
+    "type-policy": "Policy",
     "minions": {
       "table-minion-id": "Minion ID",
       "table-master": "Master",

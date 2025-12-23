@@ -1,14 +1,13 @@
-import { MasterViewSchema, TaskCreateRequestSchemaInput } from "@saltbox/saltbox-core-api-client";
+import { MasterViewSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Button, Flex, Form, InputNumber, Select } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
-
-export type TaskFormData = TaskCreateRequestSchemaInput;
+import { TaskFormData } from "./types";
 
 type TaskFormProps = {
-  taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;
+  taskCreateRequest: Partial<TaskFormData>;
   onClose: () => void;
   onFinish?: () => void;
   onChange?: (values: TaskFormData) => void;
@@ -60,16 +59,16 @@ export function TaskForm({
   useEffect(() => {
     if (Object.keys(taskCreateRequest).length === 0) {
       form.setFieldsValue({
+        task_type: taskCreateRequest?.task_type ?? TaskType.Classic,
         task_template_id: taskCreateRequest?.task_template_id ?? "",
-        salt_masters: taskCreateRequest?.salt_masters ?? [],
         batch_size: taskCreateRequest?.batch_size ?? 0,
         max_retries: taskCreateRequest?.max_retries ?? 1,
         max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
       });
     } else {
       form.setFieldsValue({
+        task_type: taskCreateRequest?.task_type,
         task_template_id: taskCreateRequest?.task_template_id,
-        salt_masters: taskCreateRequest?.salt_masters,
         batch_size: taskCreateRequest?.batch_size,
         max_retries: taskCreateRequest?.max_retries,
         max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time,
@@ -92,6 +91,25 @@ export function TaskForm({
       id="task-form"
     >
       <Form.Item<TaskFormData>
+        label={t("task-form.task-type")}
+        name="task_type"
+        rules={[
+          {
+            required: true,
+            message: t("task-form.task-type-error-required"),
+          },
+        ]}
+        initialValue={TaskType.Classic}
+      >
+        <Select
+          options={[
+            { label: t("task-form.task-type-classic"), value: TaskType.Classic },
+            { label: t("task-form.task-type-policy"), value: TaskType.Policy },
+          ]}
+        />
+      </Form.Item>
+
+      <Form.Item<TaskFormData>
         label={t("task-form.task-template")}
         name="task_template_id"
         rules={[
@@ -109,20 +127,6 @@ export function TaskForm({
           allowClear={true}
           showSearch={true}
           optionLabelProp="label"
-        />
-      </Form.Item>
-
-      <Form.Item<TaskFormData>
-        label={t("task-form.salt-masters")}
-        name="salt_masters"
-        initialValue={[]}
-      >
-        <Select
-          mode="multiple"
-          allowClear
-          options={saltMasters}
-          fieldNames={{ value: "master_id", label: "title" }}
-          placeholder={t("task-form.run-on-all-masters")}
         />
       </Form.Item>
 

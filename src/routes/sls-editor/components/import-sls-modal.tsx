@@ -13,121 +13,114 @@ interface ImportSlsModalProps {
   open: boolean;
   onCancel: () => void;
   onImport: (slsContent: string) => void;
-  hasUnsavedChanges: boolean;
 }
 
 const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
 const columnHelper = createColumnHelper<TaskTemplateShortSchema>();
 
-export const ImportSlsModal = observer(
-  ({ open, onCancel, onImport, hasUnsavedChanges }: ImportSlsModalProps) => {
-    const [templates, setTemplates] = useState<TaskTemplateShortSchema[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(false);
-    const [pagination, setPagination] = useState<PaginationState>({
-      pageIndex: 0,
-      pageSize: 10,
-    });
+export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsModalProps) => {
+  const [templates, setTemplates] = useState<TaskTemplateShortSchema[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 50,
+  });
 
-    const columns = [
-      columnHelper.accessor("title", {
-        header: "Title",
-      }),
-      columnHelper.accessor("name", {
-        header: "Name",
-      }),
-    ];
+  const columns = [
+    columnHelper.accessor("title", {
+      header: "Title",
+    }),
+    columnHelper.accessor("name", {
+      header: "Name",
+    }),
+  ];
 
-    useEffect(() => {
-      if (open) {
-        setPagination({ pageIndex: 0, pageSize: 10 });
+  useEffect(() => {
+    if (open) {
+      setPagination({ pageIndex: 0, pageSize: 50 });
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      loadTemplates();
+    }
+  }, [pagination, open]);
+
+  const loadTemplates = async () => {
+    setLoading(true);
+    try {
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
+        limit: pagination.pageSize,
+        skip: pagination.pageIndex * pagination.pageSize,
+      });
+      if (response?.data) {
+        setTemplates(response.data);
+        setTotal(response.total || 0);
       }
-    }, [open]);
+    } catch (error) {
+      console.error("Failed to load templates:", error);
+      message.error("Failed to load templates");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      if (open) {
-        loadTemplates();
-      }
-    }, [pagination, open]);
-
-    const loadTemplates = async () => {
-      setLoading(true);
+  const handleRowClick = async (template: TaskTemplateShortSchema) => {
+    const performImport = async () => {
       try {
-        const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-          limit: pagination.pageSize,
-          skip: pagination.pageIndex * pagination.pageSize,
+        const fullTemplate = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
+          tpl_id: template.id,
         });
-        if (response?.data) {
-          setTemplates(response.data);
-          setTotal(response.total || 0);
+
+        if (fullTemplate?.sls_content) {
+          onImport(fullTemplate.sls_content);
+          message.success("Template imported successfully");
+          onCancel();
+        } else {
+          message.error("Template has no SLS content");
         }
       } catch (error) {
-        console.error("Failed to load templates:", error);
-        message.error("Failed to load templates");
-      } finally {
-        setLoading(false);
+        console.error("Failed to import template:", error);
+        message.error("Failed to import template");
       }
     };
 
-    const handleRowClick = async (template: TaskTemplateShortSchema) => {
-      const performImport = async () => {
-        try {
-          const fullTemplate = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
-            tpl_id: template.id,
-          });
+    Modal.confirm({
+      title: "Unsaved Changes",
+      content:
+        "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
+      okText: "Yes, Import",
+      cancelText: "Cancel",
+      onOk: performImport,
+    });
+  };
 
-          if (fullTemplate?.sls_content) {
-            onImport(fullTemplate.sls_content);
-            message.success("Template imported successfully");
-            onCancel();
-          } else {
-            message.error("Template has no SLS content");
-          }
-        } catch (error) {
-          console.error("Failed to import template:", error);
-          message.error("Failed to import template");
-        }
-      };
+  const handleLazyLoad = (newPagination: PaginationState) => {
+    setPagination(newPagination);
+  };
 
-      if (hasUnsavedChanges) {
-        Modal.confirm({
-          title: "Unsaved Changes",
-          content:
-            "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
-          okText: "Yes, Import",
-          cancelText: "Cancel",
-          onOk: performImport,
-        });
-      } else {
-        await performImport();
-      }
-    };
-
-    const handleLazyLoad = (newPagination: PaginationState) => {
-      setPagination(newPagination);
-    };
-
-    return (
-      <Modal
-        title="Import SLS from Template"
-        open={open}
-        onCancel={onCancel}
-        footer={null}
-        width={800}
-      >
-        <div className={styles.modalContent}>
-          <TaskTemplatesTable
-            columns={columns}
-            getRowId={(row) => row.id}
-            data={templates}
-            total={total}
-            isLoading={loading}
-            pagination={pagination}
-            onRowClick={handleRowClick}
-            onLazyLoad={handleLazyLoad}
-          />
-        </div>
-      </Modal>
-    );
-  }
-);
+  return (
+    <Modal
+      title="Import SLS from Template"
+      open={open}
+      onCancel={onCancel}
+      footer={null}
+      width={800}
+    >
+      <div className={styles.modalContent}>
+        <TaskTemplatesTable
+          columns={columns}
+          getRowId={(row) => row.id}
+          data={templates}
+          total={total}
+          isLoading={loading}
+          pagination={pagination}
+          onRowClick={handleRowClick}
+          onLazyLoad={handleLazyLoad}
+        />
+      </div>
+    </Modal>
+  );
+});

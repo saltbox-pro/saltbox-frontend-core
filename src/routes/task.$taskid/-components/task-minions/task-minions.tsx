@@ -1,4 +1,4 @@
-import { TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import { TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   FastTableListed,
@@ -15,9 +15,9 @@ import { Link } from "react-router";
 
 import styles from "./task-minions.module.css";
 
-const TaskMinionsTable = FastTableListed<TaskMinion>;
+const TaskMinionsTable = FastTableListed<TaskMinionModel>;
 
-const columnHelper = createColumnHelper<TaskMinion>();
+const columnHelper = createColumnHelper<TaskMinionModel>();
 
 export const TaskMinions = ({
   minions,
@@ -26,21 +26,18 @@ export const TaskMinions = ({
   onRowClick,
   onMinionClick,
 }: {
-  minions: Array<TaskMinion>;
+  minions: Array<TaskMinionModel>;
   collectionSlug: string;
   isLoading: boolean;
-  onRowClick?: (minion: TaskMinion) => void;
-  onMinionClick?: (minion: TaskMinion) => void;
+  onRowClick?: (minion: TaskMinionModel) => void;
+  onMinionClick?: (minion: TaskMinionModel) => void;
 }) => {
   const { t } = useTranslation();
   const columns = [
-    columnHelper.accessor("minion_id", {
+    columnHelper.display({
       header: t("task.minions.table-minion-id"),
       cell: (data) => {
-        const mid = data.row.original?.id ?? "";
-        if (mid === "") {
-          return data.getValue();
-        }
+        const mid = data.row.original?.minion_inner_id ?? "";
         return (
           <>
             <Link
@@ -51,11 +48,11 @@ export const TaskMinions = ({
               }}
             >
               <Button type="link" size={"small"}>
-                {data.getValue()}
+                {data.row.original?.minion_data?.minion_id}
               </Button>
             </Link>
             <div className={styles.minionIdCopyToClipboardButton}>
-              <CopyToClipboardButton text={data.getValue()} />
+              <CopyToClipboardButton text={data.row.original?.minion_data?.minion_id} />
             </div>
             <div className={styles.minionIdNavigationLink}>
               <NavigationIconLink to={`/core/minion/${collectionSlug}/${mid}`} target="_blank" />
@@ -67,8 +64,11 @@ export const TaskMinions = ({
         tdClassName: "fast-table-column-nowrap",
       },
     }),
-    columnHelper.accessor("master", {
+    columnHelper.display({
       header: t("task.minions.table-master"),
+      cell: (data) => {
+        return data.row.original?.minion_data.master;
+      },
     }),
     columnHelper.accessor("status", {
       header: t("task.minions.table-status"),
@@ -119,7 +119,7 @@ export const TaskMinions = ({
   return (
     <TaskMinionsTable
       columns={columns}
-      getRowId={(row) => row.minion_id}
+      getRowId={(row) => row.id}
       onRowClick={(minion) => onRowClick?.(minion)}
       data={minions}
       total={minions.length}

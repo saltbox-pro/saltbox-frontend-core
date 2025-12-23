@@ -168,7 +168,11 @@
     "max-retries-error-required": "Максимальное количество попыток обязательно",
     "max-jobs-count-at-same-time-error-required": "Максимальное количество одновременно выполняемых команд обязательно",
     "task-raw-data-error-required": "Задача в формате JSON обязательна",
-    "task-raw-data-error-invalid-json": "Некорректный JSON"
+    "task-raw-data-error-invalid-json": "Некорректный JSON",
+    "task-type": "Тип задачи",
+    "task-type-error-required": "Тип задачи обязателен",
+    "task-type-classic": "Запуск один раз",
+    "task-type-policy": "Политика"
   },
   "task-modal": {
     "dialog-title": "Создание задачи",
@@ -198,11 +202,14 @@
     "failed-minions": "Завершено с ошибкой",
     "running": "Выполняется",
     "stopping": "Остановка",
-    "postprocessing": "Пост-обработка",
+    "wait-minions": "Ожидание клиентов",
     "unknown": "Неизвестно",
     "finished": "Завершена",
     "stopped": "Остановлена",
     "job-tgt-count": "{{count}} клиентов",
+    "type": "Тип задачи",
+    "type-classic": "Запуск один раз",
+    "type-policy": "Политика",
     "minions": {
       "table-minion-id": "ID клиента",
       "table-master": "Мастер",

@@ -48,6 +48,11 @@
   min-width: 0;
 }
 
+.jobDetailValueTargets {
+  flex: 0 1 auto;
+  max-width: 200px;
+}
+
 .jobDetailValue :global(.ant-statistic) {
   margin-bottom: 0;
 }
