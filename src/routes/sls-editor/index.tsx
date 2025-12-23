@@ -1,16 +1,13 @@
-import { HomeOutlined, DownloadOutlined, CopyOutlined, ImportOutlined } from "@ant-design/icons";
+import { HomeOutlined, ImportOutlined } from "@ant-design/icons";
 import { loader } from "@monaco-editor/react";
-import {
-  PageHeader,
-  SlsEditor,
-  slsEditorMonacoLoader,
-  MenuProps,
-} from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, message } from "antd";
+import { PageHeader, SlsEditor, slsEditorMonacoLoader } from "@saltbox/saltbox-frontend-common";
+import { Breadcrumb, MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { slsEditorStore } from "saltbox-core/store";
 
 import { ImportSlsModal } from "./components/import-sls-modal";
 import { RawSlsEditor } from "./components/raw-sls-editor";
@@ -21,51 +18,10 @@ slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
   const { t } = useTranslation();
-  const [slsContent, setSlsContent] = useState<string>("");
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const handleSlsChange = (newSls: string) => {
-    setSlsContent(newSls);
-  };
-
-  const hasUnsavedChanges = slsContent !== "";
-
-  const handleDownload = () => {
-    if (!slsContent) {
-      message.warning("No content to download");
-      return;
-    }
-
-    try {
-      const blob = new Blob([slsContent], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `state.sls`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      message.success("SLS file downloaded successfully");
-    } catch (error) {
-      console.error("Download error:", error);
-      message.error("Failed to download SLS file");
-    }
-  };
-
-  const handleCopyToClipboard = async () => {
-    if (!slsContent) {
-      message.warning("No content to copy");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(slsContent);
-      message.success("SLS content copied to clipboard");
-    } catch (error) {
-      console.error("Clipboard error:", error);
-      message.error("Failed to copy to clipboard");
-    }
+    slsEditorStore.setSlsContent(newSls);
   };
 
   const handleOpenImportModal = () => {
@@ -73,7 +29,7 @@ const SlsEditorPage = observer(() => {
   };
 
   const handleImportSls = (importedSls: string) => {
-    setSlsContent(importedSls);
+    slsEditorStore.setSlsContent(importedSls);
   };
 
   const menuItems: MenuProps["items"] = [
@@ -83,21 +39,6 @@ const SlsEditorPage = observer(() => {
       icon: <ImportOutlined />,
       onClick: handleOpenImportModal,
     },
-    {
-      type: "divider",
-    },
-    {
-      key: "download",
-      label: "Download SLS",
-      icon: <DownloadOutlined />,
-      onClick: handleDownload,
-    },
-    {
-      key: "copy",
-      label: "Copy to Clipboard",
-      icon: <CopyOutlined />,
-      onClick: handleCopyToClipboard,
-    },
   ];
 
   const additionalTabs = [
@@ -105,7 +46,11 @@ const SlsEditorPage = observer(() => {
       key: "raw-sls",
       title: "Raw SLS",
       content: (
-        <RawSlsEditor sls={slsContent} onSlsChange={handleSlsChange} className={styles.rawEditor} />
+        <RawSlsEditor
+          sls={slsEditorStore.slsContent}
+          onSlsChange={handleSlsChange}
+          className={styles.rawEditor}
+        />
       ),
     },
   ];
@@ -127,7 +72,7 @@ const SlsEditorPage = observer(() => {
       <PageHeader title="SLS Editor" />
 
       <SlsEditor
-        sls={slsContent}
+        sls={slsEditorStore.slsContent}
         onSlsChange={handleSlsChange}
         defaultTab="form-editor"
         additionalTabs={additionalTabs}
@@ -139,7 +84,6 @@ const SlsEditorPage = observer(() => {
         open={importModalOpen}
         onCancel={() => setImportModalOpen(false)}
         onImport={handleImportSls}
-        hasUnsavedChanges={hasUnsavedChanges}
       />
     </>
   );
