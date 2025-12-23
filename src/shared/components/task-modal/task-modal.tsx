@@ -1,10 +1,11 @@
 import {
   CollectionModel,
   MasterViewSchema,
-  TaskCreateRequestSchemaInput,
-  TaskData,
+  TaskCreateRequestSchema,
   TaskTargetMinion,
   TaskTemplateModel,
+  TaskType,
+  TaskData,
 } from "@saltbox/saltbox-core-api-client";
 import { publish, Modal } from "@saltbox/saltbox-frontend-common";
 import Ajv from "ajv";
@@ -14,12 +15,13 @@ import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-import { TaskForm, TaskFormData } from "./task-form";
+import { TaskForm } from "./task-form";
 import { TaskParamsForm } from "./task-params-form";
 import { TaskRaw } from "./task-raw";
+import { TaskFormData } from "./types";
 
-const filterAdditionalParams = (
-  formData: Partial<TaskCreateRequestSchemaInput>,
+const filterTaskData = (
+  formData: Partial<TaskCreateRequestSchema>,
   taskTemplate?: TaskTemplateModel
 ): TaskData | undefined => {
   const data = formData.data ?? {};
@@ -35,7 +37,7 @@ export type TaskModalProps = {
   collection?: CollectionModel;
   minionList?: Array<TaskTargetMinion>;
   query?: object;
-  onClose: (form?: TaskCreateRequestSchemaInput) => void;
+  onClose: (form?: TaskCreateRequestSchema) => void;
   saltMasters: Array<MasterViewSchema>;
 };
 
@@ -52,9 +54,7 @@ export function TaskModal({
   const [activeTabKey, setActiveTabKey] = useState<string>("task-info");
   const [messageApi] = message.useMessage();
 
-  const [taskCreateRequest, setTaskCreateRequest] = useState<Partial<TaskCreateRequestSchemaInput>>(
-    {}
-  );
+  const [taskCreateRequest, setTaskCreateRequest] = useState<Partial<TaskCreateRequestSchema>>({});
 
   const handleModalCancel = () => {
     onClose();
@@ -68,7 +68,7 @@ export function TaskModal({
     setTaskCreateRequest({ ...taskCreateRequest, data: { ...formData } });
   };
 
-  const handleTaskRawChange = (formData: TaskCreateRequestSchemaInput) => {
+  const handleTaskRawChange = (formData: TaskCreateRequestSchema) => {
     setTaskCreateRequest(formData);
   };
 
@@ -78,16 +78,16 @@ export function TaskModal({
 
   const getTaskCreateRequest = () => {
     return {
+      task_type: taskCreateRequest?.task_type ?? TaskType.Classic,
       task_template_id: taskCreateRequest?.task_template_id ?? "",
-      salt_masters: taskCreateRequest?.salt_masters ?? [],
       collection_slug: collection?.slug ?? "",
       minions: minionList ?? [],
       query: query ?? {},
       batch_size: taskCreateRequest?.batch_size ?? 0,
       max_retries: taskCreateRequest?.max_retries ?? 3,
       max_jobs_count_at_same_time: taskCreateRequest?.max_jobs_count_at_same_time ?? 1,
-      data: filterAdditionalParams(taskCreateRequest, taskTemplate),
-    };
+      data: filterTaskData(taskCreateRequest, taskTemplate),
+    } as TaskCreateRequestSchema;
   };
 
   const handleCreateTask = () => {

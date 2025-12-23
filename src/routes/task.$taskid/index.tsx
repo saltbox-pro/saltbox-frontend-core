@@ -10,9 +10,10 @@ import {
 } from "@ant-design/icons";
 import {
   JobReturnModel,
-  TaskMinion,
+  TaskMinionModel,
   TaskMinionStatus,
   TaskStatus,
+  TaskType,
 } from "@saltbox/saltbox-core-api-client";
 import {
   formatTimeByUserTZ,
@@ -46,12 +47,11 @@ const useMinions = (taskStore: TaskStore) => {
   const [selectedMinionCategory, setSelectedMinionCategory] = useState(MinionCategory.All);
 
   const minionsOfCategory = useMemo(() => {
-    const allMinions = Object.values(taskStore.task?.minions ?? {});
-    const getMinionsByStatus = (status: TaskMinionStatus) =>
-      allMinions.filter((minion) => minion.status === status);
-
+    const getMinionsByStatus = (status: TaskMinionStatus) => {
+      return taskStore.minions?.filter((minion) => minion.status === status);
+    };
     if (selectedMinionCategory === MinionCategory.All) {
-      return allMinions;
+      return taskStore.minions;
     }
     if (selectedMinionCategory === MinionCategory.Pending) {
       return getMinionsByStatus(TaskMinionStatus.Pending);
@@ -66,20 +66,20 @@ const useMinions = (taskStore: TaskStore) => {
       return getMinionsByStatus(TaskMinionStatus.Success);
     }
     return [];
-  }, [taskStore.task?.minions, selectedMinionCategory]);
+  }, [taskStore.minions, selectedMinionCategory]);
 
   const minionCategoryStats = useMemo(() => {
-    const allMinions = Object.keys(taskStore.task?.minions ?? {});
-    const getStatusCount = (status: TaskMinionStatus) => {
-      return allMinions.filter((mid: string) => taskStore.task?.minions?.[mid]?.status === status)
-        .length;
+    const getMinionStatusCount = (status: TaskMinionStatus) => {
+      return taskStore.minions?.filter((minion) => {
+        return minion.status === status;
+      }).length;
     };
 
-    const countMinionsAll = allMinions.length;
-    const countMinionsPending = getStatusCount(TaskMinionStatus.Pending);
-    const countMinionsInWork = getStatusCount(TaskMinionStatus.InWork);
-    const countMinionsFailed = getStatusCount(TaskMinionStatus.Failed);
-    const countMinionsSuccess = getStatusCount(TaskMinionStatus.Success);
+    const countMinionsAll = taskStore.minions?.length ?? 0;
+    const countMinionsPending = getMinionStatusCount(TaskMinionStatus.Pending);
+    const countMinionsInWork = getMinionStatusCount(TaskMinionStatus.InWork);
+    const countMinionsFailed = getMinionStatusCount(TaskMinionStatus.Failed);
+    const countMinionsSuccess = getMinionStatusCount(TaskMinionStatus.Success);
 
     const getStatItemClass = (category: MinionCategory) => {
       const isActiveClass =
@@ -181,7 +181,7 @@ const useMinions = (taskStore: TaskStore) => {
         </div>
       </Flex>
     );
-  }, [taskStore.task, selectedMinionCategory]);
+  }, [taskStore.task, taskStore.minions, selectedMinionCategory]);
 
   return {
     minions: {
@@ -194,16 +194,16 @@ const useMinions = (taskStore: TaskStore) => {
 };
 
 const useSelectedMinion = (taskStore: TaskStore) => {
-  const [selectedMinion, setSelectedMinion] = useState<TaskMinion | undefined>();
+  const [selectedMinion, setSelectedMinion] = useState<TaskMinionModel | undefined>();
   const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<Array<JobReturnModel>>(
     []
   );
 
-  const getStoredMinion = (minion: TaskMinion) => {
-    return taskStore.task?.minions?.[minion.master + "_" + minion.minion_id];
+  const getStoredMinion = (minion: TaskMinionModel) => {
+    return taskStore.minions?.[minion.minion_data.master + "_" + minion.minion_data.minion_id];
   };
 
-  const getMinionJobReturns = (minion?: TaskMinion) => {
+  const getMinionJobReturns = (minion?: TaskMinionModel) => {
     const minionJobIds = Object.keys(minion?.jobs ?? {})
       .sort()
       .reverse();
@@ -212,8 +212,8 @@ const useSelectedMinion = (taskStore: TaskStore) => {
         taskStore.jobReturns?.find(
           (jobReturn) =>
             jobReturn.jid === jobId &&
-            jobReturn.salt_master === minion.master &&
-            jobReturn.minion_id === minion.minion_id
+            jobReturn.salt_master === minion.minion_data.master &&
+            jobReturn.minion_id === minion.minion_data.minion_id
         )
       )
       .filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
@@ -228,8 +228,8 @@ const useSelectedMinion = (taskStore: TaskStore) => {
     }
   }, [taskStore.task, taskStore.jobReturns]);
 
-  const updateSelectedMinion = (minion: TaskMinion) => {
-    if (selectedMinion?.minion_id === minion.minion_id) {
+  const updateSelectedMinion = (minion: TaskMinionModel) => {
+    if (selectedMinion?.minion_data.minion_id === minion.minion_data.minion_id) {
       setSelectedMinionJobReturns([]);
       setSelectedMinion(undefined);
     } else {
@@ -253,12 +253,12 @@ const useSelectedMinion = (taskStore: TaskStore) => {
 
 const useTaskPermissions = (taskStore: TaskStore) => {
   const isTaskLoading = taskStore.isTaskLoading;
-  const taskStatus = taskStore.task?.status;
+  const taskStatus = taskStore.task?.status?.type;
 
   const canRun =
     !isTaskLoading &&
     taskStatus !== TaskStatus.Finished &&
-    taskStatus !== TaskStatus.Postprocessing &&
+    taskStatus !== TaskStatus.WaitMinions &&
     taskStatus !== TaskStatus.Running &&
     taskStatus !== TaskStatus.Stopping;
 
@@ -272,7 +272,7 @@ const useTaskPermissions = (taskStore: TaskStore) => {
   const canRestartFailed =
     !isTaskLoading &&
     taskStatus !== TaskStatus.Stopping &&
-    taskStatus !== TaskStatus.Postprocessing &&
+    taskStatus !== TaskStatus.WaitMinions &&
     taskStatus !== TaskStatus.Running &&
     taskStatus !== TaskStatus.Created &&
     (taskStatus !== TaskStatus.Stopped || !!taskStore.failedMinionsCount) &&
@@ -336,10 +336,10 @@ const TaskStatusIndicator = ({ status }: { status?: TaskStatus | "none" }) => {
           <StopOutlined /> {t("task.stopped")}
         </span>
       );
-    case TaskStatus.Postprocessing:
+    case TaskStatus.WaitMinions:
       return (
         <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.post-processing")}
+          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.wait-minions")}
         </span>
       );
     case "none":
@@ -495,9 +495,17 @@ const TaskPage = observer(() => {
         </div>
 
         <div className={styles.taskDetailItem}>
+          <span className={styles.taskDetailLabel}>{t("task.type")}:</span>
+          <span className={styles.taskDetailValue}>
+            {taskStore.task?.task_type === TaskType.Classic
+              ? t("task.type-classic")
+              : t("task.type-policy")}
+          </span>
+        </div>
+        <div className={styles.taskDetailItem}>
           <span className={styles.taskDetailLabel}>{t("task.status")}:</span>
           <span className={styles.taskDetailValue}>
-            <TaskStatusIndicator status={taskStore.task?.status ?? "none"} />
+            <TaskStatusIndicator status={taskStore.task?.status?.type ?? "none"} />
           </span>
         </div>
         <div className={styles.taskDetailItem}>

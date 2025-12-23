@@ -180,7 +180,8 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: t("minions.table-user"),
         enableSorting: false,
       }),
-      columnHelper.display({
+      // TODO: Add status column after API is updated
+      /* columnHelper.display({
         header: t("minions.table-status"),
         enableSorting: false,
         cell: (data) => {
@@ -237,7 +238,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
             </Popover>
           );
         },
-      }),
+      }), */
       columnHelper.accessor("created", {
         header: t("minions.table-created"),
         cell: (data) => {

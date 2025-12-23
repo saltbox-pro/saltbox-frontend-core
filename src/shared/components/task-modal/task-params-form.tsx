@@ -1,14 +1,13 @@
 import { Form } from "@rjsf/antd";
 import validator from "@rjsf/validator-ajv8";
 import {
-  TaskCreateRequestSchemaInput,
-  TaskData,
+  TaskCreateRequestSchema,
   TaskTemplateModel,
+  TaskData,
 } from "@saltbox/saltbox-core-api-client";
 import { Button, Flex } from "antd";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-
 import { appStore, i18nStore } from "saltbox-core/store";
 
 import styles from "./task-modal.module.css";
@@ -18,7 +17,7 @@ type TaskParamsFormProps = {
   onClose?: () => void;
   onFinish?: () => void;
   onChange?: (values: TaskData) => void;
-  taskCreateRequest: Partial<TaskCreateRequestSchemaInput>;
+  taskCreateRequest: Partial<TaskCreateRequestSchema>;
   onCreateTaskPlugin: (pluginKey: string) => void;
 };
 

@@ -2,7 +2,7 @@ import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import {
   MasterViewSchema,
   MinionShortSchema,
-  TaskCreateRequestSchemaInput,
+  TaskCreateRequestSchema,
   TaskTargetMinion,
 } from "@saltbox/saltbox-core-api-client";
 import {
@@ -233,7 +233,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       .map((minionId: string) => minionsStore.minions.find((minion) => minion.id === minionId))
       .filter((minion) => !!minion)
       .map((minion) => {
-        return { master: minion.master, minion_id: minion.minion_id };
+        return { salt_master: minion.master, minion_id: minion.minion_id };
       });
     setSelectedMinionIds(selectedMinions);
   }, [selection]);
@@ -305,7 +305,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       .finally(() => setIsCreateTaskLoading(false));
   }, [messageApi, t]);
 
-  const handleCreateTaskModalClose = (form?: TaskCreateRequestSchemaInput) => {
+  const handleCreateTaskModalClose = (form?: TaskCreateRequestSchema) => {
     if (form === undefined) {
       setIsCreateTaskModalOpen(false);
       return;

@@ -1,5 +1,9 @@
 import { SyncOutlined } from "@ant-design/icons";
-import { JobReturnModel, TaskMinion, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  JobReturnModel,
+  TaskMinionModel,
+  TaskMinionStatus,
+} from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton, pastTimeByUserTZ, Drawer } from "@saltbox/saltbox-frontend-common";
 import { Flex, Spin, Tabs, Tag } from "antd";
 import { observer } from "mobx-react";
@@ -10,7 +14,7 @@ import ReactJson from "react-json-view";
 import styles from "./minion-view.module.css";
 
 type MinionViewProps = {
-  selectedMinion: TaskMinion;
+  selectedMinion: TaskMinionModel;
   selectedMinionJobReturns: JobReturnModel[];
   onClose: () => void;
 };
@@ -171,8 +175,8 @@ export const MinionView = observer(
         mask={false}
         title={
           <>
-            {t("task.minion.title", { minionId: selectedMinion?.minion_id })}
-            <CopyToClipboardButton text={selectedMinion?.minion_id ?? ""} />
+            {t("task.minion.title", { minionId: selectedMinion?.minion_data.minion_id })}
+            <CopyToClipboardButton text={selectedMinion?.minion_data.minion_id ?? ""} />
           </>
         }
         width="35%"
