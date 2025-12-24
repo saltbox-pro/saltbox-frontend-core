@@ -77,7 +77,7 @@ const SlsEditorPage = observer(() => {
         defaultTab="form-editor"
         additionalTabs={additionalTabs}
         className={styles.editor}
-        menu={{ items: menuItems }}
+        menu={{ items: menuItems as any }}
       />
 
       <ImportSlsModal

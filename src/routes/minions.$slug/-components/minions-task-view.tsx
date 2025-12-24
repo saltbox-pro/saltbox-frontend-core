@@ -4,6 +4,7 @@ import {
   FastTablePaginated,
   pastTimeByUserTZ,
   Popover,
+  WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -255,9 +256,13 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       `${apiCoreStore.env?.ws_server_url}/tasks`,
       appStore.authStore?.user?.access_token,
       {
-        onMessage: (update: TaskListResponseSchema[]) => {
-          if (update?.length > 0) {
-            tasksStore.updateTasks(update);
+        onMessage: (messages: Array<WebSocketMessage<TaskListResponseSchema>>) => {
+          if (messages?.length > 0) {
+            tasksStore.updateTasks(
+              messages
+                .filter((message) => message.message_tag === "tasks")
+                .map((message) => message.payload)
+            );
           }
         },
       }

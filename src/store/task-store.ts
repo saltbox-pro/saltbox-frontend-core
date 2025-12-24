@@ -240,15 +240,69 @@ export class TaskStore {
   };
 
   @action
-  updateTaskData = (update: Object & { retcode?: number; jobs?: TaskModel }[]) => {
-    update.forEach((item) => {
-      if (item?.retcode !== undefined) {
-        this.addJobReturn(item as unknown as JobReturnModel);
-      } else if (item?.jobs !== undefined) {
-        runInAction(() => {
-          this.task = item as unknown as TaskModel;
-        });
-      }
-    });
+  updateTasks = (tasks: TaskModel[]) => {
+    const sortedTasks = tasks.sort(
+      (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
+    );
+    this.task = sortedTasks.at(0) ?? null;
+  };
+
+  @action
+  updateJobs = (jobs: JobsListResponse[]) => {
+    const sortedJobs = jobs.sort(
+      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
+    );
+    sortedJobs.map((job) => this.updateJob(job));
+  };
+
+  @action
+  updateJob = (job: JobsListResponse) => {
+    const index = this.jobs.findIndex(
+      (item) => item.jid === job.jid && item.salt_master === job.salt_master
+    );
+    if (index > -1) {
+      this.jobs[index] = job;
+      this.jobs = [...this.jobs];
+    } else {
+      this.jobs = [job, ...this.jobs];
+    }
+  };
+
+  @action
+  updateMinions = (minions: TaskMinionModel[]) => {
+    const sortedMinions = minions.sort(
+      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
+    );
+    sortedMinions.map((minion) => this.updateMinion(minion));
+  };
+
+  @action
+  updateMinion = (minion: TaskMinionModel) => {
+    const index = this.minions.findIndex((item) => item.minion_inner_id === minion.minion_inner_id);
+    if (index > -1) {
+      this.minions[index] = minion;
+      this.minions = [...this.minions];
+    } else {
+      this.minions = [minion, ...this.minions];
+    }
+  };
+
+  @action
+  updateJobReturns = (jobReturns: JobReturnModel[]) => {
+    const sortedJobReturns = jobReturns.sort(
+      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
+    );
+    sortedJobReturns.map((jobReturn) => this.updateJobReturn(jobReturn));
+  };
+
+  @action
+  updateJobReturn = (jobReturn: JobReturnModel) => {
+    const index = this.jobReturns.findIndex((item) => item.id === jobReturn.id);
+    if (index > -1) {
+      this.jobReturns[index] = jobReturn;
+      this.jobReturns = [...this.jobReturns];
+    } else {
+      this.jobReturns = [jobReturn, ...this.jobReturns];
+    }
   };
 }

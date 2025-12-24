@@ -10,8 +10,10 @@ import {
 } from "@ant-design/icons";
 import {
   JobReturnModel,
+  JobsListResponse,
   TaskMinionModel,
   TaskMinionStatus,
+  TaskModel,
   TaskStatus,
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
@@ -21,6 +23,7 @@ import {
   WebSocketService,
   pastTimeByUserTZ,
   Popover,
+  WebSocketMessage,
 } from "@saltbox/saltbox-frontend-common";
 import { Breadcrumb, Button, Flex, Skeleton, Spin, Statistic } from "antd";
 import { observer } from "mobx-react";
@@ -281,8 +284,13 @@ const useTaskPermissions = (taskStore: TaskStore) => {
   return { canRun, canStop, canRestartFailed };
 };
 
-const useWebSocket = (taskId: string, onUpdate: (update: Object[]) => void) => {
-  const [webSocketService] = useState(new WebSocketService<Object>());
+type TaskWebSocketMessage = TaskModel | TaskMinionModel | JobReturnModel | JobsListResponse;
+
+const useWebSocket = (
+  taskId: string,
+  onUpdate: (messages: Array<WebSocketMessage<TaskWebSocketMessage>>) => void
+) => {
+  const [webSocketService] = useState(new WebSocketService<TaskWebSocketMessage>());
 
   useEffect(() => {
     webSocketService.connect(
@@ -375,9 +383,28 @@ const TaskPage = observer(() => {
     }
   }, [taskStore.error]);
 
-  useWebSocket(taskId, (update) => {
-    if (update?.length > 0) {
-      taskStore.updateTaskData(update);
+  useWebSocket(taskId, (messages) => {
+    if (messages?.length > 0) {
+      taskStore.updateTasks(
+        messages
+          .filter((message) => message.message_tag === "task")
+          .map((message) => message.payload) as TaskModel[]
+      );
+      taskStore.updateJobs(
+        messages
+          .filter((message) => message.message_tag === "job")
+          .map((message) => message.payload) as JobsListResponse[]
+      );
+      taskStore.updateMinions(
+        messages
+          .filter((message) => message.message_tag === "task-minion")
+          .map((message) => message.payload) as TaskMinionModel[]
+      );
+      taskStore.updateJobReturns(
+        messages
+          .filter((message) => message.message_tag === "job-return")
+          .map((message) => message.payload) as JobReturnModel[]
+      );
     }
   });
 

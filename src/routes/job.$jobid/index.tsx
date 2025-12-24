@@ -8,6 +8,7 @@ import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api
 import {
   CopyToClipboardButton,
   PageHeader,
+  WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -38,7 +39,6 @@ import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import {
   mergeJobReturnsToTable,
-  canConvertToTable,
   exportToCSV,
 } from "saltbox-core/shared/components/job-return-table/utils/table-converter";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
@@ -141,8 +141,12 @@ const JobPage = observer(() => {
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
       {
-        onMessage: (jobs: JobModel[]) => {
-          jobStore.updateFromJobs(jobs);
+        onMessage: (messages: Array<WebSocketMessage<JobModel>>) => {
+          jobStore.updateFromJobs(
+            messages
+              .filter((message) => message.message_tag === "job")
+              .map((message) => message.payload)
+          );
         },
         onOpen: () => {
           jobStore.reload(jid);

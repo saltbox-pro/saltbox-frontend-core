@@ -7,6 +7,7 @@ import {
   PageHeader,
   pastTimeByUserTZ,
   Popover,
+  WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -280,9 +281,13 @@ const JobsPage = observer(() => {
       `${apiCoreStore.env?.ws_server_url}/jobs`,
       appStore.authStore?.user?.access_token,
       {
-        onMessage: (update: JobsListResponse[]) => {
-          if (update?.length > 0) {
-            jobsStore.updateJobs(update);
+        onMessage: (messages: Array<WebSocketMessage<JobsListResponse>>) => {
+          if (messages?.length > 0) {
+            jobsStore.updateJobs(
+              messages
+                .filter((message) => message.message_tag === "job")
+                .map((message) => message.payload)
+            );
           }
         },
       }
