@@ -260,7 +260,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
           if (messages?.length > 0) {
             tasksStore.updateTasks(
               messages
-                .filter((message) => message.message_tag === "tasks")
+                .filter((message) => message.message_tag === "task")
                 .map((message) => message.payload)
             );
           }

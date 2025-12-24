@@ -91,6 +91,13 @@ export class TasksStore {
     if (index > -1) {
       this.tasks[index] = task;
       this.tasks = [...this.tasks];
+    } else if (this.pagination.pageIndex === 0) {
+      let newTasks = [task, ...this.tasks];
+      if (newTasks.length > this.pagination.pageSize) {
+        newTasks = newTasks.slice(0, this.pagination.pageSize);
+      }
+      this.tasks = newTasks;
+      this.total++;
     }
   };
 
