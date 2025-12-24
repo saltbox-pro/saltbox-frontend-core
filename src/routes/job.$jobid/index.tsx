@@ -58,6 +58,10 @@ const JobPage = observer(() => {
   const { jid } = useParams();
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobModel>());
+  const [isRevealedAll, setIsRevealedAll] = useState(() => {
+    const saved = localStorage.getItem("job-revealed-all-returns");
+    return saved === "true";
+  });
   const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
@@ -135,6 +139,11 @@ const JobPage = observer(() => {
     };
     exportToCSV(sortedTableData, filename);
   }, [mergedTableData, jid, exportTable, rowsToExport]);
+
+  const handleToggleRevealedAll = (value: boolean) => {
+    setIsRevealedAll(value);
+    localStorage.setItem("job-revealed-all-returns", value.toString());
+  };
 
   useEffect(() => {
     if (jobStore.error) {
@@ -337,6 +346,13 @@ const JobPage = observer(() => {
 
           <Flex align="center" gap={16}>
             <Flex align="center" gap={8}>
+              {(viewMode === "standard" || viewMode === "detailed") &&
+                jobStore.jobReturns.length > 1 && (
+                  <Flex align="center" gap={4}>
+                    {t("jobs.reveal-all-returns")}
+                    <Switch checked={isRevealedAll} onChange={handleToggleRevealedAll} />
+                  </Flex>
+                )}
               <Radio.Group
                 value={viewMode}
                 onChange={(e) => setViewMode(e.target.value)}
@@ -392,7 +408,7 @@ const JobPage = observer(() => {
           total={jobStore.total}
           onLazyLoad={jobStore.handleLazyLoad}
           isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
-          forceExpand={jobStore.isSingleJobReturn}
+          forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
           onTableViewSortingChange={setTableViewSorting}
           onTableViewFilteredDataChange={setFilteredTableRows}
         />
