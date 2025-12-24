@@ -67,7 +67,7 @@ export const TaskMinions = ({
     columnHelper.display({
       header: t("task.minions.table-master"),
       cell: (data) => {
-        return data.row.original?.minion_data.master;
+        return data.row.original?.minion_data?.master;
       },
     }),
     columnHelper.accessor("status", {

@@ -1,0 +1,25 @@
+.root {
+  max-height: calc(100vh - 300px);
+}
+
+.formItem {
+  flex: 1;
+}
+
+.templateList {
+  overflow: auto;
+  flex: 1;
+  height: 100%;
+}
+
+.listItem {
+  cursor: pointer;
+}
+
+.listItemPart.listItemPart {
+  margin: 0;
+}
+
+.repoBadge.repoBadge {
+  background-color: #108ee9;
+}

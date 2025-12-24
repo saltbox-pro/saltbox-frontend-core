@@ -1,0 +1,21 @@
+.descriptionHeader.descriptionHeader {
+  margin: 0;
+  margin-bottom: 0.5em;
+}
+
+.descriptionLabel {
+  width: 25%;
+}
+
+.descriptionContent {
+  width: 75%;
+}
+
+.divider {
+  margin: 0;
+}
+
+.objectContent {
+  margin: 0;
+  font-size: 12px;
+}

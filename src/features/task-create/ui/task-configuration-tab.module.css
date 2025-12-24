@@ -1,0 +1,15 @@
+.jsonForm {
+  overflow: hidden;
+}
+
+.jsonForm :global(fieldset) {
+  border: none;
+}
+
+.formItem {
+  width: 100%;
+}
+
+.divider {
+  margin: 0;
+}

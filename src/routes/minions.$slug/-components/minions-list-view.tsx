@@ -1,10 +1,5 @@
 import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import {
-  MasterViewSchema,
-  MinionShortSchema,
-  TaskCreateRequestSchema,
-  TaskTargetMinion,
-} from "@saltbox/saltbox-core-api-client";
+import { MinionShortSchema, TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   FastTablePaginated,
@@ -19,11 +14,12 @@ import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { TaskCreate, useTaskCreate } from "saltbox-core/features/task-create";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { TaskModal } from "saltbox-core/shared/components/task-modal/task-modal";
+import { createTypedObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 import {
   apiCoreStore,
   appStore,
@@ -31,7 +27,6 @@ import {
   MinionFilterStore,
   MinionStore,
   MinionsStore,
-  TaskStore,
 } from "saltbox-core/store";
 
 import styles from "./minions-list-view.module.css";
@@ -40,6 +35,8 @@ import { MinionsQueryBuilder } from "./minions-query-builder";
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
+
+const memoizeContext = createTypedObjectMemoizer<ComponentProps<typeof TaskCreate>["context"]>();
 
 const lastActivitySecondsToBadgeColor = (seconds: number) => {
   if (seconds < 5 * 60) return "green";
@@ -81,17 +78,12 @@ const MinionCompactView = observer(
 
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [minionsStore] = useState(
     new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
-  const [taskStore] = useState(new TaskStore());
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [isCSVLoading, setIsCSVLoading] = useState(false);
-  const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
-  const [isCreateTaskLoading, setIsCreateTaskLoading] = useState(false);
-  const [saltMasters, setSaltMasters] = useState<Array<MasterViewSchema>>([]);
-  const [selectedMinionIds, setSelectedMinionIds] = useState<TaskTargetMinion[]>([]);
+  const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -229,13 +221,13 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   }, [props.filterStore.searchMongoDBQuery]);
 
   useEffect(() => {
-    const selectedMinions: TaskTargetMinion[] = Object.keys(selection)
+    const newSelectedMinions: TaskTargetMinion[] = Object.keys(selection)
       .map((minionId: string) => minionsStore.minions.find((minion) => minion.id === minionId))
       .filter((minion) => !!minion)
       .map((minion) => {
         return { salt_master: minion.master, minion_id: minion.minion_id };
       });
-    setSelectedMinionIds(selectedMinions);
+    setSelectedMinions(newSelectedMinions);
   }, [selection]);
 
   const handelCSVDownload = async () => {
@@ -287,40 +279,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     }
   };
 
-  const handleCreateTaskClick = useCallback(() => {
-    setIsCreateTaskLoading(true);
-    apiCoreStore.mastersApi
-      ?.mastersList({ status: "accepted" })
-      .then((result) => {
-        if (result?.data?.length === 0) {
-          messageApi.warning(t("minions.warning-on-create-task"));
-          return;
-        }
-        setSaltMasters(result.data);
-        setIsCreateTaskModalOpen(true);
-      })
-      .catch(() => {
-        messageApi.error(t("minions.error-on-load-salt-masters"));
-      })
-      .finally(() => setIsCreateTaskLoading(false));
-  }, [messageApi, t]);
-
-  const handleCreateTaskModalClose = (form?: TaskCreateRequestSchema) => {
-    if (form === undefined) {
-      setIsCreateTaskModalOpen(false);
-      return;
-    }
-
-    taskStore
-      .createTask(form)
-      .then((task) => {
-        navigate(`/task/${task.id}`);
-      })
-      .catch(() => {
-        messageApi.error(t("minions.error-on-task-create"));
-      });
-  };
-
   const handleDrawerClose = useCallback(() => {
     setDrawerMinionId(undefined);
   }, []);
@@ -338,6 +296,15 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     props.onAddFilter();
     setDrawerMinionId(undefined);
   }, []);
+
+  const {
+    taskType,
+    isTaskCreateOpen,
+    openTaskCreate,
+    openPolicyCreate,
+    closeTaskCreate,
+    goToTaskPage,
+  } = useTaskCreate();
 
   let taskModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
@@ -360,13 +327,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         )}
 
         <div className="page-actions-buttons">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleCreateTaskClick}
-            loading={isCreateTaskLoading}
-          >
+          <Button type="primary" icon={<PlusOutlined />} onClick={openTaskCreate}>
             {t("minions.create-task")}
+          </Button>
+
+          <Button
+            icon={<PlusOutlined />}
+            onClick={openPolicyCreate}
+            disabled={!!selectedMinions.length}
+          >
+            {t("minions.create-policy")}
           </Button>
 
           <Button onClick={() => handelCSVDownload()} loading={isCSVLoading}>
@@ -394,14 +364,18 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           useVirtualScroll={false}
         />
 
-        {isCreateTaskModalOpen && (
-          <TaskModal
-            isOpen={isCreateTaskModalOpen}
-            collection={props.collectionStore.collection}
-            minionList={selectedMinionIds}
-            query={props.filterStore?.searchMongoDBQuery ?? {}}
-            onClose={handleCreateTaskModalClose}
-            saltMasters={saltMasters}
+        {isTaskCreateOpen && (
+          <TaskCreate
+            isOpen={isTaskCreateOpen}
+            context={memoizeContext({
+              taskType,
+              slug: props.slug,
+              collection: props.collectionStore.collection,
+              minionList: selectedMinions,
+              query: props.filterStore?.searchMongoDBQuery ?? {},
+            })}
+            onClose={closeTaskCreate}
+            onTaskCreated={goToTaskPage}
           />
         )}
       </Flex>
