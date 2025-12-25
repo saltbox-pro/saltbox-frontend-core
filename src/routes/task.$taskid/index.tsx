@@ -264,23 +264,18 @@ const useTaskPermissions = (taskStore: TaskStore) => {
     taskStatus !== TaskStatus.WaitMinions &&
     taskStatus !== TaskStatus.Running &&
     taskStatus !== TaskStatus.Stopping;
-
   const canStop =
     !isTaskLoading &&
     taskStatus !== TaskStatus.Created &&
     taskStatus !== TaskStatus.Finished &&
     taskStatus !== TaskStatus.Stopping &&
     taskStatus !== TaskStatus.Stopped;
-
   const canRestartFailed =
-    !isTaskLoading &&
-    taskStatus !== TaskStatus.Stopping &&
-    taskStatus !== TaskStatus.WaitMinions &&
-    taskStatus !== TaskStatus.Running &&
-    taskStatus !== TaskStatus.Created &&
-    (taskStatus !== TaskStatus.Stopped || !!taskStore.failedMinionsCount) &&
-    (taskStatus !== TaskStatus.Finished || !!taskStore.failedMinionsCount);
-
+    (!isTaskLoading &&
+      taskStatus !== TaskStatus.Stopping &&
+      taskStatus !== TaskStatus.Created &&
+      taskStore.task?.minions_count?.failed > 0) ||
+    (taskStore.task?.minions_count?.pending > 0 && taskStatus === TaskStatus.Finished);
   return { canRun, canStop, canRestartFailed };
 };
 
