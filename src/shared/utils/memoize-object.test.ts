@@ -1,8 +1,8 @@
-import { createTypedObjectMemoizer } from "./memoize-object";
+import { createObjectMemoizer } from "./memoize-object";
 
-describe("createObjectMemoizer", () => {
+describe("createObjectMemoizer (shallow)", () => {
   it("returns the same reference for identical objects", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; b: string }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, b: "hello" });
     const obj2 = memoize({ a: 1, b: "hello" });
@@ -11,7 +11,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns a new reference when values change", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; b: string }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, b: "hello" });
     const obj2 = memoize({ a: 2, b: "hello" });
@@ -21,7 +21,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns a new reference when a key is added", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; b?: string }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1 });
     const obj2 = memoize({ a: 1, b: "hello" });
@@ -30,7 +30,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns a new reference when a key is removed", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; b?: string }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, b: "hello" });
     const obj2 = memoize({ a: 1 });
@@ -40,7 +40,7 @@ describe("createObjectMemoizer", () => {
 
   it("uses shallow equality for nested objects", () => {
     const nested = { x: 1 };
-    const memoize = createTypedObjectMemoizer<{ a: number; nested: typeof nested }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, nested });
     const obj2 = memoize({ a: 1, nested });
@@ -50,7 +50,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns new reference for different nested object references", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; nested: { x: number } }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, nested: { x: 1 } });
     const obj2 = memoize({ a: 1, nested: { x: 1 } });
@@ -60,7 +60,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("handles empty objects", () => {
-    const memoize = createTypedObjectMemoizer<Record<string, never>>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({});
     const obj2 = memoize({});
@@ -70,7 +70,7 @@ describe("createObjectMemoizer", () => {
 
   it("handles objects with arrays using reference equality", () => {
     const arr = [1, 2, 3];
-    const memoize = createTypedObjectMemoizer<{ items: number[] }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ items: arr });
     const obj2 = memoize({ items: arr });
@@ -79,7 +79,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns new reference for different array references", () => {
-    const memoize = createTypedObjectMemoizer<{ items: number[] }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ items: [1, 2, 3] });
     const obj2 = memoize({ items: [1, 2, 3] });
@@ -88,7 +88,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns first object on first call", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number }>();
+    const memoize = createObjectMemoizer();
     const input = { a: 1 };
 
     const result = memoize(input);
@@ -97,8 +97,8 @@ describe("createObjectMemoizer", () => {
   });
 
   it("each memoizer instance is independent", () => {
-    const memoize1 = createTypedObjectMemoizer<{ a: number }>();
-    const memoize2 = createTypedObjectMemoizer<{ a: number }>();
+    const memoize1 = createObjectMemoizer();
+    const memoize2 = createObjectMemoizer();
 
     const obj1 = memoize1({ a: 1 });
     const obj2 = memoize2({ a: 1 });
@@ -108,7 +108,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("handles null and undefined values in fields", () => {
-    const memoize = createTypedObjectMemoizer<{ a: null; b: undefined }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: null, b: undefined });
     const obj2 = memoize({ a: null, b: undefined });
@@ -117,7 +117,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("distinguishes between null and undefined", () => {
-    const memoize = createTypedObjectMemoizer<{ a: null | undefined }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: null });
     const obj2 = memoize({ a: undefined });
@@ -126,7 +126,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("handles boolean fields", () => {
-    const memoize = createTypedObjectMemoizer<{ flag: boolean }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ flag: true });
     const obj2 = memoize({ flag: true });
@@ -138,7 +138,7 @@ describe("createObjectMemoizer", () => {
 
   it("handles function references", () => {
     const fn = () => {};
-    const memoize = createTypedObjectMemoizer<{ callback: () => void }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ callback: fn });
     const obj2 = memoize({ callback: fn });
@@ -147,7 +147,7 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns new reference for different function references", () => {
-    const memoize = createTypedObjectMemoizer<{ callback: () => void }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ callback: () => {} });
     const obj2 = memoize({ callback: () => {} });
@@ -156,11 +156,131 @@ describe("createObjectMemoizer", () => {
   });
 
   it("returns the same reference when passing the previous result", () => {
-    const memoize = createTypedObjectMemoizer<{ a: number; b: string }>();
+    const memoize = createObjectMemoizer();
 
     const obj1 = memoize({ a: 1, b: "hello" });
     const obj2 = memoize(obj1);
 
     expect(obj1).toBe(obj2);
+  });
+});
+
+describe("createObjectMemoizer (deep)", () => {
+  it("returns the same reference for identical nested objects", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ a: 1, nested: { x: 1 } });
+    const obj2 = memoize({ a: 1, nested: { x: 1 } });
+
+    expect(obj1).toBe(obj2);
+  });
+
+  it("returns the same reference for arrays with identical objects", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const arr1 = memoize([{ a: 1 }, { b: 2 }]);
+    const arr2 = memoize([{ a: 1 }, { b: 2 }]);
+
+    expect(arr1).toBe(arr2);
+  });
+
+  it("handles rules-like pattern (array of rule objects)", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const rules1 = memoize([{ required: true, message: "Field is required" }]);
+    const rules2 = memoize([{ required: true, message: "Field is required" }]);
+
+    expect(rules1).toBe(rules2);
+  });
+
+  it("returns new reference when nested value changes", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ a: 1, nested: { x: 1 } });
+    const obj2 = memoize({ a: 1, nested: { x: 2 } });
+
+    expect(obj1).not.toBe(obj2);
+  });
+
+  it("returns new reference when sibling changes", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ a: { x: 1 }, b: { y: 2 } });
+    const obj2 = memoize({ a: { x: 1 }, b: { y: 3 } });
+
+    expect(obj1).not.toBe(obj2);
+  });
+
+  it("returns new reference when array item changes", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const arr1 = memoize([{ a: 1 }, { b: 2 }, { c: 3 }]);
+    const arr2 = memoize([{ a: 1 }, { b: 99 }, { c: 3 }]);
+
+    expect(arr1).not.toBe(arr2);
+  });
+
+  it("handles deeply nested structures", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ level1: { level2: { level3: { value: 1 } } } });
+    const obj2 = memoize({ level1: { level2: { level3: { value: 1 } } } });
+
+    expect(obj1).toBe(obj2);
+  });
+
+  it("handles empty arrays", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const arr1 = memoize([]);
+    const arr2 = memoize([]);
+
+    expect(arr1).toBe(arr2);
+  });
+
+  it("handles empty objects", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({});
+    const obj2 = memoize({});
+
+    expect(obj1).toBe(obj2);
+  });
+
+  it("handles arrays with different lengths", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const arr1 = memoize([{ a: 1 }, { b: 2 }]);
+    const arr2 = memoize([{ a: 1 }]);
+
+    expect(arr1).not.toBe(arr2);
+  });
+
+  it("handles mixed primitive and object values", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ num: 1, str: "hello", nested: { x: 1 } });
+    const obj2 = memoize({ num: 1, str: "hello", nested: { x: 1 } });
+
+    expect(obj1).toBe(obj2);
+  });
+
+  it("handles null values in nested structures", () => {
+    const memoize = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize({ a: null, b: { x: null } });
+    const obj2 = memoize({ a: null, b: { x: null } });
+
+    expect(obj1).toBe(obj2);
+  });
+
+  it("each memoizer instance is independent", () => {
+    const memoize1 = createObjectMemoizer({ deep: true });
+    const memoize2 = createObjectMemoizer({ deep: true });
+
+    const obj1 = memoize1([{ a: 1 }]);
+    const obj2 = memoize2([{ a: 1 }]);
+
+    expect(obj1).not.toBe(obj2);
   });
 });

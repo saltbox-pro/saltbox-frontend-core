@@ -11,6 +11,8 @@ const config = {
   moduleNameMapper: {
     ...moduleNameMapper,
     "\\.(css|scss)$": "identity-obj-proxy",
+    "^lodash-es/(.*)$": "<rootDir>/node_modules/lodash/$1",
+    "lodash-es": "lodash",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
   collectCoverage: true,

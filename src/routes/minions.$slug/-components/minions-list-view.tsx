@@ -17,9 +17,12 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { TaskCreate, useTaskCreate } from "saltbox-core/features/task-create";
+import {
+  TaskCreateModal,
+  PolicyCreateModal,
+  useTaskWorkflow,
+} from "saltbox-core/features/task-workflow";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { createTypedObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 import {
   apiCoreStore,
   appStore,
@@ -35,8 +38,6 @@ import { MinionsQueryBuilder } from "./minions-query-builder";
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
-
-const memoizeContext = createTypedObjectMemoizer<ComponentProps<typeof TaskCreate>["context"]>();
 
 const lastActivitySecondsToBadgeColor = (seconds: number) => {
   if (seconds < 5 * 60) return "green";
@@ -298,13 +299,13 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   }, []);
 
   const {
-    taskType,
     isTaskCreateOpen,
+    isPolicyCreateOpen,
     openTaskCreate,
     openPolicyCreate,
-    closeTaskCreate,
+    closeModal,
     goToTaskPage,
-  } = useTaskCreate();
+  } = useTaskWorkflow();
 
   let taskModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
@@ -365,16 +366,24 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         />
 
         {isTaskCreateOpen && (
-          <TaskCreate
+          <TaskCreateModal
             isOpen={isTaskCreateOpen}
-            context={memoizeContext({
-              taskType,
-              slug: props.slug,
-              collection: props.collectionStore.collection,
-              minionList: selectedMinions,
-              query: props.filterStore?.searchMongoDBQuery ?? {},
-            })}
-            onClose={closeTaskCreate}
+            slug={props.slug}
+            collection={props.collectionStore.collection}
+            minionList={selectedMinions}
+            query={props.filterStore?.searchMongoDBQuery ?? {}}
+            onClose={closeModal}
+            onTaskCreated={goToTaskPage}
+          />
+        )}
+
+        {isPolicyCreateOpen && (
+          <PolicyCreateModal
+            isOpen={isPolicyCreateOpen}
+            slug={props.slug}
+            collection={props.collectionStore.collection}
+            query={props.filterStore?.searchMongoDBQuery ?? {}}
+            onClose={closeModal}
             onTaskCreated={goToTaskPage}
           />
         )}

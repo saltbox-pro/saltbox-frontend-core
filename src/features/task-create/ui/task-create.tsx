@@ -1,4 +1,3 @@
-import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import { FC, useState } from "react";
 
 import { TaskCreationContext } from "../type/types";

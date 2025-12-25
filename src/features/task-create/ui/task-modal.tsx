@@ -1,13 +1,16 @@
 import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
-import { Modal, publish } from "@saltbox/saltbox-frontend-common";
+import { Modal } from "@saltbox/saltbox-frontend-common";
 import { Tabs, message } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
-
 import { taskTemplateService, taskCreationService } from "../service";
-import { TaskConfigurationFormData, TaskCreationContext } from "../type/types";
+import {
+  PluginRenderData,
+  TaskConfigurationFormData,
+  TaskCreationContext,
+  TaskOverviewData,
+} from "../type/types";
 
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";
@@ -24,8 +27,6 @@ const enum TabKey {
   Configuration = "Configuration",
   Overview = "Overview",
 }
-
-const memoize = createObjectMemoizer();
 
 export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated }: TaskModalProps) {
   const { t } = useTranslation();
@@ -96,19 +97,29 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
     }
   };
 
-  const handleCreateTaskPlugin = (pluginKey: string) => {
-    publish("minions.taskmodal.create", {
-      action: "create",
-      pluginKey,
+  const overviewData = useMemo(() => {
+    return {
+      template,
+      configuration,
+      context,
+    } as TaskOverviewData;
+  }, [configuration, context, template]);
+
+  const pluginData = useMemo<PluginRenderData>(
+    () => ({
       taskCreateRequest: taskCreationService.buildCreateRequest(
         configuration as TaskConfigurationFormData,
         context,
         template
       ),
       templateDescription: template?.title ?? "",
-    });
-    onClose();
-  };
+    }),
+    [configuration, context, template]
+  );
+
+  const pluginButtons = useMemo(() => {
+    return context.renderPluginButtons?.(pluginData) ?? [];
+  }, [context, pluginData]);
 
   const tabs = [
     {
@@ -131,14 +142,10 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         template && configuration ? (
           <TaskOverviewTab
             isLoading={isCreating}
-            overviewData={memoize({
-              template,
-              configuration: configuration as TaskConfigurationFormData,
-              context,
-            })}
+            overviewData={overviewData}
+            pluginButtons={pluginButtons}
             onBack={handleBackToConfiguration}
             onConfirm={handleCreateTask}
-            onCreateTaskPlugin={handleCreateTaskPlugin}
           />
         ) : null,
     },

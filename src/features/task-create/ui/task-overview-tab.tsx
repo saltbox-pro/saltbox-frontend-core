@@ -1,10 +1,9 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { Button, Descriptions, Divider, Flex, Typography } from "antd";
-import { ComponentProps, useMemo } from "react";
+import { ComponentProps, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
-import { appStore, i18nStore } from "saltbox-core/store";
 
 import { TaskOverviewData } from "../type/types";
 
@@ -15,9 +14,9 @@ const { Title, Text } = Typography;
 export type TaskOverviewTabProps = {
   isLoading?: boolean;
   overviewData: TaskOverviewData;
+  pluginButtons?: ReactNode;
   onBack: () => void;
   onConfirm: () => void;
-  onCreateTaskPlugin: (pluginKey: string) => void;
 };
 
 type DescriptionItems = ComponentProps<typeof Descriptions>["items"];
@@ -27,9 +26,9 @@ const memoize = createObjectMemoizer();
 export function TaskOverviewTab({
   isLoading = false,
   overviewData,
+  pluginButtons = [],
   onBack,
   onConfirm,
-  onCreateTaskPlugin = () => {},
 }: TaskOverviewTabProps) {
   const { t } = useTranslation();
   const { template, configuration, context } = overviewData;
@@ -86,6 +85,10 @@ export function TaskOverviewTab({
         children: configuration.max_retries,
       },
       {
+        label: t("task-create.retry-delay"),
+        children: t("task-create.retry-delay-seconds", { count: configuration.retry_delay }),
+      },
+      {
         label: t("task-create.max-parallel-jobs"),
         children: configuration.max_jobs_count_at_same_time,
       },
@@ -109,25 +112,6 @@ export function TaskOverviewTab({
     ],
     [t, context.collection, context.slug, context.minionList]
   );
-
-  const handleCreateTaskPlugin = (pluginKey: string) => {
-    onCreateTaskPlugin(pluginKey);
-  };
-
-  let minionsTaskModalCreateButtonsPlugin: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
-    const minionsTaskModalCreateButtonPlugin = (
-      <Button type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
-        {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
-      </Button>
-    );
-    minionsTaskModalCreateButtonsPlugin = (
-      <>
-        {minionsTaskModalCreateButtonsPlugin}
-        {minionsTaskModalCreateButtonPlugin}
-      </>
-    );
-  });
 
   return (
     <Flex vertical gap="middle">
@@ -200,7 +184,7 @@ export function TaskOverviewTab({
       <Flex justify="flex-end" gap="small">
         <Button onClick={onBack}>{t("task-create.back-to-config")}</Button>
 
-        {minionsTaskModalCreateButtonsPlugin}
+        {pluginButtons}
 
         <Button type="primary" onClick={onConfirm} loading={isLoading}>
           {t("task-create.create-task")}

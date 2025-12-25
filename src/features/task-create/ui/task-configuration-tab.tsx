@@ -22,7 +22,7 @@ export type TaskConfigurationTabProps = {
 type JsonFormChangeHandler = ComponentProps<typeof JsonForm>["onChange"];
 type JsonFormRef = ComponentProps<typeof JsonForm>["ref"];
 
-const memoize = createObjectMemoizer();
+const memoize = createObjectMemoizer({ deep: true });
 
 export function TaskConfigurationTab({
   template,
@@ -63,6 +63,7 @@ export function TaskConfigurationTab({
         task_template_id: template.id,
         batch_size: systemValues.batch_size ?? defaultConfig.batch_size,
         max_retries: systemValues.max_retries ?? defaultConfig.max_retries,
+        retry_delay: systemValues.retry_delay ?? defaultConfig.retry_delay,
         max_jobs_count_at_same_time:
           systemValues.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
         data: Object.keys(templateFormData).length
@@ -119,6 +120,20 @@ export function TaskConfigurationTab({
                     {
                       required: true,
                       message: t("task-form.max-retries-error-required"),
+                    },
+                  ])}
+                >
+                  <InputNumber min={0} className={styles.formItem} />
+                </Form.Item>
+
+                <Form.Item
+                  name="retry_delay"
+                  label={t("task-create.retry-delay")}
+                  tooltip={t("task-create.retry-delay-tooltip")}
+                  rules={memoize([
+                    {
+                      required: true,
+                      message: t("task-create.retry-delay-error-required"),
                     },
                   ])}
                 >

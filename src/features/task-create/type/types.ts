@@ -1,11 +1,13 @@
 import {
   CollectionModel,
+  TaskCreateRequestSchema,
   TaskData,
   TaskTargetMinion,
   TaskTemplateModel,
   TaskTemplateShortSchema,
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
+import { ReactNode } from "react";
 
 export type TaskTemplateWithRepository = TaskTemplateShortSchema & {
   repository?: string;
@@ -28,6 +30,7 @@ export type TaskConfigurationFormData = {
   task_template_id: string;
   batch_size: number;
   max_retries: number;
+  retry_delay: number;
   max_jobs_count_at_same_time: number;
   data: TaskData;
 };
@@ -38,4 +41,16 @@ export type TaskCreationContext = {
   minionList?: Array<TaskTargetMinion>;
   query?: object;
   slug: string;
+  renderPluginButtons?: (data: PluginRenderData) => ReactNode;
+};
+
+export type TaskCreatePlugin = {
+  key: string;
+  label?: Record<string, string>;
+  parcel: unknown;
+};
+
+export type PluginRenderData = {
+  taskCreateRequest: TaskCreateRequestSchema;
+  templateDescription: string;
 };

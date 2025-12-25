@@ -2225,10 +2225,10 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@^0.1.1-e4f74796351f974d12fd6d848998e285bd4483d7":
-  version "0.1.1-e4f74796351f974d12fd6d848998e285bd4483d7"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-e4f74796351f974d12fd6d848998e285bd4483d7.tgz#d747d045cf76477fe7cec694b8cd6043f893602e"
-  integrity sha1-10fQRc92R3/nzsaUuM1gQ/iTYC4=
+"@saltbox/saltbox-core-api-client@0.1.1-9b8a1f888c3d175960ae05375905fe76aee712d2":
+  version "0.1.1-9b8a1f888c3d175960ae05375905fe76aee712d2"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-9b8a1f888c3d175960ae05375905fe76aee712d2.tgz#912ddfe5212afa292e130a706240d461f45f68bc"
+  integrity sha1-kS3f5SEq+ikuEwpwYkDUYfRfaLw=
 
 "@saltbox/saltbox-frontend-common@^0.0.54":
   version "0.0.54"
@@ -2614,6 +2614,18 @@
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==
+
+"@types/lodash-es@^4.17.12":
+  version "4.17.12"
+  resolved "https://registry.yarnpkg.com/@types/lodash-es/-/lodash-es-4.17.12.tgz#65f6d1e5f80539aa7cfbfc962de5def0cf4f341b"
+  integrity sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash@*":
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.17.21.tgz#b806831543d696b14f8112db600ea9d3a1df6ea4"
+  integrity sha512-FOvQ0YPD5NOfPgMzJihoT+Za5pdkDJWcbpuj1DjaKZIr/gxodQjY/uWEFlTNqW2ugXHUiL8lRQgw63dzKHZdeQ==
 
 "@types/mdast@^4.0.0":
   version "4.0.4"
@@ -6741,6 +6753,11 @@ lodash-es@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.21.tgz#43e626c46e6591b7750beb2b50117390c609e3ee"
   integrity sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==
+
+lodash-es@^4.17.22:
+  version "4.17.22"
+  resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.17.22.tgz#eb7d123ec2470d69b911abe34f85cb694849b346"
+  integrity sha512-XEawp1t0gxSi9x01glktRZ5HDy0HXqrM0x5pXQM98EaI0NxO6jVM7omDOxsuEo5UIASAnm2bRp1Jt/e0a2XU8Q==
 
 lodash.curry@^4.0.1:
   version "4.1.1"

@@ -23,6 +23,7 @@ export class TaskCreationService {
       query: context.query ?? {},
       batch_size: formData.batch_size,
       max_retries: formData.max_retries,
+      retry_delay: formData.retry_delay,
       max_jobs_count_at_same_time: formData.max_jobs_count_at_same_time,
       data: this.filterTaskData(formData.data, taskTemplate),
     };
@@ -44,6 +45,7 @@ export class TaskCreationService {
     return {
       batch_size: 0,
       max_retries: 3,
+      retry_delay: 10,
       max_jobs_count_at_same_time: 1,
     };
   }
