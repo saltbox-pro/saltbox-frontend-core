@@ -203,7 +203,7 @@ const useSelectedMinion = (taskStore: TaskStore) => {
   );
 
   const getStoredMinion = (minion: TaskMinionModel) => {
-    return taskStore.minions?.[minion.minion_data.master + "_" + minion.minion_data.minion_id];
+    return taskStore.minions?.[minion.master + "_" + minion.minion_id];
   };
 
   const getMinionJobReturns = (minion?: TaskMinionModel) => {
@@ -215,8 +215,8 @@ const useSelectedMinion = (taskStore: TaskStore) => {
         taskStore.jobReturns?.find(
           (jobReturn) =>
             jobReturn.jid === jobId &&
-            jobReturn.salt_master === minion.minion_data.master &&
-            jobReturn.minion_id === minion.minion_data.minion_id
+            jobReturn.salt_master === minion.master &&
+            jobReturn.minion_id === minion.minion_id
         )
       )
       .filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
@@ -232,7 +232,7 @@ const useSelectedMinion = (taskStore: TaskStore) => {
   }, [taskStore.task, taskStore.jobReturns]);
 
   const updateSelectedMinion = (minion: TaskMinionModel) => {
-    if (selectedMinion?.minion_data.minion_id === minion.minion_data.minion_id) {
+    if (selectedMinion?.minion_id === minion.minion_id) {
       setSelectedMinionJobReturns([]);
       setSelectedMinion(undefined);
     } else {

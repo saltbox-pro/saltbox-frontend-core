@@ -175,8 +175,8 @@ export const MinionView = observer(
         mask={false}
         title={
           <>
-            {t("task.minion.title", { minionId: selectedMinion?.minion_data.minion_id })}
-            <CopyToClipboardButton text={selectedMinion?.minion_data.minion_id ?? ""} />
+            {t("task.minion.title", { minionId: selectedMinion?.minion_id })}
+            <CopyToClipboardButton text={selectedMinion?.minion_id ?? ""} />
           </>
         }
         width="35%"

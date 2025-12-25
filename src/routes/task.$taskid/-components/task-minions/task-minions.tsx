@@ -48,11 +48,11 @@ export const TaskMinions = ({
               }}
             >
               <Button type="link" size={"small"}>
-                {data.row.original?.minion_data?.minion_id}
+                {data.row.original?.minion_id}
               </Button>
             </Link>
             <div className={styles.minionIdCopyToClipboardButton}>
-              <CopyToClipboardButton text={data.row.original?.minion_data?.minion_id} />
+              <CopyToClipboardButton text={data.row.original?.minion_id} />
             </div>
             <div className={styles.minionIdNavigationLink}>
               <NavigationIconLink to={`/core/minion/${collectionSlug}/${mid}`} target="_blank" />
@@ -67,7 +67,7 @@ export const TaskMinions = ({
     columnHelper.display({
       header: t("task.minions.table-master"),
       cell: (data) => {
-        return data.row.original?.minion_data?.master;
+        return data.row.original?.master;
       },
     }),
     columnHelper.accessor("status", {

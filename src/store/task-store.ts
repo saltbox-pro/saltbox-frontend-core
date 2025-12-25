@@ -212,7 +212,7 @@ export class TaskStore {
     }
     this.isTaskLoading = true;
     apiCoreStore.tasksApi
-      ?.restartFailed({ tid: this.task.id })
+      .restartFailed({ tid: this.task.id, RestartFailedBody: {} })
       .then((task) => {
         runInAction(() => {
           this.task = task;
