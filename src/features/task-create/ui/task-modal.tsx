@@ -158,7 +158,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         title={t("task-create.configure-task-title")}
         open={isOpen}
         onCancel={onClose}
-        width="min(80vh, 800px)"
+        width="min(80vw, 800px)"
         footer={null}
         maskClosable={false}
         closable={!isCreating}

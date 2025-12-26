@@ -57,7 +57,9 @@ export function TaskOverviewTab({
       label: key,
       children:
         typeof value === "object" ? (
-          <pre className={styles.objectContent}>{JSON.stringify(value, null, 2)}</pre>
+          <Flex>
+            <pre className={styles.objectContent}>{JSON.stringify(value, null, 2)}</pre>
+          </Flex>
         ) : (
           String(value)
         ),

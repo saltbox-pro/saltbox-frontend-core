@@ -17,5 +17,8 @@
 
 .objectContent {
   margin: 0;
+  width: 0;
+  flex: 1;
+  overflow-x: auto;
   font-size: 12px;
 }
