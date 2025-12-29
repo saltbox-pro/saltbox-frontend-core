@@ -12,11 +12,13 @@ import { slsEditorStore } from "saltbox-core/store";
 import { ImportSlsModal } from "./components/import-sls-modal";
 import { RawSlsEditor } from "./components/raw-sls-editor";
 import styles from "./index.module.css";
+import { useNavigate } from "react-router";
 
 loader.config({ monaco });
 slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [importModalOpen, setImportModalOpen] = useState(false);
 
@@ -57,18 +59,6 @@ const SlsEditorPage = observer(() => {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            href: "/",
-            title: <HomeOutlined />,
-          },
-          {
-            title: "SLS Editor",
-          },
-        ]}
-      />
-
       <PageHeader title="SLS Editor" />
 
       <SlsEditor

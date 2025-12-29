@@ -1,4 +1,3 @@
-import { HomeOutlined } from "@ant-design/icons";
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   formatTimeByUserTZ,
@@ -8,11 +7,9 @@ import {
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Breadcrumb } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
 import { JobTemplateStore } from "saltbox-core/store";
@@ -58,20 +55,6 @@ const JobsTemplatePage = observer(() => {
   const [jobTemplateStore] = useState(new JobTemplateStore());
   return (
     <>
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("jobs-templates.title"),
-          },
-        ]}
-      />
       <PageHeader title={t("jobs-templates.title")} />
       <div className="page-actions-buttons">
         <SyncTemplatesButton onSyncComplete={() => jobTemplateStore.reload()} />

@@ -1,4 +1,4 @@
-import { HomeOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   formatTimeByUserTZ,
@@ -8,7 +8,7 @@ import {
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Breadcrumb, Button, Flex, Tag, message } from "antd";
+import { Button, Flex, Tag, message } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { JSX, useEffect, useState } from "react";
@@ -171,20 +171,7 @@ function MastersPage() {
   return (
     <>
       {contextHolder}
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("masters.title"),
-          },
-        ]}
-      />
+      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
 
       <PageHeader title={t("masters.title")} />
 
