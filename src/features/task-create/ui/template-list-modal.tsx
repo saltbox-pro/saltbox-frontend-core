@@ -80,7 +80,6 @@ export function TemplateListModal({ isOpen, onClose, onSelectTemplate }: Templat
       >
         <Flex className={styles.root} vertical gap="middle">
           <Input
-            className={styles.formItem}
             placeholder={t("task-create.search-templates-placeholder")}
             prefix={<SearchOutlined />}
             value={filters.searchQuery}
@@ -88,7 +87,6 @@ export function TemplateListModal({ isOpen, onClose, onSelectTemplate }: Templat
             allowClear
           />
           <Select
-            className={styles.formItem}
             placeholder={t("task-create.filter-by-repository")}
             value={filters.repositoryFilter}
             onChange={handleRepositoryChange}

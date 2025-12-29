@@ -3,10 +3,6 @@
   min-height: 300px;
 }
 
-.formItem {
-  flex: 1;
-}
-
 .templateList {
   overflow: auto;
   flex: 1;
