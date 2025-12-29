@@ -58,8 +58,14 @@
   height: 100%;
 }
 
+.minionsTabs :global(.ant-tabs-tabpane-active) {
+  display: flex;
+  flex-direction: column;
+}
+
 .minionsTabs {
-  margin-top: 8px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -81,18 +87,11 @@
 }
 
 .pillarsTabContent {
+  height: 0;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.pillarsTabContent :global(.fast-table) {
-  display: flex;
-  flex-direction: column;
-}
-
-.pillarsTabContent :global(.fast-table-wrapper) {
-  overflow: visible;
 }
 
 .tabExtraActions {
@@ -163,6 +162,7 @@
 }
 
 .jobReturnsWrapper {
+  min-height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -186,13 +186,8 @@
   margin-bottom: 8px;
 }
 
-.jobReturnsWrapper :global(.fast-table) {
-  display: flex;
-  flex-direction: column;
-}
-
 .jobReturnsWrapper :global(.fast-table-wrapper) {
-  overflow: visible;
+  overflow-x: hidden;
 }
 
 .jobReturnsWrapper :global(.fast-table table > thead > tr > th:first-child) {

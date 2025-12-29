@@ -38,7 +38,6 @@ import {
   Spin,
   Tabs,
   Tag,
-  Tooltip,
   message,
   type MenuProps,
   type TabsProps,
@@ -46,11 +45,9 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { formatQuery } from "react-querybuilder";
 import { useNavigate } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { JobFilterStore } from "saltbox-core/store";
 
 import {
   extractStringValue,
@@ -58,7 +55,6 @@ import {
   isSimpleStringData,
 } from "../job-return-table/utils/job-return-utils";
 
-import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-details.module.css";
 
 type SimpleGrainKeys = {
