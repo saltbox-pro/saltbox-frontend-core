@@ -204,7 +204,7 @@ const JobPage = observer(() => {
       <div className={styles.jobDetailsContainer}>
         <div className={styles.jobDetailItem}>
           <JobModal
-            target={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",")}
+            target={jobStore.jobTargets}
             targetType={jobStore.job?.tgt_type as CreateJobRequestTgtTypeEnum}
             fun={jobStore.job?.fun}
             arg={jobStore.job?.arg}
@@ -227,14 +227,12 @@ const JobPage = observer(() => {
         <div className={styles.jobDetailItem}>
           <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
           <span className={`${styles.jobDetailValue} ${styles.jobDetailValueTargets}`}>
-            {(jobStore.job?.tgt as string) ? (
+            {jobStore.jobTargets ? (
               <>
-                <Text ellipsis className={styles.targetText} title={jobStore.job?.tgt as string}>
-                  {jobStore.job?.tgt as string}
+                <Text ellipsis className={styles.targetText} title={jobStore.jobTargets}>
+                  {jobStore.jobTargets}
                 </Text>
-                <CopyToClipboardButton
-                  text={(jobStore.job?.tgt as string)?.replace(/,\s+/g, ",") || ""}
-                />
+                <CopyToClipboardButton text={jobStore.jobTargets} />
               </>
             ) : (
               <Skeleton.Input size="small" />

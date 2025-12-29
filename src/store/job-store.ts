@@ -271,6 +271,17 @@ export class JobStore {
   get isSingleJobReturn() {
     return this.totalMinions === 1;
   }
+
+  @computed
+  get jobTargets() {
+    if (Array.isArray(this.job?.tgt)) {
+      return this.job.tgt.join(",");
+    }
+    if (typeof this.job?.tgt === "string") {
+      return this.job.tgt.replace(/,\s+/g, ",");
+    }
+    return undefined;
+  }
 }
 
 export const jobStore = new JobStore();
