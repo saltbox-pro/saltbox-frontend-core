@@ -28,6 +28,7 @@ export { MastersStore } from "./masters-store";
 export { PillarsStore } from "./pillars-store";
 export { JobTemplateStore } from "./jobs-templates-store";
 export { JobFilterStore } from "./job-filter-store";
+export { JobStore } from "./job-store";
 export { JobsStore } from "./jobs-store";
 export { DefaultCollectionStore } from "./default-collection-store";
 export { TasksFilterStore } from "./tasks-filter-store";

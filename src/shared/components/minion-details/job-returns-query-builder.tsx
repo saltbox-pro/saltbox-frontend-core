@@ -1,14 +1,13 @@
-import {
-  SaltBoxQueryBuilderContainer,
-  SaltBoxJobValueEditor,
-} from "@saltbox/saltbox-frontend-common";
+import { SaltBoxQueryBuilderContainer } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 
-import { JobFilterStore } from "saltbox-core/store";
+import { CoreJobReturnValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-job-return-value-editor";
+import { JobFilterStore, JobStore } from "saltbox-core/store";
 
 export const JobReturnsQueryBuilder = observer(
   (props: {
     filterStore: JobFilterStore;
+    jobStore?: JobStore;
     onSearchButtonClick?: () => void;
     onResetButtonClick?: () => void;
   }) => {
@@ -18,7 +17,7 @@ export const JobReturnsQueryBuilder = observer(
         onSearchButtonClick={props.onSearchButtonClick}
         onResetButtonClick={props.onResetButtonClick}
         controlElements={{
-          valueEditor: SaltBoxJobValueEditor,
+          valueEditor: CoreJobReturnValueEditor(props.jobStore),
         }}
       />
     );
