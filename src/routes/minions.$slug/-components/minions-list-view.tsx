@@ -144,11 +144,17 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       minionsColumnHelper.accessor("grains.fqdn", {
         header: t("minions.table-fqdn"),
       }),
-      minionsColumnHelper.accessor("grains.osfullname", {
-        header: t("minions.table-os-full-name"),
-      }),
       minionsColumnHelper.accessor("grains.domain", {
         header: t("minions.table-domain"),
+      }),
+      minionsColumnHelper.accessor("master", {
+        header: t("minions.table-master"),
+      }),
+      minionsColumnHelper.accessor("grains.saltversion", {
+        header: t("minions.table-client-version"),
+      }),
+      minionsColumnHelper.accessor("grains.osfinger", {
+        header: t("minions.table-os"),
       }),
       minionsColumnHelper.accessor("grains.efi", {
         header: t("minions.table-efi"),
@@ -160,14 +166,17 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           );
         },
       }),
-      minionsColumnHelper.accessor("grains.cpu_model", {
-        header: t("minions.table-cpu-model"),
-      }),
-      minionsColumnHelper.accessor("grains.mem_total", {
-        header: t("minions.table-total-memory"),
+      minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
+        id: "grains.efi-secure-boot",
+        header: t("minions.table-secure-boot"),
         cell: (data) => {
-          if (!data || data?.getValue() === undefined) return "";
-          return <>{data.getValue()} Mb</>;
+          const value = data.getValue();
+          if (value === null || value === undefined) return "";
+          return (
+            <Tag color={value ? "green" : "red"}>
+              {value ? t("minions.efi-yes") : t("minions.efi-no")}
+            </Tag>
+          );
         },
       }),
       minionsColumnHelper.accessor("created", {

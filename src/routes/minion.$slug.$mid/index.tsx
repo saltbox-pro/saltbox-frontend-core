@@ -10,6 +10,7 @@ import { useNavigate, useParams } from "react-router";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { retcodeValues, retcodeLegacyValues } from "saltbox-core/shared/conf/retcode-values";
 import { CollectionStore, MinionStore, jobStore, JobFilterStore } from "saltbox-core/store";
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
 
@@ -82,37 +83,59 @@ const defaultDateTimeOperators = [
 ];
 
 type MongoDBQuery = Record<string, unknown> & {
-  retcode?: { $in?: Array<number | string> } | number | { $ne: number };
+  retcode?: { $in?: Array<number | string> } | number | string | { $ne: number };
 };
 
 const transformRetcodeFilter = (query: object): MongoDBQuery => {
   const mongoQuery = query as MongoDBQuery;
-  if (
-    !mongoQuery?.retcode ||
-    typeof mongoQuery.retcode !== "object" ||
-    !("$in" in mongoQuery.retcode)
-  ) {
+
+  if (!mongoQuery?.retcode) {
     return mongoQuery;
   }
-
-  const retcodeIn = mongoQuery.retcode.$in;
-  if (!Array.isArray(retcodeIn)) {
-    return mongoQuery;
-  }
-
-  const [hasZero, hasNotSuccess] = [retcodeIn.includes(0), retcodeIn.includes("NOT_SUCCESS")];
 
   const { retcode, ...rest } = mongoQuery;
 
-  if ((hasZero && hasNotSuccess) || (!hasZero && !hasNotSuccess)) {
-    return rest as MongoDBQuery;
+  if (typeof retcode !== "object") {
+    const retcodeStr = String(retcode).toLowerCase();
+
+    if (retcodeStr === retcodeValues.no || retcode === retcodeLegacyValues.notSuccess) {
+      return { ...rest, retcode: { $ne: 0 } } as MongoDBQuery;
+    }
+
+    if (
+      retcodeStr === retcodeValues.yes ||
+      retcode === retcodeLegacyValues.zero ||
+      Number(retcode) === 0
+    ) {
+      return { ...rest, retcode: 0 } as MongoDBQuery;
+    }
+
+    return mongoQuery;
   }
 
-  if (hasNotSuccess) {
-    return { ...rest, retcode: { $ne: 0 } } as MongoDBQuery;
+  if ("$in" in retcode) {
+    const retcodeIn = retcode.$in;
+    if (!Array.isArray(retcodeIn)) {
+      return mongoQuery;
+    }
+
+    const hasYes =
+      retcodeIn.includes(retcodeLegacyValues.zero) ||
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes);
+    const hasNo =
+      retcodeIn.includes(retcodeLegacyValues.notSuccess) ||
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no);
+
+    if (hasYes === hasNo) {
+      return rest as MongoDBQuery;
+    }
+
+    return hasNo
+      ? ({ ...rest, retcode: { $ne: 0 } } as MongoDBQuery)
+      : ({ ...rest, retcode: 0 } as MongoDBQuery);
   }
 
-  return { ...rest, retcode: 0 } as MongoDBQuery;
+  return mongoQuery;
 };
 
 const jobReturnsFilterSchema = [
@@ -129,19 +152,7 @@ const jobReturnsFilterSchema = [
   {
     name: "retcode",
     label: "Return Code",
-    operators: [
-      {
-        name: "in",
-        value: "in",
-        label: "in",
-      },
-    ],
-    type: "multiselect",
-    defaultValue: [],
-    selectOptions: [
-      { label: "ДА", value: 0 },
-      { label: "НЕТ", value: "NOT_SUCCESS" },
-    ],
+    operators: defaultStringOperators,
   },
   {
     name: "stamp",
@@ -335,6 +346,7 @@ const MinionPage = observer(() => {
   const jobReturnsFilter = showJobReturnsFilter ? (
     <JobReturnsQueryBuilder
       filterStore={jobReturnsFilterStore}
+      jobStore={jobStore}
       onSearchButtonClick={handleJobReturnsFilterSearch}
       onResetButtonClick={handleJobReturnsFilterReset}
     />
