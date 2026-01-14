@@ -1,7 +1,18 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Badge, Empty, Flex, Input, List, Select, Typography, message } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Badge,
+  Empty,
+  Flex,
+  Input,
+  InputRef,
+  List,
+  Select,
+  Tooltip,
+  Typography,
+  message,
+} from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { taskTemplateService } from "../service";
@@ -17,9 +28,22 @@ export type TemplateListModalProps = {
   onSelectTemplate: (templateId: string) => void;
 };
 
-export function TemplateListModal({ isOpen, onClose, onSelectTemplate }: TemplateListModalProps) {
+const useSearch = ({ isOpen }: TemplateListModalProps) => {
+  const searchInputRef = useRef<InputRef>(null);
+
+  useEffect(() => {
+    searchInputRef.current?.focus();
+  }, [isOpen]);
+
+  return { searchInputRef };
+};
+
+export function TemplateListModal(props: TemplateListModalProps) {
+  const { isOpen, onClose, onSelectTemplate } = props;
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
+
+  const { searchInputRef } = useSearch(props);
 
   const [isLoading, setIsLoading] = useState(false);
   const [templates, setTemplates] = useState<TaskTemplateWithRepository[]>([]);
@@ -77,9 +101,11 @@ export function TemplateListModal({ isOpen, onClose, onSelectTemplate }: Templat
         onCancel={onClose}
         footer={null}
         maskClosable={false}
+        width="min(80vw, 600px)"
       >
         <Flex className={styles.root} vertical gap="middle">
           <Input
+            ref={searchInputRef}
             placeholder={t("task-create.search-templates-placeholder")}
             prefix={<SearchOutlined />}
             value={filters.searchQuery}
@@ -115,16 +141,20 @@ export function TemplateListModal({ isOpen, onClose, onSelectTemplate }: Templat
                   className={styles.listItem}
                   onClick={() => handleTemplateSelect(template.id)}
                 >
-                  <Flex vertical gap="small">
-                    <Title className={styles.listItemPart} level={5}>
-                      {template.title || template.id}
-                    </Title>
-                    {template.repository && (
-                      <Badge
-                        count={template.repository}
-                        classNames={{ indicator: styles.repoBadge }}
-                      />
-                    )}
+                  <Flex vertical gap="small" className={styles.listItemWrapper}>
+                    <Flex justify="space-between" gap="small">
+                      <Tooltip title={template.title || template.id}>
+                        <Title className={styles.listItemPart} level={5} ellipsis>
+                          {template.title || template.id}
+                        </Title>
+                      </Tooltip>
+                      {template.repository && (
+                        <Badge
+                          count={template.repository}
+                          classNames={{ indicator: styles.repoBadge }}
+                        />
+                      )}
+                    </Flex>
                     {template.name && (
                       <Paragraph
                         className={styles.listItemPart}

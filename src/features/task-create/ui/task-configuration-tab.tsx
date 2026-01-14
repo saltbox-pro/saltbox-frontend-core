@@ -113,6 +113,20 @@ export function TaskConfigurationTab({
                 </Form.Item>
 
                 <Form.Item
+                  name="max_jobs_count_at_same_time"
+                  label={t("task-create.max-parallel-jobs")}
+                  tooltip={t("task-create.max-parallel-jobs-tooltip")}
+                  rules={memoize([
+                    {
+                      required: true,
+                      message: t("task-form.max-parallel-jobs-error-required"),
+                    },
+                  ])}
+                >
+                  <InputNumber min={1} className={styles.formItem} />
+                </Form.Item>
+
+                <Form.Item
                   name="max_retries"
                   label={t("task-create.max-retries")}
                   tooltip={t("task-create.max-retries-tooltip")}
@@ -138,20 +152,6 @@ export function TaskConfigurationTab({
                   ])}
                 >
                   <InputNumber min={0} className={styles.formItem} />
-                </Form.Item>
-
-                <Form.Item
-                  name="max_jobs_count_at_same_time"
-                  label={t("task-create.max-parallel-jobs")}
-                  tooltip={t("task-create.max-parallel-jobs-tooltip")}
-                  rules={memoize([
-                    {
-                      required: true,
-                      message: t("task-form.max-parallel-jobs-error-required"),
-                    },
-                  ])}
-                >
-                  <InputNumber min={1} className={styles.formItem} />
                 </Form.Item>
               </Form>
 

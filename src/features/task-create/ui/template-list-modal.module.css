@@ -9,8 +9,19 @@
   height: 100%;
 }
 
-.listItem {
+.listItem.listItem {
   cursor: pointer;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.listItem:hover {
+  background-color: #f0f5ff;
+}
+
+.listItemWrapper {
+  width: 0;
+  flex: 1;
 }
 
 .listItemPart.listItemPart {

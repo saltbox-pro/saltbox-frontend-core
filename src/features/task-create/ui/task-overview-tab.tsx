@@ -1,4 +1,5 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
+import { isMongoQueryEmpty } from "@saltbox/saltbox-frontend-common";
 import { Button, Descriptions, Divider, Flex, Typography } from "antd";
 import { ComponentProps, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -83,6 +84,10 @@ export function TaskOverviewTab({
           configuration.batch_size === 0 ? t("task-create.no-batching") : configuration.batch_size,
       },
       {
+        label: t("task-create.max-parallel-jobs"),
+        children: configuration.max_jobs_count_at_same_time,
+      },
+      {
         label: t("task-create.max-retries"),
         children: configuration.max_retries,
       },
@@ -90,30 +95,60 @@ export function TaskOverviewTab({
         label: t("task-create.retry-delay"),
         children: t("task-create.retry-delay-seconds", { count: configuration.retry_delay }),
       },
-      {
-        label: t("task-create.max-parallel-jobs"),
-        children: configuration.max_jobs_count_at_same_time,
-      },
     ],
     [t, configuration, context.taskType]
   );
 
-  const targetInfo = useMemo<DescriptionItems>(
-    () => [
+  const targetInfo = useMemo<DescriptionItems>(() => {
+    const getTargetMinionsInfo = () => {
+      if (context.minionList?.length > 0) {
+        const minionIds = context.minionList.map((minion) => minion.minion_id);
+
+        const renderMinionIds = () =>
+          minionIds.map((minionId, i) => (
+            <span key={minionId} className={styles.minionId}>
+              {minionId}
+              {i < minionIds.length - 1 ? <>,&nbsp;</> : null}
+            </span>
+          ));
+
+        return (
+          <Typography.Paragraph
+            className={styles.minionList}
+            ellipsis={{
+              rows: 4,
+              tooltip: {
+                title: <span>{renderMinionIds()}</span>,
+                classNames: memoize({
+                  root: styles.minionTooltipRoot,
+                  body: styles.minionTooltipBody,
+                }),
+              },
+            }}
+          >
+            {renderMinionIds()}
+          </Typography.Paragraph>
+        );
+      }
+
+      if (isMongoQueryEmpty(context.query)) {
+        return t("task-create.no-query-selection");
+      }
+
+      return t("task-create.query-based-selection");
+    };
+
+    return [
       {
         label: t("task-create.collection"),
         children: context.collection?.slug || context.slug,
       },
       {
         label: t("task-create.target-minions"),
-        children:
-          context.minionList?.length > 0
-            ? `${context.minionList.length} ${t("task-create.minions-selected")}`
-            : t("task-create.query-based-selection"),
+        children: getTargetMinionsInfo(),
       },
-    ],
-    [t, context.collection, context.slug, context.minionList]
-  );
+    ];
+  }, [t, context.collection, context.slug, context.minionList, context.query]);
 
   return (
     <Flex vertical gap="middle">

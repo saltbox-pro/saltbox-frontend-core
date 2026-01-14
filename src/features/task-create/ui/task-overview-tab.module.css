@@ -22,3 +22,21 @@
   overflow-x: auto;
   font-size: 12px;
 }
+
+.minionList {
+  margin: 0;
+}
+
+.minionId {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.minionTooltipRoot {
+  max-width: 480px;
+}
+
+.minionTooltipBody {
+  max-height: 240px;
+  overflow: auto;
+}
