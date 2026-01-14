@@ -21,7 +21,7 @@ function CollectionCreateModal({
   query: object;
   parentSlug: string;
   isOpen?: boolean;
-  onClose?: () => void;
+  onClose?: (success: boolean) => void;
 }) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -44,7 +44,7 @@ function CollectionCreateModal({
   const handleModalCancel = () => {
     if (!isCollectionCreating) {
       setIsModalOpen(false);
-      onClose?.();
+      onClose?.(false);
     }
   };
 
@@ -68,11 +68,10 @@ function CollectionCreateModal({
       .then((response) => {
         messageApi.success(t("collection-create-modal.success"));
         setIsModalOpen(false);
-        onClose?.();
+        onClose?.(true);
         if (response.slug) {
           navigate(`/minions/${response.slug}`);
         }
-        window.location.reload();
       })
       .catch((e) => {
         messageApi.error(t("collection-create-modal.error"));

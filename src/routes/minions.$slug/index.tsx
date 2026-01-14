@@ -136,12 +136,6 @@ const MinionsPage = observer(() => {
     minionFilterStore.loadFiltersScheme();
   }, []);
 
-  useEffect(() => {
-    if (collectionStore.isDeleted) {
-      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? "root"}`);
-    }
-  }, [collectionStore.isDeleted, navigate]);
-
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
       {
@@ -291,10 +285,12 @@ const MinionsPage = observer(() => {
         open={isDeleteModalOpen}
         onOk={async () => {
           try {
+            const parentSlug = collectionStore.collection.parent_slug;
             await collectionStore.deleteCollection();
             setIsDeleteModalOpen(false);
             messageApi.success(t("collection.collection-deleted-successfully"));
-            window.location.reload();
+            minionFilterStore.handleResetFilters();
+            navigate(`/minions/${parentSlug}`);
           } catch (error) {
             messageApi.error(t("collection.error-deleting-collection"));
           }
@@ -315,7 +311,12 @@ const MinionsPage = observer(() => {
         query={minionFilterStore.searchMongoDBQuery as object}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={(success: boolean) => {
+          if (success) {
+            minionFilterStore.handleResetFilters();
+          }
+          setIsCreateModalOpen(false);
+        }}
       />
     </>
   );

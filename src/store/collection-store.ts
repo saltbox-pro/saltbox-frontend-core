@@ -7,14 +7,12 @@ export class CollectionStore {
   isLoading: boolean;
   collection: CollectionDetailSchema | undefined;
   collectionSlug: string | undefined;
-  isDeleted: boolean;
   isCollectionLoading: boolean;
   error: string | null;
 
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
-    this.isDeleted = false;
     this.isCollectionLoading = false;
     this.error = null;
     this.loadCollection();
@@ -108,7 +106,6 @@ export class CollectionStore {
       });
 
       runInAction(() => {
-        this.isDeleted = true;
         this.collection = undefined;
         this.collectionSlug = undefined;
       });
