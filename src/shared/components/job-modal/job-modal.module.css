@@ -47,3 +47,8 @@
 .jobFormGather {
   margin-top: 24px;
 }
+
+.helpIcon {
+  cursor: help;
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}

@@ -591,8 +591,9 @@ export function JobModal({
                   trigger="hover"
                   open={functionHovered}
                   onOpenChange={handleFunctionHoverChange}
+                  overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
                 >
-                  <QuestionCircleOutlined />
+                  <QuestionCircleOutlined className={styles.helpIcon} />
                 </Popover>
               </Flex>
             }

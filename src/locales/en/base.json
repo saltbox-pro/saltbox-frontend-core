@@ -356,6 +356,7 @@
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-conversion-error": "Cannot convert data to table: {{reason}}",
     "table-empty": "No data available",
+    "table-no-data-filtered": "No data matching the selected filters",
     "table-errors-found": "Errors found for {{count}} minion(s)",
     "table-errors-collapse": "Collapse",
     "table-errors-expand": "Expand"

@@ -7,3 +7,8 @@
 .hintRoot {
   max-width: min(40vw, 600px);
 }
+
+.helpIcon {
+  cursor: help;
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}

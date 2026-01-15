@@ -45,8 +45,9 @@ const TargetTypeHint: FC<TargetTypeHintProps> = ({ data }) => {
       placement="right"
       open={isHintOpen}
       onOpenChange={handleOpenChange}
+      overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
     >
-      <QuestionCircleOutlined />
+      <QuestionCircleOutlined className={styles.helpIcon} />
     </Popover>
   );
 };

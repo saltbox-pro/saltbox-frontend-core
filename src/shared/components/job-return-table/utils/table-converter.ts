@@ -1,6 +1,8 @@
-const MAX_TABLE_ROWS = 10000;
-const MAX_TABLE_COLUMNS = 100;
-const MAX_NESTED_DEPTH = 3;
+const maxTableRows = 10000;
+const maxTableColumns = 100;
+const maxNestedDepth = 3;
+const maxDisplayLength = 100;
+const maxFilterOptions = 100;
 
 export type TableRow = Record<string, unknown>;
 export type TableData = {
@@ -10,6 +12,8 @@ export type TableData = {
   reason?: string;
   errors?: Array<{ minion_id: string; error: string }>;
 };
+
+export { maxDisplayLength, maxFilterOptions };
 
 const isErrorData = (data: unknown): boolean => {
   if (typeof data === "string") {
@@ -48,7 +52,7 @@ const isErrorData = (data: unknown): boolean => {
 const flattenObject = (
   obj: unknown,
   prefix = "",
-  maxDepth = MAX_NESTED_DEPTH,
+  maxDepth = maxNestedDepth,
   depth = 0
 ): Record<string, unknown> => {
   if (depth >= maxDepth) {
@@ -126,7 +130,7 @@ const formatValue = (value: unknown): string => {
 };
 
 const countRows = (data: unknown, depth = 0): number => {
-  if (depth > MAX_NESTED_DEPTH) {
+  if (depth > maxNestedDepth) {
     return 1;
   }
 
@@ -145,7 +149,7 @@ const countRows = (data: unknown, depth = 0): number => {
   return 1;
 };
 
-const collectKeys = (data: unknown, depth = 0, maxDepth = MAX_NESTED_DEPTH): Set<string> => {
+const collectKeys = (data: unknown, depth = 0, maxDepth = maxNestedDepth): Set<string> => {
   const keys = new Set<string>();
 
   if (depth > maxDepth) {
@@ -188,21 +192,21 @@ const convertDictOfDicts = (data: Record<string, unknown>, minionId: string): Ta
 
   const columns = ["minion_id", "dict_key", ...Array.from(allKeys).sort()];
 
-  if (columns.length > MAX_TABLE_COLUMNS) {
+  if (columns.length > maxTableColumns) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many columns: ${columns.length} > ${MAX_TABLE_COLUMNS}`,
+      reason: `Too many columns: ${columns.length} > ${maxTableColumns}`,
     };
   }
 
-  if (Object.keys(data).length > MAX_TABLE_ROWS) {
+  if (Object.keys(data).length > maxTableRows) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many rows: ${Object.keys(data).length} > ${MAX_TABLE_ROWS}`,
+      reason: `Too many rows: ${Object.keys(data).length} > ${maxTableRows}`,
     };
   }
 
@@ -256,12 +260,12 @@ const convertSimpleValue = (data: string | number | boolean, minionId: string): 
 const convertSimpleList = (data: unknown[], minionId: string): TableData => {
   const rows: TableRow[] = [];
 
-  if (data.length > MAX_TABLE_ROWS) {
+  if (data.length > maxTableRows) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many rows: ${data.length} > ${MAX_TABLE_ROWS}`,
+      reason: `Too many rows: ${data.length} > ${maxTableRows}`,
     };
   }
 
@@ -293,21 +297,21 @@ const convertListOfObjects = (data: unknown[], minionId: string): TableData => {
 
   const columns = ["minion_id", ...Array.from(allKeys).sort()];
 
-  if (columns.length > MAX_TABLE_COLUMNS) {
+  if (columns.length > maxTableColumns) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many columns: ${columns.length} > ${MAX_TABLE_COLUMNS}`,
+      reason: `Too many columns: ${columns.length} > ${maxTableColumns}`,
     };
   }
 
-  if (data.length > MAX_TABLE_ROWS) {
+  if (data.length > maxTableRows) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many rows: ${data.length} > ${MAX_TABLE_ROWS}`,
+      reason: `Too many rows: ${data.length} > ${maxTableRows}`,
     };
   }
 
@@ -345,12 +349,12 @@ const convertListOfObjects = (data: unknown[], minionId: string): TableData => {
 const convertSimpleObject = (data: Record<string, unknown>, minionId: string): TableData => {
   const columns = ["minion_id", ...Object.keys(data).sort()];
 
-  if (columns.length > MAX_TABLE_COLUMNS) {
+  if (columns.length > maxTableColumns) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many columns: ${columns.length} > ${MAX_TABLE_COLUMNS}`,
+      reason: `Too many columns: ${columns.length} > ${maxTableColumns}`,
     };
   }
 
@@ -392,10 +396,10 @@ export const canConvertToTable = (data: unknown): boolean => {
       return false;
     }
     if (data.every((item) => isPrimitive(item))) {
-      return countRows(data) <= MAX_TABLE_ROWS;
+      return countRows(data) <= maxTableRows;
     }
     if (data.every((item) => typeof item === "object" && item !== null && !Array.isArray(item))) {
-      return countRows(data) <= MAX_TABLE_ROWS;
+      return countRows(data) <= maxTableRows;
     }
     return false;
   }
@@ -412,7 +416,7 @@ export const canConvertToTable = (data: unknown): boolean => {
       (v) => typeof v === "object" && v !== null && !Array.isArray(v)
     );
     if (allValuesAreObjects) {
-      return countRows(data) <= MAX_TABLE_ROWS;
+      return countRows(data) <= maxTableRows;
     }
 
     return true;
@@ -598,22 +602,22 @@ export const mergeJobReturnsToTable = (
     };
   }
 
-  if (allColumns.size > MAX_TABLE_COLUMNS) {
+  if (allColumns.size > maxTableColumns) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many columns: ${allColumns.size} > ${MAX_TABLE_COLUMNS}`,
+      reason: `Too many columns: ${allColumns.size} > ${maxTableColumns}`,
       errors: errors.length > 0 ? errors : undefined,
     };
   }
 
-  if (allRows.length > MAX_TABLE_ROWS) {
+  if (allRows.length > maxTableRows) {
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: `Too many rows: ${allRows.length} > ${MAX_TABLE_ROWS}`,
+      reason: `Too many rows: ${allRows.length} > ${maxTableRows}`,
       errors: errors.length > 0 ? errors : undefined,
     };
   }
