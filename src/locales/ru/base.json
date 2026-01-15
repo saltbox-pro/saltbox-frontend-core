@@ -155,7 +155,7 @@
   },
   "task-create": {
     "select-template-title": "Выберите шаблон задачи",
-    "search-templates-placeholder": "Поиск по названию или описанию...",
+    "search-templates-placeholder": "Поиск по названию...",
     "filter-by-repository": "Фильтр по репозиторию",
     "no-templates-found": "Шаблоны не найдены",
     "no-templates-available": "Нет доступных шаблонов",
@@ -182,7 +182,6 @@
     "validation-error": "Ошибка валидации формы",
     "template-info": "Информация о шаблоне",
     "template-title": "Название",
-    "template-id": "Идентификатор",
     "template-function": "Функция Salt",
     "template-parameters": "Параметры шаблона",
     "no-parameters": "Параметры не заданы",

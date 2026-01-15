@@ -155,7 +155,7 @@
   },
   "task-create": {
     "select-template-title": "Select task template",
-    "search-templates-placeholder": "Search by title or description...",
+    "search-templates-placeholder": "Search by title...",
     "filter-by-repository": "Filter by repository",
     "no-templates-found": "No templates found",
     "no-templates-available": "No templates available",
@@ -182,7 +182,6 @@
     "validation-error": "Form validation error",
     "template-info": "Template info",
     "template-title": "Title",
-    "template-id": "Id",
     "template-function": "Salt function",
     "template-parameters": "Template parameters",
     "no-parameters": "No configured parameters",

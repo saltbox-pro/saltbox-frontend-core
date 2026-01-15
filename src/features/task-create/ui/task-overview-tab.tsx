@@ -41,12 +41,8 @@ export function TaskOverviewTab({
         children: template.title,
       },
       {
-        label: t("task-create.template-id"),
-        children: template.id,
-      },
-      {
         label: t("task-create.template-function"),
-        children: template.fun,
+        children: template.fun + (template.name ? ` "${template.name}"` : ""),
       },
     ],
     [t, template]

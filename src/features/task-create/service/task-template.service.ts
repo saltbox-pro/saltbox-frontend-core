@@ -46,10 +46,7 @@ export class TaskTemplateService {
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
       filtered = filtered.filter((template) => {
-        type TemplateKeys = Array<keyof typeof template>;
-        return (["title", "name", "id"] satisfies TemplateKeys).some((field) =>
-          template[field]?.toLowerCase().includes(query)
-        );
+        return template.title?.toLowerCase().includes(query);
       });
     }
 

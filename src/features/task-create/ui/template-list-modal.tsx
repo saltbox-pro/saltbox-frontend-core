@@ -141,28 +141,17 @@ export function TemplateListModal(props: TemplateListModalProps) {
                   className={styles.listItem}
                   onClick={() => handleTemplateSelect(template.id)}
                 >
-                  <Flex vertical gap="small" className={styles.listItemWrapper}>
-                    <Flex justify="space-between" gap="small">
-                      <Tooltip title={template.title || template.id}>
-                        <Title className={styles.listItemPart} level={5} ellipsis>
-                          {template.title || template.id}
-                        </Title>
-                      </Tooltip>
-                      {template.repository && (
-                        <Badge
-                          count={template.repository}
-                          classNames={{ indicator: styles.repoBadge }}
-                        />
-                      )}
-                    </Flex>
-                    {template.name && (
-                      <Paragraph
-                        className={styles.listItemPart}
-                        ellipsis={{ rows: 3 }}
-                        type="secondary"
-                      >
-                        {template.name}
-                      </Paragraph>
+                  <Flex gap="small" justify="space-between" className={styles.listItemWrapper}>
+                    <Tooltip title={template.title || template.id}>
+                      <Title className={styles.listItemPart} level={5} ellipsis>
+                        {template.title || template.id}
+                      </Title>
+                    </Tooltip>
+                    {template.repository && (
+                      <Badge
+                        count={template.repository}
+                        classNames={{ indicator: styles.repoBadge }}
+                      />
                     )}
                   </Flex>
                 </List.Item>
