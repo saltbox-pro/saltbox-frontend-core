@@ -72,6 +72,7 @@ export const DefaultJobReturnTable = ({
   total,
   onLazyLoad,
   onTableViewSortingChange,
+  onTableViewFilteredDataChange,
 }: {
   jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
@@ -84,6 +85,7 @@ export const DefaultJobReturnTable = ({
   total: number;
   onLazyLoad: OnLazyLoad;
   onTableViewSortingChange?: OnChangeFn<SortingState>;
+  onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -121,6 +123,9 @@ export const DefaultJobReturnTable = ({
               <CopyToClipboardButton text={data.row.original.minion_id} />
             </>
           );
+        },
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
         },
       }),
       columnHelper.accessor("retcode", {
@@ -233,7 +238,12 @@ export const DefaultJobReturnTable = ({
   ) {
     return (
       <div className={styles.jobReturnTableContainer}>
-        <TableView data={mergedTableData} minionId="" onSortingChange={onTableViewSortingChange} />
+        <TableView
+          data={mergedTableData}
+          minionId=""
+          onSortingChange={onTableViewSortingChange}
+          onFilteredDataChange={onTableViewFilteredDataChange}
+        />
       </div>
     );
   }

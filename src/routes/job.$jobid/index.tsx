@@ -1,6 +1,6 @@
 import {
   ReloadOutlined,
-  DownloadOutlined,
+  UploadOutlined,
   QuestionCircleOutlined,
   FilterOutlined,
   ArrowLeftOutlined,
@@ -50,6 +50,7 @@ const JobPage = observer(() => {
   const [webSocketService] = useState(new WebSocketService<JobModel>());
   const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
+  const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -75,6 +76,10 @@ const JobPage = observer(() => {
     return tableConversionCheck;
   }, [isTableViewMode, tableConversionCheck]);
 
+  useEffect(() => {
+    setFilteredTableRows([]);
+  }, [mergedTableData]);
+
   const tableColumnsForExport = useMemo(() => {
     if (!mergedTableData || !mergedTableData.canConvert) {
       return [];
@@ -89,8 +94,15 @@ const JobPage = observer(() => {
       );
   }, [mergedTableData]);
 
+  const rowsToExport = useMemo(() => {
+    if (filteredTableRows.length > 0) {
+      return filteredTableRows;
+    }
+    return mergedTableData?.canConvert ? mergedTableData.rows : [];
+  }, [filteredTableRows, mergedTableData]);
+
   const exportTable = useReactTable({
-    data: mergedTableData?.canConvert ? mergedTableData.rows : [],
+    data: rowsToExport,
     columns: tableColumnsForExport,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -101,7 +113,7 @@ const JobPage = observer(() => {
   });
 
   const handleExportToCSV = useCallback(() => {
-    if (!mergedTableData || !mergedTableData.canConvert || mergedTableData.rows.length === 0) {
+    if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
       return;
     }
     const filename = `job-returns-${jid}-${Date.now()}.csv`;
@@ -112,7 +124,7 @@ const JobPage = observer(() => {
       rows: sortedRows,
     };
     exportToCSV(sortedTableData, filename);
-  }, [mergedTableData, jid, exportTable, tableViewSorting]);
+  }, [mergedTableData, jid, exportTable, rowsToExport]);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -333,6 +345,7 @@ const JobPage = observer(() => {
                 <Tooltip
                   title={tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")}
                   placement="left"
+                  overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
                 >
                   <QuestionCircleOutlined className={styles.helpIcon} />
                 </Tooltip>
@@ -342,7 +355,7 @@ const JobPage = observer(() => {
               <Tooltip title={t("jobs.download-to-csv")}>
                 <Button
                   type="primary"
-                  icon={<DownloadOutlined />}
+                  icon={<UploadOutlined />}
                   onClick={handleExportToCSV}
                   disabled={
                     !mergedTableData ||
@@ -369,6 +382,7 @@ const JobPage = observer(() => {
           isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
           forceExpand={jobStore.isSingleJobReturn}
           onTableViewSortingChange={setTableViewSorting}
+          onTableViewFilteredDataChange={setFilteredTableRows}
         />
       </div>
 

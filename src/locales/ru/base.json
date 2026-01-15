@@ -356,6 +356,7 @@
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-conversion-error": "Невозможно преобразовать данные в таблицу: {{reason}}",
     "table-empty": "Нет данных",
+    "table-no-data-filtered": "Нет данных, соответствующих выбранным фильтрам",
     "table-errors-found": "Найдены ошибки для {{count}} миньон(ов)",
     "table-errors-collapse": "Свернуть",
     "table-errors-expand": "Развернуть"
