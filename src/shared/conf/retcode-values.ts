@@ -1,6 +1,6 @@
 export const retcodeValues = {
-  yes: "да",
-  no: "нет",
+  yes: "Да",
+  no: "Нет",
 } as const;
 
 export const retcodeLegacyValues = {

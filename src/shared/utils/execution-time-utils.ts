@@ -103,18 +103,18 @@ export const getExecutionTimeColor = (
 };
 
 export const calculateExecutionTime = (
-  jobStartTime: number,
-  jobReturnStamp: string
+  jobStartTime: number | null,
+  jobReturnStamp: string | null
 ): number | null => {
-  if (!jobReturnStamp) return null;
+  if (!jobReturnStamp || !jobStartTime) return null;
 
-  const jobReturnTime = dayjs(jobReturnStamp + "Z");
+  const jobReturnTime = dayjs(jobReturnStamp);
   if (!jobReturnTime.isValid()) return null;
 
   const executionTimeMs = jobReturnTime.valueOf() - jobStartTime;
   const executionTimeSeconds = executionTimeMs / 1000;
 
-  if (isNaN(executionTimeSeconds) || !isFinite(executionTimeSeconds) || executionTimeSeconds < 0) {
+  if (!isFinite(executionTimeSeconds) || executionTimeSeconds < 0) {
     return null;
   }
 
@@ -123,14 +123,17 @@ export const calculateExecutionTime = (
 
 export const getMaxExecutionTime = (
   jobReturns: JobReturnModel[],
-  jobStartTime: number
+  jobStartTime: number | null
 ): number | null => {
   if (!jobReturns?.length || !jobStartTime) {
     return null;
   }
 
   const executionTimes = jobReturns
-    .map((returnItem) => calculateExecutionTime(jobStartTime, returnItem.stamp))
+    .map((returnItem) => {
+      const startTime = returnItem.stamp_job ? dayjs(returnItem.stamp_job).valueOf() : jobStartTime;
+      return calculateExecutionTime(startTime, returnItem.stamp);
+    })
     .filter((time): time is number => time !== null);
 
   return executionTimes.length > 0 ? Math.max(...executionTimes) : null;
@@ -139,25 +142,33 @@ export const getMaxExecutionTime = (
 export const useFormatAndGetExecutionTimeColor = (
   jobStartTimestamp: string | null,
   stamp: string | null,
+  jobReturn: JobReturnModel | null,
   allJobReturns: JobReturnModel[],
   t: (key: string) => string
 ): { formattedTime: string; color: string } => {
-  if (!jobStartTimestamp || !stamp) {
+  if (!stamp) {
     return {
       formattedTime: t("task.job-returns-table.invalid-execution-time"),
       color: "#000000",
     };
   }
 
-  const jobStartTime = dayjs(jobStartTimestamp).valueOf();
-  const executionTimeSeconds = calculateExecutionTime(jobStartTime, stamp);
+  const startTime = jobReturn?.stamp_job
+    ? dayjs(jobReturn.stamp_job).valueOf()
+    : jobStartTimestamp
+      ? dayjs(jobStartTimestamp).valueOf()
+      : null;
 
-  if (
-    executionTimeSeconds === null ||
-    executionTimeSeconds <= 0 ||
-    isNaN(executionTimeSeconds) ||
-    !isFinite(executionTimeSeconds)
-  ) {
+  if (!startTime) {
+    return {
+      formattedTime: t("task.job-returns-table.invalid-execution-time"),
+      color: "#000000",
+    };
+  }
+
+  const executionTimeSeconds = calculateExecutionTime(startTime, stamp);
+
+  if (executionTimeSeconds === null || executionTimeSeconds <= 0) {
     return {
       formattedTime: t("task.job-returns-table.invalid-execution-time"),
       color: "#000000",
@@ -167,7 +178,14 @@ export const useFormatAndGetExecutionTimeColor = (
   const formattedTime = formatExecutionTime(executionTimeSeconds, t);
 
   const allExecutionTimes = allJobReturns
-    .map((returnItem) => calculateExecutionTime(jobStartTime, returnItem.stamp))
+    .map((returnItem) => {
+      const itemStartTime = returnItem.stamp_job
+        ? dayjs(returnItem.stamp_job).valueOf()
+        : jobStartTimestamp
+          ? dayjs(jobStartTimestamp).valueOf()
+          : null;
+      return calculateExecutionTime(itemStartTime, returnItem.stamp);
+    })
     .filter((time): time is number => time !== null && time > 0);
 
   const statistics = calculateStatistics(allExecutionTimes);

@@ -218,12 +218,8 @@ export class JobStore {
 
   @computed
   get jobStartTimestamp() {
-    let timestamp = null;
-    if (this.job?.fms_jid_timestamp) {
-      timestamp = this.job.fms_jid_timestamp;
-    } else if (this.job?.created) {
-      timestamp = this.job.created;
-    } else return null;
+    const timestamp = this.job?.stamp || this.job?.fms_jid_timestamp || this.job?.created;
+    if (!timestamp) return null;
 
     const date = dayjs(timestamp);
     if (!date.isValid()) {

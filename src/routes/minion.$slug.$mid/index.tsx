@@ -98,12 +98,15 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
   if (typeof retcode !== "object") {
     const retcodeStr = String(retcode).toLowerCase();
 
-    if (retcodeStr === retcodeValues.no || retcode === retcodeLegacyValues.notSuccess) {
+    if (
+      retcodeStr === retcodeValues.no.toLowerCase() ||
+      retcode === retcodeLegacyValues.notSuccess
+    ) {
       return { ...rest, retcode: { $ne: 0 } } as MongoDBQuery;
     }
 
     if (
-      retcodeStr === retcodeValues.yes ||
+      retcodeStr === retcodeValues.yes.toLowerCase() ||
       retcode === retcodeLegacyValues.zero ||
       Number(retcode) === 0
     ) {
@@ -121,10 +124,10 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
 
     const hasYes =
       retcodeIn.includes(retcodeLegacyValues.zero) ||
-      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes);
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());
     const hasNo =
       retcodeIn.includes(retcodeLegacyValues.notSuccess) ||
-      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no);
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no.toLowerCase());
 
     if (hasYes === hasNo) {
       return rest as MongoDBQuery;
@@ -137,6 +140,14 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
 
   return mongoQuery;
 };
+
+const retcodeOperators = [
+  {
+    name: "=",
+    value: "=",
+    label: "=",
+  },
+];
 
 const jobReturnsFilterSchema = [
   {
@@ -152,7 +163,7 @@ const jobReturnsFilterSchema = [
   {
     name: "retcode",
     label: "Return Code",
-    operators: defaultStringOperators,
+    operators: retcodeOperators,
   },
   {
     name: "stamp",
