@@ -34,17 +34,20 @@ const columnHelper = createColumnHelper<JobReturnModel>();
 const ExecutionTimeCell = ({
   jobStartTimestamp,
   stamp,
+  jobReturn,
   jobReturns,
   t,
 }: {
   jobStartTimestamp: string | null;
   stamp: string | null;
+  jobReturn: JobReturnModel;
   jobReturns: JobReturnModel[];
   t: (key: string) => string;
 }) => {
   const { formattedTime, color } = useFormatAndGetExecutionTimeColor(
     jobStartTimestamp,
     stamp,
+    jobReturn,
     jobReturns,
     t
   );
@@ -159,6 +162,7 @@ export const DefaultJobReturnTable = ({
             <ExecutionTimeCell
               jobStartTimestamp={jobStartTimestamp?.toISOString() || null}
               stamp={row.original.stamp || null}
+              jobReturn={row.original}
               jobReturns={jobReturns}
               t={t}
             />
