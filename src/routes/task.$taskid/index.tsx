@@ -406,11 +406,6 @@ const TaskPage = observer(() => {
 
   return (
     <>
-      <Button
-        icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/minions/root?tab=tasks")}
-      ></Button>
-
       <PageHeader
         title={t("task.page-title", {
           templateName: taskStore.task?.task_template?.title ?? "...",

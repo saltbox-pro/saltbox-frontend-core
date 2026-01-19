@@ -206,27 +206,6 @@ const CollectionEditPage = observer(() => {
   return (
     <>
       {contextHolder}
-      <Breadcrumb
-        items={[
-          {
-            title: (
-              <Link to="/minions">
-                <HomeOutlined />
-              </Link>
-            ),
-          },
-          {
-            title: t("collection.collections"),
-          },
-          {
-            title: (
-              <Flex gap={8} align="center">
-                {collectionStore.collection?.title}
-              </Flex>
-            ),
-          },
-        ]}
-      />
       <PageHeader
         title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
       ></PageHeader>

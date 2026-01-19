@@ -45,7 +45,7 @@ import {
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 
@@ -504,7 +504,8 @@ export function MinionDetails(props: {
   jobReturnsFilterButton?: React.ReactNode;
 }) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<string>(() => searchParams.get("tab") || "dashboard");
   const combinedGrains = props.minion
     ? {
         ...props.minion.grains,
@@ -841,7 +842,17 @@ export function MinionDetails(props: {
       items={items}
       className={styles.minionsTabs}
       tabBarExtraContent={fullViewActions}
-      onChange={(key) => setActiveTab(key)}
+      onChange={(key) => {
+        setActiveTab(key);
+        {
+          location.pathname !== "/core/minions/root" &&
+            setSearchParams((prev) => {
+              const newParams = new URLSearchParams(prev);
+              newParams.set("tab", key);
+              return newParams;
+            });
+        }
+      }}
       activeKey={activeTab}
     />
   );

@@ -171,7 +171,6 @@ function MastersPage() {
   return (
     <>
       {contextHolder}
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
 
       <PageHeader title={t("masters.title")} />
 

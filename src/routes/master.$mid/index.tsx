@@ -720,7 +720,6 @@ const MasterPage = observer(() => {
   return (
     <>
       {contextHolder}
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/masters")}></Button>
 
       <PageHeader title={masterId} />
 
