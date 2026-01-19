@@ -1,4 +1,3 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
@@ -334,7 +333,6 @@ const JobsPage = observer(() => {
 
   return (
     <>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
       <PageHeader title={t("jobs.title")} />
 
       <JobsQueryBuilder

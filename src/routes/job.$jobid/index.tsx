@@ -19,7 +19,17 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, Progress, Radio, Skeleton, Statistic, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Flex,
+  Progress,
+  Radio,
+  Skeleton,
+  Statistic,
+  Switch,
+  Tooltip,
+  Typography,
+} from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -184,8 +194,6 @@ const JobPage = observer(() => {
 
   return (
     <>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/jobs")}></Button>
-
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
       <div className={styles.jobDetailsContainer}>

@@ -365,8 +365,6 @@ const MinionPage = observer(() => {
 
   return (
     <>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/minions")}></Button>
-
       <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
