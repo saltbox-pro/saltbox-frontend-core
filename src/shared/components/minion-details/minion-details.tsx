@@ -56,6 +56,7 @@ import {
 } from "../job-return-table/utils/job-return-utils";
 
 import styles from "./minion-details.module.css";
+import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode ? K : never]: GrainsSchema[K];
@@ -393,26 +394,17 @@ const minionDetailsViewsToDescriptionItems = (
     if ("value" in minionDetailView) {
       const grainValue = minionDetailView.value(schema);
 
-      if (typeof grainValue === "object") {
-        return {
-          key: minionDetailView.key,
-          label: minionDetailView.name,
-          children: grainValue,
-          span: 3,
-        };
-      }
-
       return {
         key: minionDetailView.key,
         label: minionDetailView.name,
         children: (
           <Flex justify="space-between" className="minion-details-grain">
             <Flex className="minion-details-grain-name">{grainValue}</Flex>
-            {grainValue && (
-              <Flex className={styles.minionDetailsGrainButtons}>
-                <CopyToClipboardButton text={String(grainValue)} />
-              </Flex>
-            )}
+            <Flex className={styles.minionDetailsGrainButtons}>
+              {transformGrainValueToString(grainValue) !== "" && (
+                <CopyToClipboardButton text={transformGrainValueToString(grainValue)} />
+              )}
+            </Flex>
           </Flex>
         ),
         span: 3,
