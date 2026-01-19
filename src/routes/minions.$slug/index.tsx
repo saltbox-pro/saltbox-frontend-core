@@ -209,7 +209,7 @@ const MinionsPage = observer(() => {
     <>
       {contextHolder}
 
-      <PageHeader title={t("minions.title")}></PageHeader>
+      <PageHeader title={`${t("minions.title")} ${collectionStore.collection?.title}`}></PageHeader>
 
       <Tabs
         className={styles.minionsTabs}
