@@ -1,14 +1,4 @@
-import {
-  ArrowLeftOutlined,
-  CaretRightOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  HomeOutlined,
-  IssuesCloseOutlined,
-  QuestionCircleOutlined,
-  StopOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { CaretRightOutlined, IssuesCloseOutlined, StopOutlined } from "@ant-design/icons";
 import {
   JobReturnModel,
   JobsListResponse,
@@ -21,17 +11,18 @@ import {
 import {
   formatTimeByUserTZ,
   PageHeader,
-  WebSocketService,
   pastTimeByUserTZ,
   Popover,
   WebSocketMessage,
+  WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
-import { Breadcrumb, Button, Flex, Skeleton, Spin, Statistic } from "antd";
+import { Button, Flex, Skeleton, Statistic } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
+import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 
 import { MinionView } from "./-components/minion-view/minion-view";
@@ -304,57 +295,6 @@ const useWebSocket = (
       webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
   }, [appStore.authStore?.user]);
-};
-
-const TaskStatusIndicator = ({ status }: { status?: TaskStatus | "none" }) => {
-  const { t } = useTranslation();
-
-  switch (status) {
-    case TaskStatus.Created:
-      return (
-        <span>
-          <ClockCircleOutlined /> {t("task.created")}
-        </span>
-      );
-    case TaskStatus.Finished:
-      return (
-        <>
-          <CheckCircleOutlined /> {t("task.finished")}
-        </>
-      );
-    case TaskStatus.Running:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.running")}
-        </span>
-      );
-    case TaskStatus.Stopping:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.stopping")}
-        </span>
-      );
-    case TaskStatus.Stopped:
-      return (
-        <span>
-          <StopOutlined /> {t("task.stopped")}
-        </span>
-      );
-    case TaskStatus.WaitMinions:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.wait-minions")}
-        </span>
-      );
-    case "none":
-      return (
-        <span>
-          <QuestionCircleOutlined /> {t("task.unknown")}
-        </span>
-      );
-    default:
-      return <Skeleton.Input size="small" />;
-  }
 };
 
 const TaskPage = observer(() => {

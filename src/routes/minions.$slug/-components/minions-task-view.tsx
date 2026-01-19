@@ -9,11 +9,13 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Progress } from "antd";
+import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
@@ -156,13 +158,6 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: t("minions.table-task-template-name"),
         enableSorting: false,
       }),
-      columnHelper.accessor("target_collection.title", {
-        header: t("minions.table-collection"),
-        enableSorting: false,
-        cell: (data) => {
-          return <> {data.getValue()} </>;
-        },
-      }),
       columnHelper.accessor("source.type", {
         header: t("minions.table-source-type"),
         enableSorting: false,
@@ -181,16 +176,22 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: t("minions.table-user"),
         enableSorting: false,
       }),
-      // TODO: Add status column after API is updated
-      /* columnHelper.display({
+      columnHelper.accessor("status.type", {
         header: t("minions.table-status"),
         enableSorting: false,
         cell: (data) => {
-          const totalMinions = data.row.original?.total_minions ?? 0;
-          const statusFailed = data.row.original?.minions_count_by_status?.failed ?? 0;
-          const statusSuccess = data.row.original?.minions_count_by_status?.success ?? 0;
-          const statusInWork = data.row.original?.minions_count_by_status?.in_work ?? 0;
-          const statusPending = data.row.original?.minions_count_by_status?.pending ?? 0;
+          return <TaskStatusIndicator status={data.row.original?.status.type} />;
+        },
+      }),
+      columnHelper.display({
+        header: t("minions.table-progress"),
+        enableSorting: false,
+        cell: (data) => {
+          const totalMinions = data.row.original?.minions_count.total;
+          const statusFailed = data.row.original?.minions_count.failed;
+          const statusSuccess = data.row.original?.minions_count.success ?? 0;
+          const statusInWork = data.row.original?.minions_count.in_work ?? 0;
+          const statusPending = data.row.original?.minions_count.pending ?? 0;
           const progressStrokeColors = Array.from({ length: 10 }, (_, i) => {
             if (i < Math.ceil((statusSuccess / totalMinions) * 10)) {
               return "#52c41a";
@@ -239,7 +240,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
             </Popover>
           );
         },
-      }), */
+      }),
       columnHelper.accessor("created", {
         header: t("minions.table-created"),
         cell: (data) => {
