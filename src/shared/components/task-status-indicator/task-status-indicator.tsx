@@ -7,55 +7,67 @@ import {
 } from "@ant-design/icons";
 import { TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { Skeleton, Spin } from "antd";
+import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-export const TaskStatusIndicator = ({ status }: { status?: TaskStatus | "none" }) => {
+interface TaskStatusIndicatorProps {
+  status?: TaskStatus | "none";
+}
+
+interface StatusConfig {
+  icon: ReactNode;
+  translationKey: string;
+}
+
+const spinningIcon = <Spin indicator={<SyncOutlined spin />} size="small" />;
+
+export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
   const { t } = useTranslation();
 
-  switch (status) {
-    case TaskStatus.Created:
-      return (
-        <span>
-          <ClockCircleOutlined /> {t("task.created")}
-        </span>
-      );
-    case TaskStatus.Finished:
-      return (
-        <>
-          <CheckCircleOutlined /> {t("task.finished")}
-        </>
-      );
-    case TaskStatus.Running:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.running")}
-        </span>
-      );
-    case TaskStatus.Stopping:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.stopping")}
-        </span>
-      );
-    case TaskStatus.Stopped:
-      return (
-        <span>
-          <StopOutlined /> {t("task.stopped")}
-        </span>
-      );
-    case TaskStatus.WaitMinions:
-      return (
-        <span>
-          <Spin indicator={<SyncOutlined spin />} size="small" /> {t("task.wait-minions")}
-        </span>
-      );
-    case "none":
-      return (
-        <span>
-          <QuestionCircleOutlined /> {t("task.unknown")}
-        </span>
-      );
-    default:
-      return <Skeleton.Input size="small" />;
+  if (!status) {
+    return <Skeleton.Input size="small" />;
   }
+
+  const statusConfig: Record<TaskStatus | "none", StatusConfig> = {
+    [TaskStatus.Created]: {
+      icon: <ClockCircleOutlined />,
+      translationKey: "task.created",
+    },
+    [TaskStatus.Finished]: {
+      icon: <CheckCircleOutlined />,
+      translationKey: "task.finished",
+    },
+    [TaskStatus.Running]: {
+      icon: spinningIcon,
+      translationKey: "task.running",
+    },
+    [TaskStatus.Stopping]: {
+      icon: spinningIcon,
+      translationKey: "task.stopping",
+    },
+    [TaskStatus.Stopped]: {
+      icon: <StopOutlined />,
+      translationKey: "task.stopped",
+    },
+    [TaskStatus.WaitMinions]: {
+      icon: spinningIcon,
+      translationKey: "task.wait-minions",
+    },
+    none: {
+      icon: <QuestionCircleOutlined />,
+      translationKey: "task.unknown",
+    },
+  };
+
+  const config = statusConfig[status];
+
+  if (!config) {
+    return <Skeleton.Input size="small" />;
+  }
+
+  return (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+      {config.icon} {t(config.translationKey)}
+    </span>
+  );
 };
