@@ -2,6 +2,7 @@ import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-cl
 import {
   CopyToClipboardButton,
   FastTablePaginated,
+  formatTimeByUserTZ,
   pastTimeByUserTZ,
   Popover,
   WebSocketMessage,
@@ -242,7 +243,12 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: t("minions.table-created"),
         cell: (data) => {
           const created: string = pastTimeByUserTZ(data.getValue());
-          return <div>{created}</div>;
+          const fullDate = formatTimeByUserTZ(data.getValue());
+          return (
+            <Popover content={fullDate}>
+              <div style={{ cursor: "pointer" }}>{created}</div>
+            </Popover>
+          );
         },
       }),
     ],
