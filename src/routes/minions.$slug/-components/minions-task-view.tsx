@@ -1,4 +1,4 @@
-import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   FastTablePaginated,
@@ -9,7 +9,6 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Progress } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -57,16 +56,6 @@ const defaultDateTimeOperators = [
 
 const defaultListOperators = [
   {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
-  {
     name: "in",
     value: "in",
     label: "In",
@@ -112,9 +101,17 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         operators: defaultStringOperators,
       },
       {
-        name: "status",
+        name: "status.type",
         label: t("minions.table-status"),
-        operators: defaultStringOperators,
+        operators: defaultListOperators,
+        type: "multiselect",
+        selectOptions: [
+          { label: t("task.created"), value: TaskStatus.Created },
+          { label: t("task.running"), value: TaskStatus.Running },
+          { label: t("task.stopping"), value: TaskStatus.Stopping },
+          { label: t("task.stopped"), value: TaskStatus.Stopped },
+          { label: t("task.finished"), value: TaskStatus.Finished },
+        ],
       },
       {
         name: "created",
