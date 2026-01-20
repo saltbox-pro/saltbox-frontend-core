@@ -38,6 +38,7 @@
     "table-collection": "Коллекция",
     "table-user": "Пользователь",
     "table-status": "Статус",
+    "table-progress": "Прогресс",
     "table-source-type": "Тип источника",
     "table-soruce-type-rest": "Пользователь",
     "table-soruce-type-scheduler": "Планировщик",
