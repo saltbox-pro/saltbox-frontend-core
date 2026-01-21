@@ -505,6 +505,21 @@ export function MinionDetails(props: {
       }
     : {};
 
+  const handleTabChange = useCallback(
+    (key: string) => {
+      setActiveTab(key);
+
+      if (location.pathname !== "/core/minions/root") {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          newParams.set("tab", key);
+          return newParams;
+        });
+      }
+    },
+    [location.pathname, setSearchParams]
+  );
+
   const minionGeneralDetailViews: MinionDetailView[] = [
     { key: "id", name: t("minions.minion-id") },
     { key: "virtual", name: t("minions.virtualization") },
@@ -834,17 +849,7 @@ export function MinionDetails(props: {
       items={items}
       className={styles.minionsTabs}
       tabBarExtraContent={fullViewActions}
-      onChange={(key) => {
-        setActiveTab(key);
-        {
-          location.pathname !== "/core/minions/root" &&
-            setSearchParams((prev) => {
-              const newParams = new URLSearchParams(prev);
-              newParams.set("tab", key);
-              return newParams;
-            });
-        }
-      }}
+      onChange={handleTabChange}
       activeKey={activeTab}
     />
   );
