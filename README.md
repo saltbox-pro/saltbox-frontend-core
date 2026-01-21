@@ -9,12 +9,14 @@ Frontend microfrontend for the Salt.Box core functionality.
 For development with local changes to `@saltbox/saltbox-frontend-common`, you can link the package directly instead of using the published version:
 
 1. **Configure the local path**:
+
    ```bash
    cp example.env .env
    # Edit .env and set: COMMON_REPO_PATH=../saltbox-frontend-common
    ```
 
 2. **Link the package** (required for build system to detect type changes):
+
    ```bash
    # In the common package directory
    cd ../saltbox-frontend-common
@@ -31,6 +33,7 @@ For development with local changes to `@saltbox/saltbox-frontend-common`, you ca
    ```
 
 The development webpack configuration will automatically:
+
 - Resolve `@saltbox/saltbox-frontend-common` imports to your local repository
 - Handle CSS from the linked package
 - Ensure React singleton compatibility
@@ -40,6 +43,7 @@ The development webpack configuration will automatically:
 To stop using the local package and return to the published version:
 
 1. **Unlink the package**:
+
    ```bash
    # In the core package directory
    yarn unlink @saltbox/saltbox-frontend-common
@@ -50,6 +54,7 @@ To stop using the local package and return to the published version:
    ```
 
 2. **Reinstall the published package**:
+
    ```bash
    # Back in the core package directory
    cd ../saltbox-frontend-core
@@ -57,6 +62,7 @@ To stop using the local package and return to the published version:
    ```
 
 3. **Remove the environment variable**:
+
    ```bash
    # Remove COMMON_REPO_PATH from .env, set it to empty, or just comment the line like:
    #COMMON_REPO_PATH=../saltbox-frontend-common
@@ -72,6 +78,7 @@ The webpack configuration will automatically use the published package from `nod
 ### Without Local Linking
 
 If you don't need to modify the common package, simply:
+
 ```bash
 yarn start
 ```
@@ -80,4 +87,4 @@ The package will use the published version from npm.
 
 ## Used API's (Swagger OpenAPI links)
 
-Core: http://localhost/api/core/docs
+Core: https://localhost/api/core/docs
