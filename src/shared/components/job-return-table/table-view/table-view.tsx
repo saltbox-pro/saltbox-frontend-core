@@ -56,8 +56,8 @@ export const TableView: React.FC<TableViewProps> = ({
   }, [tableData]);
 
   React.useEffect(() => {
-    if (onErrorsChange && tableData.errors) {
-      onErrorsChange(tableData.errors);
+    if (onErrorsChange) {
+      onErrorsChange(tableData.errors || []);
     }
   }, [tableData.errors, onErrorsChange]);
 

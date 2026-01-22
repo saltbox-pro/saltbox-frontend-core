@@ -69,6 +69,13 @@ const JobPage = observer(() => {
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
   const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
 
+  const handleTableErrorsChange = useCallback(
+    (errors: Array<{ minion_id: string; error: string }>) => {
+      setTableErrors(errors);
+    },
+    []
+  );
+
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
 
@@ -95,8 +102,10 @@ const JobPage = observer(() => {
 
   useEffect(() => {
     setFilteredTableRows([]);
-    setTableErrors([]);
-  }, [mergedTableData]);
+    if (!isTableViewMode) {
+      setTableErrors([]);
+    }
+  }, [mergedTableData, isTableViewMode]);
 
   const tableColumnsForExport = useMemo(() => {
     if (!mergedTableData || !mergedTableData.canConvert) {
@@ -422,7 +431,7 @@ const JobPage = observer(() => {
           forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
           onTableViewSortingChange={setTableViewSorting}
           onTableViewFilteredDataChange={setFilteredTableRows}
-          onTableViewErrorsChange={setTableErrors}
+          onTableViewErrorsChange={handleTableErrorsChange}
         />
       </div>
 

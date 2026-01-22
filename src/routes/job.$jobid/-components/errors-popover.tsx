@@ -1,5 +1,5 @@
-import { CloseOutlined, CopyOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-import { Popover, MatIcon } from "@saltbox/saltbox-frontend-common";
+import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
+import { MatIcon, Popover } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
