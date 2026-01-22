@@ -84,44 +84,18 @@ const defaultDateTimeOperators = [
 
 type MongoDBQuery = Record<string, unknown> & {
   retcode?: { $in?: Array<number | string> } | number | string | { $ne: number };
+  $and?: Array<MongoDBQuery>;
+  $or?: Array<MongoDBQuery>;
 };
 
-const transformRetcodeFilter = (query: object): MongoDBQuery => {
-  const mongoQuery = query as MongoDBQuery;
-
-  if (!mongoQuery?.retcode) {
-    return mongoQuery;
-  }
-
-  const { retcode, ...rest } = mongoQuery;
-
-  if (typeof retcode !== "object") {
-    const retcodeStr = String(retcode).toLowerCase();
-
-    if (
-      retcodeStr === retcodeValues.no.toLowerCase() ||
-      retcode === retcodeLegacyValues.notSuccess
-    ) {
-      return { ...rest, retcode: { $ne: 0 } } as MongoDBQuery;
-    }
-
-    if (
-      retcodeStr === retcodeValues.yes.toLowerCase() ||
-      retcode === retcodeLegacyValues.zero ||
-      Number(retcode) === 0
-    ) {
-      return { ...rest, retcode: 0 } as MongoDBQuery;
-    }
-
-    return mongoQuery;
-  }
-
-  if ("$in" in retcode) {
+const transformRetcodeValue = (retcode: unknown): number | { $ne: number } | undefined => {
+  if (
+    typeof retcode === "object" &&
+    retcode !== null &&
+    "$in" in retcode &&
+    Array.isArray(retcode.$in)
+  ) {
     const retcodeIn = retcode.$in;
-    if (!Array.isArray(retcodeIn)) {
-      return mongoQuery;
-    }
-
     const hasYes =
       retcodeIn.includes(retcodeLegacyValues.zero) ||
       retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());
@@ -129,16 +103,55 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
       retcodeIn.includes(retcodeLegacyValues.notSuccess) ||
       retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no.toLowerCase());
 
-    if (hasYes === hasNo) {
-      return rest as MongoDBQuery;
-    }
-
-    return hasNo
-      ? ({ ...rest, retcode: { $ne: 0 } } as MongoDBQuery)
-      : ({ ...rest, retcode: 0 } as MongoDBQuery);
+    if (hasYes === hasNo) return undefined;
+    return hasNo ? { $ne: 0 } : 0;
   }
 
-  return mongoQuery;
+  const retcodeStr = String(retcode).toLowerCase();
+  const isNo =
+    retcodeStr === retcodeValues.no.toLowerCase() || retcode === retcodeLegacyValues.notSuccess;
+  const isYes =
+    retcodeStr === retcodeValues.yes.toLowerCase() ||
+    retcode === retcodeLegacyValues.zero ||
+    Number(retcode) === 0;
+
+  if (isNo) return { $ne: 0 };
+  if (isYes) return 0;
+  return undefined;
+};
+
+const transformRetcodeFilter = (query: object): MongoDBQuery => {
+  const mongoQuery = query as MongoDBQuery;
+  const result: MongoDBQuery = {};
+
+  if (mongoQuery?.retcode) {
+    const transformedRetcode = transformRetcodeValue(mongoQuery.retcode);
+    if (transformedRetcode !== undefined) {
+      result.retcode = transformedRetcode;
+    }
+  }
+
+  if (Array.isArray(mongoQuery.$and)) {
+    const transformedAnd = mongoQuery.$and
+      .map(transformRetcodeFilter)
+      .filter((item) => Object.keys(item).length > 0);
+    if (transformedAnd.length > 0) result.$and = transformedAnd;
+  }
+
+  if (Array.isArray(mongoQuery.$or)) {
+    const transformedOr = mongoQuery.$or
+      .map(transformRetcodeFilter)
+      .filter((item) => Object.keys(item).length > 0);
+    if (transformedOr.length > 0) result.$or = transformedOr;
+  }
+
+  Object.keys(mongoQuery).forEach((key) => {
+    if (key !== "retcode" && key !== "$and" && key !== "$or") {
+      result[key] = mongoQuery[key];
+    }
+  });
+
+  return result;
 };
 
 const retcodeOperators = [
