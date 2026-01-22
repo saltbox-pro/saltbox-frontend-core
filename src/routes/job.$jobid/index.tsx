@@ -4,6 +4,7 @@ import {
   QuestionCircleOutlined,
   FilterOutlined,
   ArrowLeftOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
 import {
@@ -46,6 +47,7 @@ import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-ut
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 
 import { ArgumentsPreview } from "./-components/arguments-preview";
+import { ErrorsPopover } from "./-components/errors-popover";
 import { KwargsPreview } from "./-components/kwargs-preview";
 import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
@@ -65,6 +67,7 @@ const JobPage = observer(() => {
   const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
+  const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -92,6 +95,7 @@ const JobPage = observer(() => {
 
   useEffect(() => {
     setFilteredTableRows([]);
+    setTableErrors([]);
   }, [mergedTableData]);
 
   const tableColumnsForExport = useMemo(() => {
@@ -345,6 +349,13 @@ const JobPage = observer(() => {
           </div>
 
           <Flex align="center" gap={16}>
+            {isTableViewMode && tableErrors.length > 0 && (
+              <Flex align="center" gap={8}>
+                <ExclamationCircleOutlined style={{ color: "#faad14", fontSize: "16px" }} />
+                <span>{t("jobs.table-errors-found-short", { count: tableErrors.length })}</span>
+                <ErrorsPopover errors={tableErrors} />
+              </Flex>
+            )}
             <Flex align="center" gap={8}>
               {(viewMode === "standard" || viewMode === "detailed") &&
                 jobStore.jobReturns.length > 1 && (
@@ -411,6 +422,7 @@ const JobPage = observer(() => {
           forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
           onTableViewSortingChange={setTableViewSorting}
           onTableViewFilteredDataChange={setFilteredTableRows}
+          onTableViewErrorsChange={setTableErrors}
         />
       </div>
 

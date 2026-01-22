@@ -76,6 +76,7 @@ export const DefaultJobReturnTable = ({
   onLazyLoad,
   onTableViewSortingChange,
   onTableViewFilteredDataChange,
+  onTableViewErrorsChange,
 }: {
   jobReturns: JobReturnModel[];
   isFullOutput?: boolean;
@@ -89,6 +90,7 @@ export const DefaultJobReturnTable = ({
   onLazyLoad: OnLazyLoad;
   onTableViewSortingChange?: OnChangeFn<SortingState>;
   onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
+  onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -247,6 +249,7 @@ export const DefaultJobReturnTable = ({
           minionId=""
           onSortingChange={onTableViewSortingChange}
           onFilteredDataChange={onTableViewFilteredDataChange}
+          onErrorsChange={onTableViewErrorsChange}
         />
       </div>
     );

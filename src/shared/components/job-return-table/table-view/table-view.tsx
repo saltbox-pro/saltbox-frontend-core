@@ -1,6 +1,5 @@
-import { ExclamationCircleOutlined, DownOutlined, UpOutlined } from "@ant-design/icons";
 import { OnChangeFn, SortingState } from "@tanstack/react-table";
-import { Alert, Button, Flex, Table, type TableColumnsType, type TableProps } from "antd";
+import { Table, type TableColumnsType, type TableProps } from "antd";
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -18,6 +17,7 @@ interface TableViewProps {
   minionId: string;
   onSortingChange?: OnChangeFn<SortingState>;
   onFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
+  onErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
 }
 
 const isEmptyBrackets = (value: unknown): boolean => {
@@ -33,9 +33,9 @@ export const TableView: React.FC<TableViewProps> = ({
   minionId,
   onSortingChange,
   onFilteredDataChange,
+  onErrorsChange,
 }) => {
   const { t } = useTranslation();
-  const [isErrorsCollapsed, setIsErrorsCollapsed] = useState(false);
   const [filteredInfo, setFilteredInfo] = useState<Record<string, unknown[] | null>>({});
 
   const tableData = useMemo(() => {
@@ -54,6 +54,12 @@ export const TableView: React.FC<TableViewProps> = ({
   React.useEffect(() => {
     setFilteredInfo({});
   }, [tableData]);
+
+  React.useEffect(() => {
+    if (onErrorsChange && tableData.errors) {
+      onErrorsChange(tableData.errors);
+    }
+  }, [tableData.errors, onErrorsChange]);
 
   const columns = useMemo<TableColumnsType<Record<string, unknown>>>(() => {
     if (!tableData.canConvert || tableData.columns.length === 0) {
@@ -76,7 +82,12 @@ export const TableView: React.FC<TableViewProps> = ({
             .filter((v): v is string => v !== null)
         )
       )
-        .sort()
+        .sort((a, b) =>
+          a.localeCompare(b, undefined, {
+            numeric: true,
+            sensitivity: "base",
+          })
+        )
         .slice(0, maxFilterOptions);
 
       const filters = uniqueValues.map((value) => {
@@ -197,64 +208,19 @@ export const TableView: React.FC<TableViewProps> = ({
     return <div className={styles.emptyMessage}>{t("jobs.table-empty")}</div>;
   }
 
-  const hasErrors = tableData.errors && tableData.errors.length > 0;
-
   return (
-    <>
-      {hasErrors && (
-        <div className={styles.errorsContainer}>
-          <Alert
-            message={
-              <Flex justify="space-between" align="center">
-                <span>{t("jobs.table-errors-found", { count: tableData.errors!.length })}</span>
-                <Button
-                  type="text"
-                  size="small"
-                  icon={isErrorsCollapsed ? <DownOutlined /> : <UpOutlined />}
-                  onClick={() => setIsErrorsCollapsed(!isErrorsCollapsed)}
-                  className={styles.collapseButton}
-                  title={
-                    isErrorsCollapsed
-                      ? t("jobs.table-errors-expand")
-                      : t("jobs.table-errors-collapse")
-                  }
-                />
-              </Flex>
-            }
-            description={
-              <div
-                className={`${styles.errorsList} ${
-                  isErrorsCollapsed ? styles.errorsListHidden : ""
-                }`}
-              >
-                {tableData.errors!.map((error, index) => (
-                  <div key={index} className={styles.errorItem}>
-                    <span className={styles.errorMinionId}>{error.minion_id}:</span>
-                    <span className={styles.errorText}>{error.error}</span>
-                  </div>
-                ))}
-              </div>
-            }
-            type="warning"
-            icon={<ExclamationCircleOutlined />}
-            showIcon
-            className={styles.errorsAlert}
-          />
-        </div>
-      )}
-      <div className={styles.tableContainer}>
-        <Table<Record<string, unknown>>
-          columns={columns}
-          dataSource={tableData.rows}
-          rowKey={(record, index) => (record.key ? String(record.key) : String(index))}
-          onChange={handleTableChange}
-          pagination={false}
-          scroll={{ x: "max-content", y: "calc(100vh - 300px)" }}
-          locale={{
-            emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
-          }}
-        />
-      </div>
-    </>
+    <div className={styles.tableContainer}>
+      <Table<Record<string, unknown>>
+        columns={columns}
+        dataSource={tableData.rows}
+        rowKey={(record, index) => (record.key ? String(record.key) : String(index))}
+        onChange={handleTableChange}
+        pagination={false}
+        scroll={{ x: "max-content", y: "calc(100vh - 300px)" }}
+        locale={{
+          emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
+        }}
+      />
+    </div>
   );
 };

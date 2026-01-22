@@ -360,6 +360,7 @@
     "table-empty": "Нет данных",
     "table-no-data-filtered": "Нет данных, соответствующих выбранным фильтрам",
     "table-errors-found": "Найдены ошибки для {{count}} миньон(ов)",
+    "table-errors-found-short": "Найдены ошибки",
     "table-errors-collapse": "Свернуть",
     "table-errors-expand": "Развернуть"
   },

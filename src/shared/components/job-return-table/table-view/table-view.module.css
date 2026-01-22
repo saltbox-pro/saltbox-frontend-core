@@ -7,6 +7,28 @@
   overflow: hidden;
 }
 
+.tableContainer :global(.ant-table) {
+  border: 0px solid #f0f0f0;
+  border-radius: 0;
+}
+
+.tableContainer :global(.ant-table .ant-table-title),
+.tableContainer :global(.ant-table .ant-table-header) {
+  border-radius: 0;
+}
+
+.tableContainer :global(.ant-table table) {
+  border-collapse: collapse;
+}
+
+.tableContainer :global(.ant-table-thead > tr > th) {
+  border: 1px solid #f0f0f0;
+}
+
+.tableContainer :global(.ant-table-tbody > tr > td) {
+  border: 1px solid #f0f0f0;
+}
+
 .tableContainer :global(.fast-table-sorter) {
   margin-left: 8px;
 }
