@@ -1,25 +1,28 @@
-import { HomeOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
   pastTimeByUserTZ,
   formatTimeByUserTZ,
   FastTablePaginated,
   PageHeader,
   Popover,
+  Drawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Badge, Breadcrumb, Button, Flex, Input, Tag, message } from "antd";
+import { Badge, Button, Flex, Input, Tag, message } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
+import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import {
   CollectionStore,
   defaultCollectionStore,
   MinionFilterStore,
+  MinionStore,
   MinionsStore,
 } from "saltbox-core/store";
 
@@ -46,24 +49,35 @@ const CollectionEditPage = observer(() => {
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
+  const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
+  const minionStoreRef = useRef<MinionStore | undefined>(undefined);
+
+  const handleOpenDrawer = (minionId: string, innerId: string) => {
+    setDrawerMinionId(minionId);
+    minionStoreRef.current = new MinionStore(
+      collectionStore.collection?.parent_slug || slug || "root",
+      innerId
+    );
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerMinionId(undefined);
+    minionStoreRef.current = undefined;
+  };
 
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
       cell: (data) => {
+        const minionId = data.row.original.minion_id;
+        const innerId = data.row.original.id;
         return (
-          <>
-            <Button
-              type="link"
-              size={"small"}
-              onClick={() =>
-                navigate(`/minion/${data.row.original.master}/${data.row.original.minion_id}`)
-              }
-            >
-              {data.row.original.minion_id}
-            </Button>
-            <CopyToClipboardButton text={data.row.original.minion_id} />
-          </>
+          <MinionIdCell
+            minionId={minionId}
+            innerId={innerId}
+            collectionSlug={collectionStore.collection?.parent_slug || slug}
+            onMenuClick={() => handleOpenDrawer(minionId, innerId)}
+          />
         );
       },
       meta: {
@@ -257,6 +271,22 @@ const CollectionEditPage = observer(() => {
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
         />
       </Flex>
+
+      <Drawer
+        onClose={handleCloseDrawer}
+        open={Boolean(drawerMinionId)}
+        size="large"
+        title={t("minions.minion")}
+      >
+        {minionStoreRef.current && (
+          <MinionDetails
+            minion={minionStoreRef.current.minion}
+            isMinionLoading={minionStoreRef.current.isMinionLoading}
+            pillars={minionStoreRef.current.pillars}
+            isPillarsLoading={minionStoreRef.current.isPillarsLoading}
+          />
+        )}
+      </Drawer>
     </>
   );
 });

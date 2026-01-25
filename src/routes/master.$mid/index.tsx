@@ -15,12 +15,7 @@ import {
   PillarModel,
   PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
-import {
-  CopyToClipboardButton,
-  FastTableListed,
-  Modal,
-  PageHeader,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, Modal, PageHeader, Drawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type CellContext } from "@tanstack/react-table";
 import {
   Input as AntdInput,
@@ -39,9 +34,11 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
-import { apiCoreStore, PillarsStore } from "saltbox-core/store";
+import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
+import { apiCoreStore, MinionStore, PillarsStore } from "saltbox-core/store";
 
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import styles from "./index.module.css";
@@ -109,6 +106,8 @@ const MasterPage = observer(() => {
   const [importStep, setImportStep] = useState(1);
   const [updateExisting, setUpdateExisting] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
+  const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
+  const [minionStore, setMinionStore] = useState<MinionStore | null>(null);
 
   const PillarsTable = FastTableListed<PillarModel>;
 
@@ -490,6 +489,29 @@ const MasterPage = observer(() => {
     });
   }, []);
 
+  const handleOpenDrawer = async (minionId: string) => {
+    if (masterId) {
+      setDrawerMinionId(minionId);
+      try {
+        // Получаем внутренний ID миньона через API
+        const minion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
+          master_id: masterId,
+          minion_id: minionId,
+        });
+        if (minion?.id) {
+          setMinionStore(new MinionStore("root", minion.id));
+        }
+      } catch (error) {
+        console.error("Error fetching minion:", error);
+      }
+    }
+  };
+
+  const handleCloseDrawer = () => {
+    setDrawerMinionId(undefined);
+    setMinionStore(null);
+  };
+
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
@@ -497,15 +519,13 @@ const MasterPage = observer(() => {
         tdClassName: "fast-table-column-nowrap",
       },
       cell: (data) => {
+        const minionId = data.getValue();
         return (
-          <>
-            <Link to={`/master/${data.row.original.master}/minion/${data.getValue()}`}>
-              <Button type="link" size={"small"}>
-                {data.getValue()}
-              </Button>
-            </Link>
-            <CopyToClipboardButton text={data.getValue()} />
-          </>
+          <MinionIdCell
+            minionId={minionId}
+            masterId={data.row.original.master}
+            onMenuClick={() => handleOpenDrawer(minionId)}
+          />
         );
       },
     }),
@@ -520,7 +540,19 @@ const MasterPage = observer(() => {
   const pillarColumns = [
     pillarColumnHelper.accessor("minion_id", {
       header: t("pillars.table-minion-id"),
-      cell: (info) => info.getValue() || "*",
+      cell: (info) => {
+        const minionId = info.getValue();
+        if (!minionId) {
+          return "*";
+        }
+        return (
+          <MinionIdCell
+            minionId={minionId}
+            masterId={masterId}
+            onMenuClick={() => handleOpenDrawer(minionId)}
+          />
+        );
+      },
       meta: {
         tdClassName: "fast-table-column-nowrap",
       },
@@ -903,6 +935,22 @@ const MasterPage = observer(() => {
           </>
         )}
       </Modal>
+
+      <Drawer
+        onClose={handleCloseDrawer}
+        open={Boolean(drawerMinionId)}
+        size="large"
+        title={t("minions.minion")}
+      >
+        {minionStore && (
+          <MinionDetails
+            minion={minionStore.minion}
+            isMinionLoading={minionStore.isMinionLoading}
+            pillars={minionStore.pillars}
+            isPillarsLoading={minionStore.isPillarsLoading}
+          />
+        )}
+      </Drawer>
     </>
   );
 });

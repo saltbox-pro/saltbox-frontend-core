@@ -1,19 +1,16 @@
 import { TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
   FastTableListed,
   formatTimeByUserTZ,
-  NavigationIconLink,
   pastTimeByUserTZ,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag } from "antd";
+import { Tag } from "antd";
 import { toJS } from "mobx";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
-import styles from "./task-minions.module.css";
+import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 
 const TaskMinionsTable = FastTableListed<TaskMinionModel>;
 
@@ -38,26 +35,14 @@ export const TaskMinions = ({
       header: t("task.minions.table-minion-id"),
       cell: (data) => {
         const mid = data.row.original?.minion_inner_id ?? "";
+        const minionId = data.row.original?.minion_id ?? "";
         return (
-          <>
-            <Link
-              to={`/minion/${collectionSlug}/${mid}/`}
-              onClick={(event) => {
-                event.preventDefault();
-                onMinionClick?.(toJS(data.row.original));
-              }}
-            >
-              <Button type="link" size={"small"}>
-                {data.row.original?.minion_id}
-              </Button>
-            </Link>
-            <div className={styles.minionIdCopyToClipboardButton}>
-              <CopyToClipboardButton text={data.row.original?.minion_id} />
-            </div>
-            <div className={styles.minionIdNavigationLink}>
-              <NavigationIconLink to={`/core/minion/${collectionSlug}/${mid}`} target="_blank" />
-            </div>
-          </>
+          <MinionIdCell
+            minionId={minionId}
+            innerId={mid}
+            collectionSlug={collectionSlug}
+            onMenuClick={() => onMinionClick?.(toJS(data.row.original))}
+          />
         );
       },
       meta: {

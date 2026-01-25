@@ -1,9 +1,7 @@
 import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import { MinionShortSchema, TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
   FastTablePaginated,
-  NavigationIconLink,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   Drawer,
@@ -23,6 +21,7 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import {
   apiCoreStore,
   appStore,
@@ -117,24 +116,12 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           const minionId = data.row.original.id;
           const showMinionId = data.row.original.minion_id ?? minionId;
           return (
-            <>
-              <Button
-                type="link"
-                size={"small"}
-                onClick={() => {
-                  setDrawerMinionId(minionId);
-                }}
-                className={styles.minionIdButton}
-              >
-                {showMinionId}
-              </Button>
-              <div className={styles.minionIdCopyToClipboardButton}>
-                <CopyToClipboardButton text={showMinionId} />
-              </div>
-              <div className={styles.minionIdNavigationLink}>
-                <NavigationIconLink to={`/core/minion/${props.slug}/${minionId}`} target="_blank" />
-              </div>
-            </>
+            <MinionIdCell
+              minionId={showMinionId}
+              innerId={minionId}
+              collectionSlug={props.slug}
+              onMenuClick={() => setDrawerMinionId(minionId)}
+            />
           );
         },
         meta: {

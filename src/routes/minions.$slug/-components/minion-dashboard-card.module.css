@@ -145,12 +145,11 @@
   padding-top: 2px;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainFilter {
-  width: 1.5rem;
+.dashboardTableBlock .minionDashboardCardGrainActions {
   min-height: 24px;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainFilter button {
+.dashboardTableBlock .minionDashboardCardGrainActions button {
   visibility: hidden;
   opacity: 0;
   transition:
@@ -158,7 +157,7 @@
     opacity 0.1s linear;
 }
 
-.dashboardTableBlock tr:hover .minionDashboardCardGrainFilter button {
+.dashboardTableBlock tr:hover .minionDashboardCardGrainActions button {
   visibility: visible;
   opacity: 1;
 }

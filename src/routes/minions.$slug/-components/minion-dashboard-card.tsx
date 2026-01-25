@@ -1,4 +1,5 @@
 import {
+  CopyOutlined,
   DashOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -8,7 +9,7 @@ import {
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { Dropdown, FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import { Button, Card, Flex, Spin } from "antd";
+import { Button, Card, Flex, Spin, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -282,6 +283,7 @@ export const MinionDashboardCard = observer(
     blockIndex = 0,
   }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
+    const [messageApi, contextHolder] = message.useMessage();
     const [sorting, setSorting] = useState<SortingState>([
       {
         id: "count",
@@ -301,6 +303,12 @@ export const MinionDashboardCard = observer(
       }
     }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
 
+    const handleCopyValue = (value: unknown) => {
+      const textToCopy = value?.toString() ?? "";
+      navigator.clipboard.writeText(textToCopy);
+      messageApi.success(t("jobs.table-copy-success"));
+    };
+
     const columns = [
       columnHelper.accessor("value", {
         header: t("dashboard.table-value"),
@@ -316,10 +324,18 @@ export const MinionDashboardCard = observer(
           return (
             <Flex justify="space-between">
               <Flex className={styles.minionDashboardCardGrainTitle}>{fieldName}</Flex>
-              <Flex className={styles.minionDashboardCardGrainFilter}>
+              <Flex className={styles.minionDashboardCardGrainActions} gap={4}>
                 <Button
                   shape="circle"
-                  type="primary"
+                  type="link"
+                  title={t("jobs.table-copy")}
+                  size="small"
+                  icon={<CopyOutlined />}
+                  onClick={() => handleCopyValue(data.getValue())}
+                />
+                <Button
+                  shape="circle"
+                  type="link"
                   title={t("dashboard.apply-value-to-filters")}
                   size="small"
                   icon={<FilterOutlined />}
@@ -339,7 +355,7 @@ export const MinionDashboardCard = observer(
                     };
                     filterStore.handleSearch();
                   }}
-                ></Button>
+                />
               </Flex>
             </Flex>
           );
@@ -413,6 +429,7 @@ export const MinionDashboardCard = observer(
 
     return (
       <>
+        {contextHolder}
         <Card
           size="small"
           className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen}`}
