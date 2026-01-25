@@ -127,7 +127,9 @@
     "delete-confirm-description": "Are you sure you want to delete minion <b>{{minionId}}</b>?",
     "deleted-successfully": "Minion deleted successfully",
     "delete-failed": "Failed to delete minion",
-    "job-returns": "Job Returns"
+    "job-returns": "Job Returns",
+    "open-in-new-tab": "Open in new tab",
+    "show-details": "Show details"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",

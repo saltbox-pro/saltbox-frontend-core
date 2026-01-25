@@ -1,0 +1,32 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.minionId {
+  color: #1677ff;
+  cursor: default;
+  font-size: 14px;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.15s ease-in-out;
+}
+
+.container:hover .actions {
+  visibility: visible;
+  opacity: 1;
+}
+
+.actionButton {
+  border: none;
+  padding: 0 2px;
+}

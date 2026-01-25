@@ -127,7 +127,9 @@
     "delete-confirm-description": "Вы действительно хотите удалить клиент <b>{{minionId}}</b>?",
     "deleted-successfully": "Клиент успешно удален",
     "delete-failed": "Ошибка удаления клиента",
-    "job-returns": "Ответы команд"
+    "job-returns": "Ответы команд",
+    "open-in-new-tab": "Открыть в новой вкладке",
+    "show-details": "Показать детали"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
