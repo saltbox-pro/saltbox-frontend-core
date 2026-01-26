@@ -326,16 +326,16 @@ export const MinionDashboardCard = observer(
               <Flex className={styles.minionDashboardCardGrainTitle}>{fieldName}</Flex>
               <Flex className={styles.minionDashboardCardGrainActions} gap={4}>
                 <Button
-                  shape="circle"
-                  type="link"
+                  color="default"
+                  variant="outlined"
                   title={t("jobs.table-copy")}
                   size="small"
                   icon={<CopyOutlined />}
                   onClick={() => handleCopyValue(data.getValue())}
                 />
                 <Button
-                  shape="circle"
-                  type="link"
+                  color="default"
+                  variant="outlined"
                   title={t("dashboard.apply-value-to-filters")}
                   size="small"
                   icon={<FilterOutlined />}
