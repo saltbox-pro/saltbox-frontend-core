@@ -1,7 +1,8 @@
 .container {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 2px;
+  width: 100%;
 }
 
 .minionId {
@@ -13,7 +14,8 @@
 .actions {
   display: inline-flex;
   align-items: center;
-  gap: 0;
+  gap: 2px;
+  margin-left: auto;
   visibility: hidden;
   opacity: 0;
   transition:
@@ -21,12 +23,7 @@
     opacity 0.15s ease-in-out;
 }
 
-.container:hover .actions {
+:global(tr):hover .actions {
   visibility: visible;
   opacity: 1;
-}
-
-.actionButton {
-  border: none;
-  padding: 0 2px;
 }

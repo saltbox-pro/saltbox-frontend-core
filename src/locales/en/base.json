@@ -129,7 +129,9 @@
     "delete-failed": "Failed to delete minion",
     "job-returns": "Job Returns",
     "open-in-new-tab": "Open in new tab",
-    "show-details": "Show details"
+    "show-details": "Show details",
+    "copy-minion-id": "Copy Minion ID",
+    "copied": "Copied"
   },
   "mainmenu": {
     "popover-language-title": "Change Language",

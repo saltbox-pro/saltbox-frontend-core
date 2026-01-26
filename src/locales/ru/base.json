@@ -129,7 +129,9 @@
     "delete-failed": "Ошибка удаления клиента",
     "job-returns": "Ответы команд",
     "open-in-new-tab": "Открыть в новой вкладке",
-    "show-details": "Показать детали"
+    "show-details": "Показать детали",
+    "copy-minion-id": "Скопировать ID клиента",
+    "copied": "Скопировано"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",

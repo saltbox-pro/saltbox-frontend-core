@@ -1,5 +1,4 @@
-import { ExportOutlined, MoreOutlined } from "@ant-design/icons";
-import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
+import { CopyOutlined, ExportOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, message } from "antd";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -49,7 +48,7 @@ export const MinionIdCell = ({
 
   const handleCopy = () => {
     navigator.clipboard.writeText(minionId);
-    messageApi.success(t("copy-to-clipboard-button.copied"));
+    messageApi.success(t("minions.copied"));
   };
 
   return (
@@ -59,7 +58,8 @@ export const MinionIdCell = ({
       <span className={styles.actions}>
         {showMenu && onMenuClick && (
           <Button
-            type="link"
+            color="default"
+            variant="outlined"
             size="small"
             icon={<MoreOutlined />}
             onClick={onMenuClick}
@@ -67,14 +67,25 @@ export const MinionIdCell = ({
             className={styles.actionButton}
           />
         )}
-        <CopyToClipboardButton text={minionId} />
+        <Button
+          color="default"
+          variant="outlined"
+          size="small"
+          icon={<CopyOutlined />}
+          onClick={handleCopy}
+          title={t("minions.copy-minion-id")}
+          className={styles.actionButton}
+        />
         {showNavigation && (collectionSlug || masterId) && (
-          <Link
-            to={getNavigationUrl()}
-            title={t("minions.open-in-new-tab")}
-            className={styles.actionButton}
-          >
-            <ExportOutlined />
+          <Link to={getNavigationUrl()} className={styles.actionButton}>
+            <Button
+              color="default"
+              variant="outlined"
+              size="small"
+              icon={<ExportOutlined />}
+              title={t("minions.open-in-new-tab")}
+              className={styles.actionButton}
+            />
           </Link>
         )}
       </span>
