@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { useCsvDownloader } from "saltbox-core/features/csv-download";
 import {
   TaskCreateModal,
   PolicyCreateModal,
@@ -23,7 +24,6 @@ import {
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import {
-  apiCoreStore,
   appStore,
   CollectionStore,
   MinionFilterStore,
@@ -82,7 +82,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
   const [selection, setSelection] = useState<RowSelectionState>({});
-  const [isCSVLoading, setIsCSVLoading] = useState(false);
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
   const [messageApi, contextHolder] = message.useMessage();
@@ -227,55 +226,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     setSelectedMinions(newSelectedMinions);
   }, [selection]);
 
-  const handelCSVDownload = async () => {
-    try {
-      setIsCSVLoading(true);
-      const response = await fetch(`${apiCoreStore.env?.api_base_path}/minions/export`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${appStore.authStore.user?.access_token}`,
-        },
-        body: JSON.stringify({
-          query: props.filterStore.searchMongoDBQuery,
-          collection_slug: props.slug,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Loading Error");
-
-      let filename =
-        "export_minions_" + new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] + ".csv";
-      const contentDisposition = response.headers.get("Content-Disposition");
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (filenameMatch && filenameMatch[1]) {
-          filename = filenameMatch[1];
-        }
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-
-      document.body.removeChild(a);
-
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 300);
-
-      setIsCSVLoading(false);
-    } catch {
-      setIsCSVLoading(false);
-      messageApi.error(t("minions.error-on-csv-download"));
-    }
-  };
-
   const handleDrawerClose = useCallback(() => {
     setDrawerMinionId(undefined);
   }, []);
@@ -293,6 +243,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     props.onAddFilter();
     setDrawerMinionId(undefined);
   }, []);
+
+  const onCsvDownloadError = useCallback(() => {
+    messageApi.error(t("minions.error-on-csv-download"));
+  }, [messageApi, t]);
+
+  const { isCSVLoading, handleCSVDownload } = useCsvDownloader({
+    slug: props.slug,
+    searchMongoDBQuery: props.filterStore.searchMongoDBQuery,
+    onError: onCsvDownloadError,
+  });
 
   const {
     isTaskCreateOpen,
@@ -336,7 +296,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             {t("minions.create-policy")}
           </Button>
 
-          <Button onClick={() => handelCSVDownload()} loading={isCSVLoading}>
+          <Button onClick={handleCSVDownload} loading={isCSVLoading}>
             {t("minions.export")}
           </Button>
 
