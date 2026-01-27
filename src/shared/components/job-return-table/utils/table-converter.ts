@@ -31,19 +31,31 @@ const isErrorData = (data: unknown): boolean => {
       /^permission denied/i,
       /^access denied/i,
       /^no such file/i,
+      /^salt.*error/i,
+      /^minion.*error/i,
+      /^return.*error/i,
     ];
     return errorPatterns.some((pattern) => pattern.test(data));
   }
 
   if (typeof data === "object" && data !== null) {
     const obj = data as Record<string, unknown>;
-    return (
-      obj.hasOwnProperty("error") ||
-      obj.hasOwnProperty("exception") ||
-      obj.hasOwnProperty("traceback") ||
-      obj.hasOwnProperty("failed") ||
-      (obj.hasOwnProperty("result") && obj.result === false)
-    );
+    if (
+      "error" in obj ||
+      "exception" in obj ||
+      "traceback" in obj ||
+      "failed" in obj ||
+      obj.result === false
+    ) {
+      return true;
+    }
+    const keys = Object.keys(obj);
+    if (keys.length === 1 && keys[0] === "error") {
+      return true;
+    }
+    if (typeof obj.error === "string") {
+      return /error|exception|failed|traceback/i.test(obj.error);
+    }
   }
 
   return false;
@@ -533,15 +545,12 @@ export const mergeJobReturnsToTable = (
   const allRows: TableRow[] = [];
   const allColumns = new Set<string>(["minion_id"]);
   const errors: Array<{ minion_id: string; error: string }> = [];
-  const conversionReasons: string[] = [];
 
   jobReturns.forEach((jobReturn) => {
     const dataToShow = jobReturn.data;
     const minionId = jobReturn.minion_id || "";
 
-    if (!minionId || !jobReturn.hasOwnProperty("data")) {
-      return;
-    }
+    if (!minionId || !("data" in jobReturn)) return;
 
     if (isErrorData(dataToShow)) {
       errors.push({
@@ -552,13 +561,19 @@ export const mergeJobReturnsToTable = (
     }
 
     if (!canConvertToTable(dataToShow)) {
-      conversionReasons.push(`${minionId}: Data structure is not suitable for table conversion`);
+      errors.push({
+        minion_id: minionId,
+        error: "Data structure is not suitable for table conversion",
+      });
       return;
     }
 
     const tableData = convertToTable(dataToShow, minionId);
     if (!tableData.canConvert) {
-      conversionReasons.push(`${minionId}: ${tableData.reason || "Unknown reason"}`);
+      errors.push({
+        minion_id: minionId,
+        error: tableData.reason || "Unknown reason",
+      });
       return;
     }
 
@@ -579,26 +594,21 @@ export const mergeJobReturnsToTable = (
     });
   });
 
-  if (allRows.length === 0 && conversionReasons.length > 0) {
-    return {
-      columns: [],
-      rows: [],
-      canConvert: false,
-      reason:
-        conversionReasons.length === 1
-          ? conversionReasons[0]
-          : `Cannot convert data for ${conversionReasons.length} minion(s). First reason: ${conversionReasons[0]}`,
-      errors: errors.length > 0 ? errors : undefined,
-    };
-  }
+  const getErrors = () => (errors.length > 0 ? errors : undefined);
 
   if (allRows.length === 0) {
+    const reason =
+      errors.length > 0
+        ? errors.length === 1
+          ? `${errors[0].minion_id}: ${errors[0].error}`
+          : `Cannot convert data for ${errors.length} minion(s). First reason: ${errors[0].minion_id}: ${errors[0].error}`
+        : "No data available for table conversion";
     return {
       columns: [],
       rows: [],
       canConvert: false,
-      reason: "No data available for table conversion",
-      errors: errors.length > 0 ? errors : undefined,
+      reason,
+      errors: getErrors(),
     };
   }
 
@@ -608,7 +618,7 @@ export const mergeJobReturnsToTable = (
       rows: [],
       canConvert: false,
       reason: `Too many columns: ${allColumns.size} > ${maxTableColumns}`,
-      errors: errors.length > 0 ? errors : undefined,
+      errors: getErrors(),
     };
   }
 
@@ -618,19 +628,17 @@ export const mergeJobReturnsToTable = (
       rows: [],
       canConvert: false,
       reason: `Too many rows: ${allRows.length} > ${maxTableRows}`,
-      errors: errors.length > 0 ? errors : undefined,
+      errors: getErrors(),
     };
   }
 
-  if (allRows.length > 0) {
-    allRows.forEach((row) => {
-      Object.keys(row).forEach((k) => {
-        if (k !== "key" && k !== "minion_id") {
-          allColumns.add(k);
-        }
-      });
+  allRows.forEach((row) => {
+    Object.keys(row).forEach((k) => {
+      if (k !== "key" && k !== "minion_id") {
+        allColumns.add(k);
+      }
     });
-  }
+  });
 
   const sortedColumns = Array.from(allColumns).sort((a, b) => {
     if (a === "minion_id") return -1;
@@ -655,8 +663,15 @@ export const mergeJobReturnsToTable = (
     columns: sortedColumns,
     rows: normalizedRows,
     canConvert: true,
-    errors: errors.length > 0 ? errors : undefined,
+    errors: getErrors(),
   };
+};
+
+const escapeCsvValue = (value: string): string => {
+  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
 };
 
 export const exportToCSV = (
@@ -705,14 +720,19 @@ export const exportToCSV = (
   rowsToExport.forEach((row) => {
     const values = headers.map((header) => {
       const value = row[header] ?? "";
-      const stringValue = String(value);
-      if (stringValue.includes(",") || stringValue.includes('"') || stringValue.includes("\n")) {
-        return `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      return stringValue;
+      return escapeCsvValue(String(value));
     });
     csvRows.push(values.join(","));
   });
+
+  if (tableData.errors && tableData.errors.length > 0) {
+    csvRows.push("");
+    csvRows.push("Errors (data not included in table):");
+    csvRows.push("minion_id,error");
+    tableData.errors.forEach((error) => {
+      csvRows.push(`${escapeCsvValue(error.minion_id)},${escapeCsvValue(error.error)}`);
+    });
+  }
 
   const csvContent = csvRows.join("\n");
 

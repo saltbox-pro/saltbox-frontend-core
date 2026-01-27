@@ -1,6 +1,6 @@
 import { OnChangeFn, SortingState } from "@tanstack/react-table";
 import { Table, type TableColumnsType, type TableProps } from "antd";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -51,15 +51,10 @@ export const TableView: React.FC<TableViewProps> = ({
     return convertToTable(data, minionId);
   }, [data, minionId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setFilteredInfo({});
-  }, [tableData]);
-
-  React.useEffect(() => {
-    if (onErrorsChange) {
-      onErrorsChange(tableData.errors || []);
-    }
-  }, [tableData.errors, onErrorsChange]);
+    onErrorsChange?.(tableData.errors || []);
+  }, [tableData, onErrorsChange]);
 
   const columns = useMemo<TableColumnsType<Record<string, unknown>>>(() => {
     if (!tableData.canConvert || tableData.columns.length === 0) {
@@ -74,9 +69,7 @@ export const TableView: React.FC<TableViewProps> = ({
           tableData.rows
             .map((row) => {
               const value = row[colName];
-              if (value === null || value === undefined || value === "" || isEmptyBrackets(value)) {
-                return null;
-              }
+              if (value == null || value === "" || isEmptyBrackets(value)) return null;
               return String(value);
             })
             .filter((v): v is string => v !== null)
@@ -104,7 +97,7 @@ export const TableView: React.FC<TableViewProps> = ({
         dataIndex: colName,
         key: colName,
         filters: filters.length > 0 ? filters : undefined,
-        filterSearch: filters.length > 0 ? true : undefined,
+        filterSearch: filters.length > 0,
         onFilter:
           filters.length > 0
             ? (value: unknown, record: Record<string, unknown>) => {
@@ -125,7 +118,7 @@ export const TableView: React.FC<TableViewProps> = ({
           });
         },
         render: (value: unknown) => {
-          if (value === null || value === undefined || value === "" || isEmptyBrackets(value)) {
+          if (value == null || value === "" || isEmptyBrackets(value)) {
             return <span className={styles.emptyCell}>—</span>;
           }
           const stringValue = String(value);
@@ -141,40 +134,34 @@ export const TableView: React.FC<TableViewProps> = ({
   }, [tableData]);
 
   const filteredRows = useMemo(() => {
-    if (!tableData.canConvert) {
-      return [];
-    }
+    if (!tableData.canConvert) return [];
 
     const activeFilters = Object.entries(filteredInfo).filter(
       ([, values]) => values && values.length > 0
     );
 
-    if (activeFilters.length === 0) {
-      return tableData.rows;
-    }
+    if (activeFilters.length === 0) return tableData.rows;
 
-    return tableData.rows.filter((row) => {
-      return activeFilters.every(([colName, filterValues]) => {
+    return tableData.rows.filter((row) =>
+      activeFilters.every(([colName, filterValues]) => {
         const rowValue = row[colName];
-        if (rowValue == null || rowValue === "") {
-          return false;
-        }
-        return filterValues!.some((filterValue) => String(rowValue) === String(filterValue));
-      });
-    });
+        return (
+          rowValue != null &&
+          rowValue !== "" &&
+          filterValues!.some((filterValue) => String(rowValue) === String(filterValue))
+        );
+      })
+    );
   }, [tableData, filteredInfo]);
 
-  React.useEffect(() => {
-    if (onFilteredDataChange) {
-      onFilteredDataChange(filteredRows);
-    }
+  useEffect(() => {
+    onFilteredDataChange?.(filteredRows);
   }, [filteredRows, onFilteredDataChange]);
 
   const handleTableChange: TableProps<Record<string, unknown>>["onChange"] = (
     pagination,
     filters,
-    sorter,
-    extra
+    sorter
   ) => {
     setFilteredInfo((filters as Record<string, unknown[] | null>) || {});
 
@@ -190,11 +177,11 @@ export const TableView: React.FC<TableViewProps> = ({
     }
   };
 
-  const hasActiveFilters = useMemo(() => {
-    return Object.values(filteredInfo).some(
-      (filterValues) => filterValues && filterValues.length > 0
-    );
-  }, [filteredInfo]);
+  const hasActiveFilters = useMemo(
+    () =>
+      Object.values(filteredInfo).some((filterValues) => filterValues && filterValues.length > 0),
+    [filteredInfo]
+  );
 
   if (!tableData.canConvert) {
     return (
@@ -210,17 +197,18 @@ export const TableView: React.FC<TableViewProps> = ({
 
   return (
     <div className={styles.tableContainer}>
-      <Table<Record<string, unknown>>
-        columns={columns}
-        dataSource={tableData.rows}
-        rowKey={(record, index) => (record.key ? String(record.key) : String(index))}
-        onChange={handleTableChange}
-        pagination={false}
-        scroll={{ x: "max-content", y: "calc(100vh - 300px)" }}
-        locale={{
-          emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
-        }}
-      />
+      <div className={styles.tableWrapper}>
+        <Table<Record<string, unknown>>
+          columns={columns}
+          dataSource={tableData.rows}
+          rowKey={(record, index) => (record.key ? String(record.key) : String(index))}
+          onChange={handleTableChange}
+          pagination={false}
+          locale={{
+            emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
+          }}
+        />
+      </div>
     </div>
   );
 };

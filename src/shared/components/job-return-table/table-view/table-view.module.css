@@ -7,6 +7,12 @@
   overflow: hidden;
 }
 
+.tableWrapper {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
 .tableContainer :global(.ant-table) {
   border: 0px solid #f0f0f0;
   border-radius: 0;
@@ -48,67 +54,4 @@
 .emptyCell {
   color: #d9d9d9;
   font-style: italic;
-}
-
-.errorsContainer {
-  margin-bottom: 16px;
-  padding: 0 16px;
-}
-
-.errorsAlert {
-  margin-bottom: 0;
-  padding: 8px 12px;
-}
-
-.errorsAlert :global(.ant-alert-message) {
-  margin-bottom: 0;
-}
-
-.errorsAlert :global(.ant-alert-description) {
-  margin-top: 4px;
-  margin-bottom: 0;
-}
-
-.collapseButton {
-  color: rgba(0, 0, 0, 0.45);
-  padding: 0;
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.collapseButton:hover {
-  color: rgba(0, 0, 0, 0.75);
-}
-
-.errorsList {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 0;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.errorsListHidden {
-  display: none;
-}
-
-.errorItem {
-  display: flex;
-  gap: 4px;
-  word-break: break-word;
-}
-
-.errorMinionId {
-  font-weight: 600;
-  color: #faad14;
-  flex-shrink: 0;
-}
-
-.errorText {
-  color: #8c8c8c;
-  flex: 1;
 }

@@ -13,7 +13,7 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
-import { ComponentProps, useMemo, useState, useCallback } from "react";
+import { ComponentProps, useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { Link } from "react-router";
@@ -233,6 +233,11 @@ export const DefaultJobReturnTable = ({
 
     return mergeJobReturnsToTable(jobReturnsData);
   }, [isTableViewMode, jobReturns]);
+
+  useEffect(() => {
+    if (!isTableViewMode || !onTableViewErrorsChange) return;
+    onTableViewErrorsChange(mergedTableData?.errors || []);
+  }, [isTableViewMode, mergedTableData?.errors, onTableViewErrorsChange]);
 
   const overscan = pagination.pageSize > 100 ? 10 : 100;
 
