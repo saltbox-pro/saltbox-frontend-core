@@ -725,15 +725,6 @@ export const exportToCSV = (
     csvRows.push(values.join(","));
   });
 
-  if (tableData.errors && tableData.errors.length > 0) {
-    csvRows.push("");
-    csvRows.push("Errors (data not included in table):");
-    csvRows.push("minion_id,error");
-    tableData.errors.forEach((error) => {
-      csvRows.push(`${escapeCsvValue(error.minion_id)},${escapeCsvValue(error.error)}`);
-    });
-  }
-
   const csvContent = csvRows.join("\n");
 
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
