@@ -9,7 +9,7 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { SelectProps, Tag, Typography } from "antd";
+import { SelectProps, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,8 +23,6 @@ import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import styles from "./index.module.css";
-
-const { Text } = Typography;
 
 const JobsTable = FastTablePaginated<JobsListResponse>;
 
@@ -215,18 +213,17 @@ const JobsPage = observer(() => {
         header: t("jobs.table-targets"),
         cell: (data) => {
           const fullValue = data.getValue() as string;
-          if (fullValue?.length <= 2) {
+          if (!fullValue || fullValue.length <= 2) {
             return fullValue;
           }
 
           const truncatedValue =
             fullValue.length > 50 ? `${fullValue.substring(0, 50)}...` : fullValue;
 
-          return (
-            <Text copyable={{ text: fullValue }} title={fullValue}>
-              {truncatedValue}
-            </Text>
-          );
+          return <span title={fullValue}>{truncatedValue}</span>;
+        },
+        meta: {
+          showCopy: true,
         },
       }),
       columnHelper.accessor("tgt_type", {
