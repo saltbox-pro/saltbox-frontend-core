@@ -1,8 +1,5 @@
 import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import JsonForm from "@rjsf/antd";
-import RjsfForm from "@rjsf/core";
 import { RJSFValidationError } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
@@ -22,6 +19,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { SaltboxJsonForm, type SaltboxJsonFormRef } from "saltbox-core/shared/components/json-form";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
@@ -96,7 +94,7 @@ export function JobModal({
   const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<JobFormData>();
-  const refJobParamsForm = useRef<RjsfForm>(null);
+  const refJobParamsForm = useRef<SaltboxJsonFormRef>(null);
   const hasLoadedInitialSchema = useRef<boolean>(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
@@ -631,11 +629,10 @@ export function JobModal({
           </Form.Item>
 
           {saltFunction && (
-            <JsonForm
+            <SaltboxJsonForm
               ref={refJobParamsForm}
               schema={saltFunction.json_schema}
               uiSchema={saltFunction?.ui_schema}
-              validator={validator}
               tagName="div"
               id="job-params-form"
               className={styles.jobParamsForm}
@@ -648,7 +645,7 @@ export function JobModal({
               omitExtraData
             >
               <Fragment />
-            </JsonForm>
+            </SaltboxJsonForm>
           )}
         </Form>
       </Modal>

@@ -1,0 +1,7 @@
+/* TODO: Рассмотреть перенос этого стиля в saltbox-frontend-common,
+   так как проблема с border-inline-start у кнопок в ant-btn-group может
+   встречаться не только в JsonForm, но и в других компонентах, использующих
+   группы кнопок Ant Design */
+.saltboxJsonForm :global(.array-item-list .ant-btn-group .ant-btn-dangerous) {
+  border-inline-start: unset;
+}

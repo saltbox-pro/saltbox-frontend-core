@@ -1,10 +1,13 @@
-import JsonForm from "@rjsf/antd";
-import validator from "@rjsf/validator-ajv8";
 import { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { Button, Divider, Flex, Form, InputNumber, Switch, message } from "antd";
-import { ComponentProps, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  SaltboxJsonForm,
+  type SaltboxJsonFormProps,
+  type SaltboxJsonFormRef,
+} from "saltbox-core/shared/components/json-form";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
 import { taskCreationService } from "../service";
@@ -19,8 +22,7 @@ export type TaskConfigurationTabProps = {
   onCancel: () => void;
 };
 
-type JsonFormChangeHandler = ComponentProps<typeof JsonForm>["onChange"];
-type JsonFormRef = ComponentProps<typeof JsonForm>["ref"];
+type JsonFormChangeHandler = SaltboxJsonFormProps["onChange"];
 
 const memoize = createObjectMemoizer({ deep: true });
 
@@ -35,7 +37,7 @@ export function TaskConfigurationTab({
   const [messageApi, contextHolder] = message.useMessage();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [templateFormData, setTemplateFormData] = useState<TaskData>({});
-  const jsonFormRef: JsonFormRef = useRef(null);
+  const jsonFormRef = useRef<SaltboxJsonFormRef>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -160,18 +162,17 @@ export function TaskConfigurationTab({
           )}
 
           {template.json_schema && (
-            <JsonForm
+            <SaltboxJsonForm
               ref={jsonFormRef}
               className={styles.jsonForm}
               schema={template.json_schema}
               uiSchema={template.ui_schema}
-              validator={validator}
               formData={templateFormData}
               onChange={handleTemplateFormChange}
               showErrorList={false}
             >
               <div />
-            </JsonForm>
+            </SaltboxJsonForm>
           )}
         </Flex>
 
