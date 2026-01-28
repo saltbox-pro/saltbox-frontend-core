@@ -408,7 +408,7 @@ const TaskPage = observer(() => {
         <div className={styles.taskDetailItem}>
           <span className={styles.taskDetailLabel}>{t("task.user")}:</span>
           <span className={styles.taskDetailValue}>
-            {taskStore.task?.user?.email ?? <Skeleton.Input size="small" />}
+            {taskStore.task?.user?.name ?? <Skeleton.Input size="small" />}
           </span>
         </div>
         <div className={styles.taskDetailItem}>
