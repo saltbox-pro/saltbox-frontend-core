@@ -226,6 +226,10 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     setSelectedMinions(newSelectedMinions);
   }, [selection]);
 
+  const clearSelection = useCallback(() => {
+    setSelection({});
+  }, []);
+
   const handleDrawerClose = useCallback(() => {
     setDrawerMinionId(undefined);
   }, []);
@@ -250,7 +254,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   const { isCSVLoading, handleCSVDownload } = useCsvDownloader({
     slug: props.slug,
-    searchMongoDBQuery: props.filterStore.searchMongoDBQuery,
+    searchFilters: props.filterStore.searchFilters,
+    selectedMinions,
     onError: onCsvDownloadError,
   });
 
@@ -279,7 +284,12 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
-            <MinionsQueryBuilder slug={props.slug} filterStore={props.filterStore} />
+            <MinionsQueryBuilder
+              slug={props.slug}
+              filterStore={props.filterStore}
+              onSearch={clearSelection}
+              onReset={clearSelection}
+            />
           </Spin>
         )}
 

@@ -8,10 +8,17 @@ import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-buil
 import { MinionFilterStore } from "saltbox-core/store";
 
 export const MinionsQueryBuilder = observer(
-  (props: { slug: string; filterStore: MinionFilterStore }) => {
+  (props: {
+    slug: string;
+    filterStore: MinionFilterStore;
+    onSearch?: () => void;
+    onReset?: () => void;
+  }) => {
     return (
       <SaltBoxQueryBuilderContainer
         filterStore={props.filterStore}
+        onSearchButtonClick={props.onSearch}
+        onResetButtonClick={props.onReset}
         additionalButtons={null}
         controlElements={{
           valueEditor: CoreMinionValueEditor(props.slug),
