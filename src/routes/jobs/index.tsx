@@ -1,6 +1,5 @@
 import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
   FastTablePaginated,
   formatTimeByUserTZ,
   PageHeader,
@@ -10,7 +9,7 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, SelectProps, Tag, Typography } from "antd";
+import { SelectProps, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -202,16 +201,10 @@ const JobsPage = observer(() => {
             return "";
           }
 
-          return (
-            <>
-              <Button type="link" size="small" onClick={() => handleNavigateToJob(jid)}>
-                {jid}
-              </Button>
-              <CopyToClipboardButton text={jid} />
-            </>
-          );
+          return <span style={{ color: "#1677ff" }}>{jid}</span>;
         },
         meta: {
+          showCopy: true,
           tdClassName: "fast-table-column-nowrap",
         },
       }),
@@ -363,6 +356,7 @@ const JobsPage = observer(() => {
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
+        onRowClick={(job) => handleNavigateToJob(job.jid)}
         useVirtualScroll={false}
       />
 
