@@ -22,7 +22,6 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import {
   appStore,
   CollectionStore,
@@ -112,18 +111,21 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       minionsColumnHelper.accessor("id", {
         header: t("minions.table-minion-id"),
         cell: (data) => {
-          const minionId = data.row.original.id;
-          const showMinionId = data.row.original.minion_id ?? minionId;
-          return (
-            <MinionIdCell
-              minionId={showMinionId}
-              innerId={minionId}
-              collectionSlug={props.slug}
-              onMenuClick={() => setDrawerMinionId(minionId)}
-            />
-          );
+          const showMinionId = data.row.original.minion_id ?? data.getValue();
+          return <span style={{ color: "#1677ff" }}>{showMinionId}</span>;
         },
         meta: {
+          showCopy: true,
+          copyValue: (row) => row.minion_id ?? row.id,
+          actions: [
+            {
+              icon: <ExportOutlined />,
+              onClick: (value, row) => {
+                window.open(`/minion/${props.slug}/${row.id}`, "_blank");
+              },
+              title: t("minions.open-in-new-tab"),
+            },
+          ],
           tdClassName: "fast-table-column-nowrap",
         },
       }),
@@ -328,6 +330,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           onRowSelectionChange={setSelection}
           rowSelection={selection}
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          onRowClick={(minion) => setDrawerMinionId(minion.id)}
           useVirtualScroll={false}
         />
 
