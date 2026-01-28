@@ -1,10 +1,6 @@
 import { MinusSquareOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import {
-  CopyToClipboardButton,
-  FastTablePaginated,
-  formatTimeByUserTZ,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated, formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import {
   OnChangeFn,
   PaginationState,
@@ -16,7 +12,6 @@ import { Button, Tag } from "antd";
 import { ComponentProps, useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
-import { Link } from "react-router";
 
 import { useFormatAndGetExecutionTimeColor } from "../../../utils/execution-time-utils";
 import { TableView } from "../table-view/table-view";
@@ -116,20 +111,11 @@ export const DefaultJobReturnTable = ({
       columnHelper.accessor("id", {
         header: t("task.job-returns-table.table-mid"),
         cell: (data) => {
-          return (
-            <>
-              <Link
-                to={`/master/${data.row.original.salt_master}/minion/${data.row.original.minion_id}`}
-              >
-                <Button type="link" size={"small"}>
-                  {data.row.original.minion_id}
-                </Button>
-              </Link>
-              <CopyToClipboardButton text={data.row.original.minion_id} />
-            </>
-          );
+          return <span style={{ color: "#1677ff" }}>{data.row.original.minion_id}</span>;
         },
         meta: {
+          showCopy: true,
+          copyValue: (row) => row.minion_id,
           tdClassName: "fast-table-column-nowrap",
         },
       }),
