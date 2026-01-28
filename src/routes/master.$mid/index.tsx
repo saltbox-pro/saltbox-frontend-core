@@ -1,9 +1,9 @@
 import {
-  ArrowLeftOutlined,
   CloseOutlined,
   DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
+  ExportOutlined,
   PlusOutlined,
   SaveOutlined,
   UploadOutlined,
@@ -37,7 +37,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import { apiCoreStore, MinionStore, PillarsStore } from "saltbox-core/store";
 
 import { PillarCreateForm } from "./-components/pillar-create-form";
@@ -515,18 +514,22 @@ const MasterPage = observer(() => {
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
       cell: (data) => {
         const minionId = data.getValue();
-        return (
-          <MinionIdCell
-            minionId={minionId}
-            masterId={data.row.original.master}
-            onMenuClick={() => handleOpenDrawer(minionId)}
-          />
-        );
+        return <span style={{ color: "#1677ff" }}>{minionId}</span>;
+      },
+      meta: {
+        showCopy: true,
+        actions: [
+          {
+            icon: <ExportOutlined />,
+            onClick: (value, row) => {
+              window.open(`/core/master/${row.master}/minion/${value}`, "_blank");
+            },
+            title: t("minions.open-in-new-tab"),
+          },
+        ],
+        tdClassName: "fast-table-column-nowrap",
       },
     }),
     clientColumnHelper.accessor("master", {
@@ -545,15 +548,23 @@ const MasterPage = observer(() => {
         if (!minionId) {
           return "*";
         }
-        return (
-          <MinionIdCell
-            minionId={minionId}
-            masterId={masterId}
-            onMenuClick={() => handleOpenDrawer(minionId)}
-          />
-        );
+        return <span style={{ color: "#1677ff" }}>{minionId}</span>;
       },
       meta: {
+        showCopy: true,
+        copyValue: (row) => row.minion_id || "*",
+        actions: [
+          {
+            icon: <ExportOutlined />,
+            onClick: (value) => {
+              if (value && masterId) {
+                window.open(`/core/master/${masterId}/minion/${value}`, "_blank");
+              }
+            },
+            title: t("minions.open-in-new-tab"),
+            visible: (value) => !!value,
+          },
+        ],
         tdClassName: "fast-table-column-nowrap",
       },
     }),
@@ -578,7 +589,8 @@ const MasterPage = observer(() => {
             type="default"
             shape="circle"
             icon={<EditOutlined />}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedPillar(info.row.original);
               setIsEditModalOpen(true);
             }}
@@ -589,7 +601,8 @@ const MasterPage = observer(() => {
             shape="circle"
             danger
             icon={<DeleteOutlined />}
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               setSelectedPillar(info.row.original);
               setIsDeleteModalOpen(true);
             }}
@@ -701,6 +714,7 @@ const MasterPage = observer(() => {
                 total={clients.length}
                 isEmpty={!clients.length}
                 getRowId={(row) => row.minion_id}
+                onRowClick={(client) => handleOpenDrawer(client.minion_id)}
               />
             </div>
           )}
@@ -741,6 +755,11 @@ const MasterPage = observer(() => {
                 total={pillarsStore.total}
                 isEmpty={!pillarsStore.pillars.length}
                 getRowId={(row) => `${row.name}_${row.minion_id || "global"}`}
+                onRowClick={(pillar) => {
+                  if (pillar.minion_id) {
+                    handleOpenDrawer(pillar.minion_id);
+                  }
+                }}
               />
             </div>
           )}
