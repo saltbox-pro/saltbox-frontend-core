@@ -1,4 +1,3 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   formatTimeByUserTZ,
@@ -13,7 +12,7 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { JSX, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import { mastersStore } from "saltbox-core/store";
 
@@ -33,13 +32,10 @@ function MastersPage() {
     columnHelper.accessor("master_id", {
       header: t("masters.table-master-id"),
       cell: (data) => {
-        return (
-          <Link to={`/master/${data.row.original.master_id}`}>
-            <Button type="link" size="small">
-              {data.getValue()}
-            </Button>
-          </Link>
-        );
+        return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
+      },
+      meta: {
+        showCopy: true,
       },
     }),
     columnHelper.accessor("status", {
@@ -93,7 +89,10 @@ function MastersPage() {
               <Button
                 color="primary"
                 variant="solid"
-                onClick={() => handleAccept(id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAccept(id);
+                }}
                 disabled={mastersStore.isLoading}
                 title={t("masters.table-accept-title")}
               >
@@ -104,7 +103,10 @@ function MastersPage() {
               <Button
                 color="danger"
                 variant="solid"
-                onClick={() => handleReject(id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReject(id);
+                }}
                 disabled={mastersStore.isLoading}
                 title={t("masters.table-reject-title")}
               >
@@ -180,6 +182,7 @@ function MastersPage() {
         isLoading={mastersStore.isLoading}
         pagination={mastersStore.pagination}
         onLazyLoad={(pagination) => mastersStore.handleLazyLoad(pagination)}
+        onRowClick={(master) => navigate(`/master/${master.master_id}`)}
       />
     </>
   );
