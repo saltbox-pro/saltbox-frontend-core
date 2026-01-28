@@ -121,7 +121,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             {
               icon: <ExportOutlined />,
               onClick: (value, row) => {
-                window.open(`/minion/${props.slug}/${row.id}`, "_blank");
+                window.open(`/core/minion/${props.slug}/${row.id}`, "_blank");
               },
               title: t("minions.open-in-new-tab"),
             },
