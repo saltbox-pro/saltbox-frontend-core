@@ -1,6 +1,5 @@
 import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
@@ -9,11 +8,11 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Flex, Progress } from "antd";
+import { Flex, Progress } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
@@ -70,6 +69,7 @@ const defaultListOperators = [
 
 export const MinionsTaskView = observer((props: { slug?: string }) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const filterSchema = useMemo(
     () => [
@@ -133,18 +133,10 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         header: "ID",
         enableSorting: false,
         cell: (data) => {
-          return (
-            <>
-              <Link to={`/task/${data.getValue()}`}>
-                <Button type="link" size={"small"}>
-                  {data.getValue()}
-                </Button>
-              </Link>
-              <CopyToClipboardButton text={data.getValue()} />
-            </>
-          );
+          return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
         },
         meta: {
+          showCopy: true,
           tdClassName: "fast-table-column-nowrap",
         },
       }),
@@ -320,6 +312,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
         onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
+        onRowClick={(task) => navigate(`/task/${task.id}`)}
         useVirtualScroll={false}
       />
     </Flex>
