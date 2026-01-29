@@ -42,12 +42,13 @@ import {
   type MenuProps,
   type TabsProps,
 } from "antd";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import {
   extractStringValue,
@@ -56,7 +57,6 @@ import {
 } from "../job-return-table/utils/job-return-utils";
 
 import styles from "./minion-details.module.css";
-import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 type SimpleGrainKeys = {
   [K in keyof GrainsSchema as GrainsSchema[K] extends React.ReactNode ? K : never]: GrainsSchema[K];
@@ -159,6 +159,18 @@ const KwargsPopoverButton = ({
 const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [selectedJobForReplay, setSelectedJobForReplay] = useState<JobReturnModel | null>(null);
+  const jobModalButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  const jobModalContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      const button = node.querySelector("button");
+      if (button) {
+        jobModalButtonRef.current = button;
+        button.click();
+      }
+    }
+  }, []);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -196,32 +208,19 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           if (!jid) {
             return "";
           }
-
-          const jobReturn = data.row.original;
-
-          return (
-            <Flex gap={4} align="center">
-              <Button type="link" size="small" onClick={() => handleNavigateToJob(jid)}>
-                {jid}
-              </Button>
-              <CopyToClipboardButton text={jid} />
-              <JobModal
-                target={jobReturn.minion_id}
-                targetType="glob"
-                fun={jobReturn.fun}
-                arg={jobReturn.fun_args || undefined}
-                kwarg={jobReturn.fun_kwarg || undefined}
-                defaultMaster={jobReturn.salt_master}
-                buttonProps={{
-                  type: "link",
-                  size: "small",
-                  icon: <ReloadOutlined />,
-                  showText: false,
-                  title: t("jobs.replay-job"),
-                }}
-              />
-            </Flex>
-          );
+          return <span style={{ color: "#1677ff" }}>{jid}</span>;
+        },
+        meta: {
+          showCopy: true,
+          actions: [
+            {
+              icon: <ReloadOutlined />,
+              onClick: (value, row) => {
+                setSelectedJobForReplay(row);
+              },
+              title: t("jobs.replay-job"),
+            },
+          ],
         },
       }),
       jobReturnsColumnHelper.accessor("retcode", {
@@ -376,10 +375,24 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         sorting={props.sorting}
         onLazyLoad={props.onLazyLoad}
         getRowId={(row) => row.id}
+        onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.jid)}
         useVirtualScroll={false}
         renderSubComponent={renderJobResult}
         getRowCanExpand={() => true}
       />
+      {selectedJobForReplay && (
+        <div ref={jobModalContainerRef} style={{ display: "none" }}>
+          <JobModal
+            key={selectedJobForReplay.jid}
+            target={selectedJobForReplay.minion_id}
+            targetType="glob"
+            fun={selectedJobForReplay.fun}
+            arg={selectedJobForReplay.fun_args || undefined}
+            kwarg={selectedJobForReplay.fun_kwarg || undefined}
+            defaultMaster={selectedJobForReplay.salt_master}
+          />
+        </div>
+      )}
     </div>
   );
 };
