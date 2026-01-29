@@ -1,5 +1,4 @@
 import {
-  CopyOutlined,
   DashOutlined,
   DeleteOutlined,
   EditOutlined,
@@ -9,7 +8,7 @@ import {
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { Dropdown, FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import { Button, Card, Flex, Spin, message } from "antd";
+import { Card, Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -283,7 +282,6 @@ export const MinionDashboardCard = observer(
     blockIndex = 0,
   }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
-    const [messageApi, contextHolder] = message.useMessage();
     const [sorting, setSorting] = useState<SortingState>([
       {
         id: "count",
@@ -303,62 +301,42 @@ export const MinionDashboardCard = observer(
       }
     }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
 
-    const handleCopyValue = (value: unknown) => {
-      const textToCopy = value?.toString() ?? "";
-      navigator.clipboard.writeText(textToCopy);
-      messageApi.success(t("jobs.table-copy-success"));
-    };
-
     const columns = [
       columnHelper.accessor("value", {
         header: t("dashboard.table-value"),
         enableSorting: false,
-        meta: {
-          tdClassName: styles.minionDashboardCardGrainCol,
-        },
         cell: (data) => {
           let fieldName = data.getValue() as string | null | undefined;
           if (fieldName === null || fieldName === undefined) {
             fieldName = t("dashboard.empty-name");
           }
-          return (
-            <Flex justify="space-between">
-              <Flex className={styles.minionDashboardCardGrainTitle}>{fieldName}</Flex>
-              <Flex className={styles.minionDashboardCardGrainActions} gap={4}>
-                <Button
-                  color="default"
-                  variant="outlined"
-                  title={t("jobs.table-copy")}
-                  size="small"
-                  icon={<CopyOutlined />}
-                  onClick={() => handleCopyValue(data.getValue())}
-                />
-                <Button
-                  color="default"
-                  variant="outlined"
-                  title={t("dashboard.apply-value-to-filters")}
-                  size="small"
-                  icon={<FilterOutlined />}
-                  onClick={() => {
-                    filterStore.currentFilters = {
-                      ...filterStore.currentFilters,
-                      rules: [
-                        ...filterStore.currentFilters.rules,
-                        {
-                          field: `grains.${grains}`,
-                          operator: "=",
-                          valueSource: "value",
-                          value: data.getValue()?.toString(),
-                          id: generateID(),
-                        },
-                      ],
-                    };
-                    filterStore.handleSearch();
-                  }}
-                />
-              </Flex>
-            </Flex>
-          );
+          return <span>{fieldName}</span>;
+        },
+        meta: {
+          showCopy: true,
+          actions: [
+            {
+              icon: <FilterOutlined />,
+              onClick: (value) => {
+                filterStore.currentFilters = {
+                  ...filterStore.currentFilters,
+                  rules: [
+                    ...filterStore.currentFilters.rules,
+                    {
+                      field: `grains.${grains}`,
+                      operator: "=",
+                      valueSource: "value",
+                      value: value?.toString(),
+                      id: generateID(),
+                    },
+                  ],
+                };
+                filterStore.handleSearch();
+              },
+              title: t("dashboard.apply-value-to-filters"),
+            },
+          ],
+          tdClassName: styles.minionDashboardCardGrainCol,
         },
       }),
       columnHelper.accessor("count", {
@@ -428,64 +406,61 @@ export const MinionDashboardCard = observer(
     ];
 
     return (
-      <>
-        {contextHolder}
-        <Card
-          size="small"
-          className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen}`}
-          classNames={{
-            body: `${view === "table" && styles.dashboardTableBlockBody}`,
-          }}
-        >
-          <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
-            <div className={styles.dashboardTableBlockHeader}>
-              <HeaderSelect
-                value={currentGrains}
-                onChange={handleGrainsChange}
-                options={grainsOptions}
-                className={styles.dashboardTableBlockHeaderSelect}
-                placeholder={t("dashboard.change-grains")}
-              />
-              <div className={styles.dashboardTableBlockHeaderSettings}>
-                <Dropdown menu={{ items }} trigger={["click"]}>
-                  <DashOutlined />
-                </Dropdown>
-              </div>
+      <Card
+        size="small"
+        className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen}`}
+        classNames={{
+          body: `${view === "table" && styles.dashboardTableBlockBody}`,
+        }}
+      >
+        <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
+          <div className={styles.dashboardTableBlockHeader}>
+            <HeaderSelect
+              value={currentGrains}
+              onChange={handleGrainsChange}
+              options={grainsOptions}
+              className={styles.dashboardTableBlockHeaderSelect}
+              placeholder={t("dashboard.change-grains")}
+            />
+            <div className={styles.dashboardTableBlockHeaderSettings}>
+              <Dropdown menu={{ items }} trigger={["click"]}>
+                <DashOutlined />
+              </Dropdown>
             </div>
-            {view === "graph" ? (
-              <ResponsiveContainer minHeight={400}>
-                <PieChart>
-                  <Pie
-                    activeIndex={activeIndex}
-                    activeShape={renderActiveShape}
-                    data={dashboardCardStore.roundedGrainValues}
-                    innerRadius={60}
-                    outerRadius={80}
-                    fill="#1677ff"
-                    dataKey="count"
-                    onMouseEnter={onPieEnter}
-                  >
-                    {dashboardCardStore.roundedGrainValues.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            ) : dashboardCardStore.grainValues.length > 0 ? (
-              <FastTableListed
-                columns={columns}
-                data={dashboardCardStore.grainValues}
-                isEmpty={!dashboardCardStore.grainValues.length}
-                sorting={sorting}
-                onSortingChange={setSorting}
-                hideFooter
-              />
-            ) : (
-              <div>{t("dashboard.no-information")}</div>
-            )}
-          </Spin>
-        </Card>
-      </>
+          </div>
+          {view === "graph" ? (
+            <ResponsiveContainer minHeight={400}>
+              <PieChart>
+                <Pie
+                  activeIndex={activeIndex}
+                  activeShape={renderActiveShape}
+                  data={dashboardCardStore.roundedGrainValues}
+                  innerRadius={60}
+                  outerRadius={80}
+                  fill="#1677ff"
+                  dataKey="count"
+                  onMouseEnter={onPieEnter}
+                >
+                  {dashboardCardStore.roundedGrainValues.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : dashboardCardStore.grainValues.length > 0 ? (
+            <FastTableListed
+              columns={columns}
+              data={dashboardCardStore.grainValues}
+              isEmpty={!dashboardCardStore.grainValues.length}
+              sorting={sorting}
+              onSortingChange={setSorting}
+              hideFooter
+            />
+          ) : (
+            <div>{t("dashboard.no-information")}</div>
+          )}
+        </Spin>
+      </Card>
     );
   }
 );
