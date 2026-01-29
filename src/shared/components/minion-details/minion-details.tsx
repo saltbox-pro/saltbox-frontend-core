@@ -529,6 +529,7 @@ export function MinionDetails(props: {
   onFullViewActionsMenuClick?: MenuProps["onClick"];
   jobReturnsFilter?: React.ReactNode;
   jobReturnsFilterButton?: React.ReactNode;
+  isInDrawer?: boolean;
 }) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -544,7 +545,7 @@ export function MinionDetails(props: {
     (key: string) => {
       setActiveTab(key);
 
-      if (location.pathname !== "/core/minions/root") {
+      if (!props.isInDrawer) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
           newParams.set("tab", key);
@@ -552,7 +553,7 @@ export function MinionDetails(props: {
         });
       }
     },
-    [location.pathname, setSearchParams]
+    [props.isInDrawer, setSearchParams]
   );
 
   const minionGeneralDetailViews: MinionDetailView[] = [

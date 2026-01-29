@@ -70,6 +70,7 @@ const MinionCompactView = observer(
         pillars={minionStore.pillars}
         isPillarsLoading={minionStore.isPillarsLoading}
         onFilterButton={props.onFilterButton}
+        isInDrawer={true}
       />
     );
   }

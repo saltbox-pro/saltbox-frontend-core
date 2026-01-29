@@ -967,6 +967,7 @@ const MasterPage = observer(() => {
             isMinionLoading={minionStore.isMinionLoading}
             pillars={minionStore.pillars}
             isPillarsLoading={minionStore.isPillarsLoading}
+            isInDrawer={true}
           />
         )}
       </Drawer>
