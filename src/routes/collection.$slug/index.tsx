@@ -1,4 +1,4 @@
-import { QuestionCircleOutlined } from "@ant-design/icons";
+import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   pastTimeByUserTZ,
@@ -17,7 +17,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { MinionIdCell } from "saltbox-core/shared/components/minion-id-cell";
 import {
   CollectionStore,
   defaultCollectionStore,
@@ -69,18 +68,21 @@ const CollectionEditPage = observer(() => {
     minionsColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
       cell: (data) => {
-        const minionId = data.row.original.minion_id;
-        const innerId = data.row.original.id;
-        return (
-          <MinionIdCell
-            minionId={minionId}
-            innerId={innerId}
-            collectionSlug={collectionStore.collection?.parent_slug || slug}
-            onMenuClick={() => handleOpenDrawer(minionId, innerId)}
-          />
-        );
+        const showMinionId = data.row.original.minion_id ?? data.getValue();
+        return <span style={{ color: "#1677ff" }}>{showMinionId}</span>;
       },
       meta: {
+        showCopy: true,
+        copyValue: (row) => row.minion_id ?? row.id,
+        actions: [
+          {
+            icon: <ExportOutlined />,
+            onClick: (value, row) => {
+              window.open(`/core/minion/${slug}/${row.id}`, "_blank");
+            },
+            title: t("minions.open-in-new-tab"),
+          },
+        ],
         tdClassName: "fast-table-column-nowrap",
       },
     }),
@@ -269,6 +271,7 @@ const CollectionEditPage = observer(() => {
           isLoading={minionsStore.isLoading}
           pagination={toJS(minionsStore.pagination)}
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          onRowClick={(minion) => handleOpenDrawer(minion.minion_id, minion.id)}
         />
       </Flex>
 
