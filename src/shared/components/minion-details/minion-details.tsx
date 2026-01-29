@@ -432,11 +432,11 @@ const minionDetailsViewsToDescriptionItems = (
                   icon={<CopyOutlined />}
                   color="default"
                   variant="outlined"
-                  title={t("copy-to-clipboard-button.copy")}
+                  title={t("common.copy-to-clipboard-button.copy")}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigator.clipboard.writeText(transformGrainValueToString(grainValue));
-                    message.success(t("copy-to-clipboard-button.copied"));
+                    message.success(t("common.copy-to-clipboard-button.copied"));
                   }}
                 />
               )}
@@ -461,11 +461,11 @@ const minionDetailsViewsToDescriptionItems = (
               icon={<CopyOutlined />}
               color="default"
               variant="outlined"
-              title={t("copy-to-clipboard-button.copy")}
+              title={t("common.copy-to-clipboard-button.copy")}
               onClick={(e) => {
                 e.stopPropagation();
                 navigator.clipboard.writeText(String(grainValue));
-                message.success(t("copy-to-clipboard-button.copied"));
+                message.success(t("common.copy-to-clipboard-button.copied"));
               }}
             />
             {onFilterButton && (
