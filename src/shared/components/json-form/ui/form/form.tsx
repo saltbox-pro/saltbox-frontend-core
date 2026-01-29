@@ -4,9 +4,9 @@ import type { FormContextType, RJSFSchema, StrictRJSFSchema } from "@rjsf/utils"
 import validator from "@rjsf/validator-ajv8";
 import type { ComponentRef, Ref } from "react";
 
-import { SaltboxArrayFieldItemTemplate } from "../templates/array-field-item-template";
-import { SaltboxArrayFieldTemplate } from "../templates/array-field-template";
-import { SaltboxWrapIfAdditionalTemplate } from "../templates/wrap-if-additional-template";
+import { CustomArrayFieldItemTemplate } from "../templates/array-field-item-template";
+import { CustomArrayFieldTemplate } from "../templates/array-field-template";
+import { CustomWrapIfAdditionalTemplate } from "../templates/wrap-if-additional-template";
 
 import styles from "./form.module.css";
 
@@ -36,13 +36,13 @@ export const SaltboxJsonForm = <
   return (
     <JsonForm
       ref={ref}
-      className={`${styles.saltboxJsonForm} ${className || ""}`}
+      className={`${styles.form} ${className || ""}`}
       validator={validatorProp ?? validator}
       showErrorList={showErrorList}
       templates={{
-        WrapIfAdditionalTemplate: SaltboxWrapIfAdditionalTemplate,
-        ArrayFieldTemplate: SaltboxArrayFieldTemplate,
-        ArrayFieldItemTemplate: SaltboxArrayFieldItemTemplate,
+        WrapIfAdditionalTemplate: CustomWrapIfAdditionalTemplate,
+        ArrayFieldTemplate: CustomArrayFieldTemplate,
+        ArrayFieldItemTemplate: CustomArrayFieldItemTemplate,
         ...templates,
       }}
       {...rest}

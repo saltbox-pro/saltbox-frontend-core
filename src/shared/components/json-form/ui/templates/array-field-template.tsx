@@ -1,11 +1,11 @@
 import {
-  ArrayFieldTemplateProps,
-  FormContextType,
+  type ArrayFieldTemplateProps,
+  type FormContextType,
+  type GenericObjectType,
+  type RJSFSchema,
+  type StrictRJSFSchema,
   getTemplate,
   getUiOptions,
-  GenericObjectType,
-  RJSFSchema,
-  StrictRJSFSchema,
 } from "@rjsf/utils";
 import { Col, ConfigProvider, Row } from "antd";
 import { useContext, type ComponentType } from "react";
@@ -18,17 +18,11 @@ import {
   isNestedArray,
 } from "../../helpers/array-field-utils";
 
-import type { SaltboxArrayFieldItemTemplateProps } from "./array-field-item-template";
+import type { CustomArrayFieldItemTemplateProps } from "./array-field-item-template";
 
-const DESCRIPTION_COL_STYLE = {
-  paddingBottom: "8px",
-} as const;
+import styles from "./array-field-template.module.css";
 
-const ADD_BUTTON_STYLE = {
-  width: "75%",
-} as const;
-
-export function SaltboxArrayFieldTemplate<
+export function CustomArrayFieldTemplate<
   T = unknown,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = FormContextType,
@@ -57,7 +51,7 @@ export function SaltboxArrayFieldTemplate<
     "ArrayFieldItemTemplate",
     registry,
     uiOptions
-  ) as ComponentType<SaltboxArrayFieldItemTemplateProps<T, S, F>>;
+  ) as ComponentType<CustomArrayFieldItemTemplateProps<T, S, F>>;
   const ArrayFieldTitleTemplate = getTemplate<"ArrayFieldTitleTemplate", T, S, F>(
     "ArrayFieldTitleTemplate",
     registry,
@@ -70,7 +64,7 @@ export function SaltboxArrayFieldTemplate<
   const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
   const prefixCls = getPrefixCls("form");
   const labelClsBasic = `${prefixCls}-item-label`;
-  const labelColClassName = `${labelClsBasic} ${labelAlign === "left" && `${labelClsBasic}-left`}`;
+  const labelColClassName = `${labelClsBasic} ${labelAlign === "left" ? `${labelClsBasic}-left` : ""}`;
 
   const displayLabel = getHasDisplayLabel({
     uiOptionsTitle: uiOptions?.title,
@@ -100,7 +94,7 @@ export function SaltboxArrayFieldTemplate<
           </Col>
         )}
         {hasDescription && (
-          <Col span={24} style={DESCRIPTION_COL_STYLE}>
+          <Col span={24} className={styles.fieldDescription}>
             <ArrayFieldDescriptionTemplate
               description={uiOptions.description || schema.description}
               idSchema={idSchema}
@@ -112,35 +106,28 @@ export function SaltboxArrayFieldTemplate<
         )}
         <Col className="row array-item-list" span={24}>
           {items &&
-            items.map(({ key, ...itemProps }, index) => (
+            items.map(({ key, ...itemProps }) => (
               <ArrayFieldItemTemplate
                 key={key}
                 {...itemProps}
-                displayLabel={displayLabel}
-                hasDescription={hasDescription}
                 isParentNested={isParentNested}
                 hasArrayItems={itemsAreArrays}
                 hasObjectItems={itemsAreObjects}
-                isLastItem={index === items.length - 1}
               />
             ))}
         </Col>
 
         {canAdd && (
           <Col span={24}>
-            <Row gutter={rowGutter}>
-              <Col flex="auto" />
-              <Col flex="189px">
-                <Row justify="end">
-                  <AddButton
-                    className="array-item-add"
-                    disabled={disabled || readonly}
-                    onClick={onAddClick}
-                    style={ADD_BUTTON_STYLE}
-                    uiSchema={uiSchema}
-                    registry={registry}
-                  />
-                </Row>
+            <Row gutter={rowGutter} justify="end">
+              <Col flex="120px">
+                <AddButton
+                  className="array-item-add"
+                  disabled={disabled || readonly}
+                  onClick={onAddClick}
+                  uiSchema={uiSchema}
+                  registry={registry}
+                />
               </Col>
             </Row>
           </Col>
