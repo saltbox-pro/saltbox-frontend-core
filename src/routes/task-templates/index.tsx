@@ -1,19 +1,12 @@
-import { ArrowLeftOutlined, ExportOutlined } from "@ant-design/icons";
+import { ExportOutlined } from "@ant-design/icons";
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
-import {
-  CopyToClipboardButton,
-  FastTablePaginated,
-  PageHeader,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { Button, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { taskTemplatesStore } from "saltbox-core/store";
-
-const { Text } = Typography;
 
 const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
 
@@ -33,45 +26,38 @@ const TaskTemplatesPage = observer(() => {
     }),
     columnHelper.accessor("repo_info.name", {
       header: t("task-templates.table-repository"),
-      cell: (data) => {
-        return (
-          <>
-            {data.getValue()}
-            <Button
-              type="link"
-              size="small"
-              href={data.row.original.repo_info.repo_url}
-              target="_blank"
-              icon={<ExportOutlined />}
-              title={t("task-templates.table-go-to-repository")}
-            />
-          </>
-        );
+      cell: (data) => data.getValue(),
+      meta: {
+        actions: [
+          {
+            icon: <ExportOutlined />,
+            onClick: (value, row) => {
+              window.open(row.repo_info.repo_url, "_blank");
+            },
+            title: t("task-templates.table-go-to-repository"),
+          },
+        ],
       },
     }),
     columnHelper.accessor("commit_hash", {
       header: t("task-templates.table-last-commit"),
       cell: (data) => {
         const commitHash = data.getValue()?.slice(0, 7) + "...";
-        const repoCommitUrl =
-          data.row.original.repo_info.repo_url.replace(".git", "") +
-          `/-/commit/${data.row.original.commit_hash}`;
-        const fullCommitHash = data.getValue();
-
-        return (
-          <>
-            {commitHash}
-            <CopyToClipboardButton text={fullCommitHash} />
-            <Button
-              type="link"
-              size="small"
-              href={repoCommitUrl}
-              target="_blank"
-              icon={<ExportOutlined />}
-              title={t("task-templates.table-go-to-repository")}
-            />
-          </>
-        );
+        return commitHash;
+      },
+      meta: {
+        showCopy: true,
+        actions: [
+          {
+            icon: <ExportOutlined />,
+            onClick: (value, row) => {
+              const repoCommitUrl =
+                row.repo_info.repo_url.replace(".git", "") + `/-/commit/${row.commit_hash}`;
+              window.open(repoCommitUrl, "_blank");
+            },
+            title: t("task-templates.table-go-to-repository"),
+          },
+        ],
       },
     }),
   ];
