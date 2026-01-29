@@ -686,6 +686,10 @@
     "yes": "Да",
     "no": "Нет",
     "cancel": "Отмена",
-    "delete": "Удалить"
+    "delete": "Удалить",
+    "copy-to-clipboard-button": {
+      "copy": "Копировать",
+      "copied": "Скопировано"
+    }
   }
 }

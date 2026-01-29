@@ -686,6 +686,10 @@
     "yes": "Yes",
     "no": "No",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "copy-to-clipboard-button": {
+      "copy": "Copy",
+      "copied": "Copied"
+    }
   }
 }

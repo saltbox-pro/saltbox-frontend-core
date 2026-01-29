@@ -415,7 +415,18 @@ const minionDetailsViewsToDescriptionItems = (
             <Flex className="minion-details-grain-name">{grainValue}</Flex>
             <Flex className={styles.minionDetailsGrainButtons}>
               {transformGrainValueToString(grainValue) !== "" && (
-                <CopyToClipboardButton text={transformGrainValueToString(grainValue)} />
+                <Button
+                  size="small"
+                  icon={<CopyOutlined />}
+                  color="default"
+                  variant="outlined"
+                  title={t("copy-to-clipboard-button.copy")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigator.clipboard.writeText(transformGrainValueToString(grainValue));
+                    message.success(t("copy-to-clipboard-button.copied"));
+                  }}
+                />
               )}
             </Flex>
           </Flex>
@@ -430,14 +441,25 @@ const minionDetailsViewsToDescriptionItems = (
       children: grainValue ? (
         <Flex justify="space-between" className="minion-details-grain">
           <Flex className="minion-details-grain-name">{grainValue}</Flex>
-          <Flex gap={8} className={styles.minionDetailsGrainButtons}>
-            <CopyToClipboardButton text={String(grainValue)} />
+          <Flex gap={2} className={styles.minionDetailsGrainButtons}>
+            <Button
+              size="small"
+              icon={<CopyOutlined />}
+              color="default"
+              variant="outlined"
+              title={t("copy-to-clipboard-button.copy")}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(String(grainValue));
+                message.success(t("copy-to-clipboard-button.copied"));
+              }}
+            />
             {onFilterButton && (
               <Button
                 size="small"
                 icon={<FilterOutlined />}
-                shape="circle"
-                type="primary"
+                color="default"
+                variant="outlined"
                 title={t("dashboard.apply-value-to-filters")}
                 onClick={() =>
                   onFilterButton({
