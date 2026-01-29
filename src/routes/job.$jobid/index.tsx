@@ -61,8 +61,7 @@ const JobPage = observer(() => {
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobModel>());
   const [isRevealedAll, setIsRevealedAll] = useState(() => {
-    const saved = localStorage.getItem("job-revealed-all-returns");
-    return saved === "true";
+    return Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true");
   });
   const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
@@ -155,7 +154,7 @@ const JobPage = observer(() => {
 
   const handleToggleRevealedAll = (value: boolean) => {
     setIsRevealedAll(value);
-    localStorage.setItem("job-revealed-all-returns", value.toString());
+    localStorage.setItem(`job-revealed-all-returns:${jid}`, value.toString());
   };
 
   useEffect(() => {
@@ -367,7 +366,7 @@ const JobPage = observer(() => {
             )}
             <Flex align="center" gap={8}>
               {(viewMode === "standard" || viewMode === "detailed") &&
-                jobStore.jobReturns.length > 1 && (
+                jobStore.totalMinions > 1 && (
                   <Flex align="center" gap={4}>
                     {t("jobs.reveal-all-returns")}
                     <Switch checked={isRevealedAll} onChange={handleToggleRevealedAll} />
