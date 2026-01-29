@@ -13,7 +13,7 @@ import {
 
 import styles from "./wrap-if-additional-template.module.css";
 
-export function SaltboxWrapIfAdditionalTemplate<
+export function CustomWrapIfAdditionalTemplate<
   T = unknown,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = FormContextType,
