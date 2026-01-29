@@ -5,7 +5,7 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatQuery } from "react-querybuilder";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
@@ -191,6 +191,7 @@ const MinionPage = observer(() => {
   const { t } = useTranslation();
   const { mid: minionId, slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const minionStoreRef = useRef<MinionStore | undefined>(undefined);
   if (!minionStoreRef.current) {
     minionStoreRef.current = new MinionStore(slug, minionId);
@@ -377,7 +378,7 @@ const MinionPage = observer(() => {
   ) : null;
 
   return (
-    <>
+    <div key={location.key}>
       <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
@@ -440,7 +441,7 @@ const MinionPage = observer(() => {
       )}
 
       {contextHolder}
-    </>
+    </div>
   );
 });
 
