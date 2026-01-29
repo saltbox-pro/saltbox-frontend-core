@@ -23,6 +23,8 @@
 .interfaceDetails {
   margin-left: 16px;
   margin-top: 4px;
+
+  list-style: none;
 }
 
 .minionDetailsDashboard :global(.ant-descriptions-item-label),

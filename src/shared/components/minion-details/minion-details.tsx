@@ -38,7 +38,9 @@ import {
   Spin,
   Tabs,
   Tag,
+  Typography,
   message,
+  type FlexProps,
   type MenuProps,
   type TabsProps,
 } from "antd";
@@ -65,12 +67,18 @@ type SimpleGrainKeys = {
 interface MinionSimpleDetailView {
   key: keyof SimpleGrainKeys;
   name: string;
+  itemProps?: Partial<DescriptionsProps["items"][number]> & {
+    grainValueProps?: Partial<FlexProps>;
+  };
 }
 
 interface MinionExtendDetailView {
   key: string;
   value: (minionDetailSchema: MinionDetailSchema) => React.ReactNode;
   name: string;
+  itemProps?: Partial<DescriptionsProps["items"][number]> & {
+    grainValueProps?: Partial<FlexProps>;
+  };
 }
 
 type MinionDetailView = MinionSimpleDetailView | MinionExtendDetailView;
@@ -404,6 +412,8 @@ const minionDetailsViewsToDescriptionItems = (
   onFilterButton?: (params: OnFilterButtonParams) => void
 ): DescriptionsProps["items"] => {
   return minionDetailViews.map((minionDetailView) => {
+    const { grainValueProps, ...restItemProps } = minionDetailView.itemProps ?? {};
+
     if ("value" in minionDetailView) {
       const grainValue = minionDetailView.value(schema);
 
@@ -412,7 +422,9 @@ const minionDetailsViewsToDescriptionItems = (
         label: minionDetailView.name,
         children: (
           <Flex justify="space-between" className="minion-details-grain">
-            <Flex className="minion-details-grain-name">{grainValue}</Flex>
+            <Flex className="minion-details-grain-name" {...grainValueProps}>
+              {grainValue}
+            </Flex>
             <Flex className={styles.minionDetailsGrainButtons}>
               {transformGrainValueToString(grainValue) !== "" && (
                 <Button
@@ -432,8 +444,10 @@ const minionDetailsViewsToDescriptionItems = (
           </Flex>
         ),
         span: 3,
+        ...restItemProps,
       };
     }
+
     const grainValue = schema.grains[minionDetailView.key];
     return {
       key: minionDetailView.key,
@@ -475,6 +489,7 @@ const minionDetailsViewsToDescriptionItems = (
         ""
       ),
       span: 3,
+      ...restItemProps,
     };
   });
 };
@@ -704,23 +719,25 @@ export function MinionDetails(props: {
         {
           key: "interfaces",
           name: t("minions.network-interfaces"),
+          itemProps: { styles: { label: { verticalAlign: "top" } }, grainValueProps: { flex: 1 } },
           value: (schema) => (
-            <>
+            <Flex wrap style={{ flexGrow: 1 }}>
               {Object.entries({
                 ...schema.grains.ip4_interfaces,
                 ...schema.grains.ip6_interfaces,
                 ...schema.grains.hwaddr_interfaces,
               }).map(([iface]) => (
-                <div key={iface} className={styles.interfaceBlock}>
-                  <div>{iface}</div>
-                  <div className={styles.interfaceDetails}>
-                    <div>MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}</div>
-                    <div>IPv4: {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}</div>
-                    <div>IPv6: {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}</div>
-                  </div>
-                </div>
+                <Flex vertical key={iface} className={styles.interfaceBlock} flex="0 1 330px">
+                  <Typography.Text italic>{iface}</Typography.Text>
+
+                  <ul className={styles.interfaceDetails}>
+                    <li>MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}</li>
+                    <li>IPv4: {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}</li>
+                    <li>IPv6: {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}</li>
+                  </ul>
+                </Flex>
               ))}
-            </>
+            </Flex>
           ),
         },
       ],
