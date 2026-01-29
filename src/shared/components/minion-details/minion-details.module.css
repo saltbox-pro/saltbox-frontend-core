@@ -2,9 +2,9 @@
   border: none;
 }
 
-.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-item-label) {
-  color: black !important;
-  background-color: white !important;
+.minionDetailsDashboard :global(.ant-descriptions-item-label),
+.minionDetailsDashboard :global(.ant-descriptions-item-content) {
+  background-color: transparent !important;
 }
 
 .minionDetailsDashboard {
@@ -43,7 +43,12 @@
   opacity: 0;
   transition:
     visibility 0s,
-    opacity 0.1s linear;
+    opacity 0.15s ease-in-out;
+}
+
+:global(.ant-descriptions-row:hover) {
+  background-color: #fafafa !important;
+  transition: background-color 0.15s ease-in-out;
 }
 
 :global(.ant-descriptions-item-content:hover) .minionDetailsGrainButtons {
