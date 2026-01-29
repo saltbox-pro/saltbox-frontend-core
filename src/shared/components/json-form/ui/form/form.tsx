@@ -6,6 +6,7 @@ import type { ComponentRef, Ref } from "react";
 
 import { SaltboxArrayFieldItemTemplate } from "../templates/array-field-item-template";
 import { SaltboxArrayFieldTemplate } from "../templates/array-field-template";
+import { SaltboxWrapIfAdditionalTemplate } from "../templates/wrap-if-additional-template";
 
 import styles from "./form.module.css";
 
@@ -20,10 +21,6 @@ export type SaltboxJsonFormProps<
   ref?: Ref<SaltboxJsonFormRef>;
 };
 
-/**
- * TODO: В дальнейшем (после теста в рамках core) нужно вынести в common репозиторий и переиспользовать везде,
- * где используется форма от @rjsf/antd
- */
 export const SaltboxJsonForm = <
   T = unknown,
   S extends StrictRJSFSchema = RJSFSchema,
@@ -43,6 +40,7 @@ export const SaltboxJsonForm = <
       validator={validatorProp ?? validator}
       showErrorList={showErrorList}
       templates={{
+        WrapIfAdditionalTemplate: SaltboxWrapIfAdditionalTemplate,
         ArrayFieldTemplate: SaltboxArrayFieldTemplate,
         ArrayFieldItemTemplate: SaltboxArrayFieldItemTemplate,
         ...templates,
