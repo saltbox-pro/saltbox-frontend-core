@@ -62,6 +62,14 @@ export default [
       ],
 
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+          caughtErrors: "none",
+        },
+      ],
 
       "prettier/prettier": "error",
     },
