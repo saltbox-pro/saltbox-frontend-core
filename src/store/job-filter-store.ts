@@ -1,10 +1,10 @@
 import { FilterStore } from "@saltbox/saltbox-frontend-common";
-import { makeObservable } from "mobx";
+import { action, makeObservable } from "mobx";
 import { OptionList } from "react-querybuilder";
 
-export class JobFilterStore extends FilterStore {
-  private static STORAGE_KEY = "jobsFilter";
+const STORAGE_KEY = "jobsFilter";
 
+export class JobFilterStore extends FilterStore {
   constructor(schema: OptionList) {
     super();
     this.filterSchema = schema;
@@ -12,13 +12,15 @@ export class JobFilterStore extends FilterStore {
     makeObservable(this);
   }
 
+  @action
   handleSearch = () => {
-    localStorage.setItem(JobFilterStore.STORAGE_KEY, JSON.stringify(this.currentFilters));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.currentFilters));
     this.searchFilters = this.currentFilters;
   };
 
+  @action
   handleResetFilters = () => {
-    localStorage.removeItem(JobFilterStore.STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
     this.currentFilters = {
       combinator: "and",
       rules: [],
@@ -26,8 +28,9 @@ export class JobFilterStore extends FilterStore {
     this.searchFilters = this.currentFilters;
   };
 
+  @action
   private loadFilters() {
-    const saved = localStorage.getItem(JobFilterStore.STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       this.currentFilters = parsed;
