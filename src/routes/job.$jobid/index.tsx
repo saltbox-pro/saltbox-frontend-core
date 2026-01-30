@@ -298,7 +298,7 @@ const JobPage = observer(() => {
 
         {jobStore.jobStartTimestamp && (
           <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
-            <span className={styles.jobDetailLabel}>{t("jobs.job-duration")}:</span>
+            <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
             <span className={styles.jobDetailValue}>
               {jobStore.isJobComplete && jobStore.actualJobDuration ? (
                 formatJobDuration(jobStore.actualJobDuration)

@@ -1,17 +1,12 @@
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import {
-  formatTimeByUserTZ,
-  pastTimeByUserTZ,
-  PageHeader,
-  FastTablePaginated,
-  Popover,
-} from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { JobTemplateStore } from "saltbox-core/store";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;
@@ -29,27 +24,11 @@ const JobsTemplatePage = observer(() => {
     }),
     columnHelper.accessor("created", {
       header: t("jobs-templates.table-created"),
-      cell: (data) => {
-        if (!data.getValue()) return "";
-
-        const rawCreated = data.getValue();
-        const created: string = formatTimeByUserTZ(rawCreated);
-        const createdPastTime: string = pastTimeByUserTZ(rawCreated);
-
-        return <Popover content={created}>{createdPastTime}</Popover>;
-      },
+      cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
     columnHelper.accessor("modified", {
       header: t("jobs-templates.table-modified"),
-      cell: (data) => {
-        if (!data.getValue()) return "";
-
-        const rawModified = data.getValue();
-        const modified: string = formatTimeByUserTZ(rawModified);
-        const modifiedPastTime: string = pastTimeByUserTZ(rawModified);
-
-        return <Popover content={modified}>{modifiedPastTime}</Popover>;
-      },
+      cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
   ];
   const [jobTemplateStore] = useState(new JobTemplateStore());

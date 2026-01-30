@@ -10,6 +10,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
 import { toJS } from "mobx";
 import { useTranslation } from "react-i18next";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 
 const TaskMinionsTable = FastTableListed<TaskMinionModel>;
 
@@ -81,27 +82,21 @@ export const TaskMinions = ({
     }),
     columnHelper.accessor("start_last_dt", {
       header: t("task.minions.table-started"),
-      cell: (data) => {
-        if (!data.getValue()) {
-          return <>{t("task.minions.table-not-started")}</>;
-        }
-        const rawStarted: string = data.getValue();
-        const started: string = formatTimeByUserTZ(rawStarted);
-        const startedPastTime: string = pastTimeByUserTZ(rawStarted);
-        return <Popover content={started}>{startedPastTime}</Popover>;
-      },
+      cell: (data) => (
+        <RelativeTime
+          date={data.getValue()}
+          fallback={<>{t("task.minions.table-not-started")}</>}
+        />
+      ),
     }),
     columnHelper.accessor("finished_dt", {
       header: t("task.minions.table-finished"),
-      cell: (data) => {
-        if (!data.getValue()) {
-          return <>{t("task.minions.table-not-started")}</>;
-        }
-        const rawFinished: string = data.getValue();
-        const finished: string = formatTimeByUserTZ(rawFinished);
-        const finishedPastTime: string = pastTimeByUserTZ(rawFinished);
-        return <Popover content={finished}>{finishedPastTime}</Popover>;
-      },
+      cell: (data) => (
+        <RelativeTime
+          date={data.getValue()}
+          fallback={<>{t("task.minions.table-not-started")}</>}
+        />
+      ),
     }),
   ];
 

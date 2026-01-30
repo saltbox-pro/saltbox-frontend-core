@@ -50,6 +50,7 @@ import ReactJson from "react-json-view";
 import { useNavigate, useSearchParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import {
@@ -329,14 +330,8 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         },
       }),
       jobReturnsColumnHelper.accessor("stamp", {
-        header: t("task.job-returns-table.table-timestamp"),
-        cell: (data) => {
-          const stamp = data.getValue();
-          if (!stamp) {
-            return "";
-          }
-          return formatTimeByUserTZ(stamp);
-        },
+        header: t("task.job-returns-table.table-execution-time"),
+        cell: (data) => <RelativeTime date={data.getValue()} />,
       }),
     ],
     [handleNavigateToJob, t]

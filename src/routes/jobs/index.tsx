@@ -1,10 +1,7 @@
 import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
-  formatTimeByUserTZ,
   PageHeader,
-  pastTimeByUserTZ,
-  Popover,
   WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
@@ -18,6 +15,7 @@ import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -251,15 +249,7 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor("fms_jid_timestamp", {
         header: t("jobs.table-created"),
-        cell: (data) => {
-          if (!data.getValue()) return "";
-
-          const rawCreated = data.getValue();
-          const created: string = formatTimeByUserTZ(rawCreated);
-          const createdPastTime: string = pastTimeByUserTZ(rawCreated);
-
-          return <Popover content={created}>{createdPastTime}</Popover>;
-        },
+        cell: (data) => <RelativeTime date={data.getValue()} />,
       }),
     ],
     [handleNavigateToJob, t]

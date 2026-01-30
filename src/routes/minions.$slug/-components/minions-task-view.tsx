@@ -1,8 +1,6 @@
 import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
-  formatTimeByUserTZ,
-  pastTimeByUserTZ,
   Popover,
   WebSocketMessage,
   WebSocketService,
@@ -15,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
@@ -233,15 +232,7 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       }),
       columnHelper.accessor("created", {
         header: t("minions.table-created"),
-        cell: (data) => {
-          const created: string = pastTimeByUserTZ(data.getValue());
-          const fullDate = formatTimeByUserTZ(data.getValue());
-          return (
-            <Popover content={fullDate}>
-              <div style={{ cursor: "pointer" }}>{created}</div>
-            </Popover>
-          );
-        },
+        cell: (data) => <RelativeTime date={data.getValue()} />,
       }),
     ],
     [t]
