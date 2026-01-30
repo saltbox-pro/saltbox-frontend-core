@@ -27,6 +27,7 @@ import {
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
@@ -115,13 +116,7 @@ const CollectionEditPage = observer(() => {
     }),
     minionsColumnHelper.accessor("created", {
       header: t("minions.table-created"),
-      cell: (data) => {
-        const rawCreated: string = data.getValue();
-        const created: string = formatTimeByUserTZ(rawCreated);
-        const createdPastTime: string = pastTimeByUserTZ(rawCreated);
-
-        return <Popover content={created}>{createdPastTime}</Popover>;
-      },
+      cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
     minionsColumnHelper.accessor("last_activity", {
       header: t("minions.table-last-activity"),

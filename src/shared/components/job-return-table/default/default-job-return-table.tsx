@@ -1,6 +1,6 @@
 import { MinusSquareOutlined, PlusSquareOutlined, ExportOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, formatTimeByUserTZ, Drawer } from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated, Drawer } from "@saltbox/saltbox-frontend-common";
 import {
   OnChangeFn,
   PaginationState,
@@ -15,9 +15,9 @@ import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { apiCoreStore, MinionStore } from "saltbox-core/store";
 
-import { useFormatAndGetExecutionTimeColor } from "../../../utils/execution-time-utils";
 import { TableView } from "../table-view/table-view";
 import {
   extractStringValue,
@@ -26,37 +26,10 @@ import {
 } from "../utils/job-return-utils";
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
+import { ExecutionDuration } from "./components/execution-duration";
 import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
-
-const ExecutionTimeCell = ({
-  jobStartTimestamp,
-  stamp,
-  jobReturn,
-  jobReturns,
-  t,
-}: {
-  jobStartTimestamp: string | null;
-  stamp: string | null;
-  jobReturn: JobReturnModel;
-  jobReturns: JobReturnModel[];
-  t: (key: string) => string;
-}) => {
-  const { formattedTime, color } = useFormatAndGetExecutionTimeColor(
-    jobStartTimestamp,
-    stamp,
-    jobReturn,
-    jobReturns,
-    t
-  );
-
-  return (
-    <div className={styles.executionTimeValue} style={{ color }}>
-      {formattedTime}
-    </div>
-  );
-};
 
 const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
@@ -170,25 +143,18 @@ export const DefaultJobReturnTable = observer(
           cell: (data) => data.row.original.retcode,
         }),
         columnHelper.accessor("stamp", {
-          header: t("task.job-returns-table.table-timestamp"),
-          cell: (data) => {
-            if (!data.getValue()) {
-              return <></>;
-            }
-            const timestamp: string = formatTimeByUserTZ(data.getValue());
-            return <div>{timestamp}</div>;
-          },
+          header: t("task.job-returns-table.table-execution-time"),
+          cell: (data) => <RelativeTime date={data.getValue()} />,
         }),
         columnHelper.display({
-          header: t("task.job-returns-table.table-execution-time"),
+          header: t("task.job-returns-table.table-execution-duration"),
           cell: ({ row }) => {
             return (
-              <ExecutionTimeCell
-                jobStartTimestamp={jobStartTimestamp?.toISOString() || null}
-                stamp={row.original.stamp || null}
+              <ExecutionDuration
+                jobStartTimestamp={jobStartTimestamp?.toISOString()}
+                stamp={row.original.stamp}
                 jobReturn={row.original}
                 jobReturns={jobReturns}
-                t={t}
               />
             );
           },

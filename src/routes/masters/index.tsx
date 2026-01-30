@@ -1,19 +1,14 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import {
-  formatTimeByUserTZ,
-  pastTimeByUserTZ,
-  PageHeader,
-  FastTablePaginated,
-  Popover,
-} from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Tag, message } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { JSX, useEffect, useState } from "react";
+import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -55,27 +50,11 @@ function MastersPage() {
     }),
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
-      cell: (data) => {
-        if (!data) return "";
-
-        const rawCreated: string = data.getValue();
-        const created: string = formatTimeByUserTZ(rawCreated);
-        const createdPastTime: string = pastTimeByUserTZ(rawCreated);
-
-        return <Popover content={created}>{createdPastTime}</Popover>;
-      },
+      cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
     columnHelper.accessor("modified", {
       header: t("masters.table-modified"),
-      cell: (data) => {
-        if (!data) return "";
-
-        const rawModified: string = data.getValue();
-        const modified: string = formatTimeByUserTZ(rawModified);
-        const modifiedPastTime: string = pastTimeByUserTZ(rawModified);
-
-        return <Popover content={modified}>{modifiedPastTime}</Popover>;
-      },
+      cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
     columnHelper.accessor("actions", {
       header: t("masters.table-actions"),

@@ -22,6 +22,7 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import {
   appStore,
   CollectionStore,
@@ -170,13 +171,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
-        cell: (data) => {
-          const rawCreated: string = data.getValue();
-          const created: string = formatTimeByUserTZ(rawCreated);
-          const createdPastTime: string = pastTimeByUserTZ(rawCreated);
-
-          return <Popover content={created}>{createdPastTime}</Popover>;
-        },
+        cell: (data) => <RelativeTime date={data.getValue()} />,
       }),
       minionsColumnHelper.accessor("last_activity", {
         header: t("minions.table-last-activity"),
