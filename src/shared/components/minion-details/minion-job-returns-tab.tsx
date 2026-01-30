@@ -6,7 +6,7 @@ import {
   ReloadOutlined,
 } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, MatIcon } from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
   PaginationState,
@@ -50,22 +50,74 @@ interface MinionJobReturnsTabProps {
   jobReturnsFilter?: React.ReactNode;
 }
 
-const KwargsPopoverButton = ({
+const KwargsTag = ({
   data,
   title,
   copySuccessMessage,
+  previewEntries,
+  hasMore,
+  isEmpty,
+  formatValue,
+  noKwargsText,
 }: {
-  data: Record<string, unknown>;
+  data: Record<string, unknown> | undefined;
   title: string;
   copySuccessMessage: string;
+  previewEntries: [string, unknown][];
+  hasMore: boolean;
+  isEmpty: boolean;
+  formatValue: (value: unknown) => string;
+  noKwargsText: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    messageApi.success(copySuccessMessage);
-  }, [copySuccessMessage, data, messageApi]);
+  const handleCopy = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (data) {
+        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+        messageApi.success(copySuccessMessage);
+      }
+    },
+    [copySuccessMessage, data, messageApi]
+  );
+
+  const handleTagClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const tagContent = (
+    <>
+      <span className={styles.kwargsBrace}>{"{"}</span>
+      {!isEmpty ? (
+        previewEntries.map(([key, value], index) => (
+          <React.Fragment key={key}>
+            <span className={styles.kwargsKey}>{key}</span>
+            <span className={styles.kwargsSeparator}>: </span>
+            <span className={styles.kwargsValue}>{formatValue(value)}</span>
+            {index < previewEntries.length - 1 && (
+              <span className={styles.kwargsSeparator}>, </span>
+            )}
+          </React.Fragment>
+        ))
+      ) : (
+        <span className={styles.kwargsEmpty}>{noKwargsText}</span>
+      )}
+      {hasMore ? <span className={styles.kwargsEllipsis}>…</span> : null}
+      <span className={styles.kwargsBrace}>{"}"}</span>
+    </>
+  );
+
+  if (isEmpty) {
+    return (
+      <>
+        {contextHolder}
+        <Tag className={styles.kwargsTag}>{tagContent}</Tag>
+      </>
+    );
+  }
 
   return (
     <>
@@ -78,7 +130,7 @@ const KwargsPopoverButton = ({
               enableClipboard={false}
               name={false}
               displayObjectSize={false}
-              src={data}
+              src={data!}
               collapsed={1}
             />
           </div>
@@ -93,17 +145,14 @@ const KwargsPopoverButton = ({
           </Flex>
         }
         trigger="click"
-        overlayStyle={{ maxWidth: 700 }}
-        placement="bottomRight"
+        styles={{ root: { maxWidth: 700 } }}
+        placement="bottom"
         open={isOpen}
         onOpenChange={setIsOpen}
       >
-        <Button
-          type="link"
-          size="small"
-          icon={<MatIcon icon="search" />}
-          className={styles.kwargsPopoverButton}
-        />
+        <Tag className={styles.kwargsTagClickable} onClick={handleTagClick}>
+          {tagContent}
+        </Tag>
       </Popover>
     </>
   );
@@ -209,6 +258,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           const entries = kwargs ? Object.entries(kwargs) : [];
           const previewEntries = entries.slice(0, 3);
           const hasMore = entries.length > 3;
+          const isEmpty = entries.length === 0;
 
           const formatValue = (value: unknown) => {
             if (value === null || typeof value === "number" || typeof value === "boolean") {
@@ -240,36 +290,16 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           };
 
           return (
-            <Flex align="center" gap={8} wrap className={styles.kwargsCell}>
-              <Flex align="center" gap={4} wrap className={styles.kwargsPreview}>
-                <Tag className={styles.kwargsTag}>
-                  <span className={styles.kwargsBrace}>{"{"}</span>
-                  {previewEntries.length > 0 ? (
-                    previewEntries.map(([key, value], index) => (
-                      <React.Fragment key={key}>
-                        <span className={styles.kwargsKey}>{key}</span>
-                        <span className={styles.kwargsSeparator}>: </span>
-                        <span className={styles.kwargsValue}>{formatValue(value)}</span>
-                        {index < previewEntries.length - 1 && (
-                          <span className={styles.kwargsSeparator}>, </span>
-                        )}
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    <span className={styles.kwargsEmpty}>{t("jobs.no-key-value-arguments")}</span>
-                  )}
-                  {hasMore ? <span className={styles.kwargsEllipsis}>…</span> : null}
-                  <span className={styles.kwargsBrace}>{"}"}</span>
-                </Tag>
-              </Flex>
-              {entries.length > 0 ? (
-                <KwargsPopoverButton
-                  data={kwargs as Record<string, unknown>}
-                  title={t("jobs.key-value-arguments")}
-                  copySuccessMessage={t("jobs.table-copy-success")}
-                />
-              ) : null}
-            </Flex>
+            <KwargsTag
+              data={kwargs}
+              title={t("jobs.key-value-arguments")}
+              copySuccessMessage={t("jobs.table-copy-success")}
+              previewEntries={previewEntries}
+              hasMore={hasMore}
+              isEmpty={isEmpty}
+              formatValue={formatValue}
+              noKwargsText={t("jobs.no-key-value-arguments")}
+            />
           );
         },
       }),

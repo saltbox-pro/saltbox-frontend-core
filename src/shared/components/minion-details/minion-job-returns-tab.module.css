@@ -19,20 +19,33 @@
   color: var(--ant-color-text-tertiary, #8c8c8c);
 }
 
-.kwargsTag {
+.kwargsTag,
+.kwargsTagClickable {
   margin-inline: 0;
-  background-color: #f0f5ff !important;
-  border-color: #d6e4ff !important;
+  background-color: #e6f4ff !important;
+  border-color: #adc9ff !important;
   flex: 1;
   min-width: 0;
 }
 
+.kwargsTagClickable {
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
+}
+
+.kwargsTagClickable:hover {
+  background-color: #bae0ff !important;
+  border-color: #91caff !important;
+}
+
 .kwargsKey {
-  color: #1890ff;
+  color: #1677ff;
 }
 
 .kwargsSeparator {
-  color: #1890ff;
+  color: #1677ff;
 }
 
 .kwargsValue {
@@ -40,7 +53,7 @@
 }
 
 .kwargsBrace {
-  color: #1890ff;
+  color: #1677ff;
   font-weight: 500;
 }
 
