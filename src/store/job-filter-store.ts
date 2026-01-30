@@ -12,13 +12,11 @@ export class JobFilterStore extends FilterStore {
     makeObservable(this);
   }
 
-  @action
   handleSearch = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.currentFilters));
     this.searchFilters = this.currentFilters;
   };
 
-  @action
   handleResetFilters = () => {
     localStorage.removeItem(STORAGE_KEY);
     this.currentFilters = {
