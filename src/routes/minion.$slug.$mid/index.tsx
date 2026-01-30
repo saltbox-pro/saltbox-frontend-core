@@ -1,4 +1,4 @@
-import { DeleteOutlined, PlusOutlined, FilterOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";

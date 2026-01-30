@@ -2,8 +2,6 @@ import {
   ReloadOutlined,
   UploadOutlined,
   QuestionCircleOutlined,
-  FilterOutlined,
-  ArrowLeftOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
@@ -34,7 +32,7 @@ import {
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";

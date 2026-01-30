@@ -8,7 +8,6 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import {
-  subscribe,
   PageHeader,
   Modal,
   Dropdown,
@@ -27,7 +26,6 @@ import {
   appStore,
   CollectionStore,
   dashboardStore,
-  defaultCollectionStore,
   i18nStore,
   MinionFilterStore,
 } from "saltbox-core/store";

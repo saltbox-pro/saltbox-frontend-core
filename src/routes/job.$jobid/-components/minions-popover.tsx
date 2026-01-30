@@ -2,7 +2,6 @@ import { CloseOutlined, CopyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { Popover } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, Typography } from "antd";
-import { toJS } from "mobx";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 

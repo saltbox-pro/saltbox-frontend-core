@@ -27,7 +27,6 @@ import {
   Spin,
   Tabs,
   Upload,
-  type UploadFile,
   type UploadProps,
 } from "antd";
 import { toJS } from "mobx";
