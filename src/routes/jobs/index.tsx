@@ -287,6 +287,7 @@ const JobsPage = observer(() => {
   }, [jobsStore.error]);
 
   useEffect(() => {
+    jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
     jobsStore.loadJobs();
   }, []);
 
