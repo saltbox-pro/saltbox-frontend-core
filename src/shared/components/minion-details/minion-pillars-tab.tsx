@@ -3,7 +3,7 @@ import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import React from "react";
 
-import styles from "./minion-details.module.css";
+import styles from "./minion-pillars-tab.module.css";
 
 const columnHelper = createColumnHelper<PillarModel>();
 

@@ -1,0 +1,58 @@
+.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-view) {
+  border: none;
+}
+
+.minionDetailsDashboard :global(.ant-descriptions-item-label),
+.minionDetailsDashboard :global(.ant-descriptions-item-content) {
+  background-color: transparent !important;
+}
+
+.minionDetailsDashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.interfaceBlock {
+  margin: 8px 0;
+  padding: 8px;
+  border-left: 3px solid #1890ff;
+  background: #fafafa;
+}
+
+.interfaceDetails {
+  margin-left: 16px;
+  margin-top: 4px;
+  list-style: none;
+}
+
+.minionDetailsDashboard :global(.ant-descriptions-item-label),
+.minionDetailsDashboard :global(.ant-descriptions-item-content) {
+  padding: 8px 12px !important;
+}
+
+.minionDetailsDashboard :global(.ant-descriptions-item-label) {
+  width: 216px;
+}
+
+.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-item-label) {
+  width: 200px;
+}
+
+.minionDetailsGrainButtons {
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.15s ease-in-out;
+}
+
+:global(.ant-descriptions-row:hover) {
+  background-color: #fafafa !important;
+  transition: background-color 0.15s ease-in-out;
+}
+
+:global(.ant-descriptions-item-content:hover) .minionDetailsGrainButtons {
+  visibility: visible;
+  opacity: 1;
+}

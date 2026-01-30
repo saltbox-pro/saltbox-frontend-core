@@ -29,7 +29,7 @@ import {
   isSimpleStringData,
 } from "../job-return-table/utils/job-return-utils";
 
-import styles from "./minion-details.module.css";
+import styles from "./minion-job-returns-tab.module.css";
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
 const JobReturnsTable = FastTablePaginated<JobReturnModel>;

@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next";
 
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
-import styles from "./minion-details.module.css";
+import styles from "./minion-dashboard-tab.module.css";
 
 type SimpleGrainKeys = {
   [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends React.ReactNode
