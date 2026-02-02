@@ -2,7 +2,7 @@ import { DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons"
 import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { formatQuery } from "react-querybuilder";
 import { useLocation, useNavigate, useParams } from "react-router";
@@ -378,7 +378,7 @@ const MinionPage = observer(() => {
   ) : null;
 
   return (
-    <div key={location.key}>
+    <Fragment key={location.key}>
       <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
@@ -441,7 +441,7 @@ const MinionPage = observer(() => {
       )}
 
       {contextHolder}
-    </div>
+    </Fragment>
   );
 });
 

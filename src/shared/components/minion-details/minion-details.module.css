@@ -22,9 +22,9 @@
   min-height: 0;
 }
 
-.pillarsTab {
-  display: flex;
-  flex-direction: column;
+.minionsTabs .minionTabWithBottomOffset {
+  height: auto;
+  padding-bottom: 24px;
 }
 
 .tabExtraActions {

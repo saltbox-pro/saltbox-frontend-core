@@ -7,12 +7,6 @@
   background-color: transparent !important;
 }
 
-.minionDetailsDashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .interfaceBlock {
   margin: 8px 0;
   padding: 8px;
