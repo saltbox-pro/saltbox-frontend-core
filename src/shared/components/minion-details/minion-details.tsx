@@ -95,6 +95,7 @@ export function MinionDetails(props: {
   items.push({
     key: "dashboard",
     label: t("minions.dashboard"),
+    className: styles.minionTabWithBottomOffset,
     children: (
       <MinionDashboardTab
         minion={props.minion}
@@ -122,7 +123,6 @@ export function MinionDetails(props: {
   items.push({
     key: "pillars",
     label: "Pillars",
-    className: styles.pillarsTab,
     children: (
       <MinionPillarsTab
         pillars={props.pillars}
@@ -136,6 +136,7 @@ export function MinionDetails(props: {
   items.push({
     key: "grains",
     label: t("minions.grains"),
+    className: styles.minionTabWithBottomOffset,
     children: <MinionGrainsTab minion={props.minion} isMinionLoading={props.isMinionLoading} />,
   });
 

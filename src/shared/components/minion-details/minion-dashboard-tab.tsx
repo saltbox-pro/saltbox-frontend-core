@@ -371,7 +371,7 @@ export function MinionDashboardTab({
   }
 
   return (
-    <div className={styles.minionDetailsDashboard}>
+    <Flex vertical gap={10} className={styles.minionDetailsDashboard}>
       <Descriptions
         items={minionDetailsViewsToDescriptionItems(
           t,
@@ -389,6 +389,6 @@ export function MinionDashboardTab({
           onFilterButton
         )}
       />
-    </div>
+    </Flex>
   );
 }
