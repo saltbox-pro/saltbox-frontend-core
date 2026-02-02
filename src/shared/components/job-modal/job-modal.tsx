@@ -6,7 +6,13 @@ import {
   JobSchemaModel,
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
-import { publish, Modal, Popover } from "@saltbox/saltbox-frontend-common";
+import {
+  publish,
+  Modal,
+  Popover,
+  JsonForm,
+  type JsonFormRef,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, Cascader, Flex, Form, Input, Select, message, type FormProps } from "antd";
 import {
   Fragment,
@@ -19,7 +25,6 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { SaltboxJsonForm, type SaltboxJsonFormRef } from "saltbox-core/shared/components/json-form";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
@@ -94,7 +99,7 @@ export function JobModal({
   const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<JobFormData>();
-  const refJobParamsForm = useRef<SaltboxJsonFormRef>(null);
+  const refJobParamsForm = useRef<JsonFormRef>(null);
   const hasLoadedInitialSchema = useRef<boolean>(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
@@ -629,7 +634,7 @@ export function JobModal({
           </Form.Item>
 
           {saltFunction && (
-            <SaltboxJsonForm
+            <JsonForm
               ref={refJobParamsForm}
               schema={saltFunction.json_schema}
               uiSchema={saltFunction?.ui_schema}
@@ -645,7 +650,7 @@ export function JobModal({
               omitExtraData
             >
               <Fragment />
-            </SaltboxJsonForm>
+            </JsonForm>
           )}
         </Form>
       </Modal>

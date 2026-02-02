@@ -1,13 +1,9 @@
 import { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { JsonForm, type JsonFormRef, type JsonFormProps } from "@saltbox/saltbox-frontend-common";
 import { Button, Divider, Flex, Form, InputNumber, Switch, message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  SaltboxJsonForm,
-  type SaltboxJsonFormProps,
-  type SaltboxJsonFormRef,
-} from "saltbox-core/shared/components/json-form";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
 import { taskCreationService } from "../service";
@@ -22,7 +18,7 @@ export type TaskConfigurationTabProps = {
   onCancel: () => void;
 };
 
-type JsonFormChangeHandler = SaltboxJsonFormProps["onChange"];
+type JsonFormChangeHandler = JsonFormProps["onChange"];
 
 const memoize = createObjectMemoizer({ deep: true });
 
@@ -37,7 +33,7 @@ export function TaskConfigurationTab({
   const [messageApi, contextHolder] = message.useMessage();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [templateFormData, setTemplateFormData] = useState<TaskData>({});
-  const jsonFormRef = useRef<SaltboxJsonFormRef>(null);
+  const jsonFormRef = useRef<JsonFormRef>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -162,7 +158,7 @@ export function TaskConfigurationTab({
           )}
 
           {template.json_schema && (
-            <SaltboxJsonForm
+            <JsonForm
               ref={jsonFormRef}
               className={styles.jsonForm}
               schema={template.json_schema}
@@ -172,7 +168,7 @@ export function TaskConfigurationTab({
               showErrorList={false}
             >
               <div />
-            </SaltboxJsonForm>
+            </JsonForm>
           )}
         </Flex>
 

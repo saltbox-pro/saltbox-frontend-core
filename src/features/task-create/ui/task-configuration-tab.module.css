@@ -1,7 +1,3 @@
-.jsonForm {
-  overflow: hidden;
-}
-
 .jsonForm :global(fieldset) {
   border: none;
 }

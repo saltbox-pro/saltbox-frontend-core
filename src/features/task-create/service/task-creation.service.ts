@@ -3,7 +3,7 @@ import {
   TaskData,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
-import Ajv from "ajv";
+import { isValidDataWithAjv } from "@saltbox/saltbox-frontend-common";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -51,14 +51,9 @@ export class TaskCreationService {
   }
 
   private filterTaskData(data: TaskData, taskTemplate?: TaskTemplateModel): TaskData | undefined {
-    if (!taskTemplate?.json_schema) {
-      return data;
-    }
+    const { json_schema: schema } = taskTemplate ?? {};
 
-    const ajv = new Ajv({ removeAdditional: true });
-    const validate = ajv.compile(taskTemplate.json_schema);
-
-    if (validate(data)) {
+    if (!schema || isValidDataWithAjv({ data, schema })) {
       return data;
     }
 
