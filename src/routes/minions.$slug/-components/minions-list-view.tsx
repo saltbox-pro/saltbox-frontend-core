@@ -297,9 +297,10 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           total={minionsStore.totalMinions}
           isLoading={minionsStore.isLoading}
           pagination={minionsStore.pagination}
+          sorting={minionsStore.sorting}
           onRowSelectionChange={setSelection}
           rowSelection={selection}
-          onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(minion) => {
             handleOpenMinionDrawer(minion.id);
           }}

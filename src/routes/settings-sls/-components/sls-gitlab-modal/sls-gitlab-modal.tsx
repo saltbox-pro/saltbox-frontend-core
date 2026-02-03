@@ -37,7 +37,9 @@ export function SlsGitLabModal(props: SlsGitLabModalProps) {
       .then(({ items: projects }) => {
         setProjects(projects);
         apiCoreStore.settingsApi
-          .repoList({})
+          .repoList({
+            SettingsSlsRepoListBody: {},
+          })
           .then(({ data: slsRepos }) => {
             const projectsWithoutSlsRepos = projects.filter(
               (project) =>

@@ -245,11 +245,11 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           return fun;
         },
       }),
-      jobReturnsColumnHelper.display({
-        id: "kwargs",
+      jobReturnsColumnHelper.accessor("fun_kwarg", {
+        id: "fun_kwarg",
         header: t("jobs.key-value-arguments"),
-        cell: ({ row }) => {
-          const rawKwargs = row.original.fun_kwarg;
+        cell: (data) => {
+          const rawKwargs = data.getValue();
 
           const isObjectKwargs =
             rawKwargs && typeof rawKwargs === "object" && !Array.isArray(rawKwargs);

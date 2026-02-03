@@ -160,7 +160,8 @@ function MastersPage() {
         data={toJS(mastersStore.masters)}
         isLoading={mastersStore.isLoading}
         pagination={mastersStore.pagination}
-        onLazyLoad={(pagination) => mastersStore.handleLazyLoad(pagination)}
+        sorting={mastersStore.sorting}
+        onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
         onRowClick={(master) => navigate(`/master/${master.master_id}`)}
       />
     </>

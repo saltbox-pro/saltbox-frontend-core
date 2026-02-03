@@ -285,7 +285,8 @@ const SettingsSlsPage = observer(() => {
         data={settingsSlsStore.slsreps}
         isLoading={settingsSlsStore.isLoading}
         pagination={settingsSlsStore.pagination}
-        onLazyLoad={(pagination) => settingsSlsStore.handleLazyLoad(pagination)}
+        sorting={settingsSlsStore.sorting}
+        onLazyLoad={(pagination, sorting) => settingsSlsStore.handleLazyLoad(pagination, sorting)}
       />
 
       {(activeModal === "slsCreate" || activeModal === "slsEdit") && (

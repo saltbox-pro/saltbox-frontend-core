@@ -1,18 +1,23 @@
 import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { PaginationState } from "@tanstack/react-table";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
+const DEFAULT_SORTING: SortingState = [{ id: "last_synced", desc: true }];
+
 export class SettingsSlsStore {
   isLoading: boolean;
   pagination: PaginationState;
+  sorting: SortingState;
   slsreps: Array<SettingsSlsRepoShortSchema>;
 
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
     this.slsreps = [];
+    this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
@@ -27,7 +32,13 @@ export class SettingsSlsStore {
     this.isLoading = true;
 
     apiCoreStore.settingsApi
-      ?.repoList({})
+      ?.repoList({
+        SettingsSlsRepoListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
+      })
       .then((response) => {
         runInAction(() => {
           this.slsreps = response.data;
@@ -40,8 +51,9 @@ export class SettingsSlsStore {
       });
   };
 
-  handleLazyLoad(pagination: PaginationState) {
+  handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
     this.pagination = pagination;
+    this.sorting = sorting;
     this.loadSLS();
   }
 

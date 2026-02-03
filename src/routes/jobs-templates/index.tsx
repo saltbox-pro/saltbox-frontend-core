@@ -45,7 +45,8 @@ const JobsTemplatePage = observer(() => {
         total={jobTemplateStore.totalJobsTemplate}
         isLoading={jobTemplateStore.isLoading}
         pagination={jobTemplateStore.pagination}
-        onLazyLoad={(pagination) => jobTemplateStore.handleLazyLoad(pagination)}
+        sorting={jobTemplateStore.sorting}
+        onLazyLoad={(pagination, sorting) => jobTemplateStore.handleLazyLoad(pagination, sorting)}
       />
     </>
   );

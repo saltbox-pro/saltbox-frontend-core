@@ -257,7 +257,8 @@ const CollectionEditPage = observer(() => {
           total={toJS(minionsStore.totalMinions)}
           isLoading={minionsStore.isLoading}
           pagination={toJS(minionsStore.pagination)}
-          onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
+          sorting={minionsStore.sorting}
+          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(minion) => handleOpenMinionDrawer(minion.id)}
         />
       </Flex>

@@ -16,7 +16,7 @@ import {
   PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, Modal, PageHeader } from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper, type CellContext } from "@tanstack/react-table";
+import { SortingState, createColumnHelper, type CellContext } from "@tanstack/react-table";
 import {
   Input as AntdInput,
   Button,
@@ -106,6 +106,8 @@ const MasterPage = observer(() => {
   const [isValidating, setIsValidating] = useState(false);
 
   const minionDrawer = useMinionDrawer();
+  const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
+  const [pillarsSorting, setPillarsSorting] = useState<SortingState>([]);
 
   const PillarsTable = FastTableListed<PillarModel>;
 
@@ -696,6 +698,8 @@ const MasterPage = observer(() => {
                 data={toJS(clients)}
                 total={clients.length}
                 isEmpty={!clients.length}
+                sorting={clientsSorting}
+                onSortingChange={setClientsSorting}
                 getRowId={(row) => row.minion_id}
                 onRowClick={(client) => {
                   handleOpenMinionDrawer(client.minion_id);
@@ -739,6 +743,8 @@ const MasterPage = observer(() => {
                 data={toJS(pillarsStore.pillars)}
                 total={pillarsStore.total}
                 isEmpty={!pillarsStore.pillars.length}
+                sorting={pillarsSorting}
+                onSortingChange={setPillarsSorting}
                 getRowId={(row) => `${row.name}_${row.minion_id || "global"}`}
                 onRowClick={(pillar) => {
                   handleOpenMinionDrawer(pillar.minion_id);
