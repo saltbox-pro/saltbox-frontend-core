@@ -4,15 +4,13 @@ import {
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
-  Drawer,
   Popover,
 } from "@saltbox/saltbox-frontend-common";
 import { Row, RowSelectionState, Table, createColumnHelper } from "@tanstack/react-table";
 import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { useCsvDownloader } from "saltbox-core/features/csv-download";
@@ -21,15 +19,10 @@ import {
   PolicyCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
-import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { RelativeTime } from "saltbox-core/shared/ui/time";
-import {
-  appStore,
-  CollectionStore,
-  MinionFilterStore,
-  MinionStore,
-  MinionsStore,
-} from "saltbox-core/store";
+import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
+import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
+import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
 
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
@@ -52,31 +45,6 @@ type MinionListViewProps = {
   onAddFilter: () => void;
 };
 
-const MinionCompactView = observer(
-  (props: {
-    minionId: string;
-    slug: string;
-    filterStore: MinionFilterStore;
-    onFilterButton: ComponentProps<typeof MinionDetails>["onFilterButton"];
-  }) => {
-    const minionStoreRef = useRef<MinionStore | undefined>(undefined);
-    if (!minionStoreRef.current) {
-      minionStoreRef.current = new MinionStore(props.slug, props.minionId);
-    }
-    const minionStore: MinionStore = minionStoreRef.current;
-    return (
-      <MinionDetails
-        minion={minionStore.minion}
-        isMinionLoading={minionStore.isMinionLoading}
-        pillars={minionStore.pillars}
-        isPillarsLoading={minionStore.isPillarsLoading}
-        onFilterButton={props.onFilterButton}
-        isInDrawer
-      />
-    );
-  }
-);
-
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
   const [minionsStore] = useState(
@@ -84,8 +52,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   );
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
-  const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
   const [messageApi, contextHolder] = message.useMessage();
+  const minionDrawer = useMinionDrawer();
 
   const minionColumns = useMemo(
     () => [
@@ -122,7 +90,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           actions: [
             {
               icon: <ExportOutlined />,
-              onClick: (value, row) => {
+              onClick: (_, row) => {
                 window.open(`/core/minion/${props.slug}/${row.id}`, "_blank");
               },
               title: t("minions.open-in-new-tab"),
@@ -228,23 +196,29 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     setSelection({});
   }, []);
 
-  const handleDrawerClose = useCallback(() => {
-    setDrawerMinionId(undefined);
-  }, []);
-
   const handleDrawerFilterButtonClick = useCallback<
-    ComponentProps<typeof MinionCompactView>["onFilterButton"]
-  >((params) => {
-    props.filterStore.addFilter({
-      field: `grains.${params.name}`,
-      operator: "=",
-      valueSource: "value",
-      value: params.value,
+    NonNullable<MinionDetailsProps["onFilterButton"]>
+  >(
+    (params) => {
+      props.filterStore.addFilter({
+        field: `grains.${params.name}`,
+        operator: "=",
+        valueSource: "value",
+        value: params.value,
+      });
+      props.filterStore.handleSearch();
+      props.onAddFilter();
+      minionDrawer.closeDrawer();
+    },
+    [props.filterStore, props.onAddFilter, minionDrawer.closeDrawer]
+  );
+
+  const handleOpenMinionDrawer = async (innerId: string) => {
+    await minionDrawer.openDrawer({
+      slug: props.slug,
+      innerId,
     });
-    props.filterStore.handleSearch();
-    props.onAddFilter();
-    setDrawerMinionId(undefined);
-  }, []);
+  };
 
   const onCsvDownloadError = useCallback(() => {
     messageApi.error(t("minions.error-on-csv-download"));
@@ -326,7 +300,9 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           onRowSelectionChange={setSelection}
           rowSelection={selection}
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
-          onRowClick={(minion) => setDrawerMinionId(minion.id)}
+          onRowClick={(minion) => {
+            handleOpenMinionDrawer(minion.id);
+          }}
           useVirtualScroll={false}
         />
 
@@ -354,26 +330,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         )}
       </Flex>
 
-      <Drawer
-        onClose={handleDrawerClose}
-        open={Boolean(drawerMinionId)}
-        size={"large"}
-        title={t("minions.minion")}
-        extra={
-          <Link to={`/minion/${props.slug}/${drawerMinionId ?? ""}`}>
-            <Button color="default" variant="text" icon={<ExportOutlined />} />
-          </Link>
-        }
-      >
-        {drawerMinionId && (
-          <MinionCompactView
-            slug={props.slug}
-            minionId={drawerMinionId}
-            filterStore={props.filterStore}
-            onFilterButton={handleDrawerFilterButtonClick}
-          />
-        )}
-      </Drawer>
+      <MinionDetailsDrawer
+        isOpened={minionDrawer.isOpened}
+        openedId={minionDrawer.openedId}
+        minionStore={minionDrawer.minionStore}
+        slug={minionDrawer.slug}
+        error={minionDrawer.error}
+        onClose={minionDrawer.closeDrawer}
+        clearData={minionDrawer.clearData}
+        onFilterButton={handleDrawerFilterButtonClick}
+      />
 
       {taskModalCreatePlugin}
     </>

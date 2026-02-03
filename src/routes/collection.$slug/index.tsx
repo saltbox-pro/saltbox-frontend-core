@@ -6,28 +6,26 @@ import {
   FastTablePaginated,
   PageHeader,
   Popover,
-  Drawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge, Button, Flex, Input, Tag, message } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
+import { RelativeTime } from "saltbox-core/shared/ui/time";
 import {
   CollectionStore,
   defaultCollectionStore,
   MinionFilterStore,
-  MinionStore,
   MinionsStore,
 } from "saltbox-core/store";
+import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
@@ -49,20 +47,14 @@ const CollectionEditPage = observer(() => {
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
-  const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
-  const minionStoreRef = useRef<MinionStore | undefined>(undefined);
 
-  const handleOpenDrawer = (minionId: string, innerId: string) => {
-    setDrawerMinionId(minionId);
-    minionStoreRef.current = new MinionStore(
-      collectionStore.collection?.parent_slug || slug || "root",
-      innerId
-    );
-  };
+  const minionDrawer = useMinionDrawer();
 
-  const handleCloseDrawer = () => {
-    setDrawerMinionId(undefined);
-    minionStoreRef.current = undefined;
+  const handleOpenMinionDrawer = async (innerId: string) => {
+    await minionDrawer.openDrawer({
+      slug: collectionStore.collection?.parent_slug || slug || "root",
+      innerId,
+    });
   };
 
   const minionsColumns = [
@@ -78,7 +70,7 @@ const CollectionEditPage = observer(() => {
         actions: [
           {
             icon: <ExportOutlined />,
-            onClick: (value, row) => {
+            onClick: (_, row) => {
               window.open(`/core/minion/${slug}/${row.id}`, "_blank");
             },
             title: t("minions.open-in-new-tab"),
@@ -266,25 +258,19 @@ const CollectionEditPage = observer(() => {
           isLoading={minionsStore.isLoading}
           pagination={toJS(minionsStore.pagination)}
           onLazyLoad={(pagination) => minionsStore.handleLazyLoad(pagination)}
-          onRowClick={(minion) => handleOpenDrawer(minion.minion_id, minion.id)}
+          onRowClick={(minion) => handleOpenMinionDrawer(minion.id)}
         />
       </Flex>
 
-      <Drawer
-        onClose={handleCloseDrawer}
-        open={Boolean(drawerMinionId)}
-        size="large"
-        title={t("minions.minion")}
-      >
-        {minionStoreRef.current && (
-          <MinionDetails
-            minion={minionStoreRef.current.minion}
-            isMinionLoading={minionStoreRef.current.isMinionLoading}
-            pillars={minionStoreRef.current.pillars}
-            isPillarsLoading={minionStoreRef.current.isPillarsLoading}
-          />
-        )}
-      </Drawer>
+      <MinionDetailsDrawer
+        isOpened={minionDrawer.isOpened}
+        openedId={minionDrawer.openedId}
+        minionStore={minionDrawer.minionStore}
+        slug={minionDrawer.slug}
+        error={minionDrawer.error}
+        onClose={minionDrawer.closeDrawer}
+        clearData={minionDrawer.clearData}
+      />
     </>
   );
 });

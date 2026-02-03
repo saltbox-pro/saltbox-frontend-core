@@ -15,7 +15,7 @@ import {
   PillarModel,
   PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed, Modal, PageHeader, Drawer } from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, Modal, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type CellContext } from "@tanstack/react-table";
 import {
   Input as AntdInput,
@@ -35,8 +35,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
-import { apiCoreStore, MinionStore, PillarsStore } from "saltbox-core/store";
+import { apiCoreStore, PillarsStore } from "saltbox-core/store";
+import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import styles from "./index.module.css";
@@ -104,8 +104,8 @@ const MasterPage = observer(() => {
   const [importStep, setImportStep] = useState(1);
   const [updateExisting, setUpdateExisting] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
-  const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
-  const [minionStore, setMinionStore] = useState<MinionStore | null>(null);
+
+  const minionDrawer = useMinionDrawer();
 
   const PillarsTable = FastTableListed<PillarModel>;
 
@@ -487,29 +487,6 @@ const MasterPage = observer(() => {
     });
   }, []);
 
-  const handleOpenDrawer = async (minionId: string) => {
-    if (masterId) {
-      setDrawerMinionId(minionId);
-      try {
-        // Получаем внутренний ID миньона через API
-        const minion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
-          master_id: masterId,
-          minion_id: minionId,
-        });
-        if (minion?.id) {
-          setMinionStore(new MinionStore("root", minion.id));
-        }
-      } catch (error) {
-        console.error("Error fetching minion:", error);
-      }
-    }
-  };
-
-  const handleCloseDrawer = () => {
-    setDrawerMinionId(undefined);
-    setMinionStore(null);
-  };
-
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
@@ -694,6 +671,13 @@ const MasterPage = observer(() => {
     ];
   }, [t, isEditingImport, handleCellChange]);
 
+  const handleOpenMinionDrawer = async (minionId: string) => {
+    await minionDrawer.openDrawer({
+      masterId,
+      minionId,
+    });
+  };
+
   const tabItems = [
     {
       key: "clients",
@@ -713,7 +697,9 @@ const MasterPage = observer(() => {
                 total={clients.length}
                 isEmpty={!clients.length}
                 getRowId={(row) => row.minion_id}
-                onRowClick={(client) => handleOpenDrawer(client.minion_id)}
+                onRowClick={(client) => {
+                  handleOpenMinionDrawer(client.minion_id);
+                }}
               />
             </div>
           )}
@@ -755,9 +741,7 @@ const MasterPage = observer(() => {
                 isEmpty={!pillarsStore.pillars.length}
                 getRowId={(row) => `${row.name}_${row.minion_id || "global"}`}
                 onRowClick={(pillar) => {
-                  if (pillar.minion_id) {
-                    handleOpenDrawer(pillar.minion_id);
-                  }
+                  handleOpenMinionDrawer(pillar.minion_id);
                 }}
               />
             </div>
@@ -946,7 +930,7 @@ const MasterPage = observer(() => {
                 columns={importColumns}
                 data={isEditingImport ? editedPillars : parsedPillars}
                 isEmpty={isEditingImport ? !editedPillars.length : !parsedPillars.length}
-                getRowId={(row, idx) => String(idx)}
+                getRowId={(_, idx) => String(idx)}
                 hideFooter
               />
             </div>
@@ -954,22 +938,15 @@ const MasterPage = observer(() => {
         )}
       </Modal>
 
-      <Drawer
-        onClose={handleCloseDrawer}
-        open={Boolean(drawerMinionId)}
-        size="large"
-        title={t("minions.minion")}
-      >
-        {minionStore && (
-          <MinionDetails
-            minion={minionStore.minion}
-            isMinionLoading={minionStore.isMinionLoading}
-            pillars={minionStore.pillars}
-            isPillarsLoading={minionStore.isPillarsLoading}
-            isInDrawer
-          />
-        )}
-      </Drawer>
+      <MinionDetailsDrawer
+        isOpened={minionDrawer.isOpened}
+        openedId={minionDrawer.openedId}
+        minionStore={minionDrawer.minionStore}
+        slug={minionDrawer.slug}
+        error={minionDrawer.error}
+        onClose={minionDrawer.closeDrawer}
+        clearData={minionDrawer.clearData}
+      />
     </>
   );
 });
