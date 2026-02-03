@@ -1,7 +1,7 @@
 import { PillarModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper } from "@tanstack/react-table";
-import React from "react";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { SortingState, createColumnHelper } from "@tanstack/react-table";
+import React, { useState } from "react";
 
 import styles from "./minion-pillars-tab.module.css";
 
@@ -31,20 +31,22 @@ export function MinionPillarsTab({
 }: MinionPillarsTabProps) {
   const pillarsData = pillars ?? [];
   const pillarsTotal = pillars?.length ?? 0;
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   return (
     <div className={styles.pillarsTabContent}>
       {isFullView && pillarsTabActions ? (
         <div className="page-actions-buttons">{pillarsTabActions}</div>
       ) : null}
-      <FastTablePaginated
+      <FastTableListed
         isLoading={isPillarsLoading}
         columns={pillarsColumns}
         data={pillarsData}
         total={pillarsTotal}
-        pagination={{ pageSize: 10, pageIndex: 0 }}
+        isEmpty={!pillarsData.length}
+        sorting={sorting}
+        onSortingChange={setSorting}
         getRowId={(row) => row.name}
-        onLazyLoad={() => {}}
       />
     </div>
   );

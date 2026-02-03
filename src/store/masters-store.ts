@@ -1,13 +1,17 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { PaginationState } from "@tanstack/react-table";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
+
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class MastersStore {
   @observable isLoading: boolean;
   @observable error: string | null;
   @observable pagination: PaginationState;
+  @observable sorting: SortingState;
   @observable masters: Array<MasterViewSchema>;
   @observable totalMasters: number;
 
@@ -16,6 +20,7 @@ export class MastersStore {
     this.error = null;
     this.masters = [];
     this.totalMasters = 0;
+    this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
@@ -29,6 +34,7 @@ export class MastersStore {
     this.error = null;
     this.masters = [];
     this.totalMasters = 0;
+    this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
@@ -92,8 +98,11 @@ export class MastersStore {
 
     apiCoreStore.mastersApi
       ?.mastersList({
-        limit: this.pagination.pageSize,
-        skip: this.pagination.pageIndex * this.pagination.pageSize,
+        MasterListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
       })
       .then((response) => {
         runInAction(() => {
@@ -119,8 +128,9 @@ export class MastersStore {
   };
 
   @action
-  handleLazyLoad = (pagination: PaginationState) => {
+  handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
     this.pagination = pagination;
+    this.sorting = sorting;
     this.loadMasters();
   };
 }

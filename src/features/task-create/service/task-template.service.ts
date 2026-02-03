@@ -7,7 +7,9 @@ import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/t
 export class TaskTemplateService {
   async loadTemplates(): Promise<TaskTemplateWithRepository[]> {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList();
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
+        TaskTemplateListBody: {},
+      });
       if (!response?.data) {
         return [];
       }

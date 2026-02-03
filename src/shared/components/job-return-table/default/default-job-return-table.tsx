@@ -123,9 +123,9 @@ export const DefaultJobReturnTable = observer(
             </Tag>
           ),
         }),
-        columnHelper.display({
+        columnHelper.accessor("retcode", {
           header: t("task.job-returns-table.table-return-code"),
-          cell: (data) => data.row.original.retcode,
+          cell: (data) => data.getValue(),
         }),
         columnHelper.accessor("stamp", {
           header: t("task.job-returns-table.table-execution-time"),

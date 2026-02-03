@@ -1,8 +1,11 @@
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { PaginationState } from "@tanstack/react-table";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
+
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class MinionsStore {
   isLoading: boolean;
@@ -11,6 +14,7 @@ export class MinionsStore {
   collectionSlug: string | undefined;
   mongoDBQuery: object | undefined;
   pagination: PaginationState;
+  sorting: SortingState;
 
   constructor(mongoDBQueryInit: object | undefined, collectionSlug: string | undefined) {
     makeAutoObservable(this);
@@ -21,6 +25,7 @@ export class MinionsStore {
       pageIndex: 0,
       pageSize: 50,
     };
+    this.sorting = [...DEFAULT_SORTING];
     this.mongoDBQuery = mongoDBQueryInit;
     this.collectionSlug = collectionSlug;
   }
@@ -35,6 +40,7 @@ export class MinionsStore {
           query: this.mongoDBQuery,
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
         },
       })
       .then((response) => {
@@ -50,8 +56,9 @@ export class MinionsStore {
       });
   };
 
-  handleLazyLoad(pagination: PaginationState) {
+  handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
     this.pagination = pagination;
+    this.sorting = sorting;
     if (this.collectionSlug) {
       this.loadMinions(this.collectionSlug);
     }
@@ -66,6 +73,7 @@ export class MinionsStore {
 
   setCollectionSlug = (slug: string | undefined) => {
     this.pagination.pageIndex = 0;
+    this.sorting = [...DEFAULT_SORTING];
     this.collectionSlug = slug;
     if (this.collectionSlug) {
       this.loadMinions(this.collectionSlug);

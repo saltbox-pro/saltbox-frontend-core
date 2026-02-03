@@ -52,8 +52,10 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
     setLoading(true);
     try {
       const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-        limit: pagination.pageSize,
-        skip: pagination.pageIndex * pagination.pageSize,
+        TaskTemplateListBody: {
+          limit: pagination.pageSize,
+          skip: pagination.pageIndex * pagination.pageSize,
+        },
       });
       if (response?.data) {
         setTemplates(response.data);

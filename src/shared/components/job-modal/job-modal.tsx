@@ -109,7 +109,13 @@ export function JobModal({
   const showModal = () => {
     setIsMasterListLoading(true);
     apiCoreStore.mastersApi
-      ?.mastersList({ status: "accepted" })
+      ?.mastersList({
+        MasterListBody: {
+          query: {
+            status: "accepted",
+          },
+        },
+      })
       .then((result) => {
         if (result?.data?.length === 0) {
           messageApi.warning(t("job-modal.warning-message"));
@@ -223,7 +229,9 @@ export function JobModal({
     hasLoadedInitialSchema.current = false;
 
     apiCoreStore.jsonSchemasApi
-      ?.jobsSchemasList()
+      ?.jobsSchemasList({
+        JobSchemaListBody: {},
+      })
       .then((result) => {
         fillSaltFunctionList(result?.data ?? []);
       })

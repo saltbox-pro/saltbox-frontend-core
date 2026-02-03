@@ -210,7 +210,9 @@ const JobsPage = observer(() => {
       columnHelper.accessor("tgt", {
         header: t("jobs.table-targets"),
         cell: (data) => {
-          const fullValue = data.getValue() as string;
+          const value = data.getValue();
+          const fullValue = typeof value === "string" ? value : String(value ?? "");
+
           if (!fullValue || fullValue.length <= 2) {
             return fullValue;
           }

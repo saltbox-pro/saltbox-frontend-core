@@ -78,9 +78,10 @@ const TaskTemplatesPage = observer(() => {
         total={taskTemplatesStore.total}
         isLoading={taskTemplatesStore.isTaskTemplatesLoading}
         pagination={taskTemplatesStore.pagination}
+        sorting={taskTemplatesStore.sorting}
         onRowSelectionChange={setSelection}
         rowSelection={selection}
-        onLazyLoad={(pagination) => taskTemplatesStore.handleLazyLoad(pagination)}
+        onLazyLoad={(pagination, sorting) => taskTemplatesStore.handleLazyLoad(pagination, sorting)}
       />
     </>
   );

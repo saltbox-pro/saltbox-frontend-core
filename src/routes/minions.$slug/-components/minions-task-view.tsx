@@ -130,7 +130,6 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
     () => [
       columnHelper.accessor("id", {
         header: "ID",
-        enableSorting: false,
         cell: (data) => {
           return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
         },
@@ -141,15 +140,12 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       }),
       columnHelper.accessor("task_template.title", {
         header: t("minions.table-task-template-title"),
-        enableSorting: false,
       }),
       columnHelper.accessor("task_template.name", {
         header: t("minions.table-task-template-name"),
-        enableSorting: false,
       }),
       columnHelper.accessor("source.type", {
         header: t("minions.table-source-type"),
-        enableSorting: false,
         cell: (data) => {
           switch (data.getValue()) {
             case "rest":
@@ -163,11 +159,9 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       }),
       columnHelper.accessor("user.name", {
         header: t("minions.table-user"),
-        enableSorting: false,
       }),
       columnHelper.accessor("status.type", {
         header: t("minions.table-status"),
-        enableSorting: false,
         cell: (data) => {
           return <TaskStatusIndicator status={data.row.original?.status.type} />;
         },
