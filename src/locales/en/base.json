@@ -49,6 +49,9 @@
     "tasks-table-total-minions": "Total Minions",
     "tasks-table-status-header": "Minions Statistics",
     "minion": "Minion",
+    "minion-not-found": "Minion not found",
+    "no-minion-data-available": "No minion data available",
+    "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
     "minion-id": "Minion ID",
@@ -129,6 +132,7 @@
     "delete-failed": "Failed to delete minion",
     "job-returns": "Job Returns",
     "open-in-new-tab": "Open in new tab",
+    "open-minion-details-page": "Open minion details page",
     "show-details": "Show details",
     "copy-minion-id": "Copy Minion ID",
     "copied": "Copied"
@@ -692,5 +696,9 @@
       "copy": "Copy",
       "copied": "Copied"
     }
+  },
+  "errors": {
+    "load-failed": "Failed to load data",
+    "access-denied": "Access denied"
   }
 }

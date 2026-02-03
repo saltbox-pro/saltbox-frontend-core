@@ -49,6 +49,9 @@
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
     "minion": "Клиент",
+    "minion-not-found": "Клиент не найден",
+    "no-minion-data-available": "Нет данных о клиенте",
+    "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
     "grains": "Данные grains",
     "minion-id": "ID клиента",
@@ -129,6 +132,7 @@
     "delete-failed": "Ошибка удаления клиента",
     "job-returns": "Ответы команд",
     "open-in-new-tab": "Открыть в новой вкладке",
+    "open-minion-details-page": "Открыть страницу клиента",
     "show-details": "Показать детали",
     "copy-minion-id": "Скопировать ID клиента",
     "copied": "Скопировано"
@@ -692,5 +696,9 @@
       "copy": "Копировать",
       "copied": "Скопировано"
     }
+  },
+  "errors": {
+    "load-failed": "Не удалось загрузить данные",
+    "access-denied": "Доступ запрещен"
   }
 }

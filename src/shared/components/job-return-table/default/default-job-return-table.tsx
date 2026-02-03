@@ -1,6 +1,6 @@
 import { MinusSquareOutlined, PlusSquareOutlined, ExportOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, Drawer } from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import {
   OnChangeFn,
   PaginationState,
@@ -10,13 +10,12 @@ import {
 } from "@tanstack/react-table";
 import { Button, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useMemo, useState, useCallback, useEffect } from "react";
+import { ComponentProps, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
-import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { RelativeTime } from "saltbox-core/shared/ui/time";
-import { apiCoreStore, MinionStore } from "saltbox-core/store";
+import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 
 import { TableView } from "../table-view/table-view";
 import {
@@ -66,28 +65,14 @@ export const DefaultJobReturnTable = observer(
     onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
   }) => {
     const { t } = useTranslation();
-    const [drawerMinionId, setDrawerMinionId] = useState<string | undefined>();
-    const [minionStore, setMinionStore] = useState<MinionStore | null>(null);
+    const minionDrawer = useMinionDrawer();
 
-    const handleOpenDrawer = useCallback(async (minionId: string, saltMaster: string) => {
-      setDrawerMinionId(minionId);
-      try {
-        const minion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
-          master_id: saltMaster,
-          minion_id: minionId,
-        });
-        if (minion?.id) {
-          setMinionStore(new MinionStore("root", minion.id));
-        }
-      } catch (error) {
-        console.error("Error loading minion:", error);
-      }
-    }, []);
-
-    const handleCloseDrawer = useCallback(() => {
-      setDrawerMinionId(undefined);
-      setMinionStore(null);
-    }, []);
+    const handleOpenMinionDrawer = async (minionId: string, masterId: string) => {
+      await minionDrawer.openDrawer({
+        masterId,
+        minionId,
+      });
+    };
 
     const columns = useMemo(
       () => [
@@ -104,7 +89,7 @@ export const DefaultJobReturnTable = observer(
                 size="small"
                 type="link"
                 onClick={row.getToggleExpandedHandler()}
-              ></Button>
+              />
             );
           },
         },
@@ -267,26 +252,21 @@ export const DefaultJobReturnTable = observer(
             forceExpandAll={forceExpand}
             getRowCanExpand={() => !isTableViewMode}
             renderSubComponent={renderJobResult}
-            onRowClick={(jobReturn) => handleOpenDrawer(jobReturn.minion_id, jobReturn.salt_master)}
+            onRowClick={(jobReturn) =>
+              handleOpenMinionDrawer(jobReturn.minion_id, jobReturn.salt_master)
+            }
           />
         </div>
 
-        <Drawer
-          open={Boolean(drawerMinionId)}
-          onClose={handleCloseDrawer}
-          size="large"
-          title={t("minions.minion")}
-        >
-          {minionStore && (
-            <MinionDetails
-              minion={minionStore.minion}
-              isMinionLoading={minionStore.isMinionLoading}
-              pillars={minionStore.pillars}
-              isPillarsLoading={minionStore.isPillarsLoading}
-              isInDrawer
-            />
-          )}
-        </Drawer>
+        <MinionDetailsDrawer
+          isOpened={minionDrawer.isOpened}
+          openedId={minionDrawer.openedId}
+          minionStore={minionDrawer.minionStore}
+          slug={minionDrawer.slug}
+          error={minionDrawer.error}
+          onClose={minionDrawer.closeDrawer}
+          clearData={minionDrawer.clearData}
+        />
       </>
     );
   }

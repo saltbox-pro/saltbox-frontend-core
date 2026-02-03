@@ -26,7 +26,7 @@ type JobReturnsConfig = {
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
 };
 
-interface MinionDetailsProps {
+export interface MinionDetailsProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   pillars: PillarModel[] | null;
