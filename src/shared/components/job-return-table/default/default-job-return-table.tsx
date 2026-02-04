@@ -1,6 +1,6 @@
-import { MinusSquareOutlined, PlusSquareOutlined, ExportOutlined } from "@ant-design/icons";
+import { ExportOutlined } from "@ant-design/icons";
 import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { createExpanderColumn, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import {
   type OnChangeFn,
   type PaginationState,
@@ -8,7 +8,7 @@ import {
   type ColumnDef,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Button, Flex, Tag } from "antd";
+import { Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -73,21 +73,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
 
     const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
-        {
-          id: "expander",
-          cell: ({ row }) => {
-            if (!row.getCanExpand()) return null;
-
-            return (
-              <Button
-                icon={row.getIsExpanded() ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
-                size="small"
-                type="link"
-                onClick={row.getToggleExpandedHandler()}
-              />
-            );
-          },
-        },
+        createExpanderColumn<JobReturnModel>(),
         columnHelper.accessor("id", {
           header: t("task.job-returns-table.table-mid"),
           cell: (data) => {

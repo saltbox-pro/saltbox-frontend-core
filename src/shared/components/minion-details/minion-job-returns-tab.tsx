@@ -1,12 +1,6 @@
-import {
-  MinusSquareOutlined,
-  PlusSquareOutlined,
-  CopyOutlined,
-  CloseOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
+import { CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { createExpanderColumn, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
   PaginationState,
@@ -15,7 +9,7 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import { Button, Flex, Popover, Tag, message } from "antd";
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
@@ -162,17 +156,6 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [selectedJobForReplay, setSelectedJobForReplay] = useState<JobReturnModel | null>(null);
-  const jobModalButtonRef = useRef<HTMLButtonElement | null>(null);
-
-  const jobModalContainerRef = useCallback((node: HTMLDivElement | null) => {
-    if (node) {
-      const button = node.querySelector("button");
-      if (button) {
-        jobModalButtonRef.current = button;
-        button.click();
-      }
-    }
-  }, []);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -186,23 +169,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
 
   const columns = useMemo<ColumnDef<JobReturnModel>[]>(
     () => [
-      {
-        id: "expander",
-        header: () => null,
-        cell: ({ row }: { row: Row<JobReturnModel> }) => {
-          if (!row.getCanExpand()) {
-            return null;
-          }
-          return (
-            <Button
-              icon={row.getIsExpanded() ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
-              size="small"
-              type="link"
-              onClick={row.getToggleExpandedHandler()}
-            />
-          );
-        },
-      },
+      createExpanderColumn(),
       jobReturnsColumnHelper.accessor("jid", {
         header: t("jobs.table-jid"),
         cell: (data) => {
@@ -217,7 +184,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
           actions: [
             {
               icon: <ReloadOutlined />,
-              onClick: (value, row) => {
+              onClick: (_, row) => {
                 setSelectedJobForReplay(row);
               },
               title: t("jobs.replay-job"),
@@ -357,17 +324,17 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         getRowCanExpand={() => true}
       />
       {selectedJobForReplay && (
-        <div ref={jobModalContainerRef} style={{ display: "none" }}>
-          <JobModal
-            key={selectedJobForReplay.jid}
-            target={selectedJobForReplay.minion_id}
-            targetType="glob"
-            fun={selectedJobForReplay.fun}
-            arg={selectedJobForReplay.fun_args || undefined}
-            kwarg={selectedJobForReplay.fun_kwarg || undefined}
-            defaultMaster={selectedJobForReplay.salt_master}
-          />
-        </div>
+        <JobModal
+          key={selectedJobForReplay.jid}
+          openOnMount
+          onAfterClose={() => setSelectedJobForReplay(null)}
+          target={selectedJobForReplay.minion_id}
+          targetType="glob"
+          fun={selectedJobForReplay.fun}
+          arg={selectedJobForReplay.fun_args || undefined}
+          kwarg={selectedJobForReplay.fun_kwarg || undefined}
+          defaultMaster={selectedJobForReplay.salt_master}
+        />
       )}
     </div>
   );
@@ -380,12 +347,12 @@ export function MinionJobReturnsTab({
   jobReturnsFilter,
 }: MinionJobReturnsTabProps) {
   return (
-    <div className={styles.jobReturnsWrapper}>
+    <Flex vertical className={styles.jobReturnsWrapper}>
       {jobReturnsFilter && <div className={styles.jobReturnsFilterWrapper}>{jobReturnsFilter}</div>}
-      {isFullView && jobReturnsTabActions ? (
+      {isFullView && !!jobReturnsTabActions && (
         <div className="page-actions-buttons">{jobReturnsTabActions}</div>
-      ) : null}
+      )}
       <MinionJobReturnsTable {...jobReturnsConfig} />
-    </div>
+    </Flex>
   );
 }
