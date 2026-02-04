@@ -66,6 +66,10 @@ const JobPage = observer(() => {
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
   const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
 
+  useEffect(() => {
+    setIsRevealedAll(Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true"));
+  }, [jid]);
+
   const handleTableErrorsChange = useCallback(
     (errors: Array<{ minion_id: string; error: string }>) => {
       setTableErrors(errors);
