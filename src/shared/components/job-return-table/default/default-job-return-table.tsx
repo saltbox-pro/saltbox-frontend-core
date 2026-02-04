@@ -1,31 +1,26 @@
 import { MinusSquareOutlined, PlusSquareOutlined, ExportOutlined } from "@ant-design/icons";
-import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import {
-  OnChangeFn,
-  PaginationState,
-  Row,
-  SortingState,
+  type OnChangeFn,
+  type PaginationState,
+  type SortingState,
+  type ColumnDef,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Button, Tag } from "antd";
+import { Button, Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useMemo, useCallback, useEffect } from "react";
+import { type ComponentProps, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import ReactJson from "react-json-view";
 
 import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 
-import { TableView } from "../table-view/table-view";
-import {
-  extractStringValue,
-  getShortJobReturnOutput,
-  isSimpleStringData,
-} from "../utils/job-return-utils";
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
 import { ExecutionDuration } from "./components/execution-duration";
+import { JobSubRow } from "./components/sub-row/job-sub-row";
+import { TableView } from "./components/table-view/table-view";
 import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
@@ -34,7 +29,23 @@ const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
 type OnLazyLoad = ComponentProps<typeof JobReturnsTable>["onLazyLoad"];
 
-export const DefaultJobReturnTable = observer(
+interface DefaultJobReturnTableProps {
+  jobReturns: JobReturnModel[];
+  isFullOutput?: boolean;
+  isTableViewMode?: boolean;
+  isLoading?: boolean;
+  forceExpand?: boolean;
+  jobStartTimestamp?: Date | null;
+  pagination: PaginationState;
+  sorting: SortingState;
+  total: number;
+  onLazyLoad: OnLazyLoad;
+  onTableViewSortingChange?: OnChangeFn<SortingState>;
+  onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
+  onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
+}
+
+export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
   ({
     jobReturns,
     isFullOutput = false,
@@ -49,20 +60,6 @@ export const DefaultJobReturnTable = observer(
     onTableViewSortingChange,
     onTableViewFilteredDataChange,
     onTableViewErrorsChange,
-  }: {
-    jobReturns: JobReturnModel[];
-    isFullOutput?: boolean;
-    isTableViewMode?: boolean;
-    isLoading?: boolean;
-    forceExpand?: boolean;
-    jobStartTimestamp?: Date | null;
-    pagination: PaginationState;
-    sorting: SortingState;
-    total: number;
-    onLazyLoad: OnLazyLoad;
-    onTableViewSortingChange?: OnChangeFn<SortingState>;
-    onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
-    onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
   }) => {
     const { t } = useTranslation();
     const minionDrawer = useMinionDrawer();
@@ -74,15 +71,13 @@ export const DefaultJobReturnTable = observer(
       });
     };
 
-    const columns = useMemo(
+    const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
         {
           id: "expander",
-          header: () => null,
-          cell: ({ row }: { row: Row<JobReturnModel> }) => {
-            if (!row.getCanExpand()) {
-              return <></>;
-            }
+          cell: ({ row }) => {
+            if (!row.getCanExpand()) return null;
+
             return (
               <Button
                 icon={row.getIsExpanded() ? <MinusSquareOutlined /> : <PlusSquareOutlined />}
@@ -114,6 +109,7 @@ export const DefaultJobReturnTable = observer(
           },
         }),
         columnHelper.accessor("retcode", {
+          id: "retcode-status",
           header: t("task.job-returns-table.table-success"),
           cell: (data) => (
             <Tag color={data.getValue() === 0 ? "green" : "red"}>
@@ -149,49 +145,6 @@ export const DefaultJobReturnTable = observer(
       [t, jobStartTimestamp, jobReturns]
     );
 
-    const renderStringData = (data: any) => {
-      const stringValue = extractStringValue(data);
-
-      return <div className={styles.stringDataContainer}>{stringValue}</div>;
-    };
-
-    const renderBooleanData = (data: any) => {
-      return <div className={styles.stringDataContainer}>{data ? "True" : "False"}</div>;
-    };
-
-    const renderJobResult = useCallback(
-      ({ row }: { row: Row<JobReturnModel> }) => {
-        const dataToShow = isFullOutput ? row.original : getShortJobReturnOutput(row.original);
-
-        if (!isFullOutput && isSimpleStringData(dataToShow)) {
-          return renderStringData(dataToShow);
-        }
-
-        if (typeof dataToShow === "boolean") {
-          return renderBooleanData(dataToShow);
-        }
-
-        const jsonValue =
-          typeof dataToShow === "object" && dataToShow !== null
-            ? dataToShow
-            : { result: dataToShow };
-
-        return (
-          <div className={styles.reactJsonContainer}>
-            <ReactJson
-              displayDataTypes={false}
-              enableClipboard={false}
-              name={false}
-              displayObjectSize={false}
-              src={jsonValue as Record<string, unknown>}
-              collapsed={isFullOutput ? 1 : 2}
-            />
-          </div>
-        );
-      },
-      [isFullOutput]
-    );
-
     const mergedTableData = useMemo(() => {
       if (!isTableViewMode) {
         return null;
@@ -210,21 +163,21 @@ export const DefaultJobReturnTable = observer(
       return mergeJobReturnsToTable(jobReturnsData);
     }, [isTableViewMode, jobReturns]);
 
+    const overscan = pagination.pageSize > 100 ? 10 : 100;
+    const shouldShowMergedView =
+      isTableViewMode &&
+      mergedTableData &&
+      mergedTableData.canConvert &&
+      mergedTableData.rows.length > 0;
+
     useEffect(() => {
       if (!isTableViewMode || !onTableViewErrorsChange) return;
       onTableViewErrorsChange(mergedTableData?.errors || []);
     }, [isTableViewMode, mergedTableData?.errors, onTableViewErrorsChange]);
 
-    const overscan = pagination.pageSize > 100 ? 10 : 100;
-
-    if (
-      isTableViewMode &&
-      mergedTableData &&
-      mergedTableData.canConvert &&
-      mergedTableData.rows.length > 0
-    ) {
-      return (
-        <div className={styles.jobReturnTableContainer}>
+    return (
+      <Flex vertical className={styles.jobReturnTableContainer}>
+        {shouldShowMergedView ? (
           <TableView
             data={mergedTableData}
             minionId=""
@@ -232,43 +185,38 @@ export const DefaultJobReturnTable = observer(
             onFilteredDataChange={onTableViewFilteredDataChange}
             onErrorsChange={onTableViewErrorsChange}
           />
-        </div>
-      );
-    }
-
-    return (
-      <>
-        <div className={styles.jobReturnTableContainer}>
-          <JobReturnsTable
-            columns={columns}
-            getRowId={(row) => row.id}
-            data={jobReturns}
-            total={total}
-            isLoading={isLoading}
-            pagination={pagination}
-            sorting={sorting}
-            onLazyLoad={onLazyLoad}
-            useVirtualScroll={false}
-            overscan={overscan}
-            forceExpandAll={forceExpand}
-            getRowCanExpand={() => !isTableViewMode}
-            renderSubComponent={renderJobResult}
-            onRowClick={(jobReturn) =>
-              handleOpenMinionDrawer(jobReturn.minion_id, jobReturn.salt_master)
-            }
-          />
-        </div>
-
-        <MinionDetailsDrawer
-          isOpened={minionDrawer.isOpened}
-          openedId={minionDrawer.openedId}
-          minionStore={minionDrawer.minionStore}
-          slug={minionDrawer.slug}
-          error={minionDrawer.error}
-          onClose={minionDrawer.closeDrawer}
-          clearData={minionDrawer.clearData}
-        />
-      </>
+        ) : (
+          <>
+            <JobReturnsTable
+              columns={columns}
+              getRowId={(row) => row.id}
+              data={jobReturns}
+              total={total}
+              isLoading={isLoading}
+              pagination={pagination}
+              sorting={sorting}
+              onLazyLoad={onLazyLoad}
+              useVirtualScroll={false}
+              overscan={overscan}
+              forceExpandAll={forceExpand}
+              getRowCanExpand={() => !isTableViewMode}
+              renderSubComponent={({ row }) => <JobSubRow row={row} isFullOutput={isFullOutput} />}
+              onRowClick={(jobReturn) =>
+                handleOpenMinionDrawer(jobReturn.minion_id, jobReturn.salt_master)
+              }
+            />
+            <MinionDetailsDrawer
+              isOpened={minionDrawer.isOpened}
+              openedId={minionDrawer.openedId}
+              minionStore={minionDrawer.minionStore}
+              slug={minionDrawer.slug}
+              error={minionDrawer.error}
+              onClose={minionDrawer.closeDrawer}
+              clearData={minionDrawer.clearData}
+            />
+          </>
+        )}
+      </Flex>
     );
   }
 );
