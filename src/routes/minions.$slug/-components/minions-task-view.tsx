@@ -139,12 +139,15 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         },
       }),
       columnHelper.accessor("task_template.title", {
+        id: "task_template.title",
         header: t("minions.table-task-template-title"),
       }),
       columnHelper.accessor("task_template.name", {
+        id: "task_template.name",
         header: t("minions.table-task-template-name"),
       }),
       columnHelper.accessor("source.type", {
+        id: "source.type",
         header: t("minions.table-source-type"),
         cell: (data) => {
           switch (data.getValue()) {
@@ -158,9 +161,11 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
         },
       }),
       columnHelper.accessor("user.name", {
+        id: "user.name",
         header: t("minions.table-user"),
       }),
       columnHelper.accessor("status.type", {
+        id: "status.type",
         header: t("minions.table-status"),
         cell: (data) => {
           return <TaskStatusIndicator status={data.row.original?.status.type} />;

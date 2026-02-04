@@ -25,6 +25,7 @@ const TaskTemplatesPage = observer(() => {
       header: t("task-templates.table-name"),
     }),
     columnHelper.accessor("repo_info.name", {
+      id: "repo_info.name",
       header: t("task-templates.table-repository"),
       cell: (data) => data.getValue(),
       meta: {

@@ -78,7 +78,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           );
         },
       },
-      minionsColumnHelper.accessor("id", {
+      minionsColumnHelper.accessor("minion_id", {
         header: t("minions.table-minion-id"),
         cell: (data) => {
           const showMinionId = data.row.original.minion_id ?? data.getValue();
@@ -100,21 +100,26 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         },
       }),
       minionsColumnHelper.accessor("grains.fqdn", {
+        id: "grains.fqdn",
         header: t("minions.table-fqdn"),
       }),
       minionsColumnHelper.accessor("grains.domain", {
+        id: "grains.domain",
         header: t("minions.table-domain"),
       }),
       minionsColumnHelper.accessor("master", {
         header: t("minions.table-master"),
       }),
       minionsColumnHelper.accessor("grains.saltversion", {
+        id: "grains.saltversion",
         header: t("minions.table-client-version"),
       }),
       minionsColumnHelper.accessor("grains.osfinger", {
+        id: "grains.osfinger",
         header: t("minions.table-os"),
       }),
       minionsColumnHelper.accessor("grains.efi", {
+        id: "grains.efi",
         header: t("minions.table-efi"),
         cell: (data) => {
           return (

@@ -124,6 +124,7 @@ export const DefaultJobReturnTable = observer(
           ),
         }),
         columnHelper.accessor("retcode", {
+          id: "retcode",
           header: t("task.job-returns-table.table-return-code"),
           cell: (data) => data.getValue(),
         }),
