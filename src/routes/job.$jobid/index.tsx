@@ -57,7 +57,9 @@ const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
+
   const [webSocketService] = useState(new WebSocketService<JobModel>());
+  const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
   const [isRevealedAll, setIsRevealedAll] = useState(() => {
     return Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true");
   });
@@ -66,32 +68,26 @@ const JobPage = observer(() => {
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
   const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
 
-  useEffect(() => {
-    setIsRevealedAll(Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true"));
-  }, [jid]);
-
-  const handleTableErrorsChange = useCallback(
-    (errors: Array<{ minion_id: string; error: string }>) => {
-      setTableErrors(errors);
-    },
-    []
-  );
-
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
+
+  const effectiveJobReturns = useMemo(
+    () => (jid && jobStore.jid === jid ? jobStore.jobReturns : []),
+    [jid, jobStore.jid, jobStore.jobReturns]
+  );
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
 
   const tableConversionCheck = useMemo(() => {
-    const jobReturnsData = jobStore.jobReturns.map((jobReturn) => ({
+    const jobReturnsData = effectiveJobReturns.map((jobReturn) => ({
       data: jobReturn.data ?? null,
       minion_id: jobReturn.minion_id || "",
     }));
 
     return mergeJobReturnsToTable(jobReturnsData);
-  }, [jobStore.jobReturns]);
+  }, [effectiveJobReturns]);
 
   const mergedTableData = useMemo(() => {
     if (!isTableViewMode) {
@@ -100,13 +96,6 @@ const JobPage = observer(() => {
 
     return tableConversionCheck;
   }, [isTableViewMode, tableConversionCheck]);
-
-  useEffect(() => {
-    setFilteredTableRows([]);
-    if (!isTableViewMode) {
-      setTableErrors([]);
-    }
-  }, [mergedTableData, isTableViewMode]);
 
   const tableColumnsForExport = useMemo(() => {
     if (!mergedTableData || !mergedTableData.canConvert) {
@@ -154,52 +143,17 @@ const JobPage = observer(() => {
     exportToCSV(sortedTableData, filename);
   }, [mergedTableData, jid, exportTable, rowsToExport]);
 
+  const handleTableErrorsChange = useCallback(
+    (errors: Array<{ minion_id: string; error: string }>) => {
+      setTableErrors(errors);
+    },
+    []
+  );
+
   const handleToggleRevealedAll = (value: boolean) => {
     setIsRevealedAll(value);
     localStorage.setItem(`job-revealed-all-returns:${jid}`, value.toString());
   };
-
-  useEffect(() => {
-    if (jobStore.error) {
-      navigate("/not-found");
-    }
-  }, [jobStore.error]);
-
-  useEffect(() => {
-    if (!jid) {
-      return;
-    }
-    jobStore.mongoDBQuery = undefined;
-    if (webSocketService.isConnected) {
-      webSocketService.disconnect();
-    }
-    webSocketService.connect(
-      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
-      appStore.authStore?.user?.access_token,
-      {
-        onMessage: (messages: Array<WebSocketMessage<JobModel>>) => {
-          jobStore.updateFromJobs(
-            messages
-              .filter((message) => message.message_tag === "job")
-              .map((message) => message.payload)
-          );
-        },
-        onOpen: () => {
-          jobStore.reload(jid);
-        },
-      }
-    );
-    return () => {
-      jobStore.reset();
-      webSocketService.disconnect();
-    };
-  }, [jid]);
-
-  useEffect(() => {
-    if (webSocketService && appStore.authStore?.user?.access_token) {
-      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
-    }
-  }, [appStore.authStore?.user]);
 
   const shouldRepeat = useCallback((event: KeyboardEvent) => {
     return event.altKey && event.code === "KeyR";
@@ -215,11 +169,68 @@ const JobPage = observer(() => {
     );
   });
 
+  useEffect(() => {
+    setIsRevealedAll(Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true"));
+  }, [jid]);
+
+  useEffect(() => {
+    setFilteredTableRows([]);
+    if (!isTableViewMode) {
+      setTableErrors([]);
+    }
+  }, [mergedTableData, isTableViewMode]);
+
+  useEffect(() => {
+    if (jobStore.error) {
+      navigate("/not-found");
+    }
+  }, [jobStore.error]);
+
+  useEffect(() => {
+    if (!jid) {
+      return;
+    }
+    jobStore.reset();
+    jobStore.mongoDBQuery = undefined;
+    if (webSocketService.isConnected()) {
+      webSocketService.disconnect();
+    }
+    setIsWebSocketConnecting(true);
+    webSocketService.connect(
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
+      appStore.authStore?.user?.access_token,
+      {
+        onMessage: (messages: Array<WebSocketMessage<JobModel>>) => {
+          jobStore.updateFromJobs(
+            messages
+              .filter((message) => message.message_tag === "job")
+              .map((message) => message.payload)
+          );
+        },
+        onOpen: () => {
+          setIsWebSocketConnecting(false);
+          jobStore.reload(jid);
+        },
+      }
+    );
+    return () => {
+      setIsWebSocketConnecting(false);
+      jobStore.reset();
+      webSocketService.disconnect();
+    };
+  }, [jid]);
+
+  useEffect(() => {
+    if (webSocketService && appStore.authStore?.user?.access_token) {
+      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
+    }
+  }, [appStore.authStore?.user]);
+
   return (
     <>
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
-      <div className={styles.jobDetailsContainer}>
+      <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
         <div className={styles.jobDetailItem}>
           <JobModal
             target={jobStore.jobTargets}
@@ -314,7 +325,7 @@ const JobPage = observer(() => {
             </span>
           </div>
         )}
-      </div>
+      </Flex>
 
       <div className={styles.progressContainer}>
         {jobStore.totalMinions > 0 && (
@@ -418,9 +429,9 @@ const JobPage = observer(() => {
         </Flex>
       )}
 
-      <div className={styles.jobReturnTableWrapper}>
+      <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
         <DefaultJobReturnTable
-          jobReturns={jobStore.jobReturns}
+          jobReturns={effectiveJobReturns}
           isFullOutput={isFullOutput}
           isTableViewMode={isTableViewMode}
           jobStartTimestamp={jobStore.jobStartTimestamp}
@@ -428,13 +439,13 @@ const JobPage = observer(() => {
           sorting={jobStore.sorting}
           total={jobStore.total}
           onLazyLoad={jobStore.handleLazyLoad}
-          isLoading={jobStore.isJobLoading || jobStore.isJobReturnsLoading}
+          isLoading={isWebSocketConnecting || jobStore.isJobLoading || jobStore.isJobReturnsLoading}
           forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
           onTableViewSortingChange={setTableViewSorting}
           onTableViewFilteredDataChange={setFilteredTableRows}
           onTableViewErrorsChange={handleTableErrorsChange}
         />
-      </div>
+      </Flex>
 
       {jobModalCreatePlugin}
     </>

@@ -8,7 +8,7 @@ import {
   TableData,
   maxDisplayLength,
   maxFilterOptions,
-} from "../utils/table-converter";
+} from "../../../utils/table-converter";
 
 import styles from "./table-view.module.css";
 
