@@ -17,6 +17,7 @@ import { Button, Cascader, Flex, Form, Input, Select, message, type FormProps } 
 import {
   Fragment,
   KeyboardEventHandler,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -61,6 +62,8 @@ interface JobModalProps {
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
   defaultMaster?: string;
+  openOnMount?: boolean;
+  onAfterClose?: () => void;
   shouldShowModalByKeyboardEvent?: (event: KeyboardEvent) => boolean;
   buttonProps?: JobModalButtonProps;
 }
@@ -76,6 +79,8 @@ export function JobModal({
   arg,
   kwarg,
   defaultMaster,
+  openOnMount,
+  onAfterClose,
   shouldShowModalByKeyboardEvent,
   buttonProps,
 }: JobModalProps) {
@@ -101,12 +106,13 @@ export function JobModal({
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
   const hasLoadedInitialSchema = useRef<boolean>(false);
+  const hasAutoOpenedRef = useRef(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
   const tgtType = Form.useWatch("tgt_type", form);
 
-  const showModal = () => {
+  const showModal = useCallback(() => {
     setIsMasterListLoading(true);
     apiCoreStore.mastersApi
       ?.mastersList({
@@ -120,6 +126,7 @@ export function JobModal({
         if (result?.data?.length === 0) {
           messageApi.warning(t("job-modal.warning-message"));
           setIsModalOpen(false);
+          onAfterClose?.();
           return;
         }
         setMasterList(
@@ -137,7 +144,7 @@ export function JobModal({
         messageApi.error("Error on load salt masters.");
       })
       .finally(() => setIsMasterListLoading(false));
-  };
+  }, [messageApi, onAfterClose, t]);
 
   const fillSaltFunctionList = (jobsSchemes: JobSchemaShortSchema[]) => {
     const list: Array<JobOption> = [];
@@ -208,6 +215,13 @@ export function JobModal({
     },
     [isModalOpen, shouldShowModalByKeyboardEvent]
   );
+
+  useEffect(() => {
+    if (openOnMount && !hasAutoOpenedRef.current) {
+      hasAutoOpenedRef.current = true;
+      showModal();
+    }
+  }, [openOnMount, showModal]);
 
   useEffect(() => {
     if (!isModalOpen) {
@@ -498,22 +512,25 @@ export function JobModal({
   return (
     <>
       {contextHolder}
-      <Button
-        type={finalButtonProps.type}
-        shape={finalButtonProps.shape}
-        icon={finalButtonProps.icon}
-        size={finalButtonProps.size}
-        title={finalButtonProps.title}
-        onClick={showModal}
-        loading={isMasterListLoading}
-      >
-        {finalButtonProps.showText ? finalButtonProps.text : null}
-      </Button>
+      {!openOnMount && (
+        <Button
+          type={finalButtonProps.type}
+          shape={finalButtonProps.shape}
+          icon={finalButtonProps.icon}
+          size={finalButtonProps.size}
+          title={finalButtonProps.title}
+          onClick={showModal}
+          loading={isMasterListLoading}
+        >
+          {finalButtonProps.showText ? finalButtonProps.text : null}
+        </Button>
+      )}
 
       <Modal
         title={t("job-modal.title")}
         open={isModalOpen}
         onCancel={handleModalCancel}
+        afterClose={() => onAfterClose?.()}
         width="800px"
         maskClosable={false}
         footer={
@@ -614,7 +631,7 @@ export function JobModal({
                 required: true,
                 message: t("job-modal.function-error-required"),
               },
-              ({ getFieldValue }) => ({
+              () => ({
                 validator(_, value) {
                   if (
                     value?.length === 1 &&
