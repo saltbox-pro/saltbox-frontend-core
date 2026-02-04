@@ -80,15 +80,19 @@ const CollectionEditPage = observer(() => {
       },
     }),
     minionsColumnHelper.accessor("grains.fqdn", {
+      id: "grains.fqdn",
       header: t("minions.table-fqdn"),
     }),
     minionsColumnHelper.accessor("grains.osfullname", {
+      id: "grains.osfullname",
       header: t("minions.table-os-full-name"),
     }),
     minionsColumnHelper.accessor("grains.domain", {
+      id: "grains.domain",
       header: t("minions.table-domain"),
     }),
     minionsColumnHelper.accessor("grains.efi", {
+      id: "grains.efi",
       header: t("minions.table-efi"),
       cell: (data) => (
         <Tag color={data.getValue() ? "green" : "red"}>
@@ -97,9 +101,11 @@ const CollectionEditPage = observer(() => {
       ),
     }),
     minionsColumnHelper.accessor("grains.cpu_model", {
+      id: "grains.cpu_model",
       header: t("minions.table-cpu-model"),
     }),
     minionsColumnHelper.accessor("grains.mem_total", {
+      id: "grains.mem_total",
       header: t("minions.table-total-memory"),
       cell: (data) => {
         if (!data || data?.getValue() === undefined) return "";

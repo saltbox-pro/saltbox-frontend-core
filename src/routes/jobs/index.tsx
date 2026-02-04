@@ -230,6 +230,7 @@ const JobsPage = observer(() => {
         header: t("jobs.table-target-type"),
       }),
       columnHelper.accessor("user.name", {
+        id: "user.name",
         header: t("jobs.table-user"),
       }),
       columnHelper.accessor("status", {
