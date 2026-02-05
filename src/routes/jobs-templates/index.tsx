@@ -1,12 +1,11 @@
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { JobTemplateStore } from "saltbox-core/store";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;

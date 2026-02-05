@@ -1,6 +1,10 @@
 import { ExportOutlined } from "@ant-design/icons";
 import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { createExpanderColumn, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import {
+  createExpanderColumn,
+  FastTablePaginated,
+  RelativeTime,
+} from "@saltbox/saltbox-frontend-common";
 import {
   type OnChangeFn,
   type PaginationState,
@@ -13,7 +17,6 @@ import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";

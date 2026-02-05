@@ -1,5 +1,5 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Tag, message } from "antd";
 import { toJS } from "mobx";
@@ -8,7 +8,6 @@ import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {

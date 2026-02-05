@@ -4,6 +4,7 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { SelectProps, Tag } from "antd";
@@ -15,7 +16,6 @@ import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";

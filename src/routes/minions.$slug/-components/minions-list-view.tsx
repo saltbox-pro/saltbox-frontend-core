@@ -5,6 +5,7 @@ import {
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   Popover,
+  RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { Row, RowSelectionState, Table, createColumnHelper } from "@tanstack/react-table";
 import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
@@ -19,7 +20,6 @@ import {
   PolicyCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";

@@ -6,6 +6,7 @@ import {
   FastTablePaginated,
   PageHeader,
   Popover,
+  RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Badge, Button, Flex, Input, Tag, message } from "antd";
@@ -15,7 +16,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import {
   CollectionStore,
   defaultCollectionStore,

@@ -1,6 +1,10 @@
 import { CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { createExpanderColumn, FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import {
+  createExpanderColumn,
+  FastTablePaginated,
+  RelativeTime,
+} from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
   PaginationState,
@@ -15,7 +19,6 @@ import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 
 import {
   extractStringValue,

@@ -1,11 +1,10 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
 import { toJS } from "mobx";
 import { useTranslation } from "react-i18next";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 
 const TaskMinionsTable = FastTableListed<TaskMinionModel>;
 

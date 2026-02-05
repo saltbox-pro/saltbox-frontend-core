@@ -4,6 +4,7 @@ import {
   Popover,
   WebSocketMessage,
   WebSocketService,
+  RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex, Progress } from "antd";
@@ -13,7 +14,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
-import { RelativeTime } from "saltbox-core/shared/ui/time";
 import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";

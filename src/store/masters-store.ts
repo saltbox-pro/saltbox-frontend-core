@@ -111,7 +111,7 @@ export class MastersStore {
           this.totalMasters = response.total;
         });
       })
-      .catch((error) => {
+      .catch((_) => {
         runInAction(() => {
           this.isLoading = false;
           this.error = "Failed to load masters";

@@ -93,7 +93,7 @@ export class JobsStore {
           this.jobs = response?.data ?? [];
         });
       })
-      .catch((error) => {
+      .catch((_) => {
         runInAction(() => {
           this.isInitialized = true;
           this.isJobsLoading = false;
