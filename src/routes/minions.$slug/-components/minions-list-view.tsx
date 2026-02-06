@@ -1,14 +1,15 @@
 import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import { MinionShortSchema, TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
+  createSelectColumn,
   FastTablePaginated,
   formatTimeByUserTZ,
   pastTimeByUserTZ,
   Popover,
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
-import { Row, RowSelectionState, Table, createColumnHelper } from "@tanstack/react-table";
-import { Badge, Button, Checkbox, Flex, Spin, Tag, message } from "antd";
+import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { Badge, Button, Flex, Spin, Tag, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -57,27 +58,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   const minionColumns = useMemo(
     () => [
-      {
-        id: "select-minion",
-        header: ({ table }: { table: Table<MinionShortSchema> }) => {
-          return (
-            <Checkbox
-              checked={table.getIsAllRowsSelected()}
-              indeterminate={table.getIsSomeRowsSelected()}
-              onChange={table.getToggleAllRowsSelectedHandler()}
-            />
-          );
-        },
-        cell: ({ row }: { row: Row<MinionShortSchema> }) => {
-          return (
-            <Checkbox
-              checked={row.getIsSelected()}
-              disabled={!row.getCanSelect()}
-              onChange={row.getToggleSelectedHandler()}
-            />
-          );
-        },
-      },
+      createSelectColumn<MinionShortSchema>(),
       minionsColumnHelper.accessor("minion_id", {
         header: t("minions.table-minion-id"),
         cell: (data) => {
