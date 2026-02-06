@@ -1,15 +1,15 @@
 import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
-  pastTimeByUserTZ,
-  formatTimeByUserTZ,
   FastTablePaginated,
+  formatTimeByUserTZ,
   PageHeader,
+  pastTimeByUserTZ,
   Popover,
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Badge, Button, Flex, Input, Tag, message } from "antd";
+import { Badge, Button, Flex, Input, message, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
@@ -22,7 +22,10 @@ import {
   MinionFilterStore,
   MinionsStore,
 } from "saltbox-core/store";
-import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
@@ -48,12 +51,13 @@ const CollectionEditPage = observer(() => {
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
 
-  const minionDrawer = useMinionDrawer();
+  const minionDrawer = useMinionDetailsDrawer();
 
-  const handleOpenMinionDrawer = async (innerId: string) => {
-    await minionDrawer.openDrawer({
+  const handleOpenMinionDrawer = async (innerId: string, minionId: string) => {
+    await minionDrawer.open({
       slug: collectionStore.collection?.parent_slug || slug || "root",
       innerId,
+      minionId,
     });
   };
 
@@ -217,7 +221,7 @@ const CollectionEditPage = observer(() => {
       {contextHolder}
       <PageHeader
         title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
-      ></PageHeader>
+      />
       <Flex className={styles.collectionHeader} gap={8} align="center">
         <Input
           value={newTitle}
@@ -265,7 +269,7 @@ const CollectionEditPage = observer(() => {
           pagination={toJS(minionsStore.pagination)}
           sorting={minionsStore.sorting}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          onRowClick={(minion) => handleOpenMinionDrawer(minion.id)}
+          onRowClick={(minion) => handleOpenMinionDrawer(minion.id, minion.minion_id)}
         />
       </Flex>
 
@@ -275,7 +279,7 @@ const CollectionEditPage = observer(() => {
         minionStore={minionDrawer.minionStore}
         slug={minionDrawer.slug}
         error={minionDrawer.error}
-        onClose={minionDrawer.closeDrawer}
+        onClose={minionDrawer.close}
         clearData={minionDrawer.clearData}
       />
     </>

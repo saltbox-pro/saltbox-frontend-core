@@ -4,7 +4,6 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { CollectionsStore } from "saltbox-core/store/collections-store";
@@ -16,7 +15,6 @@ const CollectionsTable = FastTablePaginated<CollectionModel>;
 const collectionsColumnHelper = createColumnHelper<CollectionModel>();
 
 export const CollectionSelector = observer(({ onClose }: { onClose: () => void }) => {
-  const { t } = useTranslation();
   const [collectionsStore] = useState(() => new CollectionsStore());
 
   const collectionsColumns = [

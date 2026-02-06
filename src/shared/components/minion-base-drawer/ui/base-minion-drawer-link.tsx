@@ -3,16 +3,16 @@ import { Button } from "antd";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-interface MinionDetailsDrawerLinkProps {
+interface BaseMinionDrawerLinkProps {
   slug: string;
-  id: string;
+  innerId: string;
 }
 
-export function MinionDetailsDrawerLink({ slug, id }: MinionDetailsDrawerLinkProps) {
+export function BaseMinionDrawerLink({ slug, innerId }: BaseMinionDrawerLinkProps) {
   const { t } = useTranslation();
 
   return (
-    <Link to={`/minion/${slug}/${id}`}>
+    <Link to={`/minion/${slug}/${innerId}`}>
       <Button
         color="default"
         variant="outlined"

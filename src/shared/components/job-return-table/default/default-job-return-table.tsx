@@ -17,7 +17,10 @@ import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
@@ -65,10 +68,10 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     onTableViewErrorsChange,
   }) => {
     const { t } = useTranslation();
-    const minionDrawer = useMinionDrawer();
+    const minionDrawer = useMinionDetailsDrawer();
 
     const handleOpenMinionDrawer = async (minionId: string, masterId: string) => {
-      await minionDrawer.openDrawer({
+      await minionDrawer.open({
         masterId,
         minionId,
       });
@@ -200,7 +203,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               minionStore={minionDrawer.minionStore}
               slug={minionDrawer.slug}
               error={minionDrawer.error}
-              onClose={minionDrawer.closeDrawer}
+              onClose={minionDrawer.close}
               clearData={minionDrawer.clearData}
             />
           </>

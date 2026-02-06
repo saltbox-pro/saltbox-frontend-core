@@ -261,7 +261,9 @@ const JobPage = observer(() => {
                 <Text ellipsis className={styles.targetText} title={jobStore.jobTargets}>
                   {jobStore.jobTargets}
                 </Text>
-                <CopyToClipboardButton text={jobStore.jobTargets} />
+                <Flex>
+                  <CopyToClipboardButton text={jobStore.jobTargets} />
+                </Flex>
               </>
             ) : (
               <Skeleton.Input size="small" />

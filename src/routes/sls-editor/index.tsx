@@ -5,21 +5,17 @@ import { MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { slsEditorStore } from "saltbox-core/store";
 
 import { ImportSlsModal } from "./components/import-sls-modal";
 import { RawSlsEditor } from "./components/raw-sls-editor";
 import styles from "./index.module.css";
-import { useNavigate } from "react-router";
 
 loader.config({ monaco });
 slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
-  const navigate = useNavigate();
-  const { t } = useTranslation();
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const handleSlsChange = (newSls: string) => {
