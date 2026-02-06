@@ -36,7 +36,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { apiCoreStore, PillarsStore } from "saltbox-core/store";
-import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import styles from "./index.module.css";
@@ -105,7 +108,7 @@ const MasterPage = observer(() => {
   const [updateExisting, setUpdateExisting] = useState(true);
   const [isValidating, setIsValidating] = useState(false);
 
-  const minionDrawer = useMinionDrawer();
+  const minionDrawer = useMinionDetailsDrawer();
   const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
   const [pillarsSorting, setPillarsSorting] = useState<SortingState>([]);
 
@@ -674,7 +677,7 @@ const MasterPage = observer(() => {
   }, [t, isEditingImport, handleCellChange]);
 
   const handleOpenMinionDrawer = async (minionId: string) => {
-    await minionDrawer.openDrawer({
+    await minionDrawer.open({
       masterId,
       minionId,
     });
@@ -950,7 +953,7 @@ const MasterPage = observer(() => {
         minionStore={minionDrawer.minionStore}
         slug={minionDrawer.slug}
         error={minionDrawer.error}
-        onClose={minionDrawer.closeDrawer}
+        onClose={minionDrawer.close}
         clearData={minionDrawer.clearData}
       />
     </>

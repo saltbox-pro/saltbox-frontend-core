@@ -1,0 +1,14 @@
+.jobResult {
+  padding: 10px 15px;
+  background-color: #fafafa;
+}
+
+.jobResultTitle {
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.jobReturnContent {
+  margin-bottom: 15px;
+}

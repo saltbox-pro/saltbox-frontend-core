@@ -1,5 +1,6 @@
-import { FilterOutlined, CopyOutlined } from "@ant-design/icons";
+import { FilterOutlined } from "@ant-design/icons";
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
   Collapse,
@@ -9,7 +10,6 @@ import {
   Flex,
   Spin,
   Typography,
-  message,
   type FlexProps,
 } from "antd";
 import React from "react";
@@ -71,6 +71,7 @@ const minionDetailsViewsToDescriptionItems = (
 
     if ("value" in minionDetailView) {
       const grainValue = minionDetailView.value(schema);
+      const grainValueString = transformGrainValueToString(grainValue);
 
       return {
         key: minionDetailView.key,
@@ -81,20 +82,7 @@ const minionDetailsViewsToDescriptionItems = (
               {grainValue}
             </Flex>
             <Flex className={styles.minionDetailsGrainButtons}>
-              {transformGrainValueToString(grainValue) !== "" && (
-                <Button
-                  size="small"
-                  icon={<CopyOutlined />}
-                  color="default"
-                  variant="outlined"
-                  title={t("common.copy-to-clipboard-button.copy")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigator.clipboard.writeText(transformGrainValueToString(grainValue));
-                    message.success(t("common.copy-to-clipboard-button.copied"));
-                  }}
-                />
-              )}
+              {grainValueString !== "" && <CopyToClipboardButton text={grainValueString} />}
             </Flex>
           </Flex>
         ),
@@ -111,18 +99,7 @@ const minionDetailsViewsToDescriptionItems = (
         <Flex justify="space-between" className="minion-details-grain">
           <Flex className="minion-details-grain-name">{grainValue}</Flex>
           <Flex gap={2} className={styles.minionDetailsGrainButtons}>
-            <Button
-              size="small"
-              icon={<CopyOutlined />}
-              color="default"
-              variant="outlined"
-              title={t("common.copy-to-clipboard-button.copy")}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigator.clipboard.writeText(String(grainValue));
-                message.success(t("common.copy-to-clipboard-button.copied"));
-              }}
-            />
+            <CopyToClipboardButton text={grainValue} />
             {onFilterButton && (
               <Button
                 size="small"

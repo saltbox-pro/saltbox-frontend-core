@@ -24,8 +24,11 @@ import { useNavigate, useParams } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
+import {
+  MinionTaskResultsDrawer,
+  useMinionTaskResultsDrawer,
+} from "saltbox-core/widgets/minion-task-results-drawer";
 
-import { MinionView } from "./-components/minion-view/minion-view";
 import { TaskMinions } from "./-components/task-minions/task-minions";
 import styles from "./index.module.css";
 
@@ -188,64 +191,6 @@ const useMinions = (taskStore: TaskStore) => {
   };
 };
 
-const useSelectedMinion = (taskStore: TaskStore) => {
-  const [selectedMinion, setSelectedMinion] = useState<TaskMinionModel | undefined>();
-  const [selectedMinionJobReturns, setSelectedMinionJobReturns] = useState<Array<JobReturnModel>>(
-    []
-  );
-
-  const getStoredMinion = (minion: TaskMinionModel) => {
-    return taskStore.minions?.[minion.master + "_" + minion.minion_id];
-  };
-
-  const getMinionJobReturns = (minion?: TaskMinionModel) => {
-    const minionJobIds = Object.keys(minion?.jobs ?? {})
-      .sort()
-      .reverse();
-    return minionJobIds
-      .map((jobId) =>
-        taskStore.jobReturns?.find(
-          (jobReturn) =>
-            jobReturn.jid === jobId &&
-            jobReturn.salt_master === minion.master &&
-            jobReturn.minion_id === minion.minion_id
-        )
-      )
-      .filter((jobReturn) => jobReturn !== undefined) as JobReturnModel[];
-  };
-
-  useEffect(() => {
-    if (selectedMinion) {
-      const minion = getStoredMinion(selectedMinion);
-      const minionJobReturns = getMinionJobReturns(minion);
-      setSelectedMinionJobReturns(minionJobReturns);
-      setSelectedMinion(minion);
-    }
-  }, [taskStore.task, taskStore.jobReturns]);
-
-  const updateSelectedMinion = (minion: TaskMinionModel) => {
-    if (selectedMinion?.minion_id === minion.minion_id) {
-      setSelectedMinionJobReturns([]);
-      setSelectedMinion(undefined);
-    } else {
-      const minionJobReturns = getMinionJobReturns(minion);
-      setSelectedMinionJobReturns(minionJobReturns);
-      setSelectedMinion(minion);
-    }
-  };
-
-  const clear = () => {
-    setSelectedMinion(undefined);
-  };
-
-  return {
-    value: selectedMinion,
-    jobReturns: selectedMinionJobReturns,
-    update: updateSelectedMinion,
-    clear,
-  };
-};
-
 const useTaskPermissions = (taskStore: TaskStore) => {
   const isTaskLoading = taskStore.isTaskLoading;
   const taskStatus = taskStore.task?.status?.type;
@@ -304,7 +249,7 @@ const TaskPage = observer(() => {
 
   const [taskStore] = useState(new TaskStore());
   const { minions, minionCategoryStats } = useMinions(taskStore);
-  const selectedMinion = useSelectedMinion(taskStore);
+  const minionTaskResultsDrawer = useMinionTaskResultsDrawer(taskStore);
   const taskPermissions = useTaskPermissions(taskStore);
 
   useEffect(() => {
@@ -353,35 +298,35 @@ const TaskPage = observer(() => {
         })}
       />
 
-      <div className={styles.taskDetailsContainer}>
-        <div className={styles.taskActionButtonsContainer}>
+      <Flex className={styles.taskDetailsContainer} align="center" wrap gap={24}>
+        <Flex gap={7}>
           <Button
-            onClick={() => taskStore.handleRunTask()}
+            onClick={taskStore.handleRunTask}
             color="primary"
             variant="solid"
             icon={<CaretRightOutlined />}
             disabled={!taskPermissions.canRun}
             title={t("task.run")}
-          ></Button>
+          />
 
           <Button
-            onClick={() => taskStore.handleStopTask()}
+            onClick={taskStore.handleStopTask}
             color="danger"
             variant="solid"
             icon={<StopOutlined />}
             disabled={!taskPermissions.canStop}
             title={t("task.stop")}
-          ></Button>
+          />
 
           <Button
-            onClick={() => taskStore.handleRestartFailed()}
+            onClick={taskStore.handleRestartFailed}
             color="orange"
             variant="solid"
             icon={<IssuesCloseOutlined />}
             disabled={!taskPermissions.canRestartFailed}
             title={t("task.restart-failed")}
-          ></Button>
-        </div>
+          />
+        </Flex>
 
         <div className={styles.taskDetailItem}>
           <span className={styles.taskDetailLabel}>{t("task.type")}:</span>
@@ -414,7 +359,7 @@ const TaskPage = observer(() => {
         <div className={styles.taskDetailItem}>
           <span className={styles.taskDetailLabel}>{t("task.task-more-info")}</span>
         </div>
-      </div>
+      </Flex>
 
       {minionCategoryStats}
 
@@ -422,13 +367,17 @@ const TaskPage = observer(() => {
         minions={minions.value}
         collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
         isLoading={taskStore.isTaskLoading}
-        onMinionClick={selectedMinion.update}
+        onMinionClick={minionTaskResultsDrawer.open}
       />
 
-      <MinionView
-        selectedMinion={selectedMinion.value}
-        selectedMinionJobReturns={selectedMinion.jobReturns}
-        onClose={selectedMinion.clear}
+      <MinionTaskResultsDrawer
+        isOpened={minionTaskResultsDrawer.isOpened}
+        openedId={minionTaskResultsDrawer.openedId}
+        selectedMinion={minionTaskResultsDrawer.selectedMinion}
+        selectedMinionJobReturns={minionTaskResultsDrawer.selectedMinionJobReturns}
+        slug={minionTaskResultsDrawer.slug}
+        onClose={minionTaskResultsDrawer.close}
+        clearData={minionTaskResultsDrawer.clearData}
       />
     </>
   );

@@ -1,10 +1,11 @@
 import { ExportOutlined } from "@ant-design/icons";
-import { TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import { TaskMinionModel } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Tag } from "antd";
 import { toJS } from "mobx";
 import { useTranslation } from "react-i18next";
+
+import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
 
 const TaskMinionsTable = FastTableListed<TaskMinionModel>;
 
@@ -35,14 +36,14 @@ export const TaskMinions = ({
         actions: [
           {
             icon: <ExportOutlined />,
-            onClick: (value, row) => {
+            onClick: (_, row) => {
               const mid = row.minion_inner_id ?? "";
               if (collectionSlug && mid) {
                 window.open(`/core/minion/${collectionSlug}/${mid}`, "_blank");
               }
             },
             title: t("minions.open-in-new-tab"),
-            visible: (value, row) => !!(collectionSlug && row.minion_inner_id),
+            visible: (_, row) => !!(collectionSlug && row.minion_inner_id),
           },
         ],
         tdClassName: "fast-table-column-nowrap",
@@ -56,20 +57,7 @@ export const TaskMinions = ({
     }),
     columnHelper.accessor("status", {
       header: t("task.minions.table-status"),
-      cell: (data) => {
-        switch (data.getValue()) {
-          case TaskMinionStatus.InWork:
-            return <Tag color="blue">{t("task.minions.table-in-work")}</Tag>;
-          case TaskMinionStatus.Failed:
-            return <Tag color="red">{t("task.minions.table-failed")}</Tag>;
-          case TaskMinionStatus.Success:
-            return <Tag color="green">{t("task.minions.table-success")}</Tag>;
-          case TaskMinionStatus.Pending:
-            return <Tag color="yellow">{t("task.minions.table-pending")}</Tag>;
-          default:
-            return <Tag>{`${t("task.minions.table-unknown-code")}: ${data.getValue()}`}</Tag>;
-        }
-      },
+      cell: (data) => <MinionTaskStatus status={data.getValue()} />,
     }),
     columnHelper.accessor("count_runs", {
       header: t("task.minions.table-count-runs"),

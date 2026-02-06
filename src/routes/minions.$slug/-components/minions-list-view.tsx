@@ -21,9 +21,12 @@ import {
   PolicyCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
-import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
-import { MinionDetailsDrawer, useMinionDrawer } from "saltbox-core/widgets/minion";
 import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
+import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
@@ -54,7 +57,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const minionDrawer = useMinionDrawer();
+  const minionDrawer = useMinionDetailsDrawer();
 
   const minionColumns = useMemo(
     () => [
@@ -194,15 +197,16 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       });
       props.filterStore.handleSearch();
       props.onAddFilter();
-      minionDrawer.closeDrawer();
+      minionDrawer.close();
     },
-    [props.filterStore, props.onAddFilter, minionDrawer.closeDrawer]
+    [props.filterStore, props.onAddFilter, minionDrawer.close]
   );
 
-  const handleOpenMinionDrawer = async (innerId: string) => {
-    await minionDrawer.openDrawer({
+  const handleOpenMinionDrawer = async (innerId: string, minionId: string) => {
+    await minionDrawer.open({
       slug: props.slug,
       innerId,
+      minionId,
     });
   };
 
@@ -288,7 +292,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           rowSelection={selection}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(minion) => {
-            handleOpenMinionDrawer(minion.id);
+            handleOpenMinionDrawer(minion.id, minion.minion_id);
           }}
           useVirtualScroll={false}
         />
@@ -323,7 +327,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         minionStore={minionDrawer.minionStore}
         slug={minionDrawer.slug}
         error={minionDrawer.error}
-        onClose={minionDrawer.closeDrawer}
+        onClose={minionDrawer.close}
         clearData={minionDrawer.clearData}
         onFilterButton={handleDrawerFilterButtonClick}
       />

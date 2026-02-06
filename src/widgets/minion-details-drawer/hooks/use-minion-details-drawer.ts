@@ -3,22 +3,22 @@ import { useTranslation } from "react-i18next";
 
 import { apiCoreStore, MinionStore } from "saltbox-core/store";
 
-export type OpenDrawerParams =
-  | { slug: string; innerId: string }
-  | { masterId: string; minionId: string | null | undefined };
+type OpenDrawerParams =
+  | { slug: string; minionId: string; innerId: string }
+  | { masterId: string; minionId: string };
 
-export interface UseMinionDrawerReturn {
+interface UseMinionDrawerReturn {
   minionStore: MinionStore | null;
   error: string | null;
-  openedId: string | null;
+  openedId: string | null | undefined;
   isOpened: boolean;
   slug: string | null;
-  openDrawer: (params: OpenDrawerParams) => Promise<void>;
-  closeDrawer: () => void;
+  open: (params: OpenDrawerParams) => Promise<void>;
+  close: () => void;
   clearData: () => void;
 }
 
-export function useMinionDrawer(): UseMinionDrawerReturn {
+export function useMinionDetailsDrawer(): UseMinionDrawerReturn {
   const { t } = useTranslation();
 
   const [minionStore, setMinionStore] = useState<MinionStore | null>(null);
@@ -27,17 +27,16 @@ export function useMinionDrawer(): UseMinionDrawerReturn {
   const [openedId, setOpenedId] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
 
-  const openDrawer = useCallback(
+  const open = useCallback(
     async (params: OpenDrawerParams) => {
       setError(null);
       setIsOpened(true);
+      setOpenedId(params.minionId);
 
-      const defaultSlug = "root";
-
-      if ("innerId" in params) {
+      if ("slug" in params) {
         setSlug(params.slug);
         setMinionStore(new MinionStore(params.slug, params.innerId));
-        setOpenedId(params.innerId);
+
         return;
       }
 
@@ -47,8 +46,9 @@ export function useMinionDrawer(): UseMinionDrawerReturn {
         return;
       }
 
+      const defaultSlug = "root";
+
       setSlug(defaultSlug);
-      setOpenedId(params?.minionId);
 
       try {
         const minion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
@@ -81,7 +81,7 @@ export function useMinionDrawer(): UseMinionDrawerReturn {
     [t]
   );
 
-  const closeDrawer = useCallback(() => {
+  const close = useCallback(() => {
     setIsOpened(false);
   }, []);
 
@@ -98,8 +98,8 @@ export function useMinionDrawer(): UseMinionDrawerReturn {
     isOpened,
     openedId,
     slug,
-    openDrawer,
-    closeDrawer,
+    open,
+    close,
     clearData,
   };
 }
