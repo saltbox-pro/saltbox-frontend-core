@@ -250,7 +250,7 @@ const JobsPage = observer(() => {
           }
         },
       }),
-      columnHelper.accessor("fms_jid_timestamp", {
+      columnHelper.accessor("created", {
         header: t("jobs.table-created"),
         cell: (data) => <RelativeTime date={data.getValue()} />,
       }),
