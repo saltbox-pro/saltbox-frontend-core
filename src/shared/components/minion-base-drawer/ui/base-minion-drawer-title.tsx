@@ -14,7 +14,7 @@ export function BaseMinionDrawerTitle({ name = "" }: BaseMinionDrawerTitleProps)
       {!!name && (
         <>
           {" "}
-          <CopyToClipboardButton text={null} />
+          <CopyToClipboardButton text={name} />
         </>
       )}
     </>
