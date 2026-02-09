@@ -92,7 +92,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               {
                 icon: <ExportOutlined />,
                 onClick: (value, row) => {
-                  window.open(`/core/master/${row.salt_master}/minion/${row.minion_id}`, "_blank");
+                  window.open(`/core/masters/${row.salt_master}/minion/${row.minion_id}`, "_blank");
                 },
                 title: t("minions.open-in-new-tab"),
               },

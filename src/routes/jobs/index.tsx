@@ -182,7 +182,7 @@ const JobsPage = observer(() => {
       if (!jobId) {
         return;
       }
-      navigate(`/job/${jobId}`);
+      navigate(`/jobs/${jobId}`);
     },
     [navigate]
   );

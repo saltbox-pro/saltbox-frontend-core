@@ -1,3 +1,5 @@
+import i18n from "i18next";
+import { autorun, runInAction } from "mobx";
 import React, { Suspense } from "react";
 import ReactDOMClient from "react-dom/client";
 import "@ant-design/v5-patch-for-react-19";
@@ -9,9 +11,6 @@ import { CollectionSelector } from "saltbox-core/shared/components/collection-se
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 
 import Root from "./root.component";
-
-import i18n from "i18next";
-import { autorun, runInAction } from "mobx";
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -56,6 +55,7 @@ export const saltboxModule = {
           mount: collectionSelectorLifecycles.mount,
           unmount: collectionSelectorLifecycles.unmount,
         },
+        path: "/core/minions",
       },
       {
         key: "masters",

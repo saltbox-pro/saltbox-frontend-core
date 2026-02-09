@@ -161,7 +161,7 @@ function MastersPage() {
         pagination={mastersStore.pagination}
         sorting={mastersStore.sorting}
         onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(master) => navigate(`/master/${master.master_id}`)}
+        onRowClick={(master) => navigate(`/masters/${master.master_id}`)}
       />
     </>
   );

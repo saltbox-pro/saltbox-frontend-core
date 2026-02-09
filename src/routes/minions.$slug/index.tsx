@@ -72,7 +72,7 @@ const MinionsPage = observer(() => {
   };
 
   const handleEditCollection = () => {
-    navigate(`/collection/${slug}`);
+    navigate(`/minions/${slug}/edit`);
   };
 
   const handleSaveAsNew = () => {

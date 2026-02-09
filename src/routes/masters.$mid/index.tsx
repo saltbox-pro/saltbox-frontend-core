@@ -505,7 +505,7 @@ const MasterPage = observer(() => {
           {
             icon: <ExportOutlined />,
             onClick: (value, row) => {
-              window.open(`/core/master/${row.master}/minion/${value}`, "_blank");
+              window.open(`/core/masters/${row.master}/minion/${value}`, "_blank");
             },
             title: t("minions.open-in-new-tab"),
           },
@@ -539,7 +539,7 @@ const MasterPage = observer(() => {
             icon: <ExportOutlined />,
             onClick: (value) => {
               if (value && masterId) {
-                window.open(`/core/master/${masterId}/minion/${value}`, "_blank");
+                window.open(`/core/masters/${masterId}/minion/${value}`, "_blank");
               }
             },
             title: t("minions.open-in-new-tab"),

@@ -75,7 +75,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             {
               icon: <ExportOutlined />,
               onClick: (_, row) => {
-                window.open(`/core/minion/${props.slug}/${row.id}`, "_blank");
+                window.open(`/core/minions/${props.slug}/${row.id}`, "_blank");
               },
               title: t("minions.open-in-new-tab"),
             },
@@ -305,7 +305,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             minionList={selectedMinions}
             query={props.filterStore?.searchMongoDBQuery ?? {}}
             onClose={closeModal}
-            onTaskCreated={goToTaskPage}
+            onTaskCreated={(taskId) => goToTaskPage(taskId, props.slug)}
           />
         )}
 
@@ -316,7 +316,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             collection={props.collectionStore.collection}
             query={props.filterStore?.searchMongoDBQuery ?? {}}
             onClose={closeModal}
-            onTaskCreated={goToTaskPage}
+            onTaskCreated={(taskId) => goToTaskPage(taskId, props.slug)}
           />
         )}
       </Flex>

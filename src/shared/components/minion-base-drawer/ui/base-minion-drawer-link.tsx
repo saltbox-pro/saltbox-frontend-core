@@ -12,7 +12,7 @@ export function BaseMinionDrawerLink({ slug, innerId }: BaseMinionDrawerLinkProp
   const { t } = useTranslation();
 
   return (
-    <Link to={`/minion/${slug}/${innerId}`}>
+    <Link to={`/minions/${slug}/${innerId}`}>
       <Button
         color="default"
         variant="outlined"

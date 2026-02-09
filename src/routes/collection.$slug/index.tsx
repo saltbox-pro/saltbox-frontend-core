@@ -75,7 +75,7 @@ const CollectionEditPage = observer(() => {
           {
             icon: <ExportOutlined />,
             onClick: (_, row) => {
-              window.open(`/core/minion/${slug}/${row.id}`, "_blank");
+              window.open(`/core/minions/${slug}/${row.id}`, "_blank");
             },
             title: t("minions.open-in-new-tab"),
           },

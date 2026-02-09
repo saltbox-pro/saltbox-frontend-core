@@ -165,7 +165,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
       if (!jobId) {
         return;
       }
-      navigate(`/job/${jobId}`);
+      navigate(`/jobs/${jobId}`);
     },
     [navigate]
   );

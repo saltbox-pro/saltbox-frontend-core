@@ -39,7 +39,7 @@ export const TaskMinions = ({
             onClick: (_, row) => {
               const mid = row.minion_inner_id ?? "";
               if (collectionSlug && mid) {
-                window.open(`/core/minion/${collectionSlug}/${mid}`, "_blank");
+                window.open(`/core/minions/${collectionSlug}/${mid}`, "_blank");
               }
             },
             title: t("minions.open-in-new-tab"),
