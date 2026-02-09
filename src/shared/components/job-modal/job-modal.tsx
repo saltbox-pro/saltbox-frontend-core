@@ -338,7 +338,7 @@ export function JobModal({
       .then((response) => {
         setIsModalOpen(false);
         if (response?.jid) {
-          navigate(`/job/${response.jid}`);
+          navigate(`/jobs/${response.jid}`);
         }
       })
       .catch((_) => {

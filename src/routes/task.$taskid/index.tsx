@@ -244,7 +244,7 @@ const useWebSocket = (
 
 const TaskPage = observer(() => {
   const { t } = useTranslation();
-  const { taskid: taskId } = useParams();
+  const { taskid: taskId, slug } = useParams();
   const navigate = useNavigate();
 
   const [taskStore] = useState(new TaskStore());

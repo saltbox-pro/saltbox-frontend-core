@@ -8,14 +8,14 @@ import "react-querybuilder/dist/query-builder.css";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
 
 import CollectionEditPage from "./routes/collection.$slug";
-import JobPage from "./routes/job.$jobid";
 import JobsPage from "./routes/jobs";
 import JobsTemplatesPage from "./routes/jobs-templates";
-import MinionRedirectPage from "./routes/master.$master_id.minion.$minion_id";
-import MasterPage from "./routes/master.$mid";
+import JobPage from "./routes/jobs.$jid";
 import MastersPage from "./routes/masters";
-import MinionPage from "./routes/minion.$slug.$mid";
+import MinionRedirectPage from "./routes/masters.$master_id.minion.$minion_id";
+import MasterPage from "./routes/masters.$mid";
 import MinionsPage from "./routes/minions.$slug";
+import MinionPage from "./routes/minions.$slug.$mid";
 import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
 import TaskTemplatesPage from "./routes/task-templates";
@@ -30,16 +30,16 @@ export default observer(function Root() {
       <Suspense fallback="Loading translations...">
         <BrowserRouter basename="/core">
           <Routes>
-            <Route path="/minion/:slug/:mid" element={<MinionPage />} />
-            <Route path="/minions/:slug" element={<MinionsPage />} />
             <Route path="/minions" element={<DefaultMinionsPage />} />
-            <Route path="/collection/:slug" element={<CollectionEditPage />} />
-            <Route path="/master/:mid" element={<MasterPage />} />
-            <Route path="/master/:master_id/minion/:minion_id" element={<MinionRedirectPage />} />
+            <Route path="/minions/:slug/edit" element={<CollectionEditPage />} />
+            <Route path="/minions/:slug/tasks/:taskid" element={<TaskPage />} />
+            <Route path="/minions/:slug/:mid" element={<MinionPage />} />
+            <Route path="/minions/:slug" element={<MinionsPage />} />
             <Route path="/masters" element={<MastersPage />} />
-            <Route path="/master/:mid" element={<MasterPage />} />
-            <Route path="/job/:jid" element={<JobPage />} />
+            <Route path="/masters/:mid" element={<MasterPage />} />
+            <Route path="/masters/:master_id/minion/:minion_id" element={<MinionRedirectPage />} />
             <Route path="/jobs" element={<JobsPage />} />
+            <Route path="/jobs/:jid" element={<JobPage />} />
             <Route path="/jobs-templates" element={<JobsTemplatesPage />} />
             <Route path="/task-templates" element={<TaskTemplatesPage />} />
             <Route path="/settings-sls" element={<SettingsSlsPage />} />

@@ -16,7 +16,7 @@ const MinionRedirectPage = observer(() => {
         minion_id: minion_id,
       })
       .then((minion) => {
-        navigate(`/minion/root/${minion.id}`, { replace: true });
+        navigate(`/minions/root/${minion.id}`, { replace: true });
       })
       .catch((error) => {
         console.error("Error fetching minion:", error);
