@@ -1,5 +1,6 @@
-import { DownloadOutlined, CopyOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import Editor from "@monaco-editor/react";
+import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
 import { Button, Tooltip, Typography, message } from "antd";
 import React, { useMemo } from "react";
 
@@ -94,21 +95,6 @@ export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, cl
     }
   };
 
-  const handleCopyToClipboard = async () => {
-    if (!sls) {
-      message.warning("No content to copy");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(sls);
-      message.success("SLS content copied to clipboard");
-    } catch (error) {
-      console.error("Clipboard error:", error);
-      message.error("Failed to copy to clipboard");
-    }
-  };
-
   return (
     <div className={`${styles.rawSlsEditor} ${className || ""}`}>
       <div className={styles.header}>
@@ -116,9 +102,12 @@ export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, cl
           {filename}
         </Typography.Text>
         <Button.Group>
-          <Tooltip title="Copy to Clipboard">
-            <Button icon={<CopyOutlined />} onClick={handleCopyToClipboard} disabled={!sls} />
-          </Tooltip>
+          <CopyToClipboardButton
+            text={sls ?? ""}
+            disabled={!sls}
+            successMessage="SLS content copied to clipboard"
+            errorMessage="Failed to copy to clipboard"
+          />
           <Tooltip title="Download SLS">
             <Button icon={<DownloadOutlined />} onClick={handleDownload} disabled={!sls} />
           </Tooltip>

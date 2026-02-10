@@ -1,8 +1,6 @@
-import { FilterOutlined } from "@ant-design/icons";
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
+import { CopyToClipboardButton, FilterActionButton } from "@saltbox/saltbox-frontend-common";
 import {
-  Button,
   Collapse,
   CollapseProps,
   Descriptions,
@@ -101,11 +99,7 @@ const minionDetailsViewsToDescriptionItems = (
           <Flex gap={2} className={styles.minionDetailsGrainButtons}>
             <CopyToClipboardButton text={grainValue} />
             {onFilterButton && (
-              <Button
-                size="small"
-                icon={<FilterOutlined />}
-                color="default"
-                variant="outlined"
+              <FilterActionButton
                 title={t("dashboard.apply-value-to-filters")}
                 onClick={() =>
                   onFilterButton({
