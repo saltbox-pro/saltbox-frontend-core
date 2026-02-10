@@ -1,6 +1,11 @@
-import { CloseOutlined, CopyOutlined } from "@ant-design/icons";
-import { Popover, MatIcon } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message } from "antd";
+import { CloseOutlined } from "@ant-design/icons";
+import {
+  BaseActionButton,
+  CopyToClipboardButton,
+  MatIcon,
+  Popover,
+} from "@saltbox/saltbox-frontend-common";
+import { Button, Flex } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
@@ -20,57 +25,44 @@ export function JsonPopover({
 }: JsonPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
 
   return (
-    <>
-      {contextHolder}
-      <Popover
-        content={
-          <div style={{ maxHeight, overflow: "auto" }}>
-            <ReactJson
-              displayDataTypes={false}
-              enableClipboard={false}
-              name={false}
-              displayObjectSize={false}
-              src={data}
-              collapsed={1}
+    <Popover
+      content={
+        <div style={{ maxHeight, overflow: "auto" }}>
+          <ReactJson
+            displayDataTypes={false}
+            enableClipboard={false}
+            name={false}
+            displayObjectSize={false}
+            src={data}
+            collapsed={1}
+          />
+        </div>
+      }
+      title={
+        <Flex justify="space-between" align="center">
+          <span>{title}</span>
+          <Flex gap={8}>
+            <CopyToClipboardButton
+              text={JSON.stringify(data, null, 2)}
+              successMessage={t("jobs.table-copy-success")}
             />
-          </div>
-        }
-        title={
-          <Flex justify="space-between" align="center">
-            <span>{title}</span>
-            <Flex gap={8}>
-              <Button
-                type="link"
-                icon={<CopyOutlined />}
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-                  messageApi.success(t("jobs.table-copy-success"));
-                }}
-              />
-              <Button
-                type="link"
-                icon={<CloseOutlined />}
-                onClick={() => setIsPopoverOpen(false)}
-              />
-            </Flex>
+            <BaseActionButton
+              icon={<CloseOutlined />}
+              title={t("action-button.close", { ns: "common" })}
+              onClick={() => setIsPopoverOpen(false)}
+            />
           </Flex>
-        }
-        trigger="click"
-        overlayStyle={{ maxWidth }}
-        placement="bottomRight"
-        open={isPopoverOpen}
-        onOpenChange={setIsPopoverOpen}
-      >
-        <Button
-          icon={<MatIcon icon="search" />}
-          type="link"
-          size="small"
-          title={t("minions.view")}
-        />
-      </Popover>
-    </>
+        </Flex>
+      }
+      trigger="click"
+      overlayStyle={{ maxWidth }}
+      placement="bottomRight"
+      open={isPopoverOpen}
+      onOpenChange={setIsPopoverOpen}
+    >
+      <Button icon={<MatIcon icon="search" />} type="link" size="small" title={t("minions.view")} />
+    </Popover>
   );
 }

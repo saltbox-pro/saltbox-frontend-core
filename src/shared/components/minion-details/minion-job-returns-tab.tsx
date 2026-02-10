@@ -1,6 +1,8 @@
-import { CopyOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
+import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
+  BaseActionButton,
+  CopyToClipboardButton,
   createExpanderColumn,
   FastTablePaginated,
   RelativeTime,
@@ -12,7 +14,7 @@ import {
   SortingState,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Button, Flex, Popover, Tag, message } from "antd";
+import { Flex, Popover, Tag } from "antd";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
@@ -67,18 +69,7 @@ const KwargsTag = ({
   noKwargsText: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
-
-  const handleCopy = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (data) {
-        navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-        messageApi.success(copySuccessMessage);
-      }
-    },
-    [copySuccessMessage, data, messageApi]
-  );
+  const { t } = useTranslation("common");
 
   const handleTagClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -108,50 +99,49 @@ const KwargsTag = ({
   );
 
   if (isEmpty) {
-    return (
-      <>
-        {contextHolder}
-        <Tag className={styles.kwargsTag}>{tagContent}</Tag>
-      </>
-    );
+    return <Tag className={styles.kwargsTag}>{tagContent}</Tag>;
   }
 
   return (
-    <>
-      {contextHolder}
-      <Popover
-        content={
-          <div className={styles.kwargsPopoverContent}>
-            <ReactJson
-              displayDataTypes={false}
-              enableClipboard={false}
-              name={false}
-              displayObjectSize={false}
-              src={data!}
-              collapsed={1}
+    <Popover
+      content={
+        <div className={styles.kwargsPopoverContent}>
+          <ReactJson
+            displayDataTypes={false}
+            enableClipboard={false}
+            name={false}
+            displayObjectSize={false}
+            src={data!}
+            collapsed={1}
+          />
+        </div>
+      }
+      title={
+        <Flex justify="space-between" align="center">
+          <span>{title}</span>
+          <Flex gap={8}>
+            <CopyToClipboardButton
+              text={data ? JSON.stringify(data, null, 2) : ""}
+              successMessage={copySuccessMessage}
             />
-          </div>
-        }
-        title={
-          <Flex justify="space-between" align="center">
-            <span>{title}</span>
-            <Flex gap={8}>
-              <Button type="link" icon={<CopyOutlined />} onClick={handleCopy} />
-              <Button type="link" icon={<CloseOutlined />} onClick={() => setIsOpen(false)} />
-            </Flex>
+            <BaseActionButton
+              icon={<CloseOutlined />}
+              title={t("action-button.close")}
+              onClick={() => setIsOpen(false)}
+            />
           </Flex>
-        }
-        trigger="click"
-        styles={{ root: { maxWidth: 700 } }}
-        placement="bottom"
-        open={isOpen}
-        onOpenChange={setIsOpen}
-      >
-        <Tag className={styles.kwargsTagClickable} onClick={handleTagClick}>
-          {tagContent}
-        </Tag>
-      </Popover>
-    </>
+        </Flex>
+      }
+      trigger="click"
+      styles={{ root: { maxWidth: 700 } }}
+      placement="bottom"
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <Tag className={styles.kwargsTagClickable} onClick={handleTagClick}>
+        {tagContent}
+      </Tag>
+    </Popover>
   );
 };
 
