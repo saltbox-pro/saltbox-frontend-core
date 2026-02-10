@@ -18,7 +18,7 @@ export type JobStoreItem = JobsListResponse & {
   created?: string;
 };
 
-const DEFAULT_SORTING: SortingState = [{ id: "fms_jid_timestamp", desc: true }];
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class JobsStore {
   @observable jobs: Array<JobStoreItem>;
