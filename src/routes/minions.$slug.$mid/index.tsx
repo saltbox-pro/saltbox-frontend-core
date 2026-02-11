@@ -203,7 +203,10 @@ const MinionPage = observer(() => {
   const [showJobReturnsFilter, setShowJobReturnsFilter] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
 
-  const jobReturnsFilterStore = useMemo(() => new JobFilterStore(jobReturnsFilterSchema), []);
+  const jobReturnsFilterStore = useMemo(() => {
+    const storageKey = `jobReturnsFilter:${slug}:${minionId}`;
+    return new JobFilterStore(jobReturnsFilterSchema, storageKey);
+  }, [slug, minionId]);
 
   useEffect(() => {
     collectionStore.setCollectionSlug(slug);
