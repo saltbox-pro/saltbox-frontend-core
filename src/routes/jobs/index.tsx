@@ -11,7 +11,7 @@ import { SelectProps, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -155,14 +155,13 @@ const getFilterSchema = (saltTargetTypes: SelectProps["options"]) => [
 
 const useJobFilters = () => {
   const saltTargetTypes = useSaltTargetTypes();
+  const location = useLocation();
 
   const filterSchema = useMemo(() => getFilterSchema(saltTargetTypes), [saltTargetTypes]);
 
-  const [jobFilterStore] = useState(new JobFilterStore(filterSchema));
+  const storageKey = `jobsFilter:${location.pathname}`;
 
-  useEffect(() => {
-    jobFilterStore.updateFilterSchema(filterSchema);
-  }, [filterSchema]);
+  const [jobFilterStore] = useState(new JobFilterStore(filterSchema, storageKey));
 
   return {
     jobFilterStore,
