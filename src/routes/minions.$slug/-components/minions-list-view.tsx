@@ -240,9 +240,20 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     );
   });
 
+  let pageActionsButtonsPlugin: React.ReactNode = null;
+  appStore.pluginsStore?.plugins?.["minions.pageactionsbuttons"]?.forEach((plugin) => {
+    pageActionsButtonsPlugin = (
+      <>
+        {pageActionsButtonsPlugin}
+        <Parcel config={plugin.parcel} wrapWith="div" />
+      </>
+    );
+  });
+
   return (
     <>
       {contextHolder}
+
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
@@ -267,6 +278,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           >
             {t("minions.create-policy")}
           </Button>
+
+          {pageActionsButtonsPlugin}
 
           <Button onClick={handleCSVDownload} loading={isCSVLoading}>
             {t("minions.export")}
