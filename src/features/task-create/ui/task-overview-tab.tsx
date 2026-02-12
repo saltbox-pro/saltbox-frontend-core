@@ -1,13 +1,15 @@
+import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { isMongoQueryEmpty } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
-import { ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TaskDetails, TaskDetailsData } from "saltbox-core/widgets/task/task-details";
+import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
-import { TaskOverviewData } from "../type/types";
+import type { TaskOverviewData } from "../type/types";
 
 export type TaskOverviewTabProps = {
+  type: TaskType;
   isLoading?: boolean;
   overviewData: TaskOverviewData;
   pluginButtons?: ReactNode;
@@ -16,6 +18,7 @@ export type TaskOverviewTabProps = {
 };
 
 export function TaskOverviewTab({
+  type,
   isLoading = false,
   overviewData,
   pluginButtons = [],
@@ -58,7 +61,9 @@ export function TaskOverviewTab({
         {pluginButtons}
 
         <Button type="primary" onClick={onConfirm} loading={isLoading}>
-          {t("task-create.create-task")}
+          {t(
+            type === TaskType.Policy ? "policy-create.create-button" : "task-create.create-button"
+          )}
         </Button>
       </Flex>
     </Flex>

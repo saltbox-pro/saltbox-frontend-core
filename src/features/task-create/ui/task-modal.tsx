@@ -141,6 +141,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
       children:
         template && configuration ? (
           <TaskOverviewTab
+            type={context.taskType}
             isLoading={isCreating}
             overviewData={overviewData}
             pluginButtons={pluginButtons}

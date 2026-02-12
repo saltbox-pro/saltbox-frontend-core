@@ -20,8 +20,6 @@
     "table-total-memory": "Total Memory",
     "table-created": "Created",
     "table-last-activity": "Last Activity",
-    "create-task": "Create Task",
-    "create-policy": "Create Policy",
     "export": "Export",
     "table-running": "Running",
     "table-stopped": "Stopped",
@@ -164,11 +162,13 @@
   },
   "policy-create": {
     "select-template-title": "Select policy template",
-    "configure-policy-title": "Policy Configuration"
+    "configure-policy-title": "Policy Configuration",
+    "create-button": "Create Policy"
   },
   "task-create": {
     "select-template-title": "Select task template",
     "configure-task-title": "Task Configuration",
+    "create-button": "Create Task",
     "search-templates-placeholder": "Search by title...",
     "filter-by-repository": "Filter by repository",
     "no-templates-found": "No templates found",
@@ -193,7 +193,6 @@
     "template-not-loaded": "Template not loaded",
     "validation-error": "Form validation error",
     "back-to-config": "Back to config",
-    "create-task": "Create Task",
     "invalid-configuration": "Invalid configuration",
     "error-loading-template": "Error loading template",
     "error-creating-task": "Error creating task",
