@@ -135,7 +135,7 @@
     "open-minion-details-page": "Открыть страницу клиента",
     "show-details": "Показать детали",
     "copy-minion-id": "Скопировать ID клиента",
-    "copied": "Скопировано"
+    "copied": "Скопировано в буфер обмена"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
@@ -344,7 +344,7 @@
     "date-range-1-day": "1 день назад",
     "table-copy": "Скопировать",
     "job-title": "Команда {{jobId}}",
-    "table-copy-success": "Скопировано",
+    "table-copy-success": "Скопировано в буфер обмена",
     "key-value-arguments": "Именованные аргументы",
     "failed-minions": "Неудачные миньоны",
     "pending-minions": "Ожидающие миньоны",
@@ -694,7 +694,7 @@
     "delete": "Удалить",
     "copy-to-clipboard-button": {
       "copy": "Копировать",
-      "copied": "Скопировано"
+      "copied": "Скопировано в буфер обмена"
     }
   },
   "errors": {

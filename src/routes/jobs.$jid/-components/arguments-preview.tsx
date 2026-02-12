@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import styles from "../index.module.css";
 
-import { JsonPopover } from "./json-popover";
+import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
 
 interface ArgumentsPreviewProps {
   args: unknown[];
@@ -45,28 +45,43 @@ export const ArgumentsPreview = ({ args, title }: ArgumentsPreviewProps) => {
   const previewArgs = args.slice(0, 3);
   const hasMore = args.length > 3;
 
-  return (
-    <Flex align="center" gap={8} wrap className={styles.argumentsCell}>
+  const tagContent = (
+    <>
+      <span className={styles.argumentsBrace}>[</span>
+      {previewArgs.length > 0 ? (
+        previewArgs.map((arg, index) => (
+          <React.Fragment key={index}>
+            <span className={styles.argumentsValue}>{formatValue(arg)}</span>
+            {index < previewArgs.length - 1 && (
+              <span className={styles.argumentsSeparator}>, </span>
+            )}
+          </React.Fragment>
+        ))
+      ) : (
+        <span className={styles.argumentsEmpty}>{t("jobs.no-arguments")}</span>
+      )}
+      {hasMore ? <span className={styles.argumentsEllipsis}>…</span> : null}
+      <span className={styles.argumentsBrace}>]</span>
+    </>
+  );
+
+  if (args.length === 0) {
+    return (
       <Flex align="center" gap={4} wrap className={styles.argumentsPreview}>
-        <Tag className={styles.argumentsTag}>
-          <span className={styles.argumentsBrace}>[</span>
-          {previewArgs.length > 0 ? (
-            previewArgs.map((arg, index) => (
-              <React.Fragment key={index}>
-                <span className={styles.argumentsValue}>{formatValue(arg)}</span>
-                {index < previewArgs.length - 1 && (
-                  <span className={styles.argumentsSeparator}>, </span>
-                )}
-              </React.Fragment>
-            ))
-          ) : (
-            <span className={styles.argumentsEmpty}>{t("jobs.no-arguments")}</span>
-          )}
-          {hasMore ? <span className={styles.argumentsEllipsis}>…</span> : null}
-          <span className={styles.argumentsBrace}>]</span>
-        </Tag>
+        <Tag className={styles.argumentsTag}>{tagContent}</Tag>
       </Flex>
-      {args.length > 0 ? <JsonPopover data={args} title={title} /> : null}
+    );
+  }
+
+  return (
+    <Flex align="center" gap={4} wrap className={styles.argumentsPreview}>
+      <JsonPopover
+        data={args}
+        title={title}
+        tagClassName={`${styles.argumentsTag} ${styles.argumentsTagClickable}`}
+      >
+        {tagContent}
+      </JsonPopover>
     </Flex>
   );
 };

@@ -1,30 +1,40 @@
 import { CloseOutlined } from "@ant-design/icons";
-import {
-  BaseActionButton,
-  CopyToClipboardButton,
-  MatIcon,
-  Popover,
-} from "@saltbox/saltbox-frontend-common";
-import { Button, Flex } from "antd";
-import { useState } from "react";
+import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
+import { Flex, Tag } from "antd";
+import { ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
-interface JsonPopoverProps {
-  data: any;
+export interface JsonPopoverProps {
+  data: Record<string, unknown> | unknown[];
   title?: string;
   maxHeight?: string;
   maxWidth?: string;
+  placement?: "top" | "bottom" | "bottomRight" | "left" | "right";
+  copySuccessMessage?: string;
+  tagClassName?: string;
+  children: ReactNode;
 }
 
 export function JsonPopover({
   data,
   title = "Data",
   maxHeight = "500px",
-  maxWidth = "700px",
+  maxWidth = "750px",
+  placement = "bottomRight",
+  copySuccessMessage,
+  tagClassName,
+  children,
 }: JsonPopoverProps) {
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
+
+  const handleTagClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const successMessage = copySuccessMessage ?? t("jobs.table-copy-success");
 
   return (
     <Popover
@@ -41,28 +51,30 @@ export function JsonPopover({
         </div>
       }
       title={
-        <Flex justify="space-between" align="center">
+        <Flex gap={8} justify="space-between" align="center">
           <span>{title}</span>
           <Flex gap={8}>
             <CopyToClipboardButton
               text={JSON.stringify(data, null, 2)}
-              successMessage={t("jobs.table-copy-success")}
+              successMessage={successMessage}
             />
             <BaseActionButton
               icon={<CloseOutlined />}
               title={t("action-button.close", { ns: "common" })}
-              onClick={() => setIsPopoverOpen(false)}
+              onClick={() => setIsOpen(false)}
             />
           </Flex>
         </Flex>
       }
       trigger="click"
       overlayStyle={{ maxWidth }}
-      placement="bottomRight"
-      open={isPopoverOpen}
-      onOpenChange={setIsPopoverOpen}
+      placement={placement}
+      open={isOpen}
+      onOpenChange={setIsOpen}
     >
-      <Button icon={<MatIcon icon="search" />} type="link" size="small" title={t("minions.view")} />
+      <Tag className={tagClassName} onClick={handleTagClick}>
+        {children}
+      </Tag>
     </Popover>
   );
 }
