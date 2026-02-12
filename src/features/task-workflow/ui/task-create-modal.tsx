@@ -1,7 +1,11 @@
-import { CollectionModel, TaskTargetMinion, TaskType } from "@saltbox/saltbox-core-api-client";
+import {
+  type CollectionModel,
+  type TaskTargetMinion,
+  TaskType,
+} from "@saltbox/saltbox-core-api-client";
 import { publish } from "@saltbox/saltbox-frontend-common";
 import { Button } from "antd";
-import { FC, useCallback, useMemo } from "react";
+import { type FC, useCallback, useMemo } from "react";
 
 import { TaskCreate, PluginRenderData, TaskCreatePlugin } from "saltbox-core/features/task-create";
 import { appStore, i18nStore } from "saltbox-core/store";

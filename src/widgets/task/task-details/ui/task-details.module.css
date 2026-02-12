@@ -1,6 +1,10 @@
+.descriptionHeader.descriptionHeader,
+.descriptionHeader .descriptionTitle {
+  font-size: 15px;
+}
+
 .descriptionHeader.descriptionHeader {
-  margin: 0;
-  margin-bottom: 0.5em;
+  margin: 0 0 0.5em;
 }
 
 .descriptionLabel {
@@ -11,15 +15,7 @@
   width: 75%;
 }
 
-.divider {
-  margin: 0;
-}
-
 .objectContent {
-  margin: 0;
-  width: 0;
-  flex: 1;
-  overflow-x: auto;
   font-size: 12px;
 }
 

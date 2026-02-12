@@ -1,47 +1,29 @@
-import { CaretRightOutlined, IssuesCloseOutlined, StopOutlined } from "@ant-design/icons";
 import {
-  JobReturnModel,
-  JobsListResponse,
-  TaskMinionModel,
+  type JobReturnModel,
+  type JobsListResponse,
+  type TaskMinionModel,
   TaskMinionStatus,
-  TaskModel,
-  TaskStatus,
-  TaskType,
+  type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import {
-  formatTimeByUserTZ,
-  PageHeader,
-  pastTimeByUserTZ,
-  Popover,
-  WebSocketMessage,
-  WebSocketService,
-} from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Skeleton, Statistic } from "antd";
+import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import { Flex } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
-import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import {
   MinionTaskResultsDrawer,
   useMinionTaskResultsDrawer,
 } from "saltbox-core/widgets/minion-task-results-drawer";
+import { TaskMinionsStats } from "saltbox-core/widgets/task/task-minions-stats";
+import { MinionCategory } from "saltbox-core/widgets/task/task-minions-stats/model/minion-category";
+import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
 
 import { TaskMinions } from "./-components/task-minions/task-minions";
-import styles from "./index.module.css";
-
-enum MinionCategory {
-  All,
-  Pending,
-  InWork,
-  Failed,
-  Success,
-}
 
 const useMinions = (taskStore: TaskStore) => {
-  const { t } = useTranslation();
   const [selectedMinionCategory, setSelectedMinionCategory] = useState(MinionCategory.All);
 
   const minionsOfCategory = useMemo(() => {
@@ -78,106 +60,18 @@ const useMinions = (taskStore: TaskStore) => {
     const countMinionsInWork = getMinionStatusCount(TaskMinionStatus.InWork);
     const countMinionsFailed = getMinionStatusCount(TaskMinionStatus.Failed);
     const countMinionsSuccess = getMinionStatusCount(TaskMinionStatus.Success);
-
-    const getStatItemClass = (category: MinionCategory) => {
-      const isActiveClass =
-        selectedMinionCategory === category ? " " + styles.taskStatItemActive : "";
-      return styles.taskStatItem + isActiveClass;
-    };
-
     return (
-      <Flex gap={5} align="justify" className={styles.taskStatContainer}>
-        <div
-          className={getStatItemClass(MinionCategory.All)}
-          onClick={() => setSelectedMinionCategory(MinionCategory.All)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedMinionCategory(MinionCategory.All);
-            }
-          }}
-        >
-          <Statistic
-            title={t("task.minions-nav.list-all")}
-            value={countMinionsAll}
-            valueStyle={{ color: "#3f8600" }}
-          />
-        </div>
-        <div
-          className={getStatItemClass(MinionCategory.Pending)}
-          onClick={() => setSelectedMinionCategory(MinionCategory.Pending)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedMinionCategory(MinionCategory.Pending);
-            }
-          }}
-        >
-          <Statistic
-            title={t("task.minions-nav.list-pending")}
-            value={countMinionsPending}
-            valueStyle={{ color: "#faad14" }}
-          />
-        </div>
-        <div
-          className={getStatItemClass(MinionCategory.InWork)}
-          onClick={() => setSelectedMinionCategory(MinionCategory.InWork)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedMinionCategory(MinionCategory.InWork);
-            }
-          }}
-        >
-          <Statistic
-            title={t("task.minions-nav.list-in-work")}
-            value={countMinionsInWork}
-            valueStyle={{ color: "#1964db" }}
-          />
-        </div>
-        <div
-          className={getStatItemClass(MinionCategory.Failed)}
-          onClick={() => setSelectedMinionCategory(MinionCategory.Failed)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedMinionCategory(MinionCategory.Failed);
-            }
-          }}
-        >
-          <Statistic
-            title={t("task.minions-nav.list-failed")}
-            value={countMinionsFailed}
-            valueStyle={{ color: "#ff4d4f" }}
-          />
-        </div>
-        <div
-          className={getStatItemClass(MinionCategory.Success)}
-          onClick={() => setSelectedMinionCategory(MinionCategory.Success)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setSelectedMinionCategory(MinionCategory.Success);
-            }
-          }}
-        >
-          <Statistic
-            title={t("task.minions-nav.list-success")}
-            value={countMinionsSuccess}
-            valueStyle={{ color: "#3f8600" }}
-          />
-        </div>
-      </Flex>
+      <TaskMinionsStats
+        counts={{
+          all: countMinionsAll,
+          pending: countMinionsPending,
+          inWork: countMinionsInWork,
+          failed: countMinionsFailed,
+          success: countMinionsSuccess,
+        }}
+        selectedCategory={selectedMinionCategory}
+        onSelectCategory={setSelectedMinionCategory}
+      />
     );
   }, [taskStore.task, taskStore.minions, selectedMinionCategory]);
 
@@ -189,31 +83,6 @@ const useMinions = (taskStore: TaskStore) => {
     },
     minionCategoryStats,
   };
-};
-
-const useTaskPermissions = (taskStore: TaskStore) => {
-  const isTaskLoading = taskStore.isTaskLoading;
-  const taskStatus = taskStore.task?.status?.type;
-
-  const canRun =
-    !isTaskLoading &&
-    taskStatus !== TaskStatus.Finished &&
-    taskStatus !== TaskStatus.WaitMinions &&
-    taskStatus !== TaskStatus.Running &&
-    taskStatus !== TaskStatus.Stopping;
-  const canStop =
-    !isTaskLoading &&
-    taskStatus !== TaskStatus.Created &&
-    taskStatus !== TaskStatus.Finished &&
-    taskStatus !== TaskStatus.Stopping &&
-    taskStatus !== TaskStatus.Stopped;
-  const canRestartFailed =
-    (!isTaskLoading &&
-      taskStatus !== TaskStatus.Stopping &&
-      taskStatus !== TaskStatus.Created &&
-      taskStore.task?.minions_count?.failed > 0) ||
-    (taskStore.task?.minions_count?.pending > 0 && taskStatus === TaskStatus.Finished);
-  return { canRun, canStop, canRestartFailed };
 };
 
 type TaskWebSocketMessage = TaskModel | TaskMinionModel | JobReturnModel | JobsListResponse;
@@ -244,13 +113,12 @@ const useWebSocket = (
 
 const TaskPage = observer(() => {
   const { t } = useTranslation();
-  const { taskid: taskId, slug } = useParams();
+  const { taskid: taskId } = useParams();
   const navigate = useNavigate();
 
   const [taskStore] = useState(new TaskStore());
   const { minions, minionCategoryStats } = useMinions(taskStore);
   const minionTaskResultsDrawer = useMinionTaskResultsDrawer(taskStore);
-  const taskPermissions = useTaskPermissions(taskStore);
 
   useEffect(() => {
     if (taskId) {
@@ -298,77 +166,18 @@ const TaskPage = observer(() => {
         })}
       />
 
-      <Flex className={styles.taskDetailsContainer} align="center" wrap gap={24}>
-        <Flex gap={7}>
-          <Button
-            onClick={taskStore.handleRunTask}
-            color="primary"
-            variant="solid"
-            icon={<CaretRightOutlined />}
-            disabled={!taskPermissions.canRun}
-            title={t("task.run")}
-          />
+      <Flex vertical gap={10} flex={1}>
+        <TaskRunDetails taskStore={taskStore} />
 
-          <Button
-            onClick={taskStore.handleStopTask}
-            color="danger"
-            variant="solid"
-            icon={<StopOutlined />}
-            disabled={!taskPermissions.canStop}
-            title={t("task.stop")}
-          />
+        {minionCategoryStats}
 
-          <Button
-            onClick={taskStore.handleRestartFailed}
-            color="orange"
-            variant="solid"
-            icon={<IssuesCloseOutlined />}
-            disabled={!taskPermissions.canRestartFailed}
-            title={t("task.restart-failed")}
-          />
-        </Flex>
-
-        <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>{t("task.type")}:</span>
-          <span className={styles.taskDetailValue}>
-            {taskStore.task?.task_type === TaskType.Classic
-              ? t("task.type-classic")
-              : t("task.type-policy")}
-          </span>
-        </div>
-        <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>{t("task.status")}:</span>
-          <span className={styles.taskDetailValue}>
-            <TaskStatusIndicator status={taskStore.task?.status?.type ?? "none"} />
-          </span>
-        </div>
-        <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>{t("task.created")}:</span>
-          <span className={styles.taskDetailValue}>
-            <Popover content={formatTimeByUserTZ(taskStore.task?.created ?? 0)}>
-              {pastTimeByUserTZ(taskStore.task?.created ?? 0) ?? <Skeleton.Input size="small" />}
-            </Popover>
-          </span>
-        </div>
-        <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>{t("task.user")}:</span>
-          <span className={styles.taskDetailValue}>
-            {taskStore.task?.user?.name ?? <Skeleton.Input size="small" />}
-          </span>
-        </div>
-        <div className={styles.taskDetailItem}>
-          <span className={styles.taskDetailLabel}>{t("task.task-more-info")}</span>
-        </div>
+        <TaskMinions
+          minions={minions.value}
+          collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
+          isLoading={taskStore.isTaskLoading}
+          onMinionClick={minionTaskResultsDrawer.open}
+        />
       </Flex>
-
-      {minionCategoryStats}
-
-      <TaskMinions
-        minions={minions.value}
-        collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
-        isLoading={taskStore.isTaskLoading}
-        onMinionClick={minionTaskResultsDrawer.open}
-      />
 
       <MinionTaskResultsDrawer
         isOpened={minionTaskResultsDrawer.isOpened}

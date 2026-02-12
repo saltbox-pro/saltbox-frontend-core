@@ -1,4 +1,4 @@
-import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal } from "@saltbox/saltbox-frontend-common";
 import { Tabs, message } from "antd";
 import { useEffect, useMemo, useState } from "react";
@@ -155,13 +155,18 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
     <>
       {contextHolder}
       <Modal
-        title={t("task-create.configure-task-title")}
+        title={t(
+          context.taskType === TaskType.Policy
+            ? "policy-create.configure-policy-title"
+            : "task-create.configure-task-title"
+        )}
         open={isOpen}
         onCancel={onClose}
         width="min(80vw, 800px)"
         footer={null}
         maskClosable={false}
         closable={!isCreating}
+        style={{ top: 50 }}
       >
         <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
       </Modal>
