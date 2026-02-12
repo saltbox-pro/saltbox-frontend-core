@@ -1,0 +1,16 @@
+.taskDetailItem {
+  flex-shrink: 0;
+}
+
+.taskDetailLabel {
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.88);
+  white-space: nowrap;
+}
+
+.taskDetailValue {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}

@@ -15,7 +15,7 @@ export class TaskStore {
   @observable jobReturns: Array<JobReturnModel>;
   @observable minions: Array<TaskMinionModel>;
   @observable jobs: Array<JobsListResponse>;
-  @observable isTaskLoading: boolean;
+  @observable loadingCounter: number;
   @observable error: string | null;
 
   constructor() {
@@ -23,7 +23,7 @@ export class TaskStore {
     this.jobReturns = [];
     this.minions = [];
     this.jobs = [];
-    this.isTaskLoading = false;
+    this.loadingCounter = 0;
     this.error = null;
     makeObservable(this);
   }
@@ -38,6 +38,21 @@ export class TaskStore {
     return this.minions?.filter((minion) => minion.status === TaskMinionStatus.Failed).length ?? 0;
   }
 
+  @computed
+  get isTaskLoading() {
+    return this.loadingCounter > 0;
+  }
+
+  @action
+  private startLoading = () => {
+    this.loadingCounter += 1;
+  };
+
+  @action
+  private finishLoading = () => {
+    this.loadingCounter = Math.max(0, this.loadingCounter - 1);
+  };
+
   @action
   reload = (taskId: string) => {
     this.loadTask(taskId);
@@ -45,7 +60,7 @@ export class TaskStore {
 
   @action
   loadTask = (taskId: string) => {
-    this.isTaskLoading = true;
+    this.startLoading();
     this.error = null;
     apiCoreStore.tasksApi
       ?.taskRetrieve({
@@ -65,19 +80,18 @@ export class TaskStore {
         console.error("Error loading task:", error);
         runInAction(() => {
           this.error = "Failed to load task";
-          this.isTaskLoading = false;
         });
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
 
   @action
   loadJobReturns = (taskId: string) => {
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.jobsApi
       ?.jobReturnsList({
         JobReturnsListBody: {
@@ -91,14 +105,14 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
 
   @action
   loadMinions = (taskId: string) => {
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.tasksApi
       ?.tasksMinions({
         tid: taskId,
@@ -114,19 +128,18 @@ export class TaskStore {
         console.error("Error loading task minions:", error);
         runInAction(() => {
           this.error = "Failed to load task minions";
-          this.isTaskLoading = false;
         });
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
 
   @action
   loadJobs = (taskId: string) => {
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.jobsApi
       .jobsList({
         JobListBody: {
@@ -146,12 +159,11 @@ export class TaskStore {
         console.error("Error loading task jobs:", error);
         runInAction(() => {
           this.error = "Failed to load task jobs";
-          this.isTaskLoading = false;
         });
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
@@ -166,7 +178,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.tasksApi
       ?.taskRun({
         tid: this.task.id,
@@ -178,7 +190,7 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
@@ -188,7 +200,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.tasksApi
       ?.taskStop({
         tid: this.task.id,
@@ -200,7 +212,7 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };
@@ -210,7 +222,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
-    this.isTaskLoading = true;
+    this.startLoading();
     apiCoreStore.tasksApi
       .restartFailed({ tid: this.task.id, RestartFailedBody: {} })
       .then((task) => {
@@ -220,7 +232,7 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
-          this.isTaskLoading = false;
+          this.finishLoading();
         });
       });
   };

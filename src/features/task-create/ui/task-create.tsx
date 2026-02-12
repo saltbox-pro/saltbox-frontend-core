@@ -1,6 +1,6 @@
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 
-import { TaskCreationContext } from "../type/types";
+import type { TaskCreationContext } from "../type/types";
 
 import { TaskModal } from "./task-modal";
 import { TemplateListModal } from "./template-list-modal";
@@ -18,6 +18,7 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
   return (
     <>
       <TemplateListModal
+        type={context.taskType}
         isOpen={isOpen && !selectedTemplateId}
         onClose={onClose}
         onSelectTemplate={setSelectedTemplateId}

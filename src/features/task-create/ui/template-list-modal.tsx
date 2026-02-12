@@ -1,4 +1,5 @@
 import { SearchOutlined } from "@ant-design/icons";
+import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal } from "@saltbox/saltbox-frontend-common";
 import {
   Badge,
@@ -20,9 +21,10 @@ import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/t
 
 import styles from "./template-list-modal.module.css";
 
-const { Title, Paragraph } = Typography;
+const { Title } = Typography;
 
 export type TemplateListModalProps = {
+  type: TaskType;
   isOpen: boolean;
   onClose: () => void;
   onSelectTemplate: (templateId: string) => void;
@@ -96,7 +98,11 @@ export function TemplateListModal(props: TemplateListModalProps) {
     <>
       {contextHolder}
       <Modal
-        title={t("task-create.select-template-title")}
+        title={t(
+          props.type === TaskType.Policy
+            ? "policy-create.select-template-title"
+            : "task-create.select-template-title"
+        )}
         open={isOpen}
         onCancel={onClose}
         footer={null}

@@ -1,5 +1,5 @@
-import { CollectionModel, TaskType } from "@saltbox/saltbox-core-api-client";
-import { FC, useMemo } from "react";
+import { type CollectionModel, TaskType } from "@saltbox/saltbox-core-api-client";
+import { type FC, useMemo } from "react";
 
 import { TaskCreate } from "saltbox-core/features/task-create";
 
