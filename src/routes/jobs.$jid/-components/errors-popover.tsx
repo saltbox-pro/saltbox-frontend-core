@@ -1,11 +1,6 @@
-import { CloseOutlined } from "@ant-design/icons";
-import {
-  BaseActionButton,
-  CopyToClipboardButton,
-  MatIcon,
-  Popover,
-} from "@saltbox/saltbox-frontend-common";
-import { Button, Flex } from "antd";
+import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
+import { Flex } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -68,7 +63,7 @@ export function ErrorsPopover({
       open={isPopoverOpen}
       onOpenChange={setIsPopoverOpen}
     >
-      <Button icon={<MatIcon icon="search" />} type="link" size="small" title={t("minions.view")} />
+      <BaseActionButton icon={<SearchOutlined />} title={t("minions.view")} />
     </Popover>
   );
 }

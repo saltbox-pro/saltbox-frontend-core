@@ -1,8 +1,6 @@
-import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons";
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
-  BaseActionButton,
-  CopyToClipboardButton,
   createExpanderColumn,
   FastTablePaginated,
   RelativeTime,
@@ -14,12 +12,13 @@ import {
   SortingState,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Flex, Popover, Tag } from "antd";
+import { Flex, Tag } from "antd";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
+import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 
 import {
@@ -68,14 +67,6 @@ const KwargsTag = ({
   formatValue: (value: unknown) => string;
   noKwargsText: string;
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { t } = useTranslation("common");
-
-  const handleTagClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
   const tagContent = (
     <>
       <span className={styles.kwargsBrace}>{"{"}</span>
@@ -103,45 +94,17 @@ const KwargsTag = ({
   }
 
   return (
-    <Popover
-      content={
-        <div className={styles.kwargsPopoverContent}>
-          <ReactJson
-            displayDataTypes={false}
-            enableClipboard={false}
-            name={false}
-            displayObjectSize={false}
-            src={data!}
-            collapsed={1}
-          />
-        </div>
-      }
-      title={
-        <Flex justify="space-between" align="center">
-          <span>{title}</span>
-          <Flex gap={8}>
-            <CopyToClipboardButton
-              text={data ? JSON.stringify(data, null, 2) : ""}
-              successMessage={copySuccessMessage}
-            />
-            <BaseActionButton
-              icon={<CloseOutlined />}
-              title={t("action-button.close")}
-              onClick={() => setIsOpen(false)}
-            />
-          </Flex>
-        </Flex>
-      }
-      trigger="click"
-      styles={{ root: { maxWidth: 700 } }}
+    <JsonPopover
+      data={data ?? {}}
+      title={title}
+      copySuccessMessage={copySuccessMessage}
+      maxHeight="400px"
+      maxWidth="700px"
       placement="bottom"
-      open={isOpen}
-      onOpenChange={setIsOpen}
+      tagClassName={styles.kwargsTagClickable}
     >
-      <Tag className={styles.kwargsTagClickable} onClick={handleTagClick}>
-        {tagContent}
-      </Tag>
-    </Popover>
+      {tagContent}
+    </JsonPopover>
   );
 };
 
