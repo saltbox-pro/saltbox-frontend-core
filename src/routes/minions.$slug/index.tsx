@@ -134,6 +134,12 @@ const MinionsPage = observer(() => {
     minionFilterStore.loadFiltersScheme();
   }, []);
 
+  useEffect(() => {
+    if (minionFilterStore.hasActiveFilters) {
+      setShowFilter(true);
+    }
+  }, [minionFilterStore.hasActiveFilters]);
+
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
       {
