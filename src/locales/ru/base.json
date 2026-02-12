@@ -20,8 +20,6 @@
     "table-total-memory": "Объем памяти",
     "table-created": "Создан",
     "table-last-activity": "Последняя активность",
-    "create-task": "Создать задачу",
-    "create-policy": "Создать политику",
     "export": "Экспорт",
     "table-running": "Выполняется",
     "table-stopped": "Остановлено",
@@ -164,11 +162,13 @@
   },
   "policy-create": {
     "select-template-title": "Выберите шаблон политики",
-    "configure-policy-title": "Настройка политики"
+    "configure-policy-title": "Настройка политики",
+    "create-button": "Создать политику"
   },
   "task-create": {
     "select-template-title": "Выберите шаблон задачи",
     "configure-task-title": "Настройка задачи",
+    "create-button": "Создать задачу",
     "search-templates-placeholder": "Поиск по названию...",
     "filter-by-repository": "Фильтр по репозиторию",
     "no-templates-found": "Шаблоны не найдены",
@@ -193,7 +193,6 @@
     "template-not-loaded": "Шаблон не загружен",
     "validation-error": "Ошибка валидации формы",
     "back-to-config": "Назад к настройкам",
-    "create-task": "Создать задачу",
     "invalid-configuration": "Некорректная конфигурация",
     "error-loading-template": "Ошибка загрузки шаблона",
     "error-creating-task": "Ошибка создания задачи",

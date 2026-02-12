@@ -268,7 +268,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
         <div className="page-actions-buttons">
           <Button type="primary" icon={<PlusOutlined />} onClick={openTaskCreate}>
-            {t("minions.create-task")}
+            {t("task-create.create-button")}
           </Button>
 
           <Button
@@ -276,7 +276,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             onClick={openPolicyCreate}
             disabled={!!selectedMinions.length}
           >
-            {t("minions.create-policy")}
+            {t("policy-create.create-button")}
           </Button>
 
           {pageActionsButtonsPlugin}
