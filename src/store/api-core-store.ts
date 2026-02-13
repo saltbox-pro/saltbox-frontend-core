@@ -7,7 +7,7 @@ import {
   MastersApi,
   MinionCollectionsApi,
   MinionsApi,
-  PillarsApi,
+  PillarsOldApi,
   SettingsApi,
   TaskTemplatesApi,
   TasksApi,
@@ -78,7 +78,7 @@ class ApiCoreStore {
   }
 
   @computed get pillarsApi() {
-    return this.apiConfig && new PillarsApi(this.apiConfig);
+    return this.apiConfig && new PillarsOldApi(this.apiConfig);
   }
 
   @computed get gitLabApi() {

@@ -12,7 +12,7 @@ import {
   GatheredMinionSchema,
   PillarCSVParseResult,
   PillarCSVParseResultErrorCode,
-  PillarModel,
+  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
   PillarSelector,
 } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, Modal, PageHeader } from "@saltbox/saltbox-frontend-common";
@@ -44,7 +44,8 @@ import {
 import { PillarCreateForm } from "./-components/pillar-create-form";
 import styles from "./index.module.css";
 
-const pillarColumnHelper = createColumnHelper<PillarModel>();
+const pillarColumnHelper =
+  createColumnHelper<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel>();
 const clientColumnHelper = createColumnHelper<GatheredMinionSchema>();
 
 interface ParsedPillarRow {
@@ -94,7 +95,8 @@ const MasterPage = observer(() => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedPillar, setSelectedPillar] = useState<PillarModel | null>(null);
+  const [selectedPillar, setSelectedPillar] =
+    useState<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel | null>(null);
   const isFirstRender = useRef(true);
   const [isImporting, setIsImporting] = useState(false);
   const [parsedPillars, setParsedPillars] = useState<any[]>([]);
@@ -112,7 +114,7 @@ const MasterPage = observer(() => {
   const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
   const [pillarsSorting, setPillarsSorting] = useState<SortingState>([]);
 
-  const PillarsTable = FastTableListed<PillarModel>;
+  const PillarsTable = FastTableListed<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel>;
 
   const truncateText = (text: string, maxLength: number = 100): string => {
     if (text.length <= maxLength) return text;
@@ -236,7 +238,7 @@ const MasterPage = observer(() => {
         minion_id: selectedPillar.minion_id || null,
       };
 
-      await apiCoreStore.pillarsApi?.pillarDelete({
+      await apiCoreStore.pillarsApi?.pillarDeleteOld({
         PillarSelector: pillarSelector,
       });
 
@@ -253,7 +255,7 @@ const MasterPage = observer(() => {
     if (!masterId) return;
 
     try {
-      const pillars = await apiCoreStore.pillarsApi?.pillarsList({
+      const pillars = await apiCoreStore.pillarsApi?.pillarsListOld({
         master_id: masterId,
       });
 
@@ -319,7 +321,7 @@ const MasterPage = observer(() => {
           value: row.value?.trim?.() || "",
         }));
 
-      const result = await apiCoreStore.pillarsApi?.pillarImport({
+      const result = await apiCoreStore.pillarsApi?.pillarImportOld({
         PillarImportSchema: {
           items,
           update_existing: updateExisting,
@@ -380,7 +382,7 @@ const MasterPage = observer(() => {
       const fixedText = lines.join("\n");
       const fixedFile = new Blob([fixedText], { type: "text/csv" });
 
-      const response = await apiCoreStore.pillarsApi?.pillarParseCsvRaw({
+      const response = await apiCoreStore.pillarsApi?.pillarParseCsvOldRaw({
         master_id: masterId,
         pillars_csv: fixedFile,
       });
@@ -450,8 +452,8 @@ const MasterPage = observer(() => {
           value: row.value?.trim?.() || "",
         }));
 
-      const validationResults = await apiCoreStore.pillarsApi?.pillarImportValidate({
-        PillarModel: pillarsForValidation,
+      const validationResults = await apiCoreStore.pillarsApi?.pillarImportValidateOld({
+        PillarModelInput: pillarsForValidation,
       });
 
       if (validationResults) {

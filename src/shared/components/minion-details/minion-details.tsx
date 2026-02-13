@@ -1,5 +1,9 @@
 import { SettingOutlined } from "@ant-design/icons";
-import { MinionDetailSchema, PillarModel, JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import {
+  MinionDetailSchema,
+  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
+  JobReturnModel,
+} from "@saltbox/saltbox-core-api-client";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { Button, Dropdown, Flex, Tabs, type MenuProps, type TabsProps } from "antd";
 import React, { useCallback, useState } from "react";
@@ -29,7 +33,7 @@ type JobReturnsConfig = {
 export interface MinionDetailsProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
-  pillars: PillarModel[] | null;
+  pillars: SaltboxCorePillarsOldSchemasPillarSchemasPillarModel[] | null;
   isPillarsLoading: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
   jobReturnsConfig?: JobReturnsConfig;
