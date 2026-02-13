@@ -135,10 +135,10 @@ const MinionsPage = observer(() => {
   }, []);
 
   useEffect(() => {
-    if (minionFilterStore.hasActiveFilters) {
+    if (minionFilterStore.countActiveFilters !== 0) {
       setShowFilter(true);
     }
-  }, [minionFilterStore.hasActiveFilters]);
+  }, [minionFilterStore.countActiveFilters]);
 
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
