@@ -2,13 +2,16 @@ import { useEffect } from "react";
 
 export const useDocumentEvent = <TEventName extends keyof DocumentEventMap>(
   eventName: TEventName,
-  getListener: () => ((event: DocumentEventMap[TEventName]) => void) | undefined,
-  dependencies: unknown[]
+  listener: ((event: DocumentEventMap[TEventName]) => void) | undefined,
+  options?: boolean | AddEventListenerOptions
 ) => {
   useEffect(() => {
-    const listener = getListener();
     if (!listener) return;
-    document.addEventListener(eventName, listener);
-    return () => document.removeEventListener(eventName, listener);
-  }, dependencies);
+
+    document.addEventListener(eventName, listener, options);
+
+    return () => {
+      document.removeEventListener(eventName, listener, options);
+    };
+  }, [eventName, listener, options]);
 };
