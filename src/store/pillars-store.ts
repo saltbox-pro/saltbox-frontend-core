@@ -1,4 +1,7 @@
-import { PillarModel, PillarSelector } from "@saltbox/saltbox-core-api-client";
+import {
+  PillarSelector,
+  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
+} from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -6,7 +9,7 @@ import { apiCoreStore } from "saltbox-core/store";
 export class PillarsStore {
   isLoading: boolean;
   error: string | null;
-  pillars: Array<PillarModel>;
+  pillars: Array<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel>;
   selectedMasterId: string | null;
   total: number;
 
@@ -33,7 +36,7 @@ export class PillarsStore {
     this.isLoading = true;
     this.error = null;
     try {
-      const pillars = await apiCoreStore.pillarsApi?.pillarsList({
+      const pillars = await apiCoreStore.pillarsApi?.pillarsListOld({
         master_id: masterId,
       });
 
@@ -67,8 +70,8 @@ export class PillarsStore {
     if (!apiCoreStore.pillarsApi) return false;
 
     try {
-      await apiCoreStore.pillarsApi.pillarCreate({
-        PillarModel: {
+      await apiCoreStore.pillarsApi.pillarCreateOld({
+        PillarModelInput: {
           master_id: masterId,
           minion_id: minionId || null,
           name,
@@ -91,8 +94,8 @@ export class PillarsStore {
     if (!apiCoreStore.pillarsApi) return false;
 
     try {
-      await apiCoreStore.pillarsApi.pillarUpdate({
-        PillarModel: {
+      await apiCoreStore.pillarsApi.pillarUpdateOld({
+        PillarModelInput: {
           master_id: masterId,
           minion_id: minionId || null,
           name,
@@ -116,7 +119,7 @@ export class PillarsStore {
         minion_id: minionId || null,
       };
 
-      await apiCoreStore.pillarsApi.pillarDelete({
+      await apiCoreStore.pillarsApi.pillarDeleteOld({
         PillarSelector: pillarSelector,
       });
 

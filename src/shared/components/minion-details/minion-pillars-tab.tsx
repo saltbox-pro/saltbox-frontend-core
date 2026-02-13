@@ -1,11 +1,11 @@
-import { PillarModel } from "@saltbox/saltbox-core-api-client";
+import { SaltboxCorePillarsOldSchemasPillarSchemasPillarModel } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import React, { useState } from "react";
 
 import styles from "./minion-pillars-tab.module.css";
 
-const columnHelper = createColumnHelper<PillarModel>();
+const columnHelper = createColumnHelper<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel>();
 
 const pillarsColumns = [
   columnHelper.accessor("name", {
@@ -17,7 +17,7 @@ const pillarsColumns = [
 ];
 
 interface MinionPillarsTabProps {
-  pillars: PillarModel[] | null;
+  pillars: SaltboxCorePillarsOldSchemasPillarSchemasPillarModel[] | null;
   isPillarsLoading: boolean;
   isFullView?: boolean;
   pillarsTabActions?: React.ReactNode;

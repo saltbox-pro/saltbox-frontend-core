@@ -266,8 +266,8 @@ const MinionPage = observer(() => {
       }
 
       try {
-        await apiCoreStore.pillarsApi?.pillarCreate({
-          PillarModel: {
+        await apiCoreStore.pillarsApi?.pillarCreateOld({
+          PillarModelInput: {
             master_id: minionStore.minion.master,
             minion_id: minionStore.minion.minion_id,
             name: values.name,
