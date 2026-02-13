@@ -294,24 +294,20 @@ export function JobModal({
       return;
     }
 
-    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
-    const isRepeatMode = !!(fun && target);
-
-    if (isRepeatMode) {
-      form.focusField("tgt");
-    } else if (hasJsonFields) {
+    const focusFirstJsonInput = () => {
       const jsonInputSelector =
         "#job-params-form input, #job-params-form textarea, #job-params-form select";
       const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
-      if (firstInput) {
-        firstInput.focus({ preventScroll: true });
-      } else {
-        form.focusField("tgt");
-      }
+      firstInput?.focus({ preventScroll: true });
+    };
+
+    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
+    if (hasJsonFields) {
+      focusFirstJsonInput();
     } else {
       form.focusField("tgt");
     }
-  }, [saltFunction, isModalOpen, fun, target]);
+  }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
