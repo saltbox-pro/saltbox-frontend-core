@@ -1,6 +1,6 @@
 import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import { RJSFValidationError } from "@rjsf/utils";
-import {
+import type { RJSFValidationError } from "@rjsf/utils";
+import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
@@ -14,15 +14,7 @@ import {
   type JsonFormRef,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Cascader, Flex, Form, Input, Select, message, type FormProps } from "antd";
-import {
-  Fragment,
-  KeyboardEventHandler,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -107,10 +99,13 @@ export function JobModal({
   const refJobParamsForm = useRef<JsonFormRef>(null);
   const hasLoadedInitialSchema = useRef<boolean>(false);
   const hasAutoOpenedRef = useRef(false);
+  const isSubmittingRef = useRef(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
   const tgtType = Form.useWatch("tgt_type", form);
+
+  const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
 
   const showModal = useCallback(() => {
     setIsMasterListLoading(true);
@@ -200,21 +195,39 @@ export function JobModal({
     setSaltFlatFunctionList(flatList);
   };
 
-  useDocumentEvent(
-    "keydown",
-    () => {
-      if (isModalOpen || !shouldShowModalByKeyboardEvent) {
+  const keydownHandler = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.repeat) return;
+
+      if (!isModalOpen) {
+        if (!shouldShowModalByKeyboardEvent?.(event)) return;
+        if (isMasterListLoading) return;
+
+        event.preventDefault();
+        showModal();
         return;
       }
-      return (event) => {
-        if (shouldShowModalByKeyboardEvent(event)) {
-          event.preventDefault();
-          showModal();
-        }
-      };
+
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        if (isLoading || isSubmittingRef.current) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        isSubmittingRef.current = true;
+        form.submit();
+      }
     },
-    [isModalOpen, shouldShowModalByKeyboardEvent]
+    [form, isLoading, isMasterListLoading, isModalOpen, shouldShowModalByKeyboardEvent, showModal]
   );
+
+  useDocumentEvent("keydown", keydownHandler);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      isSubmittingRef.current = false;
+    }
+  }, [isModalOpen]);
 
   useEffect(() => {
     if (openOnMount && !hasAutoOpenedRef.current) {
@@ -286,20 +299,24 @@ export function JobModal({
       return;
     }
 
-    const focusFirstJsonInput = () => {
+    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
+    const isRepeatMode = !!(fun && target);
+
+    if (isRepeatMode) {
+      form.focusField("tgt");
+    } else if (hasJsonFields) {
       const jsonInputSelector =
         "#job-params-form input, #job-params-form textarea, #job-params-form select";
       const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
-      firstInput?.focus({ preventScroll: true });
-    };
-
-    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
-    if (hasJsonFields) {
-      focusFirstJsonInput();
+      if (firstInput) {
+        firstInput.focus({ preventScroll: true });
+      } else {
+        form.focusField("tgt");
+      }
     } else {
       form.focusField("tgt");
     }
-  }, [saltFunction, isModalOpen]);
+  }, [saltFunction, isModalOpen, fun, target]);
 
   useEffect(() => {
     if (validationErrors.length > 0) {
@@ -320,7 +337,10 @@ export function JobModal({
 
   const handleFormFinish = (formValue: JobFormData) => {
     const isFormValid = refJobParamsForm.current?.validateForm();
-    if (!isFormValid) return;
+    if (!isFormValid) {
+      isSubmittingRef.current = false;
+      return;
+    }
 
     setIsJobCreating(true);
 
@@ -344,10 +364,14 @@ export function JobModal({
       .catch((_) => {
         messageApi.error(`Error on job created.`);
       })
-      .finally(() => setIsJobCreating(false));
+      .finally(() => {
+        setIsJobCreating(false);
+        isSubmittingRef.current = false;
+      });
   };
 
   const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
+    isSubmittingRef.current = false;
     if (errorInfo.errorFields.length) {
       const fieldName = errorInfo.errorFields[0].name.join("_");
       const element = document.querySelector(`[id="job-form_${fieldName}"]`);
@@ -487,26 +511,6 @@ export function JobModal({
       </>
     );
   });
-
-  const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
-
-  useDocumentEvent(
-    "keydown",
-    () => {
-      if (!isModalOpen) {
-        return;
-      }
-
-      return (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.code === "Enter") {
-          if (isLoading) return;
-          event.preventDefault();
-          form.submit();
-        }
-      };
-    },
-    [isModalOpen, isLoading]
-  );
 
   const defaultButtonProps: JobModalButtonProps = {
     shape: "default",
