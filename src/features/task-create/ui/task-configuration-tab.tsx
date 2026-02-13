@@ -36,10 +36,22 @@ export function TaskConfigurationTab({
   const jsonFormRef = useRef<JsonFormRef>(null);
 
   useEffect(() => {
-    if (initialData) {
-      form.setFieldsValue(taskCreationService.getDefaultConfiguration());
-      setTemplateFormData(initialData.data ?? {});
+    if (!initialData) {
+      return;
     }
+
+    const defaultConfig = taskCreationService.getDefaultConfiguration();
+
+    form.setFieldsValue({
+      ...defaultConfig,
+      batch_size: initialData.batch_size ?? defaultConfig.batch_size,
+      max_retries: initialData.max_retries ?? defaultConfig.max_retries,
+      retry_delay: initialData.retry_delay ?? defaultConfig.retry_delay,
+      max_jobs_count_at_same_time:
+        initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
+    });
+
+    setTemplateFormData(initialData.data ?? {});
   }, [initialData, form]);
 
   const handleFormSubmit = async () => {
@@ -92,70 +104,59 @@ export function TaskConfigurationTab({
             <span>{t("task-create.advanced-settings")}</span>
             <Switch checked={showAdvanced} onChange={setShowAdvanced} />
           </Flex>
-          {showAdvanced && (
-            <Flex vertical gap="small">
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={memoize(taskCreationService.getDefaultConfiguration())}
+          <Flex vertical gap="small" hidden={!showAdvanced}>
+            <Form
+              form={form}
+              layout="vertical"
+              initialValues={memoize(taskCreationService.getDefaultConfiguration())}
+            >
+              <Form.Item
+                name="batch_size"
+                label={t("task-create.batch-size")}
+                tooltip={t("task-create.batch-size-tooltip")}
+                rules={memoize([
+                  { required: true, message: t("task-form.batch-size-error-required") },
+                ])}
               >
-                <Form.Item
-                  name="batch_size"
-                  label={t("task-create.batch-size")}
-                  tooltip={t("task-create.batch-size-tooltip")}
-                  rules={memoize([
-                    { required: true, message: t("task-form.batch-size-error-required") },
-                  ])}
-                >
-                  <InputNumber min={0} className={styles.formItem} />
-                </Form.Item>
+                <InputNumber min={0} className={styles.formItem} />
+              </Form.Item>
 
-                <Form.Item
-                  name="max_jobs_count_at_same_time"
-                  label={t("task-create.max-parallel-jobs")}
-                  tooltip={t("task-create.max-parallel-jobs-tooltip")}
-                  rules={memoize([
-                    {
-                      required: true,
-                      message: t("task-form.max-parallel-jobs-error-required"),
-                    },
-                  ])}
-                >
-                  <InputNumber min={1} className={styles.formItem} />
-                </Form.Item>
+              <Form.Item
+                name="max_jobs_count_at_same_time"
+                label={t("task-create.max-parallel-jobs")}
+                tooltip={t("task-create.max-parallel-jobs-tooltip")}
+                rules={memoize([
+                  { required: true, message: t("task-form.max-parallel-jobs-error-required") },
+                ])}
+              >
+                <InputNumber min={1} className={styles.formItem} />
+              </Form.Item>
 
-                <Form.Item
-                  name="max_retries"
-                  label={t("task-create.max-retries")}
-                  tooltip={t("task-create.max-retries-tooltip")}
-                  rules={memoize([
-                    {
-                      required: true,
-                      message: t("task-form.max-retries-error-required"),
-                    },
-                  ])}
-                >
-                  <InputNumber min={0} className={styles.formItem} />
-                </Form.Item>
+              <Form.Item
+                name="max_retries"
+                label={t("task-create.max-retries")}
+                tooltip={t("task-create.max-retries-tooltip")}
+                rules={memoize([
+                  { required: true, message: t("task-form.max-retries-error-required") },
+                ])}
+              >
+                <InputNumber min={0} className={styles.formItem} />
+              </Form.Item>
 
-                <Form.Item
-                  name="retry_delay"
-                  label={t("task-create.retry-delay")}
-                  tooltip={t("task-create.retry-delay-tooltip")}
-                  rules={memoize([
-                    {
-                      required: true,
-                      message: t("task-create.retry-delay-error-required"),
-                    },
-                  ])}
-                >
-                  <InputNumber min={0} className={styles.formItem} />
-                </Form.Item>
-              </Form>
+              <Form.Item
+                name="retry_delay"
+                label={t("task-create.retry-delay")}
+                tooltip={t("task-create.retry-delay-tooltip")}
+                rules={memoize([
+                  { required: true, message: t("task-create.retry-delay-error-required") },
+                ])}
+              >
+                <InputNumber min={0} className={styles.formItem} />
+              </Form.Item>
+            </Form>
 
-              <Divider className={styles.divider} />
-            </Flex>
-          )}
+            <Divider className={styles.divider} />
+          </Flex>
 
           {template.json_schema && (
             <JsonForm
