@@ -361,14 +361,6 @@ export function JobModal({
     }
   };
 
-  const handleFormKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.code === "Enter") {
-      if (isLoading) return;
-      event.preventDefault();
-      form.submit();
-    }
-  };
-
   useEffect(() => {
     setSaltFunction(undefined);
     setJsonFormValue({});
@@ -498,6 +490,24 @@ export function JobModal({
 
   const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
 
+  useDocumentEvent(
+    "keydown",
+    () => {
+      if (!isModalOpen) {
+        return;
+      }
+
+      return (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.code === "Enter") {
+          if (isLoading) return;
+          event.preventDefault();
+          form.submit();
+        }
+      };
+    },
+    [isModalOpen, isLoading]
+  );
+
   const defaultButtonProps: JobModalButtonProps = {
     shape: "default",
     icon: <PlusOutlined />,
@@ -561,7 +571,6 @@ export function JobModal({
           layout={"vertical"}
           onFinish={handleFormFinish}
           onFinishFailed={handleFormFinishFailed}
-          onKeyDown={handleFormKeyDown}
           autoComplete="off"
           id="job-form"
         >
