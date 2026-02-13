@@ -100,6 +100,7 @@ export function JobModal({
   const hasLoadedInitialSchema = useRef<boolean>(false);
   const hasAutoOpenedRef = useRef(false);
   const isSubmittingRef = useRef(false);
+  const handleFormFinishInProgressRef = useRef(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
@@ -221,13 +222,7 @@ export function JobModal({
     [form, isLoading, isMasterListLoading, isModalOpen, shouldShowModalByKeyboardEvent, showModal]
   );
 
-  useDocumentEvent("keydown", keydownHandler);
-
-  useEffect(() => {
-    if (!isModalOpen) {
-      isSubmittingRef.current = false;
-    }
-  }, [isModalOpen]);
+  useDocumentEvent("keydown", keydownHandler, true);
 
   useEffect(() => {
     if (openOnMount && !hasAutoOpenedRef.current) {
@@ -336,12 +331,15 @@ export function JobModal({
   };
 
   const handleFormFinish = (formValue: JobFormData) => {
+    if (handleFormFinishInProgressRef.current) return;
+
     const isFormValid = refJobParamsForm.current?.validateForm();
     if (!isFormValid) {
       isSubmittingRef.current = false;
       return;
     }
 
+    handleFormFinishInProgressRef.current = true;
     setIsJobCreating(true);
 
     apiCoreStore.jobsApi
@@ -367,11 +365,13 @@ export function JobModal({
       .finally(() => {
         setIsJobCreating(false);
         isSubmittingRef.current = false;
+        handleFormFinishInProgressRef.current = false;
       });
   };
 
   const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
     isSubmittingRef.current = false;
+    handleFormFinishInProgressRef.current = false;
     if (errorInfo.errorFields.length) {
       const fieldName = errorInfo.errorFields[0].name.join("_");
       const element = document.querySelector(`[id="job-form_${fieldName}"]`);
