@@ -48,11 +48,30 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
       try {
         const loadedTemplate = await taskTemplateService.loadTemplateById(templateId);
         setTemplate(loadedTemplate);
-        setConfiguration((prev) => ({
-          ...prev,
+        const defaultConfig = taskCreationService.getDefaultConfiguration();
+        const templateDefaults = (
+          loadedTemplate as unknown as { defaults?: Record<string, unknown> }
+        ).defaults;
+        setConfiguration({
           task_template_id: loadedTemplate.id,
+          batch_size:
+            typeof templateDefaults?.batch_size === "number"
+              ? templateDefaults.batch_size
+              : defaultConfig.batch_size,
+          max_retries:
+            typeof templateDefaults?.max_retries === "number"
+              ? templateDefaults.max_retries
+              : defaultConfig.max_retries,
+          retry_delay:
+            typeof templateDefaults?.retry_delay === "number"
+              ? templateDefaults.retry_delay
+              : defaultConfig.retry_delay,
+          max_jobs_count_at_same_time:
+            typeof templateDefaults?.max_jobs_count_at_same_time === "number"
+              ? templateDefaults.max_jobs_count_at_same_time
+              : defaultConfig.max_jobs_count_at_same_time,
           data: {},
-        }));
+        });
       } catch (error) {
         messageApi.error(t("task-create.error-loading-template"));
         onClose();

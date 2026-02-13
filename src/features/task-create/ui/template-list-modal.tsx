@@ -142,26 +142,36 @@ export function TemplateListModal(props: TemplateListModalProps) {
               className={styles.templateList}
               dataSource={filteredTemplates}
               loading={isLoading}
-              renderItem={(template) => (
-                <List.Item
-                  className={styles.listItem}
-                  onClick={() => handleTemplateSelect(template.id)}
-                >
-                  <Flex gap="small" justify="space-between" className={styles.listItemWrapper}>
-                    <Tooltip title={template.title || template.id}>
-                      <Title className={styles.listItemPart} level={5} ellipsis>
-                        {template.title || template.id}
-                      </Title>
-                    </Tooltip>
-                    {template.repository && (
-                      <Badge
-                        count={template.repository}
-                        classNames={{ indicator: styles.repoBadge }}
-                      />
-                    )}
-                  </Flex>
-                </List.Item>
-              )}
+              renderItem={(template) => {
+                const shortDescription = template.short_description?.trim();
+                return (
+                  <List.Item
+                    className={styles.listItem}
+                    onClick={() => handleTemplateSelect(template.id)}
+                  >
+                    <Flex gap="small" justify="space-between" className={styles.listItemWrapper}>
+                      <Flex vertical gap={2} className={styles.listItemText}>
+                        <Tooltip title={template.title || template.id}>
+                          <Title className={styles.listItemPart} level={5} ellipsis>
+                            {template.title || template.id}
+                          </Title>
+                        </Tooltip>
+                        {shortDescription ? (
+                          <span className={styles.shortDescription} title={shortDescription}>
+                            {shortDescription}
+                          </span>
+                        ) : null}
+                      </Flex>
+                      {template.repository ? (
+                        <Badge
+                          count={template.repository}
+                          classNames={{ indicator: styles.repoBadge }}
+                        />
+                      ) : null}
+                    </Flex>
+                  </List.Item>
+                );
+              }}
             />
           )}
         </Flex>
