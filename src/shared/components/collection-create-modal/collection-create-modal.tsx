@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
@@ -67,6 +67,7 @@ function CollectionCreateModal({
       })
       .then((response) => {
         messageApi.success(t("collection-create-modal.success"));
+        collectionsTreeStore.addNode(response);
         setIsModalOpen(false);
         onClose?.(true);
         if (response.slug) {

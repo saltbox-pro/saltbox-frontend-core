@@ -7,8 +7,8 @@ import { I18nextProvider } from "react-i18next";
 import { BrowserRouter } from "react-router";
 import singleSpaReact from "single-spa-react";
 
-import { CollectionSelector } from "saltbox-core/shared/components/collection-selector/collection-selector";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
+import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
 import Root from "./root.component";
 
@@ -23,7 +23,7 @@ const collectionSelectorRootComponent = ({ onClose }) => (
   <I18nextProvider i18n={i18n}>
     <Suspense fallback="Loading translations...">
       <BrowserRouter>
-        <CollectionSelector onClose={onClose} />
+        <MinionsTreeMenu onClose={onClose} />
       </BrowserRouter>
     </Suspense>
   </I18nextProvider>
@@ -34,8 +34,6 @@ const collectionSelectorLifecycles = singleSpaReact({
   ReactDOMClient,
   rootComponent: collectionSelectorRootComponent,
 });
-
-//export const { bootstrap, mount, unmount } = coreLifecycles;
 
 export const saltboxModule = {
   singleSpaLifecycle: coreLifecycles,

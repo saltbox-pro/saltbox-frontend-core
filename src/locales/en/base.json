@@ -505,6 +505,9 @@
     "minion-id": "Minion ID",
     "master": "Master",
     "last-seen": "Last Seen",
+    "search-collections": "Search collections",
+    "refresh-tree": "Refresh collections tree",
+    "search-no-matches": "No collections match your search",
     "select-collection": "Select Collection",
     "create-new-collection": "Create New Collection",
     "create": "Create",
@@ -513,6 +516,7 @@
     "error-updating-collection": "Error updating collection",
     "collection-deleted-successfully": "Collection deleted successfully",
     "error-deleting-collection": "Error deleting collection",
+    "error-loading-tree": "Failed to load collections tree",
     "apply-search-before-save": "Please apply search to confirm filters before saving"
   },
   "dashboard": {

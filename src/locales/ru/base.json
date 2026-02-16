@@ -505,6 +505,9 @@
     "minion-id": "ID клиента",
     "master": "Мастер",
     "last-seen": "Последнее обновление",
+    "search-collections": "Поиск коллекций",
+    "refresh-tree": "Обновить дерево коллекций",
+    "search-no-matches": "Нет коллекций по вашему запросу",
     "select-collection": "Выбор коллекции",
     "create-new-collection": "Создать новую коллекцию",
     "create": "Создать",
@@ -513,6 +516,7 @@
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
+    "error-loading-tree": "Не удалось загрузить дерево коллекций",
     "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением"
   },
   "dashboard": {
