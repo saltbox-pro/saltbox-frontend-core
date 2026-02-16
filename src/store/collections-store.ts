@@ -28,8 +28,10 @@ export class CollectionsStore {
     this.isCollectionsLoading = true;
     apiCoreStore.minionCollectionsApi
       ?.minionCollectionsList({
-        skip: this.pagination.pageIndex * this.pagination.pageSize,
-        limit: this.pagination.pageSize,
+        CollectionListBody: {
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          limit: this.pagination.pageSize,
+        },
       })
       .then((collections) => {
         runInAction(() => {
