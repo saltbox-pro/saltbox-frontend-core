@@ -31,4 +31,5 @@ export { JobFilterStore } from "./job-filter-store";
 export { JobStore } from "./job-store";
 export { JobsStore } from "./jobs-store";
 export { DefaultCollectionStore } from "./default-collection-store";
+export { collectionsTreeStore, CollectionsTreeStore } from "./collections-tree-store";
 export { TasksFilterStore } from "./tasks-filter-store";

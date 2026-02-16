@@ -25,6 +25,7 @@ import CollectionCreateModal from "saltbox-core/shared/components/collection-cre
 import {
   appStore,
   CollectionStore,
+  collectionsTreeStore,
   dashboardStore,
   i18nStore,
   MinionFilterStore,
@@ -290,7 +291,9 @@ const MinionsPage = observer(() => {
         onOk={async () => {
           try {
             const parentSlug = collectionStore.collection.parent_slug;
+            const deletedSlug = collectionStore.collection.slug;
             await collectionStore.deleteCollection();
+            collectionsTreeStore.removeNode(deletedSlug);
             setIsDeleteModalOpen(false);
             messageApi.success(t("collection.collection-deleted-successfully"));
             minionFilterStore.handleResetFilters();

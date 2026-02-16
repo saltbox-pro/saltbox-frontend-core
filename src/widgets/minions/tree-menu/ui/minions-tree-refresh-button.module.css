@@ -1,0 +1,11 @@
+.refreshButton {
+  --size: 32px;
+
+  width: var(--size);
+  min-width: var(--size);
+  height: var(--size);
+
+  font-size: 12px;
+
+  border-radius: 6px;
+}

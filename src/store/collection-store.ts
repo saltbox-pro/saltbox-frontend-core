@@ -1,7 +1,7 @@
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable, runInAction } from "mobx";
 
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
 
 export class CollectionStore {
   isLoading: boolean;
@@ -88,6 +88,13 @@ export class CollectionStore {
 
       runInAction(() => {
         this.collection = updatedCollection;
+        if (updatedCollection) {
+          collectionsTreeStore.updateNode(this.collectionSlug!, {
+            title: updatedCollection.title,
+            slug: updatedCollection.slug,
+          });
+          this.collectionSlug = updatedCollection.slug;
+        }
       });
     } finally {
       runInAction(() => {
