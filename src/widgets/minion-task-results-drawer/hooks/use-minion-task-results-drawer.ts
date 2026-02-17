@@ -21,17 +21,17 @@ export function useMinionTaskResultsDrawer(taskStore: TaskStore): UseMinionTaskR
     master: string;
     minionId: string;
   } | null>(null);
+  const [selectedMinionData, setSelectedMinionData] = useState<TaskMinionModel | null>(null);
 
   const openedId = openedMinionKey?.minionId ?? null;
 
   const selectedMinion = useMemo(() => {
     if (!openedMinionKey) return null;
-    return (
-      taskStore.minions?.find(
-        (m) => m.master === openedMinionKey.master && m.minion_id === openedMinionKey.minionId
-      ) ?? null
+    const fromStore = taskStore.minions?.find(
+      (m) => m.master === openedMinionKey.master && m.minion_id === openedMinionKey.minionId
     );
-  }, [openedMinionKey, taskStore.minions]);
+    return fromStore ?? selectedMinionData;
+  }, [openedMinionKey, taskStore.minions, selectedMinionData]);
 
   const selectedMinionJobReturns = useMemo(() => {
     if (!selectedMinion) return [];
@@ -55,6 +55,7 @@ export function useMinionTaskResultsDrawer(taskStore: TaskStore): UseMinionTaskR
       setIsOpened(true);
       setSlug(taskStore.task?.target_collection?.slug ?? null);
       setOpenedMinionKey({ master: minion.master, minionId: minion.minion_id });
+      setSelectedMinionData(minion);
     },
     [taskStore.task?.target_collection?.slug]
   );
@@ -66,6 +67,7 @@ export function useMinionTaskResultsDrawer(taskStore: TaskStore): UseMinionTaskR
   const clearData = useCallback(() => {
     setOpenedMinionKey(null);
     setSlug(null);
+    setSelectedMinionData(null);
   }, []);
 
   return {

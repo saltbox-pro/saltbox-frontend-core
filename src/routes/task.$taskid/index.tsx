@@ -8,7 +8,7 @@ import {
 import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -23,66 +23,27 @@ import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
 
 import { TaskMinions } from "./-components/task-minions/task-minions";
 
-const useMinions = (taskStore: TaskStore) => {
-  const [selectedMinionCategory, setSelectedMinionCategory] = useState(MinionCategory.All);
+const categoryToStatus = (category: MinionCategory): TaskMinionStatus | null => {
+  switch (category) {
+    case MinionCategory.Pending:
+      return TaskMinionStatus.Pending;
+    case MinionCategory.InWork:
+      return TaskMinionStatus.InWork;
+    case MinionCategory.Failed:
+      return TaskMinionStatus.Failed;
+    case MinionCategory.Success:
+      return TaskMinionStatus.Success;
+    default:
+      return null;
+  }
+};
 
-  const minionsOfCategory = useMemo(() => {
-    const getMinionsByStatus = (status: TaskMinionStatus) => {
-      return taskStore.minions?.filter((minion) => minion.status === status);
-    };
-    if (selectedMinionCategory === MinionCategory.All) {
-      return taskStore.minions;
-    }
-    if (selectedMinionCategory === MinionCategory.Pending) {
-      return getMinionsByStatus(TaskMinionStatus.Pending);
-    }
-    if (selectedMinionCategory === MinionCategory.InWork) {
-      return getMinionsByStatus(TaskMinionStatus.InWork);
-    }
-    if (selectedMinionCategory === MinionCategory.Failed) {
-      return getMinionsByStatus(TaskMinionStatus.Failed);
-    }
-    if (selectedMinionCategory === MinionCategory.Success) {
-      return getMinionsByStatus(TaskMinionStatus.Success);
-    }
-    return [];
-  }, [taskStore.minions, selectedMinionCategory]);
-
-  const minionCategoryStats = useMemo(() => {
-    const getMinionStatusCount = (status: TaskMinionStatus) => {
-      return taskStore.minions?.filter((minion) => {
-        return minion.status === status;
-      }).length;
-    };
-
-    const countMinionsAll = taskStore.minions?.length ?? 0;
-    const countMinionsPending = getMinionStatusCount(TaskMinionStatus.Pending);
-    const countMinionsInWork = getMinionStatusCount(TaskMinionStatus.InWork);
-    const countMinionsFailed = getMinionStatusCount(TaskMinionStatus.Failed);
-    const countMinionsSuccess = getMinionStatusCount(TaskMinionStatus.Success);
-    return (
-      <TaskMinionsStats
-        counts={{
-          all: countMinionsAll,
-          pending: countMinionsPending,
-          inWork: countMinionsInWork,
-          failed: countMinionsFailed,
-          success: countMinionsSuccess,
-        }}
-        selectedCategory={selectedMinionCategory}
-        onSelectCategory={setSelectedMinionCategory}
-      />
-    );
-  }, [taskStore.task, taskStore.minions, selectedMinionCategory]);
-
-  return {
-    minions: {
-      value: minionsOfCategory,
-      selectedCategory: selectedMinionCategory,
-      updateSelectedCategory: setSelectedMinionCategory,
-    },
-    minionCategoryStats,
-  };
+const statusToCategory = (status: TaskMinionStatus | null): MinionCategory => {
+  if (status === TaskMinionStatus.Pending) return MinionCategory.Pending;
+  if (status === TaskMinionStatus.InWork) return MinionCategory.InWork;
+  if (status === TaskMinionStatus.Failed) return MinionCategory.Failed;
+  if (status === TaskMinionStatus.Success) return MinionCategory.Success;
+  return MinionCategory.All;
 };
 
 type TaskWebSocketMessage = TaskModel | TaskMinionModel | JobReturnModel | JobsListResponse;
@@ -117,7 +78,6 @@ const TaskPage = observer(() => {
   const navigate = useNavigate();
 
   const [taskStore] = useState(new TaskStore());
-  const { minions, minionCategoryStats } = useMinions(taskStore);
   const minionTaskResultsDrawer = useMinionTaskResultsDrawer(taskStore);
 
   useEffect(() => {
@@ -131,6 +91,21 @@ const TaskPage = observer(() => {
       navigate("/not-found");
     }
   }, [taskStore.error]);
+
+  const selectedMinionCategory = statusToCategory(taskStore.minionCategoryFilter);
+
+  const handleSelectMinionCategory = (category: MinionCategory) => {
+    taskStore.setMinionCategoryFilter(categoryToStatus(category));
+  };
+
+  const mc = taskStore.task?.minions_count;
+  const minionCounts = {
+    all: mc?.total ?? 0,
+    pending: mc?.pending ?? 0,
+    inWork: (mc?.in_work ?? 0) + (mc?.busy ?? 0),
+    failed: mc?.failed ?? 0,
+    success: mc?.success ?? 0,
+  };
 
   useWebSocket(taskId, (messages) => {
     if (messages?.length > 0) {
@@ -166,15 +141,23 @@ const TaskPage = observer(() => {
         })}
       />
 
-      <Flex vertical gap={10} flex={1}>
+      <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <TaskRunDetails taskStore={taskStore} />
 
-        {minionCategoryStats}
+        <TaskMinionsStats
+          counts={minionCounts}
+          selectedCategory={selectedMinionCategory}
+          onSelectCategory={handleSelectMinionCategory}
+        />
 
         <TaskMinions
-          minions={minions.value}
+          minions={taskStore.minions}
+          total={taskStore.totalMinions}
           collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
-          isLoading={taskStore.isTaskLoading}
+          isLoading={taskStore.isMinionsLoading}
+          pagination={taskStore.minionsPagination}
+          sorting={taskStore.minionsSorting}
+          onLazyLoad={taskStore.handleMinionsLazyLoad}
           onMinionClick={minionTaskResultsDrawer.open}
         />
       </Flex>

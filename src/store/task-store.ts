@@ -6,14 +6,24 @@ import {
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
+
+const PAGE_SIZE = 50;
+const DEFAULT_SORTING: SortingState = [{ id: "start_last_dt", desc: true }];
 
 export class TaskStore {
   @observable task: TaskModel | null;
   @observable jobReturns: Array<JobReturnModel>;
   @observable minions: Array<TaskMinionModel>;
+  @observable totalMinions: number;
+  @observable minionsPagination: PaginationState;
+  @observable minionsSorting: SortingState;
+  @observable isMinionsLoading: boolean;
+  @observable minionCategoryFilter: TaskMinionStatus | null;
   @observable jobs: Array<JobsListResponse>;
   @observable loadingCounter: number;
   @observable error: string | null;
@@ -22,6 +32,11 @@ export class TaskStore {
     this.task = null;
     this.jobReturns = [];
     this.minions = [];
+    this.totalMinions = 0;
+    this.minionsPagination = { pageIndex: 0, pageSize: PAGE_SIZE };
+    this.minionsSorting = [...DEFAULT_SORTING];
+    this.isMinionsLoading = false;
+    this.minionCategoryFilter = null;
     this.jobs = [];
     this.loadingCounter = 0;
     this.error = null;
@@ -73,7 +88,9 @@ export class TaskStore {
         }
         runInAction(() => {
           this.task = task;
-          this.loadMinions(taskId);
+          this.minionCategoryFilter = null;
+          this.minionsPagination.pageIndex = 0;
+          this.loadMinions(taskId, { loadJobs: true });
         });
       })
       .catch((error) => {
@@ -111,18 +128,29 @@ export class TaskStore {
   };
 
   @action
-  loadMinions = (taskId: string) => {
-    this.startLoading();
+  loadMinions = (taskId: string, options?: { loadJobs?: boolean }) => {
+    const loadJobs = options?.loadJobs ?? false;
+    this.isMinionsLoading = true;
+    const query =
+      this.minionCategoryFilter != null ? { status: this.minionCategoryFilter } : undefined;
     apiCoreStore.tasksApi
       ?.tasksMinions({
         tid: taskId,
-        TaskMinionListBody: {},
+        TaskMinionListBody: {
+          limit: this.minionsPagination.pageSize,
+          skip: this.minionsPagination.pageIndex * this.minionsPagination.pageSize,
+          sort: toBackendSorting(this.minionsSorting),
+          query,
+        },
       })
       .then((response) => {
         runInAction(() => {
           this.minions = response.data;
-          this.loadJobs(taskId);
+          this.totalMinions = response.total;
         });
+        if (loadJobs) {
+          this.loadJobs(taskId);
+        }
       })
       .catch((error) => {
         console.error("Error loading task minions:", error);
@@ -132,9 +160,28 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
-          this.finishLoading();
+          this.isMinionsLoading = false;
         });
       });
+  };
+
+  @action
+  handleMinionsLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
+    this.minionsPagination.pageIndex = pagination.pageIndex;
+    this.minionsPagination.pageSize = pagination.pageSize;
+    this.minionsSorting = sorting;
+    if (this.task?.id) {
+      this.loadMinions(this.task.id);
+    }
+  };
+
+  @action
+  setMinionCategoryFilter = (status: TaskMinionStatus | null) => {
+    this.minionCategoryFilter = status;
+    this.minionsPagination.pageIndex = 0;
+    if (this.task?.id) {
+      this.loadMinions(this.task.id);
+    }
   };
 
   @action
@@ -294,8 +341,13 @@ export class TaskStore {
     if (index > -1) {
       this.minions[index] = minion;
       this.minions = [...this.minions];
-    } else {
-      this.minions = [minion, ...this.minions];
+    } else if (this.minionsPagination.pageIndex === 0) {
+      const newMinions = [minion, ...this.minions];
+      this.minions =
+        newMinions.length > this.minionsPagination.pageSize
+          ? newMinions.slice(0, this.minionsPagination.pageSize)
+          : newMinions;
+      this.totalMinions += 1;
     }
   };
 
