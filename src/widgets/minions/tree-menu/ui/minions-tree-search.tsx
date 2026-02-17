@@ -1,61 +1,76 @@
+import { SearchOutlined } from "@ant-design/icons";
 import { Input } from "antd";
-import { type ChangeEvent, type Key, useState } from "react";
+import { type ChangeEvent, memo, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { flattenTree } from "../helpers/flatten-tree";
-import { getParentKey } from "../helpers/get-parent-key";
-import type { CollectionTreeAntdNode } from "../types/node";
+import styles from "./minions-tree-search.module.css";
+
+const DEBOUNCE_MS = 250;
 
 export interface MinionsTreeSearchProps {
   disabled: boolean;
-  treeData: CollectionTreeAntdNode[];
-  defaultExpandedKeys: Key[];
-  onAppliedSearchChange: (appliedSearch: string, expandedKeys: Key[]) => void;
+  onSearchChange: (search: string) => void;
 }
 
-export function MinionsTreeSearch({
+export const MinionsTreeSearch = memo(function MinionsTreeSearch({
   disabled,
-  treeData,
-  defaultExpandedKeys,
-  onAppliedSearchChange,
+  onSearchChange,
 }: MinionsTreeSearchProps) {
   const { t } = useTranslation();
+
   const [searchValue, setSearchValue] = useState("");
 
-  const handleSearch = (value: string) => {
-    const trimmed = value.trim().toLowerCase();
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    if (!trimmed) {
-      onAppliedSearchChange("", defaultExpandedKeys);
-      return;
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setSearchValue(value);
+
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+
+      if (!value.trim()) {
+        onSearchChange("");
+        return;
+      }
+
+      debounceTimer.current = setTimeout(() => {
+        debounceTimer.current = null;
+        onSearchChange(value.trim());
+      }, DEBOUNCE_MS);
+    },
+    [onSearchChange]
+  );
+
+  const handleClear = useCallback(() => {
+    setSearchValue("");
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
     }
+    onSearchChange("");
+  }, [onSearchChange]);
 
-    const flatList = flattenTree(treeData);
-    const newExpandedKeys = flatList
-      .filter((item) => item.title.toLowerCase().includes(trimmed))
-      .map((item) => getParentKey(item.key, treeData))
-      .filter((key, index, self): key is Key => key !== null && self.indexOf(key) === index);
-
-    onAppliedSearchChange(trimmed, newExpandedKeys);
-  };
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setSearchValue(value);
-
-    if (!value) {
-      onAppliedSearchChange("", defaultExpandedKeys);
-    }
-  };
+  useEffect(
+    () => () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    },
+    []
+  );
 
   return (
-    <Input.Search
+    <Input
+      className={styles.treeSearch}
       placeholder={t("collection.search-collections")}
+      prefix={<SearchOutlined className={styles.treeSearchIcon} />}
       allowClear
       disabled={disabled}
       value={searchValue}
       onChange={handleChange}
-      onSearch={handleSearch}
+      onClear={handleClear}
     />
   );
-}
+});
