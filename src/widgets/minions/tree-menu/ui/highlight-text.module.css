@@ -1,0 +1,14 @@
+.highlightTextDimmed {
+  opacity: 0.55;
+}
+
+.highlightTextBold {
+  font-weight: 500;
+}
+
+.highlightTextMark {
+  background: #ffe58f;
+  padding: 0 2px;
+  border-radius: 2px;
+  color: inherit;
+}

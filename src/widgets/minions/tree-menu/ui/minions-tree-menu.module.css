@@ -11,6 +11,8 @@
   --offset: 24px;
 
   height: calc(100% + var(--offset));
+  min-width: 420px;
+
   margin-bottom: calc(var(--offset) * -1);
   margin-right: calc(var(--offset) * -1);
 }
@@ -62,6 +64,13 @@
   color: #1677ff;
 }
 
-.searchHighlight {
-  color: #f50;
+.searchEmptyState {
+  text-align: center;
+  padding: 32px 16px;
+  color: rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+}
+
+.minionsTree {
+  font-size: 13px;
 }
