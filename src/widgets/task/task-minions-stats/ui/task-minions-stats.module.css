@@ -5,6 +5,10 @@
   border: 1px solid #f0f0f0;
   width: 20%;
   padding: 12px 20px;
+
+  transition:
+    border-color 300ms,
+    background-color 300ms;
 }
 
 .taskStatItem :global(.ant-statistic-title) {
