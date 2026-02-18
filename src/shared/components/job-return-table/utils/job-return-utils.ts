@@ -9,34 +9,12 @@ export const getShortJobReturnOutput = (jobReturn: JobReturnModel): unknown => {
 };
 
 export const isSimpleStringData = (data: unknown): boolean => {
-  if (typeof data === "string") {
-    return true;
-  }
-
-  if (typeof data === "object" && data !== null) {
-    const keys = Object.keys(data);
-    if (keys.length === 1) {
-      const value = (data as Record<string, unknown>)[keys[0]];
-      return typeof value === "string";
-    }
-  }
-
-  return false;
+  return typeof data === "string";
 };
 
 export const extractStringValue = (data: unknown): string => {
   if (typeof data === "string") {
     return data;
-  }
-
-  if (typeof data === "object" && data !== null) {
-    const keys = Object.keys(data);
-    if (keys.length === 1) {
-      const value = (data as Record<string, unknown>)[keys[0]];
-      if (typeof value === "string") {
-        return value;
-      }
-    }
   }
 
   return "";
