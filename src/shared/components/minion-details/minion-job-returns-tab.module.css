@@ -19,6 +19,16 @@
   color: var(--ant-color-text-tertiary, #8c8c8c);
 }
 
+.kwargsPopoverWrapper {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+
 .kwargsTag,
 .kwargsTagClickable {
   margin-inline: 0;
@@ -29,6 +39,7 @@
 }
 
 .kwargsTagClickable {
+  width: 100%;
   cursor: pointer;
   transition:
     background-color 0.2s ease-in-out,

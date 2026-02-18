@@ -12,7 +12,7 @@ import {
   SortingState,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Flex, Tag } from "antd";
+import { Button, Flex, Tag } from "antd";
 import React, { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
@@ -94,17 +94,19 @@ const KwargsTag = ({
   }
 
   return (
-    <JsonPopover
-      data={data ?? {}}
-      title={title}
-      copySuccessMessage={copySuccessMessage}
-      maxHeight="400px"
-      maxWidth="700px"
-      placement="bottom"
-      tagClassName={styles.kwargsTagClickable}
-    >
-      {tagContent}
-    </JsonPopover>
+    <Button className={styles.kwargsPopoverWrapper} onClick={(e) => e.stopPropagation()}>
+      <JsonPopover
+        data={data ?? {}}
+        title={title}
+        copySuccessMessage={copySuccessMessage}
+        maxHeight="400px"
+        maxWidth="700px"
+        placement="bottom"
+        tagClassName={styles.kwargsTagClickable}
+      >
+        {tagContent}
+      </JsonPopover>
+    </Button>
   );
 };
 
