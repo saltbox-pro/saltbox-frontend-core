@@ -245,7 +245,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     pageActionsButtonsPlugin = (
       <>
         {pageActionsButtonsPlugin}
-        <Parcel config={plugin.parcel} wrapWith="div" />
+        <Parcel config={plugin.parcel} wrapWith="div" selectedMinions={selectedMinions} />
       </>
     );
   });
