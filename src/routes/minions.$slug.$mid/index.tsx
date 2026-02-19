@@ -1,10 +1,9 @@
 import { DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
-import { PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
+import { FiltersCounter, PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { formatQuery } from "react-querybuilder";
 import { useLocation, useNavigate, useParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -351,12 +350,8 @@ const MinionPage = observer(() => {
     handleJobReturnsFilterSearch();
   }, [jobReturnsFilterStore, handleJobReturnsFilterSearch]);
 
-  const hasJobReturnsFilters = useMemo(() => {
-    return (
-      formatQuery(jobReturnsFilterStore.searchFilters, "json_without_ids") !==
-      formatQuery({ rules: [], combinator: "and", not: false }, "json_without_ids")
-    );
-  }, [jobReturnsFilterStore.searchFilters]);
+  const jobReturnsActiveFiltersCount = jobReturnsFilterStore.activeFiltersCount;
+  const hasJobReturnsFilters = jobReturnsActiveFiltersCount > 0;
 
   const jobReturnsFilterButton = (
     <Button
@@ -364,9 +359,10 @@ const MinionPage = observer(() => {
       color={"primary"}
       variant={showJobReturnsFilter ? "solid" : hasJobReturnsFilters ? "filled" : "outlined"}
     >
-      <Flex gap={8}>
+      <Flex gap={8} align="center">
         <FilterOutlined />
         {t("minions.filters-button")}
+        <FiltersCounter count={jobReturnsActiveFiltersCount} />
       </Flex>
     </Button>
   );

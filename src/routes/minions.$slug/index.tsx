@@ -8,9 +8,10 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import {
+  Dropdown,
+  FiltersCounter,
   PageHeader,
   Modal,
-  Dropdown,
   Popover,
   generateIdsForQuery,
 } from "@saltbox/saltbox-frontend-common";
@@ -208,7 +209,8 @@ const MinionsPage = observer(() => {
     tabKey,
   ]);
 
-  const hasFilters = minionFilterStore.currentFilters.rules.length > 0;
+  const activeFiltersCount = minionFilterStore.activeFiltersCount;
+  const hasFilters = activeFiltersCount > 0;
 
   return (
     <>
@@ -254,9 +256,10 @@ const MinionsPage = observer(() => {
                       color={"primary"}
                       variant={showFilter ? "solid" : hasFilters ? "filled" : "outlined"}
                     >
-                      <Flex gap={8}>
+                      <Flex gap={8} align="center">
                         <FilterOutlined />
                         {t("minions.filters-button")}
+                        <FiltersCounter count={activeFiltersCount} />
                       </Flex>
                     </Button>
                     <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
