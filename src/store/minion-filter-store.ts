@@ -43,6 +43,6 @@ export class MinionFilterStore extends FilterStore {
 
   @computed
   get countActiveFilters() {
-    return this.currentFilters.rules.length;
+    return this.activeFiltersCount;
   }
 }
