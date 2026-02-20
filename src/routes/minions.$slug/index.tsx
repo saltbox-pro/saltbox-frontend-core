@@ -254,7 +254,7 @@ const MinionsPage = observer(() => {
                     <Button
                       onClick={() => setShowFilter(!showFilter)}
                       color={"primary"}
-                      variant={showFilter ? "solid" : hasFilters ? "filled" : "outlined"}
+                      variant={hasFilters || showFilter ? "solid" : "outlined"}
                     >
                       <Flex gap={8} align="center">
                         <FilterOutlined />
