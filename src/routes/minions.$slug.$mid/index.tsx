@@ -357,7 +357,7 @@ const MinionPage = observer(() => {
     <Button
       onClick={() => setShowJobReturnsFilter(!showJobReturnsFilter)}
       color={"primary"}
-      variant={showJobReturnsFilter ? "solid" : hasJobReturnsFilters ? "filled" : "outlined"}
+      variant={hasJobReturnsFilters || showJobReturnsFilter ? "solid" : "outlined"}
     >
       <Flex gap={8} align="center">
         <FilterOutlined />
