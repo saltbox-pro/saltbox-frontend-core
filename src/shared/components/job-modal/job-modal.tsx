@@ -58,6 +58,7 @@ interface JobModalProps {
   onAfterClose?: () => void;
   shouldShowModalByKeyboardEvent?: (event: KeyboardEvent) => boolean;
   buttonProps?: JobModalButtonProps;
+  renderButton?: (openModal: () => void) => React.ReactNode;
 }
 
 type JobFormData = CreateJobRequest & { fun: string[] | number[] };
@@ -75,6 +76,7 @@ export function JobModal({
   onAfterClose,
   shouldShowModalByKeyboardEvent,
   buttonProps,
+  renderButton,
 }: JobModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -522,19 +524,22 @@ export function JobModal({
   return (
     <>
       {contextHolder}
-      {!openOnMount && (
-        <Button
-          type={finalButtonProps.type}
-          shape={finalButtonProps.shape}
-          icon={finalButtonProps.icon}
-          size={finalButtonProps.size}
-          title={finalButtonProps.title}
-          onClick={showModal}
-          loading={isMasterListLoading}
-        >
-          {finalButtonProps.showText ? finalButtonProps.text : null}
-        </Button>
-      )}
+      {!openOnMount &&
+        (renderButton ? (
+          renderButton(showModal)
+        ) : (
+          <Button
+            type={finalButtonProps.type}
+            shape={finalButtonProps.shape}
+            icon={finalButtonProps.icon}
+            size={finalButtonProps.size}
+            title={finalButtonProps.title}
+            onClick={showModal}
+            loading={isMasterListLoading}
+          >
+            {finalButtonProps.showText ? finalButtonProps.text : null}
+          </Button>
+        ))}
 
       <Modal
         title={t("job-modal.title")}

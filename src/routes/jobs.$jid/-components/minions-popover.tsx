@@ -54,13 +54,16 @@ export function MinionsPopover({ minions, title, maxWidth = "500px" }: MinionsPo
               fun={jobStore.job?.fun}
               arg={jobStore.job?.arg}
               kwarg={jobStore.job?.kwarg}
-              buttonProps={{
-                shape: "circle",
-                icon: <ReloadOutlined />,
-                type: "link",
-                size: "small",
-                showText: false,
-              }}
+              renderButton={(openModal) => (
+                <BaseActionButton
+                  icon={<ReloadOutlined />}
+                  title={t("jobs.replay-job")}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openModal();
+                  }}
+                />
+              )}
             />
             <BaseActionButton
               icon={<CloseOutlined />}
