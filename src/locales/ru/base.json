@@ -390,7 +390,7 @@
   "job": {
     "successful-minions": "успешно",
     "failed-minions": "с ошибками",
-    "pending-minions": "ожидает"
+    "pending-minions": "Ожидает"
   },
   "job-modal": {
     "title": "Создание команды",
