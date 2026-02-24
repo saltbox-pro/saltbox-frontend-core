@@ -2,9 +2,8 @@ import { TaskListResponseSchema, TaskModel, TaskType } from "@saltbox/saltbox-co
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
-import { OptionList } from "react-querybuilder";
 
-import { apiCoreStore, TasksFilterStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
@@ -18,7 +17,6 @@ export class TasksStore {
   @observable total: number;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
-  @observable filterStore: TasksFilterStore;
 
   constructor(taskType: TaskType) {
     this.tasks = [];
@@ -34,8 +32,7 @@ export class TasksStore {
     makeObservable(this);
   }
 
-  @action init = (filterSchema: OptionList) => {
-    this.filterStore = new TasksFilterStore(filterSchema);
+  @action init = () => {
     this.tasks = [];
     this.total = 0;
     this.isTasksLoading = false;

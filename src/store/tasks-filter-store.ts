@@ -3,14 +3,7 @@ import { makeObservable } from "mobx";
 import { OptionList, RuleGroupType } from "react-querybuilder";
 
 const defaultFilters: RuleGroupType = {
-  rules: [
-    {
-      field: "source.type",
-      operator: "in",
-      value: "rest",
-      valueSource: "value",
-    },
-  ],
+  rules: [],
   combinator: "and",
 };
 

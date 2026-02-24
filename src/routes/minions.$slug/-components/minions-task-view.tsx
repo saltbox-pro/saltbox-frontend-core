@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
-import { apiCoreStore, appStore, TasksStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
 import { TasksQueryBuilder } from "./tasks-query-builder";
@@ -66,7 +66,14 @@ const defaultListOperators = [
   },
 ];
 
-export const MinionsTaskView = observer((props: { slug?: string; taskType?: TaskType }) => {
+type MinionsTaskViewProps = {
+  slug?: string;
+  taskType?: TaskType;
+  filterStore: TasksFilterStore;
+  showFilter: boolean;
+};
+
+export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -258,7 +265,7 @@ export const MinionsTaskView = observer((props: { slug?: string; taskType?: Task
     );
     return () => {
       webSocketService.disconnect();
-      tasksStore.init(filterSchema);
+      tasksStore.init();
     };
   }, []);
 
@@ -270,28 +277,30 @@ export const MinionsTaskView = observer((props: { slug?: string; taskType?: Task
 
   useEffect(() => {
     if (props.slug) {
-      tasksStore.init(filterSchema);
-      tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
+      tasksStore.init();
+      props.filterStore.filterSchema = filterSchema;
+      tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
       tasksStore.setCollectionSlug(props.slug);
     }
-  }, [props.slug, filterSchema]);
+  }, [props.slug, filterSchema, props.filterStore]);
 
   const handleSearchButtonClick = () => {
-    tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
+    tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
+    props.filterStore.handleSearch();
     tasksStore.handleSearch(props.slug);
   };
 
   const handleResetButtonClick = () => {
-    tasksStore.filterStore.handleResetFilters();
-    tasksStore.mongoDBQuery = tasksStore.filterStore.searchMongoDBQuery;
+    props.filterStore.handleResetFilters();
+    tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(props.slug);
   };
 
   return (
     <Flex className={styles.tabWrapper} vertical>
-      {tasksStore.filterStore && (
+      {props.showFilter && props.filterStore && (
         <TasksQueryBuilder
-          filterStore={tasksStore.filterStore}
+          filterStore={props.filterStore}
           onSearchButtonClick={handleSearchButtonClick}
           onResetButtonClick={handleResetButtonClick}
         />
