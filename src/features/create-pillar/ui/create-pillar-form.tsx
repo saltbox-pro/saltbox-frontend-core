@@ -1,6 +1,6 @@
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { PillarCreateSchema, PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { JsonEditor } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Checkbox, Flex, Form, Input, message } from "antd";
+import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,12 +9,15 @@ import { type PillarsStore, apiCoreStore } from "saltbox-core/store";
 import { createPillarValueValidator } from "../utils/pillar-value-validator";
 import { isParseValueError, parseAndValidatePillarValue } from "../utils/validation";
 
+import { JsonEditorField } from "./create-pillar-form-value-field";
+
 export type { PillarValueType } from "../utils/validation";
 
 interface CreatePillarFormValues {
   name: string;
   value: string;
   is_personal: boolean;
+  is_secret: boolean;
 }
 
 interface CreatePillarFormProps {
@@ -26,7 +29,6 @@ interface CreatePillarFormProps {
 
 export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePillarFormProps) {
   const { t } = useTranslation();
-
   const [form] = Form.useForm<CreatePillarFormValues>();
 
   const [isCreating, setIsCreating] = useState<boolean>(false);
@@ -52,10 +54,17 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
       return;
     }
 
+    if (values.is_secret && typeof parsed.value === "object" && parsed.value !== null) {
+      setCreateError("pillars.create.field-secret-primitive-only");
+      setIsCreating(false);
+      return;
+    }
+
     const body: PillarCreateSchema = {
       name: values.name,
       value: parsed.value,
       is_personal: values.is_personal,
+      is_secret: values.is_secret,
       tgt_type: tgtType,
       tgt_id: tgtType === "root" ? null : tgtId,
     };
@@ -79,7 +88,7 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
       layout="vertical"
       onFinish={handleSubmit}
       onValuesChange={() => setCreateError(null)}
-      initialValues={{ is_personal: false }}
+      initialValues={{ is_personal: false, is_secret: false }}
       autoComplete="off"
     >
       <Form.Item
@@ -104,12 +113,27 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
           { validator: createPillarValueValidator(t) },
         ]}
       >
-        <JsonEditor />
+        <JsonEditorField form={form} />
       </Form.Item>
 
-      <Form.Item name="is_personal" valuePropName="checked">
-        <Checkbox>{t("pillars.create.field-personal")}</Checkbox>
-      </Form.Item>
+      <Flex gap="middle">
+        <Form.Item name="is_personal" valuePropName="checked">
+          <Checkbox>{t("pillars.create.field-personal")}</Checkbox>
+        </Form.Item>
+
+        <Form.Item name="is_secret" valuePropName="checked">
+          <Checkbox>
+            {t("pillars.create.field-secret")}{" "}
+            <Tooltip title={t("pillars.create.field-secret-primitive-only")}>
+              <Button
+                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
+                type="text"
+                size="small"
+              />
+            </Tooltip>
+          </Checkbox>
+        </Form.Item>
+      </Flex>
 
       <Flex vertical gap="middle">
         {!!createError && <Alert message={t(createError)} type="error" showIcon />}
