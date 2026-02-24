@@ -1,12 +1,8 @@
 import { SettingOutlined } from "@ant-design/icons";
-import {
-  MinionDetailSchema,
-  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
-  JobReturnModel,
-} from "@saltbox/saltbox-core-api-client";
-import { PaginationState, SortingState } from "@tanstack/react-table";
+import type { MinionDetailSchema, JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import type { PaginationState, SortingState } from "@tanstack/react-table";
 import { Button, Dropdown, Flex, Tabs, type MenuProps, type TabsProps } from "antd";
-import React, { useCallback, useState } from "react";
+import { type ReactNode, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
@@ -33,17 +29,14 @@ type JobReturnsConfig = {
 export interface MinionDetailsProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
-  pillars: SaltboxCorePillarsOldSchemasPillarSchemasPillarModel[] | null;
-  isPillarsLoading: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
   jobReturnsConfig?: JobReturnsConfig;
   isFullView?: boolean;
-  pillarsTabActions?: React.ReactNode;
-  jobReturnsTabActions?: React.ReactNode;
+  jobReturnsTabActions?: ReactNode;
   fullViewActionsMenuItems?: MenuProps["items"];
   onFullViewActionsMenuClick?: MenuProps["onClick"];
-  jobReturnsFilter?: React.ReactNode;
-  jobReturnsFilterButton?: React.ReactNode;
+  jobReturnsFilter?: ReactNode;
+  jobReturnsFilterButton?: ReactNode;
   isInDrawer?: boolean;
 }
 
@@ -53,9 +46,6 @@ export function MinionDetails({
   jobReturnsConfig,
   jobReturnsTabActions,
   jobReturnsFilter,
-  pillars,
-  isPillarsLoading,
-  pillarsTabActions,
   isInDrawer,
   isFullView,
   jobReturnsFilterButton,
@@ -64,7 +54,9 @@ export function MinionDetails({
   onFilterButton,
 }: MinionDetailsProps) {
   const { t } = useTranslation();
+
   const [searchParams, setSearchParams] = useSearchParams();
+
   const [activeTab, setActiveTab] = useState<string>(() =>
     !isInDrawer ? searchParams.get("tab") || "dashboard" : "dashboard"
   );
@@ -111,59 +103,73 @@ export function MinionDetails({
       }
     : undefined;
 
-  const items: TabsProps["items"] = [];
+  const tabs = useMemo<TabsProps["items"]>(() => {
+    const items: TabsProps["items"] = [
+      {
+        key: "dashboard",
+        label: t("minions.dashboard"),
+        className: styles.minionTabWithBottomOffset,
+        children: (
+          <MinionDashboardTab
+            minion={minion}
+            isMinionLoading={isMinionLoading}
+            onFilterButton={onFilterButton}
+          />
+        ),
+      },
+    ];
 
-  items.push({
-    key: "dashboard",
-    label: t("minions.dashboard"),
-    className: styles.minionTabWithBottomOffset,
-    children: (
-      <MinionDashboardTab
-        minion={minion}
-        isMinionLoading={isMinionLoading}
-        onFilterButton={onFilterButton}
-      />
-    ),
-  });
+    if (jobReturnsConfig) {
+      items.push({
+        key: "job-returns",
+        label: t("minions.job-returns"),
+        children: (
+          <MinionJobReturnsTab
+            jobReturnsConfig={jobReturnsConfig}
+            isFullView={isFullView}
+            jobReturnsTabActions={jobReturnsTabActions}
+            jobReturnsFilter={jobReturnsFilter}
+          />
+        ),
+      });
+    }
 
-  if (jobReturnsConfig) {
     items.push({
-      key: "job-returns",
-      label: t("minions.job-returns"),
-      children: (
-        <MinionJobReturnsTab
-          jobReturnsConfig={jobReturnsConfig}
-          isFullView={isFullView}
-          jobReturnsTabActions={jobReturnsTabActions}
-          jobReturnsFilter={jobReturnsFilter}
-        />
-      ),
+      key: "grains",
+      label: t("minions.grains"),
+      className: styles.minionTabWithBottomOffset,
+      children: <MinionGrainsTab minion={minion} isMinionLoading={isMinionLoading} />,
     });
-  }
 
-  items.push({
-    key: "pillars",
-    label: "Pillars",
-    children: (
-      <MinionPillarsTab
-        pillars={pillars}
-        isPillarsLoading={isPillarsLoading}
-        isFullView={isFullView}
-        pillarsTabActions={pillarsTabActions}
-      />
-    ),
-  });
+    items.push({
+      key: "pillars",
+      label: "Pillars",
+      children: minion?.id ? (
+        <MinionPillarsTab
+          targetId={minion.id}
+          targetName={minion.minion_id}
+          isFullView={isFullView}
+          isInDrawer={isInDrawer}
+        />
+      ) : null,
+    });
 
-  items.push({
-    key: "grains",
-    label: t("minions.grains"),
-    className: styles.minionTabWithBottomOffset,
-    children: <MinionGrainsTab minion={minion} isMinionLoading={isMinionLoading} />,
-  });
+    return items;
+  }, [
+    isFullView,
+    isInDrawer,
+    isMinionLoading,
+    jobReturnsConfig,
+    jobReturnsFilter,
+    jobReturnsTabActions,
+    minion,
+    onFilterButton,
+    t,
+  ]);
 
   return (
     <Tabs
-      items={items}
+      items={tabs}
       className={styles.minionsTabs}
       tabBarExtraContent={fullViewActions}
       onChange={handleTabChange}

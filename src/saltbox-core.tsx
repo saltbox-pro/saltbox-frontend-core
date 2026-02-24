@@ -67,6 +67,12 @@ export const saltboxModule = {
         icon: "build_circle",
         path: "/core/jobs",
       },
+      {
+        key: "pillars",
+        label: { en: "Pillars", ru: "Pillars" },
+        icon: "key",
+        path: "/core/pillars",
+      },
     ],
   },
   settingsConfig: {

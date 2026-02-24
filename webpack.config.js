@@ -1,9 +1,14 @@
-const { merge } = require("webpack-merge");
-const webpack = require("webpack");
-const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
 const path = require("path");
 
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const webpack = require("webpack");
+const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
+const { merge } = require("webpack-merge");
+
 module.exports = (webpackConfigEnv, argv) => {
+  const isDev = argv.mode === "development";
+  const isProd = argv.mode === "production";
+
   const defaultConfig = singleSpaDefaults({
     orgName: "saltbox",
     projectName: "core",
@@ -23,12 +28,16 @@ module.exports = (webpackConfigEnv, argv) => {
     },
     plugins: [
       new webpack.DefinePlugin({
-        DEVELOPMENT: argv.mode === 'development',
-        PRODUCTION: argv.mode === 'production',
+        DEVELOPMENT: isDev,
+        PRODUCTION: isProd,
+      }),
+      new MonacoWebpackPlugin({
+        filename: "[name].worker.js",
+        publicPath: isDev ? "http://localhost:4202/" : undefined,
       }),
     ],
     output: {
-      filename: 'index.js',
+      filename: "index.js",
     },
   });
 

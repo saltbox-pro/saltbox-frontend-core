@@ -35,6 +35,7 @@ import {
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
+import { MinionsPillarsView } from "./-components/minions-pillars-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
 
@@ -49,10 +50,11 @@ const MinionsPage = observer(() => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [collectionStore] = useState(new CollectionStore());
   const [showFilter, setShowFilter] = useState(false);
-  const [tabKey, setTabKey] = useState(() => searchParams.get("tab") || "list");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
   useEffect(() => {
     const initialFilter = JSON.parse(localStorage.getItem("minionsFilter"));
@@ -200,9 +202,25 @@ const MinionsPage = observer(() => {
         });
       }
     }
+
+    tabs.push({
+      label: t("pillars.title"),
+      key: "pillars",
+      children:
+        tabKey === "pillars" && collectionStore.collection?.id && slug ? (
+          <MinionsPillarsView
+            collectionId={collectionStore.collection.id}
+            collectionSlug={slug}
+            collectionName={collectionStore.collection?.title}
+          />
+        ) : null,
+      className: styles.flexTab,
+    });
+
     return tabs;
   }, [
     slug,
+    collectionStore.collection?.id,
     showFilter,
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
@@ -277,7 +295,6 @@ const MinionsPage = observer(() => {
         }}
         items={minionsTabs}
         onChange={(newTabKey) => {
-          setTabKey(newTabKey);
           setSearchParams((prev) => {
             const newParams = new URLSearchParams(prev);
             newParams.set("tab", newTabKey);

@@ -1,41 +1,26 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tag } from "antd";
-import {
-  type CSSProperties,
-  type MouseEventHandler,
-  type ReactNode,
-  useCallback,
-  useState,
-} from "react";
+import { type MouseEventHandler, type ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import ReactJson from "react-json-view";
 
-import styles from "./json-popover.module.css";
-
-export interface JsonPopoverProps {
-  data: unknown;
+export interface PrimitivePopoverProps {
+  value: string | number | boolean | null;
   title?: string;
-  maxHeight?: string;
   maxWidth?: string;
   placement?: "top" | "bottom" | "bottomRight" | "left" | "right";
-  copySuccessMessage?: string;
   tagClassName?: string;
-  contentStyle?: CSSProperties;
   children: ReactNode;
 }
 
-export function JsonPopover({
-  data,
-  title = "Data",
-  maxHeight = "500px",
-  maxWidth = "750px",
+export function PrimitivePopover({
+  value,
+  title = "",
+  maxWidth = "400px",
   placement = "bottomRight",
-  copySuccessMessage,
   tagClassName,
-  contentStyle,
   children,
-}: JsonPopoverProps) {
+}: PrimitivePopoverProps) {
   const { t } = useTranslation();
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -45,32 +30,28 @@ export function JsonPopover({
     e.stopPropagation();
   }, []);
 
-  const successMessage = copySuccessMessage ?? t("jobs.table-copy-success");
-
-  const displayData = data !== null && typeof data === "object" ? data : { "": data };
+  const displayText = JSON.stringify(value);
 
   return (
     <Popover
       content={
-        <div className={styles.content} style={{ maxHeight, ...contentStyle }}>
-          <ReactJson
-            displayDataTypes={false}
-            enableClipboard={false}
-            name={false}
-            displayObjectSize={false}
-            src={displayData}
-            collapsed={1}
-          />
-        </div>
+        <pre
+          style={{
+            margin: 0,
+            fontFamily: "monospace",
+            fontSize: "12px",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          {displayText}
+        </pre>
       }
       title={
         <Flex gap={8} justify="space-between" align="center">
           <span>{title}</span>
           <Flex gap={8}>
-            <CopyToClipboardButton
-              text={JSON.stringify(data, null, 2)}
-              successMessage={successMessage}
-            />
+            <CopyToClipboardButton text={displayText} />
             <BaseActionButton
               icon={<CloseOutlined />}
               title={t("action-button.close", { ns: "common" })}
