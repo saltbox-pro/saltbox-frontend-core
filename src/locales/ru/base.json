@@ -339,7 +339,7 @@
     "title": "Pillars",
     "load-error": "Не удалось получить pillars",
     "create": {
-      "add-button": "Добавить pillar",
+      "add-button": "Создать pillar",
       "modal-title-collection": "Создание pillar для коллекции {{name}}",
       "modal-title-minion": "Создание pillar для клиента {{name}}",
       "field-name": "Имя",
@@ -349,9 +349,11 @@
       "field-value": "Значение",
       "field-value-placeholder": "Введите значение",
       "field-value-required": "Значение обязательно к заполнению",
-      "field-value-invalid-json": "Значение должно быть валидным JSON (строка, число, true/false/null, объект или массив)",
-      "field-value-invalid-type": "Значение должно быть строкой, числом, boolean, null, объектом или массивом",
+      "field-value-invalid-json": "Значение должно быть валидным JSON",
+      "field-value-invalid-type": "Значение должно быть строкой, числом, true/false/null, объектом или массивом",
       "field-personal": "Персональный",
+      "field-secret": "Защищённый",
+      "field-secret-primitive-only": "Защищённый pillar поддерживает только примитивные значения (строка, число, логическое значение, null)",
       "cancel": "Отмена",
       "submit": "Создать",
       "success": "Pillar успешно создан",
@@ -363,6 +365,7 @@
       "target-type": "Тип цели",
       "target-id": "ID цели",
       "personal": "Персональный",
+      "secret": "Защищённый",
       "created": "Дата создания",
       "modified": "Дата изменения"
     }

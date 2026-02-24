@@ -1,0 +1,38 @@
+.jsonEditorWrapper {
+  --json-border-default: #d9d9d9;
+  --json-border-hover: #4096ff;
+  --json-border-active: #1677ff;
+  --json-shadow-active: rgba(5, 145, 255, 0.1);
+  --json-shadow-error-active: rgba(255, 38, 5, 0.06);
+  --json-border-error: #ff4d4f;
+  --json-border-error-hover: #ffa39e;
+  --json-border-error-active: #ff4d4f;
+  --json-border-radius: 6px;
+
+  border: 1px solid var(--json-border-default);
+  border-radius: var(--json-border-radius);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.jsonEditorWrapper:hover:not(.jsonEditorWrapper_error) {
+  border-color: var(--json-border-hover);
+}
+
+.jsonEditorWrapper:focus-within:not(.jsonEditorWrapper_error) {
+  border-color: var(--json-border-active);
+  box-shadow: 0 0 0 2px var(--json-shadow-active);
+}
+
+.jsonEditorWrapper.jsonEditorWrapper_error {
+  border-color: var(--json-border-error);
+}
+
+.jsonEditorWrapper.jsonEditorWrapper_error:hover {
+  border-color: var(--json-border-error-hover);
+}
+
+.jsonEditorWrapper.jsonEditorWrapper_error:focus-within {
+  border-color: var(--json-border-error);
+  box-shadow: 0 0 0 2px var(--json-shadow-error-active);
+}

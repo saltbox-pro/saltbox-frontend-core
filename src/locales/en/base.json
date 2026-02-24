@@ -339,7 +339,7 @@
     "title": "Pillars",
     "load-error": "Failed to load pillars",
     "create": {
-      "add-button": "Add pillar",
+      "add-button": "Create pillar",
       "modal-title-collection": "Create pillar for collection {{name}}",
       "modal-title-minion": "Create pillar for minion {{name}}",
       "field-name": "Name",
@@ -349,9 +349,11 @@
       "field-value": "Value",
       "field-value-placeholder": "Enter value",
       "field-value-required": "Value is required",
-      "field-value-invalid-json": "Value must be valid JSON (string, number, true/false/null, object or array)",
+      "field-value-invalid-json": "Value must be valid JSON",
       "field-value-invalid-type": "Value must be a string, number, boolean, null, object or array",
       "field-personal": "Personal",
+      "field-secret": "Secure",
+      "field-secret-primitive-only": "Secure pillar supports only primitive values (string, number, boolean, null)",
       "cancel": "Cancel",
       "submit": "Create",
       "success": "Pillar created successfully",
@@ -363,6 +365,7 @@
       "target-type": "Target Type",
       "target-id": "Target ID",
       "personal": "Personal",
+      "secret": "Secure",
       "created": "Created",
       "modified": "Modified"
     }

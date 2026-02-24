@@ -44,6 +44,11 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
             minWidth: 240,
           },
         }),
+        columnHelper.accessor("is_secret", {
+          header: t("pillars.table.secret"),
+          cell: (data) => (data.getValue() ? t("common.yes") : t("common.no")),
+          meta: { width: "10%", minWidth: 135 },
+        }),
       ];
 
   const columns = [
@@ -62,8 +67,17 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
     }),
     columnHelper.accessor("value", {
       header: t("pillars.table.value"),
-      cell: ({ getValue }) => <JsonPreview value={getValue()} title={t("pillars.table.value")} />,
-      meta: { showCopy: true, width: "20%", minWidth: 250, maxWidth: 250 },
+      cell: ({ row, getValue }) => {
+        const value = getValue();
+        const isSecret = row.original?.is_secret;
+
+        if (isSecret) {
+          return value;
+        }
+
+        return <JsonPreview value={value} title={t("pillars.table.value")} />;
+      },
+      meta: { width: "20%", minWidth: 250, maxWidth: 250 },
     }),
     ...targetColumns,
     columnHelper.accessor("is_personal", {
