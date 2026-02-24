@@ -13,6 +13,7 @@ import JobsTemplatesPage from "./routes/jobs-templates";
 import JobPage from "./routes/jobs.$jid";
 import MastersPage from "./routes/masters";
 import MinionRedirectPage from "./routes/masters.$master_id.minion.$minion_id";
+import PillarsPage from "./routes/pillars";
 import MasterPage from "./routes/masters.$mid";
 import MinionsPage from "./routes/minions.$slug";
 import MinionPage from "./routes/minions.$slug.$mid";
@@ -37,6 +38,7 @@ export default observer(function Root() {
             <Route path="/minions/:slug" element={<MinionsPage />} />
             <Route path="/masters" element={<MastersPage />} />
             <Route path="/masters/:mid" element={<MasterPage />} />
+            <Route path="/pillars" element={<PillarsPage />} />
             <Route path="/masters/:master_id/minion/:minion_id" element={<MinionRedirectPage />} />
             <Route path="/jobs" element={<JobsPage />} />
             <Route path="/jobs/:jid" element={<JobPage />} />

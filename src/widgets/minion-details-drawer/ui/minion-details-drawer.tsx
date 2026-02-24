@@ -28,17 +28,11 @@ export const MinionDetailsDrawer = observer<MinionDetailsDrawerProps>(function M
   onClose,
   clearData,
 }) {
-  const {
-    minion,
-    isMinionLoading,
-    pillars,
-    isPillarsLoading,
-    error: errorFromStore,
-  } = minionStore ?? {};
+  const { minion, isMinionLoading, error: errorFromStore } = minionStore ?? {};
   const { id: minionInnerId, minion_id: minionId = openedId } = minion ?? {};
 
   const isWaitingForStore = !!openedId && !minionStore && !error;
-  const isLoading = isWaitingForStore || !!isMinionLoading || !!isPillarsLoading;
+  const isLoading = isWaitingForStore || !!isMinionLoading;
 
   const hasData = Boolean(minion && !error && !errorFromStore);
 
@@ -58,8 +52,6 @@ export const MinionDetailsDrawer = observer<MinionDetailsDrawerProps>(function M
         isInDrawer
         minion={minion}
         isMinionLoading={isMinionLoading}
-        pillars={pillars}
-        isPillarsLoading={isPillarsLoading}
         onFilterButton={onFilterButton}
       />
     </BaseMinionDrawer>

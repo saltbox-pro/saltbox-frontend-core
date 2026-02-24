@@ -2225,15 +2225,15 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@^0.1.1-b1c5163da683268edf0b5af945968070bb083d0d":
-  version "0.1.1-b1c5163da683268edf0b5af945968070bb083d0d"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-b1c5163da683268edf0b5af945968070bb083d0d.tgz#f276f6bc0bcb6d403a974c58698a397fd8e6f2d8"
-  integrity sha1-8nb2vAvLbUA6l0xYaYo5f9jm8tg=
+"@saltbox/saltbox-core-api-client@^0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3":
+  version "0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3.tgz#d2f8cbb38278091256208ddb34d47b3268860627"
+  integrity sha1-0vjLs4J4CRJWII3bNNR7MmiGBic=
 
-"@saltbox/saltbox-frontend-common@^0.0.83":
-  version "0.0.83"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.83.tgz#fe19d62abacc74761b4999f66b1a634f5512abad"
-  integrity sha1-/hnWKrrMdHYbSZn2axpjT1USq60=
+"@saltbox/saltbox-frontend-common@^0.0.84":
+  version "0.0.84"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.84.tgz#bee7cc56e0f77c0b1d7c2e9d675338c6494f9ae7"
+  integrity sha1-vufMVuD3fAsdfC6dZ1M4xklPmuc=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -6726,7 +6726,7 @@ loader-runner@^4.3.1:
   resolved "https://registry.yarnpkg.com/loader-runner/-/loader-runner-4.3.1.tgz#6c76ed29b0ccce9af379208299f07f876de737e3"
   integrity sha512-IWqP2SCPhyVFTBtRcgMHdzlf9ul25NwaFx4wCEH/KjAXuuHY4yNjvPXsBokp8jCB936PyWRaPKUNh8NvylLp2Q==
 
-loader-utils@^2.0.4:
+loader-utils@^2.0.2, loader-utils@^2.0.4:
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/loader-utils/-/loader-utils-2.0.4.tgz#8b5cb38b5c34a9a018ee1fc0e6a066d1dfcc528c"
   integrity sha512-xXqpXoINfFhgua9xiqD8fPFHgkoq1mmmpE92WlDbm9rNRd/EbRb+Gqf908T2DMfuHjjJlksiK2RbHVOdD/MqSw==
@@ -7274,6 +7274,13 @@ moment@^2.24.0:
   version "2.30.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.30.1.tgz#f8c91c07b7a786e30c59926df530b4eac96974ae"
   integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
+
+monaco-editor-webpack-plugin@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/monaco-editor-webpack-plugin/-/monaco-editor-webpack-plugin-7.1.1.tgz#5c90c8ccfadd11a9168d439d1f5b96a397431553"
+  integrity sha512-WxdbFHS3Wtz4V9hzhe/Xog5hQRSMxmDLkEEYZwqMDHgJlkZo00HVFZR0j5d0nKypjTUkkygH3dDSXERLG4757A==
+  dependencies:
+    loader-utils "^2.0.2"
 
 monaco-editor@^0.55.1:
   version "0.55.1"

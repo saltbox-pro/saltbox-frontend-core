@@ -1,10 +1,10 @@
-import { DeleteOutlined, PlusOutlined, FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
 import { FiltersCounter, PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useRef, useState, Fragment } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
@@ -12,8 +12,6 @@ import { MinionDetails } from "saltbox-core/shared/components/minion-details/min
 import { retcodeValues, retcodeLegacyValues } from "saltbox-core/shared/conf/retcode-values";
 import { CollectionStore, MinionStore, jobStore, JobFilterStore } from "saltbox-core/store";
 import { apiCoreStore } from "saltbox-core/store/api-core-store";
-
-import { PillarCreateForm } from "./-components/pillar-create-form";
 
 const defaultStringOperators = [
   {
@@ -190,14 +188,12 @@ const MinionPage = observer(() => {
   const { t } = useTranslation();
   const { mid: minionId, slug } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const minionStoreRef = useRef<MinionStore | undefined>(undefined);
   if (!minionStoreRef.current) {
     minionStoreRef.current = new MinionStore(slug, minionId);
   }
   const minionStore: MinionStore = minionStoreRef.current;
   const [collectionStore] = useState(new CollectionStore());
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [showJobReturnsFilter, setShowJobReturnsFilter] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
@@ -256,45 +252,6 @@ const MinionPage = observer(() => {
       console.error("Failed to delete minion:", error);
     }
   }, [minionId, slug, messageApi, t, navigate]);
-
-  const handleCreatePillar = useCallback(
-    async (values: { name: string; value: string }) => {
-      if (!minionStore.minion?.master || !minionStore.minion?.minion_id) {
-        messageApi.error(t("pillars.select-master-error"));
-        return false;
-      }
-
-      try {
-        await apiCoreStore.pillarsApi?.pillarCreateOld({
-          PillarModelInput: {
-            master_id: minionStore.minion.master,
-            minion_id: minionStore.minion.minion_id,
-            name: values.name,
-            value: values.value,
-          },
-        });
-        setIsCreateModalOpen(false);
-        messageApi.success(t("pillars.create-success"));
-        minionStore.loadPillars();
-        return true;
-      } catch (error) {
-        messageApi.error(t("pillars.create-error"));
-        return false;
-      }
-    },
-    [minionStore, messageApi, t]
-  );
-
-  const pillarsTabActions = (
-    <Button
-      type="primary"
-      icon={<PlusOutlined />}
-      onClick={() => setIsCreateModalOpen(true)}
-      disabled={!minionStore.minion}
-    >
-      {t("pillars.create-pillar")}
-    </Button>
-  );
 
   const jobReturnsTabActions = (
     <JobModal
@@ -377,16 +334,13 @@ const MinionPage = observer(() => {
   ) : null;
 
   return (
-    <Fragment key={location.key}>
+    <>
       <PageHeader title={`${t("minions.minion")} ${minionStore.minion?.minion_id}`} />
 
       <MinionDetails
+        isFullView
         minion={minionStore.minion}
         isMinionLoading={minionStore.isMinionLoading}
-        pillars={minionStore.pillars}
-        isPillarsLoading={minionStore.isPillarsLoading}
-        isFullView
-        pillarsTabActions={pillarsTabActions}
         jobReturnsTabActions={jobReturnsTabActions}
         fullViewActionsMenuItems={minionsActionsMenuItems}
         onFullViewActionsMenuClick={handleFullViewActionsMenuClick}
@@ -424,23 +378,8 @@ const MinionPage = observer(() => {
         />
       </Modal>
 
-      {isCreateModalOpen && (
-        <Modal
-          title={t("pillars.create-pillar-modal-title")}
-          open={isCreateModalOpen}
-          onCancel={() => setIsCreateModalOpen(false)}
-          footer={null}
-          closable={false}
-        >
-          <PillarCreateForm
-            onSubmit={handleCreatePillar}
-            onCancel={() => setIsCreateModalOpen(false)}
-          />
-        </Modal>
-      )}
-
       {contextHolder}
-    </Fragment>
+    </>
   );
 });
 

@@ -1,7 +1,4 @@
-import {
-  MinionDetailSchema,
-  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
-} from "@saltbox/saltbox-core-api-client";
+import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -12,9 +9,6 @@ export class MinionStore {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   error: string | null;
-  pillars: SaltboxCorePillarsOldSchemasPillarSchemasPillarModel[];
-  isPillarsLoading: boolean;
-  pillarsError: string | null;
 
   constructor(slug: string, minionId: string) {
     makeAutoObservable(this);
@@ -24,9 +18,7 @@ export class MinionStore {
     this.isMinionLoading = false;
     this.minion = null;
     this.error = null;
-    this.pillars = [];
-    this.isPillarsLoading = false;
-    this.pillarsError = null;
+
     this.loadMinion();
   }
 
@@ -43,7 +35,6 @@ export class MinionStore {
       })
       .then((minion) => {
         this.minion = minion;
-        this.loadPillars();
       })
       .catch((error) => {
         console.error("Error loading minion:", error);
@@ -51,30 +42,6 @@ export class MinionStore {
       })
       .finally(() => {
         this.isMinionLoading = false;
-      });
-  };
-
-  loadPillars = () => {
-    if (!this.minion?.master) {
-      return;
-    }
-    this.isPillarsLoading = true;
-    this.pillarsError = null;
-    apiCoreStore.pillarsApi
-      ?.pillarsListOld({
-        master_id: this.minion.master,
-        minion_id: this.minion.minion_id,
-        only_for_minion: true,
-      })
-      .then((pillars) => {
-        this.pillars = pillars;
-      })
-      .catch((error) => {
-        console.error("Error loading pillars:", error);
-        this.pillarsError = "Failed to load pillars";
-      })
-      .finally(() => {
-        this.isPillarsLoading = false;
       });
   };
 }

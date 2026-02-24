@@ -1,132 +1,87 @@
-import {
-  PillarSelector,
-  SaltboxCorePillarsOldSchemasPillarSchemasPillarModel,
-} from "@saltbox/saltbox-core-api-client";
-import { makeAutoObservable } from "mobx";
+import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
+import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import type { PaginationState, SortingState } from "@tanstack/react-table";
+import { makeAutoObservable, runInAction } from "mobx";
 
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore } from "./api-core-store";
+
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
+const PAGE_SIZE = 50;
+
+export interface PillarsStoreOptions {
+  targetId?: string;
+}
 
 export class PillarsStore {
   isLoading: boolean;
   error: string | null;
-  pillars: Array<SaltboxCorePillarsOldSchemasPillarSchemasPillarModel>;
-  selectedMasterId: string | null;
-  total: number;
+  pagination: PaginationState;
+  sorting: SortingState;
+  pillars: Array<PillarWithTgtInfoSchema>;
+  totalPillars: number;
+  readonly targetId: string | undefined;
 
-  constructor() {
+  constructor(options?: PillarsStoreOptions) {
     makeAutoObservable(this);
+
+    this.targetId = options?.targetId;
     this.isLoading = false;
     this.error = null;
     this.pillars = [];
-    this.selectedMasterId = null;
-    this.total = 0;
+    this.totalPillars = 0;
+    this.sorting = [...DEFAULT_SORTING];
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
   }
 
-  setSelectedMasterId = (masterId: string | null) => {
-    this.selectedMasterId = masterId;
-    if (masterId) {
-      this.loadPillars(masterId);
-    } else {
-      this.pillars = [];
-      this.total = 0;
-    }
+  reset = (): void => {
+    this.isLoading = false;
+    this.error = null;
+    this.pillars = [];
+    this.totalPillars = 0;
+    this.sorting = [...DEFAULT_SORTING];
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
   };
 
-  loadPillars = async (masterId: string) => {
+  loadPillars = () => {
     this.isLoading = true;
     this.error = null;
-    try {
-      const pillars = await apiCoreStore.pillarsApi?.pillarsListOld({
-        master_id: masterId,
-      });
 
-      if (pillars) {
-        pillars.sort((a, b) => {
-          if (a.minion_id === "*" && b.minion_id !== "*") return -1;
-          if (a.minion_id !== "*" && b.minion_id === "*") return 1;
-          if (a.minion_id && b.minion_id) {
-            const minionCompare = a.minion_id.localeCompare(b.minion_id);
-            if (minionCompare !== 0) return minionCompare;
-          }
-          return a.name.localeCompare(b.name);
+    apiCoreStore.pillarsApi
+      ?.pillarsList({
+        PillarListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+          ...(this.targetId && { query: { "tgt_info.id": this.targetId } }),
+        },
+      })
+      .then((response) => {
+        runInAction(() => {
+          this.pillars = response.data;
+          this.totalPillars = response.total;
         });
-      }
-      this.pillars = pillars || [];
-      this.total = this.pillars.length;
-    } catch (error) {
-      this.error = "Failed to load pillars";
-      throw error;
-    } finally {
-      this.isLoading = false;
-    }
-  };
-
-  createPillar = async (
-    masterId: string,
-    name: string,
-    value: string,
-    minionId?: string
-  ): Promise<boolean> => {
-    if (!apiCoreStore.pillarsApi) return false;
-
-    try {
-      await apiCoreStore.pillarsApi.pillarCreateOld({
-        PillarModelInput: {
-          master_id: masterId,
-          minion_id: minionId || null,
-          name,
-          value,
-        },
+      })
+      .catch((_) => {
+        runInAction(() => {
+          this.error = "pillars.load-error";
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isLoading = false;
+        });
       });
-      await this.loadPillars(masterId);
-      return true;
-    } catch (error) {
-      throw error;
-    }
   };
 
-  updatePillar = async (
-    masterId: string,
-    name: string,
-    value: string,
-    minionId?: string
-  ): Promise<boolean> => {
-    if (!apiCoreStore.pillarsApi) return false;
-
-    try {
-      await apiCoreStore.pillarsApi.pillarUpdateOld({
-        PillarModelInput: {
-          master_id: masterId,
-          minion_id: minionId || null,
-          name,
-          value,
-        },
-      });
-      await this.loadPillars(masterId);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  deletePillar = async (masterId: string, name: string, minionId?: string): Promise<boolean> => {
-    if (!apiCoreStore.pillarsApi) return false;
-
-    try {
-      const pillarSelector: PillarSelector = {
-        master_id: masterId,
-        name,
-        minion_id: minionId || null,
-      };
-
-      await apiCoreStore.pillarsApi.pillarDeleteOld({
-        PillarSelector: pillarSelector,
-      });
-
-      await this.loadPillars(masterId);
-      return true;
-    } catch (error) {
-      throw error;
-    }
-  };
+  handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
+    this.pagination = pagination;
+    this.sorting = sorting;
+    this.loadPillars();
+  }
 }
