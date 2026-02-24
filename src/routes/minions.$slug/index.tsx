@@ -7,6 +7,7 @@ import {
   QuestionCircleOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
+import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
   FiltersCounter,
@@ -176,7 +177,15 @@ const MinionsPage = observer(() => {
       {
         label: t("minions.tab-tasks"),
         key: "tasks",
-        children: tabKey === "tasks" ? <MinionsTaskView slug={slug} /> : null,
+        children:
+          tabKey === "tasks" ? <MinionsTaskView slug={slug} taskType={TaskType.Classic} /> : null,
+        className: styles.flexTab,
+      },
+      {
+        label: t("minions.tab-policies"),
+        key: "policies",
+        children:
+          tabKey === "policies" ? <MinionsTaskView slug={slug} taskType={TaskType.Policy} /> : null,
         className: styles.flexTab,
       },
     ];

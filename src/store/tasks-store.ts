@@ -1,4 +1,4 @@
-import { TaskListResponseSchema, TaskModel } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema, TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
@@ -13,17 +13,19 @@ export class TasksStore {
   @observable isTasksLoading: boolean;
   @observable collectionSlug: string | null;
   @observable mongoDBQuery: object | undefined;
+  @observable taskType: TaskType;
 
   @observable total: number;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
   @observable filterStore: TasksFilterStore;
 
-  constructor() {
+  constructor(taskType: TaskType) {
     this.tasks = [];
     this.total = 0;
     this.isTasksLoading = false;
     this.collectionSlug = null;
+    this.taskType = taskType;
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
@@ -52,6 +54,7 @@ export class TasksStore {
         TaskListBody: {
           query: {
             "target_collection.slug": this.collectionSlug,
+            ...{ task_type: this.taskType },
             ...this.mongoDBQuery,
           },
           limit: this.pagination.pageSize,
@@ -114,5 +117,3 @@ export class TasksStore {
     }
   };
 }
-
-export const tasksStore = new TasksStore();

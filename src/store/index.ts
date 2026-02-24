@@ -9,7 +9,6 @@ export { slsEditorStore } from "./sls-editor-store";
 export { jobStore } from "./job-store";
 export { defaultCollectionStore } from "./default-collection-store";
 export { mastersStore } from "./masters-store";
-export { tasksStore } from "./tasks-store";
 
 export { TasksStore } from "./tasks-store";
 export { TaskStore } from "./task-store";

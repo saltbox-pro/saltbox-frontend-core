@@ -1,4 +1,4 @@
-import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   Popover,
@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
-import { apiCoreStore, appStore, tasksStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, TasksStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
 import { TasksQueryBuilder } from "./tasks-query-builder";
@@ -66,9 +66,11 @@ const defaultListOperators = [
   },
 ];
 
-export const MinionsTaskView = observer((props: { slug?: string }) => {
+export const MinionsTaskView = observer((props: { slug?: string; taskType?: TaskType }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const [tasksStore] = useState(new TasksStore(props.taskType));
 
   const filterSchema = useMemo(
     () => [
@@ -244,11 +246,12 @@ export const MinionsTaskView = observer((props: { slug?: string }) => {
       {
         onMessage: (messages: Array<WebSocketMessage<TaskListResponseSchema>>) => {
           if (messages?.length > 0) {
-            tasksStore.updateTasks(
-              messages
-                .filter((message) => message.message_tag === "task")
-                .map((message) => message.payload)
-            );
+            const filteredMessages = messages
+              .filter((message) => message.message_tag === "task")
+              .filter((message) => !props.taskType || message.payload.task_type === props.taskType)
+              .map((message) => message.payload);
+
+            tasksStore.updateTasks(filteredMessages);
           }
         },
       }
