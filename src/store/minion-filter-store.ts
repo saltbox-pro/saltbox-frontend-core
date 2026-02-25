@@ -1,5 +1,5 @@
 import { FilterStore } from "@saltbox/saltbox-frontend-common";
-import { action, computed, makeObservable, runInAction } from "mobx";
+import { action, makeObservable, runInAction } from "mobx";
 import { generateID, RuleGroupType } from "react-querybuilder";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -40,9 +40,4 @@ export class MinionFilterStore extends FilterStore {
       ],
     };
   };
-
-  @computed
-  get activeFiltersCount() {
-    return this.activeFiltersCount;
-  }
 }
