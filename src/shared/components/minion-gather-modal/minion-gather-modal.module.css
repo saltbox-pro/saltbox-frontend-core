@@ -1,3 +1,36 @@
-.minionGatherName {
+.listRow:hover {
+  background-color: #fafafa;
+}
+
+.rowContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  cursor: default;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.minionId {
   word-break: break-all;
+}
+
+.rowActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.15s ease-in-out;
+}
+
+.listRow:hover .rowActions {
+  visibility: visible;
+  opacity: 1;
 }
