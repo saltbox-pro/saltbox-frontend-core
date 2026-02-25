@@ -362,7 +362,7 @@ const JobPage = observer(() => {
               {jobStore.pendingMinions > 0 ? (
                 <MinionsPopover
                   minions={jobStore.pendingMinionsList}
-                  title={t("job.pending-minions")}
+                  title={t("job.pending-minions-popover")}
                 />
               ) : (
                 <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>

@@ -426,7 +426,8 @@
   "job": {
     "successful-minions": "успешно",
     "failed-minions": "с ошибками",
-    "pending-minions": "Ожидает"
+    "pending-minions": "ожидает",
+    "pending-minions-popover": "Ожидает"
   },
   "job-modal": {
     "title": "Создание команды",

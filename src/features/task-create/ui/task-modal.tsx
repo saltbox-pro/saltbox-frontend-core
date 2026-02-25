@@ -11,6 +11,10 @@ import {
   TaskCreationContext,
   TaskOverviewData,
 } from "../type/types";
+import {
+  getTemplateDescriptionText,
+  type TemplateDescriptionValue,
+} from "saltbox-core/shared/utils/template-description";
 
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";
@@ -29,7 +33,7 @@ const enum TabKey {
 }
 
 export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated }: TaskModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
   const [isCreating, setIsCreating] = useState(false);
@@ -131,9 +135,15 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         context,
         template
       ),
-      templateDescription: template?.title ?? "",
+      templateDescription:
+        (getTemplateDescriptionText(
+          (template?.description ?? null) as TemplateDescriptionValue,
+          i18n.language
+        ) ||
+          template?.title) ??
+        "",
     }),
-    [configuration, context, template]
+    [configuration, context, template, i18n.language]
   );
 
   const pluginButtons = useMemo(() => {
