@@ -54,12 +54,6 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
       return;
     }
 
-    if (values.is_secret && typeof parsed.value === "object" && parsed.value !== null) {
-      setCreateError("pillars.create.field-secret-primitive-only");
-      setIsCreating(false);
-      return;
-    }
-
     const body: PillarCreateSchema = {
       name: values.name,
       value: parsed.value,
@@ -105,6 +99,34 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
         <Input placeholder={t("pillars.create.field-name-placeholder")} />
       </Form.Item>
 
+      <Flex gap="middle">
+        <Form.Item name="is_personal" valuePropName="checked">
+          <Checkbox>
+            {t("pillars.create.field-personal")}{" "}
+            <Tooltip title={t("pillars.create.field-personal-tooltip")} placement="bottom">
+              <Button
+                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
+                type="text"
+                size="small"
+              />
+            </Tooltip>
+          </Checkbox>
+        </Form.Item>
+
+        <Form.Item name="is_secret" valuePropName="checked">
+          <Checkbox>
+            {t("pillars.create.field-secret")}{" "}
+            <Tooltip title={t("pillars.create.field-secret-tooltip")} placement="bottom">
+              <Button
+                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
+                type="text"
+                size="small"
+              />
+            </Tooltip>
+          </Checkbox>
+        </Form.Item>
+      </Flex>
+
       <Form.Item
         name="value"
         label={t("pillars.create.field-value")}
@@ -115,25 +137,6 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
       >
         <JsonEditorField form={form} />
       </Form.Item>
-
-      <Flex gap="middle">
-        <Form.Item name="is_personal" valuePropName="checked">
-          <Checkbox>{t("pillars.create.field-personal")}</Checkbox>
-        </Form.Item>
-
-        <Form.Item name="is_secret" valuePropName="checked">
-          <Checkbox>
-            {t("pillars.create.field-secret")}{" "}
-            <Tooltip title={t("pillars.create.field-secret-primitive-only")}>
-              <Button
-                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
-                type="text"
-                size="small"
-              />
-            </Tooltip>
-          </Checkbox>
-        </Form.Item>
-      </Flex>
 
       <Flex vertical gap="middle">
         {!!createError && <Alert message={t(createError)} type="error" showIcon />}
