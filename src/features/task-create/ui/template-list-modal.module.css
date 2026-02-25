@@ -33,7 +33,7 @@
   margin: 0;
 }
 
-.shortDescription.shortDescription {
+.listItemText .description {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;

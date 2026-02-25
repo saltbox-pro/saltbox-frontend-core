@@ -426,7 +426,8 @@
   "job": {
     "successful-minions": "successful",
     "failed-minions": "failed",
-    "pending-minions": "pending"
+    "pending-minions": "pending",
+    "pending-minions-popover": "Pending"
   },
   "job-modal": {
     "title": "Create Job",

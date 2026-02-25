@@ -18,6 +18,10 @@ import { useTranslation } from "react-i18next";
 
 import { taskTemplateService } from "../service";
 import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
+import {
+  getTemplateDescriptionText,
+  type TemplateDescriptionValue,
+} from "saltbox-core/shared/utils/template-description";
 
 import styles from "./template-list-modal.module.css";
 
@@ -42,7 +46,7 @@ const useSearch = ({ isOpen }: TemplateListModalProps) => {
 
 export function TemplateListModal(props: TemplateListModalProps) {
   const { isOpen, onClose, onSelectTemplate } = props;
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
   const { searchInputRef } = useSearch(props);
@@ -143,7 +147,10 @@ export function TemplateListModal(props: TemplateListModalProps) {
               dataSource={filteredTemplates}
               loading={isLoading}
               renderItem={(template) => {
-                const shortDescription = template.short_description?.trim();
+                const description = getTemplateDescriptionText(
+                  template.description as TemplateDescriptionValue,
+                  i18n.language
+                );
                 return (
                   <List.Item
                     className={styles.listItem}
@@ -156,9 +163,9 @@ export function TemplateListModal(props: TemplateListModalProps) {
                             {template.title || template.id}
                           </Title>
                         </Tooltip>
-                        {shortDescription ? (
-                          <span className={styles.shortDescription} title={shortDescription}>
-                            {shortDescription}
+                        {description ? (
+                          <span className={styles.description} title={description}>
+                            {description}
                           </span>
                         ) : null}
                       </Flex>

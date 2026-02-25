@@ -2225,10 +2225,10 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@^0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3":
-  version "0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-f351ae08cd6318932de5387dc67aa4200240cfe3.tgz#d2f8cbb38278091256208ddb34d47b3268860627"
-  integrity sha1-0vjLs4J4CRJWII3bNNR7MmiGBic=
+"@saltbox/saltbox-core-api-client@^0.1.1-a74c5495285d170faf0bff1292108ce2289ee937":
+  version "0.1.1-a74c5495285d170faf0bff1292108ce2289ee937"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-a74c5495285d170faf0bff1292108ce2289ee937.tgz#52da668bedeea7f4f962645541544d51a684627e"
+  integrity sha1-Utpmi+3up/T5YmRVQVRNUaaEYn4=
 
 "@saltbox/saltbox-frontend-common@^0.0.85":
   version "0.0.85"
