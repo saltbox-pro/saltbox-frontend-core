@@ -1,5 +1,5 @@
 import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { CopyToClipboardButton, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, List, Spin, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -69,7 +69,14 @@ export function MinionGatherModal({
         <List
           dataSource={minions}
           renderItem={(item) => (
-            <List.Item className={styles.minionGatherName}>{item.minion_id}</List.Item>
+            <List.Item className={styles.listRow}>
+              <span className={styles.rowContent}>
+                <span className={styles.minionId}>{item.minion_id}</span>
+                <span className={styles.rowActions}>
+                  <CopyToClipboardButton text={item.minion_id} />
+                </span>
+              </span>
+            </List.Item>
           )}
         />
       </Spin>
