@@ -40,7 +40,7 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
               row.tgt_info?.type === PillarTgtType.Minion
                 ? (row.tgt_info?.minion_id ?? row.tgt_info?.id)
                 : (row.tgt_info?.title ?? row.tgt_info?.id),
-            width: "15%",
+            width: "20%",
             minWidth: 240,
           },
         }),
@@ -77,7 +77,7 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
 
         return <JsonPreview value={value} title={t("pillars.table.value")} />;
       },
-      meta: { width: "20%", minWidth: 250, maxWidth: 250 },
+      meta: { width: "25%", minWidth: 250, maxWidth: 250 },
     }),
     ...targetColumns,
     columnHelper.accessor("is_personal", {
@@ -91,12 +91,12 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
           columnHelper.accessor("created", {
             header: t("pillars.table.created"),
             cell: (data) => <RelativeTime date={data.getValue()} />,
-            meta: { width: "15%", minWidth: 180 },
+            meta: { width: "20%", minWidth: 200 },
           }),
           columnHelper.accessor("modified", {
             header: t("pillars.table.modified"),
             cell: (data) => <RelativeTime date={data.getValue()} />,
-            meta: { width: "15%", minWidth: 180 },
+            meta: { width: "20%", minWidth: 200 },
           }),
         ]),
   ];
