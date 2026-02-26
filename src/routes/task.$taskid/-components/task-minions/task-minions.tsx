@@ -1,5 +1,5 @@
-import { ExportOutlined } from "@ant-design/icons";
-import { type TaskMinionModel } from "@saltbox/saltbox-core-api-client";
+import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
+import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { type PaginationState, type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
@@ -20,6 +20,7 @@ export const TaskMinions = ({
   sorting,
   onLazyLoad,
   onMinionClick,
+  onRestartFailedMinion,
 }: {
   minions: TaskMinionModel[];
   total: number;
@@ -29,6 +30,7 @@ export const TaskMinions = ({
   sorting: SortingState;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
   onMinionClick?: (minion: TaskMinionModel) => void;
+  onRestartFailedMinion?: (minionInnerId: string) => void;
 }) => {
   const { t } = useTranslation();
 
@@ -51,6 +53,17 @@ export const TaskMinions = ({
               title: t("minions.open-in-new-tab"),
               visible: (_, row) => !!(collectionSlug && row.minion_inner_id),
             },
+            {
+              icon: <IssuesCloseOutlined />,
+              title: t("task.restart-failed-minion"),
+              visible: (_, row) =>
+                row.status === TaskMinionStatus.Failed && !!onRestartFailedMinion,
+              onClick: (_, row) => onRestartFailedMinion?.(row.minion_inner_id ?? ""),
+              buttonProps: {
+                color: "orange",
+                variant: "solid",
+              },
+            },
           ],
           color: "accent",
           width: 400,
@@ -65,11 +78,11 @@ export const TaskMinions = ({
       columnHelper.accessor("status", {
         header: t("task.minions.table-status"),
         cell: (data) => <MinionTaskStatus status={data.getValue()} />,
-        meta: { width: 150 },
+        meta: { width: 125 },
       }),
       columnHelper.accessor("count_runs", {
         header: t("task.minions.table-count-runs"),
-        meta: { width: 200 },
+        meta: { width: 205 },
       }),
       columnHelper.accessor("start_last_dt", {
         header: t("task.minions.table-started"),
@@ -92,7 +105,7 @@ export const TaskMinions = ({
         meta: { width: "18%" },
       }),
     ],
-    [collectionSlug, t]
+    [collectionSlug, onRestartFailedMinion, t]
   );
 
   return (
