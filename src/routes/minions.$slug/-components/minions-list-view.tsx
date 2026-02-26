@@ -8,8 +8,8 @@ import {
   Popover,
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { Badge, Button, Flex, Spin, Tag, message } from "antd";
+import { createColumnHelper, RowSelectionState } from "@tanstack/react-table";
+import { Badge, Button, Flex, message, Spin, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,8 +17,8 @@ import Parcel from "single-spa-react/parcel";
 
 import { useCsvDownloader } from "saltbox-core/features/csv-download";
 import {
-  TaskCreateModal,
   PolicyCreateModal,
+  TaskCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
@@ -64,10 +64,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       createSelectColumn<MinionShortSchema>(),
       minionsColumnHelper.accessor("minion_id", {
         header: t("minions.table-minion-id"),
-        cell: (data) => {
-          const showMinionId = data.row.original.minion_id ?? data.getValue();
-          return <span style={{ color: "#1677ff" }}>{showMinionId}</span>;
-        },
+        cell: (data) => data.row.original.minion_id ?? data.getValue(),
         meta: {
           showCopy: true,
           copyValue: (row) => row.minion_id ?? row.id,
@@ -80,12 +77,17 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
               title: t("minions.open-in-new-tab"),
             },
           ],
-          tdClassName: "fast-table-column-nowrap",
+          color: "accent",
+          width: 300,
+          minWidth: 300,
+          maxWidth: 300,
+          ellipsis: true,
         },
       }),
       minionsColumnHelper.accessor("grains.fqdn", {
         id: "grains.fqdn",
         header: t("minions.table-fqdn"),
+        meta: { width: "10%" },
       }),
       minionsColumnHelper.accessor("grains.domain", {
         id: "grains.domain",
@@ -112,6 +114,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             </Tag>
           );
         },
+        meta: { width: 100 },
       }),
       minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
         id: "grains.efi-secure-boot",

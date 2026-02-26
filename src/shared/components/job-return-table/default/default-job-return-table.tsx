@@ -83,7 +83,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         columnHelper.accessor("id", {
           header: t("task.job-returns-table.table-mid"),
           cell: (data) => {
-            return <span style={{ color: "#1677ff" }}>{data.row.original.minion_id}</span>;
+            return data.row.original.minion_id;
           },
           meta: {
             showCopy: true,
@@ -91,13 +91,15 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             actions: [
               {
                 icon: <ExportOutlined />,
-                onClick: (value, row) => {
+                onClick: (_, row) => {
                   window.open(`/core/masters/${row.salt_master}/minion/${row.minion_id}`, "_blank");
                 },
                 title: t("minions.open-in-new-tab"),
               },
             ],
-            tdClassName: "fast-table-column-nowrap",
+            color: "accent",
+            minWidth: 300,
+            ellipsis: true,
           },
         }),
         columnHelper.accessor("retcode", {
@@ -110,15 +112,17 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 : t("task.job-returns-table.table-no")}
             </Tag>
           ),
+          meta: { width: 110 },
         }),
         columnHelper.accessor("retcode", {
           id: "retcode",
           header: t("task.job-returns-table.table-return-code"),
-          cell: (data) => data.getValue(),
+          meta: { width: 150 },
         }),
         columnHelper.accessor("stamp", {
           header: t("task.job-returns-table.table-execution-time"),
           cell: (data) => <RelativeTime date={data.getValue()} />,
+          meta: { width: "18%" },
         }),
         columnHelper.display({
           header: t("task.job-returns-table.table-execution-duration"),
@@ -132,6 +136,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               />
             );
           },
+          meta: { width: "18%" },
         }),
       ],
       [t, jobStartTimestamp, jobReturns]

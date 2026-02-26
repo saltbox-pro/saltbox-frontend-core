@@ -141,12 +141,13 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
     () => [
       columnHelper.accessor("id", {
         header: "ID",
-        cell: (data) => {
-          return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
-        },
         meta: {
           showCopy: true,
-          tdClassName: "fast-table-column-nowrap",
+          color: "accent",
+          width: 300,
+          minWidth: 300,
+          maxWidth: 300,
+          ellipsis: true,
         },
       }),
       columnHelper.accessor("task_template.title", {

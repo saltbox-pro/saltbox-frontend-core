@@ -190,47 +190,35 @@ const JobsPage = observer(() => {
     () => [
       columnHelper.accessor("jid", {
         header: t("jobs.table-jid"),
-        cell: (data) => {
-          const jid = data.getValue();
-          if (!jid) {
-            return "";
-          }
-
-          return <span style={{ color: "#1677ff" }}>{jid}</span>;
-        },
         meta: {
           showCopy: true,
-          tdClassName: "fast-table-column-nowrap",
+          color: "accent",
+          width: 250,
+          minWidth: 250,
+          maxWidth: 250,
+          ellipsis: true,
         },
       }),
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
+        meta: { width: "12%" },
       }),
       columnHelper.accessor("tgt", {
         header: t("jobs.table-targets"),
-        cell: (data) => {
-          const value = data.getValue();
-          const fullValue = typeof value === "string" ? value : String(value ?? "");
-
-          if (!fullValue || fullValue.length <= 2) {
-            return fullValue;
-          }
-
-          const truncatedValue =
-            fullValue.length > 50 ? `${fullValue.substring(0, 50)}...` : fullValue;
-
-          return <span title={fullValue}>{truncatedValue}</span>;
-        },
         meta: {
           showCopy: true,
+          maxWidth: 350,
+          ellipsis: true,
         },
       }),
       columnHelper.accessor("tgt_type", {
         header: t("jobs.table-target-type"),
+        meta: { width: "10%" },
       }),
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("jobs.table-user"),
+        meta: { width: "10%" },
       }),
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
@@ -248,10 +236,12 @@ const JobsPage = observer(() => {
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
         },
+        meta: { width: "10%" },
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
         cell: (data) => <RelativeTime date={data.getValue()} />,
+        meta: { width: "18%" },
       }),
     ],
     [handleNavigateToJob, t]

@@ -25,11 +25,11 @@ function MastersPage() {
   const columns = [
     columnHelper.accessor("master_id", {
       header: t("masters.table-master-id"),
-      cell: (data) => {
-        return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
-      },
       meta: {
         showCopy: true,
+        color: "accent",
+        width: "35%",
+        minWidth: 300,
       },
     }),
     columnHelper.accessor("status", {
@@ -46,14 +46,17 @@ function MastersPage() {
             return <Tag>{`${t("masters.table-unknown-status")}: ${data.getValue()}`}</Tag>;
         }
       },
+      meta: { minWidth: 150 },
     }),
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
       cell: (data) => <RelativeTime date={data.getValue()} />,
+      meta: { minWidth: 200 },
     }),
     columnHelper.accessor("modified", {
       header: t("masters.table-modified"),
       cell: (data) => <RelativeTime date={data.getValue()} />,
+      meta: { minWidth: 200 },
     }),
     columnHelper.accessor("actions", {
       header: t("masters.table-actions"),
@@ -94,6 +97,7 @@ function MastersPage() {
           </Flex>
         );
       },
+      meta: { width: 230 },
     }),
   ];
 
