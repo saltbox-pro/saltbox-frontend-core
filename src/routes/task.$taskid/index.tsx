@@ -139,6 +139,9 @@ const TaskPage = observer(() => {
           templateName: taskStore.task?.task_template?.title ?? "...",
           taskId: taskId ?? "...",
         })}
+        customParentPathGenerator={() =>
+          `/core/minions/root?tab=${taskStore.task.task_type === "policy" ? "policies" : "tasks"}`
+        }
       />
 
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
