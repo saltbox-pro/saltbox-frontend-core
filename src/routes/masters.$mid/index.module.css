@@ -27,34 +27,3 @@
   flex-direction: column;
   min-height: 0;
 }
-
-.clientsTableContainer :global(.fast-table) {
-  width: 100%;
-  table-layout: fixed;
-}
-
-.clientsTableContainer :global(.fast-table th),
-.clientsTableContainer :global(.fast-table td) {
-  padding: 8px 12px;
-  word-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
-  vertical-align: top;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.clientsTableContainer :global(.fast-table.empty tbody td) {
-  vertical-align: middle;
-}
-
-.clientsTableContainer :global(.fast-table th:nth-child(1)),
-.clientsTableContainer :global(.fast-table td:nth-child(1)) {
-  width: 50%;
-  min-width: 200px;
-}
-
-.clientsTableContainer :global(.fast-table th:nth-child(2)),
-.clientsTableContainer :global(.fast-table td:nth-child(2)) {
-  width: 50%;
-  min-width: 200px;
-}

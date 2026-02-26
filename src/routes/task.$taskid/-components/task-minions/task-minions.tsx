@@ -36,9 +36,6 @@ export const TaskMinions = ({
     () => [
       columnHelper.accessor("minion_id", {
         header: t("task.minions.table-minion-id"),
-        cell: (data) => {
-          return <span style={{ color: "#1677ff" }}>{data.getValue()}</span>;
-        },
         meta: {
           showCopy: true,
           copyValue: (row: TaskMinionModel) => row.minion_id ?? "",
@@ -55,7 +52,11 @@ export const TaskMinions = ({
               visible: (_, row) => !!(collectionSlug && row.minion_inner_id),
             },
           ],
-          tdClassName: "fast-table-column-nowrap",
+          color: "accent",
+          width: 400,
+          minWidth: 300,
+          maxWidth: 400,
+          ellipsis: true,
         },
       }),
       columnHelper.accessor("master", {
@@ -64,9 +65,11 @@ export const TaskMinions = ({
       columnHelper.accessor("status", {
         header: t("task.minions.table-status"),
         cell: (data) => <MinionTaskStatus status={data.getValue()} />,
+        meta: { width: 150 },
       }),
       columnHelper.accessor("count_runs", {
         header: t("task.minions.table-count-runs"),
+        meta: { width: 200 },
       }),
       columnHelper.accessor("start_last_dt", {
         header: t("task.minions.table-started"),
@@ -76,6 +79,7 @@ export const TaskMinions = ({
             fallback={<>{t("task.minions.table-not-started")}</>}
           />
         ),
+        meta: { width: "18%" },
       }),
       columnHelper.accessor("finished_dt", {
         header: t("task.minions.table-finished"),
@@ -85,6 +89,7 @@ export const TaskMinions = ({
             fallback={<>{t("task.minions.table-not-started")}</>}
           />
         ),
+        meta: { width: "18%" },
       }),
     ],
     [collectionSlug, t]

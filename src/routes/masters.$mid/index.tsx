@@ -55,10 +55,6 @@ const MasterPage = observer(() => {
   const clientColumns = [
     clientColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
-      cell: (data) => {
-        const minionId = data.getValue();
-        return <span style={{ color: "#1677ff" }}>{minionId}</span>;
-      },
       meta: {
         showCopy: true,
         actions: [
@@ -71,6 +67,9 @@ const MasterPage = observer(() => {
           },
         ],
         tdClassName: "fast-table-column-nowrap",
+        color: "accent",
+        width: "50%",
+        minWidth: 300,
       },
     }),
     clientColumnHelper.accessor("master", {

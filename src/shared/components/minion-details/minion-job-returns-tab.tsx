@@ -18,8 +18,8 @@ import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
-import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
 
 import {
   extractStringValue,
@@ -130,13 +130,6 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
       createExpanderColumn(),
       jobReturnsColumnHelper.accessor("jid", {
         header: t("jobs.table-jid"),
-        cell: (data) => {
-          const jid = data.getValue();
-          if (!jid) {
-            return "";
-          }
-          return <span style={{ color: "#1677ff" }}>{jid}</span>;
-        },
         meta: {
           showCopy: true,
           actions: [
@@ -148,6 +141,11 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
               title: t("jobs.replay-job"),
             },
           ],
+          color: "accent",
+          width: 300,
+          minWidth: 300,
+          maxWidth: 350,
+          ellipsis: true,
         },
       }),
       jobReturnsColumnHelper.accessor("retcode", {
@@ -159,16 +157,11 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
               : t("task.job-returns-table.table-no")}
           </Tag>
         ),
+        meta: { width: 110 },
       }),
       jobReturnsColumnHelper.accessor("fun", {
         header: t("task.job-returns-table.table-fun"),
-        cell: (data) => {
-          const fun = data.getValue();
-          if (!fun) {
-            return "";
-          }
-          return fun;
-        },
+        meta: { width: "15%" },
       }),
       jobReturnsColumnHelper.accessor("fun_kwarg", {
         id: "fun_kwarg",

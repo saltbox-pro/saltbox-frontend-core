@@ -64,10 +64,7 @@ const CollectionEditPage = observer(() => {
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
       header: t("minions.table-minion-id"),
-      cell: (data) => {
-        const showMinionId = data.row.original.minion_id ?? data.getValue();
-        return <span style={{ color: "#1677ff" }}>{showMinionId}</span>;
-      },
+      cell: (data) => data.row.original.minion_id ?? data.getValue(),
       meta: {
         showCopy: true,
         copyValue: (row) => row.minion_id ?? row.id,
@@ -80,12 +77,17 @@ const CollectionEditPage = observer(() => {
             title: t("minions.open-in-new-tab"),
           },
         ],
-        tdClassName: "fast-table-column-nowrap",
+        color: "accent",
+        width: 300,
+        minWidth: 300,
+        maxWidth: 300,
+        ellipsis: true,
       },
     }),
     minionsColumnHelper.accessor("grains.fqdn", {
       id: "grains.fqdn",
       header: t("minions.table-fqdn"),
+      meta: { width: "10%" },
     }),
     minionsColumnHelper.accessor("grains.osfullname", {
       id: "grains.osfullname",
@@ -103,6 +105,7 @@ const CollectionEditPage = observer(() => {
           {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
         </Tag>
       ),
+      meta: { width: 100 },
     }),
     minionsColumnHelper.accessor("grains.cpu_model", {
       id: "grains.cpu_model",
