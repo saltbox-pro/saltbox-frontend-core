@@ -20,6 +20,8 @@ import MinionPage from "./routes/minions.$slug.$mid";
 import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
 import TaskTemplatesPage from "./routes/task-templates";
+import AggregatedPoliciesPage from "./routes/policies";
+import AggregatedTasksPage from "./routes/tasks";
 import TaskPage from "./routes/task.$taskid";
 import NotFound from "./shared/components/not-found";
 
@@ -46,6 +48,8 @@ export default observer(function Root() {
             <Route path="/task-templates" element={<TaskTemplatesPage />} />
             <Route path="/settings-sls" element={<SettingsSlsPage />} />
             <Route path="/sls-editor" element={<SlsEditorPage />} />
+            <Route path="/tasks" element={<AggregatedTasksPage />} />
+            <Route path="/policies" element={<AggregatedPoliciesPage />} />
             <Route path="/task/:taskid" element={<TaskPage />} />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

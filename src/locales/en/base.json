@@ -697,6 +697,10 @@
       "copied": "Copied"
     }
   },
+  "aggregated-tasks": {
+    "title": "Tasks",
+    "policies-title": "Policies"
+  },
   "errors": {
     "load-failed": "Failed to load data",
     "access-denied": "Access denied"

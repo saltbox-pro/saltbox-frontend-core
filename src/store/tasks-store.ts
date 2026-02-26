@@ -43,15 +43,16 @@ export class TasksStore {
   };
 
   @action loadTasks = (collectionSlug?: string) => {
-    if (!collectionSlug) return;
-    this.collectionSlug = collectionSlug;
+    if (collectionSlug !== undefined) {
+      this.collectionSlug = collectionSlug;
+    }
     this.isTasksLoading = true;
     apiCoreStore.tasksApi
       ?.tasksList({
         TaskListBody: {
           query: {
-            "target_collection.slug": this.collectionSlug,
-            ...{ task_type: this.taskType },
+            ...(this.collectionSlug ? { "target_collection.slug": this.collectionSlug } : {}),
+            task_type: this.taskType,
             ...this.mongoDBQuery,
           },
           limit: this.pagination.pageSize,
@@ -76,9 +77,7 @@ export class TasksStore {
     this.pagination.pageIndex = pagination.pageIndex;
     this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;
-    if (this.collectionSlug) {
-      this.loadTasks(this.collectionSlug);
-    }
+    this.loadTasks();
   }
 
   @action handleSearch = (collectionSlug?: string) => {

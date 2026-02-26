@@ -697,6 +697,10 @@
       "copied": "Скопировано в буфер обмена"
     }
   },
+  "aggregated-tasks": {
+    "title": "Задачи",
+    "policies-title": "Политики"
+  },
   "errors": {
     "load-failed": "Не удалось загрузить данные",
     "access-denied": "Доступ запрещен"
