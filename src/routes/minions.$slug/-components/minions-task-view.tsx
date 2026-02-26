@@ -80,57 +80,59 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   const [tasksStore] = useState(new TasksStore(props.taskType));
 
   const filterSchema = useMemo(
-    () => [
-      {
-        name: "source.type",
-        label: t("minions.table-source-type"),
-        operators: defaultListOperators,
-        type: "multiselect",
-        selectOptions: [
-          { label: t("minions.table-soruce-type-rest"), value: "rest" },
-          {
-            label: t("minions.table-soruce-type-scheduler"),
-            value: "scheduler",
-          },
-        ],
-      },
-      {
-        name: "task_template.title",
-        label: t("minions.table-task-template-title"),
-        operators: defaultStringOperators,
-      },
-      {
-        name: "task_template.name",
-        label: t("minions.table-task-template-name"),
-        operators: defaultStringOperators,
-      },
-      {
-        name: "user.name",
-        label: t("minions.table-user"),
-        operators: defaultStringOperators,
-      },
-      {
-        name: "status.type",
-        label: t("minions.table-status"),
-        operators: defaultListOperators,
-        type: "multiselect",
-        selectOptions: [
-          { label: t("task.created"), value: TaskStatus.Created },
-          { label: t("task.running"), value: TaskStatus.Running },
-          { label: t("task.stopping"), value: TaskStatus.Stopping },
-          { label: t("task.stopped"), value: TaskStatus.Stopped },
-          { label: t("task.finished"), value: TaskStatus.Finished },
-        ],
-      },
-      {
-        name: "created",
-        label: t("minions.table-created"),
-        operators: defaultDateTimeOperators,
-        inputType: "datetime-local",
-        valueEditorType: "datetime-local",
-      },
-    ],
-    [t]
+    () =>
+      [
+        {
+          name: "source.type",
+          label: t("minions.table-source-type"),
+          operators: defaultListOperators,
+          type: "multiselect",
+          selectOptions: [
+            { label: t("minions.table-soruce-type-rest"), value: "rest" },
+            {
+              label: t("minions.table-soruce-type-scheduler"),
+              value: "scheduler",
+            },
+          ],
+        },
+        {
+          name: "task_template.title",
+          label: t("minions.table-task-template-title"),
+          operators: defaultStringOperators,
+        },
+        {
+          name: "task_template.name",
+          label: t("minions.table-task-template-name"),
+          operators: defaultStringOperators,
+        },
+        {
+          name: "user.name",
+          label: t("minions.table-user"),
+          operators: defaultStringOperators,
+        },
+        {
+          name: "status.type",
+          label: t("minions.table-status"),
+          operators: defaultListOperators,
+          type: "multiselect",
+          selectOptions: [
+            { label: t("task.created"), value: TaskStatus.Created },
+            { label: t("task.running"), value: TaskStatus.Running },
+            { label: t("task.stopping"), value: TaskStatus.Stopping },
+            { label: t("task.stopped"), value: TaskStatus.Stopped },
+            { label: t("task.finished"), value: TaskStatus.Finished },
+            { label: t("task.wait-minions"), value: TaskStatus.WaitMinions },
+          ],
+        },
+        {
+          name: "created",
+          label: t("minions.table-created"),
+          operators: defaultDateTimeOperators,
+          inputType: "datetime-local",
+          valueEditorType: "datetime-local",
+        },
+      ].filter((filter) => filter.name !== "source.type" || props.taskType === "classic"),
+    [props.taskType, t]
   );
 
   const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
