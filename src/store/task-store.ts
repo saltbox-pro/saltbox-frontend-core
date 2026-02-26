@@ -39,6 +39,7 @@ export class TaskStore {
     this.isRunTaskLoading = false;
     this.isStopTaskLoading = false;
     this.isRestartFailedLoading = false;
+
     this.minionsPagination = { pageIndex: 0, pageSize: PAGE_SIZE };
     this.minionsSorting = [...DEFAULT_SORTING];
     this.isMinionsLoading = false;
@@ -227,88 +228,136 @@ export class TaskStore {
   };
 
   @action
-  handleRunTask = () => {
+  handleRunTask = async () => {
     if (!this.task) {
-      return;
+      return Promise.reject(new Error("Task is not loaded"));
     }
     this.isRunTaskLoading = true;
     this.startLoading();
-    apiCoreStore.tasksApi
-      ?.taskRun({
-        tid: this.task.id,
-      })
-      .then((task) => {
+
+    const promise = apiCoreStore.tasksApi?.taskRun({
+      tid: this.task.id,
+    });
+
+    if (!promise) {
+      this.finishLoading();
+      this.isRunTaskLoading = false;
+      return Promise.reject(new Error("Tasks API is not available"));
+    }
+
+    try {
+      try {
+        const task = await promise;
         runInAction(() => {
           this.task = task;
         });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.finishLoading();
-          this.isRunTaskLoading = false;
-        });
+      } catch (error) {
+        console.error("Error running task:", error);
+        throw error;
+      }
+    } finally {
+      runInAction(() => {
+        this.finishLoading();
+        this.isRunTaskLoading = false;
       });
+    }
   };
 
   @action
-  handleStopTask = () => {
+  handleStopTask = async () => {
     if (!this.task) {
-      return;
+      return Promise.reject(new Error("Task is not loaded"));
     }
     this.isStopTaskLoading = true;
     this.startLoading();
-    apiCoreStore.tasksApi
-      ?.taskStop({
-        tid: this.task.id,
-      })
-      .then((task) => {
+
+    const promise = apiCoreStore.tasksApi?.taskStop({
+      tid: this.task.id,
+    });
+
+    if (!promise) {
+      this.finishLoading();
+      this.isStopTaskLoading = false;
+      return Promise.reject(new Error("Tasks API is not available"));
+    }
+
+    try {
+      try {
+        const task = await promise;
         runInAction(() => {
           this.task = task;
         });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.finishLoading();
-          this.isStopTaskLoading = false;
-        });
+      } catch (error) {
+        console.error("Error stopping task:", error);
+        throw error;
+      }
+    } finally {
+      runInAction(() => {
+        this.finishLoading();
+        this.isStopTaskLoading = false;
       });
+    }
   };
 
   @action
-  handleRestartFailed = () => {
+  handleRestartFailed = async () => {
     if (!this.task) {
-      return;
+      return Promise.reject(new Error("Task is not loaded"));
     }
     this.isRestartFailedLoading = true;
     this.startLoading();
-    apiCoreStore.tasksApi
-      .restartFailed({ tid: this.task.id, RestartFailedBody: {} })
-      .then((task) => {
+
+    const promise = apiCoreStore.tasksApi?.restartFailed({
+      tid: this.task.id,
+      RestartFailedBody: {},
+    });
+
+    if (!promise) {
+      this.finishLoading();
+      this.isRestartFailedLoading = false;
+      return Promise.reject(new Error("Tasks API is not available"));
+    }
+
+    try {
+      try {
+        const task = await promise;
         runInAction(() => {
           this.task = task;
         });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isRestartFailedLoading = false;
-          this.finishLoading();
-        });
+      } catch (error) {
+        console.error("Error restarting failed minions:", error);
+        throw error;
+      }
+    } finally {
+      runInAction(() => {
+        this.isRestartFailedLoading = false;
+        this.finishLoading();
       });
+    }
   };
 
   @action
-  handleRestartFailedMinion = (minionInnerId: string) => {
+  handleRestartFailedMinion = async (minionInnerId: string) => {
     if (!this.task) {
-      return;
+      return Promise.reject(new Error("Task is not loaded"));
     }
     this.isRestartFailedLoading = true;
     this.startLoading();
-    apiCoreStore.tasksApi
-      .restartFailed({
-        tid: this.task.id,
-        RestartFailedBody: { minions_by_ids: [minionInnerId] },
-      })
-      .then((task) => {
+
+    const promise = apiCoreStore.tasksApi?.restartFailed({
+      tid: this.task.id,
+      RestartFailedBody: { minions_by_ids: [minionInnerId] },
+    });
+
+    if (!promise) {
+      this.finishLoading();
+      this.isRestartFailedLoading = false;
+      return Promise.reject(new Error("Tasks API is not available"));
+    }
+
+    try {
+      try {
+        const task = await promise;
         runInAction(() => {
           this.task = task;
           const index = this.minions.findIndex((m) => m.minion_inner_id === minionInnerId);
@@ -321,13 +370,16 @@ export class TaskStore {
             this.minions = [...this.minions];
           }
         });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isRestartFailedLoading = false;
-          this.finishLoading();
-        });
+      } catch (error) {
+        console.error("Error restarting failed minion:", error);
+        throw error;
+      }
+    } finally {
+      runInAction(() => {
+        this.isRestartFailedLoading = false;
+        this.finishLoading();
       });
+    }
   };
 
   @action

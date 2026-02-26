@@ -2,8 +2,9 @@ import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { type PaginationState, type SortingState, createColumnHelper } from "@tanstack/react-table";
+import { message } from "antd";
 import { toJS } from "mobx";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
@@ -30,9 +31,30 @@ export const TaskMinions = ({
   sorting: SortingState;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
   onMinionClick?: (minion: TaskMinionModel) => void;
-  onRestartFailedMinion?: (minionInnerId: string) => void;
+  onRestartFailedMinion?: (minionInnerId: string) => Promise<void>;
 }) => {
   const { t } = useTranslation();
+
+  const handleRestartFailedMinionClick = useCallback(
+    async (minionInnerId: string | null | undefined, minionId: string | null | undefined) => {
+      if (!onRestartFailedMinion || !minionInnerId) {
+        return;
+      }
+
+      const displayId = minionId ?? minionInnerId;
+
+      try {
+        await onRestartFailedMinion(minionInnerId);
+      } catch {
+        message.error(
+          t("task.restart-failed-minion-error", {
+            minionId: displayId,
+          })
+        );
+      }
+    },
+    [onRestartFailedMinion, t]
+  );
 
   const columns = useMemo(
     () => [
@@ -58,7 +80,9 @@ export const TaskMinions = ({
               title: t("task.restart-failed-minion"),
               visible: (_, row) =>
                 row.status === TaskMinionStatus.Failed && !!onRestartFailedMinion,
-              onClick: (_, row) => onRestartFailedMinion?.(row.minion_inner_id ?? ""),
+              onClick: async (_, row) => {
+                await handleRestartFailedMinionClick(row.minion_inner_id, row.minion_id);
+              },
               buttonProps: {
                 color: "orange",
                 variant: "solid",
@@ -105,7 +129,7 @@ export const TaskMinions = ({
         meta: { width: "18%" },
       }),
     ],
-    [collectionSlug, onRestartFailedMinion, t]
+    [collectionSlug, handleRestartFailedMinionClick, onRestartFailedMinion, t]
   );
 
   return (
