@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import {
   MinionTaskResultsDrawer,
@@ -20,8 +21,6 @@ import {
 import { TaskMinionsStats } from "saltbox-core/widgets/task/task-minions-stats";
 import { MinionCategory } from "saltbox-core/widgets/task/task-minions-stats/model/minion-category";
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
-
-import { TaskMinions } from "./-components/task-minions/task-minions";
 
 const categoryToStatus = (category: MinionCategory): TaskMinionStatus | null => {
   switch (category) {
@@ -165,6 +164,7 @@ const TaskPage = observer(() => {
         slug={minionTaskResultsDrawer.slug}
         onClose={minionTaskResultsDrawer.close}
         clearData={minionTaskResultsDrawer.clearData}
+        onRestartFailedMinion={taskStore.handleRestartFailedMinion}
       />
     </>
   );

@@ -2,12 +2,15 @@ import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { type PaginationState, type SortingState, createColumnHelper } from "@tanstack/react-table";
-import { message } from "antd";
 import { toJS } from "mobx";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
+import {
+  type MinionTaskRestartFailedButtonProps,
+  useRestartFailedMinionHandler,
+} from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
 const TaskMinionsTable = FastTablePaginated<TaskMinionModel>;
 const columnHelper = createColumnHelper<TaskMinionModel>();
@@ -31,30 +34,11 @@ export const TaskMinions = ({
   sorting: SortingState;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
   onMinionClick?: (minion: TaskMinionModel) => void;
-  onRestartFailedMinion?: (minionInnerId: string) => Promise<void>;
+  onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
 }) => {
   const { t } = useTranslation();
 
-  const handleRestartFailedMinionClick = useCallback(
-    async (minionInnerId: string | null | undefined, minionId: string | null | undefined) => {
-      if (!onRestartFailedMinion || !minionInnerId) {
-        return;
-      }
-
-      const displayId = minionId ?? minionInnerId;
-
-      try {
-        await onRestartFailedMinion(minionInnerId);
-      } catch {
-        message.error(
-          t("task.restart-failed-minion-error", {
-            minionId: displayId,
-          })
-        );
-      }
-    },
-    [onRestartFailedMinion, t]
-  );
+  const handleRestartFailedMinionClick = useRestartFailedMinionHandler(onRestartFailedMinion, t);
 
   const columns = useMemo(
     () => [
