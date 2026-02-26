@@ -133,6 +133,18 @@ export class MastersStore {
     this.sorting = sorting;
     this.loadMasters();
   };
+
+  @action
+  hasAcceptedMasters = async (): Promise<boolean> => {
+    this.isLoading = true;
+    const result = await apiCoreStore.mastersApi?.mastersList({
+      MasterListBody: {
+        query: { status: "accepted" },
+      },
+    });
+    this.isLoading = false;
+    return Boolean(result?.data?.length);
+  };
 }
 
 export const mastersStore = new MastersStore();

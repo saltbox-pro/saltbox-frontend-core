@@ -198,8 +198,9 @@
     "error-loading-template": "Ошибка загрузки шаблона",
     "error-creating-task": "Ошибка создания задачи",
     "task-created-successfully": "Задача успешно создана",
-    "error-on-load-salt-masters": "Error on load salt masters",
-    "warning-on-create-task": "To create a task, activate a master on the Masters page"
+    "error-on-load-salt-masters": "Ошибка при загрузке мастеров",
+    "warning-on-create-task": "Для создания задачи активируйте мастера на странице \"Мастера\"",
+    "warning-on-create-policy": "Для создания политики активируйте мастера на странице \"Мастера\""
   },
   "task": {
     "details": {
