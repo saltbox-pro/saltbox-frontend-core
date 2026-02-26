@@ -58,7 +58,7 @@ export class PillarsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          ...(this.targetId && { query: { "tgt_info.id": this.targetId } }),
+          ...(this.targetId && { query: { tgt_id: this.targetId } }),
         },
       })
       .then((response) => {
