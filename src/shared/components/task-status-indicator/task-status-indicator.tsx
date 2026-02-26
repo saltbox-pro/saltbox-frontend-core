@@ -6,7 +6,7 @@ import {
   SyncOutlined,
 } from "@ant-design/icons";
 import { TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { Skeleton, Spin } from "antd";
+import { Flex, Skeleton, Spin } from "antd";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -66,8 +66,8 @@ export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
   }
 
   return (
-    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+    <Flex component="span" align="center" gap={4}>
       {config.icon} {t(config.translationKey)}
-    </span>
+    </Flex>
   );
 };
