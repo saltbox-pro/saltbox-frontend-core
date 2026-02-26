@@ -234,6 +234,7 @@
     "run": "Run",
     "stop": "Stop",
     "restart-failed": "Restart Failed Minions",
+    "restart-failed-minion": "Restart",
     "job-returns": "Job Returns",
     "status": "Status",
     "pending-jobs": "Pending Jobs",

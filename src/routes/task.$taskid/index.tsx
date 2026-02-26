@@ -98,15 +98,6 @@ const TaskPage = observer(() => {
     taskStore.setMinionCategoryFilter(categoryToStatus(category));
   };
 
-  const mc = taskStore.task?.minions_count;
-  const minionCounts = {
-    all: mc?.total ?? 0,
-    pending: mc?.pending ?? 0,
-    inWork: (mc?.in_work ?? 0) + (mc?.busy ?? 0),
-    failed: mc?.failed ?? 0,
-    success: mc?.success ?? 0,
-  };
-
   useWebSocket(taskId, (messages) => {
     if (messages?.length > 0) {
       taskStore.updateTasks(
@@ -148,7 +139,7 @@ const TaskPage = observer(() => {
         <TaskRunDetails taskStore={taskStore} />
 
         <TaskMinionsStats
-          counts={minionCounts}
+          taskStore={taskStore}
           selectedCategory={selectedMinionCategory}
           onSelectCategory={handleSelectMinionCategory}
         />
@@ -162,6 +153,7 @@ const TaskPage = observer(() => {
           sorting={taskStore.minionsSorting}
           onLazyLoad={taskStore.handleMinionsLazyLoad}
           onMinionClick={minionTaskResultsDrawer.open}
+          onRestartFailedMinion={taskStore.handleRestartFailedMinion}
         />
       </Flex>
 

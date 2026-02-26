@@ -20,6 +20,9 @@ export class TaskStore {
   @observable jobReturns: Array<JobReturnModel>;
   @observable minions: Array<TaskMinionModel>;
   @observable totalMinions: number;
+  @observable isRunTaskLoading: boolean;
+  @observable isStopTaskLoading: boolean;
+  @observable isRestartFailedLoading: boolean;
   @observable minionsPagination: PaginationState;
   @observable minionsSorting: SortingState;
   @observable isMinionsLoading: boolean;
@@ -33,6 +36,9 @@ export class TaskStore {
     this.jobReturns = [];
     this.minions = [];
     this.totalMinions = 0;
+    this.isRunTaskLoading = false;
+    this.isStopTaskLoading = false;
+    this.isRestartFailedLoading = false;
     this.minionsPagination = { pageIndex: 0, pageSize: PAGE_SIZE };
     this.minionsSorting = [...DEFAULT_SORTING];
     this.isMinionsLoading = false;
@@ -225,6 +231,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
+    this.isRunTaskLoading = true;
     this.startLoading();
     apiCoreStore.tasksApi
       ?.taskRun({
@@ -238,6 +245,7 @@ export class TaskStore {
       .finally(() => {
         runInAction(() => {
           this.finishLoading();
+          this.isRunTaskLoading = false;
         });
       });
   };
@@ -247,6 +255,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
+    this.isStopTaskLoading = true;
     this.startLoading();
     apiCoreStore.tasksApi
       ?.taskStop({
@@ -260,6 +269,7 @@ export class TaskStore {
       .finally(() => {
         runInAction(() => {
           this.finishLoading();
+          this.isStopTaskLoading = false;
         });
       });
   };
@@ -269,6 +279,7 @@ export class TaskStore {
     if (!this.task) {
       return;
     }
+    this.isRestartFailedLoading = true;
     this.startLoading();
     apiCoreStore.tasksApi
       .restartFailed({ tid: this.task.id, RestartFailedBody: {} })
@@ -279,6 +290,41 @@ export class TaskStore {
       })
       .finally(() => {
         runInAction(() => {
+          this.isRestartFailedLoading = false;
+          this.finishLoading();
+        });
+      });
+  };
+
+  @action
+  handleRestartFailedMinion = (minionInnerId: string) => {
+    if (!this.task) {
+      return;
+    }
+    this.isRestartFailedLoading = true;
+    this.startLoading();
+    apiCoreStore.tasksApi
+      .restartFailed({
+        tid: this.task.id,
+        RestartFailedBody: { minions_by_ids: [minionInnerId] },
+      })
+      .then((task) => {
+        runInAction(() => {
+          this.task = task;
+          const index = this.minions.findIndex((m) => m.minion_inner_id === minionInnerId);
+          if (index > -1) {
+            const minion = this.minions[index];
+            this.minions[index] = {
+              ...minion,
+              status: TaskMinionStatus.Pending,
+            };
+            this.minions = [...this.minions];
+          }
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isRestartFailedLoading = false;
           this.finishLoading();
         });
       });

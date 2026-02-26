@@ -1,28 +1,34 @@
-import { Statistic, Flex } from "antd";
+import { Flex, Statistic } from "antd";
+import { observer } from "mobx-react";
 import { useTranslation } from "react-i18next";
+
+import type { TaskStore } from "saltbox-core/store";
 
 import { MinionCategory } from "../model/minion-category";
 
 import styles from "./task-minions-stats.module.css";
 
 type TaskMinionsStatsProps = {
-  counts: {
-    all: number;
-    pending: number;
-    inWork: number;
-    failed: number;
-    success: number;
-  };
+  taskStore: TaskStore;
   selectedCategory: MinionCategory;
   onSelectCategory: (category: MinionCategory) => void;
 };
 
-export function TaskMinionsStats({
-  counts,
+export const TaskMinionsStats = observer(function TaskMinionsStats({
+  taskStore,
   selectedCategory,
   onSelectCategory,
 }: TaskMinionsStatsProps) {
   const { t } = useTranslation();
+
+  const mc = taskStore.task?.minions_count;
+  const counts = {
+    all: mc?.total ?? 0,
+    pending: mc?.pending ?? 0,
+    inWork: (mc?.in_work ?? 0) + (mc?.busy ?? 0),
+    failed: mc?.failed ?? 0,
+    success: mc?.success ?? 0,
+  };
 
   const getStatItemClass = (category: MinionCategory) => {
     const isActiveClass = selectedCategory === category ? " " + styles.taskStatItemActive : "";
@@ -123,4 +129,4 @@ export function TaskMinionsStats({
       </div>
     </Flex>
   );
-}
+});

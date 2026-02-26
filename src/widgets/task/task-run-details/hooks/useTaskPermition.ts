@@ -1,31 +1,48 @@
 import { TaskStatus } from "@saltbox/saltbox-core-api-client";
+import { useMemo } from "react";
 
-import type { TaskStore } from "saltbox-core/store";
+export type TaskRunControlInput = {
+  taskStatus: TaskStatus | undefined;
+  failedCount: number | undefined;
+  pendingCount: number | undefined;
+};
 
-export const useTaskPermissions = (taskStore: TaskStore) => {
-  const isTaskLoading = taskStore.isTaskLoading || !taskStore.task?.status;
-  const taskStatus = taskStore.task?.status?.type;
+export const useTaskPermissions = ({
+  taskStatus,
+  failedCount,
+  pendingCount,
+}: TaskRunControlInput) => {
+  const loadingOrNoStatus = taskStatus === undefined;
 
-  const canRun =
-    !isTaskLoading &&
-    taskStatus !== TaskStatus.Finished &&
-    taskStatus !== TaskStatus.WaitMinions &&
-    taskStatus !== TaskStatus.Running &&
-    taskStatus !== TaskStatus.Stopping;
+  const canRun = useMemo(
+    () =>
+      !loadingOrNoStatus &&
+      taskStatus !== TaskStatus.Finished &&
+      taskStatus !== TaskStatus.WaitMinions &&
+      taskStatus !== TaskStatus.Running &&
+      taskStatus !== TaskStatus.Stopping,
+    [loadingOrNoStatus, taskStatus]
+  );
 
-  const canStop =
-    !isTaskLoading &&
-    taskStatus !== TaskStatus.Created &&
-    taskStatus !== TaskStatus.Finished &&
-    taskStatus !== TaskStatus.Stopping &&
-    taskStatus !== TaskStatus.Stopped;
-
-  const canRestartFailed =
-    (!isTaskLoading &&
-      taskStatus !== TaskStatus.Stopping &&
+  const canStop = useMemo(
+    () =>
+      !loadingOrNoStatus &&
       taskStatus !== TaskStatus.Created &&
-      taskStore.task?.minions_count?.failed > 0) ||
-    (taskStore.task?.minions_count?.pending > 0 && taskStatus === TaskStatus.Finished);
+      taskStatus !== TaskStatus.Finished &&
+      taskStatus !== TaskStatus.Stopping &&
+      taskStatus !== TaskStatus.Stopped,
+    [loadingOrNoStatus, taskStatus]
+  );
+
+  const canRestartFailed = useMemo(
+    () =>
+      (!loadingOrNoStatus &&
+        taskStatus !== TaskStatus.Stopping &&
+        taskStatus !== TaskStatus.Created &&
+        failedCount > 0) ||
+      (pendingCount > 0 && taskStatus === TaskStatus.Finished),
+    [failedCount, loadingOrNoStatus, pendingCount, taskStatus]
+  );
 
   return { canRun, canStop, canRestartFailed };
 };

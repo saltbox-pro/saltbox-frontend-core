@@ -1,49 +1,68 @@
 import { CaretRightOutlined, IssuesCloseOutlined, StopOutlined } from "@ant-design/icons";
 import { Button, Flex } from "antd";
-import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
-import type { TaskStore } from "saltbox-core/store";
+import { type TaskRunControlInput, useTaskPermissions } from "../hooks/useTaskPermition";
 
-import { useTaskPermissions } from "../hooks/useTaskPermition";
-
-interface TaskRunControlProps {
-  taskStore: TaskStore;
+export interface TaskRunControlProps extends TaskRunControlInput {
+  onRunTask: () => void;
+  onStopTask: () => void;
+  onRestartFailed: () => void;
+  isRunTaskLoading: boolean;
+  isStopTaskLoading: boolean;
+  isRestartFailedLoading: boolean;
 }
 
-export const TaskRunControl = observer(function TaskRunControl({ taskStore }: TaskRunControlProps) {
+export function TaskRunControl({
+  taskStatus,
+  failedCount,
+  pendingCount,
+  onRunTask,
+  onStopTask,
+  onRestartFailed,
+  isRunTaskLoading,
+  isStopTaskLoading,
+  isRestartFailedLoading,
+}: TaskRunControlProps) {
   const { t } = useTranslation();
 
-  const taskPermissions = useTaskPermissions(taskStore);
+  const { canRun, canStop, canRestartFailed } = useTaskPermissions({
+    taskStatus,
+    failedCount,
+    pendingCount,
+  });
 
   return (
     <Flex gap={7}>
       <Button
-        onClick={taskStore.handleRunTask}
+        onClick={onRunTask}
         color="primary"
         variant="solid"
         icon={<CaretRightOutlined />}
-        disabled={!taskPermissions.canRun}
+        disabled={!canRun}
+        loading={isRunTaskLoading}
         title={t("task.run")}
       />
 
       <Button
-        onClick={taskStore.handleStopTask}
+        onClick={onStopTask}
         color="danger"
         variant="solid"
         icon={<StopOutlined />}
-        disabled={!taskPermissions.canStop}
+        disabled={!canStop}
+        loading={isStopTaskLoading}
         title={t("task.stop")}
       />
 
       <Button
-        onClick={taskStore.handleRestartFailed}
+        onClick={onRestartFailed}
         color="orange"
         variant="solid"
         icon={<IssuesCloseOutlined />}
-        disabled={!taskPermissions.canRestartFailed}
+        disabled={!canRestartFailed}
+        loading={isRestartFailedLoading}
         title={t("task.restart-failed")}
       />
     </Flex>
   );
-});
+}
