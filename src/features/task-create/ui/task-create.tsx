@@ -17,15 +17,17 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
 
   return (
     <>
-      <TemplateListModal
-        type={context.taskType}
-        isOpen={isOpen && !selectedTemplateId}
-        onClose={onClose}
-        onSelectTemplate={setSelectedTemplateId}
-      />
-      {selectedTemplateId && (
+      {isOpen && (
+        <TemplateListModal
+          type={context.taskType}
+          isOpen={!selectedTemplateId}
+          onClose={onClose}
+          onSelectTemplate={setSelectedTemplateId}
+        />
+      )}
+      {isOpen && selectedTemplateId && (
         <TaskModal
-          isOpen={isOpen && !!selectedTemplateId}
+          isOpen={!!selectedTemplateId}
           templateId={selectedTemplateId}
           context={context}
           onClose={onClose}

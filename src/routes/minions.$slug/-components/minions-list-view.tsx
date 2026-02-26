@@ -22,7 +22,13 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
-import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
+import {
+  appStore,
+  CollectionStore,
+  mastersStore,
+  MinionFilterStore,
+  MinionsStore,
+} from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   useMinionDetailsDrawer,
@@ -233,6 +239,33 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     goToTaskPage,
   } = useTaskWorkflow();
 
+  const handleOpenCreateTaskModal = useCallback(
+    async (typeOfTask: string) => {
+      mastersStore
+        .hasAcceptedMasters()
+        .then((hasMasters) => {
+          if (typeOfTask === "task") {
+            if (!hasMasters) {
+              message.warning(t("task-create.warning-on-create-task"));
+            } else {
+              openTaskCreate();
+            }
+          }
+          if (typeOfTask === "policy") {
+            if (!hasMasters) {
+              message.warning(t("task-create.warning-on-create-policy"));
+            } else {
+              openPolicyCreate();
+            }
+          }
+        })
+        .catch(() => {
+          message.error(t("task-create.error-on-load-salt-masters"));
+        });
+    },
+    [openTaskCreate, openPolicyCreate]
+  );
+
   let taskModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
     taskModalCreatePlugin = (
@@ -270,13 +303,19 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         )}
 
         <div className="page-actions-buttons">
-          <Button type="primary" icon={<PlusOutlined />} onClick={openTaskCreate}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => handleOpenCreateTaskModal("task")}
+            loading={mastersStore.isLoading}
+          >
             {t("task-create.create-button")}
           </Button>
 
           <Button
             icon={<PlusOutlined />}
-            onClick={openPolicyCreate}
+            onClick={() => handleOpenCreateTaskModal("policy")}
+            loading={mastersStore.isLoading}
             disabled={!!selectedMinions.length}
           >
             {t("policy-create.create-button")}

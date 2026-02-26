@@ -65,6 +65,15 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
   );
 
   return (
-    <TaskCreate isOpen={isOpen} context={context} onClose={onClose} onTaskCreated={onTaskCreated} />
+    <>
+      {isOpen && (
+        <TaskCreate
+          isOpen={true}
+          context={context}
+          onClose={onClose}
+          onTaskCreated={onTaskCreated}
+        />
+      )}
+    </>
   );
 };
