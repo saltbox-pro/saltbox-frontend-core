@@ -68,6 +68,18 @@ export const saltboxModule = {
         path: "/core/jobs",
       },
       {
+        key: "tasks",
+        label: { en: "Tasks", ru: "Задачи" },
+        icon: "assignment",
+        path: "/core/tasks",
+      },
+      {
+        key: "policies",
+        label: { en: "Policies", ru: "Политики" },
+        icon: "policy",
+        path: "/core/policies",
+      },
+      {
         key: "pillars",
         label: { en: "Pillars", ru: "Pillars" },
         icon: "key",
