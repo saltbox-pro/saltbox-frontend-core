@@ -56,12 +56,6 @@ export const saltboxModule = {
         path: "/core/minions",
       },
       {
-        key: "masters",
-        label: { en: "Masters", ru: "Мастера" },
-        icon: "dns",
-        path: "/core/masters",
-      },
-      {
         key: "jobs",
         label: { en: "Jobs", ru: "Команды" },
         icon: "build_circle",
@@ -93,19 +87,27 @@ export const saltboxModule = {
     label: "Core",
     children: [
       {
+        key: "masters",
+        label: { en: "Masters", ru: "Мастера" },
+        icon: "dns",
+        path: "/core/masters",
+      },
+      {
         key: "jobs-templates",
         label: { en: "Jobs Templates", ru: "Шаблоны команд" },
+        icon: "build",
         path: "/core/jobs-templates",
       },
-
       {
         key: "task-templates",
         label: { en: "Task Templates", ru: "Шаблоны задач" },
+        icon: "assignment_globe",
         path: "/core/task-templates",
       },
       {
         key: "settings-sls",
         label: { en: "Settings SLS", ru: "Репозитории конфигураций" },
+        icon: "source",
         path: "/core/settings-sls",
       },
     ],
