@@ -341,6 +341,26 @@
     "success-on-change-master-status": "Master '{{name}}' changed to status '{{status}}'",
     "error-on-change-master-status": "Error on change master status"
   },
+  "pillar": {
+    "title": "Pillar",
+    "details": {
+      "name": "Name",
+      "value": "Value",
+      "target-type": "Target Type",
+      "target-id": "Target ID",
+      "target-name": "Target",
+      "personal": "Personal",
+      "secret": "Secure",
+      "created": "Created",
+      "modified": "Modified",
+      "value-secret-message": "Value is secure and cannot be viewed or edited"
+    }
+  },
+  "json-editor-field": {
+    "value-required": "Value is required",
+    "value-invalid-json": "Value must be valid JSON",
+    "value-invalid-type": "Value must be a string, number, boolean, null, object or array"
+  },
   "pillars": {
     "title": "Pillars",
     "load-error": "Failed to load pillars",
@@ -354,9 +374,6 @@
       "field-name-max-length": "Name must be at most {{max}} characters",
       "field-value": "Value",
       "field-value-placeholder": "Enter value",
-      "field-value-required": "Value is required",
-      "field-value-invalid-json": "Value must be valid JSON",
-      "field-value-invalid-type": "Value must be a string, number, boolean, null, object or array",
       "field-personal": "Personal",
       "field-personal-tooltip": "The pillar is created in your personal environment and applies only to the tasks you run",
       "field-secret": "Secure",
@@ -366,15 +383,9 @@
       "success": "Pillar created successfully",
       "error": "Failed to create pillar"
     },
-    "table": {
-      "name": "Name",
-      "value": "Value",
-      "target-type": "Target Type",
-      "target-id": "Target ID",
-      "personal": "Personal",
-      "secret": "Secure",
-      "created": "Created",
-      "modified": "Modified"
+    "edit": {
+      "error": "Failed to update pillar",
+      "success": "Pillar updated successfully"
     }
   },
   "jobs": {
@@ -698,6 +709,8 @@
     "no": "No",
     "cancel": "Cancel",
     "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"

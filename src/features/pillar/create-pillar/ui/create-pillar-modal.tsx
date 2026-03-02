@@ -24,7 +24,12 @@ export function CreatePillarModal({
 }: CreatePillarModalProps) {
   return (
     <Modal width={650} open={isOpen} title={title} onCancel={onClose} footer={null} destroyOnHidden>
-      <CreatePillarForm store={store} tgtType={tgtType} tgtId={tgtId} onClose={onClose} />
+      <CreatePillarForm
+        refreshPillars={() => store.loadPillars()}
+        tgtType={tgtType}
+        tgtId={tgtId}
+        onClose={onClose}
+      />
     </Modal>
   );
 }

@@ -84,4 +84,14 @@ export class PillarsStore {
     this.sorting = sorting;
     this.loadPillars();
   }
+
+  replacePillar = (updated: PillarWithTgtInfoSchema): void => {
+    const foundIdx = this.pillars.findIndex(({ id }) => id === updated.id);
+
+    if (foundIdx === -1) return;
+
+    this.pillars = this.pillars
+      .slice(0, foundIdx)
+      .concat(updated, this.pillars.slice(foundIdx + 1));
+  };
 }

@@ -1,18 +1,12 @@
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton, FilterActionButton } from "@saltbox/saltbox-frontend-common";
-import {
-  Collapse,
-  CollapseProps,
-  Descriptions,
-  DescriptionsProps,
-  Flex,
-  Spin,
-  Typography,
-  type FlexProps,
-} from "antd";
-import React from "react";
+import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
 import { useTranslation } from "react-i18next";
 
+import {
+  InfoDescriptions,
+  type InfoDescriptionsProps,
+} from "saltbox-core/shared/ui/info-descriptions";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import styles from "./minion-dashboard-tab.module.css";
@@ -26,7 +20,7 @@ type SimpleGrainKeys = {
 interface MinionSimpleDetailView {
   key: keyof SimpleGrainKeys;
   name: string;
-  itemProps?: Partial<DescriptionsProps["items"][number]> & {
+  itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
     grainValueProps?: Partial<FlexProps>;
   };
 }
@@ -35,7 +29,7 @@ interface MinionExtendDetailView {
   key: string;
   value: (minionDetailSchema: MinionDetailSchema) => React.ReactNode;
   name: string;
-  itemProps?: Partial<DescriptionsProps["items"][number]> & {
+  itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
     grainValueProps?: Partial<FlexProps>;
   };
 }
@@ -63,7 +57,7 @@ const minionDetailsViewsToDescriptionItems = (
   minionDetailViews: MinionDetailView[],
   schema: MinionDetailSchema,
   onFilterButton?: (params: OnFilterButtonParams) => void
-): DescriptionsProps["items"] => {
+): InfoDescriptionsProps["items"] => {
   return minionDetailViews.map((minionDetailView) => {
     const { grainValueProps, ...restItemProps } = minionDetailView.itemProps ?? {};
 
@@ -131,14 +125,13 @@ const minionDetailViewGroupsToCollapseItems = (
       key: minionDetailViewGroup.name,
       label: minionDetailViewGroup.name,
       children: (
-        <Descriptions
+        <InfoDescriptions
           items={minionDetailsViewsToDescriptionItems(
             t,
             minionDetailViewGroup.details,
             schema,
             onFilterButton
           )}
-          bordered
         />
       ),
     };
@@ -343,14 +336,13 @@ export function MinionDashboardTab({
 
   return (
     <Flex vertical gap={10} className={styles.minionDetailsDashboard}>
-      <Descriptions
+      <InfoDescriptions
         items={minionDetailsViewsToDescriptionItems(
           t,
           minionGeneralDetailViews,
           minion,
           onFilterButton
         )}
-        bordered
       />
       <Collapse
         items={minionDetailViewGroupsToCollapseItems(

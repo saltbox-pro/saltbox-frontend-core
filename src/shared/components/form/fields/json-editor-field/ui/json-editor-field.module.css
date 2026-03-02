@@ -15,11 +15,11 @@
   transition: border-color 0.2s;
 }
 
-.jsonEditorWrapper:hover:not(.jsonEditorWrapper_error) {
+.jsonEditorWrapper:hover:not(.jsonEditorWrapper_error):not(.jsonEditorWrapper_disabled) {
   border-color: var(--json-border-hover);
 }
 
-.jsonEditorWrapper:focus-within:not(.jsonEditorWrapper_error) {
+.jsonEditorWrapper:focus-within:not(.jsonEditorWrapper_error):not(.jsonEditorWrapper_disabled) {
   border-color: var(--json-border-active);
   box-shadow: 0 0 0 2px var(--json-shadow-active);
 }
@@ -35,4 +35,12 @@
 .jsonEditorWrapper.jsonEditorWrapper_error:focus-within {
   border-color: var(--json-border-error);
   box-shadow: 0 0 0 2px var(--json-shadow-error-active);
+}
+
+.jsonEditorWrapper :global(.monaco-editor .margin) {
+  background-color: rgba(0, 0, 0, 0.02) !important;
+}
+
+.jsonEditorWrapper :global(.monaco-editor .lines-content) {
+  padding-left: 5px;
 }

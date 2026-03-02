@@ -1,12 +1,9 @@
-import { Drawer } from "@saltbox/saltbox-frontend-common";
-import { useEffect, type ReactNode } from "react";
+import type { PropsWithChildren } from "react";
+import { useTranslation } from "react-i18next";
 
-import { BaseMinionDrawerError } from "./base-minion-drawer-error";
-import { BaseMinionDrawerLink } from "./base-minion-drawer-link";
-import { BaseMinionDrawerLoader } from "./base-minion-drawer-loader";
-import { BaseMinionDrawerTitle } from "./base-minion-drawer-title";
+import { InfoDrawer } from "saltbox-core/shared/ui/info-drawer";
 
-interface BaseMinionDrawerProps {
+interface BaseMinionDrawerProps extends PropsWithChildren {
   innerId: string;
   id: string;
   slug: string | null | undefined;
@@ -16,7 +13,6 @@ interface BaseMinionDrawerProps {
   hasData?: boolean;
   onClose: () => void;
   onAfterClose?: () => void;
-  children: ReactNode;
 }
 
 export function BaseMinionDrawer({
@@ -31,34 +27,22 @@ export function BaseMinionDrawer({
   onAfterClose,
   children,
 }: BaseMinionDrawerProps) {
-  const handleAfterOpenChange = (isOpen: boolean) => {
-    if (!isOpen && onAfterClose) {
-      onAfterClose();
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      onClose();
-      onAfterClose();
-    };
-  }, [onAfterClose, onClose]);
+  const { t } = useTranslation();
 
   return (
-    <Drawer
+    <InfoDrawer
       open={open}
       onClose={onClose}
-      size="large"
-      placement="right"
-      title={<BaseMinionDrawerTitle name={id} />}
-      extra={!!innerId && !!slug && <BaseMinionDrawerLink slug={slug} innerId={innerId} />}
-      afterOpenChange={handleAfterOpenChange}
+      onAfterClose={onAfterClose}
+      titleName={id}
+      titleLabel={t("minions.minion")}
+      linkTo={innerId && slug ? `/minions/${slug}/${innerId}` : undefined}
+      linkTitle={t("minions.open-minion-details-page")}
+      isLoading={isLoading}
+      hasData={hasData}
+      errorMessage={error}
     >
-      {isLoading && <BaseMinionDrawerLoader />}
-
-      {hasData && !error && !isLoading
-        ? children
-        : error && <BaseMinionDrawerError message={error} />}
-    </Drawer>
+      {children}
+    </InfoDrawer>
   );
 }

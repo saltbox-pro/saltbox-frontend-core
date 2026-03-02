@@ -341,6 +341,26 @@
     "success-on-change-master-status": "Мастер '{{name}}' изменен на статус '{{status}}'",
     "error-on-change-master-status": "Ошибка при изменении статуса мастера"
   },
+  "pillar": {
+    "title": "Pillar",
+    "details": {
+      "name": "Имя",
+      "value": "Значение",
+      "target-type": "Тип цели",
+      "target-id": "ID цели",
+      "target-name": "Цель",
+      "personal": "Персональный",
+      "secret": "Защищённый",
+      "created": "Дата создания",
+      "modified": "Дата изменения",
+      "value-secret-message": "Значение является защищённым, просмотр и редактирование недоступны"
+    }
+  },
+  "json-editor-field": {
+    "value-required": "Значение обязательно к заполнению",
+    "value-invalid-json": "Значение должно быть валидным JSON",
+    "value-invalid-type": "Значение должно быть строкой, числом, true/false/null, объектом или массивом"
+  },
   "pillars": {
     "title": "Pillars",
     "load-error": "Не удалось получить pillars",
@@ -354,9 +374,6 @@
       "field-name-max-length": "Имя должно быть не длиннее {{max}} символов",
       "field-value": "Значение",
       "field-value-placeholder": "Введите значение",
-      "field-value-required": "Значение обязательно к заполнению",
-      "field-value-invalid-json": "Значение должно быть валидным JSON",
-      "field-value-invalid-type": "Значение должно быть строкой, числом, true/false/null, объектом или массивом",
       "field-personal": "Персональный",
       "field-personal-tooltip": "Пиллар создаётся в персональном окружении и применяется только к задачам, которые вы запускаете",
       "field-secret": "Защищённый",
@@ -366,15 +383,9 @@
       "success": "Pillar успешно создан",
       "error": "Не удалось создать pillar"
     },
-    "table": {
-      "name": "Имя",
-      "value": "Значение",
-      "target-type": "Тип цели",
-      "target-id": "ID цели",
-      "personal": "Персональный",
-      "secret": "Защищённый",
-      "created": "Дата создания",
-      "modified": "Дата изменения"
+    "edit": {
+      "error": "Не удалось обновить pillar",
+      "success": "Pillar успешно обновлён"
     }
   },
   "jobs": {
@@ -698,6 +709,8 @@
     "no": "Нет",
     "cancel": "Отмена",
     "delete": "Удалить",
+    "edit": "Редактировать",
+    "save": "Сохранить",
     "copy-to-clipboard-button": {
       "copy": "Копировать",
       "copied": "Скопировано в буфер обмена"

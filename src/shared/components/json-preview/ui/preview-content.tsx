@@ -23,7 +23,7 @@ export function PreviewContent({ value, maxEntries }: PreviewContentProps) {
   if (typeof value === "string") {
     const shortened =
       value.length > STRING_PREVIEW_MAX_LEN
-        ? `${value.slice(0, STRING_PREVIEW_MAX_LEN - 3)}…`
+        ? `${value.slice(0, STRING_PREVIEW_MAX_LEN - 4)}…`
         : value;
     return (
       <>

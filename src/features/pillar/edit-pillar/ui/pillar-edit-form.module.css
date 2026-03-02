@@ -1,0 +1,12 @@
+.form {
+  flex-grow: 1;
+}
+
+.valueFormItem :global(.ant-form-item-control) {
+  margin-top: 5px;
+}
+
+.valueFormItem :global(.ant-form-item-label > label) {
+  font-size: 16px;
+  font-weight: 600;
+}

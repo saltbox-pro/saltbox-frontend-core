@@ -1,12 +1,12 @@
 import { type TgtInfo, PillarTgtType } from "@saltbox/saltbox-core-api-client";
 import { Link } from "react-router";
 
-interface PillarTgtIdCellProps {
+interface PillarTgtNameProps {
   tgtInfo: TgtInfo | undefined;
 }
 
-export function PillarTgtIdCell({ tgtInfo }: PillarTgtIdCellProps) {
-  const { id, slug, type, title, minion_id: minionId } = tgtInfo;
+export function PillarTgtName({ tgtInfo }: PillarTgtNameProps) {
+  const { id, slug, type, title, minion_id: minionId } = tgtInfo ?? {};
 
   if (!id) {
     return <span>{id}</span>;

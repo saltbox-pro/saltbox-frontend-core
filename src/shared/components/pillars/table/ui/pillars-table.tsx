@@ -1,15 +1,20 @@
 import { PillarTgtType, type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
+import { BooleanDisplay, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Alert, Flex, Typography } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
+import {
+  PillarDetailsDrawer,
+  usePillarDetailsDrawer,
+} from "saltbox-core/shared/components/pillars/pillar-details-drawer";
 import type { PillarsStore } from "saltbox-core/store";
 
-import { PillarTgtIdCell } from "./cells/pillar-tgt-id-cell";
+import { PillarTgtName } from "./cells/pillar-tgt-name";
 
 const columnHelper = createColumnHelper<PillarWithTgtInfoSchema>();
 
@@ -24,16 +29,26 @@ export interface PillarsTableProps {
 function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: PillarsTableProps) {
   const { t } = useTranslation();
 
+  const pillarDrawer = usePillarDetailsDrawer();
+
+  const openedPillar = useMemo(
+    () =>
+      pillarDrawer.openedPillarId != null
+        ? (store.pillars.find(({ id }) => id === pillarDrawer.openedPillarId) ?? null)
+        : null,
+    [pillarDrawer.openedPillarId, store.pillars]
+  );
+
   const targetColumns = hideTargetColumns
     ? []
     : [
         columnHelper.accessor("tgt_info.type", {
-          header: t("pillars.table.target-type"),
+          header: t("pillar.details.target-type"),
           meta: { width: "10%", minWidth: 130 },
         }),
         columnHelper.accessor("tgt_info.id", {
-          header: t("pillars.table.target-id"),
-          cell: ({ row }) => <PillarTgtIdCell tgtInfo={row.original.tgt_info} />,
+          header: t("pillar.details.target-id"),
+          cell: ({ row }) => <PillarTgtName tgtInfo={row.original.tgt_info} />,
           meta: {
             showCopy: true,
             copyValue: (row) =>
@@ -45,15 +60,15 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
           },
         }),
         columnHelper.accessor("is_secret", {
-          header: t("pillars.table.secret"),
-          cell: (data) => (data.getValue() ? t("common.yes") : t("common.no")),
+          header: t("pillar.details.secret"),
+          cell: (data) => <BooleanDisplay value={data.getValue()} />,
           meta: { width: "10%", minWidth: 135 },
         }),
       ];
 
   const columns = [
     columnHelper.accessor("name", {
-      header: t("pillars.table.name"),
+      header: t("pillar.details.name"),
       cell: ({ getValue }) => {
         const name = getValue();
 
@@ -66,7 +81,7 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
       meta: { showCopy: true, width: "15%", minWidth: 240, maxWidth: 240 },
     }),
     columnHelper.accessor("value", {
-      header: t("pillars.table.value"),
+      header: t("pillar.details.value"),
       cell: ({ row, getValue }) => {
         const value = getValue();
         const isSecret = row.original?.is_secret;
@@ -75,26 +90,26 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
           return value;
         }
 
-        return <JsonPreview value={value} title={t("pillars.table.value")} />;
+        return <JsonPreview value={value} title={t("pillar.details.value")} />;
       },
       meta: { width: "25%", minWidth: 250, maxWidth: 250 },
     }),
     ...targetColumns,
     columnHelper.accessor("is_personal", {
-      header: t("pillars.table.personal"),
-      cell: (data) => (data.getValue() ? t("common.yes") : t("common.no")),
+      header: t("pillar.details.personal"),
+      cell: (data) => <BooleanDisplay value={data.getValue()} />,
       meta: { width: "10%", minWidth: 160 },
     }),
     ...(hideDateColumns
       ? []
       : [
           columnHelper.accessor("created", {
-            header: t("pillars.table.created"),
+            header: t("pillar.details.created"),
             cell: (data) => <RelativeTime date={data.getValue()} />,
             meta: { width: "20%", minWidth: 200 },
           }),
           columnHelper.accessor("modified", {
-            header: t("pillars.table.modified"),
+            header: t("pillar.details.modified"),
             cell: (data) => <RelativeTime date={data.getValue()} />,
             meta: { width: "20%", minWidth: 200 },
           }),
@@ -114,6 +129,16 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
         sorting={store.sorting}
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
         getRowId={(row) => row.id}
+        onRowClick={(pillar) => {
+          pillarDrawer.open(pillar.id);
+        }}
+      />
+
+      <PillarDetailsDrawer
+        open={pillarDrawer.isOpened}
+        pillar={openedPillar}
+        onClose={pillarDrawer.close}
+        onReplacePillar={store.replacePillar}
       />
     </Flex>
   );

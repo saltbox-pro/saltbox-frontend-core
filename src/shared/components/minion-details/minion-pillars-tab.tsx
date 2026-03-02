@@ -2,7 +2,7 @@ import { PillarTgtType } from "@saltbox/saltbox-core-api-client";
 import { Flex } from "antd";
 import { useEffect, useMemo } from "react";
 
-import { useCreatePillar } from "saltbox-core/features/create-pillar";
+import { useCreatePillar } from "saltbox-core/features/pillar/create-pillar";
 import { PillarsTable } from "saltbox-core/shared/components/pillars/table";
 import { PillarsStore } from "saltbox-core/store";
 

@@ -1,87 +1,43 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import type { PillarCreateSchema, PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip, message } from "antd";
-import { useState } from "react";
+import type { PillarCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
+import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { type PillarsStore, apiCoreStore } from "saltbox-core/store";
+import {
+  createJsonValueValidator,
+  JsonEditorField,
+} from "saltbox-core/shared/components/form/fields/json-editor-field";
 
-import { createPillarValueValidator } from "../utils/pillar-value-validator";
-import { isParseValueError, parseAndValidatePillarValue } from "../utils/validation";
-
-import { JsonEditorField } from "./create-pillar-form-value-field";
-
-export type { PillarValueType } from "../utils/validation";
-
-interface CreatePillarFormValues {
-  name: string;
-  value: string;
-  is_personal: boolean;
-  is_secret: boolean;
-}
+import { type CreatePillarFormValues, useCreatePillarForm } from "../hooks/use-create-pillar-form";
 
 interface CreatePillarFormProps {
-  store: PillarsStore;
-  tgtType: PillarTgtType;
+  refreshPillars: () => void;
+  tgtType: PillarCreateRequestSchema["tgt_type"];
   tgtId: string;
   onClose: () => void;
 }
 
-export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePillarFormProps) {
+export function CreatePillarForm({
+  refreshPillars,
+  tgtType,
+  tgtId,
+  onClose,
+}: CreatePillarFormProps) {
   const { t } = useTranslation();
   const [form] = Form.useForm<CreatePillarFormValues>();
-
-  const [isCreating, setIsCreating] = useState<boolean>(false);
-  const [createError, setCreateError] = useState<string | null>(null);
-
-  const handleSubmit = async (values: CreatePillarFormValues) => {
-    setIsCreating(true);
-    setCreateError(null);
-
-    const api = apiCoreStore.pillarsApi;
-
-    if (!api) {
-      setCreateError("pillars.create.error");
-      setIsCreating(false);
-      return;
-    }
-
-    const parsed = parseAndValidatePillarValue(values.value);
-
-    if (isParseValueError(parsed)) {
-      setCreateError(parsed.errorKey);
-      setIsCreating(false);
-      return;
-    }
-
-    const body: PillarCreateSchema = {
-      name: values.name,
-      value: parsed.value,
-      is_personal: values.is_personal,
-      is_secret: values.is_secret,
-      tgt_type: tgtType,
-      tgt_id: tgtType === "root" ? null : tgtId,
-    };
-
-    try {
-      await api.pillarCreate({ PillarCreateSchema: body });
-
-      message.success(t("pillars.create.success"));
-      store.loadPillars();
-      onClose();
-    } catch (_) {
-      setCreateError("pillars.create.error");
-    } finally {
-      setIsCreating(false);
-    }
-  };
+  const { handleSubmit, isCreating, createError, resetCreateError } = useCreatePillarForm({
+    refreshPillars,
+    tgtType,
+    tgtId,
+    onClose,
+  });
 
   return (
     <Form
       form={form}
       layout="vertical"
       onFinish={handleSubmit}
-      onValuesChange={() => setCreateError(null)}
+      onValuesChange={resetCreateError}
       initialValues={{ is_personal: false, is_secret: false }}
       autoComplete="off"
     >
@@ -131,8 +87,8 @@ export function CreatePillarForm({ store, tgtType, tgtId, onClose }: CreatePilla
         name="value"
         label={t("pillars.create.field-value")}
         rules={[
-          { required: true, message: t("pillars.create.field-value-required") },
-          { validator: createPillarValueValidator(t) },
+          { required: true, message: t("json-editor-field.value-required") },
+          { validator: createJsonValueValidator(t) },
         ]}
       >
         <JsonEditorField form={form} />
