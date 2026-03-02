@@ -4,6 +4,7 @@ import { Alert, Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { PillarDeleteBlock } from "saltbox-core/features/pillar/delete-pillar";
 import { PillarEditForm } from "saltbox-core/features/pillar/edit-pillar";
 import { InfoDescriptions } from "saltbox-core/shared/ui/info-descriptions";
 import { InfoDrawer } from "saltbox-core/shared/ui/info-drawer";
@@ -15,6 +16,7 @@ export interface PillarDetailsDrawerProps {
   pillar: PillarWithTgtInfoSchema | null;
   onClose: () => void;
   onReplacePillar?: (updated: PillarWithTgtInfoSchema) => void;
+  onDeleted?: () => void;
 }
 
 export function PillarDetailsDrawer({
@@ -22,6 +24,7 @@ export function PillarDetailsDrawer({
   pillar,
   onClose,
   onReplacePillar,
+  onDeleted,
 }: PillarDetailsDrawerProps) {
   const { t } = useTranslation();
 
@@ -89,15 +92,27 @@ export function PillarDetailsDrawer({
     [created, id, isSecret, isPersonal, modified, name, t, tgtInfo]
   );
 
+  const deleteBlock = useMemo(
+    () => <PillarDeleteBlock pillarId={id} pillarName={name} onDeleted={onDeleted} />,
+    [id, name, onDeleted]
+  );
+
   return (
     <InfoDrawer open={open} onClose={onClose} titleName={name} titleLabel={t("pillar.title")}>
       <Flex className={styles.pillarDetailsDrawer} vertical gap="large">
         <InfoDescriptions items={items} />
 
         {isSecret ? (
-          <Alert message={t("pillar.details.value-secret-message")} type="info" showIcon />
+          <>
+            {deleteBlock}
+            <Alert message={t("pillar.details.value-secret-message")} type="info" showIcon />
+          </>
         ) : (
-          <PillarEditForm pillar={pillar} onReplacePillar={onReplacePillar} />
+          <PillarEditForm
+            pillar={pillar}
+            onReplacePillar={onReplacePillar}
+            deleteBlock={deleteBlock}
+          />
         )}
       </Flex>
     </InfoDrawer>

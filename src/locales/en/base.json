@@ -386,6 +386,14 @@
     "edit": {
       "error": "Failed to update pillar",
       "success": "Pillar updated successfully"
+    },
+    "delete": {
+      "modal-title": "Delete pillar",
+      "modal-text": "Are you sure you want to delete pillar",
+      "success": "Pillar deleted successfully",
+      "success-before-name": "Pillar ",
+      "success-after-name": " deleted successfully",
+      "error": "Failed to delete pillar"
     }
   },
   "jobs": {

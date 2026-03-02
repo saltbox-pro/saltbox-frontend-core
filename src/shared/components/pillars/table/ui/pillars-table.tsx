@@ -139,6 +139,10 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
         pillar={openedPillar}
         onClose={pillarDrawer.close}
         onReplacePillar={store.replacePillar}
+        onDeleted={() => {
+          pillarDrawer.close();
+          store.loadPillars();
+        }}
       />
     </Flex>
   );

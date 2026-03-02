@@ -386,6 +386,14 @@
     "edit": {
       "error": "Не удалось обновить pillar",
       "success": "Pillar успешно обновлён"
+    },
+    "delete": {
+      "modal-title": "Удалить pillar",
+      "modal-text": "Вы действительно хотите удалить pillar",
+      "success": "Pillar успешно удален",
+      "success-before-name": "Pillar ",
+      "success-after-name": " успешно удален",
+      "error": "Не удалось удалить pillar"
     }
   },
   "jobs": {

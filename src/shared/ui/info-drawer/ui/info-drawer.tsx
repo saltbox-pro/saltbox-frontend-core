@@ -30,6 +30,7 @@ export function InfoDrawer({
   errorMessage,
   isLoading,
   hasData = true,
+  extra,
   onClose,
   onAfterClose,
   children,
@@ -56,7 +57,11 @@ export function InfoDrawer({
       size="large"
       placement="right"
       title={<InfoDrawerTitle name={titleName} label={titleLabel} />}
-      extra={<InfoDrawerLink to={linkTo} title={linkTitle} />}
+      extra={
+        <>
+          {extra} <InfoDrawerLink to={linkTo} title={linkTitle} />
+        </>
+      }
       afterOpenChange={handleAfterOpenChange}
     >
       {isLoading && <InfoDrawerLoader />}

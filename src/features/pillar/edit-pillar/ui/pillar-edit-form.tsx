@@ -2,7 +2,7 @@ import { EditOutlined } from "@ant-design/icons";
 import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Form } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -18,9 +18,10 @@ import styles from "./pillar-edit-form.module.css";
 export interface PillarValueFormProps {
   pillar: PillarWithTgtInfoSchema | null;
   onReplacePillar?: (updated: PillarWithTgtInfoSchema) => void;
+  deleteBlock?: ReactNode;
 }
 
-export function PillarEditForm({ pillar, onReplacePillar }: PillarValueFormProps) {
+export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarValueFormProps) {
   const { t } = useTranslation();
 
   const [form] = Form.useForm<{ value: string }>();
@@ -62,10 +63,11 @@ export function PillarEditForm({ pillar, onReplacePillar }: PillarValueFormProps
 
   return (
     <Flex vertical flex={1}>
-      <Flex justify="end">
+      <Flex justify="end" gap="small">
         <Button icon={<EditOutlined />} onClick={() => setIsEditing(true)} disabled={isEditing}>
           {t("common.edit")}
         </Button>
+        {deleteBlock}
       </Flex>
 
       <Form
