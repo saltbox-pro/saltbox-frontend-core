@@ -17,6 +17,7 @@ export interface PillarDetailsDrawerProps {
   onClose: () => void;
   onReplacePillar?: (updated: PillarWithTgtInfoSchema) => void;
   onDeleted?: () => void;
+  onAfterClose?: () => void;
 }
 
 export function PillarDetailsDrawer({
@@ -25,6 +26,7 @@ export function PillarDetailsDrawer({
   onClose,
   onReplacePillar,
   onDeleted,
+  onAfterClose,
 }: PillarDetailsDrawerProps) {
   const { t } = useTranslation();
 
@@ -98,7 +100,13 @@ export function PillarDetailsDrawer({
   );
 
   return (
-    <InfoDrawer open={open} onClose={onClose} titleName={name} titleLabel={t("pillar.title")}>
+    <InfoDrawer
+      open={open}
+      onClose={onClose}
+      onAfterClose={onAfterClose}
+      titleName={name}
+      titleLabel={t("pillar.title")}
+    >
       <Flex className={styles.pillarDetailsDrawer} vertical gap="large">
         <InfoDescriptions items={items} />
 

@@ -138,6 +138,7 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
         open={pillarDrawer.isOpened}
         pillar={openedPillar}
         onClose={pillarDrawer.close}
+        onAfterClose={pillarDrawer.clearData}
         onReplacePillar={store.replacePillar}
         onDeleted={() => {
           pillarDrawer.close();
