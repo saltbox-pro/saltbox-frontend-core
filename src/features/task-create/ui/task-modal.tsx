@@ -4,17 +4,18 @@ import { Tabs, message } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { taskTemplateService, taskCreationService } from "../service";
 import {
+  getTemplateDescriptionText,
+  type TemplateDescriptionValue,
+} from "saltbox-core/shared/utils/template-description";
+
+import { taskTemplateService, taskCreationService } from "../service";
+import type {
   PluginRenderData,
   TaskConfigurationFormData,
   TaskCreationContext,
   TaskOverviewData,
 } from "../type/types";
-import {
-  getTemplateDescriptionText,
-  type TemplateDescriptionValue,
-} from "saltbox-core/shared/utils/template-description";
 
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";

@@ -1,6 +1,6 @@
 import { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { JsonForm, type JsonFormRef, type JsonFormProps } from "@saltbox/saltbox-frontend-common";
-import { Button, Divider, Flex, Form, InputNumber, Switch, message } from "antd";
+import { Button, Col, Divider, Flex, Form, InputNumber, Row, Switch, message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -115,49 +115,58 @@ export function TaskConfigurationTab({
               layout="vertical"
               initialValues={memoize(taskCreationService.getDefaultConfiguration())}
             >
-              <Form.Item
-                name="batch_size"
-                label={t("task-create.batch-size")}
-                tooltip={t("task-create.batch-size-tooltip")}
-                rules={memoize([
-                  { required: true, message: t("task-form.batch-size-error-required") },
-                ])}
-              >
-                <InputNumber min={0} className={styles.formItem} />
-              </Form.Item>
-
-              <Form.Item
-                name="max_jobs_count_at_same_time"
-                label={t("task-create.max-parallel-jobs")}
-                tooltip={t("task-create.max-parallel-jobs-tooltip")}
-                rules={memoize([
-                  { required: true, message: t("task-form.max-parallel-jobs-error-required") },
-                ])}
-              >
-                <InputNumber min={1} className={styles.formItem} />
-              </Form.Item>
-
-              <Form.Item
-                name="max_retries"
-                label={t("task-create.max-retries")}
-                tooltip={t("task-create.max-retries-tooltip")}
-                rules={memoize([
-                  { required: true, message: t("task-form.max-retries-error-required") },
-                ])}
-              >
-                <InputNumber min={0} className={styles.formItem} />
-              </Form.Item>
-
-              <Form.Item
-                name="retry_delay"
-                label={t("task-create.retry-delay")}
-                tooltip={t("task-create.retry-delay-tooltip")}
-                rules={memoize([
-                  { required: true, message: t("task-create.retry-delay-error-required") },
-                ])}
-              >
-                <InputNumber min={0} className={styles.formItem} />
-              </Form.Item>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="batch_size"
+                    label={t("task-create.batch-size")}
+                    tooltip={t("task-create.batch-size-tooltip")}
+                    rules={memoize([
+                      { required: true, message: t("task-form.batch-size-error-required") },
+                    ])}
+                  >
+                    <InputNumber min={0} className={styles.formItem} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="max_jobs_count_at_same_time"
+                    label={t("task-create.max-parallel-jobs")}
+                    tooltip={t("task-create.max-parallel-jobs-tooltip")}
+                    rules={memoize([
+                      { required: true, message: t("task-form.max-parallel-jobs-error-required") },
+                    ])}
+                  >
+                    <InputNumber min={1} className={styles.formItem} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="max_retries"
+                    label={t("task-create.max-retries")}
+                    tooltip={t("task-create.max-retries-tooltip")}
+                    rules={memoize([
+                      { required: true, message: t("task-form.max-retries-error-required") },
+                    ])}
+                  >
+                    <InputNumber min={0} className={styles.formItem} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="retry_delay"
+                    label={t("task-create.retry-delay")}
+                    tooltip={t("task-create.retry-delay-tooltip")}
+                    rules={memoize([
+                      { required: true, message: t("task-create.retry-delay-error-required") },
+                    ])}
+                  >
+                    <InputNumber min={0} className={styles.formItem} />
+                  </Form.Item>
+                </Col>
+              </Row>
             </Form>
 
             <Divider className={styles.divider} />
