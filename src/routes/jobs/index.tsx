@@ -224,14 +224,14 @@ const JobsPage = observer(() => {
         header: t("jobs.table-status"),
         cell: (data) => {
           switch (data.getValue()) {
-            case JobStatus.InQueue:
-              return <Tag color="yellow">{t("jobs.table-status-in-queue")}</Tag>;
-            case JobStatus.Started:
-              return <Tag color="blue">{t("jobs.table-status-started")}</Tag>;
-            case JobStatus.WaitingReturns:
-              return <Tag color="lime">{t("jobs.table-status-waiting-returns")}</Tag>;
+            case JobStatus.Starting:
+              return <Tag color="yellow">{t("jobs.table-status-starting")}</Tag>;
+            case JobStatus.Running:
+              return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
             case JobStatus.Finished:
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
+            case JobStatus.LaunchError:
+              return <Tag color="red">{t("jobs.table-status-launch-error")}</Tag>;
             default:
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
