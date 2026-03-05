@@ -1,12 +1,13 @@
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton, FilterActionButton } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  FilterActionButton,
+  InfoDescriptions,
+  type InfoDescriptionsProps,
+} from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
 import { useTranslation } from "react-i18next";
 
-import {
-  InfoDescriptions,
-  type InfoDescriptionsProps,
-} from "saltbox-core/shared/ui/info-descriptions";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import styles from "./minion-dashboard-tab.module.css";

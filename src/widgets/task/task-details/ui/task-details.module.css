@@ -1,26 +1,9 @@
-.descriptionHeader.descriptionHeader,
-.descriptionHeader .descriptionTitle {
-  font-size: 15px;
-}
-
-.descriptionHeader.descriptionHeader {
-  margin: 0 0 0.5em;
-}
-
-.descriptionLabel {
-  width: 25%;
-}
-
-.descriptionContent {
-  width: 75%;
-}
-
 .objectContent {
   font-size: 12px;
 }
 
-.minionList {
-  margin: 0;
+.minionList:global(.ant-typography) {
+  margin-bottom: 0;
 }
 
 .minionId {

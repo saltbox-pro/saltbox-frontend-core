@@ -1,12 +1,16 @@
 import { PillarTgtType, type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
-import { BooleanDisplay, RelativeTime } from "@saltbox/saltbox-frontend-common";
+import {
+  BooleanDisplay,
+  InfoDescriptions,
+  type InfoDescriptionsProps,
+  RelativeTime,
+} from "@saltbox/saltbox-frontend-common";
 import { Alert, Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PillarDeleteBlock } from "saltbox-core/features/pillar/delete-pillar";
 import { PillarEditForm } from "saltbox-core/features/pillar/edit-pillar";
-import { InfoDescriptions } from "saltbox-core/shared/ui/info-descriptions";
 import { InfoDrawer } from "saltbox-core/shared/ui/info-drawer";
 
 import styles from "./pillar-details-drawer.module.css";
@@ -40,7 +44,7 @@ export function PillarDetailsDrawer({
     modified,
   } = pillar ?? {};
 
-  const items = useMemo(
+  const items = useMemo<InfoDescriptionsProps["items"]>(
     () => [
       {
         key: "id",

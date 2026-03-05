@@ -1,6 +1,7 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Descriptions, Flex, Typography } from "antd";
-import { type ComponentProps, useMemo } from "react";
+import { InfoDescriptions, type InfoDescriptionsProps } from "@saltbox/saltbox-frontend-common";
+import { Flex, Typography } from "antd";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
@@ -17,15 +18,13 @@ export type TaskDetailsProps = {
   showTargetMinions?: boolean;
 };
 
-type DescriptionItems = ComponentProps<typeof Descriptions>["items"];
-
 const memoize = createObjectMemoizer();
 
 export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps) {
   const { t } = useTranslation();
   const { template, parameters, system, target } = data;
 
-  const templateInfo = useMemo<DescriptionItems>(
+  const templateInfo = useMemo<InfoDescriptionsProps["items"]>(
     () => [
       {
         label: t("task.details.template-title"),
@@ -41,7 +40,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
 
   const parametersRecord = parameters as Record<string, unknown> | undefined;
 
-  const templateParams = useMemo<DescriptionItems>(() => {
+  const templateParams = useMemo<InfoDescriptionsProps["items"]>(() => {
     const entries = Object.entries(parametersRecord || {}).filter(([key]) => key !== "mods");
 
     return entries.map(([key, value]) => ({
@@ -67,7 +66,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
 
   const hasParameters = Object.keys(parametersRecord || {}).length > 0;
 
-  const systemParams = useMemo<DescriptionItems>(
+  const systemParams = useMemo<InfoDescriptionsProps["items"]>(
     () => [
       {
         label: t("task.details.task-type"),
@@ -96,7 +95,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
     [t, system]
   );
 
-  const targetInfo = useMemo<DescriptionItems>(() => {
+  const targetInfo = useMemo<InfoDescriptionsProps["items"]>(() => {
     const getTargetMinionsInfo = () => {
       if (target.minionIds && target.minionIds.length > 0) {
         const renderMinionIds = () =>
@@ -133,7 +132,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
       return t("task.details.query-based-selection");
     };
 
-    const items: DescriptionItems = [
+    const items: InfoDescriptionsProps["items"] = [
       {
         label: t("task.details.collection"),
         children: target.collection,
@@ -150,58 +149,24 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
     return items;
   }, [t, target, showTargetMinions]);
 
-  const descriptionClassNames = memoize({
-    header: styles.descriptionHeader,
-    label: styles.descriptionLabel,
-    content: styles.descriptionContent,
-    title: styles.descriptionTitle,
-  });
-
   return (
     <Flex vertical gap="large">
-      <Descriptions
-        title={t("task.details.template-info")}
-        bordered
-        size="small"
-        column={1}
-        items={templateInfo}
-        classNames={descriptionClassNames}
-      />
+      <InfoDescriptions title={t("task.details.template-info")} items={templateInfo} />
 
       <Flex vertical>
         <Text className={styles.descriptionHeader} strong>
           {t("task.details.template-parameters")}
         </Text>
         {hasParameters ? (
-          <Descriptions
-            bordered
-            size="small"
-            column={1}
-            items={templateParams}
-            classNames={descriptionClassNames}
-          />
+          <InfoDescriptions items={templateParams} />
         ) : (
           <Text type="secondary">{t("task.details.no-parameters")}</Text>
         )}
       </Flex>
 
-      <Descriptions
-        title={t("task.details.system-parameters")}
-        bordered
-        size="small"
-        column={1}
-        items={systemParams}
-        classNames={descriptionClassNames}
-      />
+      <InfoDescriptions title={t("task.details.system-parameters")} items={systemParams} />
 
-      <Descriptions
-        title={t("task.details.target-info")}
-        bordered
-        size="small"
-        column={1}
-        items={targetInfo}
-        classNames={descriptionClassNames}
-      />
+      <InfoDescriptions title={t("task.details.target-info")} items={targetInfo} />
     </Flex>
   );
 }
