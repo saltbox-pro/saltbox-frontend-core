@@ -14,17 +14,8 @@
   max-width: 300px;
 }
 
-.customFilterBackground :global(.queryBuilder) {
-  background-color: #f0f0f0 !important;
-}
-
-.customFilterBackground :global(.queryBuilderContainer),
-.customFilterBackground :global(.queryBuilderContainer *) {
-  background-color: #f0f0f0 !important;
-}
-
-.customFilterBackground :global(.ant-flex[style*="padding: 8px"]) {
-  background-color: #f0f0f0 !important;
+.filterBuilderWrapper {
+  flex-shrink: 0;
 }
 
 .editButtonsContainer {

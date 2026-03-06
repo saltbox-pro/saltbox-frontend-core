@@ -7,13 +7,14 @@ import {
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { SelectProps, Tag } from "antd";
+import { Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
@@ -26,138 +27,11 @@ const JobsTable = FastTablePaginated<JobsListResponse>;
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
-const defaultStringOperators = [
-  {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
-  {
-    name: "contains",
-    value: "contains",
-    label: "contains",
-  },
-  {
-    name: "beginsWith",
-    value: "beginsWith",
-    label: "begins with",
-  },
-  {
-    name: "endsWith",
-    value: "endsWith",
-    label: "ends with",
-  },
-  {
-    name: "doesNotContain",
-    value: "doesNotContain",
-    label: "does not contain",
-  },
-  {
-    name: "doesNotBeginWith",
-    value: "doesNotBeginWith",
-    label: "does not begin with",
-  },
-  {
-    name: "doesNotEndWith",
-    value: "doesNotEndWith",
-    label: "does not end with",
-  },
-];
-
-const defaultListOperators = [
-  {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
-  {
-    name: "in",
-    value: "in",
-    label: "in",
-  },
-  {
-    name: "notIn",
-    value: "notIn",
-    label: "not in",
-  },
-];
-
-const defaultDateTimeOperators = [
-  {
-    name: "<",
-    value: "<",
-    label: "<",
-  },
-  {
-    name: ">",
-    value: ">",
-    label: ">",
-  },
-  {
-    name: "<=",
-    value: "<=",
-    label: "<=",
-  },
-  {
-    name: ">=",
-    value: ">=",
-    label: ">=",
-  },
-];
-
-const getFilterSchema = (saltTargetTypes: SelectProps["options"]) => [
-  {
-    name: "jid",
-    label: "JID",
-    operators: defaultStringOperators,
-  },
-  {
-    name: "fun",
-    label: "Function",
-    operators: defaultStringOperators,
-  },
-  {
-    name: "tgt",
-    label: "Targets",
-    operators: defaultStringOperators,
-  },
-  {
-    name: "tgt_type",
-    label: "Target Type",
-    operators: defaultListOperators,
-    type: "multiselect",
-    selectOptions: saltTargetTypes,
-    selectFieldNames: { label: "label", value: "value" },
-  },
-  {
-    name: "user.name",
-    label: "User",
-    operators: defaultStringOperators,
-  },
-  {
-    name: "created",
-    label: "Created",
-    operators: defaultDateTimeOperators,
-    inputType: "datetime-local",
-    valueEditorType: "datetime-local",
-  },
-];
-
 const useJobFilters = () => {
   const saltTargetTypes = useSaltTargetTypes();
   const location = useLocation();
 
-  const filterSchema = useMemo(() => getFilterSchema(saltTargetTypes), [saltTargetTypes]);
+  const filterSchema = useMemo(() => getJobsFilterSchema(saltTargetTypes), [saltTargetTypes]);
 
   const storageKey = `jobsFilter:${location.pathname}`;
 

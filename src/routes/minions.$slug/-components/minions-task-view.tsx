@@ -1,4 +1,4 @@
-import { TaskListResponseSchema, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   Popover,
@@ -13,6 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-core/store";
 
@@ -21,50 +22,6 @@ import { TasksQueryBuilder } from "./tasks-query-builder";
 
 const TasksTable = FastTablePaginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
-
-const defaultStringOperators = [
-  {
-    name: "contains",
-    value: "contains",
-    label: "contains",
-  },
-  {
-    name: "=",
-    value: "=",
-    label: "=",
-  },
-  {
-    name: "!=",
-    value: "!=",
-    label: "!=",
-  },
-];
-
-const defaultDateTimeOperators = [
-  {
-    name: "<=",
-    value: "<=",
-    label: "<=",
-  },
-  {
-    name: ">=",
-    value: ">=",
-    label: ">=",
-  },
-];
-
-const defaultListOperators = [
-  {
-    name: "in",
-    value: "in",
-    label: "In",
-  },
-  {
-    name: "notIn",
-    value: "notIn",
-    label: "Not In",
-  },
-];
 
 type MinionsTaskViewProps = {
   slug?: string;
@@ -81,57 +38,11 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
 
   const filterSchema = useMemo(
     () =>
-      [
-        {
-          name: "source.type",
-          label: t("minions.table-source-type"),
-          operators: defaultListOperators,
-          type: "multiselect",
-          selectOptions: [
-            { label: t("minions.table-soruce-type-rest"), value: "rest" },
-            {
-              label: t("minions.table-soruce-type-scheduler"),
-              value: "scheduler",
-            },
-          ],
-        },
-        {
-          name: "task_template.title",
-          label: t("minions.table-task-template-title"),
-          operators: defaultStringOperators,
-        },
-        {
-          name: "task_template.name",
-          label: t("minions.table-task-template-name"),
-          operators: defaultStringOperators,
-        },
-        {
-          name: "user.name",
-          label: t("minions.table-user"),
-          operators: defaultStringOperators,
-        },
-        {
-          name: "status.type",
-          label: t("minions.table-status"),
-          operators: defaultListOperators,
-          type: "multiselect",
-          selectOptions: [
-            { label: t("task.created"), value: TaskStatus.Created },
-            { label: t("task.running"), value: TaskStatus.Running },
-            { label: t("task.stopping"), value: TaskStatus.Stopping },
-            { label: t("task.stopped"), value: TaskStatus.Stopped },
-            { label: t("task.finished"), value: TaskStatus.Finished },
-            { label: t("task.wait-minions"), value: TaskStatus.WaitMinions },
-          ],
-        },
-        {
-          name: "created",
-          label: t("minions.table-created"),
-          operators: defaultDateTimeOperators,
-          inputType: "datetime-local",
-          valueEditorType: "datetime-local",
-        },
-      ].filter((filter) => filter.name !== "source.type" || props.taskType === "classic"),
+      getTasksFilterSchema(t, {
+        includeTargetCollection: false,
+        includeSourceType: true,
+        taskType: props.taskType,
+      }),
     [props.taskType, t]
   );
 

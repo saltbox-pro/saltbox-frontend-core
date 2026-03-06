@@ -233,7 +233,7 @@ const CollectionEditPage = observer(() => {
         />
       </Flex>
       <Flex className={styles.collectionFlex} gap={8} vertical>
-        <div className={styles.customFilterBackground}>
+        <div className={styles.filterBuilderWrapper}>
           <CollectionQueryBuilder
             slug={collectionStore.collection?.parent_slug || ""}
             filterStore={filterStore}
