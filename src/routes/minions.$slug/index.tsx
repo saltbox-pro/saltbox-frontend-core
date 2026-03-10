@@ -2,7 +2,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   SettingOutlined,
-  FilterOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
@@ -10,11 +9,12 @@ import {
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
-  FiltersCounter,
   PageHeader,
   Modal,
   Popover,
   generateIdsForQuery,
+  FilterToggleButton,
+  useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
@@ -49,16 +49,32 @@ const policiesFilterStore = new TasksFilterStore([]);
 
 const MinionsPage = observer(() => {
   const { t } = useTranslation();
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const [messageApi, contextHolder] = message.useMessage();
+
   const [collectionStore] = useState(new CollectionStore());
-  const [showMinionsFilter, setShowMinionsFilter] = useState(false);
-  const [showTasksFilter, setShowTasksFilter] = useState(false);
-  const [showPoliciesFilter, setShowPoliciesFilter] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+
+  const {
+    isOpen: shownMinionsFilters,
+    toggle: toggleShownMinionsFilters,
+    open: openMinionsFilters,
+  } = useFiltersToggle(false);
+  const {
+    isOpen: shownTasksFilters,
+    toggle: toggleShownTasksFilters,
+    open: openTasksFilters,
+  } = useFiltersToggle(false);
+  const {
+    isOpen: shownPoliciesFilters,
+    toggle: toggleShownPoliciesFilters,
+    open: openPoliciesFilters,
+  } = useFiltersToggle(false);
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
@@ -69,9 +85,9 @@ const MinionsPage = observer(() => {
       const initialFilterWithIds = generateIdsForQuery(initialFilter);
       minionFilterStore.searchFilters = initialFilterWithIds;
       minionFilterStore.currentFilters = initialFilterWithIds;
-      setShowMinionsFilter(true);
+      openMinionsFilters();
     }
-  }, []);
+  }, [openMinionsFilters]);
 
   const addBlock = () => {
     dashboardStore.addBlock({
@@ -91,10 +107,6 @@ const MinionsPage = observer(() => {
 
   const handleDeleteCollection = () => {
     setIsDeleteModalOpen(true);
-  };
-
-  const handleAddFilter = () => {
-    setShowMinionsFilter(true);
   };
 
   const collectionMenuItems = [
@@ -146,21 +158,21 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {
-      setShowMinionsFilter(true);
+      openMinionsFilters();
     }
-  }, [minionFilterStore.activeFiltersCount]);
+  }, [minionFilterStore.activeFiltersCount, openMinionsFilters]);
 
   useEffect(() => {
     if (tasksFilterStore.activeFiltersCount > 0) {
-      setShowTasksFilter(true);
+      openTasksFilters();
     }
-  }, [tasksFilterStore.activeFiltersCount]);
+  }, [tasksFilterStore.activeFiltersCount, openTasksFilters]);
 
   useEffect(() => {
     if (policiesFilterStore.activeFiltersCount > 0) {
-      setShowPoliciesFilter(true);
+      openPoliciesFilters();
     }
-  }, [policiesFilterStore.activeFiltersCount]);
+  }, [policiesFilterStore.activeFiltersCount, openPoliciesFilters]);
 
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
@@ -172,9 +184,9 @@ const MinionsPage = observer(() => {
             <MinionsListView
               slug={slug}
               filterStore={minionFilterStore}
-              showFilter={showMinionsFilter}
+              showFilter={shownMinionsFilters}
               collectionStore={collectionStore}
-              onAddFilter={handleAddFilter}
+              onAddFilter={openMinionsFilters}
             />
           ) : null,
         className: styles.flexTab,
@@ -187,7 +199,7 @@ const MinionsPage = observer(() => {
             <MinionsDashboardView
               slug={slug}
               filterStore={minionFilterStore}
-              showFilter={showMinionsFilter}
+              showFilter={shownMinionsFilters}
             />
           ) : null,
       },
@@ -200,7 +212,7 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Classic}
               filterStore={tasksFilterStore}
-              showFilter={showTasksFilter}
+              showFilter={shownTasksFilters}
             />
           ) : null,
         className: styles.flexTab,
@@ -214,7 +226,7 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Policy}
               filterStore={policiesFilterStore}
-              showFilter={showPoliciesFilter}
+              showFilter={shownPoliciesFilters}
             />
           ) : null,
         className: styles.flexTab,
@@ -261,9 +273,9 @@ const MinionsPage = observer(() => {
   }, [
     slug,
     collectionStore.collection?.id,
-    showMinionsFilter,
-    showTasksFilter,
-    showPoliciesFilter,
+    shownMinionsFilters,
+    shownTasksFilters,
+    shownPoliciesFilters,
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
     tabKey,
@@ -308,21 +320,13 @@ const MinionsPage = observer(() => {
                 {["list", "statistics"].includes(tabKey) && (
                   <>
                     <CollectionInfoPopover slug={slug} collectionStore={collectionStore} />
-                    <Button
-                      onClick={() => setShowMinionsFilter(!showMinionsFilter)}
-                      color={"primary"}
-                      variant={
-                        minionFilterStore.activeFiltersCount > 0 || showMinionsFilter
-                          ? "solid"
-                          : "outlined"
-                      }
-                    >
-                      <Flex gap={8} align="center">
-                        <FilterOutlined />
-                        {t("minions.filters-button")}
-                        <FiltersCounter count={minionFilterStore.activeFiltersCount} />
-                      </Flex>
-                    </Button>
+
+                    <FilterToggleButton
+                      isOpen={shownMinionsFilters}
+                      activeFiltersCount={minionFilterStore.activeFiltersCount}
+                      onToggle={toggleShownMinionsFilters}
+                    />
+
                     <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
                       <Button>
                         <Flex gap={8}>
@@ -334,39 +338,19 @@ const MinionsPage = observer(() => {
                 )}
 
                 {tabKey === "tasks" && (
-                  <Button
-                    onClick={() => setShowTasksFilter(!showTasksFilter)}
-                    color={"primary"}
-                    variant={
-                      tasksFilterStore.activeFiltersCount > 0 || showTasksFilter
-                        ? "solid"
-                        : "outlined"
-                    }
-                  >
-                    <Flex gap={8} align="center">
-                      <FilterOutlined />
-                      {t("minions.filters-button")}
-                      <FiltersCounter count={tasksFilterStore.activeFiltersCount} />
-                    </Flex>
-                  </Button>
+                  <FilterToggleButton
+                    isOpen={shownTasksFilters}
+                    activeFiltersCount={tasksFilterStore.activeFiltersCount}
+                    onToggle={toggleShownTasksFilters}
+                  />
                 )}
 
                 {tabKey === "policies" && (
-                  <Button
-                    onClick={() => setShowPoliciesFilter(!showPoliciesFilter)}
-                    color={"primary"}
-                    variant={
-                      policiesFilterStore.activeFiltersCount > 0 || showPoliciesFilter
-                        ? "solid"
-                        : "outlined"
-                    }
-                  >
-                    <Flex gap={8} align="center">
-                      <FilterOutlined />
-                      {t("minions.filters-button")}
-                      <FiltersCounter count={policiesFilterStore.activeFiltersCount} />
-                    </Flex>
-                  </Button>
+                  <FilterToggleButton
+                    isOpen={shownPoliciesFilters}
+                    activeFiltersCount={policiesFilterStore.activeFiltersCount}
+                    onToggle={toggleShownPoliciesFilters}
+                  />
                 )}
               </Flex>
             </>

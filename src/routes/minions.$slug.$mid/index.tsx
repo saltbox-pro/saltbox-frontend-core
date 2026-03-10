@@ -1,6 +1,11 @@
-import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
-import { FiltersCounter, PageHeader, Modal } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message, type MenuProps } from "antd";
+import { DeleteOutlined } from "@ant-design/icons";
+import {
+  PageHeader,
+  Modal,
+  FilterToggleButton,
+  useFiltersToggle,
+} from "@saltbox/saltbox-frontend-common";
+import { Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -195,8 +200,9 @@ const MinionPage = observer(() => {
   const minionStore: MinionStore = minionStoreRef.current;
   const [collectionStore] = useState(new CollectionStore());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [showJobReturnsFilter, setShowJobReturnsFilter] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+
+  const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
 
   const jobReturnsFilterStore = useMemo(() => {
     const storageKey = `jobReturnsFilter:${slug}:${minionId}`;
@@ -307,24 +313,15 @@ const MinionPage = observer(() => {
     handleJobReturnsFilterSearch();
   }, [jobReturnsFilterStore, handleJobReturnsFilterSearch]);
 
-  const jobReturnsActiveFiltersCount = jobReturnsFilterStore.activeFiltersCount;
-  const hasJobReturnsFilters = jobReturnsActiveFiltersCount > 0;
-
   const jobReturnsFilterButton = (
-    <Button
-      onClick={() => setShowJobReturnsFilter(!showJobReturnsFilter)}
-      color={"primary"}
-      variant={hasJobReturnsFilters || showJobReturnsFilter ? "solid" : "outlined"}
-    >
-      <Flex gap={8} align="center">
-        <FilterOutlined />
-        {t("minions.filters-button")}
-        <FiltersCounter count={jobReturnsActiveFiltersCount} />
-      </Flex>
-    </Button>
+    <FilterToggleButton
+      isOpen={shownFilters}
+      activeFiltersCount={jobReturnsFilterStore.activeFiltersCount}
+      onToggle={toggleShownFilters}
+    />
   );
 
-  const jobReturnsFilter = showJobReturnsFilter ? (
+  const jobReturnsFilter = shownFilters ? (
     <JobReturnsQueryBuilder
       filterStore={jobReturnsFilterStore}
       jobStore={jobStore}
