@@ -75,7 +75,7 @@
     "@rjsf/utils": "^5.24.12",
     "@rjsf/validator-ajv8": "^5.24.12",
     "@saltbox/saltbox-core-api-client": "^0.1.1-c30319e166c23a981872866cb5b569d8d586c516",
-    "@saltbox/saltbox-frontend-common": "^0.0.92",
+    "@saltbox/saltbox-frontend-common": "^0.0.93",
     "antd": "5.26.0",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.2.0",
