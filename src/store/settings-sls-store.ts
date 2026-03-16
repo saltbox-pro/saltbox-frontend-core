@@ -5,6 +5,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
+const PAGE_SIZE = 50;
 const DEFAULT_SORTING: SortingState = [{ id: "last_synced", desc: true }];
 
 export class SettingsSlsStore {
@@ -12,6 +13,7 @@ export class SettingsSlsStore {
   pagination: PaginationState;
   sorting: SortingState;
   slsreps: Array<SettingsSlsRepoShortSchema>;
+  total: number;
 
   constructor() {
     makeAutoObservable(this);
@@ -20,8 +22,9 @@ export class SettingsSlsStore {
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
-      pageSize: 50,
+      pageSize: PAGE_SIZE,
     };
+    this.total = 0;
   }
 
   reload = () => {
@@ -42,6 +45,7 @@ export class SettingsSlsStore {
       .then((response) => {
         runInAction(() => {
           this.slsreps = response.data;
+          this.total = response.total ?? 0;
         });
       })
       .finally(() => {

@@ -1,6 +1,5 @@
-import { QuestionCircleOutlined } from "@ant-design/icons";
-import { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
-import { Modal, Popover } from "@saltbox/saltbox-frontend-common";
+import type { SettingsSlsRepoShortSchema } from "@saltbox/saltbox-core-api-client";
+import { Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Form, Input } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,11 +21,12 @@ interface SlsDialogProps {
 
 export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
   const { t } = useTranslation();
+
   const [form] = Form.useForm<SlsFormData>();
-  const [hovered, setHovered] = useState(false);
+  const values = Form.useWatch([], form);
+
   const [slsFormData, setSlsFormData] = useState<SlsFormData>();
   const [submittable, setSubmittable] = useState<boolean>(false);
-  const values = Form.useWatch([], form);
 
   useEffect(() => {
     form
@@ -38,6 +38,7 @@ export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
   const handleModalCancel = () => {
     onClose();
   };
+
   useEffect(() => {
     if (slsFormData) {
       onClose({
@@ -53,10 +54,6 @@ export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
   const handleSlsForm = (formData: SlsFormData) => {
     setSlsFormData(formData);
   };
-  const handleHoverChange = (open: boolean) => {
-    setHovered(open);
-  };
-  const hoverContent = <div>{t("settings-sls.modal-repo-url-warning")}</div>;
 
   return (
     <>
@@ -97,20 +94,7 @@ export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
           </Form.Item>
           {mode === "create" ? (
             <Form.Item<SlsFormData>
-              label={
-                <Flex gap={4} align="center">
-                  <span>{t("settings-sls.modal-repo-url")}</span>
-                  <Popover
-                    style={{ width: 500 }}
-                    content={hoverContent}
-                    trigger="hover"
-                    open={hovered}
-                    onOpenChange={handleHoverChange}
-                  >
-                    <QuestionCircleOutlined />
-                  </Popover>
-                </Flex>
-              }
+              label={t("settings-sls.modal-repo-url")}
               name="repo_url"
               rules={[
                 {
@@ -119,6 +103,7 @@ export function SlsModal({ isOpen, onClose, mode, record }: SlsDialogProps) {
                 },
               ]}
               initialValue={""}
+              tooltip={t("settings-sls.modal-repo-url-warning")}
             >
               <Input style={{ width: "100%" }} />
             </Form.Item>

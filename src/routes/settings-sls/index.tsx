@@ -14,9 +14,11 @@ import {
   PageHeader,
   FastTablePaginated,
   Modal,
+  RelativeTime,
+  BooleanDisplay,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Switch, message } from "antd";
+import { Button, Switch, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,32 +40,63 @@ const SettingsSlsPage = observer(() => {
   const columns = [
     columnHelper.accessor("name", {
       header: t("settings-sls.table-name"),
+      meta: {
+        width: 250,
+        minWidth: 250,
+        maxWidth: 250,
+        ellipsis: true,
+      },
     }),
     columnHelper.accessor("description", {
       header: t("settings-sls.table-description"),
+      meta: {
+        width: 200,
+        minWidth: 200,
+        maxWidth: 200,
+        ellipsis: true,
+      },
     }),
     columnHelper.accessor("repo_url", {
       header: t("settings-sls.table-repo-url"),
+      cell: (data) => {
+        const value = data.getValue().toString();
+        return (
+          <Typography.Link href={value} target="_blank">
+            {value}
+          </Typography.Link>
+        );
+      },
+      meta: {
+        width: 250,
+        minWidth: 250,
+        maxWidth: 250,
+        ellipsis: true,
+      },
     }),
     columnHelper.accessor("local_path", {
       header: t("settings-sls.table-local-path"),
+      meta: {
+        width: 200,
+        minWidth: 200,
+        maxWidth: 200,
+        ellipsis: true,
+      },
     }),
     columnHelper.accessor("last_synced", {
       header: t("settings-sls.table-last-synced"),
-      cell: (data) => {
-        if (data) {
-          const value = data.getValue();
-          if (value === undefined) {
-            return <div>{t("settings-sls.table-no-sync")}</div>;
-          } else {
-            const created = formatTimeByUserTZ(value);
-            return <div>{created}</div>;
-          }
-        }
+      cell: (data) => (
+        <RelativeTime date={data.getValue()} fallback={<>{t("settings-sls.table-no-sync")}</>} />
+      ),
+      meta: {
+        width: "15%",
       },
     }),
     columnHelper.accessor("is_last_sync_successful", {
       header: t("settings-sls.table-sync-status"),
+      cell: (data) => <BooleanDisplay value={data.getValue()} />,
+      meta: {
+        width: "15%",
+      },
     }),
     columnHelper.display({
       header: t("settings-sls.table-is-active"),
@@ -76,6 +109,9 @@ const SettingsSlsPage = observer(() => {
             }
           />
         );
+      },
+      meta: {
+        width: 100,
       },
     }),
     columnHelper.display({
@@ -110,6 +146,9 @@ const SettingsSlsPage = observer(() => {
             />
           </div>
         );
+      },
+      meta: {
+        width: 137,
       },
     }),
   ];
@@ -283,6 +322,7 @@ const SettingsSlsPage = observer(() => {
       <SettingsSlsTable
         columns={columns}
         data={settingsSlsStore.slsreps}
+        total={settingsSlsStore.total}
         isLoading={settingsSlsStore.isLoading}
         pagination={settingsSlsStore.pagination}
         sorting={settingsSlsStore.sorting}
