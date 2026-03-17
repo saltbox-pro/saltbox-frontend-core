@@ -4,14 +4,7 @@ import {
   MinionDetailsDrawer,
   useMinionDetailsDrawer,
 } from "saltbox-core/widgets/minion-details-drawer";
-import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
-
-interface MinionDetailsDrawerWrapperProps {
-  minionId: string;
-  master: string;
-  onFilterButton?: MinionDetailsProps["onFilterButton"];
-  onClose?: () => void;
-}
+import type { MinionDetailsDrawerWrapperProps } from "../types/types";
 
 export function MinionDetailsDrawerWrapper({
   minionId,

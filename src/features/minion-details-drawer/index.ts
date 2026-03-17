@@ -1,2 +1,5 @@
 export { MinionDetailsDrawerWrapper } from "./ui/minion-details-drawer-wrapper";
-export type { MinionDetailsDrawerWrapperSelectedMinion } from "./types/types";
+export type {
+  MinionDetailsDrawerWrapperSelectedMinion,
+  MinionDetailsDrawerWrapperProps,
+} from "./types/types";

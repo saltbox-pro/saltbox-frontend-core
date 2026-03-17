@@ -9,6 +9,10 @@ import singleSpaReact from "single-spa-react";
 
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
+import {
+  MinionDetailsDrawerWrapper,
+  type MinionDetailsDrawerWrapperProps,
+} from "./features/minion-details-drawer";
 
 import Root from "./root.component";
 
@@ -35,10 +39,39 @@ const collectionSelectorLifecycles = singleSpaReact({
   rootComponent: collectionSelectorRootComponent,
 });
 
+const MinionDetailsDrawerWrapperProvider = (props: {
+  customProps?: MinionDetailsDrawerWrapperProps;
+}) => {
+  return (
+    <I18nextProvider i18n={i18n}>
+      <Suspense fallback="Loading...">
+        <BrowserRouter>
+          <MinionDetailsDrawerWrapper {...props?.customProps} />
+        </BrowserRouter>
+      </Suspense>
+    </I18nextProvider>
+  );
+};
+
+const plugins = {
+  "minions.details-drawer": [
+    {
+      key: "minion-details-drawer",
+      wrapWith: "div",
+      parcel: singleSpaReact({
+        React,
+        ReactDOMClient,
+        rootComponent: MinionDetailsDrawerWrapperProvider,
+      }),
+    },
+  ],
+};
+
 export const saltboxModule = {
   singleSpaLifecycle: coreLifecycles,
   name: "saltbox-frontend-core",
   path: "/core",
+  plugins,
   menuConfig: {
     priority: 20,
     key: "core-module",
