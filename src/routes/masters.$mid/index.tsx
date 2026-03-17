@@ -5,15 +5,12 @@ import { type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Flex, Spin, Tabs } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
 import { apiCoreStore } from "saltbox-core/store";
-import {
-  MinionDetailsDrawer,
-  useMinionDetailsDrawer,
-} from "saltbox-core/widgets/minion-details-drawer";
+import { MinionDetailsDrawerWrapper } from "saltbox-core/features/minion-details-drawer";
 
 import styles from "./index.module.css";
 
@@ -28,7 +25,9 @@ const MasterPage = observer(() => {
 
   const [isLoadingClients, setIsLoadingClients] = useState(false);
 
-  const minionDrawer = useMinionDetailsDrawer();
+  const [selectedMinion, setSelectedMinion] = useState<{ minionId: string; master: string } | null>(
+    null
+  );
   const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
 
   useEffect(() => {
@@ -80,13 +79,6 @@ const MasterPage = observer(() => {
     }),
   ];
 
-  const handleOpenMinionDrawer = async (minionId: string) => {
-    await minionDrawer.open({
-      masterId,
-      minionId,
-    });
-  };
-
   const tabItems = [
     {
       key: "clients",
@@ -109,7 +101,7 @@ const MasterPage = observer(() => {
                 onSortingChange={setClientsSorting}
                 getRowId={(row) => row.minion_id}
                 onRowClick={(client) => {
-                  handleOpenMinionDrawer(client.minion_id);
+                  setSelectedMinion({ minionId: client.minion_id, master: client.master ?? "" });
                 }}
               />
             </div>
@@ -118,6 +110,10 @@ const MasterPage = observer(() => {
       ),
     },
   ];
+
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedMinion(null);
+  }, []);
 
   return (
     <>
@@ -130,15 +126,13 @@ const MasterPage = observer(() => {
         className={styles.masterTabs}
       />
 
-      <MinionDetailsDrawer
-        isOpened={minionDrawer.isOpened}
-        openedId={minionDrawer.openedId}
-        minionStore={minionDrawer.minionStore}
-        slug={minionDrawer.slug}
-        error={minionDrawer.error}
-        onClose={minionDrawer.close}
-        clearData={minionDrawer.clearData}
-      />
+      {selectedMinion && (
+        <MinionDetailsDrawerWrapper
+          minionId={selectedMinion.minionId}
+          master={selectedMinion.master}
+          onClose={handleCloseDrawer}
+        />
+      )}
     </>
   );
 });

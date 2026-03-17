@@ -1,5 +1,5 @@
 import { Drawer, type DrawerProps } from "@saltbox/saltbox-frontend-common";
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren, useEffect, useRef } from "react";
 
 import { InfoDrawerError } from "./info-drawer-error";
 import { InfoDrawerLink } from "./info-drawer-link";
@@ -41,12 +41,20 @@ export function InfoDrawer({
     }
   };
 
+  const onCloseRef = useRef(onClose);
+  const onAfterCloseRef = useRef(onAfterClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    onAfterCloseRef.current = onAfterClose;
+  });
+
   useEffect(() => {
     return () => {
-      onClose();
-      onAfterClose?.();
+      onCloseRef.current();
+      onAfterCloseRef.current?.();
     };
-  }, [onAfterClose, onClose]);
+  }, []);
 
   const hasError = !isLoading && !!errorMessage;
 

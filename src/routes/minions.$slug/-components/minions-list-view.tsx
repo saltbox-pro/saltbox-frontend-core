@@ -21,7 +21,10 @@ import {
   TaskCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
-import type { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
+import {
+  MinionDetailsDrawerWrapper,
+  MinionDetailsDrawerWrapperSelectedMinion,
+} from "saltbox-core/features/minion-details-drawer";
 import {
   appStore,
   CollectionStore,
@@ -29,10 +32,6 @@ import {
   MinionFilterStore,
   MinionsStore,
 } from "saltbox-core/store";
-import {
-  MinionDetailsDrawer,
-  useMinionDetailsDrawer,
-} from "saltbox-core/widgets/minion-details-drawer";
 
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
@@ -63,7 +62,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const minionDrawer = useMinionDetailsDrawer();
+  const [selectedMinion, setSelectedMinion] =
+    useState<MinionDetailsDrawerWrapperSelectedMinion>(null);
 
   const minionColumns = useMemo(
     () => [
@@ -198,10 +198,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     setSelection({});
   }, []);
 
-  const handleDrawerFilterButtonClick = useCallback<
-    NonNullable<MinionDetailsProps["onFilterButton"]>
-  >(
-    (params) => {
+  const handleDrawerFilterButtonClick = useCallback(
+    (params: { name: string; value: string }) => {
       props.filterStore.addFilter({
         field: `grains.${params.name}`,
         operator: "=",
@@ -210,18 +208,18 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       });
       props.filterStore.handleSearch();
       props.onAddFilter();
-      minionDrawer.close();
+      setSelectedMinion(null);
     },
-    [props.filterStore, props.onAddFilter, minionDrawer.close]
+    [props.filterStore, props.onAddFilter]
   );
 
-  const handleOpenMinionDrawer = async (innerId: string, minionId: string) => {
-    await minionDrawer.open({
-      slug: props.slug,
-      innerId,
-      minionId,
-    });
-  };
+  const handleCloseDrawer = useCallback(() => {
+    setSelectedMinion(null);
+  }, []);
+
+  const handleRowClick = useCallback((minion: MinionShortSchema) => {
+    setSelectedMinion({ minionId: minion.minion_id ?? minion.id, master: minion.master ?? "" });
+  }, []);
 
   const onCsvDownloadError = useCallback(() => {
     messageApi.error(t("minions.error-on-csv-download"));
@@ -350,9 +348,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           onRowSelectionChange={setSelection}
           rowSelection={selection}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          onRowClick={(minion) => {
-            handleOpenMinionDrawer(minion.id, minion.minion_id);
-          }}
+          onRowClick={handleRowClick}
           useVirtualScroll={false}
         />
 
@@ -380,16 +376,14 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         )}
       </Flex>
 
-      <MinionDetailsDrawer
-        isOpened={minionDrawer.isOpened}
-        openedId={minionDrawer.openedId}
-        minionStore={minionDrawer.minionStore}
-        slug={minionDrawer.slug}
-        error={minionDrawer.error}
-        onClose={minionDrawer.close}
-        clearData={minionDrawer.clearData}
-        onFilterButton={handleDrawerFilterButtonClick}
-      />
+      {selectedMinion && (
+        <MinionDetailsDrawerWrapper
+          minionId={selectedMinion.minionId}
+          master={selectedMinion.master}
+          onFilterButton={handleDrawerFilterButtonClick}
+          onClose={handleCloseDrawer}
+        />
+      )}
 
       {taskModalCreatePlugin}
     </>

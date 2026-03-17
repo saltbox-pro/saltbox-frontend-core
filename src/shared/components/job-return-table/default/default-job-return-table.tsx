@@ -14,13 +14,13 @@ import {
 } from "@tanstack/react-table";
 import { Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ComponentProps, useMemo, useEffect } from "react";
+import { type ComponentProps, useMemo, useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
-  MinionDetailsDrawer,
-  useMinionDetailsDrawer,
-} from "saltbox-core/widgets/minion-details-drawer";
+  MinionDetailsDrawerWrapper,
+  MinionDetailsDrawerWrapperSelectedMinion,
+} from "saltbox-core/features/minion-details-drawer";
 
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
@@ -68,14 +68,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     onTableViewErrorsChange,
   }) => {
     const { t } = useTranslation();
-    const minionDrawer = useMinionDetailsDrawer();
-
-    const handleOpenMinionDrawer = async (minionId: string, masterId: string) => {
-      await minionDrawer.open({
-        masterId,
-        minionId,
-      });
-    };
+    const [selectedMinion, setSelectedMinion] =
+      useState<MinionDetailsDrawerWrapperSelectedMinion>(null);
 
     const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
@@ -160,6 +154,14 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       return mergeJobReturnsToTable(jobReturnsData);
     }, [isTableViewMode, jobReturns]);
 
+    const handleRowClick = useCallback((jobReturn: JobReturnModel) => {
+      setSelectedMinion({ minionId: jobReturn.minion_id, master: jobReturn.salt_master });
+    }, []);
+
+    const handleCloseDrawer = useCallback(() => {
+      setSelectedMinion(null);
+    }, []);
+
     const overscan = pagination.pageSize > 100 ? 10 : 100;
     const shouldShowMergedView =
       isTableViewMode &&
@@ -198,19 +200,16 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               forceExpandAll={forceExpand}
               getRowCanExpand={() => !isTableViewMode}
               renderSubComponent={({ row }) => <JobSubRow row={row} isFullOutput={isFullOutput} />}
-              onRowClick={(jobReturn) =>
-                handleOpenMinionDrawer(jobReturn.minion_id, jobReturn.salt_master)
-              }
+              onRowClick={handleRowClick}
             />
-            <MinionDetailsDrawer
-              isOpened={minionDrawer.isOpened}
-              openedId={minionDrawer.openedId}
-              minionStore={minionDrawer.minionStore}
-              slug={minionDrawer.slug}
-              error={minionDrawer.error}
-              onClose={minionDrawer.close}
-              clearData={minionDrawer.clearData}
-            />
+
+            {selectedMinion && (
+              <MinionDetailsDrawerWrapper
+                minionId={selectedMinion.minionId}
+                master={selectedMinion.master}
+                onClose={handleCloseDrawer}
+              />
+            )}
           </>
         )}
       </Flex>

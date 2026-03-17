@@ -23,9 +23,9 @@ import {
   MinionsStore,
 } from "saltbox-core/store";
 import {
-  MinionDetailsDrawer,
-  useMinionDetailsDrawer,
-} from "saltbox-core/widgets/minion-details-drawer";
+  MinionDetailsDrawerWrapper,
+  MinionDetailsDrawerWrapperSelectedMinion,
+} from "saltbox-core/features/minion-details-drawer";
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
@@ -51,15 +51,8 @@ const CollectionEditPage = observer(() => {
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
 
-  const minionDrawer = useMinionDetailsDrawer();
-
-  const handleOpenMinionDrawer = async (innerId: string, minionId: string) => {
-    await minionDrawer.open({
-      slug: collectionStore.collection?.parent_slug || slug || "root",
-      innerId,
-      minionId,
-    });
-  };
+  const [selectedMinion, setSelectedMinion] =
+    useState<MinionDetailsDrawerWrapperSelectedMinion>(null);
 
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
@@ -272,19 +265,22 @@ const CollectionEditPage = observer(() => {
           pagination={toJS(minionsStore.pagination)}
           sorting={minionsStore.sorting}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          onRowClick={(minion) => handleOpenMinionDrawer(minion.id, minion.minion_id)}
+          onRowClick={(minion) =>
+            setSelectedMinion({
+              minionId: minion.minion_id ?? minion.id,
+              master: minion.master ?? "",
+            })
+          }
         />
       </Flex>
 
-      <MinionDetailsDrawer
-        isOpened={minionDrawer.isOpened}
-        openedId={minionDrawer.openedId}
-        minionStore={minionDrawer.minionStore}
-        slug={minionDrawer.slug}
-        error={minionDrawer.error}
-        onClose={minionDrawer.close}
-        clearData={minionDrawer.clearData}
-      />
+      {selectedMinion && (
+        <MinionDetailsDrawerWrapper
+          minionId={selectedMinion.minionId}
+          master={selectedMinion.master}
+          onClose={() => setSelectedMinion(null)}
+        />
+      )}
     </>
   );
 });
