@@ -31,26 +31,29 @@ export default observer(function Root() {
   return (
     <I18nextProvider i18n={i18n}>
       <Suspense fallback="Loading translations...">
-        <BrowserRouter basename="/core">
+        <BrowserRouter basename="/">
           <Routes>
-            <Route path="/minions" element={<DefaultMinionsPage />} />
-            <Route path="/minions/:slug/edit" element={<CollectionEditPage />} />
-            <Route path="/minions/:slug/tasks/:taskid" element={<TaskPage />} />
-            <Route path="/minions/:slug/:mid" element={<MinionPage />} />
-            <Route path="/minions/:slug" element={<MinionsPage />} />
-            <Route path="/masters" element={<MastersPage />} />
-            <Route path="/masters/:mid" element={<MasterPage />} />
-            <Route path="/pillars" element={<PillarsPage />} />
-            <Route path="/masters/:master_id/minion/:minion_id" element={<MinionRedirectPage />} />
-            <Route path="/jobs" element={<JobsPage />} />
-            <Route path="/jobs/:jid" element={<JobPage />} />
-            <Route path="/jobs-templates" element={<JobsTemplatesPage />} />
-            <Route path="/task-templates" element={<TaskTemplatesPage />} />
-            <Route path="/settings-sls" element={<SettingsSlsPage />} />
-            <Route path="/sls-editor" element={<SlsEditorPage />} />
-            <Route path="/tasks" element={<AggregatedTasksPage />} />
-            <Route path="/policies" element={<AggregatedPoliciesPage />} />
-            <Route path="/task/:taskid" element={<TaskPage />} />
+            <Route path="/core/minions" element={<DefaultMinionsPage />} />
+            <Route path="/core/minions/:slug/edit" element={<CollectionEditPage />} />
+            <Route path="/core/minions/:slug/tasks/:taskid" element={<TaskPage />} />
+            <Route path="/core/minions/:slug/:mid" element={<MinionPage />} />
+            <Route path="/core/minions/:slug" element={<MinionsPage />} />
+            <Route path="/core/masters" element={<MastersPage />} />
+            <Route path="/core/masters/:mid" element={<MasterPage />} />
+            <Route path="/core/pillars" element={<PillarsPage />} />
+            <Route
+              path="/core/masters/:master_id/minion/:minion_id"
+              element={<MinionRedirectPage />}
+            />
+            <Route path="/core/jobs" element={<JobsPage />} />
+            <Route path="/core/jobs/:jid" element={<JobPage />} />
+            <Route path="/core/jobs-templates" element={<JobsTemplatesPage />} />
+            <Route path="/core/task-templates" element={<TaskTemplatesPage />} />
+            <Route path="/core/settings-sls" element={<SettingsSlsPage />} />
+            <Route path="/core/sls-editor" element={<SlsEditorPage />} />
+            <Route path="/core/tasks" element={<AggregatedTasksPage />} />
+            <Route path="/core/policies" element={<AggregatedPoliciesPage />} />
+            <Route path="/core/task/:taskid" element={<TaskPage />} />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

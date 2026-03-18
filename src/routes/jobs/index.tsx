@@ -55,7 +55,7 @@ const JobsPage = observer(() => {
       if (!jobId) {
         return;
       }
-      navigate(`/jobs/${jobId}`);
+      navigate(`/core/jobs/${jobId}`);
     },
     [navigate]
   );
@@ -148,7 +148,7 @@ const JobsPage = observer(() => {
 
   useEffect(() => {
     if (jobsStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [jobsStore.error]);
 

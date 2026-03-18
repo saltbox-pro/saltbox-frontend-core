@@ -182,7 +182,7 @@ const JobPage = observer(() => {
 
   useEffect(() => {
     if (jobStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [jobStore.error]);
 

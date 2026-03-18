@@ -87,7 +87,7 @@ const TaskPage = observer(() => {
 
   useEffect(() => {
     if (taskStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [taskStore.error]);
 

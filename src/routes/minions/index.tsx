@@ -12,7 +12,7 @@ const DefaultMinionsPage = observer(() => {
     collectionStore.setCollectionSlug("default");
   }, []);
   useEffect(() => {
-    if (collectionStore.collection) navigate(`/minions/${collectionStore.collection.slug}`);
+    if (collectionStore.collection) navigate(`/core/minions/${collectionStore.collection.slug}`);
   }, [collectionStore.collection]);
   return (
     <Flex align={"center"} justify={"center"} style={{ height: "100%" }}>

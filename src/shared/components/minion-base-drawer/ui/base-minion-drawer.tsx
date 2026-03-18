@@ -36,7 +36,7 @@ export function BaseMinionDrawer({
       onAfterClose={onAfterClose}
       titleName={id}
       titleLabel={t("minions.minion")}
-      linkTo={innerId && slug ? `core/minions/${slug}/${innerId}` : undefined}
+      linkTo={innerId && slug ? `/core/minions/${slug}/${innerId}` : undefined}
       linkTitle={t("minions.open-minion-details-page")}
       isLoading={isLoading}
       hasData={hasData}

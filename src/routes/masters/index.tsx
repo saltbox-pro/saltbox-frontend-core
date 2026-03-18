@@ -110,7 +110,7 @@ function MastersPage() {
 
   useEffect(() => {
     if (mastersStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [mastersStore.error]);
 
@@ -165,7 +165,7 @@ function MastersPage() {
         pagination={mastersStore.pagination}
         sorting={mastersStore.sorting}
         onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(master) => navigate(`/masters/${master.master_id}`)}
+        onRowClick={(master) => navigate(`/core/masters/${master.master_id}`)}
       />
     </>
   );

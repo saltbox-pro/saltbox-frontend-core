@@ -22,9 +22,9 @@ export const useTaskWorkflow = () => {
   const goToTaskPage = useCallback(
     (taskId: string, slug?: string) => {
       if (slug) {
-        navigate(`/minions/${slug}/tasks/${taskId}`);
+        navigate(`/core/minions/${slug}/tasks/${taskId}`);
       } else {
-        navigate(`/task/${taskId}`);
+        navigate(`/core/task/${taskId}`);
       }
     },
     [navigate]

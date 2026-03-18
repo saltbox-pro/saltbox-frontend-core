@@ -16,11 +16,11 @@ const MinionRedirectPage = observer(() => {
         minion_id: minion_id,
       })
       .then((minion) => {
-        navigate(`/minions/root/${minion.id}`, { replace: true });
+        navigate(`/core/minions/root/${minion.id}`, { replace: true });
       })
       .catch((error) => {
         console.error("Error fetching minion:", error);
-        navigate("/not-found");
+        navigate("/core/not-found");
       });
   }, []);
 

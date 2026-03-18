@@ -98,7 +98,7 @@ const MinionsPage = observer(() => {
   };
 
   const handleEditCollection = () => {
-    navigate(`/minions/${slug}/edit`);
+    navigate(`/core/minions/${slug}/edit`);
   };
 
   const handleSaveAsNew = () => {
@@ -148,7 +148,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [collectionStore.error, navigate]);
 
@@ -380,7 +380,7 @@ const MinionsPage = observer(() => {
             setIsDeleteModalOpen(false);
             messageApi.success(t("collection.collection-deleted-successfully"));
             minionFilterStore.handleResetFilters();
-            navigate(`/minions/${parentSlug}`);
+            navigate(`/core/minions/${parentSlug}`);
           } catch (error) {
             messageApi.error(t("collection.error-deleting-collection"));
           }

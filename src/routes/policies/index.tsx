@@ -67,12 +67,12 @@ export default observer(function PoliciesPage() {
               style={{ color: "#1677ff", cursor: "pointer" }}
               onClick={(e) => {
                 e.stopPropagation();
-                if (slug) navigate(`/minions/${slug}`);
+                if (slug) navigate(`/core/minions/${slug}`);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && slug) {
                   e.stopPropagation();
-                  navigate(`/minions/${slug}`);
+                  navigate(`/core/minions/${slug}`);
                 }
               }}
             >
@@ -219,7 +219,9 @@ export default observer(function PoliciesPage() {
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
         onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(task) => navigate(`/minions/${task.target_collection.slug}/tasks/${task.id}`)}
+        onRowClick={(task) =>
+          navigate(`/core/minions/${task.target_collection.slug}/tasks/${task.id}`)
+        }
         useVirtualScroll={false}
       />
     </>

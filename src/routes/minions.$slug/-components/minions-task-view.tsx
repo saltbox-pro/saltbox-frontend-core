@@ -228,7 +228,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
         onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(task) => navigate(`/minions/${props.slug}/tasks/${task.id}`)}
+        onRowClick={(task) => navigate(`/core/minions/${props.slug}/tasks/${task.id}`)}
         useVirtualScroll={false}
       />
     </Flex>

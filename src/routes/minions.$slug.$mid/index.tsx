@@ -215,7 +215,7 @@ const MinionPage = observer(() => {
 
   useEffect(() => {
     if (minionStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [minionStore.error]);
 
@@ -252,7 +252,7 @@ const MinionPage = observer(() => {
       // using `message` instead of `messageApi` here to show the feedback even when the page is changed
       message.success(t("minions.deleted-successfully"));
       setIsDeleteModalOpen(false);
-      navigate(`/minions/${slug}`);
+      navigate(`/core/minions/${slug}`);
     } catch (error) {
       messageApi.error(t("minions.delete-failed"));
       console.error("Failed to delete minion:", error);

@@ -144,7 +144,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (collectionStore.error) {
-      navigate("/not-found");
+      navigate("/core/not-found");
     }
   }, [collectionStore.error]);
 
@@ -155,7 +155,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (slug === "root") {
-      navigate(`/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
+      navigate(`/core/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
     }
   }, [slug]);
 
@@ -236,7 +236,7 @@ const CollectionEditPage = observer(() => {
           <Button
             type="default"
             onClick={() => {
-              navigate(`/minions/${slug}`);
+              navigate(`/core/minions/${slug}`);
             }}
           >
             {t("minions.cancel")}
