@@ -23,7 +23,7 @@ import TaskTemplatesPage from "./routes/task-templates";
 import AggregatedPoliciesPage from "./routes/policies";
 import AggregatedTasksPage from "./routes/tasks";
 import TaskPage from "./routes/task.$taskid";
-import NotFound from "./shared/components/not-found";
+import NotFound from "./routes/not-found";
 
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 

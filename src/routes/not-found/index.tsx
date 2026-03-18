@@ -12,7 +12,7 @@ const NotFound: React.FC = () => {
       title="404"
       subTitle={t("base.not-found")}
       extra={
-        <Link to="/minions">
+        <Link to="/core/minions">
           <Button type="primary">{t("base.back-home")}</Button>
         </Link>
       }
