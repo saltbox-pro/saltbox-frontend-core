@@ -41,7 +41,7 @@ export const CollectionInfoPopover = observer(
                 }}
               >
                 {t("minions.subcollection-info")}
-                <Link to={`/minions/${collectionStore.collection?.parent_slug || ""}`}>
+                <Link to={`/core/minions/${collectionStore.collection?.parent_slug || ""}`}>
                   <Button type="link" size={"small"}>
                     {collectionStore.collection?.parent_title}
                   </Button>

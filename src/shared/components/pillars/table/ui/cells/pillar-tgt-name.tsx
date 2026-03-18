@@ -15,7 +15,7 @@ export function PillarTgtName({ tgtInfo }: PillarTgtNameProps) {
   const label = type === PillarTgtType.Minion ? (minionId ?? id) : (title ?? id);
 
   if ((type === PillarTgtType.Collection || type === PillarTgtType.Root) && slug) {
-    return <Link to={`/minions/${slug}`}>{label}</Link>;
+    return <Link to={`/core/minions/${slug}`}>{label}</Link>;
   }
 
   return <span>{label}</span>;
