@@ -1,12 +1,11 @@
 import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
+import {
+  isInvalidJsonValueResult,
+  parseAndValidateJsonValue,
+} from "@saltbox/saltbox-frontend-common";
 import { type FormInstance, message } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import {
-  isParseValueError,
-  parseAndValidateJsonValue,
-} from "saltbox-core/shared/components/form/fields/json-editor-field";
 
 import { editPillar } from "../api/edit-pillar";
 
@@ -48,7 +47,8 @@ export function useEditPillarForm({
     }
 
     const parsed = parseAndValidateJsonValue(values.value);
-    if (isParseValueError(parsed)) {
+
+    if (isInvalidJsonValueResult(parsed)) {
       setSaveError(parsed.errorKey);
       return;
     }

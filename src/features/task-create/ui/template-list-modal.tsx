@@ -16,12 +16,13 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { taskTemplateService } from "../service";
-import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
 import {
   getTemplateDescriptionText,
   type TemplateDescriptionValue,
 } from "saltbox-core/shared/utils/template-description";
+
+import { taskTemplateService } from "../service";
+import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
 
 import styles from "./template-list-modal.module.css";
 

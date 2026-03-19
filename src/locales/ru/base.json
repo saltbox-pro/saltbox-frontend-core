@@ -356,11 +356,6 @@
       "value-secret-message": "Значение является защищённым, просмотр и редактирование недоступны"
     }
   },
-  "json-editor-field": {
-    "value-required": "Значение обязательно к заполнению",
-    "value-invalid-json": "Значение должно быть валидным JSON",
-    "value-invalid-type": "Значение должно быть строкой, числом, true/false/null, объектом или массивом"
-  },
   "pillars": {
     "title": "Pillars",
     "load-error": "Не удалось получить pillars",
@@ -373,6 +368,7 @@
       "field-name-required": "Имя обязательно к заполнению",
       "field-name-max-length": "Имя должно быть не длиннее {{max}} символов",
       "field-value": "Значение",
+      "field-value-required": "Значение обязательно к заполнению",
       "field-value-placeholder": "Введите значение",
       "field-personal": "Персональный",
       "field-personal-tooltip": "Пиллар создаётся в персональном окружении и применяется только к задачам, которые вы запускаете",

@@ -1,12 +1,8 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { PillarCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
+import { createJsonValueValidator, JsonEditorField } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
-
-import {
-  createJsonValueValidator,
-  JsonEditorField,
-} from "saltbox-core/shared/components/form/fields/json-editor-field";
 
 import { type CreatePillarFormValues, useCreatePillarForm } from "../hooks/use-create-pillar-form";
 
@@ -87,7 +83,7 @@ export function CreatePillarForm({
         name="value"
         label={t("pillars.create.field-value")}
         rules={[
-          { required: true, message: t("json-editor-field.value-required") },
+          { required: true, message: t("pillars.create.field-value-required") },
           { validator: createJsonValueValidator(t) },
         ]}
       >

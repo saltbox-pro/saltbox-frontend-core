@@ -356,11 +356,6 @@
       "value-secret-message": "Value is secure and cannot be viewed or edited"
     }
   },
-  "json-editor-field": {
-    "value-required": "Value is required",
-    "value-invalid-json": "Value must be valid JSON",
-    "value-invalid-type": "Value must be a string, number, boolean, null, object or array"
-  },
   "pillars": {
     "title": "Pillars",
     "load-error": "Failed to load pillars",
@@ -373,6 +368,7 @@
       "field-name-required": "Name is required",
       "field-name-max-length": "Name must be at most {{max}} characters",
       "field-value": "Value",
+      "field-value-required": "Value is required",
       "field-value-placeholder": "Enter value",
       "field-personal": "Personal",
       "field-personal-tooltip": "The pillar is created in your personal environment and applies only to the tasks you run",

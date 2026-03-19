@@ -3,6 +3,7 @@ import { Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
 import { useDeletePillar } from "../hooks/use-delete-pillar";
+
 import { PillarDeleteConfirmModal } from "./pillar-delete-confirm-modal";
 
 export interface PillarDeleteBlockProps {

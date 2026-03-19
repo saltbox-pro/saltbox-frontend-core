@@ -1,14 +1,13 @@
 import { EditOutlined } from "@ant-design/icons";
 import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  createJsonValueValidator,
+  JsonEditorField,
+} from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Form } from "antd";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import {
-  createJsonValueValidator,
-  JsonEditorField,
-} from "saltbox-core/shared/components/form/fields/json-editor-field";
 
 import { formatPillarValueToString } from "../helpers/format-pillar-value";
 import { useEditPillarForm } from "../hooks/use-edit-pillar-form";
@@ -88,7 +87,7 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
             </Flex>
           }
           rules={[
-            { required: true, message: t("json-editor-field.value-required") },
+            { required: true, message: t("pillars.create.field-value-required") },
             { validator: createJsonValueValidator(t) },
           ]}
         >
