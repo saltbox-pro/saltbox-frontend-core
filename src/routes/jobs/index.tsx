@@ -7,7 +7,7 @@ import {
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Tag } from "antd";
+import { Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,7 @@ import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
+import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
 
 const JobsTable = FastTablePaginated<JobsListResponse>;
@@ -104,8 +105,14 @@ const JobsPage = observer(() => {
               return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
             case JobStatus.Finished:
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            case JobStatus.LaunchError:
-              return <Tag color="red">{t("jobs.table-status-launch-error")}</Tag>;
+            case JobStatus.LaunchError: {
+              return (
+                <Flex>
+                  <Tag color="red">{t("jobs.table-status-launch-error")}</Tag>
+                  <LaunchErrorPopover errorTypeText={data.row.original.launch_error_type} />
+                </Flex>
+              );
+            }
             default:
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
