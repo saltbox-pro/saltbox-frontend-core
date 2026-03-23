@@ -43,14 +43,13 @@ import styles from "./index.module.css";
 
 type TabItems = ComponentProps<typeof Tabs>["items"];
 
-const minionFilterStore = new MinionFilterStore();
-const tasksFilterStore = new TasksFilterStore([]);
-const policiesFilterStore = new TasksFilterStore([]);
+const STORAGE_KEY_PREFIX = "minions";
 
 const MinionsPage = observer(() => {
   const { t } = useTranslation();
 
   const { slug } = useParams();
+  const resolvedSlug = slug ?? "root";
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -59,6 +58,19 @@ const MinionsPage = observer(() => {
   const [collectionStore] = useState(new CollectionStore());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const minionFilterStore = useMemo(
+    () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter:${resolvedSlug}`),
+    [resolvedSlug]
+  );
+  const tasksFilterStore = useMemo(
+    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter:${resolvedSlug}`),
+    [resolvedSlug]
+  );
+  const policiesFilterStore = useMemo(
+    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}PoliciesFilter:${resolvedSlug}`),
+    [resolvedSlug]
+  );
 
   const {
     isOpen: shownMinionsFilters,
@@ -87,7 +99,7 @@ const MinionsPage = observer(() => {
       minionFilterStore.currentFilters = initialFilterWithIds;
       openMinionsFilters();
     }
-  }, [openMinionsFilters]);
+  }, [minionFilterStore, openMinionsFilters]);
 
   const addBlock = () => {
     dashboardStore.addBlock({

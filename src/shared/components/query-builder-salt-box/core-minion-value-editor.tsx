@@ -1,49 +1,42 @@
 import {
-  SaltBoxAutocompleteValueEditor,
-  SaltBoxMinionValueEditor,
+  GetOptionsCallback,
+  SaltBoxOptionsValueEditor,
+  ValueEditorProps,
 } from "@saltbox/saltbox-frontend-common";
-import { ComponentProps, useCallback } from "react";
+import { FC, useMemo } from "react";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-type AutoCompleteProps = ComponentProps<typeof SaltBoxAutocompleteValueEditor>;
-type MinionValueEditorProps = ComponentProps<typeof SaltBoxMinionValueEditor>;
+type CoreMinionValueEditorInnerProps = ValueEditorProps & { slug: string };
 
-const CoreMinionValueEditorComponent = ({
-  slug,
-  ...props
-}: MinionValueEditorProps & { slug: string }) => {
-  const handleValueChange = useCallback<AutoCompleteProps["onValueChange"]>(
-    (setOptions) => {
-      apiCoreStore.filtersApi
-        ?.filterValues({
-          MinionFilterValuesBody: {
-            collection_slug: slug,
-            query: {
-              [props.field]: {
-                $regex: `(?i)${String(props.value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-              },
+const createGetOptionsForCollection = (slug: string): GetOptionsCallback => {
+  return (field, value, setOptions) => {
+    apiCoreStore.filtersApi
+      ?.filterValues({
+        MinionFilterValuesBody: {
+          collection_slug: slug,
+          query: {
+            [field]: {
+              $regex: `(?i)${String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
             },
-            field: props.field,
           },
-        })
-        .then((result) => {
-          setOptions(
-            result.data.map((grain) => {
-              return { value: grain.value as any }; //todo
-            })
-          );
-        })
-        .catch(() => {
-          setOptions([]);
-        });
-    },
-    [slug, props.field, props.value]
-  );
-
-  return <SaltBoxMinionValueEditor onValueChange={handleValueChange} {...props} />;
+          field,
+        },
+      })
+      .then((result) => {
+        setOptions(result.data.map((grain) => ({ value: grain.value as string })));
+      })
+      .catch(() => {
+        setOptions([]);
+      });
+  };
 };
 
-export const CoreMinionValueEditor = (slug: string) => (props: MinionValueEditorProps) => {
-  return <CoreMinionValueEditorComponent slug={slug} {...props} />;
+const CoreMinionValueEditorInner: FC<CoreMinionValueEditorInnerProps> = ({ slug, ...props }) => {
+  const getOptions = useMemo(() => createGetOptionsForCollection(slug), [slug]);
+  return <SaltBoxOptionsValueEditor getOptions={getOptions} {...props} />;
 };
+
+export const CoreMinionValueEditor =
+  (slug: string): FC<ValueEditorProps> =>
+  (props) => <CoreMinionValueEditorInner slug={slug} {...props} />;

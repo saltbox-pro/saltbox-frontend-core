@@ -12,7 +12,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Badge, Button, Flex, Input, message, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -45,7 +45,10 @@ const CollectionEditPage = observer(() => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [collectionStore] = useState(new CollectionStore());
-  const [filterStore] = useState(new MinionFilterStore());
+  const filterStore = useMemo(
+    () => new MinionFilterStore(`collectionFilter:${slug ?? "root"}`),
+    [slug]
+  );
   const [minionsStore] = useState(new MinionsStore(undefined, undefined));
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");

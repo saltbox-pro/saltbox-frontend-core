@@ -1,77 +1,63 @@
 import {
-  SaltBoxAutocompleteValueEditor,
-  SaltBoxMinionValueEditor,
+  GetOptionsCallback,
+  SaltBoxOptionsValueEditor,
+  ValueEditorProps,
 } from "@saltbox/saltbox-frontend-common";
-import { ComponentProps, useCallback, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobStore } from "saltbox-core/store";
 
-type AutoCompleteProps = ComponentProps<typeof SaltBoxAutocompleteValueEditor>;
-type MinionValueEditorProps = ComponentProps<typeof SaltBoxMinionValueEditor>;
+type CoreJobReturnValueEditorInnerProps = ValueEditorProps & {
+  jobStore?: JobStore;
+};
 
-const CoreJobReturnValueEditorComponent = ({
-  jobStore,
-  ...props
-}: MinionValueEditorProps & { jobStore?: JobStore }) => {
-  const { t } = useTranslation();
-  const uniqueValues = useMemo(() => {
-    if (!jobStore?.jobReturns || jobStore.jobReturns.length === 0) {
-      return { jid: [], fun: [] };
+const createGetOptions = (jobStore?: JobStore, t?: (key: string) => string): GetOptionsCallback => {
+  return (field, value, setOptions) => {
+    if (field === "retcode" && t) {
+      setOptions([
+        { value: retcodeValues.yes, label: t("minions.efi-yes") },
+        { value: retcodeValues.no, label: t("minions.efi-no") },
+      ]);
+      return;
     }
 
-    const jidSet = new Set<string>();
-    const funSet = new Set<string>();
-
-    jobStore.jobReturns.forEach((jobReturn) => {
-      if (jobReturn.jid) {
-        jidSet.add(String(jobReturn.jid));
-      }
-      if (jobReturn.fun) {
-        funSet.add(String(jobReturn.fun));
-      }
-    });
-
-    return {
-      jid: Array.from(jidSet).sort(),
-      fun: Array.from(funSet).sort(),
-    };
-  }, [jobStore?.jobReturns]);
-
-  const handleValueChange = useCallback<AutoCompleteProps["onValueChange"]>(
-    (setOptions) => {
-      if (props.field === "retcode") {
-        setOptions([
-          { value: retcodeValues.yes, label: t("minions.efi-yes") },
-          { value: retcodeValues.no, label: t("minions.efi-no") },
-        ]);
-        return;
-      }
-
-      if (props.field === "jid") {
-        const searchValue = String(props.value || "").toLowerCase();
-        const filtered = uniqueValues.jid.filter((jid) => jid.toLowerCase().includes(searchValue));
-        setOptions(filtered.map((jid) => ({ value: jid })));
-        return;
-      }
-
-      if (props.field === "fun") {
-        const searchValue = String(props.value || "").toLowerCase();
-        const filtered = uniqueValues.fun.filter((fun) => fun.toLowerCase().includes(searchValue));
-        setOptions(filtered.map((fun) => ({ value: fun })));
-        return;
-      }
-
+    if (!jobStore?.jobReturns?.length) {
       setOptions([]);
-    },
-    [props.field, props.value, uniqueValues, t]
-  );
+      return;
+    }
 
-  return <SaltBoxMinionValueEditor onValueChange={handleValueChange} {...props} />;
+    const search = String(value ?? "").toLowerCase();
+    if (field === "jid") {
+      const jids = [
+        ...new Set(jobStore.jobReturns.map((r) => r.jid).filter((j): j is string => Boolean(j))),
+      ].sort();
+      const filtered = search ? jids.filter((jid) => jid.toLowerCase().includes(search)) : jids;
+      setOptions(filtered.map((jid) => ({ value: jid })));
+      return;
+    }
+    if (field === "fun") {
+      const funs = [
+        ...new Set(jobStore.jobReturns.map((r) => r.fun).filter((f): f is string => Boolean(f))),
+      ].sort();
+      const filtered = search ? funs.filter((f) => f.toLowerCase().includes(search)) : funs;
+      setOptions(filtered.map((f) => ({ value: f })));
+      return;
+    }
+    setOptions([]);
+  };
+};
+
+const CoreJobReturnValueEditorInner: FC<CoreJobReturnValueEditorInnerProps> = ({
+  jobStore,
+  ...props
+}) => {
+  const { t } = useTranslation();
+  const getOptions = useMemo(() => createGetOptions(jobStore, t), [jobStore, t]);
+  return <SaltBoxOptionsValueEditor getOptions={getOptions} {...props} />;
 };
 
 export const CoreJobReturnValueEditor =
-  (jobStore?: JobStore) => (props: MinionValueEditorProps) => {
-    return <CoreJobReturnValueEditorComponent jobStore={jobStore} {...props} />;
-  };
+  (jobStore?: JobStore): FC<ValueEditorProps> =>
+  (props) => <CoreJobReturnValueEditorInner jobStore={jobStore} {...props} />;

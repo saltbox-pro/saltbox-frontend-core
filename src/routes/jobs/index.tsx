@@ -191,6 +191,7 @@ const JobsPage = observer(() => {
 
       <JobsQueryBuilder
         filterStore={jobFilterStore}
+        jobsStore={jobsStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
       />

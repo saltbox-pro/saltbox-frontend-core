@@ -28,7 +28,7 @@ export default observer(function PoliciesPage() {
   const navigate = useNavigate();
 
   const [tasksStore] = useState(() => new TasksStore(TaskType.Policy));
-  const [filterStore] = useState(() => new TasksFilterStore([]));
+  const [filterStore] = useState(() => new TasksFilterStore([], "policiesFilter"));
   const [webSocketService] = useState(() => new WebSocketService<TaskListResponseSchema>());
 
   const filterSchema = useMemo(

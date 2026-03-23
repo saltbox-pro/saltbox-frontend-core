@@ -1,14 +1,14 @@
-import { FilterStore } from "@saltbox/saltbox-frontend-common";
+import { PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
 import { action, makeObservable, runInAction } from "mobx";
-import { generateID, RuleGroupType } from "react-querybuilder";
+import { generateID, OptionList, RuleGroupType } from "react-querybuilder";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 type RuleType = RuleGroupType["rules"][number];
 
-export class MinionFilterStore extends FilterStore {
-  constructor() {
-    super();
+export class MinionFilterStore extends PersistentFilterStore {
+  constructor(storageKey?: string) {
+    super([], storageKey);
     makeObservable(this);
   }
 
@@ -19,7 +19,7 @@ export class MinionFilterStore extends FilterStore {
       ?.filterSchema()
       .then((schema) => {
         runInAction(() => {
-          this.filterSchema = schema as any;
+          this.filterSchema = schema as unknown as OptionList;
         });
       })
       .finally(() => {

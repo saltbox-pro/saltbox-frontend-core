@@ -28,7 +28,7 @@ export default observer(function TasksPage() {
   const navigate = useNavigate();
 
   const [tasksStore] = useState(() => new TasksStore(TaskType.Classic));
-  const [filterStore] = useState(() => new TasksFilterStore([]));
+  const [filterStore] = useState(() => new TasksFilterStore([], "tasksFilter"));
   const [webSocketService] = useState(() => new WebSocketService<TaskListResponseSchema>());
 
   const filterSchema = useMemo(
