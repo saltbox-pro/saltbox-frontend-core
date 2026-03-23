@@ -286,6 +286,7 @@
     },
     "job-returns-table": {
       "table-mid": "MID",
+      "table-status": "Статус",
       "table-success": "Успешно",
       "table-return-code": "Код возврата",
       "table-timestamp": "Время",
@@ -295,6 +296,12 @@
       "table-no": "Нет",
       "table-fun": "Функция",
       "invalid-execution-time": "Недопустимое время выполнения",
+      "execution-time-pending": "Ожидание",
+      "status-unknown": "Неизвестно",
+      "status-waiting": "Ожидание",
+      "status-timeout": "Таймаут",
+      "status-success": "Успешно",
+      "status-failed": "Ошибка",
       "time-units": {
         "milliseconds": "мс",
         "seconds": "с",
@@ -443,7 +450,12 @@
     "table-errors-found": "Найдены ошибки для {{count}} миньон(ов)",
     "table-errors-found-short": "Найдены ошибки",
     "table-errors-collapse": "Свернуть",
-    "table-errors-expand": "Развернуть"
+    "table-errors-expand": "Развернуть",
+    "ttl-label": "Время ожидания (TTL)",
+    "ttl-unlimited": "Без ограничений",
+    "waiting-expires-at-label": "Ожидание ответов до",
+    "waiting-expires-at-label-past": "Дедлайн ответов был",
+    "waiting-countdown-label": "Осталось времени"
   },
   "job": {
     "successful-minions": "успешно",
@@ -466,7 +478,13 @@
     "tgt-error-required": "Цель обязательна",
     "function-error-required": "Функция обязательна",
     "warning-message": "Для создания команды, активируйте мастера на странице Мастера",
-    "hint-example-label": "Пример:"
+    "hint-example-label": "Пример:",
+    "ttl-label": "Время ожидания ответов (TTL)",
+    "ttl-default": "По умолчанию",
+    "ttl-unlimited": "Без ограничений",
+    "ttl-custom": "Указать вручную",
+    "ttl-seconds-placeholder": "Секунды",
+    "ttl-seconds-unit": "сек"
   },
   "jobs-templates": {
     "title": "Шаблоны команд",

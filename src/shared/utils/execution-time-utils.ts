@@ -139,6 +139,17 @@ export const getMaxExecutionTime = (
   return executionTimes.length > 0 ? Math.max(...executionTimes) : null;
 };
 
+const isPendingExecutionTime = (
+  jobReturn: JobReturnModel | null,
+  stamp: string | null
+): boolean => {
+  const status = (jobReturn as { status?: string })?.status;
+  if (status === "waiting") return true;
+  if (status === "timeout") return true;
+  if (!stamp) return true;
+  return false;
+};
+
 export const useFormatAndGetExecutionTimeColor = (
   jobStartTimestamp: string | null,
   stamp: string | null,
@@ -146,9 +157,9 @@ export const useFormatAndGetExecutionTimeColor = (
   allJobReturns: JobReturnModel[],
   t: (key: string) => string
 ): { formattedTime: string; color: string } => {
-  if (!stamp) {
+  if (isPendingExecutionTime(jobReturn, stamp)) {
     return {
-      formattedTime: t("task.job-returns-table.invalid-execution-time"),
+      formattedTime: t("task.job-returns-table.execution-time-pending"),
       color: "#000000",
     };
   }

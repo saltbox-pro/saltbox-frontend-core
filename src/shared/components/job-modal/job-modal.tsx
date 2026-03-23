@@ -13,7 +13,18 @@ import {
   JsonForm,
   type JsonFormRef,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Cascader, Flex, Form, Input, Select, message, type FormProps } from "antd";
+import {
+  Button,
+  Cascader,
+  Flex,
+  Form,
+  Input,
+  InputNumber,
+  Radio,
+  Select,
+  message,
+  type FormProps,
+} from "antd";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -96,6 +107,8 @@ export function JobModal({
   const [validationErrors, setValidationErrors] = useState<RJSFValidationError[]>([]);
   const [functionHovered, setFunctionHovered] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [ttlMode, setTtlMode] = useState<"default" | "unlimited" | "custom">("default");
+  const [ttlSeconds, setTtlSeconds] = useState<number | null>(null);
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
@@ -249,6 +262,8 @@ export function JobModal({
     setSaltFunctionName(fun ? fun : undefined);
     setSaltFunction(undefined);
     setJsonFormValue({});
+    setTtlMode("default");
+    setTtlSeconds(null);
     setIsSchemaListLoading(true);
     hasLoadedInitialSchema.current = false;
 
@@ -322,6 +337,15 @@ export function JobModal({
     }
   }, [validationErrors]);
 
+  const getTtlValue = (): number | undefined => {
+    if (ttlMode === "default") return undefined;
+    if (ttlMode === "unlimited") return 0;
+    if (ttlMode === "custom" && typeof ttlSeconds === "number" && ttlSeconds >= 0) {
+      return ttlSeconds;
+    }
+    return undefined;
+  };
+
   const handleModalCancel = () => {
     if (!isJobCreating) {
       setIsModalOpen(false);
@@ -349,6 +373,7 @@ export function JobModal({
           salt_master: formValue.salt_master,
           arg: jsonFormValue?.args,
           kwarg: jsonFormValue?.kwargs,
+          ttl: getTtlValue(),
         },
       })
       .then((response) => {
@@ -492,6 +517,7 @@ export function JobModal({
       salt_master: form.getFieldValue("salt_master"),
       arg: jsonFormValue?.args,
       kwarg: jsonFormValue?.kwargs,
+      ttl: getTtlValue(),
     };
   };
 
@@ -622,6 +648,30 @@ export function JobModal({
               className={styles.jobFormGather}
             />
           </Flex>
+
+          <Form.Item label={t("job-modal.ttl-label")}>
+            <Flex gap={8} align="center" wrap>
+              <Radio.Group
+                value={ttlMode}
+                onChange={(e) => setTtlMode(e.target.value)}
+                optionType="button"
+                buttonStyle="solid"
+              >
+                <Radio.Button value="default">{t("job-modal.ttl-default")}</Radio.Button>
+                <Radio.Button value="unlimited">{t("job-modal.ttl-unlimited")}</Radio.Button>
+                <Radio.Button value="custom">{t("job-modal.ttl-custom")}</Radio.Button>
+              </Radio.Group>
+              {ttlMode === "custom" && (
+                <InputNumber
+                  min={1}
+                  value={ttlSeconds ?? undefined}
+                  onChange={(value) => setTtlSeconds(value ?? null)}
+                  placeholder={t("job-modal.ttl-seconds-placeholder")}
+                  addonAfter={t("job-modal.ttl-seconds-unit")}
+                />
+              )}
+            </Flex>
+          </Form.Item>
 
           <Form.Item<JobFormData>
             label={

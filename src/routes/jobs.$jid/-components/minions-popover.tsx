@@ -16,17 +16,28 @@ interface MinionsPopoverProps {
   minions: (JobReturnModel | string)[];
   title: string;
   maxWidth?: string;
+  trigger?: React.ReactNode;
 }
 
-export function MinionsPopover({ minions, title, maxWidth = "500px" }: MinionsPopoverProps) {
+export function MinionsPopover({
+  minions,
+  title,
+  maxWidth = "500px",
+  trigger,
+}: MinionsPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { t } = useTranslation();
 
-  const minionNames = minions.map((minion) => (typeof minion === "string" ? minion : minion.id));
+  const minionNames = minions.map((minion) =>
+    typeof minion === "string" ? minion : (minion.minion_id ?? (minion as { id?: string }).id ?? "")
+  );
   const minionNamesCommaSeparated = minionNames.join(",");
 
+  const defaultTrigger = <span className={styles.trigger}>{minions.length}</span>;
+  const triggerNode = trigger ?? defaultTrigger;
+
   if (minions.length === 0) {
-    return <span className={styles.trigger}>{minions.length}</span>;
+    return <>{triggerNode}</>;
   }
 
   return (
@@ -80,7 +91,7 @@ export function MinionsPopover({ minions, title, maxWidth = "500px" }: MinionsPo
       onOpenChange={setIsPopoverOpen}
       zIndex={500}
     >
-      <span className={styles.trigger}>{minions.length}</span>
+      {triggerNode}
     </Popover>
   );
 }

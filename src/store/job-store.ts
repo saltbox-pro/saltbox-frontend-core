@@ -182,41 +182,6 @@ export class JobStore {
   };
 
   @computed
-  get successfulMinions() {
-    return (
-      Object.keys(this.job?.returning)?.filter((minion) => this.job?.returning[minion] === true)
-        ?.length ?? 0
-    );
-  }
-
-  @computed
-  get successfulMinionsList() {
-    return this.job?.minions?.filter((minion) => this.job?.returning[minion] === true) ?? [];
-  }
-
-  @computed
-  get failedMinions() {
-    const minions = Object.keys(this.job?.returning);
-    return minions?.filter((minion) => this.job?.returning[minion] === false)?.length ?? 0;
-  }
-
-  @computed
-  get failedMinionsList() {
-    return this.job?.minions?.filter((minion) => this.job?.returning[minion] === false) ?? [];
-  }
-
-  @computed
-  get pendingMinions() {
-    const totalMinions = this.job?.minions?.length ?? 0;
-    return totalMinions - this.successfulMinions - this.failedMinions;
-  }
-
-  @computed
-  get pendingMinionsList() {
-    return this.job?.minions?.filter((minion) => !this.job?.returning[minion]) ?? [];
-  }
-
-  @computed
   get jobStartTimestamp() {
     const timestamp = this.job?.stamp || this.job?.fms_jid_timestamp || this.job?.created;
     if (!timestamp) return null;
@@ -234,28 +199,31 @@ export class JobStore {
   }
 
   @computed
-  get progressPercent() {
-    return this.totalMinions > 0
-      ? ((this.failedMinions + this.successfulMinions) / this.totalMinions) * 100
-      : 0;
-  }
-
-  @computed
-  get successPercent() {
-    return this.totalMinions > 0 ? (this.successfulMinions / this.totalMinions) * 100 : 0;
-  }
-
-  @computed
   get totalMinions() {
     return this.job?.minions?.length ?? 0;
   }
 
   @computed
+  get progressPercent() {
+    const c = this.jobReturnStatusCounts;
+    const total = c.success + c.failed + c.timeout + c.waiting;
+    if (total === 0) return 0;
+    return ((c.success + c.failed + c.timeout) / total) * 100;
+  }
+
+  @computed
+  get successPercent() {
+    const c = this.jobReturnStatusCounts;
+    const total = c.success + c.failed + c.timeout + c.waiting;
+    if (total === 0) return 0;
+    return (c.success / total) * 100;
+  }
+
+  @computed
   get isJobComplete() {
-    return (
-      this.job?.status === JobStatus.Finished ||
-      (this.totalMinions > 0 && this.pendingMinions === 0)
-    );
+    const c = this.jobReturnStatusCounts;
+    const total = c.success + c.failed + c.timeout + c.waiting;
+    return this.job?.status === JobStatus.Finished || (total > 0 && c.waiting === 0);
   }
 
   @computed
@@ -277,6 +245,68 @@ export class JobStore {
       return this.job.tgt.replace(/,\s+/g, ",");
     }
     return undefined;
+  }
+
+  @computed
+  get jobReturnStatusCounts(): {
+    waiting: number;
+    success: number;
+    failed: number;
+    timeout: number;
+  } {
+    const counts = { waiting: 0, success: 0, failed: 0, timeout: 0 };
+    this.jobReturns.forEach((jr) => {
+      const status = (jr as { status?: string }).status;
+      if (
+        status === "waiting" ||
+        status === "success" ||
+        status === "failed" ||
+        status === "timeout"
+      ) {
+        counts[status]++;
+      } else if (jr.retcode === 0) {
+        counts.success++;
+      } else if (jr.retcode !== undefined && jr.retcode !== null) {
+        counts.failed++;
+      } else {
+        counts.waiting++;
+      }
+    });
+    return counts;
+  }
+
+  @computed
+  get jobReturnMinionsByStatus(): {
+    waiting: string[];
+    success: string[];
+    failed: string[];
+    timeout: string[];
+  } {
+    const lists = {
+      waiting: [] as string[],
+      success: [] as string[],
+      failed: [] as string[],
+      timeout: [] as string[],
+    };
+    this.jobReturns.forEach((jr) => {
+      const minionId = jr.minion_id ?? "";
+      const status = (jr as { status?: string }).status;
+      if (
+        status === "waiting" ||
+        status === "success" ||
+        status === "failed" ||
+        status === "timeout"
+      ) {
+        lists[status].push(minionId);
+      } else if (jr.retcode === 0) {
+        lists.success.push(minionId);
+      } else if (jr.retcode !== undefined && jr.retcode !== null) {
+        lists.failed.push(minionId);
+      } else {
+        lists.waiting.push(minionId);
+      }
+    });
+    return lists;
   }
 }
 

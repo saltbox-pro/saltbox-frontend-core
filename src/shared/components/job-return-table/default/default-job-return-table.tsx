@@ -12,7 +12,7 @@ import {
   type ColumnDef,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { Flex, Tag } from "antd";
+import { Flex, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -96,17 +96,36 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             ellipsis: true,
           },
         }),
-        columnHelper.accessor("retcode", {
-          id: "retcode-status",
-          header: t("task.job-returns-table.table-success"),
-          cell: (data) => (
-            <Tag color={data.getValue() === 0 ? "green" : "red"}>
-              {data.getValue() === 0
-                ? t("task.job-returns-table.table-yes")
-                : t("task.job-returns-table.table-no")}
-            </Tag>
-          ),
-          meta: { width: 110 },
+        columnHelper.accessor("status", {
+          id: "status",
+          header: t("task.job-returns-table.table-status"),
+          cell: (data) => {
+            const status = data.getValue() as string | undefined;
+            const retcode = data.row.original.retcode;
+
+            if (!status && retcode === undefined) {
+              return <Tag>{t("task.job-returns-table.status-unknown")}</Tag>;
+            }
+
+            if (status === "waiting") {
+              return <Tag color="blue">{t("task.job-returns-table.status-waiting")}</Tag>;
+            }
+
+            if (status === "timeout") {
+              return <Tag color="orange">{t("task.job-returns-table.status-timeout")}</Tag>;
+            }
+
+            if (status === "success" || retcode === 0) {
+              return <Tag color="green">{t("task.job-returns-table.status-success")}</Tag>;
+            }
+
+            if (status === "failed" || (retcode !== undefined && retcode !== 0)) {
+              return <Tag color="red">{t("task.job-returns-table.status-failed")}</Tag>;
+            }
+
+            return <Tag>{status}</Tag>;
+          },
+          meta: { width: 140 },
         }),
         columnHelper.accessor("retcode", {
           id: "retcode",
@@ -115,7 +134,17 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         }),
         columnHelper.accessor("stamp", {
           header: t("task.job-returns-table.table-execution-time"),
-          cell: (data) => <RelativeTime date={data.getValue()} />,
+          cell: (data) => {
+            const stamp = data.getValue();
+            if (stamp == null || stamp === "") {
+              return (
+                <Typography.Text type="secondary">
+                  {t("task.job-returns-table.execution-time-pending")}
+                </Typography.Text>
+              );
+            }
+            return <RelativeTime date={stamp} />;
+          },
           meta: { width: "18%" },
         }),
         columnHelper.display({

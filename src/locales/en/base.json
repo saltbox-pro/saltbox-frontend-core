@@ -286,6 +286,7 @@
     },
     "job-returns-table": {
       "table-mid": "MID",
+      "table-status": "Status",
       "table-success": "Success",
       "table-return-code": "Return Code",
       "table-timestamp": "Timestamp",
@@ -295,6 +296,12 @@
       "table-no": "No",
       "table-fun": "Function",
       "invalid-execution-time": "Invalid execution time",
+      "execution-time-pending": "Waiting",
+      "status-unknown": "Unknown",
+      "status-waiting": "Waiting",
+      "status-timeout": "Timeout",
+      "status-success": "Success",
+      "status-failed": "Failed",
       "time-units": {
         "milliseconds": "ms",
         "seconds": "s",
@@ -443,7 +450,12 @@
     "table-errors-found": "Errors found for {{count}} minion(s)",
     "table-errors-found-short": "Errors found",
     "table-errors-collapse": "Collapse",
-    "table-errors-expand": "Expand"
+    "table-errors-expand": "Expand",
+    "ttl-label": "Time to live (TTL)",
+    "ttl-unlimited": "Unlimited",
+    "waiting-expires-at-label": "Waiting for responses until",
+    "waiting-expires-at-label-past": "Response deadline was",
+    "waiting-countdown-label": "Time remaining"
   },
   "job": {
     "successful-minions": "successful",
@@ -466,7 +478,13 @@
     "tgt-error-required": "Target is required",
     "function-error-required": "Function is required",
     "warning-message": "To create a job, activate the master on the Masters page",
-    "hint-example-label": "Example:"
+    "hint-example-label": "Example:",
+    "ttl-label": "Time to wait for responses (TTL)",
+    "ttl-default": "Default",
+    "ttl-unlimited": "Unlimited",
+    "ttl-custom": "Custom",
+    "ttl-seconds-placeholder": "Seconds",
+    "ttl-seconds-unit": "sec"
   },
   "jobs-templates": {
     "title": "Job Templates",

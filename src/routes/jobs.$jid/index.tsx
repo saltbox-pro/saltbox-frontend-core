@@ -8,6 +8,7 @@ import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api
 import {
   CopyToClipboardButton,
   PageHeader,
+  RelativeTime,
   WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
@@ -26,6 +27,7 @@ import {
   Skeleton,
   Statistic,
   Switch,
+  Tag,
   Tooltip,
   Typography,
 } from "antd";
@@ -51,7 +53,17 @@ import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
-const { Timer } = Statistic;
+const { Countdown, Timer } = Statistic;
+
+const parseBackendDatetime = (value: string | null | undefined): number | null => {
+  if (value == null || value === "") return null;
+  const str = String(value).trim();
+  if (!str) return null;
+  const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(str);
+  const toParse = hasTimezone ? str : str.replace(/\.\d{3}$/, "") + "Z";
+  const ts = new Date(toParse).getTime();
+  return Number.isNaN(ts) ? null : ts;
+};
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
@@ -75,6 +87,14 @@ const JobPage = observer(() => {
     () => (jid && jobStore.jid === jid ? jobStore.jobReturns : []),
     [jid, jobStore.jid, jobStore.jobReturns]
   );
+
+  const statusCounts = jobStore.jobReturnStatusCounts;
+  const minionsByStatus = jobStore.jobReturnMinionsByStatus;
+  const waitingExpiresAtRaw = jobStore.job?.waiting_expires_at_dt;
+  const waitingExpiresAt =
+    waitingExpiresAtRaw != null ? parseBackendDatetime(String(waitingExpiresAtRaw)) : null;
+  const showCountdown =
+    !jobStore.isJobComplete && waitingExpiresAt != null && waitingExpiresAt > Date.now();
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -311,6 +331,40 @@ const JobPage = observer(() => {
           </span>
         </div>
 
+        {jobStore.job?.ttl != null && (
+          <div className={styles.jobDetailItem}>
+            <span className={styles.jobDetailLabel}>{t("jobs.ttl-label")}:</span>
+            <span className={styles.jobDetailValue}>
+              {jobStore.job.ttl === 0
+                ? t("jobs.ttl-unlimited")
+                : `${jobStore.job.ttl} ${t("job-modal.ttl-seconds-unit")}`}
+            </span>
+          </div>
+        )}
+
+        {waitingExpiresAt != null && (
+          <div className={styles.jobDetailItem}>
+            <span className={styles.jobDetailLabel}>
+              {waitingExpiresAt < Date.now()
+                ? t("jobs.waiting-expires-at-label-past")
+                : t("jobs.waiting-expires-at-label")}
+              :
+            </span>
+            <span className={styles.jobDetailValue}>
+              <RelativeTime date={new Date(waitingExpiresAt)} />
+            </span>
+          </div>
+        )}
+
+        {showCountdown && waitingExpiresAt != null && (
+          <div className={styles.jobDetailItem}>
+            <span className={styles.jobDetailLabel}>{t("jobs.waiting-countdown-label")}:</span>
+            <span className={styles.jobDetailValue}>
+              <Countdown value={waitingExpiresAt} format="HH:mm:ss" />
+            </span>
+          </div>
+        )}
+
         {jobStore.jobStartTimestamp && (
           <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
             <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
@@ -343,34 +397,63 @@ const JobPage = observer(() => {
       </div>
 
       {jobStore.totalMinions > 0 && (
-        <Flex className={styles.switchContainer} justify="space-between" align="center" gap={16}>
-          <div className={styles.statsWrapper}>
-            <span className={styles.statsText}>
-              <span className={styles.statsNumber}>{jobStore.successfulMinions}</span>{" "}
-              {t("job.successful-minions")}
-              {" / "}
-              {jobStore.failedMinions > 0 ? (
-                <MinionsPopover
-                  minions={jobStore.failedMinionsList}
-                  title={t("jobs.failed-minions")}
-                />
-              ) : (
-                <span className={styles.statsNumber}>{jobStore.failedMinions}</span>
-              )}{" "}
-              {t("job.failed-minions")}
-              {" / "}
-              {jobStore.pendingMinions > 0 ? (
-                <MinionsPopover
-                  minions={jobStore.pendingMinionsList}
-                  title={t("job.pending-minions-popover")}
-                />
-              ) : (
-                <span className={styles.statsNumber}>{jobStore.pendingMinions}</span>
-              )}{" "}
-              {t("job.pending-minions")}
-            </span>
-          </div>
-
+        <Flex
+          className={styles.switchContainer}
+          justify="space-between"
+          align="center"
+          gap={16}
+          wrap
+        >
+          <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
+            <MinionsPopover
+              minions={minionsByStatus.success}
+              title={t("task.job-returns-table.status-success")}
+              trigger={
+                <Tag
+                  color="green"
+                  style={statusCounts.success > 0 ? { cursor: "pointer" } : undefined}
+                >
+                  {t("task.job-returns-table.status-success")}: {statusCounts.success}
+                </Tag>
+              }
+            />
+            <MinionsPopover
+              minions={minionsByStatus.failed}
+              title={t("task.job-returns-table.status-failed")}
+              trigger={
+                <Tag
+                  color="red"
+                  style={statusCounts.failed > 0 ? { cursor: "pointer" } : undefined}
+                >
+                  {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
+                </Tag>
+              }
+            />
+            <MinionsPopover
+              minions={minionsByStatus.timeout}
+              title={t("task.job-returns-table.status-timeout")}
+              trigger={
+                <Tag
+                  color="orange"
+                  style={statusCounts.timeout > 0 ? { cursor: "pointer" } : undefined}
+                >
+                  {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+                </Tag>
+              }
+            />
+            <MinionsPopover
+              minions={minionsByStatus.waiting}
+              title={t("task.job-returns-table.status-waiting")}
+              trigger={
+                <Tag
+                  color="blue"
+                  style={statusCounts.waiting > 0 ? { cursor: "pointer" } : undefined}
+                >
+                  {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
+                </Tag>
+              }
+            />
+          </Flex>
           <Flex align="center" gap={16}>
             {isTableViewMode && tableErrors.length > 0 && (
               <Flex align="center" gap={8}>

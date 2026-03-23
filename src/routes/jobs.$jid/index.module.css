@@ -108,6 +108,10 @@
   background-color: #52c41a !important;
 }
 
+.statsBadgesWrapper {
+  margin-bottom: 8px;
+}
+
 .statsWrapper {
   display: flex;
   align-items: center;
@@ -138,7 +142,6 @@
   padding: 50px 0;
 }
 
-/* Arguments preview styles */
 .argumentsCell {
   display: flex;
   align-items: center;
@@ -197,7 +200,6 @@
   border-color: #adc6ff !important;
 }
 
-/* Kwargs preview styles */
 .kwargsCell {
   display: flex;
   align-items: center;
