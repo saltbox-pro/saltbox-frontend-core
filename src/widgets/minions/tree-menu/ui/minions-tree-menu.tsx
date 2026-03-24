@@ -145,9 +145,9 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
 
       <Spin
         wrapperClassName={styles.minionsTreeMenuContent}
-        spinning={collectionsTreeStore.isTreeLoading}
+        spinning={collectionsTreeStore.fetchTreeStatus === "in-process"}
       >
-        {collectionsTreeStore.error ? (
+        {collectionsTreeStore.fetchTreeStatus === "error" && collectionsTreeStore.error ? (
           <Alert
             description={
               collectionsTreeStore.error.startsWith("collection.")

@@ -4,9 +4,11 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { findNodeAndParent, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
+type FetchTreeStatus = "idle" | "in-process" | "error" | "success";
+
 export class CollectionsTreeStore {
   treeNodes: CollectionTreeNodeSchema[] = [];
-  isTreeLoading = false;
+  fetchTreeStatus: FetchTreeStatus = "idle";
   error: string | null = null;
 
   constructor() {
@@ -14,30 +16,31 @@ export class CollectionsTreeStore {
   }
 
   loadTree = (force = false) => {
-    if (!force && this.treeNodes.length > 0) return;
+    if ((!force && this.fetchTreeStatus === "success") || this.fetchTreeStatus === "in-process")
+      return;
 
-    this.isTreeLoading = true;
+    this.fetchTreeStatus = "in-process";
+
     apiCoreStore.minionCollectionsApi
       ?.minionCollectionsTree()
       .then((nodes) => {
         runInAction(() => {
+          this.fetchTreeStatus = "success";
           this.error = null;
           this.treeNodes = nodes ?? [];
         });
       })
       .catch((err) => {
         runInAction(() => {
+          this.fetchTreeStatus = "error";
           this.error = err instanceof Error ? err.message : "collection.error-loading-tree";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isTreeLoading = false;
         });
       });
   };
 
   addNode = (collection: CollectionModel) => {
+    if (this.fetchTreeStatus !== "success") return;
+
     const newNode: CollectionTreeNodeSchema = {
       id: collection.id,
       title: collection.title,
@@ -61,23 +64,28 @@ export class CollectionsTreeStore {
   };
 
   removeNode = (slug: string) => {
-    runInAction(() => {
-      const found = findNodeAndParent(this.treeNodes, slug);
-      if (!found) return;
+    if (this.treeNodes.length === 0) return;
 
-      if ("rootIndex" in found) {
+    runInAction(() => {
+      const node = findNodeAndParent(this.treeNodes, slug);
+      if (!node) return;
+
+      if ("rootIndex" in node) {
         this.treeNodes = this.treeNodes.filter((n) => n.slug !== slug);
       } else {
-        const { parent, index } = found;
+        const { parent, index } = node;
         parent.children = parent.children!.filter((_, i) => i !== index);
       }
     });
   };
 
   updateNode = (oldSlug: string, payload: { title: string; slug: string }) => {
+    if (this.treeNodes.length === 0) return;
+
     runInAction(() => {
       const node = findNodeBySlug(this.treeNodes, oldSlug);
       if (!node) return;
+
       node.title = payload.title;
       node.slug = payload.slug;
     });
