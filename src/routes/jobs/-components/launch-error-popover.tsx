@@ -1,21 +1,33 @@
 import { CloseOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
-import { Flex } from "antd";
+import { Flex, Tag } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import styles from "./launch-error-popover.module.css";
+
 interface LaunchErrorPopoverProps {
   errorTypeText: string;
+  tagText: string;
   maxWidth?: string;
 }
 
-export function LaunchErrorPopover({ errorTypeText, maxWidth = "400px" }: LaunchErrorPopoverProps) {
+export function LaunchErrorPopover({
+  errorTypeText,
+  tagText,
+  maxWidth = "300px",
+}: LaunchErrorPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { t } = useTranslation();
 
   if (!errorTypeText) {
     return;
   }
+
+  const handleOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsPopoverOpen(true);
+  };
 
   return (
     <Popover
@@ -51,16 +63,12 @@ export function LaunchErrorPopover({ errorTypeText, maxWidth = "400px" }: Launch
       onOpenChange={setIsPopoverOpen}
       zIndex={500}
     >
-      <InfoCircleOutlined
-        style={{
-          marginLeft: 8,
-          cursor: "pointer",
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsPopoverOpen(true);
-        }}
-      />
+      <Flex className={styles.launchErrorPreview} onClick={handleOpen}>
+        <Tag className={styles.launchErrorTag} color="red">
+          {tagText}
+        </Tag>
+        <InfoCircleOutlined className={styles.launchErrorIcon} />
+      </Flex>
     </Popover>
   );
 }

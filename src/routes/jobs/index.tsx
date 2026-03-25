@@ -107,10 +107,10 @@ const JobsPage = observer(() => {
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
             case JobStatus.LaunchError: {
               return (
-                <Flex>
-                  <Tag color="red">{t("jobs.table-status-launch-error")}</Tag>
-                  <LaunchErrorPopover errorTypeText={data.row.original.launch_error_type} />
-                </Flex>
+                <LaunchErrorPopover
+                  errorTypeText={data.row.original.launch_error_type}
+                  tagText={t("jobs.table-status-launch-error")}
+                />
               );
             }
             default:

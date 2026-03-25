@@ -1,0 +1,31 @@
+.launchErrorPreview {
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.launchErrorPreview:hover {
+  opacity: 0.8;
+}
+
+.launchErrorTag {
+  margin-inline: 0;
+  transition:
+    background-color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
+}
+
+.launchErrorPreview:hover .launchErrorTag {
+  background-color: #ffccc7;
+  border-color: #ffa39e;
+}
+
+.launchErrorIcon {
+  color: #ff4d4f;
+  transition: opacity 0.2s ease;
+}
+
+.launchErrorPreview:hover .launchErrorIcon {
+  opacity: 0.8;
+}
