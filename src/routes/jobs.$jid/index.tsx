@@ -8,7 +8,6 @@ import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api
 import {
   CopyToClipboardButton,
   PageHeader,
-  RelativeTime,
   WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
@@ -53,17 +52,7 @@ import { MinionsPopover } from "./-components/minions-popover";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
-const { Countdown, Timer } = Statistic;
-
-const parseBackendDatetime = (value: string | null | undefined): number | null => {
-  if (value == null || value === "") return null;
-  const str = String(value).trim();
-  if (!str) return null;
-  const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(str);
-  const toParse = hasTimezone ? str : str.replace(/\.\d{3}$/, "") + "Z";
-  const ts = new Date(toParse).getTime();
-  return Number.isNaN(ts) ? null : ts;
-};
+const { Timer } = Statistic;
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
@@ -90,12 +79,6 @@ const JobPage = observer(() => {
 
   const statusCounts = jobStore.jobReturnStatusCounts;
   const minionsByStatus = jobStore.jobReturnMinionsByStatus;
-  const waitingExpiresAtRaw = jobStore.job?.waiting_expires_at_dt;
-  const waitingExpiresAt =
-    waitingExpiresAtRaw != null ? parseBackendDatetime(String(waitingExpiresAtRaw)) : null;
-  const showCountdown =
-    !jobStore.isJobComplete && waitingExpiresAt != null && waitingExpiresAt > Date.now();
-
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
@@ -331,53 +314,31 @@ const JobPage = observer(() => {
           </span>
         </div>
 
-        {jobStore.job?.ttl != null && (
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.ttl-label")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.job.ttl === 0
-                ? t("jobs.ttl-unlimited")
-                : `${jobStore.job.ttl} ${t("job-modal.ttl-seconds-unit")}`}
-            </span>
-          </div>
-        )}
-
-        {waitingExpiresAt != null && (
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>
-              {waitingExpiresAt < Date.now()
-                ? t("jobs.waiting-expires-at-label-past")
-                : t("jobs.waiting-expires-at-label")}
-              :
-            </span>
-            <span className={styles.jobDetailValue}>
-              <RelativeTime date={new Date(waitingExpiresAt)} />
-            </span>
-          </div>
-        )}
-
-        {showCountdown && waitingExpiresAt != null && (
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.waiting-countdown-label")}:</span>
-            <span className={styles.jobDetailValue}>
-              <Countdown value={waitingExpiresAt} format="HH:mm:ss" />
-            </span>
-          </div>
-        )}
-
         {jobStore.jobStartTimestamp && (
           <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
             <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
             <span className={styles.jobDetailValue}>
-              {jobStore.isJobComplete && jobStore.actualJobDuration ? (
-                formatJobDuration(jobStore.actualJobDuration)
-              ) : (
-                <Timer
-                  type="countup"
-                  value={jobStore.jobStartTimestamp.getTime()}
-                  format="HH:mm:ss"
-                />
-              )}
+              <span title={t("jobs.job-execution-duration-actual-tooltip")}>
+                {!jobStore.isJobComplete ? (
+                  <Timer
+                    type="countup"
+                    value={jobStore.jobStartTimestamp.getTime()}
+                    format="HH:mm:ss"
+                  />
+                ) : jobStore.actualJobDuration != null ? (
+                  formatJobDuration(jobStore.actualJobDuration)
+                ) : (
+                  "—"
+                )}
+              </span>
+              <span>/</span>
+              <span title={t("jobs.job-execution-duration-max-tooltip")}>
+                {jobStore.job?.ttl == null
+                  ? "—"
+                  : jobStore.job.ttl === 0
+                    ? t("jobs.ttl-unlimited")
+                    : formatJobDuration(jobStore.job.ttl)}
+              </span>
             </span>
           </div>
         )}
@@ -438,6 +399,18 @@ const JobPage = observer(() => {
                   style={statusCounts.timeout > 0 ? { cursor: "pointer" } : undefined}
                 >
                   {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+                </Tag>
+              }
+            />
+            <MinionsPopover
+              minions={minionsByStatus.ignored}
+              title={t("task.job-returns-table.status-ignored")}
+              trigger={
+                <Tag
+                  color="default"
+                  style={statusCounts.ignored > 0 ? { cursor: "pointer" } : undefined}
+                >
+                  {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
                 </Tag>
               }
             />

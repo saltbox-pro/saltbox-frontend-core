@@ -1,0 +1,1 @@
+export const DEFAULT_JOB_TIMEOUT_SECONDS = 604800;

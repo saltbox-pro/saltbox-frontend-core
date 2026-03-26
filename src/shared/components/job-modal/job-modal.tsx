@@ -20,7 +20,6 @@ import {
   Form,
   Input,
   InputNumber,
-  Radio,
   Select,
   message,
   type FormProps,
@@ -30,6 +29,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
+import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
@@ -107,8 +107,8 @@ export function JobModal({
   const [validationErrors, setValidationErrors] = useState<RJSFValidationError[]>([]);
   const [functionHovered, setFunctionHovered] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
-  const [ttlMode, setTtlMode] = useState<"default" | "unlimited" | "custom">("default");
-  const [ttlSeconds, setTtlSeconds] = useState<number | null>(null);
+  const [ttlValue, setTtlValue] = useState<number | null>(null);
+  const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
@@ -122,6 +122,18 @@ export function JobModal({
   const tgtType = Form.useWatch("tgt_type", form);
 
   const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
+  const parseTtlValue = (rawValue: unknown): number | null => {
+    if (typeof rawValue === "number" && Number.isFinite(rawValue) && rawValue >= 0) {
+      return rawValue;
+    }
+    if (typeof rawValue === "string" && rawValue.trim() !== "") {
+      const parsedValue = Number(rawValue);
+      if (Number.isFinite(parsedValue) && parsedValue >= 0) {
+        return parsedValue;
+      }
+    }
+    return null;
+  };
 
   const showModal = useCallback(() => {
     setIsMasterListLoading(true);
@@ -262,8 +274,8 @@ export function JobModal({
     setSaltFunctionName(fun ? fun : undefined);
     setSaltFunction(undefined);
     setJsonFormValue({});
-    setTtlMode("default");
-    setTtlSeconds(null);
+    setTtlValue(null);
+    setTtlUnit("seconds");
     setIsSchemaListLoading(true);
     hasLoadedInitialSchema.current = false;
 
@@ -298,6 +310,8 @@ export function JobModal({
         .then((schema) => {
           setSaltFunction(schema);
           setJsonFormValue({ args: arg || [], kwargs: cleanNullsFromKwargs(kwarg) });
+          const functionDefaultTtl = parseTtlValue(schema?.default_ttl);
+          setTtlValue(functionDefaultTtl);
         })
         .catch(() => {
           messageApi.error("Error on load salt function schema.");
@@ -337,13 +351,57 @@ export function JobModal({
     }
   }, [validationErrors]);
 
-  const getTtlValue = (): number | undefined => {
-    if (ttlMode === "default") return undefined;
-    if (ttlMode === "unlimited") return 0;
-    if (ttlMode === "custom" && typeof ttlSeconds === "number" && ttlSeconds >= 0) {
-      return ttlSeconds;
+  useEffect(() => {
+    if (!saltFunctionName) {
+      setTtlValue(null);
+      setTtlUnit("seconds");
+      return;
     }
-    return undefined;
+    setTtlValue(null);
+    setTtlUnit("seconds");
+  }, [saltFunctionName]);
+
+  const getTtlValue = (): number | undefined => {
+    if (ttlValue == null || !Number.isFinite(ttlValue) || ttlValue < 0) {
+      return undefined;
+    }
+    if (ttlUnit === "minutes") {
+      return Math.round(ttlValue * 60);
+    }
+    if (ttlUnit === "hours") {
+      return Math.round(ttlValue * 3600);
+    }
+    return Math.round(ttlValue);
+  };
+
+  const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const key = event.key;
+    const isCtrlOrMetaCombo =
+      event.ctrlKey || event.metaKey ? ["a", "c", "v", "x"].includes(key.toLowerCase()) : false;
+    const allowedKeys = [
+      "Backspace",
+      "Delete",
+      "Tab",
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+      "Home",
+      "End",
+    ];
+
+    if (isCtrlOrMetaCombo || allowedKeys.includes(key)) return;
+
+    if (/^\d$/.test(key)) return;
+
+    event.preventDefault();
+  };
+
+  const handleTimeoutInputPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = event.clipboardData.getData("text") ?? "";
+    if (!/^\d+$/.test(pasted)) {
+      event.preventDefault();
+    }
   };
 
   const handleModalCancel = () => {
@@ -427,6 +485,8 @@ export function JobModal({
       .then((result) => {
         setSaltFunction(result);
         setJsonFormValue({});
+        const functionDefaultTtl = parseTtlValue(result?.default_ttl);
+        setTtlValue(functionDefaultTtl);
       })
       .catch(() => {
         messageApi.error("Error on load salt function schema.");
@@ -649,30 +709,6 @@ export function JobModal({
             />
           </Flex>
 
-          <Form.Item label={t("job-modal.ttl-label")}>
-            <Flex gap={8} align="center" wrap>
-              <Radio.Group
-                value={ttlMode}
-                onChange={(e) => setTtlMode(e.target.value)}
-                optionType="button"
-                buttonStyle="solid"
-              >
-                <Radio.Button value="default">{t("job-modal.ttl-default")}</Radio.Button>
-                <Radio.Button value="unlimited">{t("job-modal.ttl-unlimited")}</Radio.Button>
-                <Radio.Button value="custom">{t("job-modal.ttl-custom")}</Radio.Button>
-              </Radio.Group>
-              {ttlMode === "custom" && (
-                <InputNumber
-                  min={1}
-                  value={ttlSeconds ?? undefined}
-                  onChange={(value) => setTtlSeconds(value ?? null)}
-                  placeholder={t("job-modal.ttl-seconds-placeholder")}
-                  addonAfter={t("job-modal.ttl-seconds-unit")}
-                />
-              )}
-            </Flex>
-          </Form.Item>
-
           <Form.Item<JobFormData>
             label={
               <Flex gap={4} align="center">
@@ -721,6 +757,34 @@ export function JobModal({
               }}
             />
           </Form.Item>
+
+          {saltFunctionName && (
+            <Form.Item label={t("job-modal.timeout-label")}>
+              <Flex gap={8} align="center" wrap>
+                <InputNumber
+                  min={0}
+                  precision={0}
+                  value={ttlValue ?? undefined}
+                  onChange={(value) => setTtlValue(value ?? null)}
+                  placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  onKeyDown={handleTimeoutInputKeyDown}
+                  onPaste={handleTimeoutInputPaste}
+                />
+                <Select
+                  value={ttlUnit}
+                  onChange={(value) => setTtlUnit(value)}
+                  options={[
+                    { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
+                    { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
+                    { label: t("job-modal.timeout-unit-hours"), value: "hours" },
+                  ]}
+                  style={{ width: 100 }}
+                />
+              </Flex>
+            </Form.Item>
+          )}
 
           {saltFunction && (
             <JsonForm

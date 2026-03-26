@@ -206,15 +206,15 @@ export class JobStore {
   @computed
   get progressPercent() {
     const c = this.jobReturnStatusCounts;
-    const total = c.success + c.failed + c.timeout + c.waiting;
+    const total = c.success + c.failed + c.timeout + c.ignored + c.waiting;
     if (total === 0) return 0;
-    return ((c.success + c.failed + c.timeout) / total) * 100;
+    return ((c.success + c.failed + c.timeout + c.ignored) / total) * 100;
   }
 
   @computed
   get successPercent() {
     const c = this.jobReturnStatusCounts;
-    const total = c.success + c.failed + c.timeout + c.waiting;
+    const total = c.success + c.failed + c.timeout + c.ignored + c.waiting;
     if (total === 0) return 0;
     return (c.success / total) * 100;
   }
@@ -222,7 +222,7 @@ export class JobStore {
   @computed
   get isJobComplete() {
     const c = this.jobReturnStatusCounts;
-    const total = c.success + c.failed + c.timeout + c.waiting;
+    const total = c.success + c.failed + c.timeout + c.ignored + c.waiting;
     return this.job?.status === JobStatus.Finished || (total > 0 && c.waiting === 0);
   }
 
@@ -253,15 +253,17 @@ export class JobStore {
     success: number;
     failed: number;
     timeout: number;
+    ignored: number;
   } {
-    const counts = { waiting: 0, success: 0, failed: 0, timeout: 0 };
+    const counts = { waiting: 0, success: 0, failed: 0, timeout: 0, ignored: 0 };
     this.jobReturns.forEach((jr) => {
       const status = (jr as { status?: string }).status;
       if (
         status === "waiting" ||
         status === "success" ||
         status === "failed" ||
-        status === "timeout"
+        status === "timeout" ||
+        status === "ignored"
       ) {
         counts[status]++;
       } else if (jr.retcode === 0) {
@@ -281,12 +283,14 @@ export class JobStore {
     success: string[];
     failed: string[];
     timeout: string[];
+    ignored: string[];
   } {
     const lists = {
       waiting: [] as string[],
       success: [] as string[],
       failed: [] as string[],
       timeout: [] as string[],
+      ignored: [] as string[],
     };
     this.jobReturns.forEach((jr) => {
       const minionId = jr.minion_id ?? "";
@@ -295,7 +299,8 @@ export class JobStore {
         status === "waiting" ||
         status === "success" ||
         status === "failed" ||
-        status === "timeout"
+        status === "timeout" ||
+        status === "ignored"
       ) {
         lists[status].push(minionId);
       } else if (jr.retcode === 0) {

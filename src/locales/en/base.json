@@ -302,6 +302,7 @@
       "status-timeout": "Timeout",
       "status-success": "Success",
       "status-failed": "Failed",
+      "status-ignored": "Ignored",
       "time-units": {
         "milliseconds": "ms",
         "seconds": "s",
@@ -451,6 +452,8 @@
     "table-errors-found-short": "Errors found",
     "table-errors-collapse": "Collapse",
     "table-errors-expand": "Expand",
+    "job-execution-duration-actual-tooltip": "Actual task execution time",
+    "job-execution-duration-max-tooltip": "Maximum allowed task execution time after which the task ends with timeout",
     "ttl-label": "Time to live (TTL)",
     "ttl-unlimited": "Unlimited",
     "waiting-expires-at-label": "Waiting for responses until",
@@ -479,11 +482,11 @@
     "function-error-required": "Function is required",
     "warning-message": "To create a job, activate the master on the Masters page",
     "hint-example-label": "Example:",
-    "ttl-label": "Time to wait for responses (TTL)",
-    "ttl-default": "Default",
-    "ttl-unlimited": "Unlimited",
-    "ttl-custom": "Custom",
-    "ttl-seconds-placeholder": "Seconds",
+    "timeout-label": "Command response timeout",
+    "timeout-value-placeholder": "Value",
+    "timeout-unit-seconds": "Sec",
+    "timeout-unit-minutes": "Min",
+    "timeout-unit-hours": "Hour",
     "ttl-seconds-unit": "sec"
   },
   "jobs-templates": {

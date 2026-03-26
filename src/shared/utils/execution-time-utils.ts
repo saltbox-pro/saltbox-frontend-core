@@ -8,27 +8,42 @@ export const formatExecutionTime = (
   executionTimeSeconds: number,
   t: (key: string) => string
 ): string => {
-  const durationObj = dayjs.duration(executionTimeSeconds, "seconds");
+  const formatSeconds = (value: number): string => {
+    const normalizedValue = Number(value.toFixed(2));
+    const displayValue = Number.isInteger(normalizedValue)
+      ? String(normalizedValue)
+      : String(normalizedValue);
+    return `${displayValue}${t("task.job-returns-table.time-units.seconds")}`;
+  };
 
   if (executionTimeSeconds < 1) {
     const milliseconds = Math.round(executionTimeSeconds * 1000);
     return `${milliseconds}${t("task.job-returns-table.time-units.milliseconds")}`;
-  } else if (executionTimeSeconds < 60) {
-    return `${executionTimeSeconds.toFixed(2)}${t("task.job-returns-table.time-units.seconds")}`;
-  } else if (executionTimeSeconds < 3600) {
-    const minutes = durationObj.minutes();
-    const seconds = durationObj.seconds() + durationObj.milliseconds() / 1000;
-    return `${minutes}${t("task.job-returns-table.time-units.minutes")} ${seconds.toFixed(2)}${t(
-      "task.job-returns-table.time-units.seconds"
-    )}`;
-  } else {
-    const hours = durationObj.hours();
-    const minutes = durationObj.minutes();
-    const seconds = durationObj.seconds() + durationObj.milliseconds() / 1000;
-    return `${hours}${t("task.job-returns-table.time-units.hours")} ${minutes}${t(
-      "task.job-returns-table.time-units.minutes"
-    )} ${seconds.toFixed(2)}${t("task.job-returns-table.time-units.seconds")}`;
   }
+
+  if (executionTimeSeconds < 60) {
+    return formatSeconds(executionTimeSeconds);
+  }
+
+  const totalSeconds = Number(executionTimeSeconds.toFixed(2));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Number((totalSeconds - hours * 3600 - minutes * 60).toFixed(2));
+  const parts: string[] = [];
+
+  if (hours > 0) {
+    parts.push(`${hours}${t("task.job-returns-table.time-units.hours")}`);
+  }
+
+  if (minutes > 0) {
+    parts.push(`${minutes}${t("task.job-returns-table.time-units.minutes")}`);
+  }
+
+  if (seconds > 0 || parts.length === 0) {
+    parts.push(formatSeconds(seconds));
+  }
+
+  return parts.join(" ");
 };
 
 export interface Statistics {
