@@ -632,7 +632,7 @@
   },
   "salt-target-types": {
     "glob": {
-      "label": "glob – Сопоставление по шаблону Bash (glob)",
+      "label": "glob",
       "hint": {
         "title": "glob – Сопоставление по шаблону Bash (glob)",
         "description": "Использует шаблонные выражения в стиле Bash для выбора minion'ов по имени.",
@@ -641,7 +641,7 @@
       }
     },
     "pcre": {
-      "label": "pcre – Регулярное выражение в стиле Perl",
+      "label": "pcre",
       "hint": {
         "title": "pcre – Регулярное выражение в стиле Perl",
         "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени minion'а.",
@@ -650,7 +650,7 @@
       }
     },
     "list": {
-      "label": "list – Список хостов в формате Python",
+      "label": "list",
       "hint": {
         "title": "list – Список хостов в формате Python",
         "description": "Позволяет указать список конкретных minion'ов.",
@@ -659,7 +659,7 @@
       }
     },
     "grain": {
-      "label": "grain – Сопоставление на основе сравнения grain",
+      "label": "grain",
       "hint": {
         "title": "grain – Сопоставление на основе сравнения grain",
         "description": "Сравнивает значение указанного grain с заданным.",
@@ -668,7 +668,7 @@
       }
     },
     "grain_pcre": {
-      "label": "grain_pcre – Сравнение grain с использованием регулярного выражения",
+      "label": "grain_pcre",
       "hint": {
         "title": "grain_pcre – Сравнение grain с использованием регулярного выражения",
         "description": "Аналогично grain, но с возможностью применять регулярные выражения.",
@@ -677,7 +677,7 @@
       }
     },
     "pillar": {
-      "label": "pillar – Сравнение данных pillar",
+      "label": "pillar",
       "hint": {
         "title": "pillar – Сравнение данных pillar",
         "description": "Сопоставление на основе значений из pillar.",
@@ -686,7 +686,7 @@
       }
     },
     "pillar_pcre": {
-      "label": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
+      "label": "pillar_pcre",
       "hint": {
         "title": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
         "description": "Аналогично pillar, но позволяет применять regex.",
@@ -695,7 +695,7 @@
       }
     },
     "nodegroup": {
-      "label": "nodegroup – Сопоставление по nodegroup",
+      "label": "nodegroup",
       "hint": {
         "title": "nodegroup – Сопоставление по nodegroup",
         "description": "Использует заранее определённые группы узлов из конфигурации Salt Master.",
@@ -704,7 +704,7 @@
       }
     },
     "compound": {
-      "label": "compound – Составное условие сопоставления",
+      "label": "compound",
       "hint": {
         "title": "compound – Составное условие сопоставления",
         "description": "Позволяет комбинировать разные методы в одном запросе.",
@@ -713,7 +713,7 @@
       }
     },
     "ipcidr": {
-      "label": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
+      "label": "ipcidr",
       "hint": {
         "title": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
         "description": "Позволяет выбрать minion'ов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",

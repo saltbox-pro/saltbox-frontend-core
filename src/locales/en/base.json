@@ -632,7 +632,7 @@
   },
   "salt-target-types": {
     "glob": {
-      "label": "glob - Bash glob completion",
+      "label": "glob",
       "hint": {
         "title": "glob - Bash glob completion",
         "description": "Uses Bash-style glob patterns to select minions by name.",
@@ -641,7 +641,7 @@
       }
     },
     "pcre": {
-      "label": "pcre - Perl style regular expression",
+      "label": "pcre",
       "hint": {
         "title": "pcre - Perl style regular expression",
         "description": "Allows using PCRE (Perl Compatible Regular Expressions) for matching minion names.",
@@ -650,7 +650,7 @@
       }
     },
     "list": {
-      "label": "list - Python list of hosts",
+      "label": "list",
       "hint": {
         "title": "list - Python list of hosts",
         "description": "Allows specifying a list of specific minions.",
@@ -659,7 +659,7 @@
       }
     },
     "grain": {
-      "label": "grain - Match based on a grain comparison",
+      "label": "grain",
       "hint": {
         "title": "grain - Match based on a grain comparison",
         "description": "Compares the value of a specified grain with a given value.",
@@ -668,7 +668,7 @@
       }
     },
     "grain_pcre": {
-      "label": "grain_pcre - Grain comparison with a regex",
+      "label": "grain_pcre",
       "hint": {
         "title": "grain_pcre - Grain comparison with a regex",
         "description": "Similar to grain, but allows using regular expressions.",
@@ -677,7 +677,7 @@
       }
     },
     "pillar": {
-      "label": "pillar - Pillar data comparison",
+      "label": "pillar",
       "hint": {
         "title": "pillar - Pillar data comparison",
         "description": "Matches based on values from pillar data.",
@@ -686,7 +686,7 @@
       }
     },
     "pillar_pcre": {
-      "label": "pillar_pcre - Pillar data comparison with a regex",
+      "label": "pillar_pcre",
       "hint": {
         "title": "pillar_pcre - Pillar data comparison with a regex",
         "description": "Similar to pillar, but allows using regular expressions.",
@@ -695,7 +695,7 @@
       }
     },
     "nodegroup": {
-      "label": "nodegroup - Match on nodegroup",
+      "label": "nodegroup",
       "hint": {
         "title": "nodegroup - Match on nodegroup",
         "description": "Uses predefined node groups from the Salt Master configuration.",
@@ -704,7 +704,7 @@
       }
     },
     "compound": {
-      "label": "compound - Pass a compound match string",
+      "label": "compound",
       "hint": {
         "title": "compound - Pass a compound match string",
         "description": "Allows combining different matching methods in a single query.",
@@ -713,7 +713,7 @@
       }
     },
     "ipcidr": {
-      "label": "ipcidr - Match based on Subnet (CIDR notation) or IPv4 address.",
+      "label": "ipcidr",
       "hint": {
         "title": "ipcidr - Match based on Subnet (CIDR notation) or IPv4 address",
         "description": "Allows selecting minions by IP address or membership in a specific subnet specified in CIDR format. This is useful when you need to run commands only on nodes from a specific network range.",

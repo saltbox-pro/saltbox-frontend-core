@@ -49,7 +49,6 @@ const MinionsPage = observer(() => {
   const { t } = useTranslation();
 
   const { slug } = useParams();
-  const resolvedSlug = slug ?? "root";
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -60,16 +59,16 @@ const MinionsPage = observer(() => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const minionFilterStore = useMemo(
-    () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter:${resolvedSlug}`),
-    [resolvedSlug]
+    () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`),
+    []
   );
   const tasksFilterStore = useMemo(
-    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter:${resolvedSlug}`),
-    [resolvedSlug]
+    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
+    []
   );
   const policiesFilterStore = useMemo(
-    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}PoliciesFilter:${resolvedSlug}`),
-    [resolvedSlug]
+    () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}PoliciesFilter`),
+    []
   );
 
   const {
@@ -166,7 +165,7 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     minionFilterStore.loadFiltersScheme();
-  }, []);
+  }, [minionFilterStore]);
 
   useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {

@@ -158,6 +158,7 @@ export default observer(function PoliciesPage() {
 
   useEffect(() => {
     filterStore.filterSchema = filterSchema;
+    tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.loadTasks();
   }, [filterSchema, filterStore, tasksStore]);
 
@@ -192,7 +193,6 @@ export default observer(function PoliciesPage() {
 
   const handleSearchButtonClick = () => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-    filterStore.handleSearch();
     tasksStore.handleSearch(undefined);
   };
 
