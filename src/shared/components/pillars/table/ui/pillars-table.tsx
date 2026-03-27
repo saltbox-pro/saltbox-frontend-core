@@ -1,5 +1,10 @@
 import { PillarTgtType, type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
-import { BooleanDisplay, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
+import {
+  BooleanDisplay,
+  FastTablePaginated,
+  RelativeTime,
+  useInfoDrawer,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Alert, Flex, Typography } from "antd";
 import { toJS } from "mobx";
@@ -8,10 +13,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
-import {
-  PillarDetailsDrawer,
-  usePillarDetailsDrawer,
-} from "saltbox-core/shared/components/pillars/pillar-details-drawer";
+import { PillarDetailsDrawer } from "saltbox-core/shared/components/pillars/pillar-details-drawer";
 import type { PillarsStore } from "saltbox-core/store";
 
 import { PillarTgtName } from "./cells/pillar-tgt-name";
@@ -26,17 +28,23 @@ export interface PillarsTableProps {
   hideDateColumns?: boolean;
 }
 
-function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: PillarsTableProps) {
+export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
+  store,
+  hideTargetColumns,
+  hideDateColumns,
+}) {
   const { t } = useTranslation();
 
-  const pillarDrawer = usePillarDetailsDrawer();
+  const pillarDrawer = useInfoDrawer<PillarWithTgtInfoSchema, string, HTMLTableSectionElement>({
+    getId: (pillar) => pillar.id,
+  });
 
   const openedPillar = useMemo(
     () =>
-      pillarDrawer.openedPillarId != null
-        ? (store.pillars.find(({ id }) => id === pillarDrawer.openedPillarId) ?? null)
+      pillarDrawer.openedId != null
+        ? (store.pillars.find(({ id }) => id === pillarDrawer.openedId) ?? null)
         : null,
-    [pillarDrawer.openedPillarId, store.pillars]
+    [pillarDrawer.openedId, store.pillars]
   );
 
   const targetColumns = hideTargetColumns
@@ -129,24 +137,24 @@ function PillarsTableView({ store, hideTargetColumns, hideDateColumns }: Pillars
         sorting={store.sorting}
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
         getRowId={(row) => row.id}
-        onRowClick={(pillar) => {
-          pillarDrawer.open(pillar.id);
-        }}
+        activeRowId={pillarDrawer.activeRowId}
+        bodyRef={pillarDrawer.mainContentRef}
+        onRowClick={pillarDrawer.toggle}
       />
 
-      <PillarDetailsDrawer
-        open={pillarDrawer.isOpened}
-        pillar={openedPillar}
-        onClose={pillarDrawer.close}
-        onAfterClose={pillarDrawer.clearData}
-        onReplacePillar={store.replacePillar}
-        onDeleted={() => {
-          pillarDrawer.close();
-          store.loadPillars();
-        }}
-      />
+      {!!pillarDrawer.openedId && (
+        <PillarDetailsDrawer
+          open={pillarDrawer.isOpened}
+          pillar={openedPillar}
+          onClose={pillarDrawer.close}
+          onAfterClose={pillarDrawer.clearData}
+          onReplacePillar={store.replacePillar}
+          onDeleted={() => {
+            pillarDrawer.close();
+            store.loadPillars();
+          }}
+        />
+      )}
     </Flex>
   );
-}
-
-export const PillarsTable = observer(PillarsTableView);
+});

@@ -9,11 +9,11 @@ import singleSpaReact from "single-spa-react";
 
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
+
 import {
   MinionDetailsDrawerWrapper,
   type MinionDetailsDrawerWrapperProps,
 } from "./features/minion-details-drawer";
-
 import Root from "./root.component";
 
 const coreLifecycles = singleSpaReact({

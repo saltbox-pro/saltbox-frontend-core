@@ -1,44 +1,60 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
-import { type PaginationState, type SortingState, createColumnHelper } from "@tanstack/react-table";
+import { FastTablePaginated, RelativeTime, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
-import {
-  type MinionTaskRestartFailedButtonProps,
-  useRestartFailedMinionHandler,
-} from "saltbox-core/widgets/task/minion-task-restart-failed-button";
+import type { TaskStore } from "saltbox-core/store";
+import { MinionTaskResultsDrawer } from "saltbox-core/widgets/minion-task-results-drawer";
+import { useRestartFailedMinionHandler } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
 const TaskMinionsTable = FastTablePaginated<TaskMinionModel>;
 const columnHelper = createColumnHelper<TaskMinionModel>();
 
-export const TaskMinions = ({
-  minions,
-  total,
-  collectionSlug,
-  isLoading,
-  pagination,
-  sorting,
-  onLazyLoad,
-  onMinionClick,
-  onRestartFailedMinion,
-}: {
-  minions: TaskMinionModel[];
-  total: number;
-  collectionSlug: string;
-  isLoading: boolean;
-  pagination: PaginationState;
-  sorting: SortingState;
-  onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
-  onMinionClick?: (minion: TaskMinionModel) => void;
-  onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
-}) => {
+export interface TaskMinionsProps {
+  taskStore: TaskStore;
+}
+
+export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMinionsProps) {
   const { t } = useTranslation();
 
-  const handleRestartFailedMinionClick = useRestartFailedMinionHandler(onRestartFailedMinion, t);
+  const taskDrawer = useInfoDrawer<TaskMinionModel, string, HTMLTableSectionElement>({
+    getId: (minion) => minion.id,
+  });
+
+  const selectedMinion = useMemo(() => {
+    if (taskDrawer.openedId == null) return null;
+    return taskStore.minions?.find((m) => m.id === taskDrawer.openedId) ?? null;
+  }, [taskDrawer.openedId, taskStore.minions]);
+
+  const selectedMinionJobReturns = useMemo(() => {
+    if (!selectedMinion) return [];
+    const minionJobIds = Object.keys(selectedMinion.jobs ?? {})
+      .sort()
+      .reverse();
+    return minionJobIds
+      .map((jobId) =>
+        taskStore.jobReturns?.find(
+          (jobReturn) =>
+            jobReturn.jid === jobId &&
+            jobReturn.salt_master === selectedMinion.master &&
+            jobReturn.minion_id === selectedMinion.minion_id
+        )
+      )
+      .filter((jobReturn) => jobReturn !== undefined);
+  }, [selectedMinion, taskStore.jobReturns]);
+
+  const slug = taskStore.task?.target_collection?.slug ?? null;
+  const collectionSlug = taskStore.task?.target_collection?.slug ?? "";
+
+  const handleRestartFailedMinionClick = useRestartFailedMinionHandler(
+    taskStore.handleRestartFailedMinion,
+    t
+  );
 
   const columns = useMemo(
     () => [
@@ -63,7 +79,7 @@ export const TaskMinions = ({
               icon: <IssuesCloseOutlined />,
               title: t("task.restart-failed-minion"),
               visible: (_, row) =>
-                row.status === TaskMinionStatus.Failed && !!onRestartFailedMinion,
+                row.status === TaskMinionStatus.Failed && !!taskStore.handleRestartFailedMinion,
               onClick: async (_, row) => {
                 await handleRestartFailedMinionClick(row.minion_inner_id, row.minion_id);
               },
@@ -113,21 +129,40 @@ export const TaskMinions = ({
         meta: { width: "18%" },
       }),
     ],
-    [collectionSlug, handleRestartFailedMinionClick, onRestartFailedMinion, t]
+    [collectionSlug, handleRestartFailedMinionClick, taskStore.handleRestartFailedMinion, t]
   );
 
   return (
-    <TaskMinionsTable
-      columns={columns}
-      getRowId={(row) => row.id}
-      data={minions}
-      total={total}
-      isLoading={isLoading}
-      pagination={pagination}
-      sorting={sorting}
-      onLazyLoad={onLazyLoad}
-      onRowClick={(minion) => onMinionClick?.(toJS(minion))}
-      useVirtualScroll={false}
-    />
+    <>
+      <TaskMinionsTable
+        columns={columns}
+        getRowId={(row) => row.id}
+        data={taskStore.minions}
+        total={taskStore.totalMinions}
+        isLoading={taskStore.isMinionsLoading}
+        pagination={taskStore.minionsPagination}
+        sorting={taskStore.minionsSorting}
+        onLazyLoad={taskStore.handleMinionsLazyLoad}
+        activeRowId={taskDrawer.activeRowId}
+        bodyRef={taskDrawer.mainContentRef}
+        onRowClick={(minion) => {
+          taskDrawer.toggle(toJS(minion));
+        }}
+        useVirtualScroll={false}
+      />
+
+      {!!taskDrawer.openedId && (
+        <MinionTaskResultsDrawer
+          isOpened={taskDrawer.isOpened}
+          openedId={taskDrawer.openedId}
+          selectedMinion={selectedMinion}
+          selectedMinionJobReturns={selectedMinionJobReturns}
+          slug={slug}
+          onClose={taskDrawer.close}
+          clearData={taskDrawer.clearData}
+          onRestartFailedMinion={taskStore.handleRestartFailedMinion}
+        />
+      )}
+    </>
   );
-};
+});

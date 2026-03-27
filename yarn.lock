@@ -2230,10 +2230,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.1.1-ec6ba45c80518f9a18fb2a039182b70dfcb9ffe6.tgz#8ceb0ff080326feecf05473d0b92311599824be9"
   integrity sha1-jOsP8IAyb+7PBUc9C5IxFZmCS+k=
 
-"@saltbox/saltbox-frontend-common@^0.0.101":
-  version "0.0.101"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.101.tgz#fbb2759645d5d40d83325d4928d40d6734382395"
-  integrity sha1-+7J1lkXV1A2DMl1JKNQNZzQ4I5U=
+"@saltbox/saltbox-frontend-common@^0.0.104":
+  version "0.0.104"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.0.104.tgz#f20e72cc3ed2c7249e13c748807e59f0101e9964"
+  integrity sha1-8g5yzD7SxySeE8dIgH5Z8BAemWQ=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -2252,6 +2252,7 @@
     react-dnd "^16.0.1"
     react-dnd-html5-backend "^16.0.1"
     react-querybuilder "^8.11.1"
+    react-transition-group "^4.4.5"
 
 "@sinclair/typebox@^0.34.0":
   version "0.34.41"

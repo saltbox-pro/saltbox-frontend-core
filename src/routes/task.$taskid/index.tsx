@@ -14,10 +14,6 @@ import { useNavigate, useParams } from "react-router";
 
 import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
-import {
-  MinionTaskResultsDrawer,
-  useMinionTaskResultsDrawer,
-} from "saltbox-core/widgets/minion-task-results-drawer";
 import { TaskMinionsStats } from "saltbox-core/widgets/task/task-minions-stats";
 import { MinionCategory } from "saltbox-core/widgets/task/task-minions-stats/model/minion-category";
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
@@ -77,7 +73,6 @@ const TaskPage = observer(() => {
   const navigate = useNavigate();
 
   const [taskStore] = useState(new TaskStore());
-  const minionTaskResultsDrawer = useMinionTaskResultsDrawer(taskStore);
 
   useEffect(() => {
     if (taskId) {
@@ -143,29 +138,8 @@ const TaskPage = observer(() => {
           onSelectCategory={handleSelectMinionCategory}
         />
 
-        <TaskMinions
-          minions={taskStore.minions}
-          total={taskStore.totalMinions}
-          collectionSlug={taskStore.task?.target_collection?.slug ?? ""}
-          isLoading={taskStore.isMinionsLoading}
-          pagination={taskStore.minionsPagination}
-          sorting={taskStore.minionsSorting}
-          onLazyLoad={taskStore.handleMinionsLazyLoad}
-          onMinionClick={minionTaskResultsDrawer.open}
-          onRestartFailedMinion={taskStore.handleRestartFailedMinion}
-        />
+        <TaskMinions taskStore={taskStore} />
       </Flex>
-
-      <MinionTaskResultsDrawer
-        isOpened={minionTaskResultsDrawer.isOpened}
-        openedId={minionTaskResultsDrawer.openedId}
-        selectedMinion={minionTaskResultsDrawer.selectedMinion}
-        selectedMinionJobReturns={minionTaskResultsDrawer.selectedMinionJobReturns}
-        slug={minionTaskResultsDrawer.slug}
-        onClose={minionTaskResultsDrawer.close}
-        clearData={minionTaskResultsDrawer.clearData}
-        onRestartFailedMinion={taskStore.handleRestartFailedMinion}
-      />
     </>
   );
 });

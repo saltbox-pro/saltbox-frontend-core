@@ -3,11 +3,6 @@
   min-height: 0;
 }
 
-.lastActivityBadge :global(.ant-badge-status-dot) {
-  width: 10px !important;
-  height: 10px !important;
-}
-
 .minionIdButton {
   padding: 0;
 }

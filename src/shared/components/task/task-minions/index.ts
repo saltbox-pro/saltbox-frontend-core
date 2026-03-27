@@ -1,1 +1,1 @@
-export { TaskMinions } from "./ui/task-minions";
+export { TaskMinions, type TaskMinionsProps } from "./ui/task-minions";

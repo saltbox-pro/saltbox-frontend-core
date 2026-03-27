@@ -1,12 +1,12 @@
+import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
   defaultStringOperators,
 } from "@saltbox/saltbox-frontend-common";
-import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
 import type { OptionList } from "react-querybuilder";
-import type { SelectProps } from "antd";
 
 export type TasksFilterSchemaOptions = {
   includeTargetCollection?: boolean;

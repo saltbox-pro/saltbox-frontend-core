@@ -10,7 +10,7 @@ export class MinionStore {
   isMinionLoading: boolean;
   error: string | null;
 
-  constructor(slug: string, minionId: string) {
+  constructor(slug: string, minionId: string, options?: { initialMinion?: MinionDetailSchema }) {
     makeAutoObservable(this);
 
     this.slug = slug;
@@ -18,6 +18,11 @@ export class MinionStore {
     this.isMinionLoading = false;
     this.minion = null;
     this.error = null;
+
+    if (options?.initialMinion) {
+      this.minion = options.initialMinion;
+      return;
+    }
 
     this.loadMinion();
   }

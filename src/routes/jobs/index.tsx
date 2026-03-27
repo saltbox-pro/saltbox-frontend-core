@@ -14,9 +14,9 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
+import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -125,7 +125,7 @@ const JobsPage = observer(() => {
         meta: { width: "18%" },
       }),
     ],
-    [handleNavigateToJob, t]
+    [t]
   );
 
   useEffect(() => {

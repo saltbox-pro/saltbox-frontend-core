@@ -46,7 +46,6 @@ export const MinionsDashboardView = observer(
                 filterStore={props.filterStore}
                 isLoading={index >= visibleBlocks}
                 isLoaded={index < visibleBlocks}
-                blockIndex={index}
               />
             </div>
           ))}

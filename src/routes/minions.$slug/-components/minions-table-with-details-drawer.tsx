@@ -1,0 +1,196 @@
+import { ExportOutlined } from "@ant-design/icons";
+import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
+import {
+  createSelectColumn,
+  FastTablePaginated,
+  RelativeTime,
+} from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
+import { Tag } from "antd";
+import { observer } from "mobx-react-lite";
+import { useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+
+import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
+import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
+
+const MinionsTable = FastTablePaginated<MinionShortSchema>;
+const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
+
+export type MinionsTableWithDetailsDrawerProps = {
+  slug: string;
+  minionsStore: MinionsStore;
+  rowSelection: RowSelectionState;
+  onRowSelectionChange: (updater: RowSelectionState) => void;
+
+  filterStore: MinionFilterStore;
+  onAddFilter: () => void;
+};
+
+export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer(
+  props: MinionsTableWithDetailsDrawerProps
+) {
+  const { t } = useTranslation();
+  const minionDetailsDrawer = useMinionDetailsDrawer();
+
+  const columns = useMemo(
+    () => [
+      createSelectColumn<MinionShortSchema>(),
+      minionsColumnHelper.accessor("minion_id", {
+        header: t("minions.table-minion-id"),
+        cell: (data) => data.row.original.minion_id ?? data.getValue(),
+        meta: {
+          showCopy: true,
+          copyValue: (row) => row.minion_id ?? row.id,
+          actions: [
+            {
+              icon: <ExportOutlined />,
+              onClick: (_, row) => {
+                window.open(`/core/minions/${props.slug}/${row.id}`, "_blank");
+              },
+              title: t("minions.open-in-new-tab"),
+            },
+          ],
+          color: "accent",
+          width: 260,
+          minWidth: 260,
+          maxWidth: 260,
+          ellipsis: true,
+        },
+      }),
+      minionsColumnHelper.accessor("grains.fqdn", {
+        id: "grains.fqdn",
+        header: t("minions.table-fqdn"),
+        meta: { width: 120, minWidth: 120, maxWidth: 120, ellipsis: true },
+      }),
+      minionsColumnHelper.accessor("grains.domain", {
+        id: "grains.domain",
+        header: t("minions.table-domain"),
+        meta: { width: 150, minWidth: 150, maxWidth: 150, ellipsis: true },
+      }),
+      minionsColumnHelper.accessor("master", {
+        header: t("minions.table-master"),
+        meta: { width: 150, minWidth: 150, maxWidth: 150, ellipsis: true },
+      }),
+      minionsColumnHelper.accessor("grains.saltversion", {
+        id: "grains.saltversion",
+        header: t("minions.table-client-version"),
+        meta: { width: 155, minWidth: 155, maxWidth: 155 },
+      }),
+      minionsColumnHelper.accessor("grains.osfinger", {
+        id: "grains.osfinger",
+        header: t("minions.table-os"),
+        meta: { width: 180, minWidth: 180, maxWidth: 180, ellipsis: true },
+      }),
+      minionsColumnHelper.accessor("grains.efi", {
+        id: "grains.efi",
+        header: t("minions.table-efi"),
+        cell: (data) => {
+          return (
+            <Tag color={data.getValue() ? "green" : "red"}>
+              {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
+            </Tag>
+          );
+        },
+        meta: { width: 100 },
+      }),
+      minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
+        id: "grains.efi-secure-boot",
+        header: t("minions.table-secure-boot"),
+        cell: (data) => {
+          const value = data.getValue();
+          if (value === null || value === undefined) return "";
+          return (
+            <Tag color={value ? "green" : "red"}>
+              {value ? t("minions.efi-yes") : t("minions.efi-no")}
+            </Tag>
+          );
+        },
+      }),
+      minionsColumnHelper.accessor("created", {
+        header: t("minions.table-created"),
+        cell: (data) => <RelativeTime date={data.getValue()} />,
+      }),
+      minionsColumnHelper.accessor("last_activity", {
+        header: t("minions.table-last-activity"),
+        cell: (data) => {
+          return (
+            <MinionLastActivityCell
+              date={data.getValue()}
+              lastActivitySeconds={data?.row.original.last_activity_seconds}
+              fallback={<>{t("minions.never-synced")}</>}
+            />
+          );
+        },
+      }),
+    ],
+    [props.slug, t]
+  );
+
+  const handleDrawerFilterButtonClick = useCallback(
+    (params: { name: string; value: string }) => {
+      props.filterStore.addFilter({
+        field: `grains.${params.name}`,
+        operator: "=",
+        valueSource: "value",
+        value: params.value,
+      });
+      props.filterStore.handleSearch();
+      props.onAddFilter();
+      minionDetailsDrawer.close();
+    },
+    [minionDetailsDrawer, props.filterStore, props.onAddFilter]
+  );
+
+  const handleRowClick = useCallback(
+    (minion: MinionShortSchema) => {
+      minionDetailsDrawer.toggle({
+        slug: props.slug,
+        minionId: minion.minion_id ?? minion.id,
+        drawerId: minion.id,
+        innerId: minion.id,
+      });
+    },
+    [minionDetailsDrawer, props.slug]
+  );
+
+  return (
+    <>
+      <MinionsTable
+        columns={columns}
+        getRowId={(row) => row.id}
+        data={props.minionsStore.minions}
+        total={props.minionsStore.totalMinions}
+        isLoading={props.minionsStore.isLoading}
+        pagination={props.minionsStore.pagination}
+        sorting={props.minionsStore.sorting}
+        onRowSelectionChange={props.onRowSelectionChange}
+        rowSelection={props.rowSelection}
+        onLazyLoad={(pagination, sorting) => props.minionsStore.handleLazyLoad(pagination, sorting)}
+        activeRowId={minionDetailsDrawer.activeRowId}
+        bodyRef={minionDetailsDrawer.mainContentRef}
+        onRowClick={handleRowClick}
+        useVirtualScroll={false}
+      />
+
+      {!!minionDetailsDrawer.openedMinionId && (
+        <MinionDetailsDrawer
+          isOpened={minionDetailsDrawer.isOpened}
+          openedMinionId={minionDetailsDrawer.openedMinionId}
+          openedInnerId={minionDetailsDrawer.openedInnerId}
+          minion={minionDetailsDrawer.minion}
+          isMinionLoading={minionDetailsDrawer.isMinionLoading}
+          slug={minionDetailsDrawer.slug}
+          error={minionDetailsDrawer.error}
+          onClose={minionDetailsDrawer.close}
+          clearData={minionDetailsDrawer.clearData}
+          onFilterButton={handleDrawerFilterButtonClick}
+        />
+      )}
+    </>
+  );
+});

@@ -3,9 +3,8 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PillarsStore } from "saltbox-core/store";
-
 import { PillarsTable } from "saltbox-core/shared/components/pillars/table";
+import { PillarsStore } from "saltbox-core/store";
 
 function PillarsPage() {
   const { t } = useTranslation();

@@ -2,20 +2,19 @@ import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
-  formatTimeByUserTZ,
   PageHeader,
-  pastTimeByUserTZ,
   Popover,
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Badge, Button, Flex, Input, message, Tag } from "antd";
+import { Button, Flex, Input, message, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import {
   CollectionStore,
   defaultCollectionStore,
@@ -23,21 +22,15 @@ import {
   MinionsStore,
 } from "saltbox-core/store";
 import {
-  MinionDetailsDrawerWrapper,
-  MinionDetailsDrawerWrapperSelectedMinion,
-} from "saltbox-core/features/minion-details-drawer";
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
-
-const lastActivitySecondsToBadgeColor = (seconds: number) => {
-  if (seconds < 5 * 60) return "green";
-  if (seconds < 24 * 60 * 60) return "cyan";
-  return "red";
-};
 
 const CollectionEditPage = observer(() => {
   const { t } = useTranslation();
@@ -53,9 +46,7 @@ const CollectionEditPage = observer(() => {
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
-
-  const [selectedMinion, setSelectedMinion] =
-    useState<MinionDetailsDrawerWrapperSelectedMinion>(null);
+  const minionDetailsDrawer = useMinionDetailsDrawer();
 
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
@@ -122,24 +113,12 @@ const CollectionEditPage = observer(() => {
     minionsColumnHelper.accessor("last_activity", {
       header: t("minions.table-last-activity"),
       cell: (data) => {
-        const lastActivitySeconds = data?.row.original.last_activity_seconds;
-        const componentData = lastActivitySeconds
-          ? {
-              badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-              badgeText: pastTimeByUserTZ(data.getValue()),
-              popoverContent: formatTimeByUserTZ(data.getValue()),
-            }
-          : {
-              badgeColor: "orange",
-              badgeText: t("minions.never-synced"),
-              popoverContent: undefined,
-            };
         return (
-          <Popover content={componentData.popoverContent}>
-            <span>
-              <Badge color={componentData.badgeColor} text={componentData.badgeText} />
-            </span>
-          </Popover>
+          <MinionLastActivityCell
+            date={data.getValue()}
+            lastActivitySeconds={data?.row.original.last_activity_seconds}
+            fallback={<>{t("minions.never-synced")}</>}
+          />
         );
       },
     }),
@@ -261,27 +240,37 @@ const CollectionEditPage = observer(() => {
         </div>
         <MinionsTable
           columns={minionsColumns}
-          getRowId={(row) => `${row.master}-${row.minion_id}`}
+          getRowId={(row) => row.id}
           data={toJS(minionsStore.minions)}
           total={toJS(minionsStore.totalMinions)}
           isLoading={minionsStore.isLoading}
           pagination={toJS(minionsStore.pagination)}
           sorting={minionsStore.sorting}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          onRowClick={(minion) =>
-            setSelectedMinion({
+          activeRowId={minionDetailsDrawer.activeRowId}
+          bodyRef={minionDetailsDrawer.mainContentRef}
+          onRowClick={(minion) => {
+            minionDetailsDrawer.toggle({
+              slug: slug ?? "",
               minionId: minion.minion_id ?? minion.id,
-              master: minion.master ?? "",
-            })
-          }
+              drawerId: minion.id,
+              innerId: minion.id,
+            });
+          }}
         />
       </Flex>
 
-      {selectedMinion && (
-        <MinionDetailsDrawerWrapper
-          minionId={selectedMinion.minionId}
-          master={selectedMinion.master}
-          onClose={() => setSelectedMinion(null)}
+      {!!minionDetailsDrawer.openedMinionId && (
+        <MinionDetailsDrawer
+          isOpened={minionDetailsDrawer.isOpened}
+          openedMinionId={minionDetailsDrawer.openedMinionId}
+          openedInnerId={minionDetailsDrawer.openedInnerId}
+          minion={minionDetailsDrawer.minion}
+          isMinionLoading={minionDetailsDrawer.isMinionLoading}
+          slug={minionDetailsDrawer.slug}
+          error={minionDetailsDrawer.error}
+          onClose={minionDetailsDrawer.close}
+          clearData={minionDetailsDrawer.clearData}
         />
       )}
     </>

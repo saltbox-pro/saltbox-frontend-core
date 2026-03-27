@@ -2,9 +2,9 @@ import { Flex, Tag } from "antd";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import styles from "../index.module.css";
-
 import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
+
+import styles from "../index.module.css";
 
 interface KwargsPreviewProps {
   kwargs: Record<string, unknown>;

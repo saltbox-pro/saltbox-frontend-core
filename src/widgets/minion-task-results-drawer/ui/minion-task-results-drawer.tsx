@@ -36,7 +36,6 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
         innerId={minionInnerId}
         slug={slug}
         open={isOpened}
-        hasData
         onClose={onClose}
         onAfterClose={clearData}
       >

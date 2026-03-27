@@ -1,66 +1,81 @@
-import { useState, useCallback } from "react";
+import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { type RefObject, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { apiCoreStore, MinionStore } from "saltbox-core/store";
+import { apiCoreStore } from "saltbox-core/store";
 
 type OpenDrawerParams =
-  | { slug: string; minionId: string; innerId: string }
-  | { masterId: string; minionId: string };
+  | { slug: string; minionId: string; innerId: string; drawerId?: string }
+  | { masterId: string; minionId: string; drawerId?: string };
 
 interface UseMinionDrawerReturn {
-  minionStore: MinionStore | null;
+  minion: MinionDetailSchema | null;
+  isMinionLoading: boolean;
   error: string | null;
-  openedId: string | null | undefined;
+  openedMinionId: string | null;
+  openedInnerId: string | null;
   isOpened: boolean;
+  activeRowId: string | null;
+  mainContentRef: RefObject<HTMLTableSectionElement | null>;
   slug: string | null;
   open: (params: OpenDrawerParams) => Promise<void>;
   close: () => void;
+  toggle: (params: OpenDrawerParams) => Promise<void>;
   clearData: () => void;
 }
 
 export function useMinionDetailsDrawer(): UseMinionDrawerReturn {
   const { t } = useTranslation();
 
-  const [minionStore, setMinionStore] = useState<MinionStore | null>(null);
+  const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
+  const [isMinionLoading, setIsMinionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isOpened, setIsOpened] = useState<boolean>(false);
-  const [openedId, setOpenedId] = useState<string | null>(null);
   const [slug, setSlug] = useState<string | null>(null);
+  const [openedMinionId, setOpenedMinionId] = useState<string | null>(null);
+  const [openedInnerId, setOpenedInnerId] = useState<string | null>(null);
 
-  const open = useCallback(
-    async (params: OpenDrawerParams) => {
+  const drawer = useInfoDrawer<OpenDrawerParams, string, HTMLTableSectionElement>({
+    getId: (params) => params.drawerId ?? params.minionId,
+    onOpen: async (params) => {
       setError(null);
-      setIsOpened(true);
-      setOpenedId(params.minionId);
-
-      if ("slug" in params) {
-        setSlug(params.slug);
-        setMinionStore(new MinionStore(params.slug, params.innerId));
-
-        return;
-      }
-
-      if (!params.minionId) {
-        setError(t("minions.minion-id-not-specified"));
-        setMinionStore(null);
-        return;
-      }
-
-      const defaultSlug = "root";
-
-      setSlug(defaultSlug);
+      setMinion(null);
+      setIsMinionLoading(true);
+      setOpenedMinionId(params.minionId || null);
+      setOpenedInnerId(null);
 
       try {
-        const minion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
+        if ("slug" in params) {
+          setSlug(params.slug);
+          setOpenedInnerId(params.innerId);
+
+          const loadedMinion = await apiCoreStore.minionsApi?.minionGet({
+            collection_slug: params.slug,
+            mid: params.innerId,
+          });
+
+          setMinion(loadedMinion ?? null);
+          return;
+        }
+
+        if (!params.minionId) {
+          setError(t("minions.minion-id-not-specified"));
+          return;
+        }
+
+        const defaultSlug = "root";
+        setSlug(defaultSlug);
+
+        const loadedMinion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
           master_id: params.masterId,
           minion_id: params.minionId,
         });
 
-        if (minion?.id) {
-          setMinionStore(new MinionStore(defaultSlug, minion.id));
+        if (loadedMinion?.id) {
+          setOpenedInnerId(loadedMinion.id);
+          setMinion(loadedMinion);
         } else {
           setError(t("minions.minion-not-found"));
-          setMinionStore(null);
         }
       } catch (err) {
         console.error("Error fetching minion:", err);
@@ -75,31 +90,33 @@ export function useMinionDetailsDrawer(): UseMinionDrawerReturn {
         }
 
         setError(errorMessage);
-        setMinionStore(null);
+      } finally {
+        setIsMinionLoading(false);
       }
     },
-    [t]
-  );
-
-  const close = useCallback(() => {
-    setIsOpened(false);
-  }, []);
-
-  const clearData = useCallback(() => {
-    setOpenedId(null);
-    setMinionStore(null);
-    setError(null);
-    setSlug(null);
-  }, []);
+    onClear: () => {
+      setMinion(null);
+      setIsMinionLoading(false);
+      setError(null);
+      setSlug(null);
+      setOpenedMinionId(null);
+      setOpenedInnerId(null);
+    },
+  });
 
   return {
-    minionStore,
+    minion,
+    isMinionLoading,
     error,
-    isOpened,
-    openedId,
+    isOpened: drawer.isOpened,
+    openedMinionId,
+    openedInnerId,
+    activeRowId: drawer.activeRowId,
+    mainContentRef: drawer.mainContentRef,
     slug,
-    open,
-    close,
-    clearData,
+    open: drawer.open,
+    close: drawer.close,
+    toggle: drawer.toggle,
+    clearData: drawer.clearData,
   };
 }

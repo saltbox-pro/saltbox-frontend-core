@@ -13,8 +13,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";

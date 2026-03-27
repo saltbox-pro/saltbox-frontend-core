@@ -1,7 +1,5 @@
 import type { JobReturnModel, TaskMinionModel } from "@saltbox/saltbox-core-api-client";
-import { Flex, Tabs } from "antd";
-import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { Flex } from "antd";
 
 import type { MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
@@ -19,8 +17,6 @@ export function MinionTaskResults({
   selectedMinionJobReturns,
   onRestartFailedMinion,
 }: MinionTaskResultsProps) {
-  const { t } = useTranslation();
-
   const {
     status,
     start_last_dt: startLastDt,
@@ -29,38 +25,18 @@ export function MinionTaskResults({
     minion_inner_id: minionInnerId,
   } = selectedMinion ?? {};
 
-  const tabs = useMemo(
-    () => [
-      {
-        key: "results",
-        label: t("task.minion.results"),
-        children: (
-          <Flex vertical gap={20}>
-            <MinionTaskResultsShortInfo
-              status={status}
-              startLastDt={startLastDt}
-              finishedDt={finishedDt}
-              minionId={minionId}
-              minionInnerId={minionInnerId}
-              onRestartFailedMinion={onRestartFailedMinion}
-            />
+  return (
+    <Flex vertical gap="large">
+      <MinionTaskResultsShortInfo
+        status={status}
+        startLastDt={startLastDt}
+        finishedDt={finishedDt}
+        minionId={minionId}
+        minionInnerId={minionInnerId}
+        onRestartFailedMinion={onRestartFailedMinion}
+      />
 
-            <MinionTaskResultsJobResult jobReturns={selectedMinionJobReturns} />
-          </Flex>
-        ),
-      },
-    ],
-    [
-      t,
-      status,
-      startLastDt,
-      finishedDt,
-      minionId,
-      minionInnerId,
-      onRestartFailedMinion,
-      selectedMinionJobReturns,
-    ]
+      <MinionTaskResultsJobResult jobReturns={selectedMinionJobReturns} />
+    </Flex>
   );
-
-  return <Tabs items={tabs} />;
 }

@@ -3,6 +3,8 @@ import {
   BooleanDisplay,
   InfoDescriptions,
   type InfoDescriptionsProps,
+  InfoDrawer,
+  type InfoDrawerProps,
   RelativeTime,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Flex } from "antd";
@@ -11,26 +13,23 @@ import { useTranslation } from "react-i18next";
 
 import { PillarDeleteBlock } from "saltbox-core/features/pillar/delete-pillar";
 import { PillarEditForm } from "saltbox-core/features/pillar/edit-pillar";
-import { InfoDrawer } from "saltbox-core/shared/ui/info-drawer";
 
 import styles from "./pillar-details-drawer.module.css";
 
-export interface PillarDetailsDrawerProps {
-  open: boolean;
+export interface PillarDetailsDrawerProps extends Omit<
+  InfoDrawerProps,
+  "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent" | "children"
+> {
   pillar: PillarWithTgtInfoSchema | null;
-  onClose: () => void;
   onReplacePillar?: (updated: PillarWithTgtInfoSchema) => void;
   onDeleted?: () => void;
-  onAfterClose?: () => void;
 }
 
 export function PillarDetailsDrawer({
-  open,
   pillar,
-  onClose,
   onReplacePillar,
   onDeleted,
-  onAfterClose,
+  ...restProps
 }: PillarDetailsDrawerProps) {
   const { t } = useTranslation();
 
@@ -104,13 +103,7 @@ export function PillarDetailsDrawer({
   );
 
   return (
-    <InfoDrawer
-      open={open}
-      onClose={onClose}
-      onAfterClose={onAfterClose}
-      titleName={name}
-      titleLabel={t("pillar.title")}
-    >
+    <InfoDrawer titleName={name} titleLabel={t("pillar.title")} transitionKey={id} {...restProps}>
       <Flex className={styles.pillarDetailsDrawer} vertical gap="large">
         <InfoDescriptions items={items} />
 

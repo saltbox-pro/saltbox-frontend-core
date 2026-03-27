@@ -13,17 +13,17 @@ import JobsTemplatesPage from "./routes/jobs-templates";
 import JobPage from "./routes/jobs.$jid";
 import MastersPage from "./routes/masters";
 import MinionRedirectPage from "./routes/masters.$master_id.minion.$minion_id";
-import PillarsPage from "./routes/pillars";
 import MasterPage from "./routes/masters.$mid";
 import MinionsPage from "./routes/minions.$slug";
 import MinionPage from "./routes/minions.$slug.$mid";
+import NotFound from "./routes/not-found";
+import PillarsPage from "./routes/pillars";
+import AggregatedPoliciesPage from "./routes/policies";
 import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
 import TaskTemplatesPage from "./routes/task-templates";
-import AggregatedPoliciesPage from "./routes/policies";
-import AggregatedTasksPage from "./routes/tasks";
 import TaskPage from "./routes/task.$taskid";
-import NotFound from "./routes/not-found";
+import AggregatedTasksPage from "./routes/tasks";
 
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 

@@ -79,7 +79,6 @@ const minionDetailsViewsToDescriptionItems = (
             </Flex>
           </Flex>
         ),
-        span: 3,
         ...restItemProps,
       };
     }
@@ -109,7 +108,6 @@ const minionDetailsViewsToDescriptionItems = (
       ) : (
         ""
       ),
-      span: 3,
       ...restItemProps,
     };
   });

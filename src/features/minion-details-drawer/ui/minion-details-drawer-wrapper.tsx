@@ -4,6 +4,7 @@ import {
   MinionDetailsDrawer,
   useMinionDetailsDrawer,
 } from "saltbox-core/widgets/minion-details-drawer";
+
 import type { MinionDetailsDrawerWrapperProps } from "../types/types";
 
 export function MinionDetailsDrawerWrapper({
@@ -26,12 +27,15 @@ export function MinionDetailsDrawerWrapper({
   return (
     <MinionDetailsDrawer
       isOpened={minionDrawer.isOpened}
-      openedId={minionDrawer.openedId}
-      minionStore={minionDrawer.minionStore}
+      openedMinionId={minionDrawer.openedMinionId}
+      openedInnerId={minionDrawer.openedInnerId}
+      minion={minionDrawer.minion}
+      isMinionLoading={minionDrawer.isMinionLoading}
       slug={minionDrawer.slug}
       error={minionDrawer.error}
       onClose={minionDrawer.close}
       clearData={handleAfterClose}
+      mask
       onFilterButton={onFilterButton}
     />
   );

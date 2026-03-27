@@ -1,17 +1,9 @@
-import { ExportOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
-import { MinionShortSchema, TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import {
-  createSelectColumn,
-  FastTablePaginated,
-  formatTimeByUserTZ,
-  pastTimeByUserTZ,
-  Popover,
-  RelativeTime,
-} from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper, RowSelectionState } from "@tanstack/react-table";
-import { Badge, Button, Flex, message, Spin, Tag } from "antd";
+import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
+import { RowSelectionState } from "@tanstack/react-table";
+import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
@@ -22,10 +14,6 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import {
-  MinionDetailsDrawerWrapper,
-  MinionDetailsDrawerWrapperSelectedMinion,
-} from "saltbox-core/features/minion-details-drawer";
-import {
   appStore,
   CollectionStore,
   mastersStore,
@@ -35,16 +23,7 @@ import {
 
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
-
-const MinionsTable = FastTablePaginated<MinionShortSchema>;
-
-const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
-
-const lastActivitySecondsToBadgeColor = (seconds: number) => {
-  if (seconds < 5 * 60) return "green";
-  if (seconds < 24 * 60 * 60) return "cyan";
-  return "red";
-};
+import { MinionsTableWithDetailsDrawer } from "./minions-table-with-details-drawer";
 
 type MinionListViewProps = {
   slug: string;
@@ -62,118 +41,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [selectedMinion, setSelectedMinion] =
-    useState<MinionDetailsDrawerWrapperSelectedMinion>(null);
-
-  const minionColumns = useMemo(
-    () => [
-      createSelectColumn<MinionShortSchema>(),
-      minionsColumnHelper.accessor("minion_id", {
-        header: t("minions.table-minion-id"),
-        cell: (data) => data.row.original.minion_id ?? data.getValue(),
-        meta: {
-          showCopy: true,
-          copyValue: (row) => row.minion_id ?? row.id,
-          actions: [
-            {
-              icon: <ExportOutlined />,
-              onClick: (_, row) => {
-                window.open(`/core/minions/${props.slug}/${row.id}`, "_blank");
-              },
-              title: t("minions.open-in-new-tab"),
-            },
-          ],
-          color: "accent",
-          width: 260,
-          minWidth: 260,
-          maxWidth: 260,
-          ellipsis: true,
-        },
-      }),
-      minionsColumnHelper.accessor("grains.fqdn", {
-        id: "grains.fqdn",
-        header: t("minions.table-fqdn"),
-        meta: { width: 120, minWidth: 120, maxWidth: 120, ellipsis: true },
-      }),
-      minionsColumnHelper.accessor("grains.domain", {
-        id: "grains.domain",
-        header: t("minions.table-domain"),
-        meta: { width: 150, minWidth: 150, maxWidth: 150, ellipsis: true },
-      }),
-      minionsColumnHelper.accessor("master", {
-        header: t("minions.table-master"),
-        meta: { width: 150, minWidth: 150, maxWidth: 150, ellipsis: true },
-      }),
-      minionsColumnHelper.accessor("grains.saltversion", {
-        id: "grains.saltversion",
-        header: t("minions.table-client-version"),
-        meta: { width: 155, minWidth: 155, maxWidth: 155 },
-      }),
-      minionsColumnHelper.accessor("grains.osfinger", {
-        id: "grains.osfinger",
-        header: t("minions.table-os"),
-        meta: { width: 180, minWidth: 180, maxWidth: 180, ellipsis: true },
-      }),
-      minionsColumnHelper.accessor("grains.efi", {
-        id: "grains.efi",
-        header: t("minions.table-efi"),
-        cell: (data) => {
-          return (
-            <Tag color={data.getValue() ? "green" : "red"}>
-              {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-        meta: { width: 100 },
-      }),
-      minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
-        id: "grains.efi-secure-boot",
-        header: t("minions.table-secure-boot"),
-        cell: (data) => {
-          const value = data.getValue();
-          if (value === null || value === undefined) return "";
-          return (
-            <Tag color={value ? "green" : "red"}>
-              {value ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-      }),
-      minionsColumnHelper.accessor("created", {
-        header: t("minions.table-created"),
-        cell: (data) => <RelativeTime date={data.getValue()} />,
-      }),
-      minionsColumnHelper.accessor("last_activity", {
-        header: t("minions.table-last-activity"),
-        cell: (data) => {
-          const lastActivitySeconds = data?.row.original.last_activity_seconds;
-          const componentData = lastActivitySeconds
-            ? {
-                badgeColor: lastActivitySecondsToBadgeColor(lastActivitySeconds),
-                badgeText: pastTimeByUserTZ(data.getValue()),
-                popoverContent: formatTimeByUserTZ(data.getValue()),
-              }
-            : {
-                badgeColor: "orange",
-                badgeText: t("minions.never-synced"),
-                popoverContent: undefined,
-              };
-          return (
-            <Popover content={componentData.popoverContent}>
-              <span>
-                <Badge
-                  className={styles.lastActivityBadge}
-                  color={componentData.badgeColor}
-                  text={componentData.badgeText}
-                />
-              </span>
-            </Popover>
-          );
-        },
-      }),
-    ],
-    [t]
-  );
 
   useEffect(() => {
     minionsStore.setCollectionSlug(props.slug);
@@ -196,29 +63,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   const clearSelection = useCallback(() => {
     setSelection({});
-  }, []);
-
-  const handleDrawerFilterButtonClick = useCallback(
-    (params: { name: string; value: string }) => {
-      props.filterStore.addFilter({
-        field: `grains.${params.name}`,
-        operator: "=",
-        valueSource: "value",
-        value: params.value,
-      });
-      props.filterStore.handleSearch();
-      props.onAddFilter();
-      setSelectedMinion(null);
-    },
-    [props.filterStore, props.onAddFilter]
-  );
-
-  const handleCloseDrawer = useCallback(() => {
-    setSelectedMinion(null);
-  }, []);
-
-  const handleRowClick = useCallback((minion: MinionShortSchema) => {
-    setSelectedMinion({ minionId: minion.minion_id ?? minion.id, master: minion.master ?? "" });
   }, []);
 
   const onCsvDownloadError = useCallback(() => {
@@ -337,19 +181,13 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
         </div>
 
-        <MinionsTable
-          columns={minionColumns}
-          getRowId={(row) => row.id}
-          data={minionsStore.minions}
-          total={minionsStore.totalMinions}
-          isLoading={minionsStore.isLoading}
-          pagination={minionsStore.pagination}
-          sorting={minionsStore.sorting}
-          onRowSelectionChange={setSelection}
+        <MinionsTableWithDetailsDrawer
+          slug={props.slug}
+          minionsStore={minionsStore}
           rowSelection={selection}
-          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          onRowClick={handleRowClick}
-          useVirtualScroll={false}
+          onRowSelectionChange={setSelection}
+          filterStore={props.filterStore}
+          onAddFilter={props.onAddFilter}
         />
 
         {isTaskCreateOpen && (
@@ -375,15 +213,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
         )}
       </Flex>
-
-      {selectedMinion && (
-        <MinionDetailsDrawerWrapper
-          minionId={selectedMinion.minionId}
-          master={selectedMinion.master}
-          onFilterButton={handleDrawerFilterButtonClick}
-          onClose={handleCloseDrawer}
-        />
-      )}
 
       {taskModalCreatePlugin}
     </>

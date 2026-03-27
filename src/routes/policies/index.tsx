@@ -14,8 +14,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 
 import { TasksQueryBuilder } from "../minions.$slug/-components/tasks-query-builder";

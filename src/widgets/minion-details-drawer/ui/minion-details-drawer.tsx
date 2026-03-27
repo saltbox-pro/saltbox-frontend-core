@@ -1,59 +1,63 @@
-import { observer } from "mobx-react-lite";
+import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 
 import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
 import {
   MinionDetails,
   type MinionDetailsProps,
 } from "saltbox-core/shared/components/minion-details/minion-details";
-import type { MinionStore } from "saltbox-core/store";
 
 interface MinionDetailsDrawerProps {
-  minionStore: MinionStore | null | undefined;
   error: string | null | undefined;
+  minion: MinionDetailSchema | null | undefined;
+  isMinionLoading?: boolean;
   isOpened: boolean;
-  openedId: string | null | undefined;
+  openedMinionId?: string | null;
+  openedInnerId?: string | null;
   slug: string | null | undefined;
   onClose: () => void;
   clearData: () => void;
+  mask?: boolean;
   onFilterButton?: MinionDetailsProps["onFilterButton"];
 }
 
-export const MinionDetailsDrawer = observer<MinionDetailsDrawerProps>(function MinionDetailsDrawer({
-  minionStore,
+export function MinionDetailsDrawer({
   error,
+  minion,
+  isMinionLoading,
   isOpened,
-  openedId,
+  openedMinionId,
+  openedInnerId,
   slug,
   onFilterButton,
   onClose,
   clearData,
-}) {
-  const { minion, isMinionLoading, error: errorFromStore } = minionStore ?? {};
-  const { id: minionInnerId, minion_id: minionId = openedId } = minion ?? {};
+  mask,
+}: MinionDetailsDrawerProps) {
+  const { id: minionInnerId, minion_id: minionDisplayId } = minion ?? {};
+  const resolvedInnerId = minionInnerId ?? openedInnerId ?? "";
+  const resolvedDisplayId = minionDisplayId ?? openedMinionId ?? "";
 
-  const isWaitingForStore = !!openedId && !minionStore && !error;
-  const isLoading = isWaitingForStore || !!isMinionLoading;
-
-  const hasData = Boolean(minion && !error && !errorFromStore);
+  const hasData = Boolean(minion?.id) && !error;
 
   return (
     <BaseMinionDrawer
-      id={minionId}
-      innerId={minionInnerId}
+      id={resolvedDisplayId}
+      innerId={resolvedInnerId}
       slug={slug}
       open={isOpened}
-      isLoading={isLoading}
+      loading={!!isMinionLoading}
       hasData={hasData}
-      error={error || errorFromStore}
+      errorMessage={error}
+      mask={mask}
       onClose={onClose}
       onAfterClose={clearData}
     >
       <MinionDetails
         isInDrawer
         minion={minion}
-        isMinionLoading={isMinionLoading}
+        isMinionLoading={false}
         onFilterButton={onFilterButton}
       />
     </BaseMinionDrawer>
   );
-});
+}

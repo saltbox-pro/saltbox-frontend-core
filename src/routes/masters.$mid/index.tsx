@@ -3,14 +3,16 @@ import { type GatheredMinionSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Flex, Spin, Tabs } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
 import { apiCoreStore } from "saltbox-core/store";
-import { MinionDetailsDrawerWrapper } from "saltbox-core/features/minion-details-drawer";
+import {
+  MinionDetailsDrawer,
+  useMinionDetailsDrawer,
+} from "saltbox-core/widgets/minion-details-drawer";
 
 import styles from "./index.module.css";
 
@@ -25,10 +27,9 @@ const MasterPage = observer(() => {
 
   const [isLoadingClients, setIsLoadingClients] = useState(false);
 
-  const [selectedMinion, setSelectedMinion] = useState<{ minionId: string; master: string } | null>(
-    null
-  );
   const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
+
+  const minionDetailsDrawer = useMinionDetailsDrawer();
 
   useEffect(() => {
     if (masterId) {
@@ -94,14 +95,20 @@ const MasterPage = observer(() => {
             <div className={styles.clientsTableContainer}>
               <FastTableListed
                 columns={clientColumns}
-                data={toJS(clients)}
+                data={clients}
                 total={clients.length}
                 isEmpty={!clients.length}
                 sorting={clientsSorting}
                 onSortingChange={setClientsSorting}
                 getRowId={(row) => row.minion_id}
+                activeRowId={minionDetailsDrawer.activeRowId}
+                bodyRef={minionDetailsDrawer.mainContentRef}
                 onRowClick={(client) => {
-                  setSelectedMinion({ minionId: client.minion_id, master: client.master ?? "" });
+                  minionDetailsDrawer.toggle({
+                    masterId: client.master ?? masterId ?? "",
+                    minionId: client.minion_id,
+                    drawerId: client.minion_id,
+                  });
                 }}
               />
             </div>
@@ -110,10 +117,6 @@ const MasterPage = observer(() => {
       ),
     },
   ];
-
-  const handleCloseDrawer = useCallback(() => {
-    setSelectedMinion(null);
-  }, []);
 
   return (
     <>
@@ -126,11 +129,17 @@ const MasterPage = observer(() => {
         className={styles.masterTabs}
       />
 
-      {selectedMinion && (
-        <MinionDetailsDrawerWrapper
-          minionId={selectedMinion.minionId}
-          master={selectedMinion.master}
-          onClose={handleCloseDrawer}
+      {!!minionDetailsDrawer.openedMinionId && (
+        <MinionDetailsDrawer
+          isOpened={minionDetailsDrawer.isOpened}
+          openedMinionId={minionDetailsDrawer.openedMinionId}
+          openedInnerId={minionDetailsDrawer.openedInnerId}
+          minion={minionDetailsDrawer.minion}
+          isMinionLoading={minionDetailsDrawer.isMinionLoading}
+          slug={minionDetailsDrawer.slug}
+          error={minionDetailsDrawer.error}
+          onClose={minionDetailsDrawer.close}
+          clearData={minionDetailsDrawer.clearData}
         />
       )}
     </>

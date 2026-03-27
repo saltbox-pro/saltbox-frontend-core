@@ -265,7 +265,6 @@ type MinionDashboardCardProps = {
   filterStore: MinionFilterStore;
   isLoading?: boolean;
   isLoaded?: boolean;
-  blockIndex?: number;
 };
 
 export const MinionDashboardCard = observer(
@@ -279,7 +278,6 @@ export const MinionDashboardCard = observer(
     filterStore,
     isLoading = false,
     isLoaded = false,
-    blockIndex = 0,
   }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [sorting, setSorting] = useState<SortingState>([
