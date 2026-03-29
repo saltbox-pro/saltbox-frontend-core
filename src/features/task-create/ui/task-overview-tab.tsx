@@ -8,6 +8,8 @@ import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/tas
 
 import type { TaskOverviewData } from "../type/types";
 
+import { TaskCreateFooter } from "./task-create-footer";
+
 export type TaskOverviewTabProps = {
   type: TaskType;
   isLoading?: boolean;
@@ -52,10 +54,10 @@ export function TaskOverviewTab({
   );
 
   return (
-    <Flex vertical gap="middle">
+    <Flex vertical>
       <TaskDetails data={detailsData} />
 
-      <Flex justify="flex-end" gap="small">
+      <TaskCreateFooter>
         <Button onClick={onBack}>{t("task-create.back-to-config")}</Button>
 
         {pluginButtons}
@@ -65,7 +67,7 @@ export function TaskOverviewTab({
             type === TaskType.Policy ? "policy-create.create-button" : "task-create.create-button"
           )}
         </Button>
-      </Flex>
+      </TaskCreateFooter>
     </Flex>
   );
 }

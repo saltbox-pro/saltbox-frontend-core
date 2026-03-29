@@ -184,7 +184,7 @@
     "max-retries": "Max retries",
     "max-retries-tooltip": "Maximal number of retries on error",
     "max-retries-error-required": "Max retries is required",
-    "retry-delay": "Retry delay",
+    "retry-delay": "Retry delay (s)",
     "retry-delay-tooltip": "Delay in seconds before retrying a failed task",
     "retry-delay-error-required": "Retry delay is required",
     "max-parallel-jobs": "Parallel jobs",

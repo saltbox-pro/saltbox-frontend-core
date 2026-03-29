@@ -184,7 +184,7 @@
     "max-retries": "Максимум попыток",
     "max-retries-tooltip": "Количество повторных попыток при ошибке",
     "max-retries-error-required": "Максимальное количество попыток обязательно",
-    "retry-delay": "Задержка повтора",
+    "retry-delay": "Задержка повтора (с)",
     "retry-delay-tooltip": "Задержка в секундах перед повторной попыткой",
     "retry-delay-error-required": "Задержка повтора обязательна",
     "max-parallel-jobs": "Параллельные задачи",

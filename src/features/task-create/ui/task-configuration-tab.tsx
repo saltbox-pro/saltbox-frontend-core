@@ -1,5 +1,5 @@
-import { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
-import { JsonForm, type JsonFormRef, type JsonFormProps } from "@saltbox/saltbox-frontend-common";
+import type { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { deepOmitUndefined, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
 import { Button, Col, Divider, Flex, Form, InputNumber, Row, Switch, message } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { taskCreationService } from "../service";
 import { TaskConfigurationFormData } from "../type/types";
 
 import styles from "./task-configuration-tab.module.css";
+import { TaskCreateFooter } from "./task-create-footer";
 
 export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
@@ -17,8 +18,6 @@ export type TaskConfigurationTabProps = {
   onSubmit: (data: TaskConfigurationFormData) => void;
   onCancel: () => void;
 };
-
-type JsonFormChangeHandler = JsonFormProps["onChange"];
 
 const memoize = createObjectMemoizer({ deep: true });
 
@@ -32,11 +31,11 @@ export function TaskConfigurationTab({
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [templateFormData, setTemplateFormData] = useState<TaskData>({});
-  const jsonFormRef = useRef<JsonFormRef>(null);
+
+  const jsonFormRef = useRef<JsonFormRef<TaskData>>(null);
 
   useEffect(() => {
-    if (!initialData) {
+    if (!initialData || !template) {
       return;
     }
 
@@ -50,9 +49,7 @@ export function TaskConfigurationTab({
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
     });
-
-    setTemplateFormData(initialData.data ?? {});
-  }, [initialData, form]);
+  }, [initialData, template, form]);
 
   const handleFormSubmit = async () => {
     try {
@@ -76,19 +73,13 @@ export function TaskConfigurationTab({
         retry_delay: systemValues.retry_delay ?? defaultConfig.retry_delay,
         max_jobs_count_at_same_time:
           systemValues.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
-        data: Object.keys(templateFormData).length
-          ? templateFormData
-          : jsonFormRef.current.state.formData,
+        data: deepOmitUndefined(jsonFormRef.current.state.formData ?? {}),
       };
 
       onSubmit(configData);
     } catch (error) {
       messageApi.error(t("task-create.validation-error"));
     }
-  };
-
-  const handleTemplateFormChange: JsonFormChangeHandler = (data) => {
-    setTemplateFormData(data.formData);
   };
 
   if (!template) {
@@ -98,12 +89,13 @@ export function TaskConfigurationTab({
   return (
     <>
       {contextHolder}
-      <Flex vertical gap="middle">
+      <Flex vertical>
         <Flex vertical gap="middle">
           <Flex align="center" justify="flex-end" gap="small">
             <span>{t("task-create.advanced-settings")}</span>
             <Switch checked={showAdvanced} onChange={(checked) => setShowAdvanced(checked)} />
           </Flex>
+
           <Flex
             vertical
             gap="small"
@@ -173,26 +165,24 @@ export function TaskConfigurationTab({
           </Flex>
 
           {template.json_schema && (
-            <JsonForm
+            <JsonForm<TaskData>
               ref={jsonFormRef}
               className={styles.jsonForm}
               schema={template.json_schema}
               uiSchema={template.ui_schema}
-              formData={templateFormData}
-              onChange={handleTemplateFormChange}
-              showErrorList={false}
+              formData={initialData.data}
             >
               <div />
             </JsonForm>
           )}
         </Flex>
 
-        <Flex justify="flex-end" gap="small">
+        <TaskCreateFooter>
           <Button onClick={onCancel}>{t("common.cancel")}</Button>
           <Button type="primary" onClick={handleFormSubmit}>
             {t("task-create.next-to-overview")}
           </Button>
-        </Flex>
+        </TaskCreateFooter>
       </Flex>
     </>
   );
