@@ -135,6 +135,14 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           header: t("task.job-returns-table.table-execution-time"),
           cell: (data) => {
             const stamp = data.getValue();
+            const status = data.row.original.status;
+            if (status === "timeout") {
+              return (
+                <Typography.Text type="secondary">
+                  {t("task.job-returns-table.status-timeout")}
+                </Typography.Text>
+              );
+            }
             if (stamp == null || stamp === "") {
               return (
                 <Typography.Text type="secondary">

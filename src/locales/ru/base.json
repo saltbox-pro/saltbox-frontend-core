@@ -299,7 +299,7 @@
       "execution-time-pending": "Ожидание",
       "status-unknown": "Неизвестно",
       "status-waiting": "Ожидание",
-      "status-timeout": "Таймаут",
+      "status-timeout": "Тайм-аут",
       "status-success": "Успешно",
       "status-failed": "Ошибка",
       "status-ignored": "Игнорировано",

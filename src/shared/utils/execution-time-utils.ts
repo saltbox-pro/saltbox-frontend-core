@@ -160,7 +160,6 @@ const isPendingExecutionTime = (
 ): boolean => {
   const status = (jobReturn as { status?: string })?.status;
   if (status === "waiting") return true;
-  if (status === "timeout") return true;
   if (!stamp) return true;
   return false;
 };
@@ -172,6 +171,13 @@ export const useFormatAndGetExecutionTimeColor = (
   allJobReturns: JobReturnModel[],
   t: (key: string) => string
 ): { formattedTime: string; color: string } => {
+  if ((jobReturn as { status?: string } | null)?.status === "timeout") {
+    return {
+      formattedTime: t("task.job-returns-table.status-timeout"),
+      color: "#000000",
+    };
+  }
+
   if (isPendingExecutionTime(jobReturn, stamp)) {
     return {
       formattedTime: t("task.job-returns-table.execution-time-pending"),
