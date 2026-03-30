@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { PillarDetailsDrawer } from "saltbox-core/shared/components/pillars/pillar-details-drawer";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { PillarsStore } from "saltbox-core/store";
 
 import { PillarTgtName } from "./cells/pillar-tgt-name";
@@ -37,6 +38,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
 
   const pillarDrawer = useInfoDrawer<PillarWithTgtInfoSchema, string, HTMLTableSectionElement>({
     getId: (pillar) => pillar.id,
+    drawerId: DRAWER_IDS.pillarDetails,
   });
 
   const openedPillar = useMemo(

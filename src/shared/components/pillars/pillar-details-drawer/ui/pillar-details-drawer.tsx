@@ -13,12 +13,13 @@ import { useTranslation } from "react-i18next";
 
 import { PillarDeleteBlock } from "saltbox-core/features/pillar/delete-pillar";
 import { PillarEditForm } from "saltbox-core/features/pillar/edit-pillar";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 
 import styles from "./pillar-details-drawer.module.css";
 
 export interface PillarDetailsDrawerProps extends Omit<
   InfoDrawerProps,
-  "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent" | "children"
+  "drawerId" | "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent" | "children"
 > {
   pillar: PillarWithTgtInfoSchema | null;
   onReplacePillar?: (updated: PillarWithTgtInfoSchema) => void;
@@ -103,7 +104,13 @@ export function PillarDetailsDrawer({
   );
 
   return (
-    <InfoDrawer titleName={name} titleLabel={t("pillar.title")} transitionKey={id} {...restProps}>
+    <InfoDrawer
+      drawerId={DRAWER_IDS.pillarDetails}
+      titleName={name}
+      titleLabel={t("pillar.title")}
+      transitionKey={id}
+      {...restProps}
+    >
       <Flex className={styles.pillarDetailsDrawer} vertical gap="large">
         <InfoDescriptions items={items} />
 

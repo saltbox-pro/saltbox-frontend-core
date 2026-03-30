@@ -2,9 +2,11 @@ import { InfoDrawer, type InfoDrawerProps } from "@saltbox/saltbox-frontend-comm
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+
 export interface BaseMinionDrawerProps extends Omit<
   InfoDrawerProps,
-  "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent"
+  "drawerId" | "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent"
 > {
   innerId: string;
   id: string;
@@ -22,6 +24,7 @@ export function BaseMinionDrawer({
 
   return (
     <InfoDrawer
+      drawerId={DRAWER_IDS.minionDetails}
       titleName={id}
       titleLabel={t("minions.minion")}
       linkTo={innerId && slug ? `/core/minions/${slug}/${innerId}` : undefined}
