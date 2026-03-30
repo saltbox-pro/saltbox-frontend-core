@@ -49,6 +49,12 @@ export class MinionsStore {
           this.totalMinions = response.total;
         });
       })
+      .catch(() => {
+        runInAction(() => {
+          this.minions = [];
+          this.totalMinions = 0;
+        });
+      })
       .finally(() => {
         runInAction(() => {
           this.isLoading = false;
