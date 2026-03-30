@@ -174,6 +174,7 @@ export class JobStore {
 
   @action
   updateFromJobs = (jobs: JobModel[]) => {
+    if (jobs.length === 0) return;
     const sortedJobs = jobs.sort(
       (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
     );
@@ -183,7 +184,7 @@ export class JobStore {
 
   @computed
   get jobStartTimestamp() {
-    const timestamp = this.job?.stamp || this.job?.fms_jid_timestamp || this.job?.created;
+    const timestamp = this.job?.stamp || this.job?.created;
     if (!timestamp) return null;
 
     const date = dayjs(timestamp);
@@ -200,7 +201,7 @@ export class JobStore {
 
   @computed
   get totalMinions() {
-    return this.job?.minions?.length ?? 0;
+    return this.job?.minions_count?.total ?? 0;
   }
 
   @computed
@@ -255,26 +256,14 @@ export class JobStore {
     timeout: number;
     ignored: number;
   } {
-    const counts = { waiting: 0, success: 0, failed: 0, timeout: 0, ignored: 0 };
-    this.jobReturns.forEach((jr) => {
-      const status = (jr as { status?: string }).status;
-      if (
-        status === "waiting" ||
-        status === "success" ||
-        status === "failed" ||
-        status === "timeout" ||
-        status === "ignored"
-      ) {
-        counts[status]++;
-      } else if (jr.retcode === 0) {
-        counts.success++;
-      } else if (jr.retcode !== undefined && jr.retcode !== null) {
-        counts.failed++;
-      } else {
-        counts.waiting++;
-      }
-    });
-    return counts;
+    const mc = this.job?.minions_count;
+    return {
+      waiting: mc?.waiting ?? 0,
+      success: mc?.success ?? 0,
+      failed: mc?.failed ?? 0,
+      timeout: mc?.timeout ?? 0,
+      ignored: mc?.ignored ?? 0,
+    };
   }
 
   @computed
