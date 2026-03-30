@@ -1,7 +1,7 @@
 import { TaskListResponseSchema, TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -85,12 +85,16 @@ export class TasksStore {
     this.loadTasks(collectionSlug);
   };
 
+  @computed get hasActiveFilters(): boolean {
+    return this.mongoDBQuery !== undefined && Object.keys(this.mongoDBQuery).length > 0;
+  }
+
   @action updateTask = (task: TaskModel) => {
     const index = this.tasks.findIndex((item) => item.id === task.id);
     if (index > -1) {
       this.tasks[index] = task;
       this.tasks = [...this.tasks];
-    } else if (this.pagination.pageIndex === 0) {
+    } else if (this.pagination.pageIndex === 0 && !this.hasActiveFilters) {
       let newTasks = [task, ...this.tasks];
       if (newTasks.length > this.pagination.pageSize) {
         newTasks = newTasks.slice(0, this.pagination.pageSize);
