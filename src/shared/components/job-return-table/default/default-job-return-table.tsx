@@ -114,6 +114,10 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               return <Tag color="orange">{t("task.job-returns-table.status-timeout")}</Tag>;
             }
 
+            if (status === "ignored") {
+              return <Tag>{t("task.job-returns-table.status-ignored")}</Tag>;
+            }
+
             if (status === "success" || retcode === 0) {
               return <Tag color="green">{t("task.job-returns-table.status-success")}</Tag>;
             }
