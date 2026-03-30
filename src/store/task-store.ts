@@ -398,6 +398,9 @@ export class TaskStore {
 
   @action
   updateTasks = (tasks: TaskModel[]) => {
+    if (!tasks || tasks.length === 0) {
+      return;
+    }
     const sortedTasks = tasks.sort(
       (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
     );
@@ -439,13 +442,6 @@ export class TaskStore {
     if (index > -1) {
       this.minions[index] = minion;
       this.minions = [...this.minions];
-    } else if (this.minionsPagination.pageIndex === 0) {
-      const newMinions = [minion, ...this.minions];
-      this.minions =
-        newMinions.length > this.minionsPagination.pageSize
-          ? newMinions.slice(0, this.minionsPagination.pageSize)
-          : newMinions;
-      this.totalMinions += 1;
     }
   };
 
