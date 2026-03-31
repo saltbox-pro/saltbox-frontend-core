@@ -366,66 +366,21 @@ const JobPage = observer(() => {
           wrap
         >
           <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-            <MinionsPopover
-              minions={minionsByStatus.success}
-              title={t("task.job-returns-table.status-success")}
-              trigger={
-                <Tag
-                  color="green"
-                  style={statusCounts.success > 0 ? { cursor: "pointer" } : undefined}
-                >
-                  {t("task.job-returns-table.status-success")}: {statusCounts.success}
-                </Tag>
-              }
-            />
-            <MinionsPopover
-              minions={minionsByStatus.failed}
-              title={t("task.job-returns-table.status-failed")}
-              trigger={
-                <Tag
-                  color="red"
-                  style={statusCounts.failed > 0 ? { cursor: "pointer" } : undefined}
-                >
-                  {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-                </Tag>
-              }
-            />
-            <MinionsPopover
-              minions={minionsByStatus.timeout}
-              title={t("task.job-returns-table.status-timeout")}
-              trigger={
-                <Tag
-                  color="orange"
-                  style={statusCounts.timeout > 0 ? { cursor: "pointer" } : undefined}
-                >
-                  {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-                </Tag>
-              }
-            />
-            <MinionsPopover
-              minions={minionsByStatus.ignored}
-              title={t("task.job-returns-table.status-ignored")}
-              trigger={
-                <Tag
-                  color="default"
-                  style={statusCounts.ignored > 0 ? { cursor: "pointer" } : undefined}
-                >
-                  {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-                </Tag>
-              }
-            />
-            <MinionsPopover
-              minions={minionsByStatus.waiting}
-              title={t("task.job-returns-table.status-waiting")}
-              trigger={
-                <Tag
-                  color="blue"
-                  style={statusCounts.waiting > 0 ? { cursor: "pointer" } : undefined}
-                >
-                  {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-                </Tag>
-              }
-            />
+            <Tag color="green">
+              {t("task.job-returns-table.status-success")}: {statusCounts.success}
+            </Tag>
+            <Tag color="red">
+              {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
+            </Tag>
+            <Tag color="orange">
+              {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+            </Tag>
+            <Tag color="default">
+              {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
+            </Tag>
+            <Tag color="blue">
+              {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
+            </Tag>
           </Flex>
           <Flex align="center" gap={16}>
             {isTableViewMode && tableErrors.length > 0 && (
