@@ -171,9 +171,16 @@ export const useFormatAndGetExecutionTimeColor = (
   allJobReturns: JobReturnModel[],
   t: (key: string) => string
 ): { formattedTime: string; color: string } => {
-  if ((jobReturn as { status?: string } | null)?.status === "timeout") {
+  const status = (jobReturn as { status?: string } | null)?.status;
+  if (status === "timeout") {
     return {
       formattedTime: t("task.job-returns-table.status-timeout"),
+      color: "#000000",
+    };
+  }
+  if (status === "ignored") {
+    return {
+      formattedTime: t("task.job-returns-table.status-ignored"),
       color: "#000000",
     };
   }

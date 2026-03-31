@@ -147,6 +147,13 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 </Typography.Text>
               );
             }
+            if (status === "ignored") {
+              return (
+                <Typography.Text type="secondary">
+                  {t("task.job-returns-table.status-ignored")}
+                </Typography.Text>
+              );
+            }
             if (stamp == null || stamp === "") {
               return (
                 <Typography.Text type="secondary">
