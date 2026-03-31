@@ -105,11 +105,6 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
       meta: { width: "25%", minWidth: 250, maxWidth: 250 },
     }),
     ...targetColumns,
-    columnHelper.accessor("is_personal", {
-      header: t("pillar.details.personal"),
-      cell: (data) => <BooleanDisplay value={data.getValue()} />,
-      meta: { width: "10%", minWidth: 160 },
-    }),
     ...(hideDateColumns
       ? []
       : [

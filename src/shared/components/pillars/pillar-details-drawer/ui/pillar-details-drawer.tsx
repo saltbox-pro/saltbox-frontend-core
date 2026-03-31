@@ -34,15 +34,7 @@ export function PillarDetailsDrawer({
 }: PillarDetailsDrawerProps) {
   const { t } = useTranslation();
 
-  const {
-    id,
-    name,
-    is_secret: isSecret,
-    is_personal: isPersonal,
-    tgt_info: tgtInfo,
-    created,
-    modified,
-  } = pillar ?? {};
+  const { id, name, is_secret: isSecret, tgt_info: tgtInfo, created, modified } = pillar ?? {};
 
   const items = useMemo<InfoDescriptionsProps["items"]>(
     () => [
@@ -80,11 +72,6 @@ export function PillarDetailsDrawer({
         children: <BooleanDisplay value={isSecret} />,
       },
       {
-        key: "is_personal",
-        label: t("pillar.details.personal"),
-        children: <BooleanDisplay value={isPersonal} />,
-      },
-      {
         key: "created",
         label: t("pillar.details.created"),
         children: <RelativeTime date={created} />,
@@ -95,7 +82,7 @@ export function PillarDetailsDrawer({
         children: <RelativeTime date={modified} />,
       },
     ],
-    [created, id, isSecret, isPersonal, modified, name, t, tgtInfo]
+    [created, id, isSecret, modified, name, t, tgtInfo]
   );
 
   const deleteBlock = useMemo(

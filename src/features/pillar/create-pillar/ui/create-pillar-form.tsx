@@ -34,7 +34,7 @@ export function CreatePillarForm({
       layout="vertical"
       onFinish={handleSubmit}
       onValuesChange={resetCreateError}
-      initialValues={{ is_personal: false, is_secret: false }}
+      initialValues={{ is_secret: false }}
       autoComplete="off"
     >
       <Form.Item
@@ -52,19 +52,6 @@ export function CreatePillarForm({
       </Form.Item>
 
       <Flex gap="middle">
-        <Form.Item name="is_personal" valuePropName="checked">
-          <Checkbox>
-            {t("pillars.create.field-personal")}{" "}
-            <Tooltip title={t("pillars.create.field-personal-tooltip")} placement="bottom">
-              <Button
-                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
-                type="text"
-                size="small"
-              />
-            </Tooltip>
-          </Checkbox>
-        </Form.Item>
-
         <Form.Item name="is_secret" valuePropName="checked">
           <Checkbox>
             {t("pillars.create.field-secret")}{" "}

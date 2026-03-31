@@ -12,7 +12,6 @@ import { createPillar } from "../api/create-pillar";
 export interface CreatePillarFormValues {
   name: string;
   value: string;
-  is_personal: boolean;
   is_secret: boolean;
 }
 
@@ -52,7 +51,6 @@ export function useCreatePillarForm({
       const body: PillarCreateRequestSchema = {
         name: values.name,
         value: parsed.value,
-        is_personal: values.is_personal,
         is_secret: values.is_secret,
         tgt_type: tgtType,
         tgt_id: tgtType === "root" ? null : tgtId,
