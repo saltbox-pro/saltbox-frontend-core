@@ -2,7 +2,6 @@ import {
   type JobReturnModel,
   type JobsListResponse,
   type TaskMinionModel,
-  TaskMinionStatus,
   type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
 import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
@@ -14,32 +13,9 @@ import { useNavigate, useParams } from "react-router";
 
 import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
-import { TaskMinionsStats } from "saltbox-core/widgets/task/task-minions-stats";
-import { MinionCategory } from "saltbox-core/widgets/task/task-minions-stats/model/minion-category";
+import { TaskMinionStatusFilter } from "saltbox-core/widgets/task/task-minions-status-filter";
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
-
-const categoryToStatus = (category: MinionCategory): TaskMinionStatus | null => {
-  switch (category) {
-    case MinionCategory.Pending:
-      return TaskMinionStatus.Pending;
-    case MinionCategory.InWork:
-      return TaskMinionStatus.InWork;
-    case MinionCategory.Failed:
-      return TaskMinionStatus.Failed;
-    case MinionCategory.Success:
-      return TaskMinionStatus.Success;
-    default:
-      return null;
-  }
-};
-
-const statusToCategory = (status: TaskMinionStatus | null): MinionCategory => {
-  if (status === TaskMinionStatus.Pending) return MinionCategory.Pending;
-  if (status === TaskMinionStatus.InWork) return MinionCategory.InWork;
-  if (status === TaskMinionStatus.Failed) return MinionCategory.Failed;
-  if (status === TaskMinionStatus.Success) return MinionCategory.Success;
-  return MinionCategory.All;
-};
+import { TaskStatusProgress } from "saltbox-core/widgets/task/task-status-progress";
 
 type TaskWebSocketMessage = TaskModel | TaskMinionModel | JobReturnModel | JobsListResponse;
 
@@ -86,12 +62,6 @@ const TaskPage = observer(() => {
     }
   }, [taskStore.error]);
 
-  const selectedMinionCategory = statusToCategory(taskStore.minionCategoryFilter);
-
-  const handleSelectMinionCategory = (category: MinionCategory) => {
-    taskStore.setMinionCategoryFilter(categoryToStatus(category));
-  };
-
   useWebSocket(taskId, (messages) => {
     if (messages?.length > 0) {
       taskStore.updateTasks(
@@ -132,10 +102,12 @@ const TaskPage = observer(() => {
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <TaskRunDetails taskStore={taskStore} />
 
-        <TaskMinionsStats
-          taskStore={taskStore}
-          selectedCategory={selectedMinionCategory}
-          onSelectCategory={handleSelectMinionCategory}
+        <TaskStatusProgress counts={taskStore.task?.minions_count} />
+
+        <TaskMinionStatusFilter
+          counts={taskStore.task?.minions_count}
+          selectedCategory={taskStore.minionCategoryFilter}
+          onSelectCategory={taskStore.setMinionCategoryFilter}
         />
 
         <TaskMinions taskStore={taskStore} />

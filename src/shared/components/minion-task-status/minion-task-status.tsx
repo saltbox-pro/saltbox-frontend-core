@@ -17,8 +17,8 @@ export function MinionTaskStatus({ status }: MinionTaskStatusProps) {
     case TaskMinionStatus.Success:
       return <Tag color="green">{t("task.minions.table-success")}</Tag>;
     case TaskMinionStatus.Pending:
-      return <Tag color="yellow">{t("task.minions.table-pending")}</Tag>;
+      return <Tag color="default">{t("task.minions.table-pending")}</Tag>;
     default:
-      return <Tag>{`${t("task.minions.table-unknown-code")}: ${status}`}</Tag>;
+      return <Tag color="orange">{`${t("task.minions.table-unknown-code")}: ${status}`}</Tag>;
   }
 }

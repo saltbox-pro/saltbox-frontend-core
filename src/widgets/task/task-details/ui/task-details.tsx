@@ -11,7 +11,7 @@ import { TaskDetailsData } from "../type/task-details-data";
 
 import styles from "./task-details.module.css";
 
-const { Text, Paragraph } = Typography;
+const { Paragraph } = Typography;
 
 export type TaskDetailsProps = {
   data: TaskDetailsData;
@@ -41,6 +41,16 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
   const parametersRecord = parameters as Record<string, unknown> | undefined;
 
   const templateParams = useMemo<InfoDescriptionsProps["items"]>(() => {
+    const hasParameters = Object.keys(parametersRecord || {}).length > 0;
+
+    if (!hasParameters) {
+      return [
+        {
+          children: t("task.details.no-parameters"),
+        },
+      ];
+    }
+
     const entries = Object.entries(parametersRecord || {}).filter(([key]) => key !== "mods");
 
     return entries.map(([key, value]) => ({
@@ -62,9 +72,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
           String(value)
         ),
     }));
-  }, [parametersRecord]);
-
-  const hasParameters = Object.keys(parametersRecord || {}).length > 0;
+  }, [parametersRecord, t]);
 
   const systemParams = useMemo<InfoDescriptionsProps["items"]>(
     () => [
@@ -153,16 +161,7 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
     <Flex vertical gap="large">
       <InfoDescriptions title={t("task.details.template-info")} items={templateInfo} />
 
-      <Flex vertical>
-        <Text className={styles.descriptionHeader} strong>
-          {t("task.details.template-parameters")}
-        </Text>
-        {hasParameters ? (
-          <InfoDescriptions items={templateParams} />
-        ) : (
-          <Text type="secondary">{t("task.details.no-parameters")}</Text>
-        )}
-      </Flex>
+      <InfoDescriptions title={t("task.details.template-parameters")} items={templateParams} />
 
       <InfoDescriptions title={t("task.details.system-parameters")} items={systemParams} />
 
