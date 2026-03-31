@@ -86,28 +86,6 @@
   color: rgba(0, 0, 0, 0.88);
 }
 
-.progressContainer {
-  margin-top: 8px;
-  margin-bottom: 8px;
-  width: 100%;
-}
-
-.progressWrapper {
-  flex: 1;
-}
-
-.progressBar {
-  margin: 0;
-}
-
-.progressBar :global(.ant-progress-bg) {
-  background-color: #d9d9d9 !important;
-}
-
-.progressBar :global(.ant-progress-success-bg) {
-  background-color: #52c41a !important;
-}
-
 .statsBadgesWrapper {
   margin-bottom: 8px;
 }

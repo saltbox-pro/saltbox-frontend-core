@@ -21,7 +21,7 @@ export function TaskStatusProgress({ counts }: TaskStatusProgressProps) {
     () => [
       { id: TaskMinionStatus.Success, count: success, color: "#52C41A" },
       { id: TaskMinionStatus.Failed, count: failed, color: "#FF4D4F" },
-      { id: TaskMinionStatus.Failed, count: inWork, color: "#1677FF" },
+      { id: TaskMinionStatus.InWork, count: inWork, color: "#1677FF" },
       { id: TaskMinionStatus.Pending, count: pending, color: "#D9D9D9" },
     ],
     [failed, inWork, pending, success]

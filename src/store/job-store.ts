@@ -250,6 +250,7 @@ export class JobStore {
 
   @computed
   get jobReturnStatusCounts(): {
+    total: number;
     waiting: number;
     success: number;
     failed: number;
@@ -258,49 +259,13 @@ export class JobStore {
   } {
     const mc = this.job?.minions_count;
     return {
+      total: mc?.total ?? 0,
       waiting: mc?.waiting ?? 0,
       success: mc?.success ?? 0,
       failed: mc?.failed ?? 0,
       timeout: mc?.timeout ?? 0,
       ignored: mc?.ignored ?? 0,
     };
-  }
-
-  @computed
-  get jobReturnMinionsByStatus(): {
-    waiting: string[];
-    success: string[];
-    failed: string[];
-    timeout: string[];
-    ignored: string[];
-  } {
-    const lists = {
-      waiting: [] as string[],
-      success: [] as string[],
-      failed: [] as string[],
-      timeout: [] as string[],
-      ignored: [] as string[],
-    };
-    this.jobReturns.forEach((jr) => {
-      const minionId = jr.minion_id ?? "";
-      const status = (jr as { status?: string }).status;
-      if (
-        status === "waiting" ||
-        status === "success" ||
-        status === "failed" ||
-        status === "timeout" ||
-        status === "ignored"
-      ) {
-        lists[status].push(minionId);
-      } else if (jr.retcode === 0) {
-        lists.success.push(minionId);
-      } else if (jr.retcode !== undefined && jr.retcode !== null) {
-        lists.failed.push(minionId);
-      } else {
-        lists.waiting.push(minionId);
-      }
-    });
-    return lists;
   }
 }
 
