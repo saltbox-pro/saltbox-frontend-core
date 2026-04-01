@@ -80,7 +80,7 @@
     "os-family": "Семейство ОС",
     "kernel": "Ядро",
     "kernel-version": "Версия ядра",
-    "kernel-release": "Версия ядра",
+    "kernel-release": "Релиз ядра",
     "kernel-parameters": "Параметры ядра",
     "salt-version": "Версия Salt",
     "current-working-directory": "Текущая рабочая директория",

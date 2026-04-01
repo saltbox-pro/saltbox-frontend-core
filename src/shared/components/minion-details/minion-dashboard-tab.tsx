@@ -53,12 +53,28 @@ interface MinionDashboardTabProps {
   onFilterButton?: (params: OnFilterButtonParams) => void;
 }
 
+const transformValueToString = (value: unknown): string => {
+  return transformGrainValueToString(value as React.ReactNode);
+};
+
+const renderArrayValue = (value: unknown[], keyPrefix: string): React.ReactNode => {
+  return (
+    <Flex vertical>
+      {value.map((item, index) => (
+        <div key={`${keyPrefix}-${index}`}>{transformValueToString(item)}</div>
+      ))}
+    </Flex>
+  );
+};
+
 const minionDetailsViewsToDescriptionItems = (
   t: any,
   minionDetailViews: MinionDetailView[],
   schema: MinionDetailSchema,
   onFilterButton?: (params: OnFilterButtonParams) => void
 ): InfoDescriptionsProps["items"] => {
+  const grainNameClassName = `minion-details-grain-name ${styles.minionDetailsGrainName}`;
+
   return minionDetailViews.map((minionDetailView) => {
     const { grainValueProps, ...restItemProps } = minionDetailView.itemProps ?? {};
 
@@ -71,7 +87,7 @@ const minionDetailsViewsToDescriptionItems = (
         label: minionDetailView.name,
         children: (
           <Flex justify="space-between" className="minion-details-grain">
-            <Flex className="minion-details-grain-name" {...grainValueProps}>
+            <Flex className={grainNameClassName} {...grainValueProps}>
               {grainValue}
             </Flex>
             <Flex className={styles.minionDetailsGrainButtons}>
@@ -84,14 +100,23 @@ const minionDetailsViewsToDescriptionItems = (
     }
 
     const grainValue = schema.grains[minionDetailView.key];
+    const isGrainValueArray = Array.isArray(grainValue);
+    const grainValueString = isGrainValueArray
+      ? grainValue.map((item) => transformValueToString(item)).join("\n")
+      : transformValueToString(grainValue);
+
     return {
       key: minionDetailView.key,
       label: minionDetailView.name,
       children: grainValue ? (
         <Flex justify="space-between" className="minion-details-grain">
-          <Flex className="minion-details-grain-name">{grainValue}</Flex>
+          <Flex className={grainNameClassName}>
+            {isGrainValueArray
+              ? renderArrayValue(grainValue, String(minionDetailView.key))
+              : grainValue}
+          </Flex>
           <Flex gap={2} className={styles.minionDetailsGrainButtons}>
-            <CopyToClipboardButton text={grainValue} />
+            <CopyToClipboardButton text={grainValueString} />
             {onFilterButton && (
               <FilterActionButton
                 title={t("dashboard.apply-value-to-filters")}
@@ -270,7 +295,7 @@ export function MinionDashboardTab({
           name: t("minions.disks"),
           value: (s) => {
             const disks = s.grains.disks as any;
-            return Array.isArray(disks) ? disks.join(", ") : "";
+            return Array.isArray(disks) ? renderArrayValue(disks, "disks") : "";
           },
         },
         {
@@ -278,7 +303,7 @@ export function MinionDashboardTab({
           name: t("minions.ssd-drives"),
           value: (s) => {
             const ssds = s.grains.ssds as any;
-            return Array.isArray(ssds) ? ssds.join(", ") : "";
+            return Array.isArray(ssds) ? renderArrayValue(ssds, "ssds") : "";
           },
         },
         { key: "swap_total", name: t("minions.swap-total") },

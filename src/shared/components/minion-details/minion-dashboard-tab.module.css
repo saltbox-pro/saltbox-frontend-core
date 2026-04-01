@@ -23,6 +23,10 @@
     opacity 0.15s ease-in-out;
 }
 
+.minionDetailsGrainName {
+  white-space: pre-wrap;
+}
+
 :global(.ant-descriptions-item-content:hover) .minionDetailsGrainButtons {
   visibility: visible;
   opacity: 1;
