@@ -192,7 +192,6 @@
     "max-jobs-count-at-same-time-error-required": "Max jobs count at same time is required",
     "next-to-overview": "Next to overview",
     "template-not-loaded": "Template not loaded",
-    "validation-error": "Form validation error",
     "back-to-config": "Back to config",
     "invalid-configuration": "Invalid configuration",
     "error-loading-template": "Error loading template",
@@ -744,6 +743,7 @@
   },
   "errors": {
     "load-failed": "Failed to load data",
-    "access-denied": "Access denied"
+    "access-denied": "Access denied",
+    "form-validation": "Form validation error"
   }
 }

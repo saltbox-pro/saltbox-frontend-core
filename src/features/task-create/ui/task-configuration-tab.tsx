@@ -1,6 +1,17 @@
-import type { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
-import { deepOmitUndefined, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import { Button, Col, Divider, Flex, Form, InputNumber, Row, Switch, message } from "antd";
+import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { deepOmitUndefined } from "@saltbox/saltbox-frontend-common";
+import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Form,
+  InputNumber,
+  Row,
+  Switch,
+  message,
+  type FormProps,
+} from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -11,6 +22,7 @@ import { TaskConfigurationFormData } from "../type/types";
 
 import styles from "./task-configuration-tab.module.css";
 import { TaskCreateFooter } from "./task-create-footer";
+import { TaskDataForm, type TaskDataFormHandle, type TaskDataFormProps } from "./task-data-form";
 
 export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
@@ -28,11 +40,13 @@ export function TaskConfigurationTab({
   onCancel,
 }: TaskConfigurationTabProps) {
   const { t } = useTranslation();
-  const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const jsonFormRef = useRef<JsonFormRef<TaskData>>(null);
+  const [form] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
+
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+
+  const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
   useEffect(() => {
     if (!initialData || !template) {
@@ -49,36 +63,64 @@ export function TaskConfigurationTab({
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
     });
-  }, [initialData, template, form]);
+  }, [form, initialData, template]);
 
-  const handleFormSubmit = async () => {
+  const showValidationError = () => {
+    messageApi.error(t("errors.form-validation"));
+  };
+
+  const handleFormFinishFailed: FormProps<
+    Omit<TaskConfigurationFormData, "data">
+  >["onFinishFailed"] = (errorInfo) => {
+    showValidationError();
+    setShowAdvanced(true);
+
+    setTimeout(
+      () =>
+        form.scrollToField(errorInfo.errorFields[0].name, {
+          focus: true,
+          block: "center",
+          scrollMode: "always",
+        }),
+      0
+    );
+  };
+
+  const handleSubmit = (formValue: TaskConfigurationFormData) => {
+    const defaultConfig = taskCreationService.getDefaultConfiguration();
+
+    const configData: TaskConfigurationFormData = {
+      task_template_id: template.id,
+      batch_size: formValue.batch_size ?? defaultConfig.batch_size,
+      max_retries: formValue.max_retries ?? defaultConfig.max_retries,
+      retry_delay: formValue.retry_delay ?? defaultConfig.retry_delay,
+      max_jobs_count_at_same_time:
+        formValue.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
+      data: deepOmitUndefined(formValue.data ?? {}),
+    };
+
+    onSubmit(configData);
+  };
+
+  const handleFormFinish: FormProps<Omit<TaskConfigurationFormData, "data">>["onFinish"] = (
+    formValue
+  ) => {
+    if (!taskDataFormRef.current?.validate()) {
+      return;
+    }
+
+    const jsonDataFromForm = taskDataFormRef.current?.getData() ?? {};
+
+    handleSubmit({ ...formValue, data: jsonDataFromForm });
+  };
+
+  const handleTaskDataFinish: TaskDataFormProps["onSubmit"] = async (jsonDataFromForm) => {
     try {
-      if (!jsonFormRef.current?.validateForm()) {
-        return;
-      }
+      const formValue = await form.validateFields();
 
-      const systemValues = await form.validateFields();
-
-      if (!template) {
-        messageApi.error(t("task-create.template-not-loaded"));
-        return;
-      }
-
-      const defaultConfig = taskCreationService.getDefaultConfiguration();
-
-      const configData: TaskConfigurationFormData = {
-        task_template_id: template.id,
-        batch_size: systemValues.batch_size ?? defaultConfig.batch_size,
-        max_retries: systemValues.max_retries ?? defaultConfig.max_retries,
-        retry_delay: systemValues.retry_delay ?? defaultConfig.retry_delay,
-        max_jobs_count_at_same_time:
-          systemValues.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
-        data: deepOmitUndefined(jsonFormRef.current.state.formData ?? {}),
-      };
-
-      onSubmit(configData);
-    } catch (error) {
-      messageApi.error(t("task-create.validation-error"));
+      handleSubmit({ ...formValue, data: jsonDataFromForm });
+    } catch (errorInfo) {
+      handleFormFinishFailed(errorInfo);
     }
   };
 
@@ -89,6 +131,7 @@ export function TaskConfigurationTab({
   return (
     <>
       {contextHolder}
+
       <Flex vertical>
         <Flex vertical gap="middle">
           <Flex align="center" justify="flex-end" gap="small">
@@ -104,8 +147,13 @@ export function TaskConfigurationTab({
           >
             <Form
               form={form}
+              name="task-settings-form"
+              id="task-settings-form"
               layout="vertical"
               initialValues={memoize(taskCreationService.getDefaultConfiguration())}
+              autoComplete="off"
+              onFinish={handleFormFinish}
+              onFinishFailed={handleFormFinishFailed}
             >
               <Row gutter={16}>
                 <Col span={12}>
@@ -114,7 +162,7 @@ export function TaskConfigurationTab({
                     label={t("task-create.batch-size")}
                     tooltip={t("task-create.batch-size-tooltip")}
                     rules={memoize([
-                      { required: true, message: t("task-form.batch-size-error-required") },
+                      { required: true, message: t("task-create.batch-size-error-required") },
                     ])}
                   >
                     <InputNumber min={0} className={styles.formItem} />
@@ -126,7 +174,10 @@ export function TaskConfigurationTab({
                     label={t("task-create.max-parallel-jobs")}
                     tooltip={t("task-create.max-parallel-jobs-tooltip")}
                     rules={memoize([
-                      { required: true, message: t("task-form.max-parallel-jobs-error-required") },
+                      {
+                        required: true,
+                        message: t("task-create.max-parallel-jobs-error-required"),
+                      },
                     ])}
                   >
                     <InputNumber min={1} className={styles.formItem} />
@@ -140,7 +191,7 @@ export function TaskConfigurationTab({
                     label={t("task-create.max-retries")}
                     tooltip={t("task-create.max-retries-tooltip")}
                     rules={memoize([
-                      { required: true, message: t("task-form.max-retries-error-required") },
+                      { required: true, message: t("task-create.max-retries-error-required") },
                     ])}
                   >
                     <InputNumber min={0} className={styles.formItem} />
@@ -164,22 +215,19 @@ export function TaskConfigurationTab({
             <Divider className={styles.divider} />
           </Flex>
 
-          {template.json_schema && (
-            <JsonForm<TaskData>
-              ref={jsonFormRef}
-              className={styles.jsonForm}
-              schema={template.json_schema}
-              uiSchema={template.ui_schema}
-              formData={initialData.data}
-            >
-              <div />
-            </JsonForm>
-          )}
+          <TaskDataForm
+            ref={taskDataFormRef}
+            jsonSchema={template?.json_schema}
+            uiSchema={template?.ui_schema}
+            initialData={initialData?.data}
+            onSubmit={handleTaskDataFinish}
+            onError={showValidationError}
+          />
         </Flex>
 
         <TaskCreateFooter>
           <Button onClick={onCancel}>{t("common.cancel")}</Button>
-          <Button type="primary" onClick={handleFormSubmit}>
+          <Button type="primary" form="task-settings-form" key="submit" htmlType="submit">
             {t("task-create.next-to-overview")}
           </Button>
         </TaskCreateFooter>

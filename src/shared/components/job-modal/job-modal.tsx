@@ -1,18 +1,11 @@
-import { PlusOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
-import type { RJSFValidationError } from "@rjsf/utils";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
   JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
-import {
-  publish,
-  Modal,
-  Popover,
-  JsonForm,
-  type JsonFormRef,
-} from "@saltbox/saltbox-frontend-common";
+import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
   Cascader,
@@ -104,8 +97,6 @@ export function JobModal({
   const [isJobCreating, setIsJobCreating] = useState(false);
   const [jsonFormValue, setJsonFormValue] = useState<any>({});
   const [searchFunctionName, setSearchFunctionName] = useState("");
-  const [validationErrors, setValidationErrors] = useState<RJSFValidationError[]>([]);
-  const [functionHovered, setFunctionHovered] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
@@ -341,17 +332,6 @@ export function JobModal({
   }, [saltFunction, isModalOpen]);
 
   useEffect(() => {
-    if (validationErrors.length > 0) {
-      const errorField = document.querySelector(
-        `[id=job-params-form${validationErrors[0]?.property?.replaceAll(".", "-")}]`
-      );
-      if (errorField) {
-        errorField.scrollIntoView({ block: "center" });
-      }
-    }
-  }, [validationErrors]);
-
-  useEffect(() => {
     if (!saltFunctionName) {
       setTtlValue(null);
       setTtlUnit("seconds");
@@ -410,12 +390,13 @@ export function JobModal({
     }
   };
 
-  const handleFormFinish = (formValue: JobFormData) => {
+  const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
     if (handleFormFinishInProgressRef.current) return;
 
     const isFormValid = refJobParamsForm.current?.validateForm();
     if (!isFormValid) {
       isSubmittingRef.current = false;
+      messageApi.error(t("errors.form-validation"));
       return;
     }
 
@@ -453,17 +434,14 @@ export function JobModal({
   const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
-    if (errorInfo.errorFields.length) {
-      const fieldName = errorInfo.errorFields[0].name.join("_");
-      const element = document.querySelector(`[id="job-form_${fieldName}"]`);
-      if (element) {
-        setTimeout(() => {
-          element.scrollIntoView({
-            block: "center",
-          });
-        }, 100);
-      }
-    }
+
+    messageApi.error(t("errors.form-validation"));
+
+    form.scrollToField(errorInfo.errorFields[0].name, {
+      focus: true,
+      block: "center",
+      scrollMode: "always",
+    });
   };
 
   useEffect(() => {
@@ -553,10 +531,6 @@ export function JobModal({
     return funcName ? !saltFlatFunctionList.includes(funcName) : false;
   };
 
-  const handleFunctionHoverChange = (open: boolean) => {
-    setFunctionHovered(open);
-  };
-
   const handleCreateJobPlugin = (pluginKey: string) => {
     const isFormValid = refJobParamsForm.current?.validateForm();
     if (!isFormValid) {
@@ -632,8 +606,9 @@ export function JobModal({
         open={isModalOpen}
         onCancel={handleModalCancel}
         afterClose={() => onAfterClose?.()}
-        width="800px"
+        width="min(80vw, 800px)"
         maskClosable={false}
+        style={{ top: 50 }}
         footer={
           <>
             <Button type="default" disabled={isLoading} onClick={handleModalCancel}>
@@ -654,16 +629,15 @@ export function JobModal({
             </Button>
           </>
         }
-        closable={false}
       >
         <Form
           form={form}
           name="job-form"
-          layout={"vertical"}
+          id="job-form"
+          layout="vertical"
+          autoComplete="off"
           onFinish={handleFormFinish}
           onFinishFailed={handleFormFinishFailed}
-          autoComplete="off"
-          id="job-form"
         >
           <Form.Item<JobFormData>
             label={t("job-modal.salt-master")}
@@ -710,21 +684,8 @@ export function JobModal({
           </Flex>
 
           <Form.Item<JobFormData>
-            label={
-              <Flex gap={4} align="center">
-                <span>{t("job-modal.function")}</span>
-                <Popover
-                  style={{ width: 500 }}
-                  content={t("job-modal.function-tooltip")}
-                  trigger="hover"
-                  open={functionHovered}
-                  onOpenChange={handleFunctionHoverChange}
-                  overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
-                >
-                  <QuestionCircleOutlined className={styles.helpIcon} />
-                </Popover>
-              </Flex>
-            }
+            label={t("job-modal.function")}
+            tooltip={t("job-modal.function-tooltip")}
             name="fun"
             rules={[
               {
@@ -785,27 +746,24 @@ export function JobModal({
               </Flex>
             </Form.Item>
           )}
-
-          {saltFunction && (
-            <JsonForm
-              ref={refJobParamsForm}
-              schema={saltFunction.json_schema}
-              uiSchema={saltFunction?.ui_schema}
-              tagName="div"
-              id="job-params-form"
-              className={styles.jobParamsForm}
-              idPrefix="job-params-form"
-              idSeparator="-"
-              showErrorList={false}
-              formData={jsonFormValue}
-              onChange={(d) => setJsonFormValue(d?.formData)}
-              onError={(errors) => setValidationErrors(errors)}
-              omitExtraData
-            >
-              <Fragment />
-            </JsonForm>
-          )}
         </Form>
+
+        {saltFunction?.json_schema && (
+          <JsonForm
+            ref={refJobParamsForm}
+            schema={saltFunction.json_schema}
+            uiSchema={saltFunction?.ui_schema}
+            id="job-params-form"
+            className={styles.jobParamsForm}
+            idPrefix="job-params-form"
+            idSeparator="-"
+            formData={jsonFormValue}
+            onChange={(d) => setJsonFormValue(d?.formData)}
+            omitExtraData
+          >
+            <Fragment />
+          </JsonForm>
+        )}
       </Modal>
 
       <MinionGatherModal

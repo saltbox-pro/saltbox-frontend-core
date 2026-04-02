@@ -1,7 +1,3 @@
-.jsonForm :global(fieldset) {
-  border: none;
-}
-
 .formItem {
   width: 100%;
 }

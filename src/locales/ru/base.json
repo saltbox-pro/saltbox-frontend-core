@@ -192,7 +192,6 @@
     "max-parallel-jobs-error-required": "Максимальное количество одновременно выполняемых команд обязательно",
     "next-to-overview": "Далее к обзору",
     "template-not-loaded": "Шаблон не загружен",
-    "validation-error": "Ошибка валидации формы",
     "back-to-config": "Назад к настройкам",
     "invalid-configuration": "Некорректная конфигурация",
     "error-loading-template": "Ошибка загрузки шаблона",
@@ -744,6 +743,7 @@
   },
   "errors": {
     "load-failed": "Не удалось загрузить данные",
-    "access-denied": "Доступ запрещен"
+    "access-denied": "Доступ запрещен",
+    "form-validation": "Ошибка валидации формы"
   }
 }

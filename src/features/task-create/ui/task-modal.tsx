@@ -1,7 +1,7 @@
 import { TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Tabs, message } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { Tabs, message, Flex } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -43,6 +43,22 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>({
     ...taskCreationService.getDefaultConfiguration(),
   });
+
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const scrollToTop = () => {
+      const scrollableContainer = contentRef.current?.closest(".ant-modal-wrap");
+      if (scrollableContainer) {
+        scrollableContainer.scrollTop = 0;
+      }
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToTop);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [activeTabKey]);
 
   useEffect(() => {
     if (!isOpen || !templateId) {
@@ -185,6 +201,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   return (
     <>
       {contextHolder}
+
       <Modal
         title={t(
           context.taskType === TaskType.Policy
@@ -199,7 +216,9 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         closable={!isCreating}
         style={{ top: 50 }}
       >
-        <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
+        <Flex ref={contentRef} vertical>
+          <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
+        </Flex>
       </Modal>
     </>
   );
