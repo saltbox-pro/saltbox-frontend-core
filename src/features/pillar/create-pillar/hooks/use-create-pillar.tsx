@@ -11,8 +11,8 @@ import { CreatePillarModal } from "../ui/create-pillar-modal";
 export interface UseCreatePillarOptions {
   store: PillarsStore;
   targetType: PillarTgtType;
-  tgtId: string;
-  targetName: string;
+  tgtId?: string;
+  targetName?: string;
 }
 
 export function useCreatePillar({ store, targetType, tgtId, targetName }: UseCreatePillarOptions) {
@@ -23,7 +23,10 @@ export function useCreatePillar({ store, targetType, tgtId, targetName }: UseCre
   const closeModal = useCallback(() => setIsOpen(false), []);
 
   const modalTitle = useMemo(() => {
-    if (targetType === PillarTgtType.Collection || targetType === PillarTgtType.Root) {
+    if (targetType === PillarTgtType.Root) {
+      return t("pillars.create.modal-title-root");
+    }
+    if (targetType === PillarTgtType.Collection) {
       return t("pillars.create.modal-title-collection", { name: targetName });
     }
     return t("pillars.create.modal-title-minion", { name: targetName });

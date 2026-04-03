@@ -367,6 +367,7 @@
     "load-error": "Не удалось получить pillars",
     "create": {
       "add-button": "Создать pillar",
+      "modal-title-root": "Создание глобального pillar",
       "modal-title-collection": "Создание pillar для коллекции {{name}}",
       "modal-title-minion": "Создание pillar для клиента {{name}}",
       "field-name": "Имя",

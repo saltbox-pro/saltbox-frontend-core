@@ -2,6 +2,7 @@ import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { PillarCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
 import { createJsonValueValidator, JsonEditorField } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip } from "antd";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { type CreatePillarFormValues, useCreatePillarForm } from "../hooks/use-create-pillar-form";
@@ -9,7 +10,7 @@ import { type CreatePillarFormValues, useCreatePillarForm } from "../hooks/use-c
 interface CreatePillarFormProps {
   refreshPillars: () => void;
   tgtType: PillarCreateRequestSchema["tgt_type"];
-  tgtId: string;
+  tgtId?: string;
   onClose: () => void;
 }
 
@@ -20,7 +21,9 @@ export function CreatePillarForm({
   onClose,
 }: CreatePillarFormProps) {
   const { t } = useTranslation();
+
   const [form] = Form.useForm<CreatePillarFormValues>();
+
   const { handleSubmit, isCreating, createError, resetCreateError } = useCreatePillarForm({
     refreshPillars,
     tgtType,
@@ -28,13 +31,15 @@ export function CreatePillarForm({
     onClose,
   });
 
+  const initialValues = useMemo(() => ({ is_secret: false }), []);
+
   return (
     <Form
       form={form}
       layout="vertical"
       onFinish={handleSubmit}
       onValuesChange={resetCreateError}
-      initialValues={{ is_secret: false }}
+      initialValues={initialValues}
       autoComplete="off"
     >
       <Form.Item

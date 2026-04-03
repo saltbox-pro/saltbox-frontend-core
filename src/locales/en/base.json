@@ -367,6 +367,7 @@
     "load-error": "Failed to load pillars",
     "create": {
       "add-button": "Create pillar",
+      "modal-title-root": "Create a global pillar",
       "modal-title-collection": "Create pillar for collection {{name}}",
       "modal-title-minion": "Create pillar for minion {{name}}",
       "field-name": "Name",

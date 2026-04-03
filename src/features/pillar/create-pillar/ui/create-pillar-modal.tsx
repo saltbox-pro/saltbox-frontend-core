@@ -11,7 +11,7 @@ export type CreatePillarModalProps = {
   title: string;
   store: PillarsStore;
   tgtType: PillarTgtType;
-  tgtId: string;
+  tgtId?: string;
 };
 
 export function CreatePillarModal({

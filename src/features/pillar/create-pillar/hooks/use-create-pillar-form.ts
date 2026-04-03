@@ -18,7 +18,7 @@ export interface CreatePillarFormValues {
 interface UseCreatePillarFormParams {
   refreshPillars: () => void;
   tgtType: PillarCreateRequestSchema["tgt_type"];
-  tgtId: string;
+  tgtId?: string;
   onClose: () => void;
 }
 
