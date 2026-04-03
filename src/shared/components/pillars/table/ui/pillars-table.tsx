@@ -18,6 +18,7 @@ import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { PillarsStore } from "saltbox-core/store";
 
 import { PillarTgtName } from "./cells/pillar-tgt-name";
+import styles from "./pillars-table.module.css";
 
 const columnHelper = createColumnHelper<PillarWithTgtInfoSchema>();
 
@@ -49,80 +50,83 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
     [pillarDrawer.openedId, store.pillars]
   );
 
-  const targetColumns = hideTargetColumns
-    ? []
-    : [
-        columnHelper.accessor("tgt_info.type", {
-          header: t("pillar.details.target-type"),
-          meta: { width: "10%", minWidth: 130 },
-        }),
-        columnHelper.accessor("tgt_info.id", {
-          header: t("pillar.details.target-id"),
-          cell: ({ row }) => <PillarTgtName tgtInfo={row.original.tgt_info} />,
-          meta: {
-            showCopy: true,
-            copyValue: (row) =>
-              row.tgt_info?.type === PillarTgtType.Minion
-                ? (row.tgt_info?.minion_id ?? row.tgt_info?.id)
-                : (row.tgt_info?.title ?? row.tgt_info?.id),
-            width: "20%",
-            minWidth: 240,
-          },
-        }),
-        columnHelper.accessor("is_secret", {
-          header: t("pillar.details.secret"),
-          cell: (data) => <BooleanDisplay value={data.getValue()} />,
-          meta: { width: "10%", minWidth: 135 },
-        }),
-      ];
+  const targetColumns = useMemo(
+    () =>
+      hideTargetColumns
+        ? []
+        : [
+            columnHelper.accessor("tgt_info.id", {
+              header: t("pillar.details.target-id"),
+              cell: ({ row }) => <PillarTgtName tgtInfo={row.original.tgt_info} />,
+              meta: {
+                showCopy: true,
+                copyValue: (row) =>
+                  row.tgt_info?.type === PillarTgtType.Minion
+                    ? (row.tgt_info?.minion_id ?? row.tgt_info?.id)
+                    : (row.tgt_info?.title ?? row.tgt_info?.id),
+                width: "25%",
+                minWidth: 240,
+              },
+            }),
+            columnHelper.accessor("is_secret", {
+              header: t("pillar.details.secret"),
+              cell: (data) => <BooleanDisplay value={data.getValue()} />,
+              meta: { width: "10%", minWidth: 135 },
+            }),
+          ],
+    [hideTargetColumns, t]
+  );
 
-  const columns = [
-    columnHelper.accessor("name", {
-      header: t("pillar.details.name"),
-      cell: ({ getValue }) => {
-        const name = getValue();
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("name", {
+        header: t("pillar.details.name"),
+        cell: ({ getValue }) => {
+          const name = getValue();
 
-        return (
-          <Typography.Text ellipsis title={name}>
-            {name}
-          </Typography.Text>
-        );
-      },
-      meta: { showCopy: true, width: "15%", minWidth: 240, maxWidth: 240 },
-    }),
-    columnHelper.accessor("value", {
-      header: t("pillar.details.value"),
-      cell: ({ row, getValue }) => {
-        const value = getValue();
-        const isSecret = row.original?.is_secret;
+          return (
+            <Typography.Text ellipsis title={name}>
+              {name}
+            </Typography.Text>
+          );
+        },
+        meta: { showCopy: true, width: "28%", minWidth: 240, maxWidth: 240 },
+      }),
+      columnHelper.accessor("value", {
+        header: t("pillar.details.value"),
+        cell: ({ row, getValue }) => {
+          const value = getValue();
+          const isSecret = row.original?.is_secret;
 
-        if (isSecret) {
-          return value;
-        }
+          if (isSecret) {
+            return value;
+          }
 
-        return <JsonPreview value={value} title={t("pillar.details.value")} />;
-      },
-      meta: { width: "25%", minWidth: 250, maxWidth: 250 },
-    }),
-    ...targetColumns,
-    ...(hideDateColumns
-      ? []
-      : [
-          columnHelper.accessor("created", {
-            header: t("pillar.details.created"),
-            cell: (data) => <RelativeTime date={data.getValue()} />,
-            meta: { width: "20%", minWidth: 200 },
-          }),
-          columnHelper.accessor("modified", {
-            header: t("pillar.details.modified"),
-            cell: (data) => <RelativeTime date={data.getValue()} />,
-            meta: { width: "20%", minWidth: 200 },
-          }),
-        ]),
-  ];
+          return <JsonPreview value={value} title={t("pillar.details.value")} />;
+        },
+        meta: { width: "25%", minWidth: 250, maxWidth: 250 },
+      }),
+      ...targetColumns,
+      ...(hideDateColumns
+        ? []
+        : [
+            columnHelper.accessor("created", {
+              header: t("pillar.details.created"),
+              cell: (data) => <RelativeTime date={data.getValue()} />,
+              meta: { width: "20%", minWidth: 200 },
+            }),
+            columnHelper.accessor("modified", {
+              header: t("pillar.details.modified"),
+              cell: (data) => <RelativeTime date={data.getValue()} />,
+              meta: { width: "20%", minWidth: 200 },
+            }),
+          ]),
+    ],
+    [hideDateColumns, t, targetColumns]
+  );
 
   return (
-    <Flex vertical gap="small" flex={1}>
+    <Flex className={styles.pillarsTable} vertical gap="small" flex={1}>
       {!!store.error && <Alert description={t(store.error)} type="error" showIcon />}
 
       <Table

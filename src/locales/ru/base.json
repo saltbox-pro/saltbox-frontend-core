@@ -353,7 +353,6 @@
     "details": {
       "name": "Имя",
       "value": "Значение",
-      "target-type": "Тип цели",
       "target-id": "ID цели",
       "target-name": "Цель",
       "secret": "Защищённый",

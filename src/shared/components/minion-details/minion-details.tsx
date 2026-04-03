@@ -148,7 +148,6 @@ export function MinionDetails({
         <MinionPillarsTab
           targetId={minion.id}
           targetName={minion.minion_id}
-          isFullView={isFullView}
           isInDrawer={isInDrawer}
         />
       ) : null,

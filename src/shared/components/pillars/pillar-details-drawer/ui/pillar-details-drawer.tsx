@@ -49,11 +49,6 @@ export function PillarDetailsDrawer({
         children: name,
       },
       {
-        key: "target_type",
-        label: t("pillar.details.target-type"),
-        children: tgtInfo?.type,
-      },
-      {
         key: "target_id",
         label: t("pillar.details.target-id"),
         children: tgtInfo?.id,

@@ -353,7 +353,6 @@
     "details": {
       "name": "Name",
       "value": "Value",
-      "target-type": "Target Type",
       "target-id": "Target ID",
       "target-name": "Target",
       "secret": "Secure",

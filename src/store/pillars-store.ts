@@ -48,7 +48,12 @@ export class PillarsStore {
     };
   };
 
-  loadPillars = () => {
+  reloadFromFirstPage = (): void => {
+    this.pagination = { ...this.pagination, pageIndex: 0 };
+    this.loadPillars();
+  };
+
+  loadPillars = (): void => {
     this.isLoading = true;
     this.error = null;
 
@@ -79,7 +84,7 @@ export class PillarsStore {
       });
   };
 
-  handleLazyLoad(pagination: PaginationState, sorting: SortingState) {
+  handleLazyLoad(pagination: PaginationState, sorting: SortingState): void {
     this.pagination = pagination;
     this.sorting = sorting;
     this.loadPillars();
