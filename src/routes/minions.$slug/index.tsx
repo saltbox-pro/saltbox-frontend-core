@@ -37,7 +37,6 @@ import {
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
-import { MinionsPillarsView } from "./-components/minions-pillars-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
 
@@ -265,20 +264,6 @@ const MinionsPage = observer(() => {
         });
       }
     }
-
-    tabs.push({
-      label: t("pillars.title"),
-      key: "pillars",
-      children:
-        tabKey === "pillars" && collectionStore.collection?.id && slug ? (
-          <MinionsPillarsView
-            collectionId={collectionStore.collection.id}
-            collectionSlug={slug}
-            collectionName={collectionStore.collection?.title}
-          />
-        ) : null,
-      className: styles.flexTab,
-    });
 
     return tabs;
   }, [
