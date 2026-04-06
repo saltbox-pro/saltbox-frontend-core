@@ -46,7 +46,7 @@ export function CreatePillarForm({
         name="name"
         label={t("pillars.create.field-name")}
         rules={[
-          { required: true, message: t("pillars.create.field-name-required") },
+          { required: true, whitespace: true, message: t("pillars.create.field-name-required") },
           {
             max: 255,
             message: t("pillars.create.field-name-max-length", { max: 255 }),
@@ -75,7 +75,7 @@ export function CreatePillarForm({
         name="value"
         label={t("pillars.create.field-value")}
         rules={[
-          { required: true, message: t("pillars.create.field-value-required") },
+          { required: true, whitespace: true, message: t("pillars.create.field-value-required") },
           { validator: createJsonValueValidator(t) },
         ]}
       >
@@ -83,7 +83,7 @@ export function CreatePillarForm({
       </Form.Item>
 
       <Flex vertical gap="middle">
-        {!!createError && <Alert message={t(createError)} type="error" showIcon />}
+        {!!createError && <Alert message={createError} type="error" showIcon />}
 
         <Flex justify="end" gap="small">
           <Button onClick={onClose}>{t("pillars.create.cancel")}</Button>

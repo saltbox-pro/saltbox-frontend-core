@@ -87,7 +87,7 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
             </Flex>
           }
           rules={[
-            { required: true, message: t("pillars.create.field-value-required") },
+            { required: true, whitespace: true, message: t("pillars.create.field-value-required") },
             { validator: createJsonValueValidator(t) },
           ]}
         >
@@ -96,7 +96,7 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
 
         {isEditing && (
           <Flex vertical gap="small">
-            {!!saveError && <Alert message={t(saveError)} type="error" showIcon />}
+            {!!saveError && <Alert message={saveError} type="error" showIcon />}
 
             <Flex justify="end" gap="small">
               <Button onClick={handleCancelEdit}>{t("common.cancel")}</Button>

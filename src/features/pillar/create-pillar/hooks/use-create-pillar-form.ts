@@ -43,13 +43,13 @@ export function useCreatePillarForm({
       const parsed = parseAndValidateJsonValue(values.value);
 
       if (isInvalidJsonValueResult(parsed)) {
-        setCreateError(parsed.errorKey);
+        setCreateError(t(parsed.errorKey, parsed.errorOptions));
         setIsCreating(false);
         return;
       }
 
       const body: PillarCreateRequestSchema = {
-        name: values.name,
+        name: values.name?.trim(),
         value: parsed.value,
         is_secret: values.is_secret,
         tgt_type: tgtType,
@@ -62,7 +62,7 @@ export function useCreatePillarForm({
         refreshPillars();
         onClose();
       } catch {
-        setCreateError("pillars.create.error");
+        setCreateError(t("pillars.create.error"));
       } finally {
         setIsCreating(false);
       }

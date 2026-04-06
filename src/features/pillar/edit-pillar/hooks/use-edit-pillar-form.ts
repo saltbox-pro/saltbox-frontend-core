@@ -3,7 +3,7 @@ import {
   isInvalidJsonValueResult,
   parseAndValidateJsonValue,
 } from "@saltbox/saltbox-frontend-common";
-import { type FormInstance, message } from "antd";
+import { message, type FormInstance } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -49,7 +49,7 @@ export function useEditPillarForm({
     const parsed = parseAndValidateJsonValue(values.value);
 
     if (isInvalidJsonValueResult(parsed)) {
-      setSaveError(parsed.errorKey);
+      setSaveError(t(parsed.errorKey, parsed.errorOptions));
       return;
     }
 
@@ -66,7 +66,7 @@ export function useEditPillarForm({
 
       onSuccess?.();
     } catch {
-      setSaveError("pillars.edit.error");
+      setSaveError(t("pillars.edit.error"));
     } finally {
       setIsSaving(false);
     }
