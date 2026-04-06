@@ -203,12 +203,11 @@
   },
   "task": {
     "details": {
-      "template-info": "Template info",
+      "template-info": "General information",
       "template-title": "Title",
       "template-function": "Salt function",
-      "template-parameters": "Template parameters",
       "no-parameters": "No configured parameters",
-      "system-parameters": "System parameters",
+      "system-parameters": "Launch parameters",
       "task-type": "Type",
       "task-type-classic": "Task",
       "task-type-policy": "Policy",
@@ -222,7 +221,8 @@
       "collection": "Collection",
       "target-minions": "Target minions",
       "query-based-selection": "Query based",
-      "no-query-selection": "Whole collection"
+      "no-query-selection": "Whole collection",
+      "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
     "details-title": "Task Details",

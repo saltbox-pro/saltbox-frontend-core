@@ -1,4 +1,4 @@
-import { TaskType } from "@saltbox/saltbox-core-api-client";
+import type { TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
 
 export type TaskDetailsData = {
   template: {
@@ -19,4 +19,5 @@ export type TaskDetailsData = {
     isQueryBased?: boolean;
     showMinionsDetails?: boolean;
   };
+  pillars?: TaskModel["pillars"];
 };

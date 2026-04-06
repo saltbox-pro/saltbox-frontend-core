@@ -1,4 +1,3 @@
-import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { InfoDescriptions, type InfoDescriptionsProps } from "@saltbox/saltbox-frontend-common";
 import { Flex, Typography } from "antd";
 import { useMemo } from "react";
@@ -7,7 +6,7 @@ import ReactJson from "react-json-view";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
-import { TaskDetailsData } from "../type/task-details-data";
+import type { TaskDetailsData } from "../type/task-details-data";
 
 import styles from "./task-details.module.css";
 
@@ -22,36 +21,10 @@ const memoize = createObjectMemoizer();
 
 export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps) {
   const { t } = useTranslation();
-  const { template, parameters, system, target } = data;
-
-  const templateInfo = useMemo<InfoDescriptionsProps["items"]>(
-    () => [
-      {
-        label: t("task.details.template-title"),
-        children: template.title,
-      },
-      {
-        label: t("task.details.template-function"),
-        children: template.saltFunction,
-      },
-    ],
-    [t, template]
-  );
-
-  const parametersRecord = parameters as Record<string, unknown> | undefined;
+  const { template, parameters, system, target, pillars } = data;
 
   const templateParams = useMemo<InfoDescriptionsProps["items"]>(() => {
-    const hasParameters = Object.keys(parametersRecord || {}).length > 0;
-
-    if (!hasParameters) {
-      return [
-        {
-          children: t("task.details.no-parameters"),
-        },
-      ];
-    }
-
-    const entries = Object.entries(parametersRecord || {}).filter(([key]) => key !== "mods");
+    const entries = Object.entries(parameters || {}).filter(([key]) => key !== "mods");
 
     return entries.map(([key, value]) => ({
       key,
@@ -72,17 +45,25 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
           String(value)
         ),
     }));
-  }, [parametersRecord, t]);
+  }, [parameters]);
+
+  const templateInfo = useMemo<InfoDescriptionsProps["items"]>(
+    () => [
+      {
+        label: t("task.details.template-title"),
+        children: template.title,
+      },
+      {
+        label: t("task.details.template-function"),
+        children: template.saltFunction,
+      },
+      ...templateParams,
+    ],
+    [t, template.saltFunction, template.title, templateParams]
+  );
 
   const systemParams = useMemo<InfoDescriptionsProps["items"]>(
     () => [
-      {
-        label: t("task.details.task-type"),
-        children:
-          system.taskType === TaskType.Classic
-            ? t("task.details.task-type-classic")
-            : t("task.details.task-type-policy"),
-      },
       {
         label: t("task.details.batch-size"),
         children: system.batchSize === 0 ? t("task.details.no-batching") : system.batchSize,
@@ -100,8 +81,30 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
         children: t("task.details.retry-delay-seconds", { count: system.retryDelay }),
       },
     ],
-    [t, system]
+    [system.batchSize, system.maxParallelJobs, system.maxRetries, system.retryDelay, t]
   );
+
+  const pillarsInfo = useMemo<InfoDescriptionsProps["items"]>(() => {
+    return Object.entries(pillars ?? {}).map(([key, value]) => ({
+      key,
+      label: key,
+      children:
+        typeof value === "object" && value !== null ? (
+          <Flex vertical className={styles.objectContent}>
+            <ReactJson
+              src={value}
+              displayDataTypes={false}
+              displayObjectSize={false}
+              name={false}
+              collapsed={3}
+              enableClipboard={false}
+            />
+          </Flex>
+        ) : (
+          String(value)
+        ),
+    }));
+  }, [pillars]);
 
   const targetInfo = useMemo<InfoDescriptionsProps["items"]>(() => {
     const getTargetMinionsInfo = () => {
@@ -161,7 +164,9 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
     <Flex vertical gap="large">
       <InfoDescriptions title={t("task.details.template-info")} items={templateInfo} />
 
-      <InfoDescriptions title={t("task.details.template-parameters")} items={templateParams} />
+      {pillarsInfo?.length > 0 && (
+        <InfoDescriptions title={t("task.details.pillars")} items={pillarsInfo} />
+      )}
 
       <InfoDescriptions title={t("task.details.system-parameters")} items={systemParams} />
 

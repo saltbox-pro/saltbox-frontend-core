@@ -203,12 +203,11 @@
   },
   "task": {
     "details": {
-      "template-info": "Информация о шаблоне",
+      "template-info": "Общая информация",
       "template-title": "Название",
       "template-function": "Функция Salt",
-      "template-parameters": "Параметры шаблона",
       "no-parameters": "Параметры не заданы",
-      "system-parameters": "Системные параметры",
+      "system-parameters": "Параметры запуска",
       "task-type": "Тип",
       "task-type-classic": "Задача",
       "task-type-policy": "Политика",
@@ -222,7 +221,8 @@
       "collection": "Коллекция",
       "target-minions": "Целевые клиенты",
       "query-based-selection": "Выбор по запросу",
-      "no-query-selection": "Вся коллекция"
+      "no-query-selection": "Вся коллекция",
+      "pillars": "Pillars"
     },
     "show-details": "Параметры задачи",
     "details-title": "Детали задачи",

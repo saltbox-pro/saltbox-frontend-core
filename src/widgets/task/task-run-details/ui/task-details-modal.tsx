@@ -59,6 +59,7 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
         minionIds: taskStore.minions?.map((minion) => minion.minion_id),
         isQueryBased: Boolean(task?.target_query && Object.keys(task.target_query).length > 0),
       },
+      pillars: task?.pillars,
     };
   }, [task, taskStore.minions]);
 
