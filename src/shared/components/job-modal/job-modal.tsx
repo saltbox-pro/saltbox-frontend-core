@@ -759,7 +759,6 @@ export function JobModal({
             idSeparator="-"
             formData={jsonFormValue}
             onChange={(d) => setJsonFormValue(d?.formData)}
-            omitExtraData
           >
             <Fragment />
           </JsonForm>
