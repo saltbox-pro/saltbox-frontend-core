@@ -151,18 +151,15 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         useVirtualScroll={false}
       />
 
-      {!!taskDrawer.openedId && (
-        <MinionTaskResultsDrawer
-          isOpened={taskDrawer.isOpened}
-          openedId={taskDrawer.openedId}
-          selectedMinion={selectedMinion}
-          selectedMinionJobReturns={selectedMinionJobReturns}
-          slug={slug}
-          onClose={taskDrawer.close}
-          clearData={taskDrawer.clearData}
-          onRestartFailedMinion={taskStore.handleRestartFailedMinion}
-        />
-      )}
+      <MinionTaskResultsDrawer
+        isOpened={taskDrawer.isOpened}
+        openedId={taskDrawer.openedId}
+        selectedMinion={selectedMinion}
+        selectedMinionJobReturns={selectedMinionJobReturns}
+        slug={slug}
+        onClose={taskDrawer.close}
+        onRestartFailedMinion={taskStore.handleRestartFailedMinion}
+      />
     </>
   );
 });

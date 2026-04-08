@@ -4,6 +4,7 @@ import {
   createExpanderColumn,
   FastTablePaginated,
   RelativeTime,
+  useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import {
   type OnChangeFn,
@@ -19,7 +20,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   MinionDetailsDrawer,
-  useMinionDetailsDrawer,
+  type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
@@ -68,7 +69,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     onTableViewErrorsChange,
   }) => {
     const { t } = useTranslation();
-    const minionDetailsDrawer = useMinionDetailsDrawer();
+    const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
+      getId: (params) => params.drawerId ?? params.minionId,
+    });
 
     const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
@@ -203,13 +206,13 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
 
     const handleRowClick = useCallback(
       (jobReturn: JobReturnModel) => {
-        minionDetailsDrawer.toggle({
+        drawer.toggle({
           masterId: jobReturn.salt_master,
           minionId: jobReturn.minion_id,
           drawerId: jobReturn.id,
         });
       },
-      [minionDetailsDrawer]
+      [drawer]
     );
 
     const overscan = pagination.pageSize > 100 ? 10 : 100;
@@ -250,26 +253,14 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               forceExpandAll={forceExpand}
               getRowCanExpand={() => !isTableViewMode}
               renderSubComponent={({ row }) => <JobSubRow row={row} isFullOutput={isFullOutput} />}
-              activeRowId={minionDetailsDrawer.activeRowId}
-              bodyRef={minionDetailsDrawer.mainContentRef}
+              activeRowId={drawer.activeRowId}
+              bodyRef={drawer.mainContentRef}
               onRowClick={handleRowClick}
             />
           </>
         )}
 
-        {!!minionDetailsDrawer.openedMinionId && (
-          <MinionDetailsDrawer
-            isOpened={minionDetailsDrawer.isOpened}
-            openedMinionId={minionDetailsDrawer.openedMinionId}
-            openedInnerId={minionDetailsDrawer.openedInnerId}
-            minion={minionDetailsDrawer.minion}
-            isMinionLoading={minionDetailsDrawer.isMinionLoading}
-            slug={minionDetailsDrawer.slug}
-            error={minionDetailsDrawer.error}
-            onClose={minionDetailsDrawer.close}
-            clearData={minionDetailsDrawer.clearData}
-          />
-        )}
+        <MinionDetailsDrawer drawer={drawer} />
       </Flex>
     );
   }

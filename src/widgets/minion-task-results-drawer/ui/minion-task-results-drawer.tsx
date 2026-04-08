@@ -13,7 +13,6 @@ interface MinionTaskResultsDrawerProps {
   openedId: string | null | undefined;
   slug: string | null | undefined;
   onClose: () => void;
-  clearData: () => void;
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
 }
 
@@ -25,7 +24,6 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
     openedId,
     slug,
     onClose,
-    clearData,
     onRestartFailedMinion,
   }) {
     const { minion_id: minionId = openedId, minion_inner_id: minionInnerId } = selectedMinion ?? {};
@@ -37,7 +35,7 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
         slug={slug}
         open={isOpened}
         onClose={onClose}
-        onAfterClose={clearData}
+        transitionKey={isOpened ? "opened" : "closed"}
       >
         <MinionTaskResults
           selectedMinion={selectedMinion}

@@ -5,6 +5,7 @@ import {
   PageHeader,
   Popover,
   RelativeTime,
+  useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Input, message, Tag } from "antd";
@@ -23,7 +24,7 @@ import {
 } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
-  useMinionDetailsDrawer,
+  type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
@@ -46,7 +47,9 @@ const CollectionEditPage = observer(() => {
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
-  const minionDetailsDrawer = useMinionDetailsDrawer();
+  const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
+    getId: (params) => params.drawerId ?? params.minionId,
+  });
 
   const minionsColumns = [
     minionsColumnHelper.accessor("minion_id", {
@@ -247,10 +250,10 @@ const CollectionEditPage = observer(() => {
           pagination={toJS(minionsStore.pagination)}
           sorting={minionsStore.sorting}
           onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          activeRowId={minionDetailsDrawer.activeRowId}
-          bodyRef={minionDetailsDrawer.mainContentRef}
+          activeRowId={drawer.activeRowId}
+          bodyRef={drawer.mainContentRef}
           onRowClick={(minion) => {
-            minionDetailsDrawer.toggle({
+            drawer.toggle({
               slug: slug ?? "",
               minionId: minion.minion_id ?? minion.id,
               drawerId: minion.id,
@@ -260,19 +263,7 @@ const CollectionEditPage = observer(() => {
         />
       </Flex>
 
-      {!!minionDetailsDrawer.openedMinionId && (
-        <MinionDetailsDrawer
-          isOpened={minionDetailsDrawer.isOpened}
-          openedMinionId={minionDetailsDrawer.openedMinionId}
-          openedInnerId={minionDetailsDrawer.openedInnerId}
-          minion={minionDetailsDrawer.minion}
-          isMinionLoading={minionDetailsDrawer.isMinionLoading}
-          slug={minionDetailsDrawer.slug}
-          error={minionDetailsDrawer.error}
-          onClose={minionDetailsDrawer.close}
-          clearData={minionDetailsDrawer.clearData}
-        />
-      )}
+      <MinionDetailsDrawer drawer={drawer} />
     </>
   );
 });

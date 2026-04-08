@@ -1,17 +1,17 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { type GatheredMinionSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { FastTableListed, PageHeader, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Flex, Spin, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
 import { apiCoreStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
-  useMinionDetailsDrawer,
+  type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
 import styles from "./index.module.css";
@@ -29,7 +29,9 @@ const MasterPage = observer(() => {
 
   const [clientsSorting, setClientsSorting] = useState<SortingState>([]);
 
-  const minionDetailsDrawer = useMinionDetailsDrawer();
+  const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
+    getId: (params) => params.drawerId ?? params.minionId,
+  });
 
   useEffect(() => {
     if (masterId) {
@@ -52,71 +54,87 @@ const MasterPage = observer(() => {
     }
   }, [masterId]);
 
-  const clientColumns = [
-    clientColumnHelper.accessor("minion_id", {
-      header: t("minions.table-minion-id"),
-      meta: {
-        showCopy: true,
-        actions: [
-          {
-            icon: <ExportOutlined />,
-            onClick: (value, row) => {
-              window.open(`/core/masters/${row.master}/minion/${value}`, "_blank");
+  const clientColumns = useMemo(
+    () => [
+      clientColumnHelper.accessor("minion_id", {
+        header: t("minions.table-minion-id"),
+        meta: {
+          showCopy: true,
+          actions: [
+            {
+              icon: <ExportOutlined />,
+              onClick: (value, row) => {
+                window.open(`/core/masters/${row.master}/minion/${value}`, "_blank");
+              },
+              title: t("minions.open-in-new-tab"),
             },
-            title: t("minions.open-in-new-tab"),
-          },
-        ],
-        tdClassName: "fast-table-column-nowrap",
-        color: "accent",
-        width: "50%",
-        minWidth: 300,
-      },
-    }),
-    clientColumnHelper.accessor("master", {
-      header: t("minions.table-master"),
-      meta: {
-        tdClassName: "fast-table-column-nowrap",
-      },
-    }),
-  ];
+          ],
+          tdClassName: "fast-table-column-nowrap",
+          color: "accent",
+          width: "50%",
+          minWidth: 300,
+        },
+      }),
+      clientColumnHelper.accessor("master", {
+        header: t("minions.table-master"),
+        meta: {
+          tdClassName: "fast-table-column-nowrap",
+        },
+      }),
+    ],
+    [t]
+  );
 
-  const tabItems = [
-    {
-      key: "clients",
-      label: t("minions.title"),
-      className: styles.flexTab,
-      children: (
-        <Flex vertical gap="large" className={styles.tabWrapper}>
-          {isLoadingClients ? (
-            <Flex justify="center" align="center" style={{ height: 200 }}>
-              <Spin />
-            </Flex>
-          ) : (
-            <div className={styles.clientsTableContainer}>
-              <FastTableListed
-                columns={clientColumns}
-                data={clients}
-                total={clients.length}
-                isEmpty={!clients.length}
-                sorting={clientsSorting}
-                onSortingChange={setClientsSorting}
-                getRowId={(row) => row.minion_id}
-                activeRowId={minionDetailsDrawer.activeRowId}
-                bodyRef={minionDetailsDrawer.mainContentRef}
-                onRowClick={(client) => {
-                  minionDetailsDrawer.toggle({
-                    masterId: client.master ?? masterId ?? "",
-                    minionId: client.minion_id,
-                    drawerId: client.minion_id,
-                  });
-                }}
-              />
-            </div>
-          )}
-        </Flex>
-      ),
-    },
-  ];
+  const tabItems = useMemo(
+    () => [
+      {
+        key: "clients",
+        label: t("minions.title"),
+        className: styles.flexTab,
+        children: (
+          <Flex vertical gap="large" className={styles.tabWrapper}>
+            {isLoadingClients ? (
+              <Flex justify="center" align="center" style={{ height: 200 }}>
+                <Spin />
+              </Flex>
+            ) : (
+              <div className={styles.clientsTableContainer}>
+                <FastTableListed
+                  columns={clientColumns}
+                  data={clients}
+                  total={clients.length}
+                  isEmpty={!clients.length}
+                  sorting={clientsSorting}
+                  onSortingChange={setClientsSorting}
+                  getRowId={(row) => row.minion_id}
+                  activeRowId={drawer.activeRowId}
+                  bodyRef={drawer.mainContentRef}
+                  onRowClick={(client) => {
+                    drawer.toggle({
+                      masterId: client.master ?? masterId ?? "",
+                      minionId: client.minion_id,
+                      drawerId: client.minion_id,
+                    });
+                  }}
+                />
+              </div>
+            )}
+          </Flex>
+        ),
+      },
+    ],
+    [
+      drawer.activeRowId,
+      drawer.mainContentRef,
+      drawer.toggle,
+      clientColumns,
+      clients,
+      clientsSorting,
+      isLoadingClients,
+      masterId,
+      t,
+    ]
+  );
 
   return (
     <>
@@ -129,19 +147,7 @@ const MasterPage = observer(() => {
         className={styles.masterTabs}
       />
 
-      {!!minionDetailsDrawer.openedMinionId && (
-        <MinionDetailsDrawer
-          isOpened={minionDetailsDrawer.isOpened}
-          openedMinionId={minionDetailsDrawer.openedMinionId}
-          openedInnerId={minionDetailsDrawer.openedInnerId}
-          minion={minionDetailsDrawer.minion}
-          isMinionLoading={minionDetailsDrawer.isMinionLoading}
-          slug={minionDetailsDrawer.slug}
-          error={minionDetailsDrawer.error}
-          onClose={minionDetailsDrawer.close}
-          clearData={minionDetailsDrawer.clearData}
-        />
-      )}
+      <MinionDetailsDrawer drawer={drawer} />
     </>
   );
 });

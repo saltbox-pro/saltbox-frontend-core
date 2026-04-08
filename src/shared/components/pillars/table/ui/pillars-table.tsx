@@ -143,19 +143,16 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
         onRowClick={pillarDrawer.toggle}
       />
 
-      {!!pillarDrawer.openedId && (
-        <PillarDetailsDrawer
-          open={pillarDrawer.isOpened}
-          pillar={openedPillar}
-          onClose={pillarDrawer.close}
-          onAfterClose={pillarDrawer.clearData}
-          onReplacePillar={store.replacePillar}
-          onDeleted={() => {
-            pillarDrawer.close();
-            store.loadPillars();
-          }}
-        />
-      )}
+      <PillarDetailsDrawer
+        open={pillarDrawer.isOpened}
+        pillar={openedPillar}
+        onClose={pillarDrawer.close}
+        onReplacePillar={store.replacePillar}
+        onDeleted={() => {
+          pillarDrawer.close();
+          store.loadPillars();
+        }}
+      />
     </Flex>
   );
 });

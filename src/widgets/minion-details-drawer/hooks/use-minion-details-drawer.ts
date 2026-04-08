@@ -1,83 +1,123 @@
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { useInfoDrawer } from "@saltbox/saltbox-frontend-common";
-import { type RefObject, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-type OpenDrawerParams =
-  | { slug: string; minionId: string; innerId: string; drawerId?: string }
-  | { masterId: string; minionId: string; drawerId?: string };
+import type { MinionDetailsDrawerOpenParams } from "../types";
 
-interface UseMinionDrawerReturn {
+export type UseMinionDetailsDrawerResult = {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   error: string | null;
-  openedMinionId: string | null;
-  openedInnerId: string | null;
-  isOpened: boolean;
-  activeRowId: string | null;
-  mainContentRef: RefObject<HTMLTableSectionElement | null>;
+  hasData: boolean;
   slug: string | null;
-  open: (params: OpenDrawerParams) => Promise<void>;
-  close: () => void;
-  toggle: (params: OpenDrawerParams) => Promise<void>;
-  clearData: () => void;
-}
+  resolvedDisplayId: string;
+  resolvedInnerId: string;
+};
 
-export function useMinionDetailsDrawer(): UseMinionDrawerReturn {
+export type UseMinionDetailsDrawerArgs = {
+  isOpened: boolean;
+  openedArg: MinionDetailsDrawerOpenParams | null;
+};
+
+export function useMinionDetailsDrawer({
+  isOpened,
+  openedArg,
+}: UseMinionDetailsDrawerArgs): UseMinionDetailsDrawerResult {
   const { t } = useTranslation();
 
   const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
   const [isMinionLoading, setIsMinionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [slug, setSlug] = useState<string | null>(null);
-  const [openedMinionId, setOpenedMinionId] = useState<string | null>(null);
-  const [openedInnerId, setOpenedInnerId] = useState<string | null>(null);
 
-  const drawer = useInfoDrawer<OpenDrawerParams, string, HTMLTableSectionElement>({
-    getId: (params) => params.drawerId ?? params.minionId,
-    onOpen: async (params) => {
-      setError(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const { resolvedDisplayId, resolvedInnerId, slug } = useMemo(() => {
+    const params = openedArg;
+    if (!params) {
+      return { resolvedDisplayId: "", resolvedInnerId: "", slug: null as string | null };
+    }
+
+    if ("slug" in params) {
+      return {
+        resolvedDisplayId: params.minionId ?? "",
+        resolvedInnerId: params.innerId ?? "",
+        slug: params.slug ?? null,
+      };
+    }
+
+    return {
+      resolvedDisplayId: params.minionId ?? "",
+      resolvedInnerId: minion?.id ?? "",
+      slug: "root",
+    };
+  }, [minion?.id, openedArg]);
+
+  const hasData = Boolean(minion?.id) && !error;
+
+  useEffect(() => {
+    if (!isOpened) {
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
       setMinion(null);
-      setIsMinionLoading(true);
-      setOpenedMinionId(params.minionId || null);
-      setOpenedInnerId(null);
+      setIsMinionLoading(false);
+      setError(null);
+      return;
+    }
 
+    const params = openedArg;
+    if (!params) return;
+
+    abortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    setError(null);
+    setMinion(null);
+    setIsMinionLoading(true);
+
+    (async () => {
       try {
         if ("slug" in params) {
-          setSlug(params.slug);
-          setOpenedInnerId(params.innerId);
+          const loadedMinion = await apiCoreStore.minionsApi?.minionGet(
+            {
+              collection_slug: params.slug,
+              mid: params.innerId,
+            },
+            { signal: abortController.signal }
+          );
 
-          const loadedMinion = await apiCoreStore.minionsApi?.minionGet({
-            collection_slug: params.slug,
-            mid: params.innerId,
-          });
-
+          if (abortControllerRef.current !== abortController) return;
           setMinion(loadedMinion ?? null);
           return;
         }
 
-        if (!params.minionId) {
-          setError(t("minions.minion-id-not-specified"));
-          return;
-        }
+        const loadedMinion = await apiCoreStore.minionsApi?.minionGetByMasterAndId(
+          {
+            master_id: params.masterId,
+            minion_id: params.minionId,
+          },
+          { signal: abortController.signal }
+        );
 
-        const defaultSlug = "root";
-        setSlug(defaultSlug);
-
-        const loadedMinion = await apiCoreStore.minionsApi?.minionGetByMasterAndId({
-          master_id: params.masterId,
-          minion_id: params.minionId,
-        });
+        if (abortControllerRef.current !== abortController) return;
 
         if (loadedMinion?.id) {
-          setOpenedInnerId(loadedMinion.id);
           setMinion(loadedMinion);
         } else {
           setError(t("minions.minion-not-found"));
         }
       } catch (err) {
+        const isAbortError =
+          err?.name === "AbortError" ||
+          err?.cause?.name === "AbortError" ||
+          err?.cause?.code === DOMException.ABORT_ERR;
+
+        if (isAbortError) {
+          return;
+        }
+
         console.error("Error fetching minion:", err);
 
         let errorMessage: string | null = null;
@@ -89,34 +129,27 @@ export function useMinionDetailsDrawer(): UseMinionDrawerReturn {
           errorMessage = t("errors.access-denied");
         }
 
+        if (abortControllerRef.current !== abortController) return;
         setError(errorMessage);
       } finally {
-        setIsMinionLoading(false);
+        if (abortControllerRef.current === abortController) {
+          setIsMinionLoading(false);
+        }
       }
-    },
-    onClear: () => {
-      setMinion(null);
-      setIsMinionLoading(false);
-      setError(null);
-      setSlug(null);
-      setOpenedMinionId(null);
-      setOpenedInnerId(null);
-    },
-  });
+    })();
+
+    return () => {
+      abortController.abort();
+    };
+  }, [isOpened, openedArg, t]);
 
   return {
     minion,
     isMinionLoading,
     error,
-    isOpened: drawer.isOpened,
-    openedMinionId,
-    openedInnerId,
-    activeRowId: drawer.activeRowId,
-    mainContentRef: drawer.mainContentRef,
+    hasData,
     slug,
-    open: drawer.open,
-    close: drawer.close,
-    toggle: drawer.toggle,
-    clearData: drawer.clearData,
+    resolvedDisplayId,
+    resolvedInnerId,
   };
 }

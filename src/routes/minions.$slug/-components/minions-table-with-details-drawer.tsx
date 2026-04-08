@@ -4,6 +4,7 @@ import {
   createSelectColumn,
   FastTablePaginated,
   RelativeTime,
+  useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
 import { Tag } from "antd";
@@ -15,7 +16,7 @@ import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-la
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
-  useMinionDetailsDrawer,
+  type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
 const MinionsTable = FastTablePaginated<MinionShortSchema>;
@@ -35,7 +36,9 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   props: MinionsTableWithDetailsDrawerProps
 ) {
   const { t } = useTranslation();
-  const minionDetailsDrawer = useMinionDetailsDrawer();
+  const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
+    getId: (params) => params.drawerId ?? params.minionId,
+  });
 
   const columns = useMemo(
     () => [
@@ -141,21 +144,21 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       });
       props.filterStore.handleSearch();
       props.onAddFilter();
-      minionDetailsDrawer.close();
+      drawer.close();
     },
-    [minionDetailsDrawer, props.filterStore, props.onAddFilter]
+    [drawer.close, props.filterStore, props.onAddFilter]
   );
 
   const handleRowClick = useCallback(
     (minion: MinionShortSchema) => {
-      minionDetailsDrawer.toggle({
+      drawer.toggle({
         slug: props.slug,
         minionId: minion.minion_id ?? minion.id,
         drawerId: minion.id,
         innerId: minion.id,
       });
     },
-    [minionDetailsDrawer, props.slug]
+    [drawer.toggle, props.slug]
   );
 
   return (
@@ -171,26 +174,13 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         onRowSelectionChange={props.onRowSelectionChange}
         rowSelection={props.rowSelection}
         onLazyLoad={(pagination, sorting) => props.minionsStore.handleLazyLoad(pagination, sorting)}
-        activeRowId={minionDetailsDrawer.activeRowId}
-        bodyRef={minionDetailsDrawer.mainContentRef}
+        activeRowId={drawer.activeRowId}
+        bodyRef={drawer.mainContentRef}
         onRowClick={handleRowClick}
         useVirtualScroll={false}
       />
 
-      {!!minionDetailsDrawer.openedMinionId && (
-        <MinionDetailsDrawer
-          isOpened={minionDetailsDrawer.isOpened}
-          openedMinionId={minionDetailsDrawer.openedMinionId}
-          openedInnerId={minionDetailsDrawer.openedInnerId}
-          minion={minionDetailsDrawer.minion}
-          isMinionLoading={minionDetailsDrawer.isMinionLoading}
-          slug={minionDetailsDrawer.slug}
-          error={minionDetailsDrawer.error}
-          onClose={minionDetailsDrawer.close}
-          clearData={minionDetailsDrawer.clearData}
-          onFilterButton={handleDrawerFilterButtonClick}
-        />
-      )}
+      <MinionDetailsDrawer drawer={drawer} onFilterButton={handleDrawerFilterButtonClick} />
     </>
   );
 });
