@@ -27,6 +27,10 @@ export function MinionGatherModal({
   const [minions, setMinions] = useState<GatheredMinionSchema[]>([]);
   const [count, setCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const totalMinionsText =
+    count >= 100
+      ? t("minion-gather-modal.first-100-minions")
+      : t("minion-gather-modal.total-minions", { count });
 
   useEffect(() => {
     if (isOpen && target && targetType && master) {
@@ -63,9 +67,7 @@ export function MinionGatherModal({
       ]}
     >
       <Spin spinning={isLoading}>
-        <Typography.Text strong>
-          {t("minion-gather-modal.total-minions", { count })}
-        </Typography.Text>
+        <Typography.Text strong>{totalMinionsText}</Typography.Text>
         <List
           dataSource={minions}
           renderItem={(item) => (

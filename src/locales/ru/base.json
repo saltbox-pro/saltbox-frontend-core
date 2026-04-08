@@ -624,6 +624,7 @@
   "minion-gather-modal": {
     "title": "Предварительное нацеливание",
     "close": "Закрыть",
+    "first-100-minions": "Первые 100 клиентов",
     "total-minions": "Всего клиентов: {{count}}"
   },
   "salt-target-types": {

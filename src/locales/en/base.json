@@ -624,6 +624,7 @@
   "minion-gather-modal": {
     "title": "Gathered Minions",
     "close": "Close",
+    "first-100-minions": "First 100 minions",
     "total-minions": "Total minions: {{count}}"
   },
   "salt-target-types": {
