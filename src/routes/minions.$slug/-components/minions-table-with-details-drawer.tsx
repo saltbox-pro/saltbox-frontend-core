@@ -135,12 +135,18 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   );
 
   const handleDrawerFilterButtonClick = useCallback(
-    (params: { name: string; value: string }) => {
+    (params: { name: string; value: unknown }) => {
+      const field = `grains.${params.name}`;
+      const value = params.value;
+      const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
+        ? ["in", value.map((item) => String(item)).join(",")]
+        : ["=", String(value ?? "")];
+
       props.filterStore.addFilter({
-        field: `grains.${params.name}`,
-        operator: "=",
+        field,
+        operator,
         valueSource: "value",
-        value: params.value,
+        value: ruleValue,
       });
       props.filterStore.handleSearch();
       props.onAddFilter();
