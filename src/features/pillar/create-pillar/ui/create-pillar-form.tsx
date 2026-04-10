@@ -60,12 +60,8 @@ export function CreatePillarForm({
         <Form.Item name="is_secret" valuePropName="checked">
           <Checkbox>
             {t("pillars.create.field-secret")}{" "}
-            <Tooltip title={t("pillars.create.field-secret-tooltip")} placement="bottom">
-              <Button
-                icon={<QuestionCircleOutlined style={{ color: "#8c8c8c" }} />}
-                type="text"
-                size="small"
-              />
+            <Tooltip title={t("pillars.create.field-secret-tooltip")}>
+              <QuestionCircleOutlined style={{ color: "#8c8c8c", cursor: "help" }} />
             </Tooltip>
           </Checkbox>
         </Form.Item>

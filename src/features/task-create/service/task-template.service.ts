@@ -1,4 +1,4 @@
-import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplateExcludeSlsSchema } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -24,9 +24,9 @@ export class TaskTemplateService {
     }
   }
 
-  async loadTemplateById(templateId: string): Promise<TaskTemplateModel> {
+  async loadTemplateById(templateId: string): Promise<TaskTemplateExcludeSlsSchema> {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieveWithDefaults({
         tpl_id: templateId,
       });
       if (!response) {

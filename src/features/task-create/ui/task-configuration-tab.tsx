@@ -1,5 +1,5 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import type { TaskTemplateExcludeSlsSchema } from "@saltbox/saltbox-core-api-client";
 import { deepOmitUndefined } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
@@ -14,7 +14,6 @@ import {
   type FormProps,
   Tooltip,
   Checkbox,
-  Space,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,7 +28,7 @@ import { TaskCreateFooter } from "./task-create-footer";
 import { TaskDataForm, type TaskDataFormHandle, type TaskDataFormProps } from "./task-data-form";
 
 export type TaskConfigurationTabProps = {
-  template?: TaskTemplateModel;
+  template?: TaskTemplateExcludeSlsSchema;
   initialData?: Partial<TaskConfigurationFormData>;
   onSubmit: (data: TaskConfigurationFormData) => void;
   onCancel: () => void;
@@ -160,10 +159,7 @@ export function TaskConfigurationTab({
                   <Checkbox>{t("task-create.save-pillars-as-default")}</Checkbox>
                 </Form.Item>
 
-                <Tooltip
-                  title={t("task-create.save-pillars-as-default-tooltip")}
-                  placement="bottom"
-                >
+                <Tooltip title={t("task-create.save-pillars-as-default-tooltip")}>
                   <QuestionCircleOutlined style={{ color: "#8c8c8c", cursor: "help" }} />
                 </Tooltip>
               </Flex>
