@@ -11,22 +11,23 @@ import { CollectionPopoverFilterStore, CollectionStore } from "saltbox-core/stor
 interface CollectionInfoPopoverProps {
   slug: string;
   collectionStore: CollectionStore;
+  filterSchema: CollectionPopoverFilterStore["filterSchema"];
 }
 
 export const CollectionInfoPopover = observer(
-  ({ slug, collectionStore }: CollectionInfoPopoverProps) => {
+  ({ slug, collectionStore, filterSchema }: CollectionInfoPopoverProps) => {
     const { t } = useTranslation();
-    const [filterStore] = useState(new CollectionPopoverFilterStore());
+    const [filterStore] = useState(() => new CollectionPopoverFilterStore());
 
     useEffect(() => {
       if (collectionStore.collection?.query) {
         filterStore.initializeByQuery(collectionStore.collection.query);
       }
-    }, [collectionStore.collection]);
+    }, [collectionStore.collection, filterStore]);
 
     useEffect(() => {
-      filterStore.loadFiltersScheme();
-    }, []);
+      filterStore.filterSchema = filterSchema;
+    }, [filterSchema, filterStore]);
 
     return (
       <Popover

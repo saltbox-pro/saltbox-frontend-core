@@ -191,18 +191,21 @@ const SettingsSlsPage = observer(() => {
       if (!result) {
         setSyncingSlsId(null);
         messageApi.error(t("settings-sls.error-on-check-task-status"));
+        settingsSlsStore.reload();
         return;
       }
 
       if (result.progress === "FAILURE") {
         setSyncingSlsId(null);
         messageApi.error(t("settings-sls.task-failed"));
+        settingsSlsStore.reload();
         return;
       }
 
       if (result.progress === "SUCCESS") {
         setSyncingSlsId(null);
         messageApi.success(t("settings-sls.success-on-sync-sls"));
+        settingsSlsStore.reload();
         return;
       }
 
@@ -211,8 +214,8 @@ const SettingsSlsPage = observer(() => {
     } catch {
       messageApi.error(t("settings-sls.error-on-check-task-status"));
       setSyncingSlsId(null);
+      settingsSlsStore.reload();
     }
-    settingsSlsStore.reload();
   };
 
   const handleCreateSls = () => {

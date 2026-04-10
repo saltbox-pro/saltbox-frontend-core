@@ -23,18 +23,21 @@ export function SyncTemplatesButton({ onSyncComplete }: SyncTemplatesButtonProps
       if (!result) {
         setIsSyncTemplates(false);
         messageApi.error(t("sync-templates-button.error-checking-task-status"));
+        onSyncComplete?.();
         return;
       }
 
       if (result.progress === "FAILURE") {
         setIsSyncTemplates(false);
         messageApi.error(t("sync-templates-button.task-failed"));
+        onSyncComplete?.();
         return;
       }
 
       if (result.progress === "SUCCESS") {
         setIsSyncTemplates(false);
         messageApi.success(t("sync-templates-button.success-on-sync-templates"));
+        onSyncComplete?.();
         return;
       }
 
@@ -43,7 +46,6 @@ export function SyncTemplatesButton({ onSyncComplete }: SyncTemplatesButtonProps
     } catch {
       messageApi.error(t("sync-templates-button.error-checking-task-status"));
       setIsSyncTemplates(false);
-    } finally {
       onSyncComplete?.();
     }
   };

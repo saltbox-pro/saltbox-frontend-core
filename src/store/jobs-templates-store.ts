@@ -24,7 +24,6 @@ export class JobTemplateStore {
       pageIndex: 0,
       pageSize: 50,
     };
-    this.loadJobsTemplate();
   }
 
   reload = () => {

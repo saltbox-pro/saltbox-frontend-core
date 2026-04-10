@@ -2,7 +2,7 @@ import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
 import { PageHeader, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
@@ -30,7 +30,11 @@ const JobsTemplatePage = observer(() => {
       cell: (data) => <RelativeTime date={data.getValue()} />,
     }),
   ];
-  const [jobTemplateStore] = useState(new JobTemplateStore());
+  const [jobTemplateStore] = useState(() => new JobTemplateStore());
+
+  useEffect(() => {
+    jobTemplateStore.reload();
+  }, [jobTemplateStore]);
   return (
     <>
       <PageHeader title={t("jobs-templates.title")} />

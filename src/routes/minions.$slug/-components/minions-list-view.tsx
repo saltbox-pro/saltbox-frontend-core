@@ -3,7 +3,7 @@ import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { RowSelectionState } from "@tanstack/react-table";
 import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
@@ -36,8 +36,9 @@ type MinionListViewProps = {
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
   const [minionsStore] = useState(
-    new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
+    () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
+  const isInitialSearchEffect = useRef(true);
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
@@ -47,9 +48,13 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   }, [props.slug]);
 
   useEffect(() => {
+    if (isInitialSearchEffect.current) {
+      isInitialSearchEffect.current = false;
+      return;
+    }
     minionsStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
     minionsStore.handleSearch();
-  }, [props.filterStore.searchMongoDBQuery]);
+  }, [props.filterStore.searchMongoDBQuery, minionsStore]);
 
   useEffect(() => {
     const newSelectedMinions: TaskTargetMinion[] = Object.keys(selection)

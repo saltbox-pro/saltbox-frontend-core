@@ -315,7 +315,11 @@ const MinionsPage = observer(() => {
 
                 {["list", "statistics"].includes(tabKey) && (
                   <>
-                    <CollectionInfoPopover slug={slug} collectionStore={collectionStore} />
+                    <CollectionInfoPopover
+                      slug={slug}
+                      collectionStore={collectionStore}
+                      filterSchema={minionFilterStore.filterSchema}
+                    />
 
                     <FilterToggleButton
                       isOpen={shownMinionsFilters}
