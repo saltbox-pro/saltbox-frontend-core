@@ -32,6 +32,7 @@ export type TaskConfigurationFormData = {
   max_retries: number;
   retry_delay: number;
   max_jobs_count_at_same_time: number;
+  save_pillars_as_default: boolean;
   data: TaskData;
 };
 

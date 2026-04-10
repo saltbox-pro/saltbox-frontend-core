@@ -30,6 +30,19 @@ export function TaskOverviewTab({
   const { t } = useTranslation();
   const { template, configuration, context } = overviewData;
 
+  const templateInfoExtraItems = useMemo(() => {
+    if (!configuration.save_pillars_as_default) {
+      return undefined;
+    }
+
+    return [
+      {
+        label: t("task.details.save-pillars-as-default-title"),
+        children: t("task.details.save-pillars-as-default-description"),
+      },
+    ];
+  }, [configuration.save_pillars_as_default, t]);
+
   const detailsData = useMemo<TaskDetailsData>(
     () => ({
       template: {
@@ -55,7 +68,7 @@ export function TaskOverviewTab({
 
   return (
     <Flex vertical>
-      <TaskDetails data={detailsData} />
+      <TaskDetails data={detailsData} templateInfoExtraItems={templateInfoExtraItems} />
 
       <TaskCreateFooter>
         <Button onClick={onBack}>{t("task-create.back-to-config")}</Button>

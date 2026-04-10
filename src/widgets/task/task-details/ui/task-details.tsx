@@ -15,11 +15,16 @@ const { Paragraph } = Typography;
 export type TaskDetailsProps = {
   data: TaskDetailsData;
   showTargetMinions?: boolean;
+  templateInfoExtraItems?: InfoDescriptionsProps["items"];
 };
 
 const memoize = createObjectMemoizer();
 
-export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps) {
+export function TaskDetails({
+  data,
+  showTargetMinions = true,
+  templateInfoExtraItems,
+}: TaskDetailsProps) {
   const { t } = useTranslation();
   const { template, parameters, system, target, pillars } = data;
 
@@ -47,8 +52,8 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
     }));
   }, [parameters]);
 
-  const templateInfo = useMemo<InfoDescriptionsProps["items"]>(
-    () => [
+  const templateInfo = useMemo<InfoDescriptionsProps["items"]>(() => {
+    const baseItems: InfoDescriptionsProps["items"] = [
       {
         label: t("task.details.template-title"),
         children: template.title,
@@ -57,10 +62,10 @@ export function TaskDetails({ data, showTargetMinions = true }: TaskDetailsProps
         label: t("task.details.template-function"),
         children: template.saltFunction,
       },
-      ...templateParams,
-    ],
-    [t, template.saltFunction, template.title, templateParams]
-  );
+    ];
+
+    return [...baseItems, ...templateParams, ...(templateInfoExtraItems ?? [])];
+  }, [t, template.saltFunction, template.title, templateInfoExtraItems, templateParams]);
 
   const systemParams = useMemo<InfoDescriptionsProps["items"]>(
     () => [

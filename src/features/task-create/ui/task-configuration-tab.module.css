@@ -1,5 +1,15 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
 .formItem {
   width: 100%;
+}
+
+.formItem_withoutOffset {
+  margin-bottom: 0 !important;
 }
 
 .divider {

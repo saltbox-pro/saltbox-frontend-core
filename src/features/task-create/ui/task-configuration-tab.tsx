@@ -1,3 +1,4 @@
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { deepOmitUndefined } from "@saltbox/saltbox-frontend-common";
 import {
@@ -11,6 +12,9 @@ import {
   Switch,
   message,
   type FormProps,
+  Tooltip,
+  Checkbox,
+  Space,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,7 +46,7 @@ export function TaskConfigurationTab({
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const [form] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
+  const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
@@ -55,7 +59,7 @@ export function TaskConfigurationTab({
 
     const defaultConfig = taskCreationService.getDefaultConfiguration();
 
-    form.setFieldsValue({
+    settingsForm.setFieldsValue({
       ...defaultConfig,
       batch_size: initialData.batch_size ?? defaultConfig.batch_size,
       max_retries: initialData.max_retries ?? defaultConfig.max_retries,
@@ -63,7 +67,7 @@ export function TaskConfigurationTab({
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
     });
-  }, [form, initialData, template]);
+  }, [settingsForm, initialData, template]);
 
   const showValidationError = () => {
     messageApi.error(t("errors.form-validation"));
@@ -77,7 +81,7 @@ export function TaskConfigurationTab({
 
     setTimeout(
       () =>
-        form.scrollToField(errorInfo.errorFields[0].name, {
+        settingsForm.scrollToField(errorInfo.errorFields[0].name, {
           focus: true,
           block: "center",
           scrollMode: "always",
@@ -97,6 +101,7 @@ export function TaskConfigurationTab({
       max_jobs_count_at_same_time:
         formValue.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
       data: deepOmitUndefined(formValue.data ?? {}),
+      save_pillars_as_default: formValue.save_pillars_as_default,
     };
 
     onSubmit(configData);
@@ -116,9 +121,9 @@ export function TaskConfigurationTab({
 
   const handleTaskDataFinish: TaskDataFormProps["onSubmit"] = async (jsonDataFromForm) => {
     try {
-      const formValue = await form.validateFields();
+      const settingsFormValue = await settingsForm.validateFields();
 
-      handleSubmit({ ...formValue, data: jsonDataFromForm });
+      handleSubmit({ ...settingsFormValue, data: jsonDataFromForm });
     } catch (errorInfo) {
       handleFormFinishFailed(errorInfo);
     }
@@ -134,26 +139,45 @@ export function TaskConfigurationTab({
 
       <Flex vertical>
         <Flex vertical gap="middle">
-          <Flex align="center" justify="flex-end" gap="small">
-            <span>{t("task-create.advanced-settings")}</span>
-            <Switch checked={showAdvanced} onChange={(checked) => setShowAdvanced(checked)} />
-          </Flex>
-
-          <Flex
-            vertical
-            gap="small"
-            style={{ display: showAdvanced ? "flex" : "none" }}
-            aria-hidden={!showAdvanced}
+          <Form
+            className={styles.form}
+            form={settingsForm}
+            name="task-settings-form"
+            id="task-settings-form"
+            layout="vertical"
+            initialValues={memoize(taskCreationService.getDefaultConfiguration())}
+            autoComplete="off"
+            onFinish={handleFormFinish}
+            onFinishFailed={handleFormFinishFailed}
           >
-            <Form
-              form={form}
-              name="task-settings-form"
-              id="task-settings-form"
-              layout="vertical"
-              initialValues={memoize(taskCreationService.getDefaultConfiguration())}
-              autoComplete="off"
-              onFinish={handleFormFinish}
-              onFinishFailed={handleFormFinishFailed}
+            <Flex align="center" justify="space-between" gap="small">
+              <Flex align="center">
+                <Form.Item
+                  name="save_pillars_as_default"
+                  valuePropName="checked"
+                  className={styles.formItem_withoutOffset}
+                >
+                  <Checkbox>{t("task-create.save-pillars-as-default")}</Checkbox>
+                </Form.Item>
+
+                <Tooltip
+                  title={t("task-create.save-pillars-as-default-tooltip")}
+                  placement="bottom"
+                >
+                  <QuestionCircleOutlined style={{ color: "#8c8c8c", cursor: "help" }} />
+                </Tooltip>
+              </Flex>
+
+              <Flex align="center" justify="flex-end" gap="small">
+                <span>{t("task-create.advanced-settings")}</span>
+                <Switch checked={showAdvanced} onChange={(checked) => setShowAdvanced(checked)} />
+              </Flex>
+            </Flex>
+            <Flex
+              vertical
+              gap="small"
+              style={{ display: showAdvanced ? "flex" : "none" }}
+              aria-hidden={!showAdvanced}
             >
               <Row gutter={16}>
                 <Col span={12}>
@@ -210,10 +234,10 @@ export function TaskConfigurationTab({
                   </Form.Item>
                 </Col>
               </Row>
-            </Form>
 
-            <Divider className={styles.divider} />
-          </Flex>
+              <Divider className={styles.divider} />
+            </Flex>
+          </Form>
 
           <TaskDataForm
             ref={taskDataFormRef}
