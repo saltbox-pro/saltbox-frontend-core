@@ -65,6 +65,7 @@ export function TaskConfigurationTab({
       retry_delay: initialData.retry_delay ?? defaultConfig.retry_delay,
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
+      save_pillars_as_default: true,
     });
   }, [settingsForm, initialData, template]);
 
