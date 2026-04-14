@@ -1,12 +1,13 @@
-import i18n from "i18next";
+import { SaltboxLocaleProvider } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react";
 import { Suspense } from "react";
-import { I18nextProvider } from "react-i18next";
 import { BrowserRouter, Routes, Route } from "react-router";
 
 import "react-querybuilder/dist/query-builder.css";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
+import { i18nStore } from "saltbox-core/store";
 
+import { coreResources } from "./i18n-resources";
 import CollectionEditPage from "./routes/collection.$slug";
 import JobsPage from "./routes/jobs";
 import JobsTemplatesPage from "./routes/jobs-templates";
@@ -29,8 +30,8 @@ import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
 export default observer(function Root() {
   return (
-    <I18nextProvider i18n={i18n}>
-      <Suspense fallback="Loading translations...">
+    <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+      <Suspense fallback="Loading...">
         <BrowserRouter basename="/">
           <Routes>
             <Route path="/core/minions" element={<DefaultMinionsPage />} />
@@ -59,6 +60,6 @@ export default observer(function Root() {
           </Routes>
         </BrowserRouter>
       </Suspense>
-    </I18nextProvider>
+    </SaltboxLocaleProvider>
   );
 });
