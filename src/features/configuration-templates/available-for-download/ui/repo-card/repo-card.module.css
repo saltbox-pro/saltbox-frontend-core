@@ -1,0 +1,20 @@
+.card .title {
+  flex: unset;
+}
+
+.card .extra {
+  margin-inline-start: 10px;
+}
+
+.name {
+  vertical-align: middle;
+}
+
+.avatar {
+  font-weight: normal;
+  margin-right: 6px;
+}
+
+.secondaryText {
+  white-space: nowrap;
+}

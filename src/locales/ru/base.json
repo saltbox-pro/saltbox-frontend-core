@@ -742,6 +742,28 @@
       "copied": "Скопировано в буфер обмена"
     }
   },
+  "configuration-templates": {
+    "page-title": "Шаблоны конфигураций",
+    "tabs": {
+      "available-for-download": {
+        "title": "Доступные для подключения",
+        "empty": "Нет доступных источников шаблонов",
+        "load-error": "Не удалось загрузить данные"
+      }
+    },
+    "repo": {
+      "visibility": {
+        "private": "Приватный",
+        "internal": "Внутренний",
+        "public": "Публичный"
+      },
+      "created-at": "Создан",
+      "updated-at": "Обновлён",
+      "star-count-title": "Звёзды",
+      "fork-count-title": "Форки",
+      "templates": "Шаблоны"
+    }
+  },
   "aggregated-tasks": {
     "title": "Задачи",
     "policies-title": "Политики"

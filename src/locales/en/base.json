@@ -742,6 +742,28 @@
       "copied": "Copied"
     }
   },
+  "configuration-templates": {
+    "page-title": "Configuration Templates",
+    "tabs": {
+      "available-for-download": {
+        "title": "Available to connect",
+        "empty": "No template sources available",
+        "load-error": "Failed to load data"
+      }
+    },
+    "repo": {
+      "visibility": {
+        "private": "Private",
+        "internal": "Internal",
+        "public": "Public"
+      },
+      "created-at": "Created",
+      "updated-at": "Updated",
+      "star-count-title": "Stars",
+      "fork-count-title": "Forks",
+      "templates": "Templates"
+    }
+  },
   "aggregated-tasks": {
     "title": "Tasks",
     "policies-title": "Policies"

@@ -8,6 +8,7 @@ import "react-querybuilder/dist/query-builder.css";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
 
 import CollectionEditPage from "./routes/collection.$slug";
+import ConfigurationTemplatesPage from "./routes/configuration-templates";
 import JobsPage from "./routes/jobs";
 import JobsTemplatesPage from "./routes/jobs-templates";
 import JobPage from "./routes/jobs.$jid";
@@ -54,6 +55,7 @@ export default observer(function Root() {
             <Route path="/core/tasks" element={<AggregatedTasksPage />} />
             <Route path="/core/policies" element={<AggregatedPoliciesPage />} />
             <Route path="/core/task/:taskid" element={<TaskPage />} />
+            <Route path="/core/configuration-templates" element={<ConfigurationTemplatesPage />} />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
