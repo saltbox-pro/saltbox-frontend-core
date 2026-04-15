@@ -384,17 +384,37 @@ export function JobModal({
     }
   };
 
+  const resetModalState = () => {
+    form.resetFields();
+    refJobParamsForm.current?.reset();
+    setSaltFunction(undefined);
+    setSaltFunctionName(undefined);
+    setSearchFunctionName("");
+    setJsonFormValue({});
+    hasLoadedInitialSchema.current = false;
+    isSubmittingRef.current = false;
+    handleFormFinishInProgressRef.current = false;
+  };
+
   const handleModalCancel = () => {
     if (!isJobCreating) {
+      resetModalState();
       setIsModalOpen(false);
     }
+  };
+
+  const validateJsonForm = () => {
+    if (!saltFunction?.json_schema) {
+      return true;
+    }
+
+    return refJobParamsForm.current?.validateForm() === true;
   };
 
   const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
     if (handleFormFinishInProgressRef.current) return;
 
-    const isFormValid = refJobParamsForm.current?.validateForm();
-    if (!isFormValid) {
+    if (!validateJsonForm()) {
       isSubmittingRef.current = false;
       messageApi.error(t("errors.form-validation"));
       return;
@@ -416,6 +436,7 @@ export function JobModal({
         },
       })
       .then((response) => {
+        resetModalState();
         setIsModalOpen(false);
         if (response?.jid) {
           navigate(`/core/jobs/${response.jid}`);
@@ -532,8 +553,7 @@ export function JobModal({
   };
 
   const handleCreateJobPlugin = (pluginKey: string) => {
-    const isFormValid = refJobParamsForm.current?.validateForm();
-    if (!isFormValid) {
+    if (!validateJsonForm()) {
       return;
     }
     publish("jobs.jobmodal.create", {
