@@ -143,6 +143,12 @@ export const saltboxModule = {
         icon: "source",
         path: "/core/settings-sls",
       },
+      {
+        key: "configuration-templates",
+        label: { en: "Configuration Templates", ru: "Шаблоны конфигураций" },
+        icon: "source",
+        path: "/core/configuration-templates",
+      },
     ],
   },
   init: (authStore, services, localeStore, pluginsStore) => {

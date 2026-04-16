@@ -2,6 +2,14 @@
   flex: unset;
 }
 
+.cardDisconnected {
+  background: #fbfbfb;
+}
+
+.dimmed {
+  opacity: 0.8;
+}
+
 .card .extra {
   margin-inline-start: 10px;
 }
@@ -15,6 +23,6 @@
   margin-right: 6px;
 }
 
-.secondaryText {
-  white-space: nowrap;
+.divider {
+  margin: 7px 0 3px;
 }

@@ -144,7 +144,6 @@
     "jobs": "Jobs",
     "jobs-templates": "Job Templates",
     "task-templates": "Task Templates",
-    "settings-sls-repositories": "Configuration Repositories",
     "pillars": "Pillars",
     "logout": "Logout",
     "popover-support-help-center": "Support & Help Center",
@@ -744,14 +743,19 @@
   },
   "configuration-templates": {
     "page-title": "Configuration Templates",
-    "tabs": {
-      "available-for-download": {
-        "title": "Available to connect",
-        "empty": "No template sources available",
-        "load-error": "Failed to load data"
-      }
+    "load-error": "Failed to load data",
+    "empty": "No available templates",
+    "search": {
+      "placeholder": "Search"
+    },
+    "filter": {
+      "placeholder": "Filter (soon)"
     },
     "repo": {
+      "connection": {
+        "connected": "Connected",
+        "disconnected": "Not connected"
+      },
       "visibility": {
         "private": "Private",
         "internal": "Internal",
@@ -759,9 +763,14 @@
       },
       "created-at": "Created",
       "updated-at": "Updated",
+      "synced-at": "Synced",
+      "synced-never": "never",
       "star-count-title": "Stars",
       "fork-count-title": "Forks",
-      "templates": "Templates"
+      "templates": "Templates",
+      "templates-empty": "No templates",
+      "templates-load-more": "Load more",
+      "templates-load-error": "Failed to load data"
     }
   },
   "aggregated-tasks": {

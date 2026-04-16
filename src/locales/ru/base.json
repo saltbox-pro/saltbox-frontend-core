@@ -144,7 +144,6 @@
     "jobs": "Команды",
     "jobs-templates": "Шаблоны команд",
     "task-templates": "Шаблоны задач",
-    "settings-sls-repositories": "Репозитории конфигураций",
     "pillars": "Данные Pillars",
     "logout": "Выйти",
     "popover-support-help-center": "Поддержка и помощь",
@@ -744,14 +743,19 @@
   },
   "configuration-templates": {
     "page-title": "Шаблоны конфигураций",
-    "tabs": {
-      "available-for-download": {
-        "title": "Доступные для подключения",
-        "empty": "Нет доступных источников шаблонов",
-        "load-error": "Не удалось загрузить данные"
-      }
+    "load-error": "Не удалось загрузить данные",
+    "empty": "Нет доступных шаблонов",
+    "search": {
+      "placeholder": "Поиск"
+    },
+    "filter": {
+      "placeholder": "Фильтр (скоро)"
     },
     "repo": {
+      "connection": {
+        "connected": "Подключен",
+        "disconnected": "Не подключен"
+      },
       "visibility": {
         "private": "Приватный",
         "internal": "Внутренний",
@@ -759,9 +763,14 @@
       },
       "created-at": "Создан",
       "updated-at": "Обновлён",
+      "synced-at": "Синхронизирован",
+      "synced-never": "никогда",
       "star-count-title": "Звёзды",
       "fork-count-title": "Форки",
-      "templates": "Шаблоны"
+      "templates": "Шаблоны",
+      "templates-empty": "Нет шаблонов",
+      "templates-load-more": "Загрузить ещё",
+      "templates-load-error": "Не удалось загрузить данные"
     }
   },
   "aggregated-tasks": {
