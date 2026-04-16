@@ -1,5 +1,5 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { isMongoQueryEmpty } from "@saltbox/saltbox-frontend-common";
+import { isMongoQueryEmpty, maskPasswordFields } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,7 +49,11 @@ export function TaskOverviewTab({
         title: template.title,
         saltFunction: template.fun,
       },
-      parameters: configuration.data,
+      parameters: maskPasswordFields(
+        configuration.data,
+        template?.json_schema,
+        template?.ui_schema
+      ),
       system: {
         taskType: context.taskType!,
         batchSize: configuration.batch_size,
