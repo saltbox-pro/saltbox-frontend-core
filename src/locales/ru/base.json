@@ -408,6 +408,7 @@
     "table-targets": "Цели",
     "table-user": "Пользователь",
     "table-jid": "JID",
+    "table-master": "Мастер",
     "table-status-starting": "Запускается",
     "table-status-running": "Запущена",
     "table-status-finished": "Завершена",

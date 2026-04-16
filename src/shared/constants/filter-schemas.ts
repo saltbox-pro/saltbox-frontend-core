@@ -98,6 +98,11 @@ export const getJobsFilterSchema = (saltTargetTypes: SelectProps["options"]): Op
       operators: defaultStringOperators,
     },
     {
+      name: "salt_master",
+      label: "Master",
+      operators: defaultStringOperators,
+    },
+    {
       name: "fun",
       label: "Function",
       operators: defaultStringOperators,

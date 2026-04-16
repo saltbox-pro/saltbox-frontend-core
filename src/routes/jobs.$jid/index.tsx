@@ -239,6 +239,14 @@ const JobPage = observer(() => {
                 title: t("jobs.repeat-job"),
               }}
             />
+
+            <span className={styles.jobDetailLabel}>{t("jobs.table-master")}:</span>
+            <span className={styles.jobDetailValue}>
+              {jobStore.job?.salt_master ?? <Skeleton.Input size="small" />}
+            </span>
+          </div>
+
+          <div className={styles.jobDetailItem}>
             <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
             <span className={styles.jobDetailValue}>
               {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}

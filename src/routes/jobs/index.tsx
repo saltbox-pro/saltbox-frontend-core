@@ -74,6 +74,10 @@ const JobsPage = observer(() => {
           ellipsis: true,
         },
       }),
+      columnHelper.accessor("salt_master", {
+        header: t("jobs.table-master"),
+        meta: { width: "10%" },
+      }),
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
         meta: { width: "12%" },

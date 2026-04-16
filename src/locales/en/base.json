@@ -408,6 +408,7 @@
     "table-targets": "Targets",
     "table-user": "User",
     "table-jid": "JID",
+    "table-master": "Master",
     "table-status-starting": "Starting",
     "table-status-running": "Running",
     "table-status-finished": "Finished",
