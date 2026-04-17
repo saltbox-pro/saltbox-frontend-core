@@ -62,7 +62,7 @@ export function TaskOverviewTab({
         retryDelay: configuration.retry_delay,
       },
       target: {
-        collection: context.collection?.slug || context.slug,
+        collection: context.collection?.title ?? context.collection?.slug,
         minionIds: context.minionList?.map((minion) => minion.minion_id),
         isQueryBased: !isMongoQueryEmpty(context.query),
       },

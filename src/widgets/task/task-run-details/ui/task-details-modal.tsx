@@ -55,7 +55,7 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
         retryDelay: task?.retry_delay,
       },
       target: {
-        collection: task.target_collection?.slug ?? "",
+        collection: task.target_collection?.title ?? task.target_collection?.slug,
         minionIds: taskStore.minions?.map((minion) => minion.minion_id),
         isQueryBased: Boolean(task?.target_query && Object.keys(task.target_query).length > 0),
       },
