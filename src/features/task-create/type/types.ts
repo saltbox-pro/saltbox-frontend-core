@@ -54,4 +54,5 @@ export type TaskCreatePlugin = {
 export type PluginRenderData = {
   taskCreateRequest: TaskCreateRequestSchema;
   templateDescription: string;
+  collectionName?: string;
 };

@@ -200,6 +200,10 @@
     "error-creating-task": "Ошибка создания задачи",
     "task-created-successfully": "Задача успешно создана",
     "error-on-load-salt-masters": "Ошибка при загрузке мастеров",
+    "warning-apply-to-whole-collection": "{{entityType}} будет применена ко всем клиентам коллекции \"{{collectionName}}\"",
+    "confirm-apply-to-whole-collection-title": "Подтверждение запуска",
+    "confirm-apply-to-whole-collection-description": "Вы собираетесь запустить {{entityType}} на всех клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
+    "confirm-apply-to-whole-collection-question": "Вы уверены, что хотите продолжить?",
     "warning-on-create-task": "Для создания задачи активируйте мастера на странице \"Мастера\"",
     "warning-on-create-policy": "Для создания политики активируйте мастера на странице \"Мастера\""
   },
@@ -260,6 +264,8 @@
     "type": "Тип",
     "type-classic": "Задача",
     "type-policy": "Политика",
+    "type-classic-accusative": "задачу",
+    "type-policy-accusative": "политику",
     "minions": {
       "table-minion-id": "ID клиента",
       "table-master": "Мастер",

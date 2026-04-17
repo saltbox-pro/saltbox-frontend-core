@@ -200,6 +200,10 @@
     "error-creating-task": "Error creating task",
     "task-created-successfully": "Task created successfully",
     "error-on-load-salt-masters": "Error on load salt masters",
+    "warning-apply-to-whole-collection": "{{entityType}} will be applied to all minions in the \"{{collectionName}}\" collection",
+    "confirm-apply-to-whole-collection-title": "Launch confirmation",
+    "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
+    "confirm-apply-to-whole-collection-question": "Are you sure you want to continue?",
     "warning-on-create-task": "To create a task, activate a master on the Masters page",
     "warning-on-create-policy": "To create a policy, activate a master on the Masters page"
   },
@@ -260,6 +264,8 @@
     "type": "Type",
     "type-classic": "Task",
     "type-policy": "Policy",
+    "type-classic-accusative": "task",
+    "type-policy-accusative": "policy",
     "minions": {
       "table-minion-id": "Minion ID",
       "table-master": "Master",

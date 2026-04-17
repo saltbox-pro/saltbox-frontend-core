@@ -15,7 +15,7 @@ import {
   Tooltip,
   Checkbox,
 } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
@@ -30,6 +30,7 @@ import { TaskDataForm, type TaskDataFormHandle, type TaskDataFormProps } from ".
 export type TaskConfigurationTabProps = {
   template?: TaskTemplateExcludeSlsSchema;
   initialData?: Partial<TaskConfigurationFormData>;
+  topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;
   onCancel: () => void;
 };
@@ -39,6 +40,7 @@ const memoize = createObjectMemoizer({ deep: true });
 export function TaskConfigurationTab({
   template,
   initialData,
+  topContent,
   onSubmit,
   onCancel,
 }: TaskConfigurationTabProps) {
@@ -139,6 +141,8 @@ export function TaskConfigurationTab({
 
       <Flex vertical>
         <Flex vertical gap="middle">
+          {topContent}
+
           <Form
             className={styles.form}
             form={settingsForm}

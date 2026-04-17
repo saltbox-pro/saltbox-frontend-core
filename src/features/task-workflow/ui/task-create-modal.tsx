@@ -37,6 +37,7 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
           pluginKey,
           taskCreateRequest: data.taskCreateRequest,
           templateDescription: data.templateDescription,
+          collectionName: data.collectionName,
         });
         onClose();
       };

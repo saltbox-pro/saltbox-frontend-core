@@ -1,6 +1,6 @@
 import { type TaskTemplateExcludeSlsSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Tabs, message, Flex } from "antd";
+import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,8 +17,11 @@ import type {
   TaskOverviewData,
 } from "../type/types";
 
+import { TaskApplyToWholeCollectionWarning } from "./task-apply-to-whole-collection-warning";
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";
+
+const { Paragraph, Text } = Typography;
 
 export type TaskModalProps = {
   isOpen: boolean;
@@ -35,7 +38,8 @@ const enum TabKey {
 
 export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated }: TaskModalProps) {
   const { t, i18n } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi, messageContextHolder] = message.useMessage();
+  const [modalApi, modalContextHolder] = Modal.useModal();
 
   const [isCreating, setIsCreating] = useState(false);
   const [template, setTemplate] = useState<TaskTemplateExcludeSlsSchema | undefined>();
@@ -45,6 +49,8 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   });
 
   const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const collectionName = context.collection?.title ?? context.slug;
 
   useEffect(() => {
     const scrollToTop = () => {
@@ -113,10 +119,49 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
     setActiveTabKey(TabKey.Configuration);
   };
 
+  const confirmApplyToWholeCollection = (): Promise<boolean> => {
+    const entityType = t(
+      context.taskType === TaskType.Policy
+        ? "task.type-policy-accusative"
+        : "task.type-classic-accusative"
+    );
+
+    return new Promise((resolve) => {
+      modalApi.confirm({
+        title: t("task-create.confirm-apply-to-whole-collection-title"),
+        content: (
+          <>
+            <Paragraph>
+              {t("task-create.confirm-apply-to-whole-collection-description", {
+                entityType,
+                collectionName,
+              })}
+            </Paragraph>
+            <Text>{t("task-create.confirm-apply-to-whole-collection-question")}</Text>
+          </>
+        ),
+        icon: null,
+        okText: t("common.yes"),
+        cancelText: t("common.no"),
+        maskClosable: false,
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  };
+
   const handleCreateTask = async () => {
     if (!configuration || !template) {
       messageApi.error(t("task-create.invalid-configuration"));
       return;
+    }
+
+    const shouldConfirmApplyToWholeCollection = !context.minionList?.length;
+    if (shouldConfirmApplyToWholeCollection) {
+      const confirmed = await confirmApplyToWholeCollection();
+      if (!confirmed) {
+        return;
+      }
     }
 
     setIsCreating(true);
@@ -159,13 +204,26 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         ) ||
           template?.title) ??
         "",
+      collectionName,
     }),
-    [configuration, context, template, i18n.language]
+    [configuration, context, template, i18n.language, collectionName]
   );
 
   const pluginButtons = useMemo(() => {
     return context.renderPluginButtons?.(pluginData) ?? [];
   }, [context, pluginData]);
+
+  const configurationTopContent = useMemo(() => {
+    const shouldShow = !context.minionList?.length;
+    if (!shouldShow) return null;
+
+    return (
+      <TaskApplyToWholeCollectionWarning
+        taskType={context.taskType}
+        collectionName={collectionName}
+      />
+    );
+  }, [collectionName, context.minionList?.length, context.taskType]);
 
   const tabs = [
     {
@@ -175,6 +233,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         <TaskConfigurationTab
           template={template}
           initialData={configuration}
+          topContent={configurationTopContent}
           onSubmit={handleConfigurationSubmit}
           onCancel={onClose}
         />
@@ -200,7 +259,8 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
 
   return (
     <>
-      {contextHolder}
+      {messageContextHolder}
+      {modalContextHolder}
 
       <Modal
         title={t(
