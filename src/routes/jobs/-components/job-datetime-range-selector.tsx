@@ -16,7 +16,7 @@ interface JobDatetimeRangeSelectorOption {
   unut: dayjs.ManipulateType;
 }
 
-const optionsDefaultValue = 1;
+const optionsDefaultValue = 4;
 
 export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
   const { t } = useTranslation();
