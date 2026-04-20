@@ -70,6 +70,7 @@ const JobPage = observer(() => {
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
+  const isMinionsCountReadyForReturns = jobStore.isMinionsCountReadyForReturns;
 
   const tableConversionCheck = useMemo(() => {
     const jobReturnsData = effectiveJobReturns.map((jobReturn) => ({
@@ -341,114 +342,126 @@ const JobPage = observer(() => {
           )}
         </Flex>
 
-        <JobStatusProgress counts={statusCounts} />
+        {!isMinionsCountReadyForReturns ? (
+          <Skeleton active />
+        ) : (
+          <>
+            <JobStatusProgress counts={statusCounts} />
 
-        {jobStore.totalMinions > 0 && (
-          <Flex
-            className={styles.switchContainer}
-            justify="space-between"
-            align="center"
-            gap={16}
-            wrap
-          >
-            <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-              <Tag color="green">
-                {t("task.job-returns-table.status-success")}: {statusCounts.success}
-              </Tag>
-              <Tag color="red">
-                {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-              </Tag>
-              <Tag color="orange">
-                {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-              </Tag>
-              <Tag color="default">
-                {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-              </Tag>
-              <Tag color="blue">
-                {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-              </Tag>
-            </Flex>
-            <Flex align="center" gap={16}>
-              {isTableViewMode && tableErrors.length > 0 && (
-                <Flex align="center" gap={8}>
-                  <ExclamationCircleOutlined style={{ color: "#faad14", fontSize: "16px" }} />
-                  <span>{t("jobs.table-errors-found-short", { count: tableErrors.length })}</span>
-                  <ErrorsPopover errors={tableErrors} />
+            {jobStore.totalMinions > 0 && (
+              <Flex
+                className={styles.switchContainer}
+                justify="space-between"
+                align="center"
+                gap={16}
+                wrap
+              >
+                <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
+                  <Tag color="green">
+                    {t("task.job-returns-table.status-success")}: {statusCounts.success}
+                  </Tag>
+                  <Tag color="red">
+                    {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
+                  </Tag>
+                  <Tag color="orange">
+                    {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+                  </Tag>
+                  <Tag color="default">
+                    {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
+                  </Tag>
+                  <Tag color="blue">
+                    {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
+                  </Tag>
                 </Flex>
-              )}
-              <Flex align="center" gap={8}>
-                {(viewMode === "standard" || viewMode === "detailed") &&
-                  jobStore.totalMinions > 1 && (
-                    <Flex align="center" gap={4}>
-                      {t("jobs.reveal-all-returns")}
-                      <Switch checked={isRevealedAll} onChange={handleToggleRevealedAll} />
+                <Flex align="center" gap={16}>
+                  {isTableViewMode && tableErrors.length > 0 && (
+                    <Flex align="center" gap={8}>
+                      <ExclamationCircleOutlined style={{ color: "#faad14", fontSize: "16px" }} />
+                      <span>
+                        {t("jobs.table-errors-found-short", { count: tableErrors.length })}
+                      </span>
+                      <ErrorsPopover errors={tableErrors} />
                     </Flex>
                   )}
-                <Radio.Group
-                  value={viewMode}
-                  onChange={(e) => setViewMode(e.target.value)}
-                  options={[
-                    { label: t("jobs.standard-view"), value: "standard" },
-                    { label: t("jobs.detailed-view"), value: "detailed" },
-                    {
-                      label: t("jobs.table-view"),
-                      value: "table",
-                      disabled:
-                        !tableConversionCheck?.canConvert || tableConversionCheck.rows.length === 0,
-                    },
-                  ]}
-                  optionType="button"
-                  buttonStyle="solid"
-                />
-                {(!tableConversionCheck?.canConvert || tableConversionCheck.rows.length === 0) && (
-                  <Tooltip
-                    title={tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")}
-                    placement="left"
-                    overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
-                  >
-                    <QuestionCircleOutlined className={styles.helpIcon} />
-                  </Tooltip>
-                )}
+                  <Flex align="center" gap={8}>
+                    {(viewMode === "standard" || viewMode === "detailed") &&
+                      jobStore.totalMinions > 1 && (
+                        <Flex align="center" gap={4}>
+                          {t("jobs.reveal-all-returns")}
+                          <Switch checked={isRevealedAll} onChange={handleToggleRevealedAll} />
+                        </Flex>
+                      )}
+                    <Radio.Group
+                      value={viewMode}
+                      onChange={(e) => setViewMode(e.target.value)}
+                      options={[
+                        { label: t("jobs.standard-view"), value: "standard" },
+                        { label: t("jobs.detailed-view"), value: "detailed" },
+                        {
+                          label: t("jobs.table-view"),
+                          value: "table",
+                          disabled:
+                            !tableConversionCheck?.canConvert ||
+                            tableConversionCheck.rows.length === 0,
+                        },
+                      ]}
+                      optionType="button"
+                      buttonStyle="solid"
+                    />
+                    {(!tableConversionCheck?.canConvert ||
+                      tableConversionCheck.rows.length === 0) && (
+                      <Tooltip
+                        title={
+                          tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")
+                        }
+                        placement="left"
+                        overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
+                      >
+                        <QuestionCircleOutlined className={styles.helpIcon} />
+                      </Tooltip>
+                    )}
+                  </Flex>
+                  {isTableViewMode && (
+                    <Tooltip title={t("jobs.download-to-csv")}>
+                      <Button
+                        type="primary"
+                        icon={<UploadOutlined />}
+                        onClick={handleExportToCSV}
+                        disabled={
+                          !mergedTableData ||
+                          !mergedTableData.canConvert ||
+                          mergedTableData.rows.length === 0
+                        }
+                      />
+                    </Tooltip>
+                  )}
+                </Flex>
               </Flex>
-              {isTableViewMode && (
-                <Tooltip title={t("jobs.download-to-csv")}>
-                  <Button
-                    type="primary"
-                    icon={<UploadOutlined />}
-                    onClick={handleExportToCSV}
-                    disabled={
-                      !mergedTableData ||
-                      !mergedTableData.canConvert ||
-                      mergedTableData.rows.length === 0
-                    }
-                  />
-                </Tooltip>
-              )}
+            )}
+
+            <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
+              <DefaultJobReturnTable
+                jobReturns={effectiveJobReturns}
+                isFullOutput={isFullOutput}
+                isTableViewMode={isTableViewMode}
+                jobStartTimestamp={jobStore.jobStartTimestamp}
+                pagination={jobStore.pagination}
+                sorting={jobStore.sorting}
+                total={jobStore.total}
+                onLazyLoad={jobStore.handleLazyLoad}
+                isLoading={
+                  isWebSocketConnecting || jobStore.isJobLoading || jobStore.isJobReturnsLoading
+                }
+                forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
+                onTableViewSortingChange={setTableViewSorting}
+                onTableViewFilteredDataChange={setFilteredTableRows}
+                onTableViewErrorsChange={handleTableErrorsChange}
+              />
             </Flex>
-          </Flex>
+
+            {jobModalCreatePlugin}
+          </>
         )}
-
-        <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
-          <DefaultJobReturnTable
-            jobReturns={effectiveJobReturns}
-            isFullOutput={isFullOutput}
-            isTableViewMode={isTableViewMode}
-            jobStartTimestamp={jobStore.jobStartTimestamp}
-            pagination={jobStore.pagination}
-            sorting={jobStore.sorting}
-            total={jobStore.total}
-            onLazyLoad={jobStore.handleLazyLoad}
-            isLoading={
-              isWebSocketConnecting || jobStore.isJobLoading || jobStore.isJobReturnsLoading
-            }
-            forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
-            onTableViewSortingChange={setTableViewSorting}
-            onTableViewFilteredDataChange={setFilteredTableRows}
-            onTableViewErrorsChange={handleTableErrorsChange}
-          />
-        </Flex>
-
-        {jobModalCreatePlugin}
       </Flex>
     </>
   );
