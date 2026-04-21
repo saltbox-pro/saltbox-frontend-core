@@ -69,6 +69,14 @@ type JobFormData = CreateJobRequest & { fun: string[] | number[] };
 
 const searchFunctionAllowedSymbols = /[^a-zA-Z0-9._]/g;
 
+const getRepeatJsonFormValue = (
+  arg: unknown[] | undefined,
+  kwarg: Record<string, unknown> | undefined
+) => ({
+  args: Array.isArray(arg) ? arg : arg != null ? [arg] : [],
+  kwargs: cleanNullsFromKwargs(kwarg),
+});
+
 export function JobModal({
   target,
   targetType,
@@ -103,7 +111,6 @@ export function JobModal({
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
-  const hasLoadedInitialSchema = useRef<boolean>(false);
   const hasAutoOpenedRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
@@ -268,7 +275,6 @@ export function JobModal({
     setTtlValue(null);
     setTtlUnit("seconds");
     setIsSchemaListLoading(true);
-    hasLoadedInitialSchema.current = false;
 
     apiCoreStore.jsonSchemasApi
       ?.jobsSchemasList({
@@ -282,34 +288,6 @@ export function JobModal({
       })
       .finally(() => setIsSchemaListLoading(false));
   }, [isModalOpen, target, targetType, defaultMaster]);
-
-  useEffect(() => {
-    if (!isModalOpen) {
-      return;
-    }
-
-    if (fun && saltFunctionList.length > 0 && !hasLoadedInitialSchema.current) {
-      setSaltFunction(undefined);
-      setJsonFormValue({});
-      refJobParamsForm.current?.reset();
-
-      setIsSchemaLoading(true);
-      hasLoadedInitialSchema.current = true;
-
-      apiCoreStore.jsonSchemasApi
-        ?.jobsSchemasGet({ name: fun })
-        .then((schema) => {
-          setSaltFunction(schema);
-          setJsonFormValue({ args: arg || [], kwargs: cleanNullsFromKwargs(kwarg) });
-          const functionDefaultTtl = parseTtlValue(schema?.default_ttl);
-          setTtlValue(functionDefaultTtl);
-        })
-        .catch(() => {
-          messageApi.error("Error on load salt function schema.");
-        })
-        .finally(() => setIsSchemaLoading(false));
-    }
-  }, [fun, arg, kwarg, saltFunctionList, isModalOpen]);
 
   useLayoutEffect(() => {
     if (!saltFunction || !isModalOpen) {
@@ -391,7 +369,6 @@ export function JobModal({
     setSaltFunctionName(undefined);
     setSearchFunctionName("");
     setJsonFormValue({});
-    hasLoadedInitialSchema.current = false;
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
   };
@@ -430,8 +407,8 @@ export function JobModal({
           fun: formValue.fun.at(-1),
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
-          arg: jsonFormValue?.args,
-          kwarg: jsonFormValue?.kwargs,
+          arg: jsonFormValue?.args ?? jsonFormValue?.arg ?? arg,
+          kwarg: jsonFormValue?.kwargs ?? jsonFormValue?.kwarg ?? cleanNullsFromKwargs(kwarg),
           ttl: getTtlValue(),
         },
       })
@@ -467,11 +444,6 @@ export function JobModal({
 
   useEffect(() => {
     const isRepeatSameFunction = isModalOpen && fun && saltFunctionName === fun;
-    if (isRepeatSameFunction) {
-      setJsonFormValue({ args: arg || [], kwargs: cleanNullsFromKwargs(kwarg) });
-      return;
-    }
-
     setSaltFunction(undefined);
     setJsonFormValue({});
     refJobParamsForm.current?.reset();
@@ -489,7 +461,7 @@ export function JobModal({
       .jobsSchemasGet({ name: saltFunctionName })
       .then((result) => {
         setSaltFunction(result);
-        setJsonFormValue({});
+        setJsonFormValue(isRepeatSameFunction ? getRepeatJsonFormValue(arg, kwarg) : {});
         const functionDefaultTtl = parseTtlValue(result?.default_ttl);
         setTtlValue(functionDefaultTtl);
       })
@@ -575,8 +547,8 @@ export function JobModal({
       fun: form.getFieldValue("fun").at(-1),
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
-      arg: jsonFormValue?.args,
-      kwarg: jsonFormValue?.kwargs,
+      arg: jsonFormValue?.args ?? jsonFormValue?.arg ?? arg,
+      kwarg: jsonFormValue?.kwargs ?? jsonFormValue?.kwarg ?? cleanNullsFromKwargs(kwarg),
       ttl: getTtlValue(),
     };
   };
