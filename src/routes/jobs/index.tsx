@@ -4,7 +4,7 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
-  RelativeTime,
+  formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
@@ -125,7 +125,7 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
-        cell: (data) => <RelativeTime date={data.getValue()} />,
+        cell: (data) => formatTimeByUserTZ(data.getValue()),
         meta: { width: "18%" },
       }),
     ],

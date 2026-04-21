@@ -1,5 +1,9 @@
 import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
+import {
+  PageHeader,
+  FastTablePaginated,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
@@ -23,11 +27,11 @@ const JobsTemplatePage = observer(() => {
     }),
     columnHelper.accessor("created", {
       header: t("jobs-templates.table-created"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
     }),
     columnHelper.accessor("modified", {
       header: t("jobs-templates.table-modified"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
     }),
   ];
   const [jobTemplateStore] = useState(() => new JobTemplateStore());

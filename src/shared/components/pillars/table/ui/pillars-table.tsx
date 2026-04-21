@@ -2,7 +2,7 @@ import { PillarTgtType, type PillarWithTgtInfoSchema } from "@saltbox/saltbox-co
 import {
   BooleanDisplay,
   FastTablePaginated,
-  RelativeTime,
+  formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -112,12 +112,12 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
         : [
             columnHelper.accessor("created", {
               header: t("pillar.details.created"),
-              cell: (data) => <RelativeTime date={data.getValue()} />,
+              cell: (data) => formatTimeByUserTZ(data.getValue()),
               meta: { width: "20%", minWidth: 200 },
             }),
             columnHelper.accessor("modified", {
               header: t("pillar.details.modified"),
-              cell: (data) => <RelativeTime date={data.getValue()} />,
+              cell: (data) => formatTimeByUserTZ(data.getValue()),
               meta: { width: "20%", minWidth: 200 },
             }),
           ]),

@@ -1,5 +1,9 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, FastTablePaginated, RelativeTime } from "@saltbox/saltbox-frontend-common";
+import {
+  PageHeader,
+  FastTablePaginated,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Tag, message } from "antd";
 import { toJS } from "mobx";
@@ -50,12 +54,12 @@ function MastersPage() {
     }),
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
       meta: { minWidth: 200 },
     }),
     columnHelper.accessor("modified", {
       header: t("masters.table-modified"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
       meta: { minWidth: 200 },
     }),
     columnHelper.accessor("actions", {

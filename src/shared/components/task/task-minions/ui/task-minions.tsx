@@ -1,6 +1,10 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, RelativeTime, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTablePaginated,
+  formatTimeByUserTZ,
+  useInfoDrawer,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -110,22 +114,18 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
       }),
       columnHelper.accessor("start_last_dt", {
         header: t("task.minions.table-started"),
-        cell: (data) => (
-          <RelativeTime
-            date={data.getValue()}
-            fallback={<>{t("task.minions.table-not-started")}</>}
-          />
-        ),
+        cell: (data) =>
+          data.getValue()
+            ? formatTimeByUserTZ(data.getValue())
+            : t("task.minions.table-not-started"),
         meta: { width: "18%" },
       }),
       columnHelper.accessor("finished_dt", {
         header: t("task.minions.table-finished"),
-        cell: (data) => (
-          <RelativeTime
-            date={data.getValue()}
-            fallback={<>{t("task.minions.table-not-started")}</>}
-          />
-        ),
+        cell: (data) =>
+          data.getValue()
+            ? formatTimeByUserTZ(data.getValue())
+            : t("task.minions.table-not-started"),
         meta: { width: "18%" },
       }),
     ],

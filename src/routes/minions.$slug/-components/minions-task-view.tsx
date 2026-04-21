@@ -4,7 +4,7 @@ import {
   Popover,
   WebSocketMessage,
   WebSocketService,
-  RelativeTime,
+  formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex, Progress } from "antd";
@@ -154,7 +154,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
       }),
       columnHelper.accessor("created", {
         header: t("minions.table-created"),
-        cell: (data) => <RelativeTime date={data.getValue()} />,
+        cell: (data) => formatTimeByUserTZ(data.getValue()),
       }),
     ],
     [t]

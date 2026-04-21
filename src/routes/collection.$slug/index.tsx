@@ -4,7 +4,7 @@ import {
   FastTablePaginated,
   PageHeader,
   Popover,
-  RelativeTime,
+  formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -111,7 +111,7 @@ const CollectionEditPage = observer(() => {
     }),
     minionsColumnHelper.accessor("created", {
       header: t("minions.table-created"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
     }),
     minionsColumnHelper.accessor("last_activity", {
       header: t("minions.table-last-activity"),

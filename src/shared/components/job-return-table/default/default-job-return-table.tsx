@@ -3,7 +3,7 @@ import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
-  RelativeTime,
+  formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -164,7 +164,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 </Typography.Text>
               );
             }
-            return <RelativeTime date={stamp} />;
+            return formatTimeByUserTZ(stamp);
           },
           meta: { width: "18%" },
         }),

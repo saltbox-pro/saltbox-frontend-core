@@ -3,7 +3,7 @@ import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
-  RelativeTime,
+  formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
@@ -223,7 +223,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-execution-time"),
-        cell: (data) => <RelativeTime date={data.getValue()} />,
+        cell: (data) => formatTimeByUserTZ(data.getValue()),
       }),
     ],
     [handleNavigateToJob, t]

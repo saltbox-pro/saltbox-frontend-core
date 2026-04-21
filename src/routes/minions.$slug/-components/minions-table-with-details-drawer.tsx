@@ -3,7 +3,7 @@ import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   createSelectColumn,
   FastTablePaginated,
-  RelativeTime,
+  formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
@@ -116,7 +116,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
-        cell: (data) => <RelativeTime date={data.getValue()} />,
+        cell: (data) => formatTimeByUserTZ(data.getValue()),
       }),
       minionsColumnHelper.accessor("last_activity", {
         header: t("minions.table-last-activity"),

@@ -13,7 +13,7 @@ import {
   PageHeader,
   FastTablePaginated,
   Modal,
-  RelativeTime,
+  formatTimeByUserTZ,
   BooleanDisplay,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -83,9 +83,8 @@ const SettingsSlsPage = observer(() => {
     }),
     columnHelper.accessor("last_synced", {
       header: t("settings-sls.table-last-synced"),
-      cell: (data) => (
-        <RelativeTime date={data.getValue()} fallback={<>{t("settings-sls.table-no-sync")}</>} />
-      ),
+      cell: (data) =>
+        data.getValue() ? formatTimeByUserTZ(data.getValue()) : t("settings-sls.table-no-sync"),
       meta: {
         width: "15%",
       },
