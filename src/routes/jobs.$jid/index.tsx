@@ -76,6 +76,7 @@ const JobPage = observer(() => {
     () => (jid && jobStore.jid === jid ? jobStore.jobReturns : []),
     [jid, jobStore.jid, jobStore.jobReturns]
   );
+  const defaultMasterForReplay = jobStore.job?.salt_master;
 
   const statusCounts = jobStore.jobReturnStatusCounts;
   const formatJobDuration = (seconds: number): string => {
@@ -242,6 +243,7 @@ const JobPage = observer(() => {
               fun={jobStore.job?.fun}
               arg={jobStore.job?.arg}
               kwarg={jobStore.job?.kwarg}
+              defaultMaster={defaultMasterForReplay}
               shouldShowModalByKeyboardEvent={shouldRepeat}
               buttonProps={{
                 shape: "default",

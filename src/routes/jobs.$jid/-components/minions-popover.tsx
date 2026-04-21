@@ -28,6 +28,8 @@ export function MinionsPopover({
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { t } = useTranslation();
 
+  const defaultMasterForReplay = jobStore.job?.salt_master;
+
   const minionNames = minions.map((minion) =>
     typeof minion === "string" ? minion : (minion.minion_id ?? (minion as { id?: string }).id ?? "")
   );
@@ -65,6 +67,7 @@ export function MinionsPopover({
               fun={jobStore.job?.fun}
               arg={jobStore.job?.arg}
               kwarg={jobStore.job?.kwarg}
+              defaultMaster={defaultMasterForReplay}
               renderButton={(openModal) => (
                 <BaseActionButton
                   icon={<ReloadOutlined />}
