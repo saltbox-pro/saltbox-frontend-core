@@ -465,7 +465,8 @@
     "ttl-unlimited": "Без ограничений",
     "waiting-expires-at-label": "Ожидание ответов до",
     "waiting-expires-at-label-past": "Дедлайн ответов был",
-    "waiting-countdown-label": "Осталось времени"
+    "waiting-countdown-label": "Осталось времени",
+    "executing-command": "Инициализация команды"
   },
   "job": {
     "successful-minions": "успешно",

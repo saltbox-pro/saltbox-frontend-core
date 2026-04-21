@@ -465,7 +465,8 @@
     "ttl-unlimited": "Unlimited",
     "waiting-expires-at-label": "Waiting for responses until",
     "waiting-expires-at-label-past": "Response deadline was",
-    "waiting-countdown-label": "Time remaining"
+    "waiting-countdown-label": "Time remaining",
+    "executing-command": "Initializing job"
   },
   "job": {
     "successful-minions": "successful",

@@ -18,7 +18,18 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Button, Flex, Radio, Skeleton, Statistic, Switch, Tag, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Flex,
+  Radio,
+  Skeleton,
+  Spin,
+  Statistic,
+  Switch,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -343,7 +354,10 @@ const JobPage = observer(() => {
         </Flex>
 
         {!isMinionsCountReadyForReturns ? (
-          <Skeleton active />
+          <Flex className={styles.jobLoader} vertical align="center" justify="center" gap={20}>
+            <Spin />
+            <Text type="secondary">{t("jobs.executing-command")}</Text>
+          </Flex>
         ) : (
           <>
             <JobStatusProgress counts={statusCounts} />

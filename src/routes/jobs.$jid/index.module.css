@@ -257,3 +257,7 @@
 .targetText {
   max-width: 200px;
 }
+
+.jobLoader {
+  padding: 40px;
+}
