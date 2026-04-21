@@ -466,6 +466,12 @@ export function JobModal({
   };
 
   useEffect(() => {
+    const isRepeatSameFunction = isModalOpen && fun && saltFunctionName === fun;
+    if (isRepeatSameFunction) {
+      setJsonFormValue({ args: arg || [], kwargs: cleanNullsFromKwargs(kwarg) });
+      return;
+    }
+
     setSaltFunction(undefined);
     setJsonFormValue({});
     refJobParamsForm.current?.reset();
@@ -491,7 +497,7 @@ export function JobModal({
         messageApi.error("Error on load salt function schema.");
       })
       .finally(() => setIsSchemaLoading(false));
-  }, [saltFunctionName]);
+  }, [saltFunctionName, isModalOpen, fun, arg, kwarg]);
 
   const handleFunctionNameSearch = (searchText: string) => {
     const filteredSearchText = searchText
