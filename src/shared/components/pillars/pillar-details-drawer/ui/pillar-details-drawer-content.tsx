@@ -3,7 +3,7 @@ import {
   BooleanDisplay,
   InfoDescriptions,
   type InfoDescriptionsProps,
-  RelativeTime,
+  formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Flex } from "antd";
 import { useMemo } from "react";
@@ -62,12 +62,12 @@ export function PillarDetailsDrawerContent({
       {
         key: "created",
         label: t("pillar.details.created"),
-        children: <RelativeTime date={created} />,
+        children: created ? formatTimeByUserTZ(created) : null,
       },
       {
         key: "modified",
         label: t("pillar.details.modified"),
-        children: <RelativeTime date={modified} />,
+        children: modified ? formatTimeByUserTZ(modified) : null,
       },
     ],
     [created, id, isSecret, modified, name, t, tgtInfo]

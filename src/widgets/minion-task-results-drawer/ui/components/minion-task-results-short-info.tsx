@@ -2,7 +2,7 @@ import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-ap
 import {
   InfoDescriptions,
   InfoDescriptionsProps,
-  RelativeTime,
+  formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { useMemo } from "react";
@@ -55,14 +55,18 @@ export function MinionTaskResultsShortInfo({
       },
       {
         label: t("task.minions.table-started"),
-        children: (
-          <RelativeTime date={startLastDt} fallback={<>{t("task.minions.table-not-started")}</>} />
+        children: startLastDt ? (
+          formatTimeByUserTZ(startLastDt)
+        ) : (
+          <>{t("task.minions.table-not-started")}</>
         ),
       },
       {
         label: t("task.minions.table-finished"),
-        children: (
-          <RelativeTime date={finishedDt} fallback={<>{t("task.minions.table-not-started")}</>} />
+        children: finishedDt ? (
+          formatTimeByUserTZ(finishedDt)
+        ) : (
+          <>{t("task.minions.table-not-started")}</>
         ),
       },
     ],
