@@ -77,24 +77,28 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
           minWidth: 210,
         },
       }),
-      columnHelper.accessor("source.type", {
-        id: "source.type",
-        header: t("minions.table-source-type"),
-        cell: (data) => {
-          switch (data.getValue()) {
-            case "rest":
-              return t("minions.table-soruce-type-rest");
-            case "scheduler":
-              return t("minions.table-soruce-type-scheduler");
-            default:
-              return data.getValue();
-          }
-        },
-        meta: {
-          width: "7%",
-          minWidth: 150,
-        },
-      }),
+      ...(props.taskType === TaskType.Policy
+        ? []
+        : [
+            columnHelper.accessor("source.type", {
+              id: "source.type",
+              header: t("minions.table-source-type"),
+              cell: (data) => {
+                switch (data.getValue()) {
+                  case "rest":
+                    return t("minions.table-soruce-type-rest");
+                  case "scheduler":
+                    return t("minions.table-soruce-type-scheduler");
+                  default:
+                    return data.getValue();
+                }
+              },
+              meta: {
+                width: "7%",
+                minWidth: 150,
+              },
+            }),
+          ]),
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("minions.table-user"),
@@ -192,7 +196,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         meta: { width: "10%" },
       }),
     ],
-    [t]
+    [t, props.taskType]
   );
 
   useEffect(() => {
