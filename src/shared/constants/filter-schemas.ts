@@ -2,6 +2,7 @@ import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
+  defaultNumberOperators,
   defaultStringOperators,
 } from "@saltbox/saltbox-frontend-common";
 import type { SelectProps } from "antd";
@@ -77,6 +78,18 @@ export const getTasksFilterSchema = (
       operators: defaultListOperators,
       type: "multiselect",
       selectOptions: statusSelectOptions(t),
+    },
+    {
+      name: "minions_count.total",
+      label: t("minions.table-total-clients"),
+      operators: defaultNumberOperators,
+      inputType: "number",
+    },
+    {
+      name: "minions_count.failed",
+      label: t("minions.table-failed-clients"),
+      operators: defaultNumberOperators,
+      inputType: "number",
     },
     {
       name: "created",
