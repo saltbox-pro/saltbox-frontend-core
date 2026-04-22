@@ -44,16 +44,30 @@ export default observer(function PoliciesPage() {
     () => [
       columnHelper.accessor("id", {
         header: "ID",
-        cell: (data) => <span style={{ color: "#1677ff" }}>{data.getValue()}</span>,
-        meta: { showCopy: true, tdClassName: "fast-table-column-nowrap" },
+        meta: {
+          showCopy: true,
+          color: "accent",
+          width: "10%",
+          minWidth: 200,
+          maxWidth: 200,
+          ellipsis: true,
+        },
       }),
       columnHelper.accessor("task_template.title", {
         id: "task_template.title",
         header: t("minions.table-task-template-title"),
+        meta: {
+          width: "10%",
+          minWidth: 200,
+        },
       }),
       columnHelper.accessor("task_template.name", {
         id: "task_template.name",
         header: t("minions.table-task-template-name"),
+        meta: {
+          width: "10%",
+          minWidth: 210,
+        },
       }),
       columnHelper.accessor("target_collection.title", {
         id: "target_collection.title",
@@ -80,15 +94,39 @@ export default observer(function PoliciesPage() {
             </span>
           );
         },
+        meta: {
+          width: "7%",
+          minWidth: 120,
+        },
       }),
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("minions.table-user"),
+        meta: {
+          width: "7%",
+          minWidth: 120,
+        },
       }),
       columnHelper.accessor("status.type", {
         id: "status.type",
         header: t("minions.table-status"),
         cell: (data) => <TaskStatusIndicator status={data.row.original?.status.type} />,
+        meta: {
+          width: "7%",
+          minWidth: 120,
+        },
+      }),
+      columnHelper.accessor("minions_count.total", {
+        id: "minions_count.total",
+        header: t("minions.table-total-clients"),
+        cell: (data) => data.getValue() ?? 0,
+        meta: { width: "7%", minWidth: 120 },
+      }),
+      columnHelper.accessor("minions_count.failed", {
+        id: "minions_count.failed",
+        header: t("minions.table-failed-clients"),
+        cell: (data) => data.getValue() ?? 0,
+        meta: { width: "7%", minWidth: 120 },
       }),
       columnHelper.display({
         header: t("minions.table-progress"),
@@ -139,6 +177,7 @@ export default observer(function PoliciesPage() {
             <Popover content={popoverContent}>
               <Progress
                 steps={10}
+                size={8.5}
                 percent={((statusSuccess + statusFailed) / totalMinions) * 100}
                 success={{ percent: (statusSuccess / totalMinions) * 100 }}
                 strokeColor={progressStrokeColors}
@@ -147,10 +186,12 @@ export default observer(function PoliciesPage() {
             </Popover>
           );
         },
+        meta: { width: "5%", minWidth: 130, maxWidth: 130 },
       }),
       columnHelper.accessor("created", {
-        header: t("minions.table-created"),
+        header: t("minions.tasks-table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
+        meta: { width: "10%" },
       }),
     ],
     [t, navigate]

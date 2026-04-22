@@ -37,6 +37,8 @@
     "table-collection": "Коллекция",
     "table-user": "Пользователь",
     "table-status": "Статус",
+    "table-total-clients": "Всего клиентов",
+    "table-failed-clients": "С ошибкой",
     "table-progress": "Прогресс",
     "table-source-type": "Тип источника",
     "table-soruce-type-rest": "Пользователь",

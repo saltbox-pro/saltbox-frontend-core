@@ -37,6 +37,8 @@
     "table-collection": "Collection",
     "table-user": "User",
     "table-status": "Status",
+    "table-total-clients": "Total clients",
+    "table-failed-clients": "Failed",
     "table-progress": "Progress",
     "table-source-type": "Source Type",
     "table-soruce-type-rest": "User",
