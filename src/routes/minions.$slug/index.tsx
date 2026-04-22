@@ -386,8 +386,8 @@ const MinionsPage = observer(() => {
           }
         }}
         onCancel={() => setIsDeleteModalOpen(false)}
-        okText={t("collection.delete")}
-        cancelText={t("collection.cancel")}
+        okText={t("common.delete")}
+        cancelText={t("common.cancel")}
         okButtonProps={{ danger: true }}
       >
         <p>

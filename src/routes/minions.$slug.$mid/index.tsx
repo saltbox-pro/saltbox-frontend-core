@@ -1,22 +1,17 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import {
-  PageHeader,
-  Modal,
-  FilterToggleButton,
-  useFiltersToggle,
-} from "@saltbox/saltbox-frontend-common";
+import { PageHeader, FilterToggleButton, useFiltersToggle } from "@saltbox/saltbox-frontend-common";
 import { Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
+import { useRemoveMinionConfirm } from "saltbox-core/features/minions/remove-minion";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { MinionDetails } from "saltbox-core/shared/components/minion-details/minion-details";
 import { retcodeValues, retcodeLegacyValues } from "saltbox-core/shared/conf/retcode-values";
 import { CollectionStore, MinionStore, jobStore, JobFilterStore } from "saltbox-core/store";
-import { apiCoreStore } from "saltbox-core/store/api-core-store";
 
 const defaultStringOperators = [
   {
@@ -193,15 +188,14 @@ const MinionPage = observer(() => {
   const { t } = useTranslation();
   const { mid: minionId, slug } = useParams();
   const navigate = useNavigate();
+  const [messageApi, messageContextHolder] = message.useMessage();
+
+  const [collectionStore] = useState(new CollectionStore());
   const minionStoreRef = useRef<MinionStore | undefined>(undefined);
   if (!minionStoreRef.current) {
     minionStoreRef.current = new MinionStore(slug, minionId);
   }
   const minionStore: MinionStore = minionStoreRef.current;
-  const [collectionStore] = useState(new CollectionStore());
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
-
   const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
 
   const jobReturnsFilterStore = useMemo(() => {
@@ -241,23 +235,15 @@ const MinionPage = observer(() => {
     jobStore.loadJobReturns();
   }, [minionStore.minion?.minion_id, minionStore.minion?.master, slug, jobReturnsFilterStore]);
 
-  const handleDeleteMinion = useCallback(async () => {
-    if (!minionId || !slug) return;
-
-    try {
-      await apiCoreStore.minionsApi?.minionDelete({
-        mid: minionId,
-        collection_slug: slug,
-      });
-      // using `message` instead of `messageApi` here to show the feedback even when the page is changed
-      message.success(t("minions.deleted-successfully"));
-      setIsDeleteModalOpen(false);
+  const removeMinion = useRemoveMinionConfirm({
+    collectionSlug: slug ?? "",
+    minionMongoId: minionId ?? "",
+    minionDisplayId: minionStore.minion?.minion_id,
+    messageApi,
+    onDeleted: () => {
       navigate(`/core/minions/${slug}`);
-    } catch (error) {
-      messageApi.error(t("minions.delete-failed"));
-      console.error("Failed to delete minion:", error);
-    }
-  }, [minionId, slug, messageApi, t, navigate]);
+    },
+  });
 
   const jobReturnsTabActions = (
     <JobModal
@@ -266,12 +252,6 @@ const MinionPage = observer(() => {
       defaultMaster={minionStore.minion?.master ?? ""}
     />
   );
-
-  const handleFullViewActionsMenuClick: MenuProps["onClick"] = (info) => {
-    if (info.key === "delete-minion") {
-      setIsDeleteModalOpen(true);
-    }
-  };
 
   const minionsActionsMenuItems: MenuProps["items"] = [
     {
@@ -283,6 +263,7 @@ const MinionPage = observer(() => {
         </Flex>
       ),
       danger: true,
+      onClick: removeMinion.openConfirm,
       disabled: !minionStore.minion,
     },
   ];
@@ -340,7 +321,6 @@ const MinionPage = observer(() => {
         isMinionLoading={minionStore.isMinionLoading}
         jobReturnsTabActions={jobReturnsTabActions}
         fullViewActionsMenuItems={minionsActionsMenuItems}
-        onFullViewActionsMenuClick={handleFullViewActionsMenuClick}
         jobReturnsConfig={
           jobStore
             ? {
@@ -356,26 +336,9 @@ const MinionPage = observer(() => {
         jobReturnsFilter={jobReturnsFilter}
         jobReturnsFilterButton={jobReturnsFilterButton}
       />
+      {removeMinion.modalContextHolder}
 
-      <Modal
-        title={t("minions.delete-confirm-title")}
-        open={isDeleteModalOpen}
-        onOk={handleDeleteMinion}
-        onCancel={() => setIsDeleteModalOpen(false)}
-        okText={t("common.yes")}
-        cancelText={t("common.cancel")}
-        okButtonProps={{ danger: true }}
-      >
-        <p
-          dangerouslySetInnerHTML={{
-            __html: t("minions.delete-confirm-description", {
-              minionId: minionStore.minion?.minion_id,
-            }),
-          }}
-        />
-      </Modal>
-
-      {contextHolder}
+      {messageContextHolder}
     </>
   );
 });

@@ -1,13 +1,13 @@
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
+import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
 import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
-import { useCsvDownloader } from "saltbox-core/features/csv-download";
 import {
   PolicyCreateModal,
   TaskCreateModal,
@@ -21,6 +21,7 @@ import {
   MinionsStore,
 } from "saltbox-core/store";
 
+import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
 import { MinionsTableWithDetailsDrawer } from "./minions-table-with-details-drawer";
@@ -33,15 +34,16 @@ type MinionListViewProps = {
   onAddFilter: () => void;
 };
 
+type SelectedMinion = TaskTargetMinion & { mid: string };
+
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
+
   const [minionsStore] = useState(
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
   const isInitialSearchEffect = useRef(true);
   const [selection, setSelection] = useState<RowSelectionState>({});
-  const [selectedMinions, setSelectedMinions] = useState<TaskTargetMinion[]>([]);
-  const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     minionsStore.setCollectionSlug(props.slug);
@@ -56,30 +58,21 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     minionsStore.handleSearch();
   }, [props.filterStore.searchMongoDBQuery, minionsStore]);
 
-  useEffect(() => {
-    const newSelectedMinions: TaskTargetMinion[] = Object.keys(selection)
-      .map((minionId: string) => minionsStore.minions.find((minion) => minion.id === minionId))
-      .filter((minion) => !!minion)
+  const selectedMinions: SelectedMinion[] = useMemo(() => {
+    return Object.keys(selection)
+      .filter((mongoId) => Boolean(selection[mongoId]))
+      .map((mongoId: string) => minionsStore.minions.find((minion) => minion.id === mongoId))
+      .filter((minion): minion is NonNullable<typeof minion> => Boolean(minion))
       .map((minion) => {
-        return { salt_master: minion.master, minion_id: minion.minion_id };
+        return { salt_master: minion.master, minion_id: minion.minion_id, mid: minion.id };
       });
-    setSelectedMinions(newSelectedMinions);
-  }, [selection]);
+  }, [minionsStore.minions, selection]);
 
   const clearSelection = useCallback(() => {
     setSelection({});
   }, []);
 
-  const onCsvDownloadError = useCallback(() => {
-    messageApi.error(t("minions.error-on-csv-download"));
-  }, [messageApi, t]);
-
-  const { isCSVLoading, handleCSVDownload } = useCsvDownloader({
-    slug: props.slug,
-    searchFilters: props.filterStore.searchFilters,
-    selectedMinions,
-    onError: onCsvDownloadError,
-  });
+  const selectedMinionsCount = selectedMinions.length;
 
   const {
     isTaskCreateOpen,
@@ -117,6 +110,10 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     [openTaskCreate, openPolicyCreate]
   );
 
+  const reloadMinions = useCallback(() => {
+    minionsStore.loadMinions(props.slug);
+  }, [minionsStore.loadMinions, props.slug]);
+
   let taskModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["minions.taskmodal.create"]?.forEach((plugin) => {
     taskModalCreatePlugin = (
@@ -139,8 +136,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   return (
     <>
-      {contextHolder}
-
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
@@ -167,23 +162,29 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             icon={<PlusOutlined />}
             onClick={() => handleOpenCreateTaskModal("policy")}
             loading={mastersStore.isLoading}
-            disabled={!!selectedMinions.length}
+            disabled={!!selectedMinionsCount}
           >
             {t("policy-create.create-button")}
           </Button>
 
           {pageActionsButtonsPlugin}
 
-          <Button onClick={handleCSVDownload} loading={isCSVLoading}>
-            {t("minions.export")}
-          </Button>
+          <MinionsActionsDropdown
+            slug={props.slug}
+            searchFilters={props.filterStore.searchFilters}
+            selectedMinions={selectedMinions}
+            clearSelection={clearSelection}
+            reloadMinions={reloadMinions}
+          />
 
           <Button
             icon={<SyncOutlined spin={minionsStore.isLoading} />}
-            onClick={() => minionsStore.loadMinions(props.slug)}
+            onClick={reloadMinions}
             type="text"
             title={t("minions.refresh")}
           />
+
+          <SelectedItemsCounter count={selectedMinionsCount} />
         </div>
 
         <MinionsTableWithDetailsDrawer
