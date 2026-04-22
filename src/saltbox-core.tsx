@@ -1,5 +1,6 @@
 import { SaltboxLocaleProvider } from "@saltbox/saltbox-frontend-common";
 import { autorun, runInAction } from "mobx";
+import { observer } from "mobx-react";
 import React, { Suspense } from "react";
 import ReactDOMClient from "react-dom/client";
 import "@ant-design/v5-patch-for-react-19";
@@ -23,7 +24,7 @@ const coreLifecycles = singleSpaReact({
   domElementGetter: () => document.getElementById("app-container"),
 });
 
-const collectionSelectorRootComponent = ({ onClose }) => (
+const collectionSelectorRootComponent = observer(({ onClose }) => (
   <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
     <Suspense fallback="Loading...">
       <BrowserRouter>
@@ -31,7 +32,7 @@ const collectionSelectorRootComponent = ({ onClose }) => (
       </BrowserRouter>
     </Suspense>
   </SaltboxLocaleProvider>
-);
+));
 
 const collectionSelectorLifecycles = singleSpaReact({
   React,
@@ -39,19 +40,19 @@ const collectionSelectorLifecycles = singleSpaReact({
   rootComponent: collectionSelectorRootComponent,
 });
 
-const MinionDetailsDrawerWrapperProvider = (props: {
-  customProps?: MinionDetailsDrawerWrapperProps;
-}) => {
-  return (
-    <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
-      <Suspense fallback="Loading...">
-        <BrowserRouter>
-          <MinionDetailsDrawerWrapper {...props?.customProps} />
-        </BrowserRouter>
-      </Suspense>
-    </SaltboxLocaleProvider>
-  );
-};
+const MinionDetailsDrawerWrapperProvider = observer(
+  (props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
+    return (
+      <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+        <Suspense fallback="Loading...">
+          <BrowserRouter>
+            <MinionDetailsDrawerWrapper {...props?.customProps} />
+          </BrowserRouter>
+        </Suspense>
+      </SaltboxLocaleProvider>
+    );
+  }
+);
 
 const plugins = {
   "minions.details-drawer": [
