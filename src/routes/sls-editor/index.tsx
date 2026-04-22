@@ -5,6 +5,7 @@ import { MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { slsEditorStore } from "saltbox-core/store";
 
@@ -16,6 +17,7 @@ loader.config({ monaco });
 slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
+  const { t } = useTranslation();
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const handleSlsChange = (newSls: string) => {
@@ -33,7 +35,7 @@ const SlsEditorPage = observer(() => {
   const menuItems: MenuProps["items"] = [
     {
       key: "import",
-      label: "Import from Template",
+      label: t("sls-editor.menu-import-from-template"),
       icon: <ImportOutlined />,
       onClick: handleOpenImportModal,
     },
@@ -42,7 +44,7 @@ const SlsEditorPage = observer(() => {
   const additionalTabs = [
     {
       key: "raw-sls",
-      title: "Raw SLS",
+      title: t("sls-editor.tab-raw-sls"),
       content: (
         <RawSlsEditor
           sls={slsEditorStore.slsContent}
@@ -55,7 +57,7 @@ const SlsEditorPage = observer(() => {
 
   return (
     <>
-      <PageHeader title="SLS Editor" />
+      <PageHeader title={t("sls-editor.page-title")} />
 
       <SlsEditor
         sls={slsEditorStore.slsContent}

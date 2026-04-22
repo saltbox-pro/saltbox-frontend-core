@@ -4,6 +4,7 @@ import { PaginationState, createColumnHelper } from "@tanstack/react-table";
 import { Modal, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -19,6 +20,7 @@ const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
 const columnHelper = createColumnHelper<TaskTemplateShortSchema>();
 
 export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsModalProps) => {
+  const { t } = useTranslation();
   const [templates, setTemplates] = useState<TaskTemplateShortSchema[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -29,10 +31,10 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
 
   const columns = [
     columnHelper.accessor("title", {
-      header: "Title",
+      header: t("sls-editor.import-column-title"),
     }),
     columnHelper.accessor("name", {
-      header: "Name",
+      header: t("sls-editor.import-column-name"),
     }),
   ];
 
@@ -63,7 +65,7 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
       }
     } catch (error) {
       console.error("Failed to load templates:", error);
-      message.error("Failed to load templates");
+      message.error(t("sls-editor.import-load-failed"));
     } finally {
       setLoading(false);
     }
@@ -78,23 +80,22 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
 
         if (fullTemplate?.sls_content) {
           onImport(fullTemplate.sls_content);
-          message.success("Template imported successfully");
+          message.success(t("sls-editor.import-success"));
           onCancel();
         } else {
-          message.error("Template has no SLS content");
+          message.error(t("sls-editor.import-empty-sls"));
         }
       } catch (error) {
         console.error("Failed to import template:", error);
-        message.error("Failed to import template");
+        message.error(t("sls-editor.import-failed"));
       }
     };
 
     Modal.confirm({
-      title: "Unsaved Changes",
-      content:
-        "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
-      okText: "Yes, Import",
-      cancelText: "Cancel",
+      title: t("sls-editor.import-confirm-title"),
+      content: t("sls-editor.import-confirm-description"),
+      okText: t("sls-editor.import-confirm-ok"),
+      cancelText: t("sls-editor.import-confirm-cancel"),
       onOk: performImport,
     });
   };
@@ -105,7 +106,7 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
 
   return (
     <Modal
-      title="Import SLS from Template"
+      title={t("sls-editor.import-modal-title")}
       open={open}
       onCancel={onCancel}
       footer={null}
