@@ -20,6 +20,7 @@ const optionsDefaultValue = 4;
 
 export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
   const { t } = useTranslation();
+
   const options: Array<JobDatetimeRangeSelectorOption> = [
     { value: 1, label: t("jobs.date-range-today"), dtValue: -1, unut: "d" },
     {
@@ -40,7 +41,7 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
     { value: 7, label: t("jobs.date-range-1-day"), dtValue: -1, unut: "d" },
   ];
   const handleChangeRange = (value: number) => {
-    if (value === optionsDefaultValue) {
+    if (value === 1) {
       const range: [dayjs.Dayjs, dayjs.Dayjs] = [dayjs().startOf("day"), dayjs()];
       props.onChange(range);
     } else {

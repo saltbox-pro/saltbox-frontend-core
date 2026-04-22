@@ -38,7 +38,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().startOf("day"), dayjs()];
+    this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
@@ -54,7 +54,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().startOf("day"), dayjs()];
+    this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
