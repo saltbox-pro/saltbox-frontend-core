@@ -433,7 +433,20 @@ export class TaskStore {
     const sortedMinions = minions.sort(
       (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
     );
+    const hasNewMinion = sortedMinions.some((minion) => {
+      const minionIdentity = minion.minion_inner_id ?? minion.id ?? minion.minion_id;
+      if (!minionIdentity) {
+        return false;
+      }
+      return !this.minions.some((item) => {
+        const itemIdentity = item.minion_inner_id ?? item.id ?? item.minion_id;
+        return itemIdentity === minionIdentity;
+      });
+    });
     sortedMinions.map((minion) => this.updateMinion(minion));
+    if (hasNewMinion && this.task?.id) {
+      this.loadMinions(this.task.id);
+    }
   };
 
   @action
