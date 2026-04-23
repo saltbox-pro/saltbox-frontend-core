@@ -68,7 +68,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.fqdn", {
         id: "grains.fqdn",
         header: t("minions.table-fqdn"),
-        meta: { width: 120, minWidth: 120, maxWidth: 120, ellipsis: true },
+        meta: { width: 150, minWidth: 150, maxWidth: 150, ellipsis: true },
       }),
       minionsColumnHelper.accessor("grains.domain", {
         id: "grains.domain",
@@ -82,7 +82,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.saltversion", {
         id: "grains.saltversion",
         header: t("minions.table-client-version"),
-        meta: { width: 155, minWidth: 155, maxWidth: 155 },
+        meta: { width: 100 },
       }),
       minionsColumnHelper.accessor("grains.osfinger", {
         id: "grains.osfinger",
@@ -99,7 +99,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
             </Tag>
           );
         },
-        meta: { width: 100 },
+        meta: { width: 70 },
       }),
       minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
         id: "grains.efi-secure-boot",
@@ -113,10 +113,12 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
             </Tag>
           );
         },
+        meta: { width: 90 },
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
+        meta: { width: "10%" },
       }),
       minionsColumnHelper.accessor("last_activity", {
         header: t("minions.table-last-activity"),
@@ -129,6 +131,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
             />
           );
         },
+        meta: { width: "13%" },
       }),
     ],
     [props.slug, t]

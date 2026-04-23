@@ -1,8 +1,7 @@
 import { SettingOutlined } from "@ant-design/icons";
-import type { MinionDetailSchema, JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import type { PaginationState, SortingState } from "@tanstack/react-table";
+import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { Button, Dropdown, Flex, Tabs, type MenuProps, type TabsProps } from "antd";
-import { type ReactNode, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
@@ -17,38 +16,21 @@ interface OnFilterButtonParams {
   value: any;
 }
 
-type JobReturnsConfig = {
-  jobReturns: JobReturnModel[];
-  isLoading: boolean;
-  pagination: PaginationState;
-  sorting: SortingState;
-  total: number;
-  onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
-};
-
 export interface MinionDetailsProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
-  jobReturnsConfig?: JobReturnsConfig;
   isFullView?: boolean;
-  jobReturnsTabActions?: ReactNode;
   fullViewActionsMenuItems?: MenuProps["items"];
   onFullViewActionsMenuClick?: MenuProps["onClick"];
-  jobReturnsFilter?: ReactNode;
-  jobReturnsFilterButton?: ReactNode;
   isInDrawer?: boolean;
 }
 
 export function MinionDetails({
   minion,
   isMinionLoading,
-  jobReturnsConfig,
-  jobReturnsTabActions,
-  jobReturnsFilter,
   isInDrawer,
   isFullView,
-  jobReturnsFilterButton,
   fullViewActionsMenuItems,
   onFullViewActionsMenuClick,
   onFilterButton,
@@ -81,7 +63,12 @@ export function MinionDetails({
         right: (
           <div className={styles.tabExtraActions}>
             <Flex gap={8}>
-              {activeTab === "job-returns" && jobReturnsFilterButton}
+              {!isInDrawer && (
+                <div
+                  id="minion-job-returns-filters-extra"
+                  style={{ display: activeTab === "job-returns" ? "block" : "none" }}
+                />
+              )}
               {fullViewActionsMenuItems && (
                 <Dropdown
                   menu={{
@@ -119,18 +106,13 @@ export function MinionDetails({
       },
     ];
 
-    if (jobReturnsConfig) {
+    if (!isInDrawer) {
       items.push({
         key: "job-returns",
         label: t("minions.job-returns"),
-        children: (
-          <MinionJobReturnsTab
-            jobReturnsConfig={jobReturnsConfig}
-            isFullView={isFullView}
-            jobReturnsTabActions={jobReturnsTabActions}
-            jobReturnsFilter={jobReturnsFilter}
-          />
-        ),
+        children: minion?.id ? (
+          <MinionJobReturnsTab minion={minion} isFullView={isFullView} />
+        ) : null,
       });
     }
 
@@ -154,17 +136,7 @@ export function MinionDetails({
     });
 
     return items;
-  }, [
-    isFullView,
-    isInDrawer,
-    isMinionLoading,
-    jobReturnsConfig,
-    jobReturnsFilter,
-    jobReturnsTabActions,
-    minion,
-    onFilterButton,
-    t,
-  ]);
+  }, [isFullView, isInDrawer, isMinionLoading, minion, onFilterButton, t]);
 
   return (
     <Tabs

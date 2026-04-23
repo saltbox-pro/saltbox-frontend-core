@@ -1,9 +1,11 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { JobReturnModel, type MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
+  FilterToggleButton,
   formatTimeByUserTZ,
+  useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
@@ -13,13 +15,18 @@ import {
   createColumnHelper,
 } from "@tanstack/react-table";
 import { Button, Flex, Tag } from "antd";
-import React, { useCallback, useMemo, useState } from "react";
+import { observer } from "mobx-react-lite";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
+import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
+import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
+import { JobFilterStore, JobStore } from "saltbox-core/store";
 
 import {
   extractStringValue,
@@ -41,12 +48,117 @@ interface JobReturnsConfig {
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
 }
 
-interface MinionJobReturnsTabProps {
+interface MinionJobReturnsTabViewProps {
   jobReturnsConfig: JobReturnsConfig;
   isFullView?: boolean;
   jobReturnsTabActions?: React.ReactNode;
   jobReturnsFilter?: React.ReactNode;
 }
+
+type MongoDBQuery = Record<string, unknown> & {
+  retcode?: { $in?: Array<number | string> } | number | string | { $ne: number };
+  $and?: Array<MongoDBQuery>;
+  $or?: Array<MongoDBQuery>;
+};
+
+const defaultStringOperators = [
+  { name: "=", value: "=", label: "=" },
+  { name: "!=", value: "!=", label: "!=" },
+  { name: "contains", value: "contains", label: "contains" },
+  { name: "beginsWith", value: "beginsWith", label: "begins with" },
+  { name: "endsWith", value: "endsWith", label: "ends with" },
+  { name: "doesNotContain", value: "doesNotContain", label: "does not contain" },
+  { name: "doesNotBeginWith", value: "doesNotBeginWith", label: "does not begin with" },
+  { name: "doesNotEndWith", value: "doesNotEndWith", label: "does not end with" },
+] as const;
+
+const defaultDateTimeOperators = [
+  { name: "<", value: "<", label: "<" },
+  { name: ">", value: ">", label: ">" },
+  { name: "<=", value: "<=", label: "<=" },
+  { name: ">=", value: ">=", label: ">=" },
+] as const;
+
+const retcodeOperators = [{ name: "=", value: "=", label: "=" }] as const;
+
+const jobReturnsFilterSchema = [
+  { name: "jid", label: "JID", operators: defaultStringOperators },
+  { name: "fun", label: "Function", operators: defaultStringOperators },
+  { name: "retcode", label: "Return Code", operators: retcodeOperators },
+  {
+    name: "stamp",
+    label: "Timestamp",
+    operators: defaultDateTimeOperators,
+    inputType: "datetime-local",
+    valueEditorType: "datetime-local",
+  },
+];
+
+const transformRetcodeValue = (retcode: unknown): number | { $ne: number } | undefined => {
+  if (
+    typeof retcode === "object" &&
+    retcode !== null &&
+    "$in" in retcode &&
+    Array.isArray((retcode as any).$in)
+  ) {
+    const retcodeIn = (retcode as any).$in as Array<number | string>;
+    const hasYes =
+      retcodeIn.includes(retcodeLegacyValues.zero) ||
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());
+    const hasNo =
+      retcodeIn.includes(retcodeLegacyValues.notSuccess) ||
+      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no.toLowerCase());
+
+    if (hasYes === hasNo) return undefined;
+    return hasNo ? { $ne: 0 } : 0;
+  }
+
+  const retcodeStr = String(retcode).toLowerCase();
+  const isNo =
+    retcodeStr === retcodeValues.no.toLowerCase() || retcode === retcodeLegacyValues.notSuccess;
+  const isYes =
+    retcodeStr === retcodeValues.yes.toLowerCase() ||
+    retcode === retcodeLegacyValues.zero ||
+    Number(retcode) === 0;
+
+  if (isNo) return { $ne: 0 };
+  if (isYes) return 0;
+  return undefined;
+};
+
+const transformRetcodeFilter = (query: object): MongoDBQuery => {
+  const mongoQuery = query as MongoDBQuery;
+  const result: MongoDBQuery = {};
+
+  if (mongoQuery?.retcode) {
+    const transformedRetcode = transformRetcodeValue(mongoQuery.retcode);
+    if (transformedRetcode !== undefined) {
+      result.retcode = transformedRetcode;
+    }
+  }
+
+  if (Array.isArray(mongoQuery.$and)) {
+    const transformedAnd = mongoQuery.$and
+      .map(transformRetcodeFilter)
+      .filter((item) => Object.keys(item).length > 0);
+    if (transformedAnd.length > 0) result.$and = transformedAnd;
+  }
+
+  if (Array.isArray(mongoQuery.$or)) {
+    const transformedOr = mongoQuery.$or
+      .map(transformRetcodeFilter)
+      .filter((item) => Object.keys(item).length > 0);
+    if (transformedOr.length > 0) result.$or = transformedOr;
+  }
+
+  Object.keys(mongoQuery).forEach((key) => {
+    if (key !== "retcode" && key !== "$and" && key !== "$or") {
+      result[key] = mongoQuery[key];
+    }
+  });
+
+  return result;
+};
 
 const KwargsTag = ({
   data,
@@ -72,14 +184,14 @@ const KwargsTag = ({
       <span className={styles.kwargsBrace}>{"{"}</span>
       {!isEmpty ? (
         previewEntries.map(([key, value], index) => (
-          <React.Fragment key={key}>
+          <Fragment key={key}>
             <span className={styles.kwargsKey}>{key}</span>
             <span className={styles.kwargsSeparator}>: </span>
             <span className={styles.kwargsValue}>{formatValue(value)}</span>
             {index < previewEntries.length - 1 && (
               <span className={styles.kwargsSeparator}>, </span>
             )}
-          </React.Fragment>
+          </Fragment>
         ))
       ) : (
         <span className={styles.kwargsEmpty}>{noKwargsText}</span>
@@ -291,12 +403,12 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   );
 };
 
-export function MinionJobReturnsTab({
+function MinionJobReturnsTabView({
   jobReturnsConfig,
   isFullView = false,
   jobReturnsTabActions,
   jobReturnsFilter,
-}: MinionJobReturnsTabProps) {
+}: MinionJobReturnsTabViewProps) {
   return (
     <Flex vertical className={styles.jobReturnsWrapper}>
       {jobReturnsFilter && <div className={styles.jobReturnsFilterWrapper}>{jobReturnsFilter}</div>}
@@ -307,3 +419,116 @@ export function MinionJobReturnsTab({
     </Flex>
   );
 }
+
+export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
+  minion,
+  isFullView = false,
+}: {
+  minion: MinionDetailSchema | null;
+  isFullView?: boolean;
+}) {
+  const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
+  const [filtersExtraContainer, setFiltersExtraContainer] = useState<HTMLElement | null>(null);
+
+  const jobStore = useMemo(() => new JobStore(), []);
+  const lastLoadedMinionIdRef = useRef<string | null>(null);
+
+  const jobReturnsFilterStore = useMemo(() => {
+    const storageKey = `jobReturnsFilter:${minion?.id ?? "unknown"}`;
+    return new JobFilterStore(jobReturnsFilterSchema as any, storageKey);
+  }, [minion?.id]);
+
+  const handleJobReturnsFilterSearch = useCallback(() => {
+    const minionId = minion?.minion_id;
+    const masterId = minion?.master;
+
+    if (!minionId || !masterId) return;
+
+    const baseQuery = { minion_id: minionId, salt_master: masterId };
+    const filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
+    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
+
+    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
+    jobStore.pagination.pageIndex = 0;
+    jobStore.loadJobReturns();
+  }, [jobReturnsFilterStore, jobStore, minion?.master, minion?.minion_id]);
+
+  const handleJobReturnsFilterReset = useCallback(() => {
+    jobReturnsFilterStore.handleResetFilters();
+    handleJobReturnsFilterSearch();
+  }, [handleJobReturnsFilterSearch, jobReturnsFilterStore]);
+
+  useEffect(() => {
+    jobStore.reset();
+    lastLoadedMinionIdRef.current = null;
+  }, [jobStore, minion?.id]);
+
+  useEffect(() => {
+    const minionId = minion?.minion_id;
+    const masterId = minion?.master;
+    if (!minionId || !masterId) return;
+
+    if (lastLoadedMinionIdRef.current === minionId) {
+      return;
+    }
+
+    const baseQuery = { minion_id: minionId, salt_master: masterId };
+    const filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
+    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
+
+    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
+    jobStore.loadJobReturns();
+    lastLoadedMinionIdRef.current = minionId;
+  }, [jobReturnsFilterStore, jobStore, minion?.master, minion?.minion_id]);
+
+  useEffect(() => {
+    setFiltersExtraContainer(document.getElementById("minion-job-returns-filters-extra"));
+  }, []);
+
+  const jobReturnsFilterButton = (
+    <FilterToggleButton
+      isOpen={shownFilters}
+      activeFiltersCount={jobReturnsFilterStore.activeFiltersCount}
+      onToggle={toggleShownFilters}
+    />
+  );
+
+  const jobReturnsFilter = shownFilters ? (
+    <JobReturnsQueryBuilder
+      filterStore={jobReturnsFilterStore}
+      jobStore={jobStore}
+      onSearchButtonClick={handleJobReturnsFilterSearch}
+      onResetButtonClick={handleJobReturnsFilterReset}
+    />
+  ) : null;
+
+  const jobReturnsTabActions = isFullView ? (
+    <Flex justify="flex-end">
+      <JobModal
+        target={minion?.minion_id ?? ""}
+        targetType="glob"
+        defaultMaster={minion?.master ?? ""}
+      />
+    </Flex>
+  ) : null;
+
+  return (
+    <>
+      {filtersExtraContainer && createPortal(jobReturnsFilterButton, filtersExtraContainer)}
+
+      <MinionJobReturnsTabView
+        jobReturnsConfig={{
+          jobReturns: jobStore.jobReturns,
+          isLoading: jobStore.isJobReturnsLoading,
+          pagination: jobStore.pagination,
+          sorting: jobStore.sorting,
+          total: jobStore.total,
+          onLazyLoad: jobStore.handleLazyLoad,
+        }}
+        isFullView={isFullView}
+        jobReturnsTabActions={jobReturnsTabActions}
+        jobReturnsFilter={jobReturnsFilter}
+      />
+    </>
+  );
+});
