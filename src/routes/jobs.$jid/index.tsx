@@ -37,6 +37,7 @@ import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
+import { KwargsPreview } from "saltbox-core/shared/components/job/kwargs-preview";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import {
@@ -48,7 +49,6 @@ import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 
 import { ArgumentsPreview } from "./-components/arguments-preview";
 import { ErrorsPopover } from "./-components/errors-popover";
-import { KwargsPreview } from "./-components/kwargs-preview";
 import styles from "./index.module.css";
 
 const { Text } = Typography;

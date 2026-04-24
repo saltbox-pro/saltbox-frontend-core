@@ -9,21 +9,21 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
+  createColumnHelper,
   PaginationState,
   Row,
   SortingState,
-  createColumnHelper,
 } from "@tanstack/react-table";
-import { Button, Flex, Tag } from "antd";
+import { Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
+import { KwargsPreview } from "saltbox-core/shared/components/job/kwargs-preview";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { JsonPopover } from "saltbox-core/shared/components/json-popover/json-popover";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobFilterStore, JobStore } from "saltbox-core/store";
@@ -160,68 +160,6 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
   return result;
 };
 
-const KwargsTag = ({
-  data,
-  title,
-  copySuccessMessage,
-  previewEntries,
-  hasMore,
-  isEmpty,
-  formatValue,
-  noKwargsText,
-}: {
-  data: Record<string, unknown> | undefined;
-  title: string;
-  copySuccessMessage: string;
-  previewEntries: [string, unknown][];
-  hasMore: boolean;
-  isEmpty: boolean;
-  formatValue: (value: unknown) => string;
-  noKwargsText: string;
-}) => {
-  const tagContent = (
-    <>
-      <span className={styles.kwargsBrace}>{"{"}</span>
-      {!isEmpty ? (
-        previewEntries.map(([key, value], index) => (
-          <Fragment key={key}>
-            <span className={styles.kwargsKey}>{key}</span>
-            <span className={styles.kwargsSeparator}>: </span>
-            <span className={styles.kwargsValue}>{formatValue(value)}</span>
-            {index < previewEntries.length - 1 && (
-              <span className={styles.kwargsSeparator}>, </span>
-            )}
-          </Fragment>
-        ))
-      ) : (
-        <span className={styles.kwargsEmpty}>{noKwargsText}</span>
-      )}
-      {hasMore ? <span className={styles.kwargsEllipsis}>…</span> : null}
-      <span className={styles.kwargsBrace}>{"}"}</span>
-    </>
-  );
-
-  if (isEmpty) {
-    return <Tag className={styles.kwargsTag}>{tagContent}</Tag>;
-  }
-
-  return (
-    <Button className={styles.kwargsPopoverWrapper} onClick={(e) => e.stopPropagation()}>
-      <JsonPopover
-        data={data ?? {}}
-        title={title}
-        copySuccessMessage={copySuccessMessage}
-        maxHeight="400px"
-        maxWidth="700px"
-        placement="bottom"
-        tagClassName={styles.kwargsTagClickable}
-      >
-        {tagContent}
-      </JsonPopover>
-    </Button>
-  );
-};
-
 const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -276,69 +214,15 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         meta: { width: "15%" },
       }),
       jobReturnsColumnHelper.accessor("fun_kwarg", {
-        id: "fun_kwarg",
         header: t("jobs.key-value-arguments"),
-        cell: (data) => {
-          const rawKwargs = data.getValue();
-
-          const isObjectKwargs =
-            rawKwargs && typeof rawKwargs === "object" && !Array.isArray(rawKwargs);
-
-          const kwargs = isObjectKwargs ? (rawKwargs as Record<string, unknown>) : undefined;
-          const entries = kwargs ? Object.entries(kwargs) : [];
-          const previewEntries = entries.slice(0, 3);
-          const hasMore = entries.length > 3;
-          const isEmpty = entries.length === 0;
-
-          const formatValue = (value: unknown) => {
-            if (value === null || typeof value === "number" || typeof value === "boolean") {
-              return String(value);
-            }
-
-            if (typeof value === "string") {
-              return value.length > 24 ? `${value.slice(0, 21)}…` : value;
-            }
-
-            if (Array.isArray(value)) {
-              const items = value.slice(0, 3).map((item) => {
-                if (typeof item === "string") {
-                  return item.length > 12 ? `${item.slice(0, 9)}…` : item;
-                }
-                if (typeof item === "number" || typeof item === "boolean") {
-                  return String(item);
-                }
-                return "…";
-              });
-              return `[${items.join(", ")}${value.length > 3 ? ", …" : ""}]`;
-            }
-
-            if (typeof value === "object") {
-              return "{…}";
-            }
-
-            return "";
-          };
-
-          return (
-            <KwargsTag
-              data={kwargs}
-              title={t("jobs.key-value-arguments")}
-              copySuccessMessage={t("jobs.table-copy-success")}
-              previewEntries={previewEntries}
-              hasMore={hasMore}
-              isEmpty={isEmpty}
-              formatValue={formatValue}
-              noKwargsText={t("jobs.no-key-value-arguments")}
-            />
-          );
-        },
+        cell: (data) => <KwargsPreview kwargs={data.getValue()} />,
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-execution-time"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
       }),
     ],
-    [handleNavigateToJob, t]
+    [t]
   );
 
   const renderJobResult = useCallback(({ row }: { row: Row<JobReturnModel> }) => {
@@ -435,7 +319,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
 
   const jobReturnsFilterStore = useMemo(() => {
     const storageKey = `jobReturnsFilter:${minion?.id ?? "unknown"}`;
-    return new JobFilterStore(jobReturnsFilterSchema as any, storageKey);
+    return new JobFilterStore(jobReturnsFilterSchema, storageKey);
   }, [minion?.id]);
 
   const handleJobReturnsFilterSearch = useCallback(() => {
