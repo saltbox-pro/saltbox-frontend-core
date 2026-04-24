@@ -1,7 +1,7 @@
 import { SettingOutlined } from "@ant-design/icons";
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { Button, Dropdown, Flex, Tabs, type MenuProps, type TabsProps } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
@@ -39,14 +39,13 @@ export function MinionDetails({
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<string>(() =>
-    !isInDrawer ? searchParams.get("tab") || "dashboard" : "dashboard"
+  const tabKey = useMemo(
+    () => (!isInDrawer ? searchParams.get("tab") || "dashboard" : "dashboard"),
+    [isInDrawer, searchParams]
   );
 
   const handleTabChange = useCallback(
     (key: string) => {
-      setActiveTab(key);
-
       if (!isInDrawer) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -66,7 +65,7 @@ export function MinionDetails({
               {!isInDrawer && (
                 <div
                   id="minion-job-returns-filters-extra"
-                  style={{ display: activeTab === "job-returns" ? "block" : "none" }}
+                  style={{ display: tabKey === "job-returns" ? "block" : "none" }}
                 />
               )}
               {fullViewActionsMenuItems && (
@@ -144,7 +143,7 @@ export function MinionDetails({
       className={styles.minionsTabs}
       tabBarExtraContent={fullViewActions}
       onChange={handleTabChange}
-      activeKey={activeTab}
+      activeKey={!isInDrawer ? tabKey : undefined}
     />
   );
 }
