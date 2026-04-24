@@ -22,8 +22,8 @@ import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
-import { KwargsPreview } from "saltbox-core/shared/components/job/kwargs-preview";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobFilterStore, JobStore } from "saltbox-core/store";
@@ -192,7 +192,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
             },
           ],
           color: "accent",
-          width: 300,
+          width: "18%",
           minWidth: 300,
           maxWidth: 350,
           ellipsis: true,
@@ -213,9 +213,27 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         header: t("task.job-returns-table.table-fun"),
         meta: { width: "15%" },
       }),
+      jobReturnsColumnHelper.accessor("fun_args", {
+        header: t("jobs.arguments"),
+        cell: (data) => (
+          <JsonPreview
+            value={data.getValue()}
+            title={t("jobs.arguments")}
+            emptyLabel={t("jobs.no-arguments")}
+          />
+        ),
+        meta: { width: "20%" },
+      }),
       jobReturnsColumnHelper.accessor("fun_kwarg", {
         header: t("jobs.key-value-arguments"),
-        cell: (data) => <KwargsPreview kwargs={data.getValue()} />,
+        cell: (data) => (
+          <JsonPreview
+            value={data.getValue()}
+            title={t("jobs.key-value-arguments")}
+            emptyLabel={t("jobs.no-key-value-arguments")}
+          />
+        ),
+        meta: { width: "20%" },
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-execution-time"),

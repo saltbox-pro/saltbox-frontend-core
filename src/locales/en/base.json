@@ -751,6 +751,7 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
+    "no-data": "No data",
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"

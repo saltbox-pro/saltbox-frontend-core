@@ -1,4 +1,5 @@
 import { Tag } from "antd";
+import { useTranslation } from "react-i18next";
 
 import {
   JsonPopover,
@@ -29,16 +30,19 @@ const DEFAULT_POPOVER_CONTENT_STYLE: JsonPopoverProps["contentStyle"] = {
 export function JsonPreview({
   value,
   title,
-  emptyLabel = "",
+  emptyLabel,
   maxPreviewEntries = 6,
   popoverMaxHeight = "400px",
   popoverMaxWidth = "500px",
   popoverPlacement = "bottom",
   popoverContentStyle,
 }: JsonPreviewProps) {
-  const isEmpty = value === undefined;
+  const { t } = useTranslation();
+  const isEmpty = value === undefined || value === null;
+  const resolvedEmptyLabel = emptyLabel ?? t("common.no-data");
+
   const tagContent = isEmpty ? (
-    <span className={styles.empty}>{emptyLabel}</span>
+    <span className={styles.empty}>{resolvedEmptyLabel}</span>
   ) : (
     <PreviewContent value={value} maxEntries={maxPreviewEntries} />
   );

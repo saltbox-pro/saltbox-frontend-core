@@ -37,17 +37,16 @@ import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
-import { KwargsPreview } from "saltbox-core/shared/components/job/kwargs-preview";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import {
   mergeJobReturnsToTable,
   exportToCSV,
 } from "saltbox-core/shared/components/job-return-table/utils/table-converter";
+import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 
-import { ArgumentsPreview } from "./-components/arguments-preview";
 import { ErrorsPopover } from "./-components/errors-popover";
 import styles from "./index.module.css";
 
@@ -297,10 +296,12 @@ const JobPage = observer(() => {
             <span className={styles.jobDetailValue}>
               {jobStore.isJobLoading ? (
                 <Skeleton.Input size="small" />
-              ) : jobStore.job?.arg && jobStore.job.arg.length > 0 ? (
-                <ArgumentsPreview args={jobStore.job.arg} title={t("jobs.arguments")} />
               ) : (
-                <Text type="secondary">{t("jobs.no-arguments")}</Text>
+                <JsonPreview
+                  value={jobStore.job?.arg}
+                  title={t("jobs.arguments")}
+                  emptyLabel={t("jobs.no-arguments")}
+                />
               )}
             </span>
           </div>
@@ -310,10 +311,12 @@ const JobPage = observer(() => {
             <span className={styles.jobDetailValue}>
               {jobStore.isJobLoading ? (
                 <Skeleton.Input size="small" />
-              ) : jobStore.job?.kwarg && Object.keys(jobStore.job.kwarg).length > 0 ? (
-                <KwargsPreview kwargs={jobStore.job.kwarg} title={t("jobs.key-value-arguments")} />
               ) : (
-                <Text type="secondary">{t("jobs.no-key-value-arguments")}</Text>
+                <JsonPreview
+                  value={jobStore.job?.kwarg}
+                  title={t("jobs.key-value-arguments")}
+                  emptyLabel={t("jobs.no-key-value-arguments")}
+                />
               )}
             </span>
           </div>

@@ -121,64 +121,6 @@
   padding: 50px 0;
 }
 
-.argumentsCell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.argumentsPreview {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.argumentsTag {
-  margin-inline: 0;
-  background-color: #f0f5ff !important;
-  border-color: #d6e4ff !important;
-  flex: 1;
-  min-width: 0;
-}
-
-.argumentsValue {
-  color: #722ed1;
-}
-
-.argumentsSeparator {
-  color: #1890ff;
-}
-
-.argumentsBrace {
-  color: #1890ff;
-  font-weight: 500;
-}
-
-.argumentsEllipsis {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
-.argumentsEmpty {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
-.argumentsTagClickable {
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out;
-}
-
-.argumentsTagClickable:hover {
-  background-color: #d6e4ff !important;
-  border-color: #adc6ff !important;
-}
-
 .filterWrapper {
   margin-bottom: 16px;
 }
