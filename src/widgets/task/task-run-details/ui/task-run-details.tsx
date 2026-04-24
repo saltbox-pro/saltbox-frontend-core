@@ -1,4 +1,4 @@
-import { RelativeTime } from "@saltbox/saltbox-frontend-common";
+import { formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
 import { Divider, Flex, Skeleton } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
@@ -47,10 +47,11 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
           </TaskDetailItem>
           <Divider type="vertical" />
           <TaskDetailItem label={t("task.created")}>
-            <RelativeTime
-              date={taskStore.task.created}
-              fallback={<Skeleton.Input size="small" />}
-            />
+            {taskStore.task.created ? (
+              formatTimeByUserTZ(taskStore.task.created)
+            ) : (
+              <Skeleton.Input size="small" />
+            )}
           </TaskDetailItem>
           <Divider type="vertical" />
           <TaskDetailItem label={t("task.user")}>
