@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
@@ -68,9 +69,9 @@ const JobsPage = observer(() => {
         meta: {
           showCopy: true,
           color: "accent",
-          width: 250,
-          minWidth: 250,
-          maxWidth: 250,
+          width: "12%",
+          minWidth: 220,
+          maxWidth: 220,
           ellipsis: true,
         },
       }),
@@ -80,24 +81,33 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
-        meta: { width: "12%" },
+        meta: { width: "10%" },
       }),
       columnHelper.accessor("tgt", {
         header: t("jobs.table-targets"),
         meta: {
           showCopy: true,
-          maxWidth: 350,
+          width: "13%",
+          minWidth: 230,
+          maxWidth: 230,
           ellipsis: true,
         },
       }),
       columnHelper.accessor("tgt_type", {
         header: t("jobs.table-target-type"),
-        meta: { width: "10%" },
+        meta: { width: "8%" },
+      }),
+      columnHelper.accessor("source.type", {
+        header: t("jobs.table-source"),
+        cell: (data) => {
+          return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
+        },
+        meta: { width: "11%" },
       }),
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("jobs.table-user"),
-        meta: { width: "10%" },
+        meta: { width: "11%" },
       }),
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
@@ -121,12 +131,12 @@ const JobsPage = observer(() => {
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
         },
-        meta: { width: "10%" },
+        meta: { width: "11%" },
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
-        meta: { width: "18%" },
+        meta: { width: "11%" },
       }),
     ],
     [t]
