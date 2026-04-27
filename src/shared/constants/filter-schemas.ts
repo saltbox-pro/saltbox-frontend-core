@@ -103,44 +103,61 @@ export const getTasksFilterSchema = (
   return fields as OptionList;
 };
 
-export const getJobsFilterSchema = (saltTargetTypes: SelectProps["options"]): OptionList =>
+const jobSourceTypeSelectOptions = (t: TFunction) => [
+  { label: t("jobs.table-source-rest"), value: "rest" },
+  { label: t("jobs.table-source-task"), value: "task" },
+  { label: t("jobs.table-source-scheduler"), value: "scheduler" },
+  { label: t("jobs.table-source-scenario"), value: "migration" },
+];
+
+export const getJobsFilterSchema = (
+  t: TFunction,
+  saltTargetTypes: SelectProps["options"]
+): OptionList =>
   [
     {
       name: "jid",
-      label: "JID",
+      label: t("jobs.table-jid"),
       operators: defaultStringOperators,
     },
     {
       name: "salt_master",
-      label: "Master",
+      label: t("jobs.table-master"),
       operators: defaultStringOperators,
     },
     {
       name: "fun",
-      label: "Function",
+      label: t("jobs.table-function"),
       operators: defaultStringOperators,
     },
     {
       name: "tgt",
-      label: "Targets",
+      label: t("jobs.table-targets"),
       operators: defaultStringOperators,
     },
     {
       name: "tgt_type",
-      label: "Target Type",
+      label: t("jobs.table-target-type"),
       operators: defaultListOperators,
       type: "multiselect",
       selectOptions: saltTargetTypes,
       selectFieldNames: { label: "label", value: "value" },
     },
     {
+      name: "source.type",
+      label: t("jobs.table-source"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobSourceTypeSelectOptions(t),
+    },
+    {
       name: "user.name",
-      label: "User",
+      label: t("jobs.table-user"),
       operators: defaultStringOperators,
     },
     {
       name: "created",
-      label: "Created",
+      label: t("jobs.table-created"),
       operators: defaultDateTimeOperators,
       inputType: "datetime-local",
       valueEditorType: "datetime-local",

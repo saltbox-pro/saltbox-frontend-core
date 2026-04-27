@@ -8,6 +8,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
+import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,15 +30,19 @@ const JobsTable = FastTablePaginated<JobsListResponse>;
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
-const useJobFilters = () => {
+const useJobFilters = (t: TFunction) => {
   const saltTargetTypes = useSaltTargetTypes();
   const location = useLocation();
 
-  const filterSchema = useMemo(() => getJobsFilterSchema(saltTargetTypes), [saltTargetTypes]);
+  const filterSchema = useMemo(() => getJobsFilterSchema(t, saltTargetTypes), [saltTargetTypes, t]);
 
   const storageKey = `jobsFilter:${location.pathname}`;
 
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema, storageKey));
+
+  useEffect(() => {
+    jobFilterStore.filterSchema = filterSchema;
+  }, [filterSchema, jobFilterStore]);
 
   return {
     jobFilterStore,
@@ -49,7 +54,7 @@ const JobsPage = observer(() => {
   const navigate = useNavigate();
   const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
 
-  const { jobFilterStore } = useJobFilters();
+  const { jobFilterStore } = useJobFilters(t);
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
 
   const handleNavigateToJob = useCallback(
