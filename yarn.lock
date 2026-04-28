@@ -2201,10 +2201,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@saltbox/react-jsonschema-form-generator@0.1.3":
-  version "0.1.3"
-  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.3.tgz#4a5b613047322678de58dfd8126af89fed50ca4d"
-  integrity sha1-SlthMEcyJnjeWN/YEmr4n+1Qyk0=
+"@saltbox/react-jsonschema-form-generator@0.1.4":
+  version "0.1.4"
+  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.4.tgz#bd30ad783768b85014e8adf95af7caa7843d8085"
+  integrity sha1-vTCteDdouFAU6K35WvfKp4Q9gIU=
   dependencies:
     "@monaco-editor/react" "^4.7.0"
     "@radix-ui/react-checkbox" "^1.3.3"
@@ -2231,10 +2231,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.0-78517bef21768c78f6aef42480bf7f08f92cca87.tgz#c27fda023670b6508cb1c4dd44fb66e285ac793d"
   integrity sha1-wn/aAjZwtlCMscTdRPtm4oWseT0=
 
-"@saltbox/saltbox-frontend-common@^0.1.10":
-  version "0.1.10"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.1.10.tgz#12f9c096633617ed3fb57903146b09883e6958de"
-  integrity sha1-EvnAlmM2F+0/tXkDFGsJiD5pWN4=
+"@saltbox/saltbox-frontend-common@^0.1.11":
+  version "0.1.11"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.1.11.tgz#fa6af653b67951915114496270703f68f6ff8b82"
+  integrity sha1-+mr2U7Z5UZFRFElicHA/aPb/i4I=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -2244,7 +2244,7 @@
     "@rjsf/core" "^6.4.2"
     "@rjsf/utils" "^6.4.2"
     "@rjsf/validator-ajv8" "^6.4.2"
-    "@saltbox/react-jsonschema-form-generator" "0.1.3"
+    "@saltbox/react-jsonschema-form-generator" "0.1.4"
     "@tanstack/react-table" "^8.21.3"
     "@tanstack/react-virtual" "^3.13.12"
     ajv "^8.17.1"
