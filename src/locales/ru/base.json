@@ -312,6 +312,8 @@
       "table-fun": "Функция",
       "invalid-execution-time": "Недопустимое время выполнения",
       "execution-time-pending": "Ожидание",
+      "waiting-client-response": "Ожидание ответа от клиента",
+      "no-execution-result": "Результат выполнения отсутствует",
       "status-unknown": "Неизвестно",
       "status-waiting": "Ожидание",
       "status-timeout": "Тайм-аут",
