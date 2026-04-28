@@ -24,15 +24,16 @@ export function JobSubRow({ isFullOutput, row }: JobJsonProps) {
   const dataToShow = isFullOutput ? row.original : getShortJobReturnOutput(row.original);
 
   if (isJobReturnResultMissing(row.original)) {
-    const status = row.original?.status;
-    const labelKey =
-      status === "waiting"
-        ? "task.job-returns-table.waiting-client-response"
-        : "task.job-returns-table.no-execution-result";
+    const { status } = row.original ?? {};
+    const isWaiting = status === "waiting";
+    const labelKey = isWaiting
+      ? "task.job-returns-table.waiting-client-response"
+      : "task.job-returns-table.no-execution-result";
+
     return (
       <JobSubContent>
         <Flex align="center" gap={12}>
-          <Skeleton.Input size="small" active />
+          {isWaiting && <Skeleton.Input size="small" active />}
 
           <Typography.Text type="secondary">{t(labelKey)}</Typography.Text>
         </Flex>
