@@ -316,6 +316,7 @@ const JobPage = observer(() => {
                   value={jobStore.job?.kwarg}
                   title={t("jobs.key-value-arguments")}
                   emptyLabel={t("jobs.no-key-value-arguments")}
+                  maxPreviewEntries={2}
                 />
               )}
             </span>
