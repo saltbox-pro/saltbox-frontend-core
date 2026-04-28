@@ -151,6 +151,11 @@ export const getJobsFilterSchema = (
       selectOptions: jobSourceTypeSelectOptions(t),
     },
     {
+      name: "source.id",
+      label: t("jobs.table-source-id"),
+      operators: defaultStringOperators,
+    },
+    {
       name: "user.name",
       label: t("jobs.table-user"),
       operators: defaultStringOperators,

@@ -16,6 +16,10 @@ import {
 } from "./features/minion-details-drawer";
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
+import {
+  OpenRelatedJobsButton,
+  type OpenRelatedJobsButtonProps,
+} from "./shared/components/jobs/open-related-jobs-button";
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -34,12 +38,6 @@ const collectionSelectorRootComponent = observer(({ onClose }) => (
   </SaltboxLocaleProvider>
 ));
 
-const collectionSelectorLifecycles = singleSpaReact({
-  React,
-  ReactDOMClient,
-  rootComponent: collectionSelectorRootComponent,
-});
-
 const MinionDetailsDrawerWrapperProvider = observer(
   (props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
     return (
@@ -47,6 +45,20 @@ const MinionDetailsDrawerWrapperProvider = observer(
         <Suspense fallback="Loading...">
           <BrowserRouter>
             <MinionDetailsDrawerWrapper {...props?.customProps} />
+          </BrowserRouter>
+        </Suspense>
+      </SaltboxLocaleProvider>
+    );
+  }
+);
+
+const OpenRelatedJobsButtonProvider = observer(
+  (props: { customProps?: OpenRelatedJobsButtonProps }) => {
+    return (
+      <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+        <Suspense fallback="Loading...">
+          <BrowserRouter>
+            {!!props.customProps && <OpenRelatedJobsButton {...props.customProps} />}
           </BrowserRouter>
         </Suspense>
       </SaltboxLocaleProvider>
@@ -66,7 +78,24 @@ const plugins = {
       }),
     },
   ],
+  "jobs.open-related": [
+    {
+      key: "open-related-jobs-button",
+      wrapWith: "div",
+      parcel: singleSpaReact({
+        React,
+        ReactDOMClient,
+        rootComponent: OpenRelatedJobsButtonProvider,
+      }),
+    },
+  ],
 };
+
+const collectionSelectorLifecycles = singleSpaReact({
+  React,
+  ReactDOMClient,
+  rootComponent: collectionSelectorRootComponent,
+});
 
 export const saltboxModule = {
   singleSpaLifecycle: coreLifecycles,

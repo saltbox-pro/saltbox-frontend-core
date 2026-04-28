@@ -3,6 +3,7 @@ import { Divider, Flex, Skeleton } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
+import { OpenRelatedJobsButton } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import type { TaskStore } from "saltbox-core/store";
 
@@ -17,6 +18,7 @@ type TaskRunDetailsProps = {
 
 export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: TaskRunDetailsProps) {
   const { t } = useTranslation();
+  const taskId = taskStore.task?.id;
 
   return (
     <Flex className={styles.taskDetailsContainer} align="center" wrap gap="middle">
@@ -31,8 +33,14 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
         onStopTask={taskStore.handleStopTask}
         onRestartFailed={taskStore.handleRestartFailed}
       />
-
       <TaskDetailsModal taskStore={taskStore} />
+
+      {!!taskId && (
+        <OpenRelatedJobsButton
+          sourceId={taskId}
+          sourceType={taskStore.task?.task_type === "policy" ? "policy" : "task"}
+        />
+      )}
 
       {taskStore.task ? (
         <Flex align="center">

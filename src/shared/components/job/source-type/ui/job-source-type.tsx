@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 
+import { parseScenarioSourceId } from "../helpers/parse";
+
 import { JobSourceLink } from "./job-source-link";
 
 interface JobSourceTypeProps {
@@ -35,9 +37,10 @@ export function JobSourceType({ type, sourceId }: JobSourceTypeProps) {
 
   if (type === "migration") {
     if (sourceId) {
-      const scenarioId = sourceId.split(":")[0] ?? sourceId;
+      const { scenarioId, step } = parseScenarioSourceId(sourceId);
+
       return (
-        <JobSourceLink to={`/scenarios/list/${scenarioId}`}>
+        <JobSourceLink to={`/scenarios/list/${scenarioId}`} state={step ? { step } : undefined}>
           {t("jobs.table-source-scenario")}
         </JobSourceLink>
       );

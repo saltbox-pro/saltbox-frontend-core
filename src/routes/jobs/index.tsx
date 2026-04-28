@@ -1,4 +1,4 @@
-import { JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   PageHeader,
@@ -10,7 +10,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
 import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -29,6 +29,14 @@ import styles from "./index.module.css";
 const JobsTable = FastTablePaginated<JobsListResponse>;
 
 const columnHelper = createColumnHelper<JobsListResponse>();
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isEmptyObject(value: unknown): boolean {
+  return isPlainObject(value) && Object.keys(value).length === 0;
+}
 
 const useJobFilters = (t: TFunction) => {
   const saltTargetTypes = useSaltTargetTypes();
@@ -52,10 +60,12 @@ const useJobFilters = (t: TFunction) => {
 const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
 
   const { jobFilterStore } = useJobFilters(t);
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
+  const didInitFromLocationRef = useRef(false);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -179,11 +189,26 @@ const JobsPage = observer(() => {
   }, [jobsStore.error]);
 
   useEffect(() => {
-    jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
-    jobsStore.loadJobs();
-  }, []);
+    if (didInitFromLocationRef.current) {
+      return;
+    }
 
-  let jobModalCreatePlugin: React.ReactNode = null;
+    const stateQuery = location.state;
+    if (isPlainObject(stateQuery)) {
+      jobFilterStore.initializeByQuery(stateQuery);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+
+    const parsedQuery = jobFilterStore.searchMongoDBQuery;
+    jobsStore.mongoDBQuery =
+      isPlainObject(stateQuery) && !isEmptyObject(stateQuery) && isEmptyObject(parsedQuery)
+        ? stateQuery
+        : parsedQuery;
+    jobsStore.loadJobs();
+    didInitFromLocationRef.current = true;
+  }, [jobFilterStore, jobsStore, location.pathname, location.state, navigate]);
+
+  let jobModalCreatePlugin: ReactNode = null;
   appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
     jobModalCreatePlugin = (
       <>
