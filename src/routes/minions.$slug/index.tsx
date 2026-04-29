@@ -1,5 +1,5 @@
 import {
-  DeleteOutlined,
+  // DeleteOutlined,
   EditOutlined,
   SettingOutlined,
   PlusOutlined,
@@ -115,9 +115,9 @@ const MinionsPage = observer(() => {
     setIsCreateModalOpen(true);
   };
 
-  const handleDeleteCollection = () => {
-    setIsDeleteModalOpen(true);
-  };
+  // const handleDeleteCollection = () => {
+  //   setIsDeleteModalOpen(true);
+  // };
 
   const collectionMenuItems = [
     {
@@ -139,15 +139,15 @@ const MinionsPage = observer(() => {
           ? t("minions.add-filters-to-save")
           : undefined,
     },
-    {
-      key: "delete",
-      label: t("minions.delete"),
-      icon: <DeleteOutlined />,
-      onClick: handleDeleteCollection,
-      danger: true,
-      disabled: slug === "root",
-      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
-    },
+    // {
+    //   key: "delete",
+    //   label: t("minions.delete"),
+    //   icon: <DeleteOutlined />,
+    //   onClick: handleDeleteCollection,
+    //   danger: true,
+    //   disabled: slug === "root",
+    //   title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
+    // },
   ];
 
   useEffect(() => {
