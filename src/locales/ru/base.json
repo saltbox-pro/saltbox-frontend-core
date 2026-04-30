@@ -516,6 +516,29 @@
     "timeout-unit-hours": "Час",
     "ttl-seconds-unit": "сек"
   },
+  "job-function-select": {
+    "open-button": "Создать команду (новый интерфейс)",
+    "title": "Выберите функцию",
+    "search-placeholder": "Поиск функции...",
+    "table-module": "Модуль",
+    "table-functions": "Функции",
+    "empty": "Нет доступных функций",
+    "nothing-found": "Ничего не найдено",
+    "error": "Не удалось загрузить данные",
+    "tooltip-description": "Описание",
+    "tooltip-arguments": "Аргументы",
+    "tooltip-example": "Пример команды",
+    "module-descriptions": {
+      "default": "Модуль {{module}}",
+      "test": "Тестирование и диагностика",
+      "cmd": "Выполнение команд",
+      "grains": "Информация о системе (Grains)",
+      "pillar": "Pillar-данные",
+      "pkg": "Управление пакетами",
+      "service": "Управление сервисами",
+      "file": "Работа с файлами"
+    }
+  },
   "jobs-templates": {
     "title": "Шаблоны команд",
     "table-name": "Имя",

@@ -7,7 +7,7 @@ import {
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Tag } from "antd";
+import { Button, Tag } from "antd";
 import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -22,6 +22,7 @@ import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schema
 import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
+import { JobFunctionSelectModal } from "./-components/job-function-select-modal";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
@@ -62,6 +63,8 @@ const JobsPage = observer(() => {
   const navigate = useNavigate();
   const location = useLocation();
   const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
+  const [isFunctionSelectModalOpen, setIsFunctionSelectModalOpen] = useState(false);
+  const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
 
   const { jobFilterStore } = useJobFilters(t);
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
@@ -229,6 +232,23 @@ const JobsPage = observer(() => {
     jobsStore.handleSearch();
   };
 
+  const handleFunctionSelectModalOpen = useCallback(() => {
+    setIsFunctionSelectModalOpen(true);
+  }, []);
+
+  const handleFunctionSelectModalClose = useCallback(() => {
+    setIsFunctionSelectModalOpen(false);
+  }, []);
+
+  const handleFunctionSelect = useCallback((functionName: string) => {
+    setSelectedFunction(functionName);
+    setIsFunctionSelectModalOpen(false);
+  }, []);
+
+  const handleSelectedFunctionModalClose = useCallback(() => {
+    setSelectedFunction(null);
+  }, []);
+
   return (
     <>
       <PageHeader title={t("jobs.title")} />
@@ -242,6 +262,9 @@ const JobsPage = observer(() => {
 
       <div className="page-actions-buttons">
         <JobModal target="*" targetType="glob" />
+        <Button type="default" onClick={handleFunctionSelectModalOpen}>
+          {t("job-function-select.open-button")}
+        </Button>
 
         <JobDatetimeRangeSelector
           className={styles.jobsDateRangePicker}
@@ -265,6 +288,22 @@ const JobsPage = observer(() => {
         onRowClick={(job) => handleNavigateToJob(job.jid)}
         useVirtualScroll={false}
       />
+
+      <JobFunctionSelectModal
+        open={isFunctionSelectModalOpen}
+        onCancel={handleFunctionSelectModalClose}
+        onSelect={handleFunctionSelect}
+      />
+
+      {selectedFunction && (
+        <JobModal
+          target="*"
+          targetType="glob"
+          fun={selectedFunction}
+          openOnMount
+          onAfterClose={handleSelectedFunctionModalClose}
+        />
+      )}
 
       {jobModalCreatePlugin}
     </>

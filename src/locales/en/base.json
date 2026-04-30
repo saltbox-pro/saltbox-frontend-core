@@ -516,6 +516,29 @@
     "timeout-unit-hours": "Hour",
     "ttl-seconds-unit": "sec"
   },
+  "job-function-select": {
+    "open-button": "Create Job (new flow)",
+    "title": "Choose function",
+    "search-placeholder": "Search function...",
+    "table-module": "Module",
+    "table-functions": "Functions",
+    "empty": "No available functions",
+    "nothing-found": "Nothing found",
+    "error": "Failed to load data",
+    "tooltip-description": "Description",
+    "tooltip-arguments": "Arguments",
+    "tooltip-example": "Command example",
+    "module-descriptions": {
+      "default": "{{module}} module",
+      "test": "Testing and diagnostics",
+      "cmd": "Command execution",
+      "grains": "System information (Grains)",
+      "pillar": "Pillar data",
+      "pkg": "Package management",
+      "service": "Service management",
+      "file": "File operations"
+    }
+  },
   "jobs-templates": {
     "title": "Job Templates",
     "table-name": "Name",
