@@ -4,7 +4,7 @@ import {
   QuestionCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { CreateJobRequestTgtTypeEnum, JobModel } from "@saltbox/saltbox-core-api-client";
+import { CreateJobRequestTgtTypeEnum, JobModel, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   PageHeader,
@@ -81,7 +81,10 @@ const JobPage = observer(() => {
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
-  const isMinionsCountReadyForReturns = jobStore.isMinionsCountReadyForReturns;
+  const isCommandInitializing = jobStore.job != null && jobStore.job.status === JobStatus.Starting;
+  const showJobBodyLoader = isWebSocketConnecting || jobStore.isJobLoading || isCommandInitializing;
+  const showJobReturnsToolbar =
+    jobStore.totalMinions > 0 || jobStore.total > 0 || effectiveJobReturns.length > 0;
 
   const tableConversionCheck = useMemo(() => {
     const jobReturnsData = effectiveJobReturns.map((jobReturn) => ({
@@ -359,16 +362,17 @@ const JobPage = observer(() => {
           )}
         </Flex>
 
-        {!isMinionsCountReadyForReturns ? (
+        {showJobBodyLoader ? (
           <Flex className={styles.jobLoader} vertical align="center" justify="center" gap={20}>
             <Spin />
-            <Text type="secondary">{t("jobs.executing-command")}</Text>
+
+            {!!isCommandInitializing && <Text type="secondary">{t("jobs.executing-command")}</Text>}
           </Flex>
         ) : (
           <>
             <JobStatusProgress counts={statusCounts} />
 
-            {jobStore.totalMinions > 0 && (
+            {showJobReturnsToolbar && (
               <Flex
                 className={styles.switchContainer}
                 justify="space-between"
@@ -469,9 +473,7 @@ const JobPage = observer(() => {
                 sorting={jobStore.sorting}
                 total={jobStore.total}
                 onLazyLoad={jobStore.handleLazyLoad}
-                isLoading={
-                  isWebSocketConnecting || jobStore.isJobLoading || jobStore.isJobReturnsLoading
-                }
+                isLoading={jobStore.isJobReturnsLoading}
                 forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
                 onTableViewSortingChange={setTableViewSorting}
                 onTableViewFilteredDataChange={setFilteredTableRows}

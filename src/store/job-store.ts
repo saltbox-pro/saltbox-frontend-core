@@ -14,7 +14,6 @@ const PAGE_SIZE = 50;
 export class JobStore {
   @observable jid: string;
   @observable job: JobModel | null;
-  @observable expectedMinionsTotal: number | null;
   @observable total: number;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
@@ -29,7 +28,6 @@ export class JobStore {
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
-    this.expectedMinionsTotal = null;
     this.jobReturns = [];
     this.total = 0;
     this.pagination = {
@@ -48,7 +46,6 @@ export class JobStore {
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
-    this.expectedMinionsTotal = null;
     this.jobReturns = [];
     this.total = 0;
     this.pagination = {
@@ -86,8 +83,6 @@ export class JobStore {
         } else {
           runInAction(() => {
             this.job = job;
-            const minions = job?.minions;
-            this.expectedMinionsTotal = Array.isArray(minions) ? minions.length : null;
           });
           this.loadJobReturns();
         }
@@ -207,15 +202,6 @@ export class JobStore {
   @computed
   get totalMinions() {
     return this.job?.minions_count?.total ?? 0;
-  }
-
-  @computed
-  get isMinionsCountReadyForReturns() {
-    const expected = this.expectedMinionsTotal;
-    if (expected == null) {
-      return true;
-    }
-    return this.totalMinions === expected;
   }
 
   @computed
