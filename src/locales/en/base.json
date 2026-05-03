@@ -468,7 +468,8 @@
     "standard-view": "Standard",
     "detailed-view": "Detailed",
     "table-view": "Table",
-    "export-to-csv": "Export to CSV",
+    "export-to-csv-title": "Export to CSV",
+    "export-to-csv-warning": "Information about {{count}} minions will be uploaded",
     "download-to-csv": "Download to CSV",
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-conversion-error": "Cannot convert data to table: {{reason}}",
@@ -792,6 +793,7 @@
     "edit": "Edit",
     "save": "Save",
     "no-data": "No data",
+    "export": "Export",
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"

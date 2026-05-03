@@ -49,6 +49,7 @@ interface DefaultJobReturnTableProps {
   onLazyLoad: OnLazyLoad;
   onTableViewSortingChange?: OnChangeFn<SortingState>;
   onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
+  onTableViewPaginationChange?: (pageIndex: number, pageSize: number) => void;
   onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
 }
 
@@ -66,6 +67,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     onLazyLoad,
     onTableViewSortingChange,
     onTableViewFilteredDataChange,
+    onTableViewPaginationChange,
     onTableViewErrorsChange,
   }) => {
     const { t } = useTranslation();
@@ -235,6 +237,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             minionId=""
             onSortingChange={onTableViewSortingChange}
             onFilteredDataChange={onTableViewFilteredDataChange}
+            onPaginationChange={onTableViewPaginationChange}
             onErrorsChange={onTableViewErrorsChange}
           />
         ) : (

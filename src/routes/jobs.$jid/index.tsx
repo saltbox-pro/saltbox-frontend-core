@@ -11,16 +11,11 @@ import {
   WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
-import {
-  createColumnHelper,
-  getCoreRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { SortingState } from "@tanstack/react-table";
 import {
   Button,
   Flex,
+  Modal,
   Radio,
   Skeleton,
   Spin,
@@ -31,7 +26,7 @@ import {
   Typography,
 } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -67,6 +62,9 @@ const JobPage = observer(() => {
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
   const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [tablePagination, setTablePagination] = useState({ pageIndex: 1, pageSize: 50 });
+  const savedPageSizeRef = useRef<number | null>(null);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -103,51 +101,61 @@ const JobPage = observer(() => {
     return tableConversionCheck;
   }, [isTableViewMode, tableConversionCheck]);
 
-  const tableColumnsForExport = useMemo(() => {
-    if (!mergedTableData || !mergedTableData.canConvert) {
-      return [];
-    }
-    const columnHelper = createColumnHelper<Record<string, unknown>>();
-    return mergedTableData.columns
-      .filter((col) => col !== "key")
-      .map((colName) =>
-        columnHelper.accessor(colName as keyof Record<string, unknown>, {
-          header: colName,
-        })
-      );
-  }, [mergedTableData]);
-
   const rowsToExport = useMemo(() => {
-    if (filteredTableRows.length > 0) {
-      return filteredTableRows;
-    }
-    return mergedTableData?.canConvert ? mergedTableData.rows : [];
-  }, [filteredTableRows, mergedTableData]);
+    const allRows =
+      filteredTableRows.length > 0
+        ? filteredTableRows
+        : mergedTableData?.canConvert
+          ? mergedTableData.rows
+          : [];
 
-  const exportTable = useReactTable({
-    data: rowsToExport,
-    columns: tableColumnsForExport,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting: tableViewSorting,
-    },
-    enableSorting: true,
-  });
+    const sortedRows = [...allRows].sort((rowA, rowB) => {
+      for (const sortRule of tableViewSorting) {
+        const valueA = rowA[sortRule.id];
+        const valueB = rowB[sortRule.id];
+
+        if (valueA === valueB) continue;
+
+        const stringA = valueA == null ? "" : String(valueA);
+        const stringB = valueB == null ? "" : String(valueB);
+        const comparisonResult = stringA.localeCompare(stringB, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        });
+
+        if (comparisonResult !== 0) {
+          return sortRule.desc ? -comparisonResult : comparisonResult;
+        }
+      }
+      return 0;
+    });
+
+    const startIndex = (tablePagination.pageIndex - 1) * tablePagination.pageSize;
+    const endIndex = startIndex + tablePagination.pageSize;
+
+    return sortedRows.slice(startIndex, endIndex);
+  }, [filteredTableRows, mergedTableData, tablePagination, tableViewSorting]);
 
   const handleExportToCSV = useCallback(() => {
     if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
       return;
     }
+    setIsExportModalOpen(true);
+  }, [mergedTableData, rowsToExport]);
+
+  const handleExportConfirm = useCallback(() => {
+    if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
+      return;
+    }
     const filename = `job-returns-${jid}-${Date.now()}.csv`;
 
-    const sortedRows = exportTable.getRowModel().rows.map((row) => row.original);
     const sortedTableData = {
       ...mergedTableData,
-      rows: sortedRows,
+      rows: rowsToExport,
     };
     exportToCSV(sortedTableData, filename);
-  }, [mergedTableData, jid, exportTable, rowsToExport]);
+    setIsExportModalOpen(false);
+  }, [mergedTableData, jid, rowsToExport]);
 
   const handleTableErrorsChange = useCallback(
     (errors: Array<{ minion_id: string; error: string }>) => {
@@ -155,6 +163,10 @@ const JobPage = observer(() => {
     },
     []
   );
+
+  const handleTablePaginationChange = useCallback((pageIndex: number, pageSize: number) => {
+    setTablePagination({ pageIndex, pageSize });
+  }, []);
 
   const handleToggleRevealedAll = (value: boolean) => {
     setIsRevealedAll(value);
@@ -176,11 +188,29 @@ const JobPage = observer(() => {
   });
 
   useEffect(() => {
+    if (isTableViewMode && jobStore.totalMinions > 0) {
+      if (savedPageSizeRef.current === null) {
+        savedPageSizeRef.current = jobStore.pagination.pageSize;
+      }
+
+      jobStore.handleLazyLoad({ pageIndex: 0, pageSize: jobStore.totalMinions }, tableViewSorting);
+    }
+
+    if (!isTableViewMode && savedPageSizeRef.current !== null) {
+      const pageSize = savedPageSizeRef.current;
+      savedPageSizeRef.current = null;
+
+      jobStore.handleLazyLoad({ pageIndex: 0, pageSize }, tableViewSorting);
+    }
+  }, [isTableViewMode]);
+
+  useEffect(() => {
     setIsRevealedAll(Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true"));
   }, [jid]);
 
   useEffect(() => {
     setFilteredTableRows([]);
+    setTablePagination({ pageIndex: 1, pageSize: 50 });
     if (!isTableViewMode) {
       setTableErrors([]);
     }
@@ -477,6 +507,7 @@ const JobPage = observer(() => {
                 forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
                 onTableViewSortingChange={setTableViewSorting}
                 onTableViewFilteredDataChange={setFilteredTableRows}
+                onTableViewPaginationChange={handleTablePaginationChange}
                 onTableViewErrorsChange={handleTableErrorsChange}
               />
             </Flex>
@@ -485,6 +516,17 @@ const JobPage = observer(() => {
           </>
         )}
       </Flex>
+
+      <Modal
+        title={t("jobs.export-to-csv-title")}
+        open={isExportModalOpen}
+        onOk={handleExportConfirm}
+        onCancel={() => setIsExportModalOpen(false)}
+        okText={t("common.export")}
+        cancelText={t("common.cancel")}
+      >
+        <span>{t("jobs.export-to-csv-warning", { count: rowsToExport.length })}</span>
+      </Modal>
     </>
   );
 });

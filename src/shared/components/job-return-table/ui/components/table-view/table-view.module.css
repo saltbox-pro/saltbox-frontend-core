@@ -9,11 +9,28 @@
 
 .tableWrapper {
   overflow: auto;
+  display: flex;
   flex: 1;
   min-height: 0;
 }
 
+.tableContainer :global(.ant-pagination.ant-table-pagination) {
+  position: sticky;
+  bottom: 0;
+  padding: 0.5rem;
+  background: #fff;
+  margin: 0;
+  z-index: 10;
+}
+
+.tableContainer :global(:is(.ant-spin-nested-loading, .ant-table-wrapper, .ant-spin-container)) {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .tableContainer :global(.ant-table) {
+  flex: 1;
   border: 0px solid #f0f0f0;
   border-radius: 0;
 }

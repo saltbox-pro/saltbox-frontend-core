@@ -1,5 +1,5 @@
 import { OnChangeFn, SortingState } from "@tanstack/react-table";
-import { Table, type TableColumnsType, type TableProps } from "antd";
+import { Flex, Table, type TableColumnsType, type TableProps } from "antd";
 import React, { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +17,7 @@ interface TableViewProps {
   minionId: string;
   onSortingChange?: OnChangeFn<SortingState>;
   onFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
+  onPaginationChange?: (pageIndex: number, pageSize: number) => void;
   onErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
 }
 
@@ -33,10 +34,13 @@ export const TableView: React.FC<TableViewProps> = ({
   minionId,
   onSortingChange,
   onFilteredDataChange,
+  onPaginationChange,
   onErrorsChange,
 }) => {
   const { t } = useTranslation();
   const [filteredInfo, setFilteredInfo] = useState<Record<string, unknown[] | null>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const tableData = useMemo(() => {
     if (
@@ -53,6 +57,7 @@ export const TableView: React.FC<TableViewProps> = ({
 
   useEffect(() => {
     setFilteredInfo({});
+    setCurrentPage(1);
     onErrorsChange?.(tableData.errors || []);
   }, [tableData, onErrorsChange]);
 
@@ -158,12 +163,23 @@ export const TableView: React.FC<TableViewProps> = ({
     onFilteredDataChange?.(filteredRows);
   }, [filteredRows, onFilteredDataChange]);
 
+  useEffect(() => {
+    onPaginationChange?.(currentPage, pageSize);
+  }, [currentPage, pageSize, onPaginationChange]);
+
   const handleTableChange: TableProps<Record<string, unknown>>["onChange"] = (
     pagination,
     filters,
     sorter
   ) => {
     setFilteredInfo((filters as Record<string, unknown[] | null>) || {});
+
+    if (pagination.current) {
+      setCurrentPage(pagination.current);
+    }
+    if (pagination.pageSize) {
+      setPageSize(pagination.pageSize);
+    }
 
     if (onSortingChange && sorter) {
       const sorters = Array.isArray(sorter) ? sorter : [sorter];
@@ -200,10 +216,19 @@ export const TableView: React.FC<TableViewProps> = ({
       <div className={styles.tableWrapper}>
         <Table<Record<string, unknown>>
           columns={columns}
-          dataSource={tableData.rows}
-          rowKey={(record, index) => (record.key ? String(record.key) : String(index))}
+          dataSource={filteredRows}
+          rowKey={(record) => {
+            return String(record.key || record.minion_id || "");
+          }}
           onChange={handleTableChange}
-          pagination={false}
+          pagination={{
+            size: "small",
+            defaultPageSize: 50,
+            showSizeChanger: true,
+            pageSizeOptions: [10, 50, 100, 1000],
+            showTotal: (total) => `Total: ${total}`,
+            showQuickJumper: true,
+          }}
           locale={{
             emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
           }}

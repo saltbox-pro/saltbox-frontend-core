@@ -468,7 +468,8 @@
     "standard-view": "Стандартный",
     "detailed-view": "Подробный",
     "table-view": "Табличный",
-    "export-to-csv": "Экспорт в CSV",
+    "export-to-csv-title": "Экспорт в CSV",
+    "export-to-csv-warning": "Будет выгружена информация по {{count}} миньонам",
     "download-to-csv": "Выгрузить в CSV",
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-conversion-error": "Невозможно преобразовать данные в таблицу: {{reason}}",
@@ -792,6 +793,7 @@
     "edit": "Редактировать",
     "save": "Сохранить",
     "no-data": "Нет данных",
+    "export": "Экспорт",
     "copy-to-clipboard-button": {
       "copy": "Копировать",
       "copied": "Скопировано в буфер обмена"
