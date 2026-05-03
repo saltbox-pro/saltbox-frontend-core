@@ -1,13 +1,12 @@
+import { SyncOutlined } from "@ant-design/icons";
 import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   PageHeader,
-  WebSocketMessage,
-  WebSocketService,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag } from "antd";
+import { Button, Tag, message } from "antd";
 import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -19,7 +18,7 @@ import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
-import { apiCoreStore, appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobFunctionSelectModal } from "./-components/job-function-select-modal";
@@ -62,7 +61,6 @@ const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [webSocketService] = useState(new WebSocketService<JobsListResponse>());
   const [isFunctionSelectModalOpen, setIsFunctionSelectModalOpen] = useState(false);
   const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
 
@@ -161,35 +159,10 @@ const JobsPage = observer(() => {
   );
 
   useEffect(() => {
-    webSocketService.connect(
-      `${apiCoreStore.env?.ws_server_url}/jobs`,
-      appStore.authStore?.user?.access_token,
-      {
-        onMessage: (messages: Array<WebSocketMessage<JobsListResponse>>) => {
-          if (messages?.length > 0) {
-            jobsStore.updateJobs(
-              messages
-                .filter((message) => message.message_tag === "job")
-                .map((message) => message.payload)
-            );
-          }
-        },
-      }
-    );
-    return () => webSocketService.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (webSocketService && appStore.authStore?.user?.access_token) {
-      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
-    }
-  }, [appStore.authStore?.user]);
-
-  useEffect(() => {
     if (jobsStore.error) {
-      navigate("/core/not-found");
+      message.error(t("jobs.load-error"));
     }
-  }, [jobsStore.error]);
+  }, [jobsStore.error, t]);
 
   useEffect(() => {
     if (didInitFromLocationRef.current) {
@@ -261,19 +234,27 @@ const JobsPage = observer(() => {
       />
 
       <div className="page-actions-buttons">
-        <JobModal target="*" targetType="glob" />
-        <Button type="default" onClick={handleFunctionSelectModalOpen}>
-          {t("job-function-select.open-button")}
-        </Button>
-
-        <JobDatetimeRangeSelector
-          className={styles.jobsDateRangePicker}
-          label={t("jobs.date-range-label")}
-          disabled={jobsStore.isJobsLoading}
-          onChange={(value) => {
-            jobsStore.handleDateRangeChange(value);
-          }}
-        />
+        <div className={styles.leftGroup}>
+          <JobModal target="*" targetType="glob" />
+          <Button type="default" onClick={handleFunctionSelectModalOpen}>
+            {t("job-function-select.open-button")}
+          </Button>
+        </div>
+        <div className={styles.rightGroup}>
+          <JobDatetimeRangeSelector
+            label={t("jobs.date-range-label")}
+            disabled={jobsStore.isJobsLoading}
+            onChange={(value) => {
+              jobsStore.handleDateRangeChange(value);
+            }}
+          />
+          <Button
+            icon={<SyncOutlined spin={jobsStore.isJobsLoading} />}
+            onClick={() => jobsStore.loadJobs()}
+            title={t("jobs.refresh")}
+            disabled={jobsStore.isJobsLoading}
+          />
+        </div>
       </div>
 
       <JobsTable

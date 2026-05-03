@@ -416,6 +416,8 @@
   },
   "jobs": {
     "title": "Jobs",
+    "refresh": "Refresh",
+    "load-error": "Failed to load data",
     "open-related": "Open jobs",
     "open-related-tooltip-task": "Show jobs created from this task",
     "open-related-tooltip-policy": "Show jobs created from this policy",

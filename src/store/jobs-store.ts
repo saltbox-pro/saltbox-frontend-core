@@ -111,30 +111,6 @@ export class JobsStore {
   };
 
   @action
-  updateJob = (job: JobsListResponse) => {
-    const index = this.jobs.findIndex((item) => item.jid === job.jid);
-    if (index > -1) {
-      this.jobs[index] = job;
-      this.jobs = [...this.jobs];
-    } else if (this.pagination.pageIndex === 0) {
-      let newJobs = [job, ...this.jobs];
-      if (newJobs.length > this.pagination.pageSize) {
-        newJobs = newJobs.slice(0, this.pagination.pageSize);
-      }
-      this.jobs = newJobs;
-      this.total++;
-    }
-  };
-
-  @action
-  updateJobs = (jobs: JobsListResponse[]) => {
-    const sortedJobs = jobs.sort(
-      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
-    );
-    sortedJobs.map((job) => this.updateJob(job));
-  };
-
-  @action
   handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs]) => {
     this.dateRange = range;
     this.pagination.pageIndex = 0;
