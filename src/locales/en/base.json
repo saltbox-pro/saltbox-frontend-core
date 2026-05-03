@@ -312,8 +312,6 @@
       "table-fun": "Function",
       "invalid-execution-time": "Invalid execution time",
       "execution-time-pending": "Waiting",
-      "waiting-client-response": "Waiting for client response",
-      "no-execution-result": "Execution result is missing",
       "status-unknown": "Unknown",
       "status-waiting": "Waiting",
       "status-timeout": "Timeout",
@@ -547,6 +545,10 @@
     "table-commit-hash": "Commit Hash",
     "table-created": "Created",
     "table-modified": "Modified"
+  },
+  "job-return": {
+    "waiting-client-response": "Waiting for client response",
+    "no-execution-result": "Execution result is missing"
   },
   "sync-templates-button": {
     "sync-templates": "Sync Templates",

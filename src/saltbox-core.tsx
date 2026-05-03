@@ -7,6 +7,14 @@ import "@ant-design/v5-patch-for-react-19";
 import { BrowserRouter } from "react-router";
 import singleSpaReact from "single-spa-react";
 
+import {
+  JobReturnOutput,
+  type JobReturnOutputProps,
+} from "saltbox-core/shared/components/job-return";
+import {
+  OpenRelatedJobsButton,
+  type OpenRelatedJobsButtonProps,
+} from "saltbox-core/shared/components/jobs/open-related-jobs-button";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
@@ -16,10 +24,6 @@ import {
 } from "./features/minion-details-drawer";
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
-import {
-  OpenRelatedJobsButton,
-  type OpenRelatedJobsButtonProps,
-} from "./shared/components/jobs/open-related-jobs-button";
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -66,6 +70,26 @@ const OpenRelatedJobsButtonProvider = observer(
   }
 );
 
+const JobReturnOutputProvider = observer((props: { customProps?: JobReturnOutputProps | null }) => {
+  const customProps = props.customProps;
+  if (!customProps?.jobReturn) {
+    return null;
+  }
+
+  return (
+    <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+      <Suspense fallback="Loading...">
+        <BrowserRouter>
+          <JobReturnOutput
+            isFullOutput={customProps.isFullOutput}
+            jobReturn={customProps.jobReturn}
+          />
+        </BrowserRouter>
+      </Suspense>
+    </SaltboxLocaleProvider>
+  );
+});
+
 const plugins = {
   "minions.details-drawer": [
     {
@@ -86,6 +110,17 @@ const plugins = {
         React,
         ReactDOMClient,
         rootComponent: OpenRelatedJobsButtonProvider,
+      }),
+    },
+  ],
+  "jobs.job-return-output": [
+    {
+      key: "job-return-output",
+      wrapWith: "div",
+      parcel: singleSpaReact({
+        React,
+        ReactDOMClient,
+        rootComponent: JobReturnOutputProvider,
       }),
     },
   ],

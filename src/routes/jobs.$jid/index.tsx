@@ -38,11 +38,11 @@ import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
-import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table/default/default-job-return-table";
 import {
-  mergeJobReturnsToTable,
+  DefaultJobReturnTable,
   exportToCSV,
-} from "saltbox-core/shared/components/job-return-table/utils/table-converter";
+  mergeJobReturnsToTable,
+} from "saltbox-core/shared/components/job-return-table";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";

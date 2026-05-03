@@ -19,20 +19,14 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import ReactJson from "react-json-view";
 import { useNavigate } from "react-router";
 
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobFilterStore, JobStore } from "saltbox-core/store";
-
-import {
-  extractStringValue,
-  getShortJobReturnOutput,
-  isSimpleStringData,
-} from "../job-return-table/utils/job-return-utils";
 
 import styles from "./minion-job-returns-tab.module.css";
 
@@ -243,34 +237,10 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
     [t]
   );
 
-  const renderJobResult = useCallback(({ row }: { row: Row<JobReturnModel> }) => {
-    const dataToShow = getShortJobReturnOutput(row.original);
-
-    if (isSimpleStringData(dataToShow)) {
-      const stringValue = extractStringValue(dataToShow);
-      return <div className={styles.stringDataContainer}>{stringValue}</div>;
-    }
-
-    if (typeof dataToShow === "boolean") {
-      return <div className={styles.stringDataContainer}>{dataToShow ? "True" : "False"}</div>;
-    }
-
-    const jsonValue =
-      typeof dataToShow === "object" && dataToShow !== null ? dataToShow : { result: dataToShow };
-
-    return (
-      <div className={styles.reactJsonContainer}>
-        <ReactJson
-          displayDataTypes={false}
-          enableClipboard={false}
-          name={false}
-          displayObjectSize={false}
-          src={jsonValue as Record<string, unknown>}
-          collapsed={1}
-        />
-      </div>
-    );
-  }, []);
+  const renderJobResult = useCallback(
+    ({ row }: { row: Row<JobReturnModel> }) => <JobReturnRow row={row} />,
+    []
+  );
 
   return (
     <div className={styles.jobReturnsTableWrapper}>

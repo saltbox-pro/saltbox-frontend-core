@@ -18,6 +18,7 @@ import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
@@ -26,7 +27,6 @@ import {
 import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
 import { ExecutionDuration } from "./components/execution-duration";
-import { JobSubRow } from "./components/sub-row/job-sub-row";
 import { TableView } from "./components/table-view/table-view";
 import styles from "./default-job-return-table.module.css";
 
@@ -252,7 +252,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               overscan={overscan}
               forceExpandAll={forceExpand}
               getRowCanExpand={() => !isTableViewMode}
-              renderSubComponent={({ row }) => <JobSubRow row={row} isFullOutput={isFullOutput} />}
+              renderSubComponent={({ row }) => (
+                <JobReturnRow row={row} isFullOutput={isFullOutput} />
+              )}
               activeRowId={drawer.activeRowId}
               bodyRef={drawer.mainContentRef}
               onRowClick={handleRowClick}
