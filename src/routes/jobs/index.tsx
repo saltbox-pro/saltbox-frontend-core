@@ -1,9 +1,10 @@
-import { SyncOutlined } from "@ant-design/icons";
+import { SyncOutlined, FilterOutlined } from "@ant-design/icons";
 import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   PageHeader,
   formatTimeByUserTZ,
+  CellAction,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag, message } from "antd";
@@ -13,6 +14,7 @@ import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } fro
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
+import { RuleType } from "react-querybuilder";
 
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
@@ -49,7 +51,7 @@ const useJobFilters = (t: TFunction) => {
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema, storageKey));
 
   useEffect(() => {
-    jobFilterStore.filterSchema = filterSchema;
+    jobFilterStore.updateFilterSchema(filterSchema);
   }, [filterSchema, jobFilterStore]);
 
   return {
@@ -78,6 +80,40 @@ const JobsPage = observer(() => {
     [navigate]
   );
 
+  const handleCellFilterClick = useCallback(
+    (fieldName: string, value: unknown) => {
+      const newRule: RuleType = {
+        field: fieldName,
+        operator: "=",
+        value: value,
+      };
+
+      jobFilterStore.handleFiltersChange({
+        combinator: "and",
+        rules: [
+          ...jobFilterStore.currentFilters.rules.filter(
+            (r) => "field" in r && r.field !== fieldName
+          ),
+          newRule,
+        ],
+      });
+
+      jobFilterStore.handleSearch();
+      jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
+      jobsStore.handleSearch();
+    },
+    [jobFilterStore, jobsStore]
+  );
+
+  const createFilterAction = useCallback(
+    (fieldName: string): CellAction<JobsListResponse> => ({
+      icon: <FilterOutlined />,
+      title: t("dashboard.apply-value-to-filters"),
+      onClick: (value) => handleCellFilterClick(fieldName, value),
+    }),
+    [handleCellFilterClick, t]
+  );
+
   const columns = useMemo(
     () => [
       columnHelper.accessor("jid", {
@@ -93,11 +129,17 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor("salt_master", {
         header: t("jobs.table-master"),
-        meta: { width: "10%" },
+        meta: {
+          width: "10%",
+          actions: [createFilterAction("salt_master")],
+        },
       }),
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
-        meta: { width: "10%" },
+        meta: {
+          width: "10%",
+          actions: [createFilterAction("fun")],
+        },
       }),
       columnHelper.accessor("tgt", {
         header: t("jobs.table-targets"),
@@ -107,6 +149,7 @@ const JobsPage = observer(() => {
           minWidth: 230,
           maxWidth: 230,
           ellipsis: true,
+          actions: [createFilterAction("tgt")],
         },
       }),
       columnHelper.accessor("tgt_type", {
@@ -123,7 +166,10 @@ const JobsPage = observer(() => {
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("jobs.table-user"),
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("user.name")],
+        },
       }),
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
@@ -135,19 +181,21 @@ const JobsPage = observer(() => {
               return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
             case JobStatus.Finished:
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            case JobStatus.LaunchError: {
+            case JobStatus.LaunchError:
               return (
                 <LaunchErrorPopover
                   errorTypeText={data.row.original.launch_error_type}
                   tagText={t("jobs.table-status-launch-error")}
                 />
               );
-            }
             default:
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
         },
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("status")],
+        },
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
@@ -155,7 +203,7 @@ const JobsPage = observer(() => {
         meta: { width: "11%" },
       }),
     ],
-    [t]
+    [t, createFilterAction]
   );
 
   useEffect(() => {
