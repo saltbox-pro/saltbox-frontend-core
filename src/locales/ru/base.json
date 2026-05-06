@@ -469,7 +469,7 @@
     "detailed-view": "Подробный",
     "table-view": "Табличный",
     "export-to-csv-title": "Экспорт в CSV",
-    "export-to-csv-warning": "Будет выгружена информация по {{count}} миньонам",
+    "export-to-csv-warning": "Количество записей для выгрузки: {{count}}",
     "download-to-csv": "Выгрузить в CSV",
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-conversion-error": "Невозможно преобразовать данные в таблицу: {{reason}}",
