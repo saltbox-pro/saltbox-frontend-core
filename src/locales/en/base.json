@@ -469,7 +469,7 @@
     "detailed-view": "Detailed",
     "table-view": "Table",
     "export-to-csv-title": "Export to CSV",
-    "export-to-csv-warning": "Information about {{count}} minions will be uploaded",
+    "export-to-csv-warning": "Number of records to upload: {{count}}",
     "download-to-csv": "Download to CSV",
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-conversion-error": "Cannot convert data to table: {{reason}}",
