@@ -1,5 +1,5 @@
 import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Empty, Input, Skeleton, Table, Tooltip } from "antd";
+import { Alert, Button, Empty, Input, Spin, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -62,6 +62,10 @@ type FunctionUiSchema = {
 };
 
 const EXCLUDED_FUNCTIONS = new Set(["default"]);
+const getFunctionDisplayName = (functionName: string): string => {
+  const functionNameParts = functionName.split(".");
+  return functionNameParts[functionNameParts.length - 1] || functionName;
+};
 
 const buildModuleRows = (
   schemaNames: string[],
@@ -161,7 +165,7 @@ const buildFunctionTooltipData = (
   });
 
   return {
-    name: functionName,
+    name: getFunctionDisplayName(functionName),
     description: schema.description ?? schema.title ?? uiSchema["ui:description"],
     arguments: argumentsList,
     example: schema.example,
@@ -297,11 +301,15 @@ export const JobFunctionSelectModal = ({
       const tooltipData = functionTooltips[functionName];
 
       if (isTooltipLoading) {
-        return <Skeleton active paragraph={{ rows: 3 }} title={false} />;
+        return (
+          <div className={styles.spinnerContainer}>
+            <Spin />
+          </div>
+        );
       }
 
       if (!tooltipData) {
-        return <span>{functionName}</span>;
+        return <span>{getFunctionDisplayName(functionName)}</span>;
       }
 
       if (tooltipData.isLoadError) {
@@ -390,8 +398,12 @@ export const JobFunctionSelectModal = ({
                 <Tooltip
                   key={`${functionName}-${tooltipResetCounter}`}
                   title={renderFunctionTooltip(functionName)}
-                  placement="topLeft"
-                  mouseEnterDelay={0.2}
+                  mouseEnterDelay={0.45}
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) {
+                      handleFunctionHover(functionName);
+                    }
+                  }}
                   classNames={{ root: styles.tooltip }}
                   destroyOnHidden
                 >
@@ -402,9 +414,8 @@ export const JobFunctionSelectModal = ({
                       setTooltipResetCounter((prevState) => prevState + 1);
                       onSelect(functionName);
                     }}
-                    onMouseEnter={() => handleFunctionHover(functionName)}
                   >
-                    {functionName}
+                    {getFunctionDisplayName(functionName)}
                   </Button>
                 </Tooltip>
               ))}
@@ -433,6 +444,12 @@ export const JobFunctionSelectModal = ({
       />
 
       <div className={styles.modalContent}>
+        {isLoading && (
+          <div className={styles.spinnerContainer}>
+            <Spin />
+          </div>
+        )}
+
         {!isLoading && isError && (
           <Alert type="error" message={t("job-function-select.error")} showIcon />
         )}
