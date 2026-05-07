@@ -4,6 +4,11 @@
   padding-right: 4px;
 }
 
+.spinnerContainer {
+  text-align: center;
+  padding: 32px 0;
+}
+
 .functionsTable :global(.ant-table-container) {
   border-radius: 8px;
   border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
@@ -75,11 +80,11 @@
 
 .tooltip {
   width: min(620px, calc(100vw - 48px));
-  max-width: min(620px, calc(100vw - 48px));
+  max-width: min(520px, calc(100vw - 48px));
 }
 
 .tooltip :global(.ant-tooltip-inner) {
-  width: min(620px, calc(100vw - 48px));
+  width: min(520px, calc(100vw - 48px));
   border-radius: 10px;
   padding: 10px 12px;
   background: #1f1f1f;
@@ -88,7 +93,7 @@
 }
 
 .tooltipContent {
-  max-height: 340px;
+  max-height: 240px;
   overflow-y: auto;
   padding-right: 2px;
   color: #f5f5f5;
