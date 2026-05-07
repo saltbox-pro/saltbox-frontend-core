@@ -1,5 +1,5 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
-import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   formatTimeByUserTZ,
@@ -11,13 +11,13 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { MinionTaskResultsDrawer } from "saltbox-core/features/task/job-return";
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
 import type { TaskStore } from "saltbox-core/store";
-import { MinionTaskResultsDrawer } from "saltbox-core/widgets/minion-task-results-drawer";
 import { useRestartFailedMinionHandler } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
-const TaskMinionsTable = FastTablePaginated<TaskMinionModel>;
-const columnHelper = createColumnHelper<TaskMinionModel>();
+const TaskMinionsTable = FastTablePaginated<TaskMinionListResponse>;
+const columnHelper = createColumnHelper<TaskMinionListResponse>();
 
 export interface TaskMinionsProps {
   taskStore: TaskStore;
@@ -26,7 +26,7 @@ export interface TaskMinionsProps {
 export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMinionsProps) {
   const { t } = useTranslation();
 
-  const taskDrawer = useInfoDrawer<TaskMinionModel, string, HTMLTableSectionElement>({
+  const taskDrawer = useInfoDrawer<TaskMinionListResponse, string, HTMLTableSectionElement>({
     getId: (minion) => minion.id,
   });
 
@@ -34,23 +34,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     if (taskDrawer.openedId == null) return null;
     return taskStore.minions?.find((m) => m.id === taskDrawer.openedId) ?? null;
   }, [taskDrawer.openedId, taskStore.minions]);
-
-  const selectedMinionJobReturns = useMemo(() => {
-    if (!selectedMinion) return [];
-    const minionJobIds = Object.keys(selectedMinion.jobs ?? {})
-      .sort()
-      .reverse();
-    return minionJobIds
-      .map((jobId) =>
-        taskStore.jobReturns?.find(
-          (jobReturn) =>
-            jobReturn.jid === jobId &&
-            jobReturn.salt_master === selectedMinion.master &&
-            jobReturn.minion_id === selectedMinion.minion_id
-        )
-      )
-      .filter((jobReturn) => jobReturn !== undefined);
-  }, [selectedMinion, taskStore.jobReturns]);
 
   const slug = taskStore.task?.target_collection?.slug ?? null;
   const collectionSlug = taskStore.task?.target_collection?.slug ?? "";
@@ -66,7 +49,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         header: t("task.minions.table-minion-id"),
         meta: {
           showCopy: true,
-          copyValue: (row: TaskMinionModel) => row.minion_id ?? "",
+          copyValue: (row: TaskMinionListResponse) => row.minion_id ?? "",
           actions: [
             {
               icon: <ExportOutlined />,
@@ -152,10 +135,11 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
       />
 
       <MinionTaskResultsDrawer
+        taskStore={taskStore}
+        taskId={taskStore.task?.id}
         isOpened={taskDrawer.isOpened}
         openedId={taskDrawer.openedId}
         selectedMinion={selectedMinion}
-        selectedMinionJobReturns={selectedMinionJobReturns}
         slug={slug}
         onClose={taskDrawer.close}
         onRestartFailedMinion={taskStore.handleRestartFailedMinion}

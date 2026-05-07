@@ -21,13 +21,15 @@ export function MinionPillarsTab({
 }: MinionPillarsTabProps) {
   const pillarsStore = useMemo(() => new PillarsStore({ targetId }), [targetId]);
 
+  const { loadPillars, reset } = pillarsStore;
+
   const displayName = targetName ?? targetId;
 
   useEffect(() => {
-    pillarsStore.loadPillars();
+    loadPillars();
 
-    return () => pillarsStore.reset();
-  }, [pillarsStore]);
+    return () => reset();
+  }, [loadPillars, reset]);
 
   return (
     <Flex className={styles.pillarsTabContent} vertical flex={1}>

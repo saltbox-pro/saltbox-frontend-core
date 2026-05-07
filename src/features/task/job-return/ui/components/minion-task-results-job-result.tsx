@@ -5,21 +5,31 @@ import { useTranslation } from "react-i18next";
 
 import { JobReturnOutput } from "saltbox-core/shared/components/job-return";
 
+import { sortJobReturnsChronologically } from "../../utils/chronological-job-return-sort";
+
 import styles from "./minion-task-results-job-result.module.css";
 
 interface MinionTaskResultsJobResultProps {
   jobReturns: JobReturnModel[];
+  isJobReturnsLoading: boolean;
 }
 
-export function MinionTaskResultsJobResult({ jobReturns }: MinionTaskResultsJobResultProps) {
+export function MinionTaskResultsJobResult({
+  jobReturns,
+  isJobReturnsLoading,
+}: MinionTaskResultsJobResultProps) {
   const { t } = useTranslation();
 
-  return jobReturns.map((jobResult, jobIndex, jobResults) => {
+  const orderedReturns = sortJobReturnsChronologically(Array.from(jobReturns ?? []));
+
+  return orderedReturns.map((jobResult, jobIndex) => {
+    const attemptNo = orderedReturns.length - jobIndex;
+    const isActiveAttempt = jobIndex === 0;
     return (
       <Flex key={jobResult?.jid ?? jobIndex} className={styles.jobResult} vertical>
         <Flex className={styles.jobResultTitle} gap={5} wrap="wrap" align="center">
           {t("task.minion.job-title", {
-            run: jobResults.length - jobIndex,
+            run: attemptNo,
           })}
           : JID
           <Flex gap={5} align="center">
@@ -28,7 +38,7 @@ export function MinionTaskResultsJobResult({ jobReturns }: MinionTaskResultsJobR
           </Flex>
         </Flex>
 
-        <JobReturnOutput jobReturn={jobResult} />
+        <JobReturnOutput inProcess={isJobReturnsLoading && isActiveAttempt} jobReturn={jobResult} />
       </Flex>
     );
   });

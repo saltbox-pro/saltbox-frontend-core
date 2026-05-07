@@ -11,6 +11,13 @@ import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
 const PAGE_SIZE = 50;
 
+type FetchStatus = "idle" | "in-process" | "refetching" | "error" | "success";
+type LoadingFetchStatus = Extract<FetchStatus, "in-process" | "refetching">;
+type LoadJobReturnDataOptions = {
+  force?: boolean;
+  loadingStatus: LoadingFetchStatus;
+};
+
 export class JobStore {
   @observable jid: string;
   @observable job: JobModel | null;
@@ -20,8 +27,17 @@ export class JobStore {
   @observable jobReturns: Array<JobReturnModel>;
   @observable isJobLoading: boolean;
   @observable isJobReturnsLoading: boolean;
+  @observable jobReturnDataById: Record<string, unknown>;
+  @observable jobReturnDataStatusById: Record<string, FetchStatus>;
+  @observable jobReturnDataErrorById: Record<
+    string,
+    null | "not-found" | "access-denied" | "load-failed" | "api-unavailable"
+  >;
   @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
+
+  private inFlightJobReturnDataLoads: Map<string, Promise<void>> = new Map();
+  private staleJobReturnDataIds: Set<string> = new Set();
 
   constructor() {
     this.jid = "";
@@ -36,6 +52,9 @@ export class JobStore {
     };
     this.sorting = [...DEFAULT_SORTING];
     this.mongoDBQuery = undefined;
+    this.jobReturnDataById = {};
+    this.jobReturnDataStatusById = {};
+    this.jobReturnDataErrorById = {};
     this.error = null;
     makeObservable(this);
   }
@@ -54,7 +73,143 @@ export class JobStore {
     };
     this.sorting = [...DEFAULT_SORTING];
     this.mongoDBQuery = undefined;
+    this.jobReturnDataById = {};
+    this.jobReturnDataStatusById = {};
+    this.jobReturnDataErrorById = {};
+    this.inFlightJobReturnDataLoads.clear();
+    this.staleJobReturnDataIds.clear();
     this.error = null;
+  };
+
+  @action
+  private setJobReturnDataStatus = (jobReturnId: string, value: FetchStatus) => {
+    this.jobReturnDataStatusById = { ...this.jobReturnDataStatusById, [jobReturnId]: value };
+  };
+
+  @action
+  private setJobReturnDataError = (
+    jobReturnId: string,
+    value: null | "not-found" | "access-denied" | "load-failed" | "api-unavailable"
+  ) => {
+    this.jobReturnDataErrorById = { ...this.jobReturnDataErrorById, [jobReturnId]: value };
+  };
+
+  @action
+  private setJobReturnData = (jobReturnId: string, data: unknown) => {
+    this.jobReturnDataById = { ...this.jobReturnDataById, [jobReturnId]: data };
+  };
+
+  loadJobReturnData = async (
+    jobReturnId: string,
+    opts: LoadJobReturnDataOptions
+  ): Promise<void> => {
+    if (!jobReturnId) return;
+    const shouldForceRefetch = this.staleJobReturnDataIds.has(jobReturnId);
+    const hasCachedData = Object.prototype.hasOwnProperty.call(this.jobReturnDataById, jobReturnId);
+    const force = Boolean(opts?.force);
+    if (hasCachedData && !shouldForceRefetch && !force) return;
+
+    const inFlight = this.inFlightJobReturnDataLoads.get(jobReturnId);
+    if (inFlight) return await inFlight;
+
+    const promise = (async () => {
+      this.setJobReturnDataStatus(jobReturnId, opts.loadingStatus);
+      this.setJobReturnDataError(jobReturnId, null);
+
+      try {
+        if (!apiCoreStore.jobsApi) {
+          runInAction(() => {
+            this.setJobReturnDataError(jobReturnId, "api-unavailable");
+            this.setJobReturnDataStatus(jobReturnId, "error");
+          });
+          return;
+        }
+
+        const data = await apiCoreStore.jobsApi.jobReturnData({
+          job_return_mongo_id: jobReturnId,
+        });
+        runInAction(() => {
+          this.setJobReturnData(jobReturnId, data);
+          this.setJobReturnDataStatus(jobReturnId, "success");
+          this.staleJobReturnDataIds.delete(jobReturnId);
+        });
+      } catch (e) {
+        console.error("loadJobReturnData:", e);
+        const status = (e as { response?: { status?: number } })?.response?.status;
+        runInAction(() => {
+          if (status === 404) this.setJobReturnDataError(jobReturnId, "not-found");
+          else if (status === 403) this.setJobReturnDataError(jobReturnId, "access-denied");
+          else this.setJobReturnDataError(jobReturnId, "load-failed");
+          this.setJobReturnDataStatus(jobReturnId, "error");
+        });
+      } finally {
+        this.inFlightJobReturnDataLoads.delete(jobReturnId);
+      }
+    })();
+
+    this.inFlightJobReturnDataLoads.set(jobReturnId, promise);
+    return await promise;
+  };
+
+  isJobReturnDataStale = (jobReturnId: string): boolean => {
+    if (!jobReturnId) return false;
+    return this.staleJobReturnDataIds.has(jobReturnId);
+  };
+
+  getJobReturnDataStatus = (jobReturnId: string): FetchStatus =>
+    this.jobReturnDataStatusById[jobReturnId] ?? "idle";
+
+  getJobReturnDataError = (
+    jobReturnId: string
+  ): null | "not-found" | "access-denied" | "load-failed" | "api-unavailable" =>
+    this.jobReturnDataErrorById[jobReturnId] ?? null;
+
+  getJobReturn = (jobReturnId: string): JobReturnModel | undefined =>
+    this.jobReturns.find((r) => r.id === jobReturnId);
+
+  getJobReturnData = (jobReturnId: string): unknown => this.jobReturnDataById[jobReturnId];
+
+  @action
+  invalidateJobReturnData = (jobReturnId: string) => {
+    if (!jobReturnId) return;
+    const { [jobReturnId]: _data, ...nextData } = this.jobReturnDataById;
+    const { [jobReturnId]: _status, ...nextStatus } = this.jobReturnDataStatusById;
+    const { [jobReturnId]: _error, ...nextError } = this.jobReturnDataErrorById;
+    this.jobReturnDataById = nextData;
+    this.jobReturnDataStatusById = nextStatus;
+    this.jobReturnDataErrorById = nextError;
+    this.inFlightJobReturnDataLoads.delete(jobReturnId);
+  };
+
+  @action
+  mergeJobReturnsFromSocket = (incoming: JobReturnModel[]) => {
+    if (!this.jid || incoming.length === 0) return;
+
+    const next = [...this.jobReturns];
+    let changed = false;
+
+    for (const jobReturn of incoming) {
+      if (!jobReturn?.id || jobReturn.jid !== this.jid) continue;
+      const idx = next.findIndex((r) => r.id === jobReturn.id);
+      if (idx !== -1) {
+        const prev = next[idx];
+        const prevStatus = prev?.status;
+        const nextStatus = jobReturn?.status;
+
+        next[idx] = jobReturn;
+        changed = true;
+
+        const statusChanged = prevStatus !== nextStatus;
+        if (statusChanged) {
+          this.staleJobReturnDataIds.add(jobReturn.id);
+          this.invalidateJobReturnData(jobReturn.id);
+        }
+      }
+    }
+
+    if (!changed) return;
+
+    this.jobReturns = next;
   };
 
   @action
@@ -146,7 +301,7 @@ export class JobStore {
 
   @action
   addJobReturn = (jobReturn: JobReturnModel) => {
-    const index = this.jobReturns.findIndex((jb) => jb.jid === jobReturn.jid);
+    const index = this.jobReturns.findIndex((jb) => jb.id === jobReturn.id);
     if (index > -1) {
       this.jobReturns[index] = jobReturn;
       this.jobReturns = [...this.jobReturns];
@@ -179,7 +334,6 @@ export class JobStore {
       (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
     );
     this.job = sortedJobs.at(0);
-    this.loadJobReturns(true);
   };
 
   @computed
