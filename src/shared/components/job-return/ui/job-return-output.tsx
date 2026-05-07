@@ -31,9 +31,14 @@ export function JobReturnOutput({ isFullOutput, jobReturn, inProcess }: JobRetur
   const rawDataToShow = isFullOutput ? jobReturn : getShortJobReturnOutput(jobReturn);
   const dataToShow = sortJobReturnOutputByRunNumIfPresent(rawDataToShow);
   const { status, success } = jobReturn ?? {};
-  const contentStatus: JobReturnContentStatus = success ? "success" : "failed";
+  const isWaiting = status === "waiting" || inProcess;
+  const contentStatus: JobReturnContentStatus = isWaiting
+    ? "unknown"
+    : success
+      ? "success"
+      : "failed";
   const shouldHideNoExecutionForFullOutput = Boolean(
-    isFullOutput && isJobReturnDataExplicitlyEmpty(jobReturn)
+    isFullOutput && !isWaiting && isJobReturnDataExplicitlyEmpty(jobReturn)
   );
 
   const renderValue = (value: unknown, valueStatus: JobReturnContentStatus) => {
@@ -60,7 +65,6 @@ export function JobReturnOutput({ isFullOutput, jobReturn, inProcess }: JobRetur
   };
 
   if ((isJobReturnResultMissing(jobReturn) || inProcess) && !shouldHideNoExecutionForFullOutput) {
-    const isWaiting = status === "waiting" || inProcess;
     const labelKey = isWaiting
       ? "job-return.waiting-client-response"
       : "job-return.no-execution-result";
