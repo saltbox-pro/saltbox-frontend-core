@@ -8,6 +8,7 @@ import {
   extractStringValue,
   getShortJobReturnOutput,
   getTopLevelRunNumBlocks,
+  isJobReturnDataExplicitlyEmpty,
   isJobReturnResultMissing,
   isSimpleBooleanData,
   isSimpleStringData,
@@ -31,6 +32,9 @@ export function JobReturnOutput({ isFullOutput, jobReturn, inProcess }: JobRetur
   const dataToShow = sortJobReturnOutputByRunNumIfPresent(rawDataToShow);
   const { status, success } = jobReturn ?? {};
   const contentStatus: JobReturnContentStatus = success ? "success" : "failed";
+  const shouldHideNoExecutionForFullOutput = Boolean(
+    isFullOutput && isJobReturnDataExplicitlyEmpty(jobReturn)
+  );
 
   const renderValue = (value: unknown, valueStatus: JobReturnContentStatus) => {
     if (isSimpleStringData(value)) {
@@ -55,7 +59,7 @@ export function JobReturnOutput({ isFullOutput, jobReturn, inProcess }: JobRetur
     );
   };
 
-  if (isJobReturnResultMissing(jobReturn) || inProcess) {
+  if ((isJobReturnResultMissing(jobReturn) || inProcess) && !shouldHideNoExecutionForFullOutput) {
     const isWaiting = status === "waiting" || inProcess;
     const labelKey = isWaiting
       ? "job-return.waiting-client-response"
