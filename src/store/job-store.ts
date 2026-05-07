@@ -38,6 +38,7 @@ export class JobStore {
 
   private inFlightJobReturnDataLoads: Map<string, Promise<void>> = new Map();
   private staleJobReturnDataIds: Set<string> = new Set();
+  private shouldLoadJobReturnsAfterStarting = false;
 
   constructor() {
     this.jid = "";
@@ -78,6 +79,7 @@ export class JobStore {
     this.jobReturnDataErrorById = {};
     this.inFlightJobReturnDataLoads.clear();
     this.staleJobReturnDataIds.clear();
+    this.shouldLoadJobReturnsAfterStarting = false;
     this.error = null;
   };
 
@@ -216,6 +218,7 @@ export class JobStore {
   reload = (jid: string | undefined) => {
     this.jobReturns = [];
     this.jid = jid;
+    this.shouldLoadJobReturnsAfterStarting = false;
     if (this.jid) {
       this.loadJob();
     }
@@ -239,7 +242,11 @@ export class JobStore {
           runInAction(() => {
             this.job = job;
           });
-          this.loadJobReturns();
+          if (job.status === JobStatus.Starting) {
+            this.shouldLoadJobReturnsAfterStarting = true;
+          } else {
+            this.loadJobReturns();
+          }
         }
       })
       .catch((error) => {
@@ -257,6 +264,12 @@ export class JobStore {
 
   @action
   loadJobReturns = (isSilentLoading: boolean = false) => {
+    if (this.jid && this.job?.status === JobStatus.Starting) {
+      this.shouldLoadJobReturnsAfterStarting = true;
+      return;
+    }
+
+    this.shouldLoadJobReturnsAfterStarting = false;
     if (!isSilentLoading) {
       this.isJobReturnsLoading = true;
     }
@@ -334,6 +347,11 @@ export class JobStore {
       (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
     );
     this.job = sortedJobs.at(0);
+
+    if (this.shouldLoadJobReturnsAfterStarting && this.job?.status !== JobStatus.Starting) {
+      this.shouldLoadJobReturnsAfterStarting = false;
+      this.loadJobReturns();
+    }
   };
 
   @computed
