@@ -44,11 +44,13 @@ const collectionSelectorRootComponent = observer(({ onClose }) => (
 
 const MinionDetailsDrawerWrapperProvider = observer(
   (props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
+    const { customProps } = props ?? {};
+
     return (
       <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
         <Suspense fallback="Loading...">
           <BrowserRouter>
-            <MinionDetailsDrawerWrapper {...props?.customProps} />
+            <MinionDetailsDrawerWrapper {...customProps} />
           </BrowserRouter>
         </Suspense>
       </SaltboxLocaleProvider>
@@ -58,11 +60,13 @@ const MinionDetailsDrawerWrapperProvider = observer(
 
 const OpenRelatedJobsButtonProvider = observer(
   (props: { customProps?: OpenRelatedJobsButtonProps }) => {
+    const { customProps } = props ?? {};
+
     return (
       <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
         <Suspense fallback="Loading...">
           <BrowserRouter>
-            {!!props.customProps && <OpenRelatedJobsButton {...props.customProps} />}
+            {!!customProps && <OpenRelatedJobsButton {...customProps} />}
           </BrowserRouter>
         </Suspense>
       </SaltboxLocaleProvider>
@@ -71,7 +75,8 @@ const OpenRelatedJobsButtonProvider = observer(
 );
 
 const JobReturnOutputProvider = observer((props: { customProps?: JobReturnOutputProps | null }) => {
-  const customProps = props.customProps;
+  const { customProps } = props ?? {};
+
   if (!customProps?.jobReturn) {
     return null;
   }
@@ -80,10 +85,7 @@ const JobReturnOutputProvider = observer((props: { customProps?: JobReturnOutput
     <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
       <Suspense fallback="Loading...">
         <BrowserRouter>
-          <JobReturnOutput
-            isFullOutput={customProps.isFullOutput}
-            jobReturn={customProps.jobReturn}
-          />
+          <JobReturnOutput {...customProps} />
         </BrowserRouter>
       </Suspense>
     </SaltboxLocaleProvider>

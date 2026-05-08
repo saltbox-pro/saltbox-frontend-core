@@ -8,6 +8,7 @@ import {
   extractStringValue,
   getShortJobReturnOutput,
   getTopLevelRunNumBlocks,
+  isJobReturnDataExplicitlyEmpty,
   isJobReturnResultMissing,
   isSimpleBooleanData,
   isSimpleStringData,
@@ -19,18 +20,26 @@ import { JobReturnContent } from "./job-return-content";
 import styles from "./job-return-output.module.css";
 
 export interface JobReturnOutputProps {
-  jobReturn: JobReturnModel;
+  jobReturn?: JobReturnModel | null;
   isFullOutput?: boolean;
+  inProcess?: boolean;
 }
 
-export function JobReturnOutput({ isFullOutput, jobReturn }: JobReturnOutputProps) {
+export function JobReturnOutput({ isFullOutput, jobReturn, inProcess }: JobReturnOutputProps) {
   const { t } = useTranslation();
 
   const rawDataToShow = isFullOutput ? jobReturn : getShortJobReturnOutput(jobReturn);
   const dataToShow = sortJobReturnOutputByRunNumIfPresent(rawDataToShow);
-  const { status } = jobReturn ?? {};
-  const isSuccess = jobReturn.success;
-  const contentStatus: JobReturnContentStatus = isSuccess ? "success" : "failed";
+  const { status, success } = jobReturn ?? {};
+  const isWaiting = status === "waiting" || inProcess;
+  const contentStatus: JobReturnContentStatus = isWaiting
+    ? "unknown"
+    : success
+      ? "success"
+      : "failed";
+  const shouldHideNoExecutionForFullOutput = Boolean(
+    isFullOutput && !isWaiting && isJobReturnDataExplicitlyEmpty(jobReturn)
+  );
 
   const renderValue = (value: unknown, valueStatus: JobReturnContentStatus) => {
     if (isSimpleStringData(value)) {
@@ -55,8 +64,7 @@ export function JobReturnOutput({ isFullOutput, jobReturn }: JobReturnOutputProp
     );
   };
 
-  if (isJobReturnResultMissing(jobReturn)) {
-    const isWaiting = status === "waiting";
+  if ((isJobReturnResultMissing(jobReturn) || inProcess) && !shouldHideNoExecutionForFullOutput) {
     const labelKey = isWaiting
       ? "job-return.waiting-client-response"
       : "job-return.no-execution-result";

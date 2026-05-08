@@ -4,7 +4,12 @@ import {
   QuestionCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import { CreateJobRequestTgtTypeEnum, JobModel, JobStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  CreateJobRequestTgtTypeEnum,
+  JobModel,
+  JobReturnModel,
+  JobStatus,
+} from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   PageHeader,
@@ -20,7 +25,6 @@ import {
   Skeleton,
   Spin,
   Statistic,
-  Switch,
   Tag,
   Tooltip,
   Typography,
@@ -48,16 +52,15 @@ import styles from "./index.module.css";
 const { Text } = Typography;
 const { Timer } = Statistic;
 
+type JobWebSocketMessage = JobModel | JobReturnModel;
+
 const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
 
-  const [webSocketService] = useState(new WebSocketService<JobModel>());
+  const [webSocketService] = useState(new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
-  const [isRevealedAll, setIsRevealedAll] = useState(() => {
-    return Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true");
-  });
   const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
   const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
   const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
@@ -168,11 +171,6 @@ const JobPage = observer(() => {
     setTablePagination({ pageIndex, pageSize });
   }, []);
 
-  const handleToggleRevealedAll = (value: boolean) => {
-    setIsRevealedAll(value);
-    localStorage.setItem(`job-revealed-all-returns:${jid}`, value.toString());
-  };
-
   const shouldRepeat = useCallback((event: KeyboardEvent) => {
     return event.altKey && event.code === "KeyR";
   }, []);
@@ -205,10 +203,6 @@ const JobPage = observer(() => {
   }, [isTableViewMode]);
 
   useEffect(() => {
-    setIsRevealedAll(Boolean(localStorage.getItem(`job-revealed-all-returns:${jid}`) === "true"));
-  }, [jid]);
-
-  useEffect(() => {
     setFilteredTableRows([]);
     setTablePagination({ pageIndex: 1, pageSize: 50 });
     if (!isTableViewMode) {
@@ -236,11 +230,17 @@ const JobPage = observer(() => {
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
       {
-        onMessage: (messages: Array<WebSocketMessage<JobModel>>) => {
+        onMessage: (messages: Array<WebSocketMessage<JobWebSocketMessage>>) => {
           jobStore.updateFromJobs(
             messages
               .filter((message) => message.message_tag === "job")
-              .map((message) => message.payload)
+              .map((message) => message.payload as JobModel)
+          );
+
+          jobStore.mergeJobReturnsFromSocket(
+            messages
+              .filter((message) => message.message_tag === "job-return")
+              .map((message) => message.payload as JobReturnModel)
           );
         },
         onOpen: () => {
@@ -438,57 +438,50 @@ const JobPage = observer(() => {
                     </Flex>
                   )}
                   <Flex align="center" gap={8}>
-                    {(viewMode === "standard" || viewMode === "detailed") &&
-                      jobStore.totalMinions > 1 && (
-                        <Flex align="center" gap={4}>
-                          {t("jobs.reveal-all-returns")}
-                          <Switch checked={isRevealedAll} onChange={handleToggleRevealedAll} />
-                        </Flex>
-                      )}
                     <Radio.Group
                       value={viewMode}
                       onChange={(e) => setViewMode(e.target.value)}
                       options={[
                         { label: t("jobs.standard-view"), value: "standard" },
                         { label: t("jobs.detailed-view"), value: "detailed" },
-                        {
-                          label: t("jobs.table-view"),
-                          value: "table",
-                          disabled:
-                            !tableConversionCheck?.canConvert ||
-                            tableConversionCheck.rows.length === 0,
-                        },
+                        // {
+                        //   label: t("jobs.table-view"),
+                        //   value: "table",
+                        //   disabled:
+                        //     !tableConversionCheck?.canConvert ||
+                        //     tableConversionCheck.rows.length === 0,
+                        // },
                       ]}
                       optionType="button"
                       buttonStyle="solid"
                     />
-                    {(!tableConversionCheck?.canConvert ||
-                      tableConversionCheck.rows.length === 0) && (
-                      <Tooltip
-                        title={
-                          tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")
-                        }
-                        placement="left"
-                        overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
-                      >
-                        <QuestionCircleOutlined className={styles.helpIcon} />
-                      </Tooltip>
-                    )}
+                    {/*{(!tableConversionCheck?.canConvert ||*/}
+                    {/*  tableConversionCheck.rows.length === 0) && (*/}
+                    {/*  <Tooltip*/}
+                    {/*    title={*/}
+                    {/*      tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")*/}
+                    {/*    }*/}
+                    {/*    placement="left"*/}
+                    {/*    overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}*/}
+                    {/*  >*/}
+                    {/*    <QuestionCircleOutlined className={styles.helpIcon} />*/}
+                    {/*  </Tooltip>*/}
+                    {/*)}*/}
                   </Flex>
-                  {isTableViewMode && (
-                    <Tooltip title={t("jobs.download-to-csv")}>
-                      <Button
-                        type="primary"
-                        icon={<UploadOutlined />}
-                        onClick={handleExportToCSV}
-                        disabled={
-                          !mergedTableData ||
-                          !mergedTableData.canConvert ||
-                          mergedTableData.rows.length === 0
-                        }
-                      />
-                    </Tooltip>
-                  )}
+                  {/*{isTableViewMode && (*/}
+                  {/*  <Tooltip title={t("jobs.download-to-csv")}>*/}
+                  {/*    <Button*/}
+                  {/*      type="primary"*/}
+                  {/*      icon={<UploadOutlined />}*/}
+                  {/*      onClick={handleExportToCSV}*/}
+                  {/*      disabled={*/}
+                  {/*        !mergedTableData ||*/}
+                  {/*        !mergedTableData.canConvert ||*/}
+                  {/*        mergedTableData.rows.length === 0*/}
+                  {/*      }*/}
+                  {/*    />*/}
+                  {/*  </Tooltip>*/}
+                  {/*)}*/}
                 </Flex>
               </Flex>
             )}
@@ -496,6 +489,7 @@ const JobPage = observer(() => {
             <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
               <DefaultJobReturnTable
                 jobReturns={effectiveJobReturns}
+                jobStore={jobStore}
                 isFullOutput={isFullOutput}
                 isTableViewMode={isTableViewMode}
                 jobStartTimestamp={jobStore.jobStartTimestamp}
@@ -504,7 +498,7 @@ const JobPage = observer(() => {
                 total={jobStore.total}
                 onLazyLoad={jobStore.handleLazyLoad}
                 isLoading={jobStore.isJobReturnsLoading}
-                forceExpand={jobStore.isSingleJobReturn || isRevealedAll}
+                forceExpand={jobStore.isSingleJobReturn}
                 onTableViewSortingChange={setTableViewSorting}
                 onTableViewFilteredDataChange={setFilteredTableRows}
                 onTableViewPaginationChange={handleTablePaginationChange}

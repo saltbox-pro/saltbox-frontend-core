@@ -11,7 +11,9 @@ import {
   type PaginationState,
   type SortingState,
   type ColumnDef,
+  type ExpandedState,
   createColumnHelper,
+  Row,
 } from "@tanstack/react-table";
 import { Flex, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
@@ -19,6 +21,7 @@ import { type ComponentProps, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
+import type { JobStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
@@ -38,6 +41,7 @@ type OnLazyLoad = ComponentProps<typeof JobReturnsTable>["onLazyLoad"];
 
 interface DefaultJobReturnTableProps {
   jobReturns: JobReturnModel[];
+  jobStore: JobStore;
   isFullOutput?: boolean;
   isTableViewMode?: boolean;
   isLoading?: boolean;
@@ -56,6 +60,7 @@ interface DefaultJobReturnTableProps {
 export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
   ({
     jobReturns,
+    jobStore,
     isFullOutput = false,
     isTableViewMode = false,
     isLoading = false,
@@ -185,7 +190,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           meta: { width: "18%" },
         }),
       ],
-      [t, jobStartTimestamp, jobReturns]
+      [jobReturns, jobStartTimestamp, t]
     );
 
     const mergedTableData = useMemo(() => {
@@ -224,6 +229,13 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       mergedTableData.canConvert &&
       mergedTableData.rows.length > 0;
 
+    const renderJobResult = useCallback(
+      ({ row }: { row: Row<JobReturnModel> }) => (
+        <JobReturnRow jobStore={jobStore} row={row.original} isFullOutput={isFullOutput} />
+      ),
+      [isFullOutput, jobStore]
+    );
+
     useEffect(() => {
       if (!isTableViewMode || !onTableViewErrorsChange) return;
       onTableViewErrorsChange(mergedTableData?.errors || []);
@@ -255,9 +267,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               overscan={overscan}
               forceExpandAll={forceExpand}
               getRowCanExpand={() => !isTableViewMode}
-              renderSubComponent={({ row }) => (
-                <JobReturnRow row={row} isFullOutput={isFullOutput} />
-              )}
+              renderSubComponent={renderJobResult}
               activeRowId={drawer.activeRowId}
               bodyRef={drawer.mainContentRef}
               onRowClick={handleRowClick}

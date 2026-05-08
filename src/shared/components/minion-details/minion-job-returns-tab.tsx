@@ -35,6 +35,7 @@ const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
 interface JobReturnsConfig {
   jobReturns: JobReturnModel[];
+  jobStore: JobStore;
   isLoading: boolean;
   pagination: PaginationState;
   sorting: SortingState;
@@ -154,9 +155,18 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
   return result;
 };
 
-const MinionJobReturnsTable = (props: JobReturnsConfig) => {
+const MinionJobReturnsTable = ({
+  onLazyLoad,
+  sorting,
+  jobReturns,
+  jobStore,
+  isLoading,
+  total,
+  pagination,
+}: JobReturnsConfig) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
   const [selectedJobForReplay, setSelectedJobForReplay] = useState<JobReturnModel | null>(null);
 
   const handleNavigateToJob = useCallback(
@@ -238,20 +248,22 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
   );
 
   const renderJobResult = useCallback(
-    ({ row }: { row: Row<JobReturnModel> }) => <JobReturnRow row={row} />,
-    []
+    ({ row }: { row: Row<JobReturnModel> }) => (
+      <JobReturnRow jobStore={jobStore} row={row.original} />
+    ),
+    [jobStore]
   );
 
   return (
     <div className={styles.jobReturnsTableWrapper}>
       <JobReturnsTable
         columns={columns}
-        data={props.jobReturns}
-        total={props.total}
-        isLoading={props.isLoading}
-        pagination={props.pagination}
-        sorting={props.sorting}
-        onLazyLoad={props.onLazyLoad}
+        data={jobReturns}
+        total={total}
+        isLoading={isLoading}
+        pagination={pagination}
+        sorting={sorting}
+        onLazyLoad={onLazyLoad}
         getRowId={(row) => row.id}
         onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.jid)}
         useVirtualScroll={false}
@@ -391,6 +403,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
       <MinionJobReturnsTabView
         jobReturnsConfig={{
           jobReturns: jobStore.jobReturns,
+          jobStore,
           isLoading: jobStore.isJobReturnsLoading,
           pagination: jobStore.pagination,
           sorting: jobStore.sorting,

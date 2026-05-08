@@ -8,6 +8,10 @@ export const isRecord = (v: unknown): v is Record<string, unknown> => {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 };
 
+const isEmptyObject = (v: unknown): boolean => isRecord(v) && Object.keys(v).length === 0;
+const isEmptyArray = (v: unknown): boolean => Array.isArray(v) && v.length === 0;
+const isEmptyString = (v: unknown): boolean => typeof v === "string" && v.trim().length === 0;
+
 const getRunNum = (v: unknown): number | undefined => {
   if (!isRecord(v)) return undefined;
   const rn = v.__run_num__;
@@ -97,6 +101,7 @@ export const isJobReturnResultMissing = (jobReturn: JobReturnModel): boolean => 
 
   const status = jr.status;
   if (status === "waiting") return true;
+  if (isJobReturnDataExplicitlyEmpty(jobReturn)) return true;
 
   const hasRetcode = !isNil(jr.retcode);
   const hasData = !isNil(jr.data);
@@ -106,8 +111,15 @@ export const isJobReturnResultMissing = (jobReturn: JobReturnModel): boolean => 
   return !(hasRetcode || hasData || hasSuccess || hasStamp);
 };
 
+export const isJobReturnDataExplicitlyEmpty = (
+  jobReturn: JobReturnModel | null | undefined
+): boolean => {
+  const data = jobReturn?.data;
+  return data === null || isEmptyArray(data) || isEmptyObject(data) || isEmptyString(data);
+};
+
 export const getShortJobReturnOutput = (jobReturn: JobReturnModel): unknown => {
-  if (jobReturn?.data === undefined || jobReturn?.data === null) {
+  if (jobReturn?.data === undefined) {
     return jobReturn;
   }
 
