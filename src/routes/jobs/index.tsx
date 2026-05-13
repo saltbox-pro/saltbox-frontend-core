@@ -156,7 +156,7 @@ const JobsPage = observer(() => {
         header: t("jobs.table-target-type"),
         meta: { width: "8%" },
       }),
-      columnHelper.accessor("source.type", {
+      columnHelper.accessor((row) => row.source?.type, {
         header: t("jobs.table-source"),
         cell: (data) => {
           return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
