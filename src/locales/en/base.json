@@ -528,7 +528,7 @@
     "table-module": "Module",
     "table-functions": "Functions",
     "empty": "No available functions",
-    "nothing-found": "Nothing found",
+    "nothing-found": "Nothing found for query",
     "error": "Failed to load data",
     "tooltip-description": "Description",
     "tooltip-arguments": "Arguments",

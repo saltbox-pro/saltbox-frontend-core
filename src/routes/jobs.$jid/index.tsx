@@ -1,9 +1,4 @@
-import {
-  ReloadOutlined,
-  UploadOutlined,
-  QuestionCircleOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons";
+import { ReloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -16,19 +11,8 @@ import {
   WebSocketMessage,
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
-import { SortingState } from "@tanstack/react-table";
-import {
-  Button,
-  Flex,
-  Modal,
-  Radio,
-  Skeleton,
-  Spin,
-  Statistic,
-  Tag,
-  Tooltip,
-  Typography,
-} from "antd";
+import type { SortingState } from "@tanstack/react-table";
+import { Flex, Modal, Radio, Skeleton, Spin, Statistic, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -139,12 +123,12 @@ const JobPage = observer(() => {
     return sortedRows.slice(startIndex, endIndex);
   }, [filteredTableRows, mergedTableData, tablePagination, tableViewSorting]);
 
-  const handleExportToCSV = useCallback(() => {
-    if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
-      return;
-    }
-    setIsExportModalOpen(true);
-  }, [mergedTableData, rowsToExport]);
+  // const handleExportToCSV = useCallback(() => {
+  //   if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
+  //     return;
+  //   }
+  //   setIsExportModalOpen(true);
+  // }, [mergedTableData, rowsToExport]);
 
   const handleExportConfirm = useCallback(() => {
     if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {

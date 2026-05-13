@@ -1,5 +1,5 @@
-import { Select, SelectProps } from "antd";
-import { useRef, useState } from "react";
+import { Select, type SelectProps } from "antd";
+import { type ComponentRef, useRef, useState } from "react";
 
 import styles from "./header-select.module.css";
 
@@ -20,8 +20,8 @@ export const HeaderSelect = ({
 }: HeaderSelectProps) => {
   const [isHeaderHovered, setIsHeaderHovered] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const selectRef = useRef<any>(null);
+
+  const selectRef = useRef<ComponentRef<typeof Select>>(null);
 
   const handleSelectChange: SelectProps["onChange"] = (newValue) => {
     if (typeof newValue === "string") {
@@ -33,7 +33,6 @@ export const HeaderSelect = ({
 
   return (
     <div
-      ref={containerRef}
       className={`${styles.headerSelectContainer} ${className || ""}`}
       onMouseEnter={() => setIsHeaderHovered(true)}
       onMouseLeave={() => setIsHeaderHovered(false)}

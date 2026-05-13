@@ -12,9 +12,9 @@ import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { RuleType } from "react-querybuilder";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
-import { RuleType } from "react-querybuilder";
 
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";

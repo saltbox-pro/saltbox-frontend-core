@@ -11,7 +11,6 @@ import {
   type PaginationState,
   type SortingState,
   type ColumnDef,
-  type ExpandedState,
   createColumnHelper,
   Row,
 } from "@tanstack/react-table";

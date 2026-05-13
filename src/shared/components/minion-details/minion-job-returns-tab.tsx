@@ -94,9 +94,9 @@ const transformRetcodeValue = (retcode: unknown): number | { $ne: number } | und
     typeof retcode === "object" &&
     retcode !== null &&
     "$in" in retcode &&
-    Array.isArray((retcode as any).$in)
+    Array.isArray(retcode.$in)
   ) {
-    const retcodeIn = (retcode as any).$in as Array<number | string>;
+    const retcodeIn = retcode.$in as Array<number | string>;
     const hasYes =
       retcodeIn.includes(retcodeLegacyValues.zero) ||
       retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());

@@ -528,7 +528,7 @@
     "table-module": "Модуль",
     "table-functions": "Функции",
     "empty": "Нет доступных функций",
-    "nothing-found": "Ничего не найдено",
+    "nothing-found": "Ничего не найдено по запросу",
     "error": "Не удалось загрузить данные",
     "tooltip-description": "Описание",
     "tooltip-arguments": "Аргументы",

@@ -1,5 +1,5 @@
-import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Empty, Input, Spin, Table, Tooltip } from "antd";
+import { Modal, SearchInput } from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Empty, Flex, Spin, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -107,8 +107,8 @@ const buildModuleRows = (
     );
 };
 
-const filterModuleRows = (moduleRows: ModuleRow[], searchValue: string): ModuleRow[] => {
-  const normalizedSearchValue = searchValue.trim().toLowerCase();
+const filterModuleRows = (moduleRows: ModuleRow[], appliedSearchQuery: string): ModuleRow[] => {
+  const normalizedSearchValue = appliedSearchQuery.trim().toLowerCase();
   if (!normalizedSearchValue) {
     return moduleRows;
   }
@@ -181,7 +181,7 @@ export const JobFunctionSelectModal = ({
   const [moduleRows, setModuleRows] = useState<ModuleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
   const [functionTooltips, setFunctionTooltips] = useState<Record<string, FunctionTooltipData>>({});
   const [functionTooltipsLoading, setFunctionTooltipsLoading] = useState<Record<string, boolean>>(
     {}
@@ -189,7 +189,7 @@ export const JobFunctionSelectModal = ({
   const [tooltipResetCounter, setTooltipResetCounter] = useState(0);
 
   const resetModalState = useCallback(() => {
-    setSearchValue("");
+    setAppliedSearchQuery("");
     setModuleRows([]);
     setFunctionTooltips({});
     setFunctionTooltipsLoading({});
@@ -237,8 +237,8 @@ export const JobFunctionSelectModal = ({
   }, [open, resetModalState, t]);
 
   const filteredRows = useMemo(
-    () => filterModuleRows(moduleRows, searchValue),
-    [moduleRows, searchValue]
+    () => filterModuleRows(moduleRows, appliedSearchQuery),
+    [moduleRows, appliedSearchQuery]
   );
 
   const hasNoData = !isLoading && !isError && moduleRows.length === 0;
@@ -434,40 +434,51 @@ export const JobFunctionSelectModal = ({
       onCancel={onCancel}
       footer={null}
       width={900}
+      destroyOnHidden
     >
-      <Input
-        value={searchValue}
-        placeholder={t("job-function-select.search-placeholder")}
-        onChange={(event) => setSearchValue(event.target.value)}
-        allowClear
-        className={styles.search}
-      />
+      <Flex vertical gap="middle">
+        <SearchInput
+          placeholder={t("job-function-select.search-placeholder")}
+          autoFocus={open}
+          onSearch={setAppliedSearchQuery}
+        />
 
-      <div className={styles.modalContent}>
-        {isLoading && (
-          <div className={styles.spinnerContainer}>
-            <Spin />
-          </div>
-        )}
+        <div className={styles.modalContent}>
+          {isLoading && (
+            <div className={styles.spinnerContainer}>
+              <Spin />
+            </div>
+          )}
 
-        {!isLoading && isError && (
-          <Alert type="error" message={t("job-function-select.error")} showIcon />
-        )}
+          {!isLoading && isError && (
+            <Alert type="error" message={t("job-function-select.error")} showIcon />
+          )}
 
-        {hasNoData && <Empty description={t("job-function-select.empty")} />}
+          {hasNoData && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("job-function-select.empty")}
+            />
+          )}
 
-        {hasNoResults && <Empty description={t("job-function-select.nothing-found")} />}
+          {hasNoResults && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("job-function-select.nothing-found")}
+            />
+          )}
 
-        {shouldShowTable && (
-          <Table
-            className={styles.functionsTable}
-            columns={columns}
-            dataSource={filteredRows}
-            pagination={false}
-            size="small"
-          />
-        )}
-      </div>
+          {shouldShowTable && (
+            <Table
+              className={styles.functionsTable}
+              columns={columns}
+              dataSource={filteredRows}
+              pagination={false}
+              size="small"
+            />
+          )}
+        </div>
+      </Flex>
     </Modal>
   );
 };
