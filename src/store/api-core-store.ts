@@ -12,6 +12,7 @@ import {
   TaskTemplatesApi,
   TasksApi,
 } from "@saltbox/saltbox-core-api-client";
+import { createServerErrorMiddleware } from "@saltbox/saltbox-frontend-common";
 import { computed, makeObservable, observable } from "mobx";
 
 import { appStore, envStore } from "saltbox-core/store";
@@ -28,6 +29,7 @@ class ApiCoreStore {
       headers: {
         Authorization: `Bearer ${appStore.authStore.user.access_token}`,
       },
+      middleware: [createServerErrorMiddleware()],
     });
   }
 
