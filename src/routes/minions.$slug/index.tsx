@@ -14,6 +14,7 @@ import {
   Popover,
   generateIdsForQuery,
   FilterToggleButton,
+  isGlobalServerError,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs, message } from "antd";
@@ -382,6 +383,7 @@ const MinionsPage = observer(() => {
             minionFilterStore.handleResetFilters();
             navigate(`/core/minions/${parentSlug}`);
           } catch (error) {
+            if (isGlobalServerError(error)) return;
             messageApi.error(t("collection.error-deleting-collection"));
           }
         }}

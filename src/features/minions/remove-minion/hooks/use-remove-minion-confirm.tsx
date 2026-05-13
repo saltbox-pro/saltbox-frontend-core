@@ -1,4 +1,4 @@
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import type { MessageInstance } from "antd/es/message/interface";
 import { type ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -48,8 +48,9 @@ export function useRemoveMinionConfirm({
       messageApi.success(t("minions.deleted-successfully", { minionId: minionDisplayId }));
       onDeleted?.();
     } catch (error) {
-      messageApi.error(t("minions.delete-failed", { minionId: minionDisplayId }));
       console.error("Failed to delete minion:", error);
+      if (isGlobalServerError(error)) return;
+      messageApi.error(t("minions.delete-failed", { minionId: minionDisplayId }));
     } finally {
       setIsRemoving(false);
     }

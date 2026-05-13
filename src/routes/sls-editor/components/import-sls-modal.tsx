@@ -1,5 +1,5 @@
 import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { FastTablePaginated, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, createColumnHelper } from "@tanstack/react-table";
 import { Modal, message } from "antd";
 import { observer } from "mobx-react-lite";
@@ -65,6 +65,7 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
       }
     } catch (error) {
       console.error("Failed to load templates:", error);
+      if (isGlobalServerError(error)) return;
       message.error(t("sls-editor.import-load-failed"));
     } finally {
       setLoading(false);
@@ -87,6 +88,7 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
         }
       } catch (error) {
         console.error("Failed to import template:", error);
+        if (isGlobalServerError(error)) return;
         message.error(t("sls-editor.import-failed"));
       }
     };

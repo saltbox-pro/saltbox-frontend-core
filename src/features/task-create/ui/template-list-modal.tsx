@@ -1,6 +1,6 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import {
   Badge,
   Empty,
@@ -76,6 +76,7 @@ export function TemplateListModal(props: TemplateListModalProps) {
         const loadedTemplates = await taskTemplateService.loadTemplates();
         setTemplates(loadedTemplates);
       } catch (error) {
+        if (isGlobalServerError(error)) return;
         messageApi.error(t("task-create.error-loading-templates"));
       } finally {
         setIsLoading(false);

@@ -1,5 +1,5 @@
 import { type TaskTemplateExcludeSlsSchema, TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -100,7 +100,9 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
           data: {},
         });
       } catch (error) {
-        messageApi.error(t("task-create.error-loading-template"));
+        if (!isGlobalServerError(error)) {
+          messageApi.error(t("task-create.error-loading-template"));
+        }
         onClose();
       }
     };
@@ -176,6 +178,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
       messageApi.success(t("task-create.task-created-successfully"));
       onTaskCreated(taskId);
     } catch (error) {
+      if (isGlobalServerError(error)) return;
       messageApi.error(t("task-create.error-creating-task"));
     } finally {
       setIsCreating(false);

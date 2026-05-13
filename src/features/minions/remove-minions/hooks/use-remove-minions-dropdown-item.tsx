@@ -1,5 +1,9 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { type ActionDropdownItem, Modal } from "@saltbox/saltbox-frontend-common";
+import {
+  type ActionDropdownItem,
+  Modal,
+  isGlobalServerError,
+} from "@saltbox/saltbox-frontend-common";
 import type { MessageInstance } from "antd/es/message/interface";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,8 +43,9 @@ export function useRemoveMinionsDropdownItem({
       messageApi.success(t("minions.delete-selected-success", { count: selectedCount }));
       onDeleted?.();
     } catch (error) {
-      messageApi.error(t("minions.delete-selected-failed", { count: selectedCount }));
       console.error("Failed to delete selected minions:", error);
+      if (isGlobalServerError(error)) return;
+      messageApi.error(t("minions.delete-selected-failed", { count: selectedCount }));
     }
   }, [collectionSlug, selectedCount, remove, minionMongoIds, t, onDeleted, messageApi]);
 

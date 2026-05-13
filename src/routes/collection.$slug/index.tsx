@@ -5,6 +5,7 @@ import {
   PageHeader,
   Popover,
   formatTimeByUserTZ,
+  isGlobalServerError,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -189,6 +190,7 @@ const CollectionEditPage = observer(() => {
 
       messageApi.success(t("collection.collection-has-been-changed"));
     } catch (error) {
+      if (isGlobalServerError(error)) return;
       messageApi.error(t("collection.error-updating-collection"));
     }
   };

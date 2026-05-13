@@ -1,4 +1,5 @@
 import { SyncOutlined } from "@ant-design/icons";
+import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Button, message } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,8 +44,10 @@ export function SyncTemplatesButton({ onSyncComplete }: SyncTemplatesButtonProps
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await checkTemplatesSyncTask(taskId);
-    } catch {
-      messageApi.error(t("sync-templates-button.error-checking-task-status"));
+    } catch (e) {
+      if (!isGlobalServerError(e)) {
+        messageApi.error(t("sync-templates-button.error-checking-task-status"));
+      }
       setIsSyncTemplates(false);
       onSyncComplete?.();
     }
