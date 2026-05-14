@@ -24,7 +24,10 @@ import { useNavigate } from "react-router";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
-import { cleanNullsFromKwargs } from "saltbox-core/shared/utils/job-modal-utils";
+import {
+  cleanNullsFromKwargs,
+  getArgAndKwargForRequest,
+} from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
@@ -400,6 +403,14 @@ export function JobModal({
     handleFormFinishInProgressRef.current = true;
     setIsJobCreating(true);
 
+    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
+      fun,
+      saltFunctionName,
+      jsonFormValue,
+      arg,
+      kwarg,
+    });
+
     apiCoreStore.jobsApi
       ?.jobCreate({
         CreateJobRequest: {
@@ -407,8 +418,8 @@ export function JobModal({
           fun: formValue.fun.at(-1),
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
-          arg: jsonFormValue?.args ?? jsonFormValue?.arg ?? arg,
-          kwarg: jsonFormValue?.kwargs ?? jsonFormValue?.kwarg ?? cleanNullsFromKwargs(kwarg),
+          arg: requestArg,
+          kwarg: requestKwarg,
           ttl: getTtlValue(),
         },
       })
@@ -420,7 +431,7 @@ export function JobModal({
         }
       })
       .catch((_) => {
-        messageApi.error(`Error on job created.`);
+        messageApi.error(t("job-modal.error-on-job-created"));
       })
       .finally(() => {
         setIsJobCreating(false);
@@ -542,13 +553,20 @@ export function JobModal({
   };
 
   const getJobCreateRequest = (): CreateJobRequest => {
+    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
+      fun,
+      saltFunctionName,
+      jsonFormValue,
+      arg,
+      kwarg,
+    });
     return {
       tgt: form.getFieldValue("tgt"),
       fun: form.getFieldValue("fun").at(-1),
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
-      arg: jsonFormValue?.args ?? jsonFormValue?.arg ?? arg,
-      kwarg: jsonFormValue?.kwargs ?? jsonFormValue?.kwarg ?? cleanNullsFromKwargs(kwarg),
+      arg: requestArg,
+      kwarg: requestKwarg,
       ttl: getTtlValue(),
     };
   };

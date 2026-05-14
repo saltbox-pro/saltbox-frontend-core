@@ -519,7 +519,8 @@
     "timeout-unit-seconds": "Sec",
     "timeout-unit-minutes": "Min",
     "timeout-unit-hours": "Hour",
-    "ttl-seconds-unit": "sec"
+    "ttl-seconds-unit": "sec",
+    "error-on-job-created": "Error on job created"
   },
   "job-function-select": {
     "open-button": "Create Job (new flow)",

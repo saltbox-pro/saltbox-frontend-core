@@ -519,7 +519,8 @@
     "timeout-unit-seconds": "Сек",
     "timeout-unit-minutes": "Мин",
     "timeout-unit-hours": "Час",
-    "ttl-seconds-unit": "сек"
+    "ttl-seconds-unit": "сек",
+    "error-on-job-created": "Ошибка при создании команды"
   },
   "job-function-select": {
     "open-button": "Создать команду (новый интерфейс)",
