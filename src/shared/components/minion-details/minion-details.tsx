@@ -63,10 +63,16 @@ export function MinionDetails({
           <div className={styles.tabExtraActions}>
             <Flex gap={8}>
               {!isInDrawer && (
-                <div
-                  id="minion-job-returns-filters-extra"
-                  style={{ display: tabKey === "job-returns" ? "block" : "none" }}
-                />
+                <>
+                  <div
+                    id="minion-job-returns-filters-extra"
+                    style={{ display: tabKey === "job-returns" ? "block" : "none" }}
+                  />
+                  <div
+                    id="minion-pillars-filters-extra"
+                    style={{ display: tabKey === "pillars" ? "block" : "none" }}
+                  />
+                </>
               )}
               {fullViewActionsMenuItems && (
                 <Dropdown
@@ -130,6 +136,7 @@ export function MinionDetails({
           targetId={minion.id}
           targetName={minion.minion_id}
           isInDrawer={isInDrawer}
+          isFullView={isFullView}
         />
       ) : null,
     });
