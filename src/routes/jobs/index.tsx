@@ -82,10 +82,14 @@ const JobsPage = observer(() => {
 
   const handleCellFilterClick = useCallback(
     (fieldName: string, value: unknown) => {
+      const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
+        ? ["in", value.join(",")]
+        : ["=", String(value ?? "")];
+
       const newRule: RuleType = {
         field: fieldName,
-        operator: "=",
-        value: value,
+        operator,
+        value: ruleValue,
       };
 
       jobFilterStore.handleFiltersChange({
