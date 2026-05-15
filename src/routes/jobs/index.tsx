@@ -80,6 +80,7 @@ const JobsPage = observer(() => {
   const { jobFilterStore } = useJobFilters(t);
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
   const didInitFromLocationRef = useRef(false);
+  const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -93,6 +94,8 @@ const JobsPage = observer(() => {
 
   const handleCellFilterClick = useCallback(
     (fieldName: string, value: unknown) => {
+      setIsFilterButtonClick(true);
+
       const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
         ? ["in", value.join(",")]
         : ["=", String(value ?? "")];
@@ -281,6 +284,8 @@ const JobsPage = observer(() => {
         jobsStore={jobsStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
+        isFilterButton={isFilterButtonClick}
+        onFilterButtonApplied={() => setIsFilterButtonClick(false)}
       />
 
       <div className="page-actions-buttons">
