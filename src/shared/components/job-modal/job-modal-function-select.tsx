@@ -5,11 +5,12 @@ import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-import styles from "./job-function-select-modal.module.css";
+import styles from "./job-modal-function-select.module.css";
 
-interface JobFunctionSelectModalProps {
+interface JobModalFunctionSelectProps {
   open: boolean;
   onCancel: () => void;
   onSelect: (functionName: string) => void;
@@ -62,6 +63,7 @@ type FunctionUiSchema = {
 };
 
 const EXCLUDED_FUNCTIONS = new Set(["default"]);
+
 const getFunctionDisplayName = (functionName: string): string => {
   const functionNameParts = functionName.split(".");
   return functionNameParts[functionNameParts.length - 1] || functionName;
@@ -172,11 +174,11 @@ const buildFunctionTooltipData = (
   };
 };
 
-export const JobFunctionSelectModal = ({
+export const JobModalFunctionSelect = ({
   open,
   onCancel,
   onSelect,
-}: JobFunctionSelectModalProps) => {
+}: JobModalFunctionSelectProps) => {
   const { t } = useTranslation();
   const [moduleRows, setModuleRows] = useState<ModuleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -240,6 +242,27 @@ export const JobFunctionSelectModal = ({
     () => filterModuleRows(moduleRows, appliedSearchQuery),
     [moduleRows, appliedSearchQuery]
   );
+
+  const catalogFunctionNamesLower = useMemo(() => {
+    const names = new Set<string>();
+    for (const moduleRow of moduleRows) {
+      for (const functionName of moduleRow.functions) {
+        names.add(functionName.toLowerCase());
+      }
+    }
+    return names;
+  }, [moduleRows]);
+
+  const trimmedSearch = appliedSearchQuery.trim();
+  const normalizedSearchLower = trimmedSearch.toLowerCase();
+
+  const showCreateWithCustomFunction =
+    trimmedSearch.length > 0 &&
+    isValidManualSaltFunctionName(trimmedSearch) &&
+    !catalogFunctionNamesLower.has(normalizedSearchLower);
+
+  const showInvalidFormatHint =
+    trimmedSearch.length > 0 && !isValidManualSaltFunctionName(trimmedSearch);
 
   const hasNoData = !isLoading && !isError && moduleRows.length === 0;
   const hasNoResults = !isLoading && !isError && moduleRows.length > 0 && filteredRows.length === 0;
@@ -443,6 +466,29 @@ export const JobFunctionSelectModal = ({
           onSearch={setAppliedSearchQuery}
         />
 
+        {showInvalidFormatHint && (
+          <Alert
+            type="info"
+            showIcon
+            className={styles.searchHint}
+            message={t("job-function-select.invalid-function-format")}
+          />
+        )}
+
+        {showCreateWithCustomFunction && (
+          <div className={styles.customFunctionAction}>
+            <Button
+              type="primary"
+              onClick={() => {
+                setTooltipResetCounter((prevState) => prevState + 1);
+                onSelect(normalizedSearchLower);
+              }}
+            >
+              {t("job-function-select.create-with-function", { name: normalizedSearchLower })}
+            </Button>
+          </div>
+        )}
+
         <div className={styles.modalContent}>
           {isLoading && (
             <div className={styles.spinnerContainer}>
@@ -461,7 +507,7 @@ export const JobFunctionSelectModal = ({
             />
           )}
 
-          {hasNoResults && (
+          {hasNoResults && !showCreateWithCustomFunction && !showInvalidFormatHint && (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={t("job-function-select.nothing-found")}

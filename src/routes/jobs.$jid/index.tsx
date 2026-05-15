@@ -12,7 +12,7 @@ import {
   WebSocketService,
 } from "@saltbox/saltbox-frontend-common";
 import type { SortingState } from "@tanstack/react-table";
-import { Flex, Modal, Radio, Skeleton, Spin, Statistic, Tag, Typography } from "antd";
+import { Button, Flex, Modal, Radio, Skeleton, Spin, Statistic, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,13 +20,17 @@ import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
-import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import {
+  JobModalShell,
+  type JobModalTargeting,
+} from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import {
   DefaultJobReturnTable,
   exportToCSV,
   mergeJobReturnsToTable,
 } from "saltbox-core/shared/components/job-return-table";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
+import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 
@@ -56,12 +60,20 @@ const JobPage = observer(() => {
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
 
-  const effectiveJobReturns = useMemo(
-    () => (jid && jobStore.jid === jid ? jobStore.jobReturns : []),
-    [jid, jobStore.jid, jobStore.jobReturns]
-  );
-  const defaultMasterForReplay = jobStore.job?.salt_master;
+  const [repeatPickerOpen, setRepeatPickerOpen] = useState(false);
+  const [repeatConfigureFun, setRepeatConfigureFun] = useState<string | null>(null);
+  const [repeatTargeting, setRepeatTargeting] = useState<JobModalTargeting>({
+    target: "*",
+    targetType: CreateJobRequestTgtTypeEnum.Glob,
+    defaultMaster: "",
+  });
 
+  useEffect(() => {
+    setRepeatConfigureFun(null);
+    setRepeatPickerOpen(false);
+  }, [jid]);
+
+  const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -159,6 +171,34 @@ const JobPage = observer(() => {
     return event.altKey && event.code === "KeyR";
   }, []);
 
+  const openRepeatConfigure = useCallback(() => {
+    const job = jobStore.job;
+    if (!job) {
+      return;
+    }
+    setRepeatTargeting({
+      target: jobStore.jobTargets ?? "*",
+      targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
+      defaultMaster: job.salt_master,
+      ttlSeconds: job.ttl,
+    });
+    setRepeatConfigureFun(job.fun);
+    setRepeatPickerOpen(false);
+  }, []);
+
+  const repeatKeydownHandler = useCallback(
+    (event: KeyboardEvent) => {
+      if (!shouldRepeat(event)) {
+        return;
+      }
+      event.preventDefault();
+      openRepeatConfigure();
+    },
+    [openRepeatConfigure, shouldRepeat]
+  );
+
+  useDocumentEvent("keydown", repeatKeydownHandler, true);
+
   let jobModalCreatePlugin: React.ReactNode = null;
   appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
     jobModalCreatePlugin = (
@@ -253,21 +293,26 @@ const JobPage = observer(() => {
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
           <div className={styles.jobDetailItem}>
-            <JobModal
-              target={jobStore.jobTargets}
-              targetType={jobStore.job?.tgt_type as CreateJobRequestTgtTypeEnum}
-              fun={jobStore.job?.fun}
-              arg={jobStore.job?.arg}
-              kwarg={jobStore.job?.kwarg}
-              defaultMaster={defaultMasterForReplay}
-              shouldShowModalByKeyboardEvent={shouldRepeat}
-              buttonProps={{
-                shape: "default",
-                icon: <ReloadOutlined />,
-                type: "default",
-                showText: false,
-                title: t("jobs.repeat-job"),
-              }}
+            <Button
+              shape="default"
+              icon={<ReloadOutlined />}
+              type="default"
+              title={t("jobs.repeat-job")}
+              onClick={openRepeatConfigure}
+              disabled={!jobStore.job}
+            />
+
+            <JobModalShell
+              key={jid}
+              pickerOpen={repeatPickerOpen}
+              onPickerOpenChange={setRepeatPickerOpen}
+              configureFunction={repeatConfigureFun}
+              onConfigureFunctionChange={setRepeatConfigureFun}
+              targeting={repeatTargeting}
+              onTargetingChange={setRepeatTargeting}
+              repeatBaselineFun={jobStore.job?.fun ?? null}
+              repeatBaselineArg={jobStore.job?.arg ?? undefined}
+              repeatBaselineKwarg={jobStore.job?.kwarg ?? undefined}
             />
 
             <span className={styles.jobDetailLabel}>{t("jobs.table-master")}:</span>

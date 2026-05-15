@@ -78,6 +78,14 @@
   border-radius: 8px;
 }
 
+.searchHint {
+  margin-bottom: 12px;
+}
+
+.customFunctionAction {
+  margin-bottom: 12px;
+}
+
 .tooltip {
   width: min(620px, calc(100vw - 48px));
   max-width: min(520px, calc(100vw - 48px));

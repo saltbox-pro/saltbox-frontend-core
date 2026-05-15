@@ -32,3 +32,18 @@
   cursor: help;
   color: var(--ant-color-text-tertiary, #8c8c8c);
 }
+
+.selectedFunctionBanner {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: var(--ant-border-radius, 6px);
+  border-left: 4px solid var(--ant-color-primary, #1677ff);
+  background: var(--ant-color-fill-alter, rgba(0, 0, 0, 0.02));
+}
+
+.selectedFunctionText {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ant-color-text, rgba(0, 0, 0, 0.88));
+  font-family: var(--app-font-mono, ui-monospace, monospace);
+}

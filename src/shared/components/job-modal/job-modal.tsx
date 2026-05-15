@@ -1,22 +1,11 @@
-import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
-  JobSchemaShortSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import {
-  Button,
-  Cascader,
-  Flex,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  message,
-  type FormProps,
-} from "antd";
+import { Button, Flex, Form, Input, InputNumber, Select, message, type FormProps } from "antd";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -25,60 +14,48 @@ import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import {
-  cleanNullsFromKwargs,
+  fetchJobFunctionSchema,
   getArgAndKwargForRequest,
+  getRepeatJsonFormValue,
+  isTimeoutInputKeyAllowed,
+  isTimeoutPasteAllowed,
+  parseTtlValue,
+  totalSecondsToTtlParts,
+  ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 import styles from "./job-modal.module.css";
 
-interface JobOption {
-  value: string;
-  label: string;
-  children?: JobOption[];
-}
-
 interface MasterOption {
   value: string;
   label: string;
 }
 
-interface JobModalButtonProps {
-  shape?: "default" | "circle" | "round";
-  icon?: React.ReactNode;
-  text?: string;
-  type?: "primary" | "default" | "dashed" | "link" | "text";
-  showText?: boolean;
-  size?: "small" | "middle" | "large";
-  title?: string;
-}
+export type JobReturnToPickerSnapshot = {
+  salt_master: string;
+  tgt: string;
+  tgt_type: CreateJobRequestTgtTypeEnum;
+  fun: string;
+  jsonFormData: unknown;
+  ttlSeconds?: number;
+};
 
 interface JobModalProps {
   target?: string;
   targetType?: CreateJobRequestTgtTypeEnum;
-  fun?: string;
+  fun: string;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
   defaultMaster?: string;
+  initialTtlSeconds?: number;
   openOnMount?: boolean;
   onAfterClose?: () => void;
-  shouldShowModalByKeyboardEvent?: (event: KeyboardEvent) => boolean;
-  buttonProps?: JobModalButtonProps;
-  renderButton?: (openModal: () => void) => React.ReactNode;
+  onReturnToFunctionPicker: (payload: JobReturnToPickerSnapshot) => void;
 }
 
-type JobFormData = CreateJobRequest & { fun: string[] | number[] };
-
-const searchFunctionAllowedSymbols = /[^a-zA-Z0-9._]/g;
-
-const getRepeatJsonFormValue = (
-  arg: unknown[] | undefined,
-  kwarg: Record<string, unknown> | undefined
-) => ({
-  args: Array.isArray(arg) ? arg : arg != null ? [arg] : [],
-  kwargs: cleanNullsFromKwargs(kwarg),
-});
+type JobFormData = Pick<CreateJobRequest, "tgt" | "tgt_type" | "salt_master">;
 
 export function JobModal({
   target,
@@ -87,27 +64,21 @@ export function JobModal({
   arg,
   kwarg,
   defaultMaster,
+  initialTtlSeconds,
   openOnMount,
   onAfterClose,
-  shouldShowModalByKeyboardEvent,
-  buttonProps,
-  renderButton,
+  onReturnToFunctionPicker,
 }: JobModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
-  const [saltFunctionList, setSaltFunctionList] = useState<Array<JobOption>>([]);
-  const [saltFlatFunctionList, setSaltFlatFunctionList] = useState<Array<string>>([]);
-  const [saltFunctionName, setSaltFunctionName] = useState<string>();
   const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
-  const [isSchemaListLoading, setIsSchemaListLoading] = useState(false);
   const [isMasterListLoading, setIsMasterListLoading] = useState(false);
   const [isSchemaLoading, setIsSchemaLoading] = useState(false);
   const [isJobCreating, setIsJobCreating] = useState(false);
-  const [jsonFormValue, setJsonFormValue] = useState<any>({});
-  const [searchFunctionName, setSearchFunctionName] = useState("");
+  const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
   const [messageApi, contextHolder] = message.useMessage();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
@@ -117,23 +88,19 @@ export function JobModal({
   const hasAutoOpenedRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
+  const shouldReturnToFunctionPickerRef = useRef(false);
+  const returnToPickerSnapshotRef = useRef<JobReturnToPickerSnapshot | null>(null);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
   const tgtType = Form.useWatch("tgt_type", form);
 
-  const isLoading = isSchemaListLoading || isMasterListLoading || isSchemaLoading || isJobCreating;
-  const parseTtlValue = (rawValue: unknown): number | null => {
-    if (typeof rawValue === "number" && Number.isFinite(rawValue) && rawValue >= 0) {
-      return rawValue;
-    }
-    if (typeof rawValue === "string" && rawValue.trim() !== "") {
-      const parsedValue = Number(rawValue);
-      if (Number.isFinite(parsedValue) && parsedValue >= 0) {
-        return parsedValue;
-      }
-    }
-    return null;
+  const isLoading = isMasterListLoading || isSchemaLoading || isJobCreating;
+
+  const applyTotalSecondsToTtlState = (totalSeconds: number) => {
+    const parts = totalSecondsToTtlParts(totalSeconds);
+    setTtlValue(parts.value);
+    setTtlUnit(parts.unit);
   };
 
   const showModal = useCallback(() => {
@@ -165,75 +132,16 @@ export function JobModal({
         setIsModalOpen(true);
       })
       .catch(() => {
-        messageApi.error("Error on load salt masters.");
+        messageApi.error(t("job-modal.error-load-salt-masters"));
       })
       .finally(() => setIsMasterListLoading(false));
   }, [messageApi, onAfterClose, t]);
-
-  const fillSaltFunctionList = (jobsSchemes: JobSchemaShortSchema[]) => {
-    const list: Array<JobOption> = [];
-    const flatList: Array<string> = [];
-
-    const jobList =
-      jobsSchemes.reduce<Array<JobOption>>((options, item) => {
-        options.push({
-          label: item.name,
-          value: item.name,
-        });
-        return options;
-      }, []) ?? [];
-
-    jobList.sort((a, b) =>
-      a.label.toLowerCase() > b.label.toLowerCase()
-        ? 1
-        : a.label.toLowerCase() < b.label.toLowerCase()
-          ? -1
-          : 0
-    );
-
-    jobList.forEach((saltFunction) => {
-      const [moduleName] = saltFunction.value.split(".");
-      const moduleIndex = list.findIndex((item) => item.label === moduleName);
-
-      if (saltFunction.value == "default") {
-        return;
-      }
-
-      flatList.push(saltFunction.value);
-
-      if (moduleIndex > -1) {
-        list[moduleIndex].children?.push({
-          label: saltFunction.label,
-          value: saltFunction.value,
-        });
-      } else {
-        list.push({
-          label: moduleName,
-          value: `${moduleName}-module`,
-          children: [
-            {
-              label: saltFunction.label,
-              value: saltFunction.value,
-            },
-          ],
-        });
-      }
-    });
-
-    setSaltFunctionList(list);
-    setSaltFlatFunctionList(flatList);
-  };
 
   const keydownHandler = useCallback(
     (event: KeyboardEvent) => {
       if (event.repeat) return;
 
       if (!isModalOpen) {
-        if (!shouldShowModalByKeyboardEvent?.(event)) return;
-        if (isMasterListLoading) return;
-
-        event.preventDefault();
-        showModal();
         return;
       }
 
@@ -247,7 +155,7 @@ export function JobModal({
         form.submit();
       }
     },
-    [form, isLoading, isMasterListLoading, isModalOpen, shouldShowModalByKeyboardEvent, showModal]
+    [form, isLoading, isModalOpen]
   );
 
   useDocumentEvent("keydown", keydownHandler, true);
@@ -264,33 +172,24 @@ export function JobModal({
       return;
     }
 
+    shouldReturnToFunctionPickerRef.current = false;
+
     form.resetFields();
     form.setFieldsValue({
       tgt: target,
       tgt_type: targetType,
       salt_master: defaultMaster || masterList[0]?.value,
-      fun: fun ? [fun] : undefined,
     });
     refJobParamsForm.current?.reset();
-    setSaltFunctionName(fun ? fun : undefined);
     setSaltFunction(undefined);
     setJsonFormValue({});
     setTtlValue(null);
     setTtlUnit("seconds");
-    setIsSchemaListLoading(true);
 
-    apiCoreStore.jsonSchemasApi
-      ?.jobsSchemasList({
-        JobSchemaListBody: {},
-      })
-      .then((result) => {
-        fillSaltFunctionList(result?.data ?? []);
-      })
-      .catch(() => {
-        messageApi.error("Error on load salt function schemes.");
-      })
-      .finally(() => setIsSchemaListLoading(false));
-  }, [isModalOpen, target, targetType, defaultMaster]);
+    if (initialTtlSeconds != null && Number.isFinite(initialTtlSeconds) && initialTtlSeconds >= 0) {
+      applyTotalSecondsToTtlState(initialTtlSeconds);
+    }
+  }, [isModalOpen, target, targetType, defaultMaster, initialTtlSeconds, form, masterList]);
 
   useLayoutEffect(() => {
     if (!saltFunction || !isModalOpen) {
@@ -310,57 +209,19 @@ export function JobModal({
     } else {
       form.focusField("tgt");
     }
-  }, [saltFunction, isModalOpen]);
+  }, [saltFunction, isModalOpen, form]);
 
-  useEffect(() => {
-    if (!saltFunctionName) {
-      setTtlValue(null);
-      setTtlUnit("seconds");
-      return;
-    }
-    setTtlValue(null);
-    setTtlUnit("seconds");
-  }, [saltFunctionName]);
-
-  const getTtlValue = (): number | undefined => {
-    if (ttlValue == null || !Number.isFinite(ttlValue) || ttlValue < 0) {
-      return undefined;
-    }
-    if (ttlUnit === "minutes") {
-      return Math.round(ttlValue * 60);
-    }
-    if (ttlUnit === "hours") {
-      return Math.round(ttlValue * 3600);
-    }
-    return Math.round(ttlValue);
-  };
+  const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
 
   const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const key = event.key;
-    const isCtrlOrMetaCombo =
-      event.ctrlKey || event.metaKey ? ["a", "c", "v", "x"].includes(key.toLowerCase()) : false;
-    const allowedKeys = [
-      "Backspace",
-      "Delete",
-      "Tab",
-      "ArrowLeft",
-      "ArrowRight",
-      "ArrowUp",
-      "ArrowDown",
-      "Home",
-      "End",
-    ];
-
-    if (isCtrlOrMetaCombo || allowedKeys.includes(key)) return;
-
-    if (/^\d$/.test(key)) return;
-
-    event.preventDefault();
+    if (!isTimeoutInputKeyAllowed(event)) {
+      event.preventDefault();
+    }
   };
 
   const handleTimeoutInputPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
     const pasted = event.clipboardData.getData("text") ?? "";
-    if (!/^\d+$/.test(pasted)) {
+    if (!isTimeoutPasteAllowed(pasted)) {
       event.preventDefault();
     }
   };
@@ -369,18 +230,44 @@ export function JobModal({
     form.resetFields();
     refJobParamsForm.current?.reset();
     setSaltFunction(undefined);
-    setSaltFunctionName(undefined);
-    setSearchFunctionName("");
     setJsonFormValue({});
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
   };
 
-  const handleModalCancel = () => {
-    if (!isJobCreating) {
-      resetModalState();
-      setIsModalOpen(false);
+  const closeModalResettingState = () => {
+    if (isJobCreating) {
+      return;
     }
+    resetModalState();
+    setIsModalOpen(false);
+  };
+
+  const handleModalDismiss = () => {
+    if (isJobCreating) {
+      return;
+    }
+    shouldReturnToFunctionPickerRef.current = false;
+    returnToPickerSnapshotRef.current = null;
+    resetModalState();
+    setIsModalOpen(false);
+  };
+
+  const handleFooterDismiss = () => {
+    if (isJobCreating) {
+      return;
+    }
+    shouldReturnToFunctionPickerRef.current = true;
+    returnToPickerSnapshotRef.current = {
+      salt_master: form.getFieldValue("salt_master") as string,
+      tgt: form.getFieldValue("tgt") as string,
+      tgt_type: form.getFieldValue("tgt_type") as CreateJobRequestTgtTypeEnum,
+      fun,
+      jsonFormData: jsonFormValue,
+      ttlSeconds: getTtlValue(),
+    };
+    resetModalState();
+    setIsModalOpen(false);
   };
 
   const validateJsonForm = () => {
@@ -405,7 +292,6 @@ export function JobModal({
 
     const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
       fun,
-      saltFunctionName,
       jsonFormValue,
       arg,
       kwarg,
@@ -415,7 +301,7 @@ export function JobModal({
       ?.jobCreate({
         CreateJobRequest: {
           tgt: formValue.tgt,
-          fun: formValue.fun.at(-1),
+          fun,
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
           arg: requestArg,
@@ -426,12 +312,13 @@ export function JobModal({
       .then((response) => {
         resetModalState();
         setIsModalOpen(false);
+        onAfterClose?.();
         if (response?.jid) {
           navigate(`/core/jobs/${response.jid}`);
         }
       })
       .catch((_) => {
-        messageApi.error(t("job-modal.error-on-job-created"));
+        messageApi.error(t("job-modal.error-job-create"));
       })
       .finally(() => {
         setIsJobCreating(false);
@@ -454,92 +341,68 @@ export function JobModal({
   };
 
   useEffect(() => {
-    const isRepeatSameFunction = isModalOpen && fun && saltFunctionName === fun;
+    if (!isModalOpen || !fun) {
+      return;
+    }
+
+    const hasBaselineArgs =
+      (Array.isArray(arg) && arg.length > 0) || (kwarg != null && Object.keys(kwarg).length > 0);
+
     setSaltFunction(undefined);
     setJsonFormValue({});
     refJobParamsForm.current?.reset();
 
-    if (saltFunctionName === undefined) {
-      return;
-    }
+    let isCancelled = false;
 
-    if (isCustomSaltFunction(saltFunctionName) && !isValidCustomSaltFunction(saltFunctionName)) {
-      return;
-    }
+    const applySchemaResult = (result: JobSchemaModel) => {
+      if (isCancelled) {
+        return;
+      }
+      setSaltFunction(result);
+      setJsonFormValue(hasBaselineArgs ? getRepeatJsonFormValue(arg, kwarg) : {});
+      if (
+        initialTtlSeconds != null &&
+        Number.isFinite(initialTtlSeconds) &&
+        initialTtlSeconds >= 0
+      ) {
+        applyTotalSecondsToTtlState(initialTtlSeconds);
+      } else {
+        setTtlValue(parseTtlValue(result?.default_ttl));
+      }
+    };
 
-    setIsSchemaLoading(true);
-    apiCoreStore.jsonSchemasApi
-      .jobsSchemasGet({ name: saltFunctionName })
-      .then((result) => {
-        setSaltFunction(result);
-        setJsonFormValue(isRepeatSameFunction ? getRepeatJsonFormValue(arg, kwarg) : {});
-        const functionDefaultTtl = parseTtlValue(result?.default_ttl);
-        setTtlValue(functionDefaultTtl);
-      })
-      .catch(() => {
-        messageApi.error("Error on load salt function schema.");
-      })
-      .finally(() => setIsSchemaLoading(false));
-  }, [saltFunctionName, isModalOpen, fun, arg, kwarg]);
+    const loadSchema = async () => {
+      setIsSchemaLoading(true);
+      try {
+        const schema = await fetchJobFunctionSchema(fun, (name) =>
+          apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
+        );
+        if (isCancelled) {
+          return;
+        }
+        applySchemaResult(schema);
+      } catch {
+        if (!isCancelled) {
+          messageApi.error(t("job-modal.error-load-function-schema"));
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSchemaLoading(false);
+        }
+      }
+    };
 
-  const handleFunctionNameSearch = (searchText: string) => {
-    const filteredSearchText = searchText
-      .toLocaleLowerCase()
-      .trim()
-      .replaceAll(searchFunctionAllowedSymbols, "");
-    if (!isCustomSaltFunction(filteredSearchText) && hasCustomSaltFunction()) {
-      setSaltFunctionList(saltFunctionList.slice(1));
-    } else if (filteredSearchText === "" && hasCustomSaltFunction()) {
-      setSaltFunctionList(saltFunctionList.slice(1));
-    } else if (isCustomSaltFunction(filteredSearchText) && !hasCustomSaltFunction()) {
-      setSaltFunctionList([
-        {
-          label: filteredSearchText,
-          value: filteredSearchText,
-        },
-        ...saltFunctionList,
-      ]);
-    } else if (isCustomSaltFunction(filteredSearchText) && hasCustomSaltFunction()) {
-      setSaltFunctionList([
-        {
-          label: filteredSearchText,
-          value: filteredSearchText,
-        },
-        ...saltFunctionList.slice(1),
-      ]);
-    }
+    loadSchema().catch(() => {
+      if (!isCancelled) {
+        messageApi.error(t("job-modal.error-load-function-schema"));
+        setIsSchemaLoading(false);
+      }
+    });
 
-    setSearchFunctionName(filteredSearchText);
-  };
-
-  const handleSaltFunctionChange = (values: string[] | undefined) => {
-    const newSaltFunctionName = values?.at(-1);
-    const firstSaltFunctionNameInList = saltFunctionList?.at(0)?.value;
-    if (
-      saltFunctionList?.at(0)?.children === undefined &&
-      newSaltFunctionName != firstSaltFunctionNameInList
-    ) {
-      setSaltFunctionList(saltFunctionList.slice(1));
-    }
-
-    setSaltFunctionName(newSaltFunctionName);
-  };
-
-  const isValidCustomSaltFunction = (value: string): boolean => {
-    return /^[_0-9a-z]+\.[_0-9a-z]+$/i.test(value);
-  };
-
-  const hasCustomSaltFunction = (): boolean => {
-    const funcName = saltFunctionList?.[0]?.value;
-    if ((saltFunctionList?.[0]?.children?.length ?? 0) > 0) {
-      return false;
-    }
-    return isCustomSaltFunction(funcName);
-  };
-
-  const isCustomSaltFunction = (funcName?: string | undefined): boolean => {
-    return funcName ? !saltFlatFunctionList.includes(funcName) : false;
-  };
+    return () => {
+      isCancelled = true;
+    };
+  }, [fun, isModalOpen, arg, kwarg, messageApi, initialTtlSeconds, t]);
 
   const handleCreateJobPlugin = (pluginKey: string) => {
     if (!validateJsonForm()) {
@@ -549,20 +412,19 @@ export function JobModal({
       pluginKey: pluginKey,
       jobCreateRequest: getJobCreateRequest(),
     });
-    handleModalCancel();
+    closeModalResettingState();
   };
 
   const getJobCreateRequest = (): CreateJobRequest => {
     const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
       fun,
-      saltFunctionName,
       jsonFormValue,
       arg,
       kwarg,
     });
     return {
       tgt: form.getFieldValue("tgt"),
-      fun: form.getFieldValue("fun").at(-1),
+      fun,
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
       arg: requestArg,
@@ -586,49 +448,32 @@ export function JobModal({
     );
   });
 
-  const defaultButtonProps: JobModalButtonProps = {
-    shape: "default",
-    icon: <PlusOutlined />,
-    text: t("job-modal.create-job"),
-    type: "primary",
-    showText: true,
-    size: "middle",
-  };
-
-  const finalButtonProps = { ...defaultButtonProps, ...buttonProps };
-
   return (
     <>
       {contextHolder}
-      {!openOnMount &&
-        (renderButton ? (
-          renderButton(showModal)
-        ) : (
-          <Button
-            type={finalButtonProps.type}
-            shape={finalButtonProps.shape}
-            icon={finalButtonProps.icon}
-            size={finalButtonProps.size}
-            title={finalButtonProps.title}
-            onClick={showModal}
-            loading={isMasterListLoading}
-          >
-            {finalButtonProps.showText ? finalButtonProps.text : null}
-          </Button>
-        ))}
 
       <Modal
         title={t("job-modal.title")}
         open={isModalOpen}
-        onCancel={handleModalCancel}
-        afterClose={() => onAfterClose?.()}
+        onCancel={handleModalDismiss}
+        afterClose={() => {
+          const returnToPicker = shouldReturnToFunctionPickerRef.current;
+          shouldReturnToFunctionPickerRef.current = false;
+          const snapshot = returnToPickerSnapshotRef.current;
+          returnToPickerSnapshotRef.current = null;
+          if (returnToPicker && snapshot) {
+            onReturnToFunctionPicker(snapshot);
+            return;
+          }
+          onAfterClose?.();
+        }}
         width="min(80vw, 800px)"
         maskClosable={false}
         style={{ top: 50 }}
         footer={
           <>
-            <Button type="default" disabled={isLoading} onClick={handleModalCancel}>
-              {t("job-modal.cancel")}
+            <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
+              {t("job-modal.return-to-function-picker")}
             </Button>
 
             {jobsJobModalCreateButtonsPlugins}
@@ -699,69 +544,37 @@ export function JobModal({
             />
           </Flex>
 
-          <Form.Item<JobFormData>
-            label={t("job-modal.function")}
-            tooltip={t("job-modal.function-tooltip")}
-            name="fun"
-            rules={[
-              {
-                required: true,
-                message: t("job-modal.function-error-required"),
-              },
-              () => ({
-                validator(_, value) {
-                  if (
-                    value?.length === 1 &&
-                    isCustomSaltFunction(value?.[0]) &&
-                    !isValidCustomSaltFunction(value?.[0])
-                  ) {
-                    return Promise.reject(new Error("Function must have MODULE.FUNCTION format."));
-                  }
-                  return Promise.resolve();
-                },
-              }),
-            ]}
-          >
-            <Cascader
-              options={saltFunctionList}
-              disabled={isSchemaListLoading}
-              showSearch={true}
-              onSearch={handleFunctionNameSearch}
-              searchValue={searchFunctionName}
-              onChange={handleSaltFunctionChange}
-              displayRender={(label) => {
-                return <span>{label?.at(-1) ?? ""}</span>;
-              }}
-            />
-          </Form.Item>
+          <div className={styles.selectedFunctionBanner}>
+            <span className={styles.selectedFunctionText}>
+              {t("job-modal.selected-function", { name: fun })}
+            </span>
+          </div>
 
-          {saltFunctionName && (
-            <Form.Item label={t("job-modal.timeout-label")}>
-              <Flex gap={8} align="center" wrap>
-                <InputNumber
-                  min={0}
-                  precision={0}
-                  value={ttlValue ?? undefined}
-                  onChange={(value) => setTtlValue(value ?? null)}
-                  placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  onKeyDown={handleTimeoutInputKeyDown}
-                  onPaste={handleTimeoutInputPaste}
-                />
-                <Select
-                  value={ttlUnit}
-                  onChange={(value) => setTtlUnit(value)}
-                  options={[
-                    { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                    { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                    { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                  ]}
-                  style={{ width: 100 }}
-                />
-              </Flex>
-            </Form.Item>
-          )}
+          <Form.Item label={t("job-modal.timeout-label")}>
+            <Flex gap={8} align="center" wrap>
+              <InputNumber
+                min={0}
+                precision={0}
+                value={ttlValue ?? undefined}
+                onChange={(value) => setTtlValue(value ?? null)}
+                placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                onKeyDown={handleTimeoutInputKeyDown}
+                onPaste={handleTimeoutInputPaste}
+              />
+              <Select
+                value={ttlUnit}
+                onChange={(value) => setTtlUnit(value)}
+                options={[
+                  { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
+                  { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
+                  { label: t("job-modal.timeout-unit-hours"), value: "hours" },
+                ]}
+                style={{ width: 100 }}
+              />
+            </Flex>
+          </Form.Item>
         </Form>
 
         {saltFunction?.json_schema && (
@@ -774,7 +587,7 @@ export function JobModal({
             idPrefix="job-params-form"
             idSeparator="-"
             formData={jsonFormValue}
-            onChange={(d) => setJsonFormValue(d?.formData)}
+            onChange={(d) => setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>)}
           >
             <Fragment />
           </JsonForm>
