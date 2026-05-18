@@ -505,7 +505,6 @@
     "salt-master": "Salt Master",
     "target-type": "Target Type",
     "target": "Target",
-    "selected-function": "Function: {{name}}",
     "return-to-function-picker": "Return to function selection",
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
@@ -523,7 +522,7 @@
   "job-function-select": {
     "title": "Choose function",
     "search-placeholder": "Search or type module.function (e.g. file.append)",
-    "invalid-function-format": "Use the module.function format: Latin letters, digits, and underscores (example: file.append).",
+    "invalid-function-format": "Use the module.function format (example: file.append)",
     "create-with-function": "Create job with function \"{{name}}\"",
     "table-module": "Module",
     "table-functions": "Functions",

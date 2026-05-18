@@ -544,10 +544,8 @@ export function JobModal({
             />
           </Flex>
 
-          <div className={styles.selectedFunctionBanner}>
-            <span className={styles.selectedFunctionText}>
-              {t("job-modal.selected-function", { name: fun })}
-            </span>
+          <div className={styles.selectedFunction}>
+            {t("jobs.table-function")}: <strong>{fun}</strong>
           </div>
 
           <Form.Item label={t("job-modal.timeout-label")}>

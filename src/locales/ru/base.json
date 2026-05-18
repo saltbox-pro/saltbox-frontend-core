@@ -505,7 +505,6 @@
     "salt-master": "Мастер",
     "target-type": "Тип цели",
     "target": "Цель",
-    "selected-function": "Функция: {{name}}",
     "return-to-function-picker": "Вернуться к выбору функции",
     "salt-master-error-required": "Мастер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
@@ -523,7 +522,7 @@
   "job-function-select": {
     "title": "Выберите функцию",
     "search-placeholder": "Поиск или ввод module.function (например file.append)",
-    "invalid-function-format": "Укажите функцию в формате module.function: латиница, цифры и подчёркивание (пример: file.append).",
+    "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
     "create-with-function": "Создать команду с функцией «{{name}}»",
     "table-module": "Модуль",
     "table-functions": "Функции",
