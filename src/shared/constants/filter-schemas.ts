@@ -1,4 +1,4 @@
-import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import { JobStatus, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
@@ -111,6 +111,13 @@ const jobSourceTypeSelectOptions = (t: TFunction) => [
   { label: t("jobs.table-source-scenario"), value: "migration" },
 ];
 
+const jobStatusSelectOptions = (t: TFunction) => [
+  { label: t("jobs.table-status-starting"), value: JobStatus.Starting },
+  { label: t("jobs.table-status-running"), value: JobStatus.Running },
+  { label: t("jobs.table-status-finished"), value: JobStatus.Finished },
+  { label: t("jobs.table-status-launch-error"), value: JobStatus.LaunchError },
+];
+
 export const getJobsFilterSchema = (
   t: TFunction,
   saltTargetTypes: SelectProps["options"]
@@ -160,6 +167,13 @@ export const getJobsFilterSchema = (
       name: "user.name",
       label: t("jobs.table-user"),
       operators: defaultStringOperators,
+    },
+    {
+      name: "status",
+      label: t("jobs.table-status"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobStatusSelectOptions(t),
     },
     {
       name: "created",

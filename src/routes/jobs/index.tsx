@@ -175,11 +175,15 @@ const JobsPage = observer(() => {
         meta: { width: "8%" },
       }),
       columnHelper.accessor((row) => row.source?.type, {
+        id: "source.type",
         header: t("jobs.table-source"),
         cell: (data) => {
           return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
         },
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("source.type")],
+        },
       }),
       columnHelper.accessor("user.name", {
         id: "user.name",
@@ -298,13 +302,13 @@ const JobsPage = observer(() => {
           <JobDatetimeRangeSelector
             label={t("jobs.date-range-label")}
             disabled={jobsStore.isJobsLoading}
-            onChange={(value) => {
-              jobsStore.handleDateRangeChange(value);
+            onChange={(range, preset) => {
+              jobsStore.handleDateRangeChange(range, preset);
             }}
           />
           <Button
             icon={<SyncOutlined spin={jobsStore.isJobsLoading} />}
-            onClick={() => jobsStore.loadJobs()}
+            onClick={() => jobsStore.refreshJobs()}
             title={t("jobs.refresh")}
             disabled={jobsStore.isJobsLoading}
           />
