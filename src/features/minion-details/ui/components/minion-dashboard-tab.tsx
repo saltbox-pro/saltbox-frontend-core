@@ -7,14 +7,17 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
 import type { TFunction } from "i18next";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
+import { OnFilterButtonParams } from "../../types/minion-details-props";
+
 import styles from "./minion-dashboard-tab.module.css";
 
 type SimpleGrainKeys = {
-  [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends React.ReactNode
+  [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends ReactNode
     ? K
     : never]: MinionDetailSchema["grains"][K];
 };
@@ -29,7 +32,7 @@ interface MinionSimpleDetailView {
 
 interface MinionExtendDetailView {
   key: string;
-  value: (minionDetailSchema: MinionDetailSchema) => React.ReactNode;
+  value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
   name: string;
   itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
     grainValueProps?: Partial<FlexProps>;
@@ -43,11 +46,6 @@ interface MinionDetailViewGroup {
   details: MinionDetailView[];
 }
 
-interface OnFilterButtonParams {
-  name: string;
-  value: any;
-}
-
 interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
@@ -55,10 +53,10 @@ interface MinionDashboardTabProps {
 }
 
 const transformValueToString = (value: unknown): string => {
-  return transformGrainValueToString(value as React.ReactNode);
+  return transformGrainValueToString(value as ReactNode);
 };
 
-const renderArrayValue = (value: unknown[], keyPrefix: string): React.ReactNode => {
+const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
   return (
     <Flex vertical>
       {value.map((item, index) => (

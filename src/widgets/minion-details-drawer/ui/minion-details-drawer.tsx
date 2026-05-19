@@ -1,8 +1,9 @@
-import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
 import {
-  MinionDetails,
-  type MinionDetailsProps,
-} from "saltbox-core/shared/components/minion-details/minion-details";
+  MinionDetailsInDrawer,
+  type OnFilterButtonHandler,
+  useMinionDetailsDrawerTab,
+} from "saltbox-core/features/minion-details";
+import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
 
 import { useMinionDetailsDrawer } from "../hooks/use-minion-details-drawer";
 import type { MinionDetailsDrawerOpenParams } from "../types";
@@ -14,12 +15,14 @@ interface MinionDetailsDrawerProps {
     close: () => void;
   };
   mask?: boolean;
-  onFilterButton?: MinionDetailsProps["onFilterButton"];
+  onFilterButton?: OnFilterButtonHandler;
 }
 
 export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDetailsDrawerProps) {
   const { minion, isMinionLoading, error, hasData, slug, resolvedDisplayId, resolvedInnerId } =
     useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
+
+  const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
 
   return (
     <BaseMinionDrawer
@@ -34,8 +37,9 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       transitionKey={minion?.minion_id}
       onClose={drawer.close}
     >
-      <MinionDetails
-        isInDrawer
+      <MinionDetailsInDrawer
+        activeTab={tabKey}
+        onActiveTabChange={onTabChange}
         minion={minion}
         isMinionLoading={false}
         onFilterButton={onFilterButton}

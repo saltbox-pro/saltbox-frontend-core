@@ -1,4 +1,4 @@
-import { MinionDetailsProps } from "saltbox-core/shared/components/minion-details/minion-details";
+import type { OnFilterButtonHandler } from "saltbox-core/features/minion-details";
 import type { MinionDetailsDrawerOpenParams } from "saltbox-core/widgets/minion-details-drawer";
 
 export type MinionDetailsDrawerWrapperSelectedMinion = {
@@ -16,5 +16,5 @@ export type MinionDetailsDrawerController = {
 
 export type MinionDetailsDrawerWrapperProps = {
   drawer?: MinionDetailsDrawerController;
-  onFilterButton?: MinionDetailsProps["onFilterButton"];
+  onFilterButton?: OnFilterButtonHandler;
 };

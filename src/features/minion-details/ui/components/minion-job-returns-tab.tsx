@@ -29,10 +29,10 @@ import { JobModalShell } from "saltbox-core/shared/components/job-modal/job-moda
 import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
-import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobFilterStore, JobStore } from "saltbox-core/store";
 
+import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
