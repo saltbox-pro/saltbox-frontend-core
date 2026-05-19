@@ -5,7 +5,17 @@ import type {
   JobSchemaModel,
 } from "@saltbox/saltbox-core-api-client";
 import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Form, Input, InputNumber, Select, message, type FormProps } from "antd";
+import {
+  Alert,
+  Button,
+  Flex,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  message,
+  type FormProps,
+} from "antd";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -37,7 +47,6 @@ export type JobReturnToPickerSnapshot = {
   salt_master: string;
   tgt: string;
   tgt_type: CreateJobRequestTgtTypeEnum;
-  fun: string;
   jsonFormData: unknown;
   ttlSeconds?: number;
 };
@@ -262,7 +271,6 @@ export function JobModal({
       salt_master: form.getFieldValue("salt_master") as string,
       tgt: form.getFieldValue("tgt") as string,
       tgt_type: form.getFieldValue("tgt_type") as CreateJobRequestTgtTypeEnum,
-      fun,
       jsonFormData: jsonFormValue,
       ttlSeconds: getTtlValue(),
     };
@@ -291,7 +299,6 @@ export function JobModal({
     setIsJobCreating(true);
 
     const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      fun,
       jsonFormValue,
       arg,
       kwarg,
@@ -417,7 +424,6 @@ export function JobModal({
 
   const getJobCreateRequest = (): CreateJobRequest => {
     const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      fun,
       jsonFormValue,
       arg,
       kwarg,
@@ -544,9 +550,9 @@ export function JobModal({
             />
           </Flex>
 
-          <div className={styles.selectedFunction}>
-            {t("jobs.table-function")}: <strong>{fun}</strong>
-          </div>
+          <Form.Item label={t("job-modal.function")}>
+            <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
+          </Form.Item>
 
           <Form.Item label={t("job-modal.timeout-label")}>
             <Flex gap={8} align="center" wrap>

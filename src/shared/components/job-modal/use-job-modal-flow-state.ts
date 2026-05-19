@@ -27,11 +27,6 @@ export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
     []
   );
 
-  const resetFlow = useCallback(() => {
-    setConfigureFunction(null);
-    setPickerOpen(false);
-  }, []);
-
   return {
     pickerOpen,
     setPickerOpen,
@@ -41,6 +36,5 @@ export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
     setTargeting,
     openFunctionPicker,
     openConfigureWithFunction,
-    resetFlow,
   };
 };

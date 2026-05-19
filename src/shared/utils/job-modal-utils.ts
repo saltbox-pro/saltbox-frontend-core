@@ -26,14 +26,12 @@ export const cleanNullsFromKwargs = (kwargs?: Record<string, unknown>): Record<s
 };
 
 interface GetArgAndKwargForRequestParams {
-  fun?: string;
   jsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
 }
 
 export const getArgAndKwargForRequest = ({
-  fun,
   jsonFormValue,
   arg,
   kwarg,

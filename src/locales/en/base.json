@@ -505,6 +505,7 @@
     "salt-master": "Salt Master",
     "target-type": "Target Type",
     "target": "Target",
+    "function": "Function",
     "return-to-function-picker": "Return to function selection",
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",

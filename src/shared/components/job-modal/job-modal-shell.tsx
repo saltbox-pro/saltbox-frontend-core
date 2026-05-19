@@ -1,5 +1,5 @@
 import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 
 import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
 import { JobModalFunctionSelect } from "./job-modal-function-select";
@@ -39,7 +39,6 @@ export const JobModalShell = ({
   onAfterConfigureClose,
 }: JobModalShellProps) => {
   const jsonFormByFunRef = useRef<Record<string, unknown>>({});
-  const [, setFormCacheRevision] = useState(0);
 
   let resolvedArg: unknown[] | undefined;
   let resolvedKwarg: Record<string, unknown> | undefined;
@@ -62,7 +61,6 @@ export const JobModalShell = ({
     (payload: JobReturnToPickerSnapshot) => {
       if (configureFunction) {
         jsonFormByFunRef.current[configureFunction] = payload.jsonFormData;
-        setFormCacheRevision((value) => value + 1);
       }
       onTargetingChange({
         target: payload.tgt,

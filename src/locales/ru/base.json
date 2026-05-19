@@ -505,6 +505,7 @@
     "salt-master": "Мастер",
     "target-type": "Тип цели",
     "target": "Цель",
+    "function": "Функция",
     "return-to-function-picker": "Вернуться к выбору функции",
     "salt-master-error-required": "Мастер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
