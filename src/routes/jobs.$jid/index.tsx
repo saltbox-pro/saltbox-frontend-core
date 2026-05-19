@@ -173,7 +173,7 @@ const JobPage = observer(() => {
 
   const openRepeatConfigure = useCallback(() => {
     const job = jobStore.job;
-    if (!job) {
+    if (!job?.fun) {
       return;
     }
     setRepeatTargeting({
@@ -183,8 +183,8 @@ const JobPage = observer(() => {
       ttlSeconds: job.ttl,
     });
     setRepeatConfigureFun(job.fun);
-    setRepeatPickerOpen(false);
-  }, []);
+    setRepeatPickerOpen(true);
+  }, [jobStore.job, jobStore.jobTargets]);
 
   const repeatKeydownHandler = useCallback(
     (event: KeyboardEvent) => {

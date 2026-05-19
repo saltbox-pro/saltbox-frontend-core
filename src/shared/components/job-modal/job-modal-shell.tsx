@@ -1,5 +1,5 @@
 import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
 import { JobModalFunctionSelect } from "./job-modal-function-select";
@@ -39,23 +39,32 @@ export const JobModalShell = ({
   onAfterConfigureClose,
 }: JobModalShellProps) => {
   const jsonFormByFunRef = useRef<Record<string, unknown>>({});
+  const [jobModalFun, setJobModalFun] = useState<string | null>(null);
 
-  let resolvedArg: unknown[] | undefined;
-  let resolvedKwarg: Record<string, unknown> | undefined;
-  if (!configureFunction) {
-    resolvedArg = undefined;
-    resolvedKwarg = undefined;
-  } else if (Object.prototype.hasOwnProperty.call(jsonFormByFunRef.current, configureFunction)) {
-    const data = jsonFormByFunRef.current[configureFunction] as Record<string, unknown>;
-    resolvedArg = (data?.args ?? data?.arg) as unknown[] | undefined;
-    resolvedKwarg = (data?.kwargs ?? data?.kwarg) as Record<string, unknown> | undefined;
-  } else if (repeatBaselineFun && configureFunction === repeatBaselineFun) {
-    resolvedArg = repeatBaselineArg;
-    resolvedKwarg = repeatBaselineKwarg;
-  } else {
-    resolvedArg = undefined;
-    resolvedKwarg = undefined;
-  }
+  useEffect(() => {
+    if (configureFunction) {
+      setJobModalFun(configureFunction);
+    }
+  }, [configureFunction]);
+
+  const funForArgs = configureFunction ?? jobModalFun;
+
+  const resolvedArgKwarg = (() => {
+    if (!funForArgs) {
+      return { arg: undefined, kwarg: undefined };
+    }
+    if (Object.prototype.hasOwnProperty.call(jsonFormByFunRef.current, funForArgs)) {
+      const data = jsonFormByFunRef.current[funForArgs] as Record<string, unknown>;
+      return {
+        arg: (data?.args ?? data?.arg) as unknown[] | undefined,
+        kwarg: (data?.kwargs ?? data?.kwarg) as Record<string, unknown> | undefined,
+      };
+    }
+    if (repeatBaselineFun && funForArgs === repeatBaselineFun) {
+      return { arg: repeatBaselineArg, kwarg: repeatBaselineKwarg };
+    }
+    return { arg: undefined, kwarg: undefined };
+  })();
 
   const handleReturnToFunctionPicker = useCallback(
     (payload: JobReturnToPickerSnapshot) => {
@@ -74,15 +83,12 @@ export const JobModalShell = ({
     [configureFunction, onConfigureFunctionChange, onPickerOpenChange, onTargetingChange]
   );
 
-  const handleFunctionSelect = useCallback(
-    (functionName: string) => {
-      onConfigureFunctionChange(functionName);
-      onPickerOpenChange(false);
-    },
-    [onConfigureFunctionChange, onPickerOpenChange]
-  );
+  const handleJobModalClosed = useCallback(() => {
+    setJobModalFun(null);
+  }, []);
 
   const handleJobModalAfterClose = useCallback(() => {
+    setJobModalFun(null);
     onConfigureFunctionChange(null);
     onPickerOpenChange(false);
     onAfterConfigureClose?.();
@@ -91,24 +97,26 @@ export const JobModalShell = ({
   return (
     <>
       <JobModalFunctionSelect
-        open={pickerOpen}
+        open={pickerOpen && !configureFunction}
+        pickerSessionOpen={pickerOpen}
         onCancel={() => onPickerOpenChange(false)}
-        onSelect={handleFunctionSelect}
+        onSelect={onConfigureFunctionChange}
       />
 
-      {configureFunction && (
+      {jobModalFun && (
         <JobModal
-          key={configureFunction}
+          key={jobModalFun}
           target={targeting.target}
           targetType={targeting.targetType}
           defaultMaster={targeting.defaultMaster}
           initialTtlSeconds={targeting.ttlSeconds}
-          fun={configureFunction}
-          arg={resolvedArg}
-          kwarg={resolvedKwarg}
+          fun={jobModalFun}
+          arg={resolvedArgKwarg.arg}
+          kwarg={resolvedArgKwarg.kwarg}
           openOnMount
           onAfterClose={handleJobModalAfterClose}
           onReturnToFunctionPicker={handleReturnToFunctionPicker}
+          onJobModalClosed={handleJobModalClosed}
         />
       )}
     </>

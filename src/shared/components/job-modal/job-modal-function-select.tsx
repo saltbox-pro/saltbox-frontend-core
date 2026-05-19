@@ -12,6 +12,7 @@ import styles from "./job-modal-function-select.module.css";
 
 interface JobModalFunctionSelectProps {
   open: boolean;
+  pickerSessionOpen: boolean;
   onCancel: () => void;
   onSelect: (functionName: string) => void;
 }
@@ -176,6 +177,7 @@ const buildFunctionTooltipData = (
 
 export const JobModalFunctionSelect = ({
   open,
+  pickerSessionOpen,
   onCancel,
   onSelect,
 }: JobModalFunctionSelectProps) => {
@@ -201,14 +203,17 @@ export const JobModalFunctionSelect = ({
   }, []);
 
   useEffect(() => {
-    if (!open) {
+    if (!pickerSessionOpen) {
       resetModalState();
+      return;
+    }
+
+    if (moduleRows.length > 0) {
       return;
     }
 
     let isCancelled = false;
     setIsError(false);
-    setModuleRows([]);
     setIsLoading(true);
     apiCoreStore.jsonSchemasApi
       ?.jobsSchemasList({
@@ -236,7 +241,7 @@ export const JobModalFunctionSelect = ({
     return () => {
       isCancelled = true;
     };
-  }, [open, resetModalState, t]);
+  }, [pickerSessionOpen, moduleRows.length, resetModalState, t]);
 
   const filteredRows = useMemo(
     () => filterModuleRows(moduleRows, appliedSearchQuery),
@@ -457,7 +462,8 @@ export const JobModalFunctionSelect = ({
       onCancel={onCancel}
       footer={null}
       width={900}
-      destroyOnHidden
+      zIndex={1001}
+      destroyOnHidden={!pickerSessionOpen}
     >
       <Flex vertical gap="middle">
         <SearchInput

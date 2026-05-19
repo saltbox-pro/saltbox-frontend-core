@@ -62,6 +62,7 @@ interface JobModalProps {
   openOnMount?: boolean;
   onAfterClose?: () => void;
   onReturnToFunctionPicker: (payload: JobReturnToPickerSnapshot) => void;
+  onJobModalClosed?: () => void;
 }
 
 type JobFormData = Pick<CreateJobRequest, "tgt" | "tgt_type" | "salt_master">;
@@ -77,6 +78,7 @@ export function JobModal({
   openOnMount,
   onAfterClose,
   onReturnToFunctionPicker,
+  onJobModalClosed,
 }: JobModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -97,8 +99,7 @@ export function JobModal({
   const hasAutoOpenedRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
-  const shouldReturnToFunctionPickerRef = useRef(false);
-  const returnToPickerSnapshotRef = useRef<JobReturnToPickerSnapshot | null>(null);
+  const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
@@ -181,7 +182,7 @@ export function JobModal({
       return;
     }
 
-    shouldReturnToFunctionPickerRef.current = false;
+    closeReasonRef.current = null;
 
     form.resetFields();
     form.setFieldsValue({
@@ -256,8 +257,7 @@ export function JobModal({
     if (isJobCreating) {
       return;
     }
-    shouldReturnToFunctionPickerRef.current = false;
-    returnToPickerSnapshotRef.current = null;
+    closeReasonRef.current = "dismiss";
     resetModalState();
     setIsModalOpen(false);
   };
@@ -266,15 +266,16 @@ export function JobModal({
     if (isJobCreating) {
       return;
     }
-    shouldReturnToFunctionPickerRef.current = true;
-    returnToPickerSnapshotRef.current = {
+    const snapshot: JobReturnToPickerSnapshot = {
       salt_master: form.getFieldValue("salt_master") as string,
       tgt: form.getFieldValue("tgt") as string,
       tgt_type: form.getFieldValue("tgt_type") as CreateJobRequestTgtTypeEnum,
       jsonFormData: jsonFormValue,
       ttlSeconds: getTtlValue(),
     };
+    closeReasonRef.current = "return-to-picker";
     resetModalState();
+    onReturnToFunctionPicker(snapshot);
     setIsModalOpen(false);
   };
 
@@ -463,16 +464,15 @@ export function JobModal({
         open={isModalOpen}
         onCancel={handleModalDismiss}
         afterClose={() => {
-          const returnToPicker = shouldReturnToFunctionPickerRef.current;
-          shouldReturnToFunctionPickerRef.current = false;
-          const snapshot = returnToPickerSnapshotRef.current;
-          returnToPickerSnapshotRef.current = null;
-          if (returnToPicker && snapshot) {
-            onReturnToFunctionPicker(snapshot);
+          const reason = closeReasonRef.current;
+          closeReasonRef.current = null;
+          if (reason === "return-to-picker") {
+            onJobModalClosed?.();
             return;
           }
           onAfterClose?.();
         }}
+        zIndex={1000}
         width="min(80vw, 800px)"
         maskClosable={false}
         style={{ top: 50 }}

@@ -22,7 +22,7 @@ export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
     (functionName: string, nextTargeting: JobModalTargeting) => {
       setTargeting(nextTargeting);
       setConfigureFunction(functionName);
-      setPickerOpen(false);
+      setPickerOpen(true);
     },
     []
   );
