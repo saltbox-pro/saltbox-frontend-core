@@ -1,5 +1,5 @@
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { isGlobalServerError, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
@@ -106,10 +106,11 @@ export class JobsStore {
           this.jobs = response?.data ?? [];
         });
       })
-      .catch((_) => {
+      .catch((e) => {
         runInAction(() => {
           this.isInitialized = true;
           this.isJobsLoading = false;
+          if (isGlobalServerError(e)) return;
           this.error = "Failed to load jobs";
         });
       });
