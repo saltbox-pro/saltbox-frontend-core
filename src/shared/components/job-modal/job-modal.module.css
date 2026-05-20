@@ -1,11 +1,3 @@
-.args {
-  display: flex;
-}
-
-.args :global(.ant-space-item:has(> input)) {
-  flex: 1;
-}
-
 .jobParamsForm label[for="job-params-form__title"] {
   display: none;
 }

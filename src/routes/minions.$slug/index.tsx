@@ -21,7 +21,7 @@ import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
@@ -50,6 +50,7 @@ const MinionsPage = observer(() => {
 
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -156,6 +157,17 @@ const MinionsPage = observer(() => {
       collectionStore.setCollectionSlug(slug);
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (location.state?.resetFilters) {
+      minionFilterStore.handleResetFiltersSilent();
+
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: {},
+      });
+    }
+  }, [location, navigate, minionFilterStore]);
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -403,10 +415,7 @@ const MinionsPage = observer(() => {
         query={minionFilterStore.searchMongoDBQuery as object}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
-        onClose={(success: boolean) => {
-          if (success) {
-            minionFilterStore.handleResetFilters();
-          }
+        onClose={() => {
           setIsCreateModalOpen(false);
         }}
       />

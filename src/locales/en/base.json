@@ -280,6 +280,7 @@
       "table-failed": "Failed",
       "table-success": "Success",
       "table-pending": "Pending",
+      "table-unknown-code": "Unknown Code",
       "table-started": "Started",
       "table-finished": "Finished",
       "table-count-runs": "Count Runs",
@@ -339,7 +340,10 @@
       "finished": "Finished",
       "last-run": "Last Run",
       "job-title": "Job (retry {{run}})",
-      "job-running": "Running"
+      "job-running": "Running",
+      "job-returns-load-error": "Failed to load job returns for this minion",
+      "job-returns-not-found": "Job returns not found",
+      "job-returns-missing-context": "Task or minion identifier is missing"
     }
   },
   "policy": {
@@ -469,7 +473,7 @@
     "detailed-view": "Detailed",
     "table-view": "Table",
     "export-to-csv-title": "Export to CSV",
-    "export-to-csv-warning": "Information about {{count}} minions will be uploaded",
+    "export-to-csv-warning": "Number of records to upload: {{count}}",
     "download-to-csv": "Download to CSV",
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-conversion-error": "Cannot convert data to table: {{reason}}",
@@ -497,34 +501,34 @@
   "job-modal": {
     "title": "Create Job",
     "create-job": "Create Job",
-    "cancel": "Cancel",
     "create": "Create",
     "salt-master": "Salt Master",
     "target-type": "Target Type",
     "target": "Target",
     "function": "Function",
-    "function-tooltip": "You can select from the list or enter any available SaltStack function.",
+    "return-to-function-picker": "Return to function selection",
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
-    "function-error-required": "Function is required",
     "warning-message": "To create a job, activate the master on the Masters page",
     "hint-example-label": "Example:",
     "timeout-label": "Command response timeout",
-    "timeout-value-placeholder": "Value",
     "timeout-unit-seconds": "Sec",
     "timeout-unit-minutes": "Min",
     "timeout-unit-hours": "Hour",
-    "ttl-seconds-unit": "sec"
+    "error-load-salt-masters": "Failed to load masters",
+    "error-load-function-schema": "Failed to load function schema",
+    "error-job-create": "Failed to create job"
   },
   "job-function-select": {
-    "open-button": "Create Job (new flow)",
     "title": "Choose function",
-    "search-placeholder": "Search function...",
+    "search-placeholder": "Search or type module.function (e.g. file.append)",
+    "invalid-function-format": "Use the module.function format (example: file.append)",
+    "create-with-function": "Create job with function \"{{name}}\"",
     "table-module": "Module",
     "table-functions": "Functions",
     "empty": "No available functions",
-    "nothing-found": "Nothing found",
+    "nothing-found": "Nothing found for query",
     "error": "Failed to load data",
     "tooltip-description": "Description",
     "tooltip-arguments": "Arguments",
@@ -549,7 +553,9 @@
   },
   "job-return": {
     "waiting-client-response": "Waiting for client response",
-    "no-execution-result": "Execution result is missing"
+    "no-execution-result": "Execution result is missing",
+    "load-error": "Failed to load job return result",
+    "not-found": "Job return result not found"
   },
   "sync-templates-button": {
     "sync-templates": "Sync Templates",

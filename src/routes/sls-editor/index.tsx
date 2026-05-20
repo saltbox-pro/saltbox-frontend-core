@@ -1,7 +1,11 @@
 import { ImportOutlined } from "@ant-design/icons";
 import { loader } from "@monaco-editor/react";
-import { PageHeader, SlsEditor, slsEditorMonacoLoader } from "@saltbox/saltbox-frontend-common";
-import { MenuProps } from "antd";
+import {
+  PageHeader,
+  SlsEditor,
+  type SlsEditorProps,
+  slsEditorMonacoLoader,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
@@ -32,7 +36,7 @@ const SlsEditorPage = observer(() => {
     slsEditorStore.setSlsContent(importedSls);
   };
 
-  const menuItems: MenuProps["items"] = [
+  const menuItems: SlsEditorProps["menu"]["items"] = [
     {
       key: "import",
       label: t("sls-editor.menu-import-from-template"),
@@ -65,7 +69,7 @@ const SlsEditorPage = observer(() => {
         defaultTab="form-editor"
         additionalTabs={additionalTabs}
         className={styles.editor}
-        menu={{ items: menuItems as any }}
+        menu={{ items: menuItems }}
       />
 
       <ImportSlsModal

@@ -6,6 +6,11 @@ import { add_operation } from "json-logic-js";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { jsonLogicAdditionalOperators } from "react-querybuilder";
 
+import {
+  DEFAULT_JOB_DATE_RANGE_PRESET,
+  getJobDateRangeForPreset,
+  type JobDateRangePreset,
+} from "saltbox-core/shared/constants/job-date-range-presets";
 import { apiCoreStore, JobFilterStore } from "saltbox-core/store";
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
@@ -30,6 +35,7 @@ export class JobsStore {
   @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
   @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs];
+  @observable dateRangePreset: JobDateRangePreset;
   @observable jobFilterStore: JobFilterStore;
 
   constructor(jobFilterStore: JobFilterStore) {
@@ -39,6 +45,7 @@ export class JobsStore {
     this.isJobsLoading = false;
     this.error = null;
     this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
+    this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
@@ -55,12 +62,19 @@ export class JobsStore {
     this.isJobsLoading = false;
     this.error = null;
     this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
+    this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
+  };
+
+  @action
+  refreshJobs = () => {
+    this.dateRange = getJobDateRangeForPreset(this.dateRangePreset);
+    this.loadJobs();
   };
 
   @action
@@ -111,8 +125,9 @@ export class JobsStore {
   };
 
   @action
-  handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs]) => {
+  handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs], preset: JobDateRangePreset) => {
     this.dateRange = range;
+    this.dateRangePreset = preset;
     this.pagination.pageIndex = 0;
     this.loadJobs();
   };

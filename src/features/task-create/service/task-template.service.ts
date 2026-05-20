@@ -45,8 +45,8 @@ export class TaskTemplateService {
   ): TaskTemplateWithRepository[] {
     let filtered = [...templates];
 
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase();
+    if (filters.appliedSearchQuery) {
+      const query = filters.appliedSearchQuery.toLowerCase();
       filtered = filtered.filter((template) => {
         return template.title?.toLowerCase().includes(query);
       });

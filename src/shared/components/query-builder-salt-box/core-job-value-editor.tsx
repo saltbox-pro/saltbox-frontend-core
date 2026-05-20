@@ -1,11 +1,21 @@
 import {
   GetOptionsCallback,
+  SaltBoxJobValueEditor,
   SaltBoxOptionsValueEditor,
   ValueEditorProps,
 } from "@saltbox/saltbox-frontend-common";
 import { FC, useMemo } from "react";
 
 import { JobsStore } from "saltbox-core/store";
+
+function hasPredefinedFieldOptions(fieldData: ValueEditorProps["fieldData"]): boolean {
+  return (
+    fieldData?.type === "multiselect" ||
+    fieldData?.valueEditorType === "select" ||
+    (Array.isArray(fieldData?.selectOptions) && fieldData.selectOptions.length > 0) ||
+    (Array.isArray(fieldData?.values) && fieldData.values.length > 0)
+  );
+}
 
 type CoreJobValueEditorInnerProps = ValueEditorProps & { jobsStore?: JobsStore };
 
@@ -44,6 +54,11 @@ const getOptionsFromJobsStore = (jobsStore?: JobsStore): GetOptionsCallback => {
 
 const CoreJobValueEditorInner: FC<CoreJobValueEditorInnerProps> = ({ jobsStore, ...props }) => {
   const getOptions = useMemo(() => getOptionsFromJobsStore(jobsStore), [jobsStore]);
+
+  if (hasPredefinedFieldOptions(props.fieldData)) {
+    return <SaltBoxJobValueEditor {...props} />;
+  }
+
   return <SaltBoxOptionsValueEditor getOptions={getOptions} {...props} />;
 };
 

@@ -19,6 +19,7 @@ export class PillarsStore {
   sorting: SortingState;
   pillars: Array<PillarWithTgtInfoSchema>;
   totalPillars: number;
+  mongoDBQuery: object | undefined;
   readonly targetId: string | undefined;
 
   constructor(options?: PillarsStoreOptions) {
@@ -29,6 +30,7 @@ export class PillarsStore {
     this.error = null;
     this.pillars = [];
     this.totalPillars = 0;
+    this.mongoDBQuery = undefined;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
@@ -41,6 +43,7 @@ export class PillarsStore {
     this.error = null;
     this.pillars = [];
     this.totalPillars = 0;
+    this.mongoDBQuery = undefined;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
@@ -63,7 +66,10 @@ export class PillarsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          ...(this.targetId && { query: { tgt_id: this.targetId } }),
+          query: {
+            ...(this.mongoDBQuery ?? {}),
+            ...(this.targetId ? { tgt_id: this.targetId } : {}),
+          },
         },
       })
       .then((response) => {

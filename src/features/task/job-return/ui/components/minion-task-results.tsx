@@ -1,20 +1,22 @@
-import type { JobReturnModel, TaskMinionModel } from "@saltbox/saltbox-core-api-client";
+import type { JobReturnModel, TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
 import { Flex } from "antd";
 
-import type { MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
+import { type MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
 import { MinionTaskResultsJobResult } from "./minion-task-results-job-result";
 import { MinionTaskResultsShortInfo } from "./minion-task-results-short-info";
 
 export interface MinionTaskResultsProps {
-  selectedMinion: TaskMinionModel | null;
-  selectedMinionJobReturns: JobReturnModel[];
+  selectedMinion: TaskMinionListResponse | null;
+  jobReturns: JobReturnModel[];
+  isJobReturnsLoading: boolean;
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
 }
 
 export function MinionTaskResults({
   selectedMinion,
-  selectedMinionJobReturns,
+  jobReturns,
+  isJobReturnsLoading,
   onRestartFailedMinion,
 }: MinionTaskResultsProps) {
   const {
@@ -36,7 +38,10 @@ export function MinionTaskResults({
         onRestartFailedMinion={onRestartFailedMinion}
       />
 
-      <MinionTaskResultsJobResult jobReturns={selectedMinionJobReturns} />
+      <MinionTaskResultsJobResult
+        jobReturns={jobReturns}
+        isJobReturnsLoading={isJobReturnsLoading}
+      />
     </Flex>
   );
 }

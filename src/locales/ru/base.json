@@ -280,6 +280,7 @@
       "table-failed": "С ошибкой",
       "table-success": "Успешно",
       "table-pending": "Ожидает",
+      "table-unknown-code": "Неизвестный код",
       "table-started": "Запущена",
       "table-finished": "Завершена",
       "table-count-runs": "Количество запусков",
@@ -339,7 +340,10 @@
       "finished": "Завершена",
       "last-run": "Последний запуск",
       "job-title": "Команда (попытка запуска №{{run}})",
-      "job-running": "Выполняется"
+      "job-running": "Выполняется",
+      "job-returns-load-error": "Не удалось загрузить ответы команд для этого клиента",
+      "job-returns-not-found": "Ответы команд не найдены",
+      "job-returns-missing-context": "Не задан идентификатор задачи или клиента"
     }
   },
   "policy": {
@@ -469,7 +473,7 @@
     "detailed-view": "Подробный",
     "table-view": "Табличный",
     "export-to-csv-title": "Экспорт в CSV",
-    "export-to-csv-warning": "Будет выгружена информация по {{count}} миньонам",
+    "export-to-csv-warning": "Количество записей для выгрузки: {{count}}",
     "download-to-csv": "Выгрузить в CSV",
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-conversion-error": "Невозможно преобразовать данные в таблицу: {{reason}}",
@@ -497,34 +501,34 @@
   "job-modal": {
     "title": "Создание команды",
     "create-job": "Создать команду",
-    "cancel": "Отмена",
     "create": "Создать",
     "salt-master": "Мастер",
     "target-type": "Тип цели",
     "target": "Цель",
     "function": "Функция",
-    "function-tooltip": "Можно выбрать из списка или ввести любую доступную функцию SaltStack.",
+    "return-to-function-picker": "Вернуться к выбору функции",
     "salt-master-error-required": "Мастер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
     "tgt-error-required": "Цель обязательна",
-    "function-error-required": "Функция обязательна",
     "warning-message": "Для создания команды, активируйте мастера на странице Мастера",
     "hint-example-label": "Пример:",
     "timeout-label": "Время ожидания ответа команды",
-    "timeout-value-placeholder": "Значение",
     "timeout-unit-seconds": "Сек",
     "timeout-unit-minutes": "Мин",
     "timeout-unit-hours": "Час",
-    "ttl-seconds-unit": "сек"
+    "error-load-salt-masters": "Не удалось загрузить список мастеров",
+    "error-load-function-schema": "Не удалось загрузить схему функции",
+    "error-job-create": "Не удалось создать команду"
   },
   "job-function-select": {
-    "open-button": "Создать команду (новый интерфейс)",
     "title": "Выберите функцию",
-    "search-placeholder": "Поиск функции...",
+    "search-placeholder": "Поиск или ввод module.function (например file.append)",
+    "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
+    "create-with-function": "Создать команду с функцией «{{name}}»",
     "table-module": "Модуль",
     "table-functions": "Функции",
     "empty": "Нет доступных функций",
-    "nothing-found": "Ничего не найдено",
+    "nothing-found": "Ничего не найдено по запросу",
     "error": "Не удалось загрузить данные",
     "tooltip-description": "Описание",
     "tooltip-arguments": "Аргументы",
@@ -549,7 +553,9 @@
   },
   "job-return": {
     "waiting-client-response": "Ожидание ответа от клиента",
-    "no-execution-result": "Результат выполнения отсутствует"
+    "no-execution-result": "Результат выполнения отсутствует",
+    "load-error": "Не удалось загрузить результат выполнения команды",
+    "not-found": "Результат выполнения команды не найден"
   },
   "sync-templates-button": {
     "sync-templates": "Синхронизировать шаблоны",

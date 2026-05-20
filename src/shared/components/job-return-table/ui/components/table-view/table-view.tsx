@@ -1,6 +1,6 @@
-import { OnChangeFn, SortingState } from "@tanstack/react-table";
-import { Flex, Table, type TableColumnsType, type TableProps } from "antd";
-import React, { useMemo, useState, useEffect } from "react";
+import type { OnChangeFn, SortingState } from "@tanstack/react-table";
+import { Table, type TableColumnsType, type TableProps } from "antd";
+import { useMemo, useState, useEffect, type FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -29,7 +29,7 @@ const isEmptyBrackets = (value: unknown): boolean => {
   return stringValue === "[]" || stringValue === "{}";
 };
 
-export const TableView: React.FC<TableViewProps> = ({
+export const TableView: FC<TableViewProps> = ({
   data,
   minionId,
   onSortingChange,

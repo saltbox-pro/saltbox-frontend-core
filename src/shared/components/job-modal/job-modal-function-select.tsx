@@ -1,16 +1,18 @@
-import { Modal } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Empty, Input, Skeleton, Table, Tooltip } from "antd";
+import { Modal, SearchInput } from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Empty, Flex, Spin, Table, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-import styles from "./job-function-select-modal.module.css";
+import styles from "./job-modal-function-select.module.css";
 
-interface JobFunctionSelectModalProps {
+interface JobModalFunctionSelectProps {
   open: boolean;
+  pickerSessionOpen: boolean;
   onCancel: () => void;
   onSelect: (functionName: string) => void;
 }
@@ -63,6 +65,11 @@ type FunctionUiSchema = {
 
 const EXCLUDED_FUNCTIONS = new Set(["default"]);
 
+const getFunctionDisplayName = (functionName: string): string => {
+  const functionNameParts = functionName.split(".");
+  return functionNameParts[functionNameParts.length - 1] || functionName;
+};
+
 const buildModuleRows = (
   schemaNames: string[],
   t: TFunction<"translation", undefined>
@@ -103,8 +110,8 @@ const buildModuleRows = (
     );
 };
 
-const filterModuleRows = (moduleRows: ModuleRow[], searchValue: string): ModuleRow[] => {
-  const normalizedSearchValue = searchValue.trim().toLowerCase();
+const filterModuleRows = (moduleRows: ModuleRow[], appliedSearchQuery: string): ModuleRow[] => {
+  const normalizedSearchValue = appliedSearchQuery.trim().toLowerCase();
   if (!normalizedSearchValue) {
     return moduleRows;
   }
@@ -161,23 +168,24 @@ const buildFunctionTooltipData = (
   });
 
   return {
-    name: functionName,
+    name: getFunctionDisplayName(functionName),
     description: schema.description ?? schema.title ?? uiSchema["ui:description"],
     arguments: argumentsList,
     example: schema.example,
   };
 };
 
-export const JobFunctionSelectModal = ({
+export const JobModalFunctionSelect = ({
   open,
+  pickerSessionOpen,
   onCancel,
   onSelect,
-}: JobFunctionSelectModalProps) => {
+}: JobModalFunctionSelectProps) => {
   const { t } = useTranslation();
   const [moduleRows, setModuleRows] = useState<ModuleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
   const [functionTooltips, setFunctionTooltips] = useState<Record<string, FunctionTooltipData>>({});
   const [functionTooltipsLoading, setFunctionTooltipsLoading] = useState<Record<string, boolean>>(
     {}
@@ -185,7 +193,7 @@ export const JobFunctionSelectModal = ({
   const [tooltipResetCounter, setTooltipResetCounter] = useState(0);
 
   const resetModalState = useCallback(() => {
-    setSearchValue("");
+    setAppliedSearchQuery("");
     setModuleRows([]);
     setFunctionTooltips({});
     setFunctionTooltipsLoading({});
@@ -195,14 +203,17 @@ export const JobFunctionSelectModal = ({
   }, []);
 
   useEffect(() => {
-    if (!open) {
+    if (!pickerSessionOpen) {
       resetModalState();
+      return;
+    }
+
+    if (moduleRows.length > 0) {
       return;
     }
 
     let isCancelled = false;
     setIsError(false);
-    setModuleRows([]);
     setIsLoading(true);
     apiCoreStore.jsonSchemasApi
       ?.jobsSchemasList({
@@ -230,12 +241,33 @@ export const JobFunctionSelectModal = ({
     return () => {
       isCancelled = true;
     };
-  }, [open, resetModalState, t]);
+  }, [pickerSessionOpen, moduleRows.length, resetModalState, t]);
 
   const filteredRows = useMemo(
-    () => filterModuleRows(moduleRows, searchValue),
-    [moduleRows, searchValue]
+    () => filterModuleRows(moduleRows, appliedSearchQuery),
+    [moduleRows, appliedSearchQuery]
   );
+
+  const catalogFunctionNamesLower = useMemo(() => {
+    const names = new Set<string>();
+    for (const moduleRow of moduleRows) {
+      for (const functionName of moduleRow.functions) {
+        names.add(functionName.toLowerCase());
+      }
+    }
+    return names;
+  }, [moduleRows]);
+
+  const trimmedSearch = appliedSearchQuery.trim();
+  const normalizedSearchLower = trimmedSearch.toLowerCase();
+
+  const showCreateWithCustomFunction =
+    trimmedSearch.length > 0 &&
+    isValidManualSaltFunctionName(trimmedSearch) &&
+    !catalogFunctionNamesLower.has(normalizedSearchLower);
+
+  const showInvalidFormatHint =
+    trimmedSearch.length > 0 && !isValidManualSaltFunctionName(trimmedSearch);
 
   const hasNoData = !isLoading && !isError && moduleRows.length === 0;
   const hasNoResults = !isLoading && !isError && moduleRows.length > 0 && filteredRows.length === 0;
@@ -297,11 +329,15 @@ export const JobFunctionSelectModal = ({
       const tooltipData = functionTooltips[functionName];
 
       if (isTooltipLoading) {
-        return <Skeleton active paragraph={{ rows: 3 }} title={false} />;
+        return (
+          <div className={styles.spinnerContainer}>
+            <Spin />
+          </div>
+        );
       }
 
       if (!tooltipData) {
-        return <span>{functionName}</span>;
+        return <span>{getFunctionDisplayName(functionName)}</span>;
       }
 
       if (tooltipData.isLoadError) {
@@ -390,8 +426,12 @@ export const JobFunctionSelectModal = ({
                 <Tooltip
                   key={`${functionName}-${tooltipResetCounter}`}
                   title={renderFunctionTooltip(functionName)}
-                  placement="topLeft"
-                  mouseEnterDelay={0.2}
+                  mouseEnterDelay={0.45}
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) {
+                      handleFunctionHover(functionName);
+                    }
+                  }}
                   classNames={{ root: styles.tooltip }}
                   destroyOnHidden
                 >
@@ -402,9 +442,8 @@ export const JobFunctionSelectModal = ({
                       setTooltipResetCounter((prevState) => prevState + 1);
                       onSelect(functionName);
                     }}
-                    onMouseEnter={() => handleFunctionHover(functionName)}
                   >
-                    {functionName}
+                    {getFunctionDisplayName(functionName)}
                   </Button>
                 </Tooltip>
               ))}
@@ -423,34 +462,75 @@ export const JobFunctionSelectModal = ({
       onCancel={onCancel}
       footer={null}
       width={900}
+      zIndex={1001}
+      destroyOnHidden={!pickerSessionOpen}
     >
-      <Input
-        value={searchValue}
-        placeholder={t("job-function-select.search-placeholder")}
-        onChange={(event) => setSearchValue(event.target.value)}
-        allowClear
-        className={styles.search}
-      />
+      <Flex vertical gap="middle">
+        <SearchInput
+          placeholder={t("job-function-select.search-placeholder")}
+          autoFocus={open}
+          onSearch={setAppliedSearchQuery}
+        />
 
-      <div className={styles.modalContent}>
-        {!isLoading && isError && (
-          <Alert type="error" message={t("job-function-select.error")} showIcon />
-        )}
-
-        {hasNoData && <Empty description={t("job-function-select.empty")} />}
-
-        {hasNoResults && <Empty description={t("job-function-select.nothing-found")} />}
-
-        {shouldShowTable && (
-          <Table
-            className={styles.functionsTable}
-            columns={columns}
-            dataSource={filteredRows}
-            pagination={false}
-            size="small"
+        {showInvalidFormatHint && (
+          <Alert
+            type="info"
+            showIcon
+            className={styles.searchHint}
+            message={t("job-function-select.invalid-function-format")}
           />
         )}
-      </div>
+
+        {showCreateWithCustomFunction && (
+          <div className={styles.customFunctionAction}>
+            <Button
+              type="primary"
+              onClick={() => {
+                setTooltipResetCounter((prevState) => prevState + 1);
+                onSelect(normalizedSearchLower);
+              }}
+            >
+              {t("job-function-select.create-with-function", { name: normalizedSearchLower })}
+            </Button>
+          </div>
+        )}
+
+        <div className={styles.modalContent}>
+          {isLoading && (
+            <div className={styles.spinnerContainer}>
+              <Spin />
+            </div>
+          )}
+
+          {!isLoading && isError && (
+            <Alert type="error" message={t("job-function-select.error")} showIcon />
+          )}
+
+          {hasNoData && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("job-function-select.empty")}
+            />
+          )}
+
+          {hasNoResults && !showCreateWithCustomFunction && !showInvalidFormatHint && (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={t("job-function-select.nothing-found")}
+            />
+          )}
+
+          {shouldShowTable && (
+            <Table
+              className={styles.functionsTable}
+              columns={columns}
+              dataSource={filteredRows}
+              pagination={false}
+              size="small"
+            />
+          )}
+        </div>
+      </Flex>
     </Modal>
   );
 };

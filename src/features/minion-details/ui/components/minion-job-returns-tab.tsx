@@ -1,5 +1,9 @@
-import { ReloadOutlined } from "@ant-design/icons";
-import { JobReturnModel, type MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+  CreateJobRequestTgtTypeEnum,
+  JobReturnModel,
+  type MinionDetailSchema,
+} from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
@@ -14,20 +18,21 @@ import {
   Row,
   SortingState,
 } from "@tanstack/react-table";
-import { Flex, Tag } from "antd";
+import { Button, Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import { JobModalShell } from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
-import { JobReturnsQueryBuilder } from "saltbox-core/shared/components/minion-details/job-returns-query-builder";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobFilterStore, JobStore } from "saltbox-core/store";
 
+import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
@@ -35,11 +40,13 @@ const JobReturnsTable = FastTablePaginated<JobReturnModel>;
 
 interface JobReturnsConfig {
   jobReturns: JobReturnModel[];
+  jobStore: JobStore;
   isLoading: boolean;
   pagination: PaginationState;
   sorting: SortingState;
   total: number;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
+  onReplayJob: (row: JobReturnModel) => void;
 }
 
 interface MinionJobReturnsTabViewProps {
@@ -93,9 +100,9 @@ const transformRetcodeValue = (retcode: unknown): number | { $ne: number } | und
     typeof retcode === "object" &&
     retcode !== null &&
     "$in" in retcode &&
-    Array.isArray((retcode as any).$in)
+    Array.isArray(retcode.$in)
   ) {
-    const retcodeIn = (retcode as any).$in as Array<number | string>;
+    const retcodeIn = retcode.$in as Array<number | string>;
     const hasYes =
       retcodeIn.includes(retcodeLegacyValues.zero) ||
       retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());
@@ -154,10 +161,18 @@ const transformRetcodeFilter = (query: object): MongoDBQuery => {
   return result;
 };
 
-const MinionJobReturnsTable = (props: JobReturnsConfig) => {
+const MinionJobReturnsTable = ({
+  onLazyLoad,
+  sorting,
+  jobReturns,
+  jobStore,
+  isLoading,
+  total,
+  pagination,
+  onReplayJob,
+}: JobReturnsConfig) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [selectedJobForReplay, setSelectedJobForReplay] = useState<JobReturnModel | null>(null);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -180,7 +195,7 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
             {
               icon: <ReloadOutlined />,
               onClick: (_, row) => {
-                setSelectedJobForReplay(row);
+                onReplayJob(row);
               },
               title: t("jobs.replay-job"),
             },
@@ -234,43 +249,32 @@ const MinionJobReturnsTable = (props: JobReturnsConfig) => {
         cell: (data) => formatTimeByUserTZ(data.getValue()),
       }),
     ],
-    [t]
+    [onReplayJob, t]
   );
 
   const renderJobResult = useCallback(
-    ({ row }: { row: Row<JobReturnModel> }) => <JobReturnRow row={row} />,
-    []
+    ({ row }: { row: Row<JobReturnModel> }) => (
+      <JobReturnRow jobStore={jobStore} row={row.original} />
+    ),
+    [jobStore]
   );
 
   return (
     <div className={styles.jobReturnsTableWrapper}>
       <JobReturnsTable
         columns={columns}
-        data={props.jobReturns}
-        total={props.total}
-        isLoading={props.isLoading}
-        pagination={props.pagination}
-        sorting={props.sorting}
-        onLazyLoad={props.onLazyLoad}
+        data={jobReturns}
+        total={total}
+        isLoading={isLoading}
+        pagination={pagination}
+        sorting={sorting}
+        onLazyLoad={onLazyLoad}
         getRowId={(row) => row.id}
         onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.jid)}
         useVirtualScroll={false}
         renderSubComponent={renderJobResult}
         getRowCanExpand={() => true}
       />
-      {selectedJobForReplay && (
-        <JobModal
-          key={selectedJobForReplay.jid}
-          openOnMount
-          onAfterClose={() => setSelectedJobForReplay(null)}
-          target={selectedJobForReplay.minion_id}
-          targetType="glob"
-          fun={selectedJobForReplay.fun}
-          arg={selectedJobForReplay.fun_args || undefined}
-          kwarg={selectedJobForReplay.fun_kwarg || undefined}
-          defaultMaster={selectedJobForReplay.salt_master}
-        />
-      )}
     </div>
   );
 };
@@ -292,6 +296,12 @@ function MinionJobReturnsTabView({
   );
 }
 
+type JobReplayBaseline = {
+  fun: string;
+  arg?: unknown[];
+  kwarg?: Record<string, unknown>;
+};
+
 export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   minion,
   isFullView = false,
@@ -299,11 +309,66 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   minion: MinionDetailSchema | null;
   isFullView?: boolean;
 }) {
+  const { t } = useTranslation();
   const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
   const [filtersExtraContainer, setFiltersExtraContainer] = useState<HTMLElement | null>(null);
 
   const jobStore = useMemo(() => new JobStore(), []);
   const lastLoadedMinionIdRef = useRef<string | null>(null);
+
+  const minionTargeting = useMemo(
+    () => ({
+      target: minion?.minion_id ?? "",
+      targetType: CreateJobRequestTgtTypeEnum.Glob,
+      defaultMaster: minion?.master ?? "",
+    }),
+    [minion?.master, minion?.minion_id]
+  );
+
+  const {
+    pickerOpen,
+    setPickerOpen,
+    configureFunction,
+    setConfigureFunction,
+    targeting,
+    setTargeting,
+    openFunctionPicker,
+    openConfigureWithFunction,
+  } = useJobModalFlowState(minionTargeting);
+  const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
+
+  useEffect(() => {
+    setTargeting(minionTargeting);
+  }, [minionTargeting, setTargeting]);
+
+  const handleOpenCreateJob = useCallback(() => {
+    setReplayBaseline(null);
+    setTargeting(minionTargeting);
+    openFunctionPicker();
+  }, [minionTargeting, openFunctionPicker, setTargeting]);
+
+  const handleReplayJob = useCallback(
+    (row: JobReturnModel) => {
+      if (!row.fun) {
+        return;
+      }
+      setReplayBaseline({
+        fun: row.fun,
+        arg: row.fun_args ?? undefined,
+        kwarg: row.fun_kwarg ?? undefined,
+      });
+      openConfigureWithFunction(row.fun, {
+        target: row.minion_id ?? minionTargeting.target,
+        targetType: CreateJobRequestTgtTypeEnum.Glob,
+        defaultMaster: row.salt_master ?? minionTargeting.defaultMaster,
+      });
+    },
+    [minionTargeting, openConfigureWithFunction]
+  );
+
+  const handleJobModalAfterConfigureClose = useCallback(() => {
+    setReplayBaseline(null);
+  }, []);
 
   const jobReturnsFilterStore = useMemo(() => {
     const storageKey = `jobReturnsFilter:${minion?.id ?? "unknown"}`;
@@ -376,11 +441,9 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
 
   const jobReturnsTabActions = isFullView ? (
     <Flex justify="flex-end">
-      <JobModal
-        target={minion?.minion_id ?? ""}
-        targetType="glob"
-        defaultMaster={minion?.master ?? ""}
-      />
+      <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreateJob}>
+        {t("job-modal.create-job")}
+      </Button>
     </Flex>
   ) : null;
 
@@ -391,15 +454,30 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
       <MinionJobReturnsTabView
         jobReturnsConfig={{
           jobReturns: jobStore.jobReturns,
+          jobStore,
           isLoading: jobStore.isJobReturnsLoading,
           pagination: jobStore.pagination,
           sorting: jobStore.sorting,
           total: jobStore.total,
           onLazyLoad: jobStore.handleLazyLoad,
+          onReplayJob: handleReplayJob,
         }}
         isFullView={isFullView}
         jobReturnsTabActions={jobReturnsTabActions}
         jobReturnsFilter={jobReturnsFilter}
+      />
+
+      <JobModalShell
+        pickerOpen={pickerOpen}
+        onPickerOpenChange={setPickerOpen}
+        configureFunction={configureFunction}
+        onConfigureFunctionChange={setConfigureFunction}
+        targeting={targeting}
+        onTargetingChange={setTargeting}
+        repeatBaselineFun={replayBaseline?.fun ?? null}
+        repeatBaselineArg={replayBaseline?.arg}
+        repeatBaselineKwarg={replayBaseline?.kwarg}
+        onAfterConfigureClose={handleJobModalAfterConfigureClose}
       />
     </>
   );

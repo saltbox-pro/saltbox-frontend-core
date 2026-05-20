@@ -1,7 +1,6 @@
 import {
   type JobReturnModel,
-  type JobsListResponse,
-  type TaskMinionModel,
+  type TaskMinionListResponse,
   type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
 import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
@@ -17,7 +16,7 @@ import { TaskMinionStatusFilter } from "saltbox-core/widgets/task/task-minions-s
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
 import { TaskStatusProgress } from "saltbox-core/widgets/task/task-status-progress";
 
-type TaskWebSocketMessage = TaskModel | TaskMinionModel | JobReturnModel | JobsListResponse;
+type TaskWebSocketMessage = TaskModel | TaskMinionListResponse | JobReturnModel;
 
 const useWebSocket = (
   taskId: string,
@@ -69,20 +68,15 @@ const TaskPage = observer(() => {
           .filter((message) => message.message_tag === "task")
           .map((message) => message.payload) as TaskModel[]
       );
-      taskStore.updateJobs(
-        messages
-          .filter((message) => message.message_tag === "job")
-          .map((message) => message.payload) as JobsListResponse[]
-      );
       taskStore.updateMinions(
         messages
           .filter((message) => message.message_tag === "task-minion")
-          .map((message) => message.payload) as TaskMinionModel[]
+          .map((message) => message.payload) as TaskMinionListResponse[]
       );
-      taskStore.updateJobReturns(
+      taskStore.mergeTaskJobReturnsFromSocket(
         messages
           .filter((message) => message.message_tag === "job-return")
-          .map((message) => message.payload) as JobReturnModel[]
+          .map((message) => message.payload as JobReturnModel)
       );
     }
   });

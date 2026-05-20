@@ -1,9 +1,10 @@
-import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import { JobStatus, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
   defaultNumberOperators,
   defaultStringOperators,
+  MONGO_VALUE_COERCION_BOOLEAN_FROM_STRING,
 } from "@saltbox/saltbox-frontend-common";
 import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
@@ -110,6 +111,13 @@ const jobSourceTypeSelectOptions = (t: TFunction) => [
   { label: t("jobs.table-source-scenario"), value: "migration" },
 ];
 
+const jobStatusSelectOptions = (t: TFunction) => [
+  { label: t("jobs.table-status-starting"), value: JobStatus.Starting },
+  { label: t("jobs.table-status-running"), value: JobStatus.Running },
+  { label: t("jobs.table-status-finished"), value: JobStatus.Finished },
+  { label: t("jobs.table-status-launch-error"), value: JobStatus.LaunchError },
+];
+
 export const getJobsFilterSchema = (
   t: TFunction,
   saltTargetTypes: SelectProps["options"]
@@ -161,6 +169,13 @@ export const getJobsFilterSchema = (
       operators: defaultStringOperators,
     },
     {
+      name: "status",
+      label: t("jobs.table-status"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobStatusSelectOptions(t),
+    },
+    {
       name: "created",
       label: t("jobs.table-created"),
       operators: defaultDateTimeOperators,
@@ -168,3 +183,60 @@ export const getJobsFilterSchema = (
       valueEditorType: "datetime-local",
     },
   ] as OptionList;
+
+const booleanSelectOptions = (t: TFunction) => [
+  { label: t("common.yes"), value: "true" },
+  { label: t("common.no"), value: "false" },
+];
+
+const equalsOnlyOperators = [{ name: "=", value: "=", label: "=" }];
+
+export type PillarsFilterSchemaOptions = {
+  includeTargetId?: boolean;
+};
+
+export const getPillarsFilterSchema = (
+  t: TFunction,
+  options: PillarsFilterSchemaOptions = {}
+): OptionList => {
+  const { includeTargetId = true } = options;
+
+  return [
+    {
+      name: "name",
+      label: t("pillar.details.name"),
+      operators: defaultStringOperators,
+    },
+    ...(includeTargetId
+      ? [
+          {
+            name: "tgt_info.display_name",
+            label: t("pillar.details.target-id"),
+            operators: defaultStringOperators,
+          },
+        ]
+      : []),
+    {
+      name: "is_secret",
+      label: t("pillar.details.secret"),
+      operators: equalsOnlyOperators,
+      valueEditorType: "select",
+      values: booleanSelectOptions(t).map(({ label, value }) => ({ label, name: value })),
+      mongoValueCoercion: MONGO_VALUE_COERCION_BOOLEAN_FROM_STRING,
+    },
+    {
+      name: "created",
+      label: t("pillar.details.created"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
+    },
+    {
+      name: "modified",
+      label: t("pillar.details.modified"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
+    },
+  ] as OptionList;
+};

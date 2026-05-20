@@ -1,7 +1,7 @@
-import { type TaskMinionModel, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
+import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   InfoDescriptions,
-  InfoDescriptionsProps,
+  type InfoDescriptionsProps,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
@@ -17,11 +17,11 @@ import {
 import styles from "./minion-task-results-short-info.module.css";
 
 interface MinionTaskResultsShortInfoProps {
-  status: TaskMinionModel["status"];
-  startLastDt: TaskMinionModel["start_last_dt"];
-  finishedDt: TaskMinionModel["finished_dt"];
-  minionId: TaskMinionModel["minion_id"];
-  minionInnerId: TaskMinionModel["minion_inner_id"];
+  status: TaskMinionListResponse["status"];
+  startLastDt: TaskMinionListResponse["start_last_dt"];
+  finishedDt: TaskMinionListResponse["finished_dt"];
+  minionId: TaskMinionListResponse["minion_id"];
+  minionInnerId: TaskMinionListResponse["minion_inner_id"];
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
 }
 

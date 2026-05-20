@@ -6,14 +6,18 @@ import {
   type InfoDescriptionsProps,
 } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
+import type { TFunction } from "i18next";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
+import { OnFilterButtonParams } from "../../types/minion-details-props";
+
 import styles from "./minion-dashboard-tab.module.css";
 
 type SimpleGrainKeys = {
-  [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends React.ReactNode
+  [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends ReactNode
     ? K
     : never]: MinionDetailSchema["grains"][K];
 };
@@ -28,7 +32,7 @@ interface MinionSimpleDetailView {
 
 interface MinionExtendDetailView {
   key: string;
-  value: (minionDetailSchema: MinionDetailSchema) => React.ReactNode;
+  value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
   name: string;
   itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
     grainValueProps?: Partial<FlexProps>;
@@ -42,11 +46,6 @@ interface MinionDetailViewGroup {
   details: MinionDetailView[];
 }
 
-interface OnFilterButtonParams {
-  name: string;
-  value: any;
-}
-
 interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
@@ -54,10 +53,10 @@ interface MinionDashboardTabProps {
 }
 
 const transformValueToString = (value: unknown): string => {
-  return transformGrainValueToString(value as React.ReactNode);
+  return transformGrainValueToString(value as ReactNode);
 };
 
-const renderArrayValue = (value: unknown[], keyPrefix: string): React.ReactNode => {
+const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
   return (
     <Flex vertical>
       {value.map((item, index) => (
@@ -68,7 +67,7 @@ const renderArrayValue = (value: unknown[], keyPrefix: string): React.ReactNode 
 };
 
 const minionDetailsViewsToDescriptionItems = (
-  t: any,
+  t: TFunction,
   minionDetailViews: MinionDetailView[],
   schema: MinionDetailSchema,
   onFilterButton?: (params: OnFilterButtonParams) => void
@@ -139,7 +138,7 @@ const minionDetailsViewsToDescriptionItems = (
 };
 
 const minionDetailViewGroupsToCollapseItems = (
-  t: any,
+  t: TFunction,
   minionDetailViewGroups: MinionDetailViewGroup[],
   schema: MinionDetailSchema,
   onFilterButton?: (params: OnFilterButtonParams) => void
@@ -200,7 +199,7 @@ export function MinionDashboardTab({
             (
               <>
                 {Array.isArray(s.grains.gpus)
-                  ? s.grains.gpus.map((gpu: any) => (
+                  ? s.grains.gpus.map((gpu) => (
                       <div key={gpu.model} className={styles.interfaceBlock}>
                         <div className={styles.interfaceDetails}>
                           <div>Vendor: {gpu.vendor || ""}</div>
@@ -257,7 +256,7 @@ export function MinionDashboardTab({
           key: "defaultlanguage",
           name: t("minions.default-language"),
           value: (minionDetailSchema) => {
-            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            const localeInfo = minionDetailSchema.grains.locale_info;
             return localeInfo?.defaultlanguage ?? "";
           },
         },
@@ -265,7 +264,7 @@ export function MinionDashboardTab({
           key: "defaultencoding",
           name: t("minions.default-encoding"),
           value: (minionDetailSchema) => {
-            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            const localeInfo = minionDetailSchema.grains.locale_info;
             return localeInfo?.defaultencoding ?? "";
           },
         },
@@ -273,7 +272,7 @@ export function MinionDashboardTab({
           key: "detectedencoding",
           name: t("minions.detected-encoding"),
           value: (minionDetailSchema) => {
-            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            const localeInfo = minionDetailSchema.grains.locale_info;
             return localeInfo?.detectedencoding ?? "";
           },
         },
@@ -281,7 +280,7 @@ export function MinionDashboardTab({
           key: "timezone",
           name: t("minions.timezone"),
           value: (minionDetailSchema) => {
-            const localeInfo = minionDetailSchema.grains.locale_info as any;
+            const localeInfo = minionDetailSchema.grains.locale_info;
             return localeInfo?.timezone ?? "";
           },
         },
@@ -294,7 +293,7 @@ export function MinionDashboardTab({
           key: "disks",
           name: t("minions.disks"),
           value: (s) => {
-            const disks = s.grains.disks as any;
+            const disks = s.grains.disks;
             return Array.isArray(disks) ? renderArrayValue(disks, "disks") : "";
           },
         },
@@ -302,7 +301,7 @@ export function MinionDashboardTab({
           key: "ssds",
           name: t("minions.ssd-drives"),
           value: (s) => {
-            const ssds = s.grains.ssds as any;
+            const ssds = s.grains.ssds;
             return Array.isArray(ssds) ? renderArrayValue(ssds, "ssds") : "";
           },
         },

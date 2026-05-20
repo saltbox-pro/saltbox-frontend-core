@@ -1,9 +1,14 @@
-import { SyncOutlined } from "@ant-design/icons";
-import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import { FilterOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import {
+  type JobsListResponse,
+  CreateJobRequestTgtTypeEnum,
+  JobStatus,
+} from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
   PageHeader,
   formatTimeByUserTZ,
+  CellAction,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag, message } from "antd";
@@ -11,17 +16,20 @@ import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { RuleType } from "react-querybuilder";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
-import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import {
+  JobModalShell,
+  type JobModalTargeting,
+} from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
-import { JobFunctionSelectModal } from "./-components/job-function-select-modal";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
@@ -49,7 +57,7 @@ const useJobFilters = (t: TFunction) => {
   const [jobFilterStore] = useState(new JobFilterStore(filterSchema, storageKey));
 
   useEffect(() => {
-    jobFilterStore.filterSchema = filterSchema;
+    jobFilterStore.updateFilterSchema(filterSchema);
   }, [filterSchema, jobFilterStore]);
 
   return {
@@ -61,12 +69,18 @@ const JobsPage = observer(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isFunctionSelectModalOpen, setIsFunctionSelectModalOpen] = useState(false);
-  const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [configureFunction, setConfigureFunction] = useState<string | null>(null);
+  const [targeting, setTargeting] = useState<JobModalTargeting>({
+    target: "*",
+    targetType: CreateJobRequestTgtTypeEnum.Glob,
+    defaultMaster: "",
+  });
 
   const { jobFilterStore } = useJobFilters(t);
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
   const didInitFromLocationRef = useRef(false);
+  const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -76,6 +90,46 @@ const JobsPage = observer(() => {
       navigate(`/core/jobs/${jobId}`);
     },
     [navigate]
+  );
+
+  const handleCellFilterClick = useCallback(
+    (fieldName: string, value: unknown) => {
+      setIsFilterButtonClick(true);
+
+      const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
+        ? ["in", value.join(",")]
+        : ["=", String(value ?? "")];
+
+      const newRule: RuleType = {
+        field: fieldName,
+        operator,
+        value: ruleValue,
+      };
+
+      jobFilterStore.handleFiltersChange({
+        combinator: "and",
+        rules: [
+          ...jobFilterStore.currentFilters.rules.filter(
+            (r) => "field" in r && r.field !== fieldName
+          ),
+          newRule,
+        ],
+      });
+
+      jobFilterStore.handleSearch();
+      jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
+      jobsStore.handleSearch();
+    },
+    [jobFilterStore, jobsStore]
+  );
+
+  const createFilterAction = useCallback(
+    (fieldName: string): CellAction<JobsListResponse> => ({
+      icon: <FilterOutlined />,
+      title: t("dashboard.apply-value-to-filters"),
+      onClick: (value) => handleCellFilterClick(fieldName, value),
+    }),
+    [handleCellFilterClick, t]
   );
 
   const columns = useMemo(
@@ -93,11 +147,17 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor("salt_master", {
         header: t("jobs.table-master"),
-        meta: { width: "10%" },
+        meta: {
+          width: "10%",
+          actions: [createFilterAction("salt_master")],
+        },
       }),
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
-        meta: { width: "10%" },
+        meta: {
+          width: "10%",
+          actions: [createFilterAction("fun")],
+        },
       }),
       columnHelper.accessor("tgt", {
         header: t("jobs.table-targets"),
@@ -107,23 +167,31 @@ const JobsPage = observer(() => {
           minWidth: 230,
           maxWidth: 230,
           ellipsis: true,
+          actions: [createFilterAction("tgt")],
         },
       }),
       columnHelper.accessor("tgt_type", {
         header: t("jobs.table-target-type"),
         meta: { width: "8%" },
       }),
-      columnHelper.accessor("source.type", {
+      columnHelper.accessor((row) => row.source?.type, {
+        id: "source.type",
         header: t("jobs.table-source"),
         cell: (data) => {
           return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
         },
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("source.type")],
+        },
       }),
       columnHelper.accessor("user.name", {
         id: "user.name",
         header: t("jobs.table-user"),
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("user.name")],
+        },
       }),
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
@@ -135,19 +203,21 @@ const JobsPage = observer(() => {
               return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
             case JobStatus.Finished:
               return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            case JobStatus.LaunchError: {
+            case JobStatus.LaunchError:
               return (
                 <LaunchErrorPopover
                   errorTypeText={data.row.original.launch_error_type}
                   tagText={t("jobs.table-status-launch-error")}
                 />
               );
-            }
             default:
               return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
           }
         },
-        meta: { width: "11%" },
+        meta: {
+          width: "11%",
+          actions: [createFilterAction("status")],
+        },
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
@@ -155,7 +225,7 @@ const JobsPage = observer(() => {
         meta: { width: "11%" },
       }),
     ],
-    [t]
+    [t, createFilterAction]
   );
 
   useEffect(() => {
@@ -205,21 +275,8 @@ const JobsPage = observer(() => {
     jobsStore.handleSearch();
   };
 
-  const handleFunctionSelectModalOpen = useCallback(() => {
-    setIsFunctionSelectModalOpen(true);
-  }, []);
-
-  const handleFunctionSelectModalClose = useCallback(() => {
-    setIsFunctionSelectModalOpen(false);
-  }, []);
-
-  const handleFunctionSelect = useCallback((functionName: string) => {
-    setSelectedFunction(functionName);
-    setIsFunctionSelectModalOpen(false);
-  }, []);
-
-  const handleSelectedFunctionModalClose = useCallback(() => {
-    setSelectedFunction(null);
+  const openFunctionPicker = useCallback(() => {
+    setPickerOpen(true);
   }, []);
 
   return (
@@ -231,26 +288,27 @@ const JobsPage = observer(() => {
         jobsStore={jobsStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
+        isFilterButton={isFilterButtonClick}
+        onFilterButtonApplied={() => setIsFilterButtonClick(false)}
       />
 
       <div className="page-actions-buttons">
         <div className={styles.leftGroup}>
-          <JobModal target="*" targetType="glob" />
-          <Button type="default" onClick={handleFunctionSelectModalOpen}>
-            {t("job-function-select.open-button")}
+          <Button type="primary" icon={<PlusOutlined />} onClick={openFunctionPicker}>
+            {t("job-modal.create-job")}
           </Button>
         </div>
         <div className={styles.rightGroup}>
           <JobDatetimeRangeSelector
             label={t("jobs.date-range-label")}
             disabled={jobsStore.isJobsLoading}
-            onChange={(value) => {
-              jobsStore.handleDateRangeChange(value);
+            onChange={(range, preset) => {
+              jobsStore.handleDateRangeChange(range, preset);
             }}
           />
           <Button
             icon={<SyncOutlined spin={jobsStore.isJobsLoading} />}
-            onClick={() => jobsStore.loadJobs()}
+            onClick={() => jobsStore.refreshJobs()}
             title={t("jobs.refresh")}
             disabled={jobsStore.isJobsLoading}
           />
@@ -270,21 +328,14 @@ const JobsPage = observer(() => {
         useVirtualScroll={false}
       />
 
-      <JobFunctionSelectModal
-        open={isFunctionSelectModalOpen}
-        onCancel={handleFunctionSelectModalClose}
-        onSelect={handleFunctionSelect}
+      <JobModalShell
+        pickerOpen={pickerOpen}
+        onPickerOpenChange={setPickerOpen}
+        configureFunction={configureFunction}
+        onConfigureFunctionChange={setConfigureFunction}
+        targeting={targeting}
+        onTargetingChange={setTargeting}
       />
-
-      {selectedFunction && (
-        <JobModal
-          target="*"
-          targetType="glob"
-          fun={selectedFunction}
-          openOnMount
-          onAfterClose={handleSelectedFunctionModalClose}
-        />
-      )}
 
       {jobModalCreatePlugin}
     </>
