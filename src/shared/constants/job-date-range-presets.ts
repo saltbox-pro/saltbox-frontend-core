@@ -8,16 +8,21 @@ export const JOB_DATE_RANGE_PRESET = {
   HOUR_3: "3h",
   HOUR_12: "12h",
   DAY_1: "1d",
+  ALL_TIME: "all",
 } as const;
 
 export type JobDateRangePreset = (typeof JOB_DATE_RANGE_PRESET)[keyof typeof JOB_DATE_RANGE_PRESET];
 
 export const DEFAULT_JOB_DATE_RANGE_PRESET = JOB_DATE_RANGE_PRESET.HOUR_1;
 
-export function getJobDateRangeForPreset(preset: JobDateRangePreset): [dayjs.Dayjs, dayjs.Dayjs] {
+export function getJobDateRangeForPreset(
+  preset: JobDateRangePreset
+): [dayjs.Dayjs, dayjs.Dayjs] | null {
   const now = dayjs();
 
   switch (preset) {
+    case JOB_DATE_RANGE_PRESET.ALL_TIME:
+      return null;
     case JOB_DATE_RANGE_PRESET.TODAY:
       return [now.startOf("day"), now];
     case JOB_DATE_RANGE_PRESET.MINUTES_10:

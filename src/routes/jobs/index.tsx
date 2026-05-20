@@ -117,6 +117,7 @@ const JobsPage = observer(() => {
       });
 
       jobFilterStore.handleSearch();
+      jobsStore.syncDateRangeWithAppliedFilters();
       jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
       jobsStore.handleSearch();
     },
@@ -245,6 +246,8 @@ const JobsPage = observer(() => {
       navigate(location.pathname, { replace: true, state: null });
     }
 
+    jobsStore.syncDateRangeWithAppliedFilters();
+
     const parsedQuery = jobFilterStore.searchMongoDBQuery;
     jobsStore.mongoDBQuery =
       isPlainObject(stateQuery) && !isEmptyObject(stateQuery) && isEmptyObject(parsedQuery)
@@ -265,12 +268,14 @@ const JobsPage = observer(() => {
   });
 
   const handleSearchButtonClick = () => {
+    jobsStore.syncDateRangeWithAppliedFilters();
     jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
     jobsStore.handleSearch();
   };
 
   const handleResetButtonClick = () => {
     jobFilterStore.handleResetFilters();
+    jobsStore.syncDateRangeWithAppliedFilters();
     jobsStore.mongoDBQuery = jobFilterStore.searchMongoDBQuery;
     jobsStore.handleSearch();
   };
@@ -301,6 +306,7 @@ const JobsPage = observer(() => {
         <div className={styles.rightGroup}>
           <JobDatetimeRangeSelector
             label={t("jobs.date-range-label")}
+            value={jobsStore.dateRangePreset}
             disabled={jobsStore.isJobsLoading}
             onChange={(range, preset) => {
               jobsStore.handleDateRangeChange(range, preset);

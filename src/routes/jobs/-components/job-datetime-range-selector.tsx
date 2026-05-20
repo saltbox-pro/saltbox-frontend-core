@@ -12,6 +12,7 @@ type JobDatetimeRangeSelectorProps = {
   className?: string;
   label?: string;
   disabled?: boolean;
+  value?: JobDateRangePreset;
   onChange: (
     range: ReturnType<typeof getJobDateRangeForPreset>,
     preset: JobDateRangePreset
@@ -22,6 +23,7 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
   const { t } = useTranslation();
 
   const options: Array<{ value: JobDateRangePreset; label: string }> = [
+    { value: JOB_DATE_RANGE_PRESET.ALL_TIME, label: t("jobs.date-range-all-time") },
     { value: JOB_DATE_RANGE_PRESET.TODAY, label: t("jobs.date-range-today") },
     { value: JOB_DATE_RANGE_PRESET.MINUTES_10, label: t("jobs.date-range-10-minutes") },
     { value: JOB_DATE_RANGE_PRESET.MINUTES_30, label: t("jobs.date-range-30-minutes") },
@@ -42,7 +44,7 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
         options={options}
         style={{ minWidth: 125 }}
         optionLabelProp="label"
-        defaultValue={DEFAULT_JOB_DATE_RANGE_PRESET}
+        value={props.value ?? DEFAULT_JOB_DATE_RANGE_PRESET}
         styles={{
           popup: {
             root: {

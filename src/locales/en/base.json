@@ -452,6 +452,7 @@
     "date-range-3-hours": "3 hours ago",
     "date-range-12-hours": "12 hours ago",
     "date-range-1-day": "1 day ago",
+    "date-range-all-time": "All time",
     "table-copy": "Copy",
     "job-title-breadcrumb": "Job",
     "job-title": "Job {{jobId}}",
