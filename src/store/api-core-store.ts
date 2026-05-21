@@ -9,6 +9,7 @@ import {
   MinionsApi,
   PillarsApi,
   SettingsApi,
+  SaltKeysApi,
   TaskTemplatesApi,
   TasksApi,
 } from "@saltbox/saltbox-core-api-client";
@@ -85,6 +86,10 @@ class ApiCoreStore {
 
   @computed get pillarsApi() {
     return this.apiConfig && new PillarsApi(this.apiConfig);
+  }
+
+  @computed get saltKeysApi() {
+    return this.apiConfig && new SaltKeysApi(this.apiConfig);
   }
 }
 
