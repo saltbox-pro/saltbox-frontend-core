@@ -1,5 +1,5 @@
-import { Modal, SearchInput } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Empty, Flex, Spin, Table, Tooltip } from "antd";
+import { Modal, SearchInput, useFocusOnOpenChange } from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Empty, Flex, Spin, Table, Tooltip, type InputRef } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TFunction } from "i18next";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -191,6 +191,8 @@ export const JobModalFunctionSelect = ({
     {}
   );
   const [tooltipResetCounter, setTooltipResetCounter] = useState(0);
+  const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
+    useFocusOnOpenChange<InputRef>();
 
   const resetModalState = useCallback(() => {
     setAppliedSearchQuery("");
@@ -460,6 +462,7 @@ export const JobModalFunctionSelect = ({
       title={t("job-function-select.title")}
       open={open}
       onCancel={onCancel}
+      afterOpenChange={handlePickerAfterOpenChange}
       footer={null}
       width={900}
       zIndex={1001}
@@ -467,8 +470,8 @@ export const JobModalFunctionSelect = ({
     >
       <Flex vertical gap="middle">
         <SearchInput
+          ref={searchInputRef}
           placeholder={t("job-function-select.search-placeholder")}
-          autoFocus={open}
           onSearch={setAppliedSearchQuery}
         />
 
