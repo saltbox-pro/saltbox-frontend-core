@@ -23,6 +23,7 @@ import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job
 import {
   JobModalShell,
   type JobModalTargeting,
+  type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import {
   DefaultJobReturnTable,
@@ -62,6 +63,7 @@ const JobPage = observer(() => {
 
   const [repeatPickerOpen, setRepeatPickerOpen] = useState(false);
   const [repeatConfigureFun, setRepeatConfigureFun] = useState<string | null>(null);
+  const [repeatBaseline, setRepeatBaseline] = useState<JobReplayBaseline | null>(null);
   const [repeatTargeting, setRepeatTargeting] = useState<JobModalTargeting>({
     target: "*",
     targetType: CreateJobRequestTgtTypeEnum.Glob,
@@ -71,6 +73,7 @@ const JobPage = observer(() => {
   useEffect(() => {
     setRepeatConfigureFun(null);
     setRepeatPickerOpen(false);
+    setRepeatBaseline(null);
   }, [jid]);
 
   const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
@@ -176,6 +179,11 @@ const JobPage = observer(() => {
     if (!job?.fun) {
       return;
     }
+    setRepeatBaseline({
+      fun: job.fun,
+      arg: job.arg ?? undefined,
+      kwarg: job.kwarg ?? undefined,
+    });
     setRepeatTargeting({
       target: jobStore.jobTargets ?? "*",
       targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
@@ -185,6 +193,10 @@ const JobPage = observer(() => {
     setRepeatConfigureFun(job.fun);
     setRepeatPickerOpen(true);
   }, [jobStore.job, jobStore.jobTargets]);
+
+  const handleRepeatConfigureClose = useCallback(() => {
+    setRepeatBaseline(null);
+  }, []);
 
   const repeatKeydownHandler = useCallback(
     (event: KeyboardEvent) => {
@@ -310,9 +322,8 @@ const JobPage = observer(() => {
               onConfigureFunctionChange={setRepeatConfigureFun}
               targeting={repeatTargeting}
               onTargetingChange={setRepeatTargeting}
-              repeatBaselineFun={jobStore.job?.fun ?? null}
-              repeatBaselineArg={jobStore.job?.arg ?? undefined}
-              repeatBaselineKwarg={jobStore.job?.kwarg ?? undefined}
+              repeatBaseline={repeatBaseline}
+              onAfterConfigureClose={handleRepeatConfigureClose}
             />
 
             <span className={styles.jobDetailLabel}>{t("jobs.table-master")}:</span>

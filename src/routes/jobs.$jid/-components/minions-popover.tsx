@@ -5,7 +5,10 @@ import { Flex, Typography } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { JobModalShell } from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import {
+  JobModalShell,
+  type JobReplayBaseline,
+} from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { jobStore } from "saltbox-core/store";
 
@@ -43,6 +46,7 @@ export function MinionsPopover({
     setTargeting,
     openConfigureWithFunction,
   } = useJobModalFlowState();
+  const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
 
   const handleReplayClick = useCallback(
     (event: React.MouseEvent) => {
@@ -51,6 +55,11 @@ export function MinionsPopover({
       if (!job?.fun) {
         return;
       }
+      setReplayBaseline({
+        fun: job.fun,
+        arg: job.arg ?? undefined,
+        kwarg: job.kwarg ?? undefined,
+      });
       openConfigureWithFunction(job.fun, {
         target: minionNamesCommaSeparated,
         targetType: CreateJobRequestTgtTypeEnum.List,
@@ -60,6 +69,10 @@ export function MinionsPopover({
     },
     [minionNamesCommaSeparated, openConfigureWithFunction]
   );
+
+  const handleJobModalAfterConfigureClose = useCallback(() => {
+    setReplayBaseline(null);
+  }, []);
 
   const defaultTrigger = <span className={styles.trigger}>{minions.length}</span>;
   const triggerNode = trigger ?? defaultTrigger;
@@ -118,9 +131,8 @@ export function MinionsPopover({
         onConfigureFunctionChange={setConfigureFunction}
         targeting={targeting}
         onTargetingChange={setTargeting}
-        repeatBaselineFun={jobStore.job?.fun ?? null}
-        repeatBaselineArg={jobStore.job?.arg ?? undefined}
-        repeatBaselineKwarg={jobStore.job?.kwarg ?? undefined}
+        repeatBaseline={replayBaseline}
+        onAfterConfigureClose={handleJobModalAfterConfigureClose}
       />
     </>
   );

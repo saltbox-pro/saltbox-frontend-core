@@ -25,7 +25,10 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { JobModalShell } from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import {
+  JobModalShell,
+  type JobReplayBaseline,
+} from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
@@ -296,12 +299,6 @@ function MinionJobReturnsTabView({
   );
 }
 
-type JobReplayBaseline = {
-  fun: string;
-  arg?: unknown[];
-  kwarg?: Record<string, unknown>;
-};
-
 export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   minion,
   isFullView = false,
@@ -474,9 +471,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
         onConfigureFunctionChange={setConfigureFunction}
         targeting={targeting}
         onTargetingChange={setTargeting}
-        repeatBaselineFun={replayBaseline?.fun ?? null}
-        repeatBaselineArg={replayBaseline?.arg}
-        repeatBaselineKwarg={replayBaseline?.kwarg}
+        repeatBaseline={replayBaseline}
         onAfterConfigureClose={handleJobModalAfterConfigureClose}
       />
     </>

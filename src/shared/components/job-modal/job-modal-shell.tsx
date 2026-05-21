@@ -11,6 +11,12 @@ export type JobModalTargeting = {
   ttlSeconds?: number;
 };
 
+export type JobReplayBaseline = {
+  fun: string;
+  arg?: unknown[];
+  kwarg?: Record<string, unknown>;
+};
+
 export type { JobReturnToPickerSnapshot };
 
 type JobModalShellProps = {
@@ -20,9 +26,7 @@ type JobModalShellProps = {
   onConfigureFunctionChange: (functionName: string | null) => void;
   targeting: JobModalTargeting;
   onTargetingChange: (next: JobModalTargeting) => void;
-  repeatBaselineFun?: string | null;
-  repeatBaselineArg?: unknown[];
-  repeatBaselineKwarg?: Record<string, unknown>;
+  repeatBaseline?: JobReplayBaseline | null;
   onAfterConfigureClose?: () => void;
 };
 
@@ -33,12 +37,11 @@ export const JobModalShell = ({
   onConfigureFunctionChange,
   targeting,
   onTargetingChange,
-  repeatBaselineFun,
-  repeatBaselineArg,
-  repeatBaselineKwarg,
+  repeatBaseline,
   onAfterConfigureClose,
 }: JobModalShellProps) => {
   const jsonFormByFunRef = useRef<Record<string, unknown>>({});
+  const [, setFormCacheRevision] = useState(0);
   const [jobModalFun, setJobModalFun] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,8 +63,8 @@ export const JobModalShell = ({
         kwarg: (data?.kwargs ?? data?.kwarg) as Record<string, unknown> | undefined,
       };
     }
-    if (repeatBaselineFun && funForArgs === repeatBaselineFun) {
-      return { arg: repeatBaselineArg, kwarg: repeatBaselineKwarg };
+    if (repeatBaseline && funForArgs === repeatBaseline.fun) {
+      return { arg: repeatBaseline.arg, kwarg: repeatBaseline.kwarg };
     }
     return { arg: undefined, kwarg: undefined };
   })();
@@ -70,6 +73,7 @@ export const JobModalShell = ({
     (payload: JobReturnToPickerSnapshot) => {
       if (configureFunction) {
         jsonFormByFunRef.current[configureFunction] = payload.jsonFormData;
+        setFormCacheRevision((value) => value + 1);
       }
       onTargetingChange({
         target: payload.tgt,
