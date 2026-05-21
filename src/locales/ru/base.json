@@ -492,6 +492,7 @@
     "date-range-3-hours": "3 часа назад",
     "date-range-12-hours": "12 часов назад",
     "date-range-1-day": "1 день назад",
+    "date-range-all-time": "За всё время",
     "table-copy": "Скопировать",
     "job-title": "Команда {{jobId}}",
     "table-copy-success": "Скопировано в буфер обмена",

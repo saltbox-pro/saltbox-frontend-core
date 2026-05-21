@@ -1,5 +1,5 @@
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { isGlobalServerError, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
@@ -9,8 +9,11 @@ import { jsonLogicAdditionalOperators } from "react-querybuilder";
 import {
   DEFAULT_JOB_DATE_RANGE_PRESET,
   getJobDateRangeForPreset,
+  JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
+import { buildJobsListQuery } from "saltbox-core/shared/utils/build-jobs-list-query";
+import { hasJobCreatedFilterField } from "saltbox-core/shared/utils/job-filter-fields";
 import { apiCoreStore, JobFilterStore } from "saltbox-core/store";
 
 for (const [op, func] of Object.entries(jsonLogicAdditionalOperators)) {
@@ -34,9 +37,10 @@ export class JobsStore {
   @observable isJobsLoading: boolean;
   @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
-  @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs];
+  @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs] | null;
   @observable dateRangePreset: JobDateRangePreset;
   @observable jobFilterStore: JobFilterStore;
+  @observable appliedFiltersHadCreated: boolean;
 
   constructor(jobFilterStore: JobFilterStore) {
     this.jobFilterStore = jobFilterStore;
@@ -44,8 +48,9 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
+    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
+    this.appliedFiltersHadCreated = false;
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
     this.pagination = {
@@ -61,7 +66,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = [dayjs().add(-1, "hour"), dayjs()];
+    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
@@ -90,13 +95,7 @@ export class JobsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          query: {
-            created: {
-              $gte: this.dateRange[0].toDate(),
-              $lte: this.dateRange[1].toDate(),
-            },
-            ...this.mongoDBQuery,
-          },
+          query: buildJobsListQuery(this.dateRange, this.mongoDBQuery),
         },
       })
       .then((response) => {
@@ -107,10 +106,11 @@ export class JobsStore {
           this.jobs = response?.data ?? [];
         });
       })
-      .catch((_) => {
+      .catch((e) => {
         runInAction(() => {
           this.isInitialized = true;
           this.isJobsLoading = false;
+          if (isGlobalServerError(e)) return;
           this.error = "Failed to load jobs";
         });
       });
@@ -125,7 +125,35 @@ export class JobsStore {
   };
 
   @action
-  handleDateRangeChange = (range: [dayjs.Dayjs, dayjs.Dayjs], preset: JobDateRangePreset) => {
+  resetDateRangeToAllTime = () => {
+    this.dateRangePreset = JOB_DATE_RANGE_PRESET.ALL_TIME;
+    this.dateRange = null;
+  };
+
+  @action
+  resetDateRangeToDefault = () => {
+    this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
+    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
+  };
+
+  @action
+  syncDateRangeWithAppliedFilters = () => {
+    const hasCreated = hasJobCreatedFilterField(this.jobFilterStore.searchFilters);
+
+    if (hasCreated && !this.appliedFiltersHadCreated) {
+      this.resetDateRangeToAllTime();
+    } else if (!hasCreated && this.appliedFiltersHadCreated) {
+      this.resetDateRangeToDefault();
+    }
+
+    this.appliedFiltersHadCreated = hasCreated;
+  };
+
+  @action
+  handleDateRangeChange = (
+    range: [dayjs.Dayjs, dayjs.Dayjs] | null,
+    preset: JobDateRangePreset
+  ) => {
     this.dateRange = range;
     this.dateRangePreset = preset;
     this.pagination.pageIndex = 0;
