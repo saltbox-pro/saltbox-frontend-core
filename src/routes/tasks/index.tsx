@@ -217,10 +217,13 @@ export default observer(function TasksPage() {
   );
 
   useEffect(() => {
-    filterStore.filterSchema = filterSchema;
+    filterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema, filterStore]);
+
+  useEffect(() => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.loadTasks();
-  }, [filterSchema, filterStore, tasksStore]);
+  }, [filterStore, tasksStore]);
 
   useEffect(() => {
     webSocketService.connect(

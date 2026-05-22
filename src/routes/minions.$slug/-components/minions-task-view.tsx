@@ -229,13 +229,16 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   }, [appStore.authStore?.user]);
 
   useEffect(() => {
-    if (props.slug) {
-      tasksStore.init();
-      props.filterStore.filterSchema = filterSchema;
-      tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
-      tasksStore.setCollectionSlug(props.slug);
-    }
-  }, [props.slug, filterSchema, props.filterStore]);
+    props.filterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema, props.filterStore]);
+
+  useEffect(() => {
+    if (!props.slug) return;
+
+    tasksStore.init();
+    tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
+    tasksStore.setCollectionSlug(props.slug);
+  }, [props.slug]);
 
   const handleSearchButtonClick = () => {
     tasksStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;

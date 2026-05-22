@@ -24,13 +24,16 @@ function PillarsPage() {
 
   useEffect(() => {
     filterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema, filterStore]);
+
+  useEffect(() => {
     pillarsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     pillarsStore.loadPillars();
 
     return () => {
       pillarsStore.reset();
     };
-  }, [filterSchema, filterStore, pillarsStore]);
+  }, [filterStore, pillarsStore]);
 
   const handleSearchButtonClick = () => {
     pillarsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
