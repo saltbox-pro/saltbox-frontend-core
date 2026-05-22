@@ -374,7 +374,7 @@
     "error-on-change-master-status": "Error on change master status"
   },
   "master": {
-    "tab-salt-keys-title": "Master Keys",
+    "tab-salt-keys-title": "Master Clients",
     "table-minion-id": "Minion ID",
     "table-status": "Status",
     "table-status-unaccepted": "Unaccepted",
@@ -382,11 +382,12 @@
     "table-status-rejected": "Rejected",
     "table-status-denied": "Denied",
     "table-status-unknown": "Unknown status",
+    "load-salt-keys-failed": "Failed to load master keys",
     "action-accept-selected-label": "Accept",
     "action-reject-selected-label": "Reject",
     "action-delete-selected-label": "Delete",
-    "action-accept-all-label": "Accept all keys",
-    "action-reject-all-label": "Reject all keys",
+    "action-accept-all-label": "Accept all unaccepted keys",
+    "action-reject-all-label": "Reject all unaccepted keys",
     "action-delete-all-label": "Delete all keys",
     "accept-selected-confirm-title": "Accept selected keys",
     "accept-selected-confirm-description": "Are you sure you want to accept selected keys: {{count}}?",

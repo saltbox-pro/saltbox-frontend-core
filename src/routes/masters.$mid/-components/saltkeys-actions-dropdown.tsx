@@ -47,6 +47,7 @@ export function SaltKeysActionsDropdown({
           key: "delete-selected",
           label: t("master.action-delete-selected-label"),
           icon: <DeleteOutlined />,
+          danger: true,
           onClick: () => onDeleteSelected?.(),
         },
       ];
@@ -68,6 +69,7 @@ export function SaltKeysActionsDropdown({
           key: "delete-all",
           label: t("master.action-delete-all-label"),
           icon: <DeleteOutlined />,
+          danger: true,
           onClick: () => onDeleteAll?.(),
         },
       ];

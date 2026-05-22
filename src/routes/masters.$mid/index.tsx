@@ -10,7 +10,7 @@ import {
 import { RowSelectionState, type SortingState, createColumnHelper } from "@tanstack/react-table";
 import { Flex, message, Modal, Spin, Tabs, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
@@ -24,8 +24,6 @@ import styles from "./index.module.css";
 import { SaltKeysActionsDropdown } from "./-components/saltkeys-actions-dropdown";
 
 const saltKeysColumnHelper = createColumnHelper<SaltKeyMinionWithStatus>();
-
-type SelectedSaltKeys = { [minionId: string]: boolean };
 
 const MasterPage = observer(() => {
   const { t } = useTranslation();
@@ -393,6 +391,14 @@ const MasterPage = observer(() => {
       saltKeys,
       clientsSorting,
       isLoadingSaltKeys,
+      isSendingAction,
+      selection,
+      handleAcceptSelected,
+      handleRejectSelected,
+      handleDeleteSelected,
+      handleAcceptAll,
+      handleRejectAll,
+      handleDeleteAll,
       masterId,
       t,
     ]
