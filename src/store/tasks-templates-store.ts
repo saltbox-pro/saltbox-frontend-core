@@ -37,7 +37,7 @@ export class TaskTemplatesStore {
     this.isTaskTemplatesLoading = true;
     apiCoreStore.taskTemplatesApi
       ?.taskTemplatesList({
-        TaskTemplateListBody: {
+        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),

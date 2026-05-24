@@ -64,7 +64,7 @@ export class ConnectedTemplatesStore {
 
     await apiCoreStore.taskTemplatesApi
       ?.taskTemplatesList({
-        TaskTemplateListBody: {
+        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {
           repo_ids: [key],
           limit: state.limit,
           skip: 0,
@@ -107,7 +107,7 @@ export class ConnectedTemplatesStore {
 
     await apiCoreStore.taskTemplatesApi
       ?.taskTemplatesList({
-        TaskTemplateListBody: {
+        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {
           repo_ids: [key],
           limit,
           skip,

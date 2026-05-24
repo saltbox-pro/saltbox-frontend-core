@@ -8,7 +8,7 @@ export class TaskTemplateService {
   async loadTemplates(): Promise<TaskTemplateWithRepository[]> {
     try {
       const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-        TaskTemplateListBody: {},
+        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {},
       });
       if (!response?.data) {
         return [];
