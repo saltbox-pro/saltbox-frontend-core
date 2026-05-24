@@ -13,8 +13,9 @@ import {
   PageHeader,
   FastTablePaginated,
   Modal,
-  RelativeTime,
+  formatTimeByUserTZ,
   BooleanDisplay,
+  isGlobalServerError,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Switch, Typography, message } from "antd";
@@ -83,9 +84,8 @@ const SettingsSlsPage = observer(() => {
     }),
     columnHelper.accessor("last_synced", {
       header: t("settings-sls.table-last-synced"),
-      cell: (data) => (
-        <RelativeTime date={data.getValue()} fallback={<>{t("settings-sls.table-no-sync")}</>} />
-      ),
+      cell: (data) =>
+        data.getValue() ? formatTimeByUserTZ(data.getValue()) : t("settings-sls.table-no-sync"),
       meta: {
         width: "15%",
       },
@@ -211,8 +211,10 @@ const SettingsSlsPage = observer(() => {
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await checkSlsSyncTask(taskId);
-    } catch {
-      messageApi.error(t("settings-sls.error-on-check-task-status"));
+    } catch (e) {
+      if (!isGlobalServerError(e)) {
+        messageApi.error(t("settings-sls.error-on-check-task-status"));
+      }
       setSyncingSlsId(null);
       settingsSlsStore.reload();
     }

@@ -1,8 +1,7 @@
 import {
   JobReturnModel,
-  JobsListResponse,
   TaskCreateRequestSchema,
-  TaskMinionModel,
+  TaskMinionListResponse,
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
@@ -10,6 +9,11 @@ import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
+import {
+  TaskJobReturnsStore,
+  type TaskJobReturnsContext,
+  type TaskJobReturnsErrorKey,
+} from "saltbox-core/features/task/job-return";
 import { apiCoreStore } from "saltbox-core/store";
 
 const PAGE_SIZE = 50;
@@ -17,8 +21,7 @@ const DEFAULT_SORTING: SortingState = [{ id: "start_last_dt", desc: true }];
 
 export class TaskStore {
   @observable task: TaskModel | null;
-  @observable jobReturns: Array<JobReturnModel>;
-  @observable minions: Array<TaskMinionModel>;
+  @observable minions: Array<TaskMinionListResponse>;
   @observable totalMinions: number;
   @observable isRunTaskLoading: boolean;
   @observable isStopTaskLoading: boolean;
@@ -27,13 +30,12 @@ export class TaskStore {
   @observable minionsSorting: SortingState;
   @observable isMinionsLoading: boolean;
   @observable minionCategoryFilter: TaskMinionStatus | null;
-  @observable jobs: Array<JobsListResponse>;
   @observable loadingCounter: number;
   @observable error: string | null;
+  taskJobReturnsStore: TaskJobReturnsStore;
 
   constructor() {
     this.task = null;
-    this.jobReturns = [];
     this.minions = [];
     this.totalMinions = 0;
     this.isRunTaskLoading = false;
@@ -44,15 +46,39 @@ export class TaskStore {
     this.minionsSorting = [...DEFAULT_SORTING];
     this.isMinionsLoading = false;
     this.minionCategoryFilter = null;
-    this.jobs = [];
     this.loadingCounter = 0;
     this.error = null;
+    this.taskJobReturnsStore = new TaskJobReturnsStore(() => this.task?.id ?? null);
     makeObservable(this);
   }
 
   @computed
-  get jobsCount() {
-    return this.jobs.length;
+  get taskJobReturnsHasData(): boolean {
+    return this.taskJobReturnsStore.taskJobReturnsHasData;
+  }
+
+  get taskJobReturnsContext(): TaskJobReturnsContext | null {
+    return this.taskJobReturnsStore.taskJobReturnsContext;
+  }
+
+  get taskJobReturns(): JobReturnModel[] {
+    return this.taskJobReturnsStore.taskJobReturns;
+  }
+
+  get taskJobReturnsLoading(): boolean {
+    return this.taskJobReturnsStore.taskJobReturnsLoading;
+  }
+
+  get taskJobReturnsError(): TaskJobReturnsErrorKey {
+    return this.taskJobReturnsStore.taskJobReturnsError;
+  }
+
+  get taskJobReturnsFetched(): boolean {
+    return this.taskJobReturnsStore.taskJobReturnsFetched;
+  }
+
+  get taskJobReturnsDrawerMinion(): TaskMinionListResponse | null {
+    return this.taskJobReturnsStore.drawerMinion;
   }
 
   @computed
@@ -97,7 +123,7 @@ export class TaskStore {
           this.task = task;
           this.minionCategoryFilter = null;
           this.minionsPagination.pageIndex = 0;
-          this.loadMinions(taskId, { loadJobs: true });
+          this.loadMinions(taskId);
         });
       })
       .catch((error) => {
@@ -114,29 +140,7 @@ export class TaskStore {
   };
 
   @action
-  loadJobReturns = (taskId: string) => {
-    this.startLoading();
-    apiCoreStore.jobsApi
-      ?.jobReturnsList({
-        JobReturnsListBody: {
-          query: { "source.type": "task", "source.id": taskId },
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.jobReturns = response.data;
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.finishLoading();
-        });
-      });
-  };
-
-  @action
-  loadMinions = (taskId: string, options?: { loadJobs?: boolean }) => {
-    const loadJobs = options?.loadJobs ?? false;
+  loadMinions = (taskId: string) => {
     this.isMinionsLoading = true;
     const query =
       this.minionCategoryFilter != null ? { status: this.minionCategoryFilter } : undefined;
@@ -155,9 +159,6 @@ export class TaskStore {
           this.minions = response.data;
           this.totalMinions = response.total;
         });
-        if (loadJobs) {
-          this.loadJobs(taskId);
-        }
       })
       .catch((error) => {
         console.error("Error loading task minions:", error);
@@ -189,42 +190,6 @@ export class TaskStore {
     if (this.task?.id) {
       this.loadMinions(this.task.id);
     }
-  };
-
-  @action
-  loadJobs = (taskId: string) => {
-    this.startLoading();
-    apiCoreStore.jobsApi
-      .jobsList({
-        JobListBody: {
-          query: {
-            "source.type": "task",
-            "source.id": taskId,
-          },
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.jobs = response?.data ?? [];
-          this.loadJobReturns(taskId);
-        });
-      })
-      .catch((error) => {
-        console.error("Error loading task jobs:", error);
-        runInAction(() => {
-          this.error = "Failed to load task jobs";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.finishLoading();
-        });
-      });
-  };
-
-  @action
-  addJobReturn = (jobReturn: JobReturnModel) => {
-    this.jobReturns = [...this.jobReturns, jobReturn];
   };
 
   @action
@@ -408,59 +373,61 @@ export class TaskStore {
   };
 
   @action
-  updateJobs = (jobs: JobsListResponse[]) => {
-    const sortedJobs = jobs.sort(
+  updateMinions = (minions: TaskMinionListResponse[]) => {
+    const sortedMinions = minions.sort(
       (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
     );
-    sortedJobs.map((job) => this.updateJob(job));
-  };
-
-  @action
-  updateJob = (job: JobsListResponse) => {
-    const index = this.jobs.findIndex(
-      (item) => item.jid === job.jid && item.salt_master === job.salt_master
-    );
-    if (index > -1) {
-      this.jobs[index] = job;
-      this.jobs = [...this.jobs];
-    } else {
-      this.jobs = [job, ...this.jobs];
+    const hasNewMinion = sortedMinions.some((minion) => {
+      const minionIdentity = minion.minion_inner_id ?? minion.id ?? minion.minion_id;
+      if (!minionIdentity) {
+        return false;
+      }
+      return !this.minions.some((item) => {
+        const itemIdentity = item.minion_inner_id ?? item.id ?? item.minion_id;
+        return itemIdentity === minionIdentity;
+      });
+    });
+    sortedMinions.map((minion) => this.updateMinion(minion));
+    if (hasNewMinion && this.task?.id) {
+      this.loadMinions(this.task.id);
     }
   };
 
   @action
-  updateMinions = (minions: TaskMinionModel[]) => {
-    const sortedMinions = minions.sort(
-      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
-    );
-    sortedMinions.map((minion) => this.updateMinion(minion));
-  };
-
-  @action
-  updateMinion = (minion: TaskMinionModel) => {
+  updateMinion = (minion: TaskMinionListResponse) => {
     const index = this.minions.findIndex((item) => item.minion_inner_id === minion.minion_inner_id);
     if (index > -1) {
       this.minions[index] = minion;
       this.minions = [...this.minions];
     }
+    this.taskJobReturnsStore.syncDrawerMinionFromTaskMinion(minion);
   };
 
-  @action
-  updateJobReturns = (jobReturns: JobReturnModel[]) => {
-    const sortedJobReturns = jobReturns.sort(
-      (a, b) => new Date(a.modified).getTime() - new Date(b.modified).getTime()
-    );
-    sortedJobReturns.map((jobReturn) => this.updateJobReturn(jobReturn));
+  resetTaskJobReturns = () => this.taskJobReturnsStore.reset();
+
+  setTaskJobReturnsContext = (minion: TaskMinionListResponse | null) =>
+    this.taskJobReturnsStore.setContext(minion);
+
+  setTaskJobReturnsLoadError = (key: TaskJobReturnsErrorKey) =>
+    this.taskJobReturnsStore.setLoadError(key);
+
+  applyTaskJobReturnsDrawerMinionFromTableRow = (
+    row: TaskMinionListResponse | null,
+    openedMongoId: string | null | undefined
+  ) => {
+    this.taskJobReturnsStore.applyDrawerMinionFromTableRow(row, openedMongoId);
   };
 
-  @action
-  updateJobReturn = (jobReturn: JobReturnModel) => {
-    const index = this.jobReturns.findIndex((item) => item.id === jobReturn.id);
-    if (index > -1) {
-      this.jobReturns[index] = jobReturn;
-      this.jobReturns = [...this.jobReturns];
-    } else {
-      this.jobReturns = [jobReturn, ...this.jobReturns];
+  loadTaskJobReturns = async (taskId: string, taskMinionMongoId: string) => {
+    const minion = this.taskJobReturnsDrawerMinion;
+    if (!minion?.id || minion.id !== taskMinionMongoId) {
+      this.setTaskJobReturnsLoadError("missing-context");
+      return;
     }
+    return await this.taskJobReturnsStore.load(taskId, taskMinionMongoId, minion);
+  };
+
+  mergeTaskJobReturnsFromSocket = (jobReturns: JobReturnModel[]) => {
+    this.taskJobReturnsStore.mergeManyFromSocket(jobReturns);
   };
 }

@@ -1,8 +1,10 @@
-import { TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import { JobStatus, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
+  defaultNumberOperators,
   defaultStringOperators,
+  MONGO_VALUE_COERCION_BOOLEAN_FROM_STRING,
 } from "@saltbox/saltbox-frontend-common";
 import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
@@ -79,6 +81,18 @@ export const getTasksFilterSchema = (
       selectOptions: statusSelectOptions(t),
     },
     {
+      name: "minions_count.total",
+      label: t("minions.table-total-clients"),
+      operators: defaultNumberOperators,
+      inputType: "number",
+    },
+    {
+      name: "minions_count.failed",
+      label: t("minions.table-failed-clients"),
+      operators: defaultNumberOperators,
+      inputType: "number",
+    },
+    {
       name: "created",
       label: t("minions.table-created"),
       operators: defaultDateTimeOperators,
@@ -90,41 +104,139 @@ export const getTasksFilterSchema = (
   return fields as OptionList;
 };
 
-export const getJobsFilterSchema = (saltTargetTypes: SelectProps["options"]): OptionList =>
+const jobSourceTypeSelectOptions = (t: TFunction) => [
+  { label: t("jobs.table-source-rest"), value: "rest" },
+  { label: t("jobs.table-source-task"), value: "task" },
+  { label: t("jobs.table-source-scheduler"), value: "scheduler" },
+  { label: t("jobs.table-source-scenario"), value: "migration" },
+];
+
+const jobStatusSelectOptions = (t: TFunction) => [
+  { label: t("jobs.table-status-starting"), value: JobStatus.Starting },
+  { label: t("jobs.table-status-running"), value: JobStatus.Running },
+  { label: t("jobs.table-status-finished"), value: JobStatus.Finished },
+  { label: t("jobs.table-status-launch-error"), value: JobStatus.LaunchError },
+];
+
+export const getJobsFilterSchema = (
+  t: TFunction,
+  saltTargetTypes: SelectProps["options"]
+): OptionList =>
   [
     {
       name: "jid",
-      label: "JID",
+      label: t("jobs.table-jid"),
+      operators: defaultStringOperators,
+    },
+    {
+      name: "salt_master",
+      label: t("jobs.table-master"),
       operators: defaultStringOperators,
     },
     {
       name: "fun",
-      label: "Function",
+      label: t("jobs.table-function"),
       operators: defaultStringOperators,
     },
     {
       name: "tgt",
-      label: "Targets",
+      label: t("jobs.table-targets"),
       operators: defaultStringOperators,
     },
     {
       name: "tgt_type",
-      label: "Target Type",
+      label: t("jobs.table-target-type"),
       operators: defaultListOperators,
       type: "multiselect",
       selectOptions: saltTargetTypes,
       selectFieldNames: { label: "label", value: "value" },
     },
     {
-      name: "user.name",
-      label: "User",
+      name: "source.type",
+      label: t("jobs.table-source"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobSourceTypeSelectOptions(t),
+    },
+    {
+      name: "source.id",
+      label: t("jobs.table-source-id"),
       operators: defaultStringOperators,
     },
     {
+      name: "user.name",
+      label: t("jobs.table-user"),
+      operators: defaultStringOperators,
+    },
+    {
+      name: "status",
+      label: t("jobs.table-status"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobStatusSelectOptions(t),
+    },
+    {
       name: "created",
-      label: "Created",
+      label: t("jobs.table-created"),
       operators: defaultDateTimeOperators,
       inputType: "datetime-local",
       valueEditorType: "datetime-local",
     },
   ] as OptionList;
+
+const booleanSelectOptions = (t: TFunction) => [
+  { label: t("common.yes"), value: "true" },
+  { label: t("common.no"), value: "false" },
+];
+
+const equalsOnlyOperators = [{ name: "=", value: "=", label: "=" }];
+
+export type PillarsFilterSchemaOptions = {
+  includeTargetId?: boolean;
+};
+
+export const getPillarsFilterSchema = (
+  t: TFunction,
+  options: PillarsFilterSchemaOptions = {}
+): OptionList => {
+  const { includeTargetId = true } = options;
+
+  return [
+    {
+      name: "name",
+      label: t("pillar.details.name"),
+      operators: defaultStringOperators,
+    },
+    ...(includeTargetId
+      ? [
+          {
+            name: "tgt_info.display_name",
+            label: t("pillar.details.target-id"),
+            operators: defaultStringOperators,
+          },
+        ]
+      : []),
+    {
+      name: "is_secret",
+      label: t("pillar.details.secret"),
+      operators: equalsOnlyOperators,
+      valueEditorType: "select",
+      values: booleanSelectOptions(t).map(({ label, value }) => ({ label, name: value })),
+      mongoValueCoercion: MONGO_VALUE_COERCION_BOOLEAN_FROM_STRING,
+    },
+    {
+      name: "created",
+      label: t("pillar.details.created"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
+    },
+    {
+      name: "modified",
+      label: t("pillar.details.modified"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
+    },
+  ] as OptionList;
+};

@@ -1,11 +1,20 @@
 import { SaltboxLocaleProvider } from "@saltbox/saltbox-frontend-common";
 import { autorun, runInAction } from "mobx";
+import { observer } from "mobx-react";
 import React, { Suspense } from "react";
 import ReactDOMClient from "react-dom/client";
 import "@ant-design/v5-patch-for-react-19";
 import { BrowserRouter } from "react-router";
 import singleSpaReact from "single-spa-react";
 
+import {
+  JobReturnOutput,
+  type JobReturnOutputProps,
+} from "saltbox-core/shared/components/job-return";
+import {
+  OpenRelatedJobsButton,
+  type OpenRelatedJobsButtonProps,
+} from "saltbox-core/shared/components/jobs/open-related-jobs-button";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
@@ -23,7 +32,7 @@ const coreLifecycles = singleSpaReact({
   domElementGetter: () => document.getElementById("app-container"),
 });
 
-const collectionSelectorRootComponent = ({ onClose }) => (
+const collectionSelectorRootComponent = observer(({ onClose }) => (
   <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
     <Suspense fallback="Loading...">
       <BrowserRouter>
@@ -31,27 +40,57 @@ const collectionSelectorRootComponent = ({ onClose }) => (
       </BrowserRouter>
     </Suspense>
   </SaltboxLocaleProvider>
+));
+
+const MinionDetailsDrawerWrapperProvider = observer(
+  (props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
+    const { customProps } = props ?? {};
+
+    return (
+      <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+        <Suspense fallback="Loading...">
+          <BrowserRouter>
+            <MinionDetailsDrawerWrapper {...customProps} />
+          </BrowserRouter>
+        </Suspense>
+      </SaltboxLocaleProvider>
+    );
+  }
 );
 
-const collectionSelectorLifecycles = singleSpaReact({
-  React,
-  ReactDOMClient,
-  rootComponent: collectionSelectorRootComponent,
-});
+const OpenRelatedJobsButtonProvider = observer(
+  (props: { customProps?: OpenRelatedJobsButtonProps }) => {
+    const { customProps } = props ?? {};
 
-const MinionDetailsDrawerWrapperProvider = (props: {
-  customProps?: MinionDetailsDrawerWrapperProps;
-}) => {
+    return (
+      <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+        <Suspense fallback="Loading...">
+          <BrowserRouter>
+            {!!customProps && <OpenRelatedJobsButton {...customProps} />}
+          </BrowserRouter>
+        </Suspense>
+      </SaltboxLocaleProvider>
+    );
+  }
+);
+
+const JobReturnOutputProvider = observer((props: { customProps?: JobReturnOutputProps | null }) => {
+  const { customProps } = props ?? {};
+
+  if (!customProps?.jobReturn) {
+    return null;
+  }
+
   return (
     <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
       <Suspense fallback="Loading...">
         <BrowserRouter>
-          <MinionDetailsDrawerWrapper {...props?.customProps} />
+          <JobReturnOutput {...customProps} />
         </BrowserRouter>
       </Suspense>
     </SaltboxLocaleProvider>
   );
-};
+});
 
 const plugins = {
   "minions.details-drawer": [
@@ -65,7 +104,35 @@ const plugins = {
       }),
     },
   ],
+  "jobs.open-related": [
+    {
+      key: "open-related-jobs-button",
+      wrapWith: "div",
+      parcel: singleSpaReact({
+        React,
+        ReactDOMClient,
+        rootComponent: OpenRelatedJobsButtonProvider,
+      }),
+    },
+  ],
+  "jobs.job-return-output": [
+    {
+      key: "job-return-output",
+      wrapWith: "div",
+      parcel: singleSpaReact({
+        React,
+        ReactDOMClient,
+        rootComponent: JobReturnOutputProvider,
+      }),
+    },
+  ],
 };
+
+const collectionSelectorLifecycles = singleSpaReact({
+  React,
+  ReactDOMClient,
+  rootComponent: collectionSelectorRootComponent,
+});
 
 export const saltboxModule = {
   singleSpaLifecycle: coreLifecycles,

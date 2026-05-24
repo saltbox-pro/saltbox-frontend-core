@@ -1,5 +1,6 @@
 import { DownOutlined } from "@ant-design/icons";
-import { Alert, Flex, Spin, Tree } from "antd";
+import { SearchInput } from "@saltbox/saltbox-frontend-common";
+import { Alert, Empty, Flex, Spin, Tree } from "antd";
 import { observer } from "mobx-react-lite";
 import { type Key, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +18,6 @@ import type { CollectionTreeAntdNode } from "../types/node";
 
 import styles from "./minions-tree-menu.module.css";
 import { MinionsTreeRefreshButton } from "./minions-tree-refresh-button";
-import { MinionsTreeSearch } from "./minions-tree-search";
 
 interface MinionsTreeMenuProps {
   onClose: () => void;
@@ -25,7 +25,8 @@ interface MinionsTreeMenuProps {
 
 export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
   const { t } = useTranslation();
-  const [appliedSearch, setAppliedSearch] = useState<string>("");
+
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>("");
   const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [autoExpandParent, setAutoExpandParent] = useState<boolean>(false);
 
@@ -61,21 +62,21 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
   }, [treeData, activePath]);
 
   const displayData = useMemo(() => {
-    const filtered = filterTree(treeData, appliedSearch);
+    const filtered = filterTree(treeData, appliedSearchQuery);
     return filtered ?? treeData;
-  }, [treeData, appliedSearch]);
+  }, [treeData, appliedSearchQuery]);
 
   const matchedKeys = useMemo(
-    () => collectMatchedKeys(displayData, appliedSearch),
-    [displayData, appliedSearch]
+    () => collectMatchedKeys(displayData, appliedSearchQuery),
+    [displayData, appliedSearchQuery]
   );
 
   const highlightedTreeData = useMemo(() => {
-    if (!appliedSearch) return displayData;
-    return displayData.map((node) => buildHighlightedNode(node, appliedSearch, matchedKeys));
-  }, [displayData, appliedSearch, matchedKeys]);
+    if (!appliedSearchQuery) return displayData;
+    return displayData.map((node) => buildHighlightedNode(node, appliedSearchQuery, matchedKeys));
+  }, [displayData, appliedSearchQuery, matchedKeys]);
 
-  const noResults = appliedSearch.length > 0 && displayData.length === 0;
+  const noResults = appliedSearchQuery.length > 0 && displayData.length === 0;
 
   useEffect(() => {
     collectionsTreeStore.loadTree();
@@ -90,7 +91,7 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
 
   useEffect(() => {
     const wasSearching = !!prevSearch.current;
-    const isSearching = !!appliedSearch;
+    const isSearching = !!appliedSearchQuery;
 
     if (isSearching && !wasSearching) {
       savedExpandedKeys.current = expandedKeys;
@@ -110,8 +111,8 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
       setAutoExpandParent(false);
     }
 
-    prevSearch.current = appliedSearch;
-  }, [appliedSearch, displayData, matchedKeys]);
+    prevSearch.current = appliedSearchQuery;
+  }, [appliedSearchQuery, displayData, matchedKeys]);
 
   const onSelect = useCallback(
     (_: Key[], info: { node: CollectionTreeAntdNode }) => {
@@ -130,15 +131,16 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
   }, []);
 
   const handleSearchChange = useCallback((search: string) => {
-    setAppliedSearch(search);
+    setAppliedSearchQuery(search);
   }, []);
 
   return (
     <Flex className={styles.minionsTreeMenu} vertical flex="1" gap="middle">
       <Flex className={styles.minionsTreeMenuHeader} gap="small" align="center">
-        <MinionsTreeSearch
+        <SearchInput
           disabled={!!collectionsTreeStore.error}
-          onSearchChange={handleSearchChange}
+          autoFocus
+          onSearch={handleSearchChange}
         />
         <MinionsTreeRefreshButton />
       </Flex>
@@ -157,9 +159,11 @@ export const MinionsTreeMenu = observer(({ onClose }: MinionsTreeMenuProps) => {
             type="error"
           />
         ) : noResults ? (
-          <div className={styles.searchEmptyState}>
-            {t("collection.search-no-results", { search: appliedSearch })}
-          </div>
+          <Empty
+            className={styles.searchEmptyState}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("collection.search-no-results")}
+          />
         ) : (
           <Tree
             className={styles.minionsTree}

@@ -1,8 +1,8 @@
-import { PillarTgtType, type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
+import { type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import {
   BooleanDisplay,
   FastTablePaginated,
-  RelativeTime,
+  formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -27,12 +27,14 @@ const Table = FastTablePaginated<PillarWithTgtInfoSchema>;
 export interface PillarsTableProps {
   store: PillarsStore;
   hideTargetColumns?: boolean;
+  hideSecretColumn?: boolean;
   hideDateColumns?: boolean;
 }
 
 export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
   store,
   hideTargetColumns,
+  hideSecretColumn,
   hideDateColumns,
 }) {
   const { t } = useTranslation();
@@ -50,31 +52,37 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
     [pillarDrawer.openedId, store.pillars]
   );
 
-  const targetColumns = useMemo(
+  const targetDisplayColumn = useMemo(
     () =>
       hideTargetColumns
         ? []
         : [
-            columnHelper.accessor("tgt_info.id", {
+            columnHelper.accessor("tgt_info.display_name", {
               header: t("pillar.details.target-id"),
               cell: ({ row }) => <PillarTgtName tgtInfo={row.original.tgt_info} />,
               meta: {
                 showCopy: true,
-                copyValue: (row) =>
-                  row.tgt_info?.type === PillarTgtType.Minion
-                    ? (row.tgt_info?.minion_id ?? row.tgt_info?.id)
-                    : (row.tgt_info?.title ?? row.tgt_info?.id),
+                copyValue: (row) => row.tgt_info?.display_name,
                 width: "25%",
                 minWidth: 240,
               },
             }),
+          ],
+    [hideTargetColumns, t]
+  );
+
+  const secretColumn = useMemo(
+    () =>
+      hideSecretColumn
+        ? []
+        : [
             columnHelper.accessor("is_secret", {
               header: t("pillar.details.secret"),
               cell: (data) => <BooleanDisplay value={data.getValue()} />,
               meta: { width: "10%", minWidth: 135 },
             }),
           ],
-    [hideTargetColumns, t]
+    [hideSecretColumn, t]
   );
 
   const columns = useMemo(
@@ -106,23 +114,24 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
         },
         meta: { width: "25%", minWidth: 250, maxWidth: 250 },
       }),
-      ...targetColumns,
+      ...targetDisplayColumn,
+      ...secretColumn,
       ...(hideDateColumns
         ? []
         : [
             columnHelper.accessor("created", {
               header: t("pillar.details.created"),
-              cell: (data) => <RelativeTime date={data.getValue()} />,
+              cell: (data) => formatTimeByUserTZ(data.getValue()),
               meta: { width: "20%", minWidth: 200 },
             }),
             columnHelper.accessor("modified", {
               header: t("pillar.details.modified"),
-              cell: (data) => <RelativeTime date={data.getValue()} />,
+              cell: (data) => formatTimeByUserTZ(data.getValue()),
               meta: { width: "20%", minWidth: 200 },
             }),
           ]),
     ],
-    [hideDateColumns, t, targetColumns]
+    [hideDateColumns, secretColumn, t, targetDisplayColumn]
   );
 
   return (

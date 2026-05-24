@@ -151,7 +151,7 @@ export function TaskDetails({
     const items: InfoDescriptionsProps["items"] = [
       {
         label: t("task.details.collection"),
-        children: target.collection,
+        children: target?.collection,
       },
     ];
 

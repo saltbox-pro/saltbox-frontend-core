@@ -1,4 +1,5 @@
 import { Tag } from "antd";
+import { useTranslation } from "react-i18next";
 
 import {
   JsonPopover,
@@ -6,6 +7,7 @@ import {
 } from "saltbox-core/shared/components/json-popover/json-popover";
 import { PrimitivePopover } from "saltbox-core/shared/components/json-popover/primitive-popover";
 
+import { isEmpty } from "../helpers/is-empty";
 import { isPrimitive } from "../helpers/is-primitive";
 
 import styles from "./json-preview.module.css";
@@ -29,23 +31,26 @@ const DEFAULT_POPOVER_CONTENT_STYLE: JsonPopoverProps["contentStyle"] = {
 export function JsonPreview({
   value,
   title,
-  emptyLabel = "",
+  emptyLabel,
   maxPreviewEntries = 6,
   popoverMaxHeight = "400px",
   popoverMaxWidth = "500px",
   popoverPlacement = "bottom",
   popoverContentStyle,
 }: JsonPreviewProps) {
-  const isEmpty = value === undefined;
-  const tagContent = isEmpty ? (
-    <span className={styles.empty}>{emptyLabel}</span>
+  const { t } = useTranslation();
+  const empty = isEmpty(value);
+  const resolvedEmptyLabel = emptyLabel ?? t("common.no-data");
+
+  const tagContent = empty ? (
+    <span className={styles.empty}>{resolvedEmptyLabel}</span>
   ) : (
     <PreviewContent value={value} maxEntries={maxPreviewEntries} />
   );
 
   return (
     <div className={styles.jsonPreview}>
-      {isEmpty ? (
+      {empty ? (
         <Tag className={styles.tag}>{tagContent}</Tag>
       ) : isPrimitive(value) ? (
         <PrimitivePopover

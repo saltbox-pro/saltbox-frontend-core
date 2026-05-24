@@ -4,7 +4,8 @@ import {
   FastTablePaginated,
   PageHeader,
   Popover,
-  RelativeTime,
+  formatTimeByUserTZ,
+  isGlobalServerError,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -111,7 +112,7 @@ const CollectionEditPage = observer(() => {
     }),
     minionsColumnHelper.accessor("created", {
       header: t("minions.table-created"),
-      cell: (data) => <RelativeTime date={data.getValue()} />,
+      cell: (data) => formatTimeByUserTZ(data.getValue()),
     }),
     minionsColumnHelper.accessor("last_activity", {
       header: t("minions.table-last-activity"),
@@ -189,6 +190,7 @@ const CollectionEditPage = observer(() => {
 
       messageApi.success(t("collection.collection-has-been-changed"));
     } catch (error) {
+      if (isGlobalServerError(error)) return;
       messageApi.error(t("collection.error-updating-collection"));
     }
   };

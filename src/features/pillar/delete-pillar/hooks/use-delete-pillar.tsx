@@ -1,3 +1,4 @@
+import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { message } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,8 @@ export function useDeletePillar({ pillarId, pillarName, onDeleted }: UseDeletePi
         message.success(t("pillars.delete.success"));
       }
       onDeleted?.();
-    } catch {
+    } catch (e) {
+      if (isGlobalServerError(e)) return;
       message.error(t("pillars.delete.error"));
     } finally {
       setIsDeleting(false);

@@ -1,10 +1,15 @@
 import { ImportOutlined } from "@ant-design/icons";
 import { loader } from "@monaco-editor/react";
-import { PageHeader, SlsEditor, slsEditorMonacoLoader } from "@saltbox/saltbox-frontend-common";
-import { MenuProps } from "antd";
+import {
+  PageHeader,
+  SlsEditor,
+  type SlsEditorProps,
+  slsEditorMonacoLoader,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import * as monaco from "monaco-editor";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { slsEditorStore } from "saltbox-core/store";
 
@@ -16,6 +21,7 @@ loader.config({ monaco });
 slsEditorMonacoLoader.config({ monaco });
 
 const SlsEditorPage = observer(() => {
+  const { t } = useTranslation();
   const [importModalOpen, setImportModalOpen] = useState(false);
 
   const handleSlsChange = (newSls: string) => {
@@ -30,10 +36,10 @@ const SlsEditorPage = observer(() => {
     slsEditorStore.setSlsContent(importedSls);
   };
 
-  const menuItems: MenuProps["items"] = [
+  const menuItems: SlsEditorProps["menu"]["items"] = [
     {
       key: "import",
-      label: "Import from Template",
+      label: t("sls-editor.menu-import-from-template"),
       icon: <ImportOutlined />,
       onClick: handleOpenImportModal,
     },
@@ -42,7 +48,7 @@ const SlsEditorPage = observer(() => {
   const additionalTabs = [
     {
       key: "raw-sls",
-      title: "Raw SLS",
+      title: t("sls-editor.tab-raw-sls"),
       content: (
         <RawSlsEditor
           sls={slsEditorStore.slsContent}
@@ -55,7 +61,7 @@ const SlsEditorPage = observer(() => {
 
   return (
     <>
-      <PageHeader title="SLS Editor" />
+      <PageHeader title={t("sls-editor.page-title")} />
 
       <SlsEditor
         sls={slsEditorStore.slsContent}
@@ -63,7 +69,7 @@ const SlsEditorPage = observer(() => {
         defaultTab="form-editor"
         additionalTabs={additionalTabs}
         className={styles.editor}
-        menu={{ items: menuItems as any }}
+        menu={{ items: menuItems }}
       />
 
       <ImportSlsModal

@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
 import { Button, Tooltip, Typography, message } from "antd";
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import styles from "./raw-sls-editor.module.css";
 
@@ -43,6 +44,8 @@ export interface RawSlsEditorProps {
  * ```
  */
 export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, className }) => {
+  const { t } = useTranslation();
+
   const handleChange = (value: string | undefined) => {
     if (value !== undefined && onSlsChange) {
       onSlsChange(value);
@@ -74,7 +77,7 @@ export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, cl
 
   const handleDownload = () => {
     if (!sls) {
-      message.warning("No content to download");
+      message.warning(t("sls-editor.download-no-content"));
       return;
     }
 
@@ -88,10 +91,10 @@ export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, cl
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      message.success("SLS file downloaded successfully");
+      message.success(t("sls-editor.download-success"));
     } catch (error) {
       console.error("Download error:", error);
-      message.error("Failed to download SLS file");
+      message.error(t("sls-editor.download-failed"));
     }
   };
 
@@ -105,11 +108,18 @@ export const RawSlsEditor: React.FC<RawSlsEditorProps> = ({ sls, onSlsChange, cl
           <CopyToClipboardButton
             text={sls ?? ""}
             disabled={!sls}
-            successMessage="SLS content copied to clipboard"
-            errorMessage="Failed to copy to clipboard"
+            successMessage={t("sls-editor.copy-success")}
+            errorMessage={t("sls-editor.copy-failed")}
           />
-          <Tooltip title="Download SLS">
-            <Button icon={<DownloadOutlined />} onClick={handleDownload} disabled={!sls} />
+          <Tooltip title={t("sls-editor.download-tooltip")}>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={handleDownload}
+              disabled={!sls}
+              size="small"
+              variant="outlined"
+              color="default"
+            />
           </Tooltip>
         </Button.Group>
       </div>

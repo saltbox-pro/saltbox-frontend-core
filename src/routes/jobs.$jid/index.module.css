@@ -56,6 +56,7 @@
 
 .jobDetailValue :global(.ant-statistic-content) {
   font-size: 14px;
+  line-height: initial;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: rgba(0, 0, 0, 0.88);
@@ -121,126 +122,6 @@
   padding: 50px 0;
 }
 
-.argumentsCell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.argumentsPreview {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.argumentsTag {
-  margin-inline: 0;
-  background-color: #f0f5ff !important;
-  border-color: #d6e4ff !important;
-  flex: 1;
-  min-width: 0;
-}
-
-.argumentsValue {
-  color: #722ed1;
-}
-
-.argumentsSeparator {
-  color: #1890ff;
-}
-
-.argumentsBrace {
-  color: #1890ff;
-  font-weight: 500;
-}
-
-.argumentsEllipsis {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
-.argumentsEmpty {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
-.argumentsTagClickable {
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out;
-}
-
-.argumentsTagClickable:hover {
-  background-color: #d6e4ff !important;
-  border-color: #adc6ff !important;
-}
-
-.kwargsCell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.kwargsPreview {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-
-.kwargsTag {
-  margin-inline: 0;
-  background-color: #f0f5ff !important;
-  border-color: #d6e4ff !important;
-  flex: 1;
-  min-width: 0;
-}
-
-.kwargsTagClickable {
-  cursor: pointer;
-  transition:
-    background-color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out;
-}
-
-.kwargsTagClickable:hover {
-  background-color: #d6e4ff !important;
-  border-color: #adc6ff !important;
-}
-
-.kwargsKey {
-  color: #1890ff;
-}
-
-.kwargsSeparator {
-  color: #1890ff;
-}
-
-.kwargsValue {
-  color: #722ed1;
-}
-
-.kwargsBrace {
-  color: #1890ff;
-  font-weight: 500;
-}
-
-.kwargsEllipsis {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
-.kwargsEmpty {
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
-
 .filterWrapper {
   margin-bottom: 16px;
 }
@@ -256,4 +137,8 @@
 
 .targetText {
   max-width: 200px;
+}
+
+.jobLoader {
+  padding: 40px;
 }

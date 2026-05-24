@@ -1,0 +1,32 @@
+.jobReturn {
+  width: 100%;
+  font-size: 12px;
+
+  padding: 8px;
+  background-color: #f5f5f5;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.jobReturn pre {
+  margin: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.jobReturn_success {
+  background-color: #f6ffed;
+  border-color: #b7eb8f;
+}
+
+.jobReturn_failed {
+  background-color: #fff1f0;
+  border-color: #ffa39e;
+}
+
+.jobReturn :global(.node-ellipsis) {
+  font-size: inherit !important;
+}

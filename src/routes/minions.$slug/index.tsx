@@ -1,5 +1,5 @@
 import {
-  DeleteOutlined,
+  // DeleteOutlined,
   EditOutlined,
   SettingOutlined,
   PlusOutlined,
@@ -14,13 +14,14 @@ import {
   Popover,
   generateIdsForQuery,
   FilterToggleButton,
+  isGlobalServerError,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
@@ -49,6 +50,7 @@ const MinionsPage = observer(() => {
 
   const { slug } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [messageApi, contextHolder] = message.useMessage();
@@ -115,9 +117,9 @@ const MinionsPage = observer(() => {
     setIsCreateModalOpen(true);
   };
 
-  const handleDeleteCollection = () => {
-    setIsDeleteModalOpen(true);
-  };
+  // const handleDeleteCollection = () => {
+  //   setIsDeleteModalOpen(true);
+  // };
 
   const collectionMenuItems = [
     {
@@ -139,15 +141,15 @@ const MinionsPage = observer(() => {
           ? t("minions.add-filters-to-save")
           : undefined,
     },
-    {
-      key: "delete",
-      label: t("minions.delete"),
-      icon: <DeleteOutlined />,
-      onClick: handleDeleteCollection,
-      danger: true,
-      disabled: slug === "root",
-      title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
-    },
+    // {
+    //   key: "delete",
+    //   label: t("minions.delete"),
+    //   icon: <DeleteOutlined />,
+    //   onClick: handleDeleteCollection,
+    //   danger: true,
+    //   disabled: slug === "root",
+    //   title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
+    // },
   ];
 
   useEffect(() => {
@@ -155,6 +157,17 @@ const MinionsPage = observer(() => {
       collectionStore.setCollectionSlug(slug);
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (location.state?.resetFilters) {
+      minionFilterStore.handleResetFiltersSilent();
+
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: {},
+      });
+    }
+  }, [location, navigate, minionFilterStore]);
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -382,12 +395,13 @@ const MinionsPage = observer(() => {
             minionFilterStore.handleResetFilters();
             navigate(`/core/minions/${parentSlug}`);
           } catch (error) {
+            if (isGlobalServerError(error)) return;
             messageApi.error(t("collection.error-deleting-collection"));
           }
         }}
         onCancel={() => setIsDeleteModalOpen(false)}
-        okText={t("collection.delete")}
-        cancelText={t("collection.cancel")}
+        okText={t("common.delete")}
+        cancelText={t("common.cancel")}
         okButtonProps={{ danger: true }}
       >
         <p>
@@ -401,10 +415,7 @@ const MinionsPage = observer(() => {
         query={minionFilterStore.searchMongoDBQuery as object}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
-        onClose={(success: boolean) => {
-          if (success) {
-            minionFilterStore.handleResetFilters();
-          }
+        onClose={() => {
           setIsCreateModalOpen(false);
         }}
       />

@@ -61,60 +61,6 @@ const isErrorData = (data: unknown): boolean => {
   return false;
 };
 
-const flattenObject = (
-  obj: unknown,
-  prefix = "",
-  maxDepth = maxNestedDepth,
-  depth = 0
-): Record<string, unknown> => {
-  if (depth >= maxDepth) {
-    return { [prefix || "value"]: JSON.stringify(obj) };
-  }
-
-  const flattened: Record<string, unknown> = {};
-
-  if (obj === null || obj === undefined) {
-    return { [prefix || "value"]: String(obj) };
-  }
-
-  if (Array.isArray(obj)) {
-    if (obj.length === 0) {
-      return { [prefix || "value"]: "[]" };
-    }
-
-    const firstItem = obj[0];
-    if (typeof firstItem === "object" && firstItem !== null && !Array.isArray(firstItem)) {
-      obj.forEach((item, index) => {
-        const nested = flattenObject(
-          item,
-          prefix ? `${prefix}[${index}]` : `[${index}]`,
-          maxDepth,
-          depth + 1
-        );
-        Object.assign(flattened, nested);
-      });
-    } else {
-      flattened[prefix || "value"] = obj
-        .map((v) => {
-          if (v === null || v === undefined) return String(v);
-          if (typeof v === "object") return JSON.stringify(v);
-          return String(v);
-        })
-        .join(", ");
-    }
-  } else if (typeof obj === "object") {
-    Object.entries(obj as Record<string, unknown>).forEach(([key, value]) => {
-      const newPrefix = prefix ? `${prefix}.${key}` : key;
-      const nested = flattenObject(value, newPrefix, maxDepth, depth + 1);
-      Object.assign(flattened, nested);
-    });
-  } else {
-    flattened[prefix || "value"] = String(obj);
-  }
-
-  return flattened;
-};
-
 const isPrimitive = (value: unknown): boolean => {
   return (
     value === null ||
@@ -159,37 +105,6 @@ const countRows = (data: unknown, depth = 0): number => {
   }
 
   return 1;
-};
-
-const collectKeys = (data: unknown, depth = 0, maxDepth = maxNestedDepth): Set<string> => {
-  const keys = new Set<string>();
-
-  if (depth > maxDepth) {
-    return keys;
-  }
-
-  if (Array.isArray(data)) {
-    data.forEach((item) => {
-      if (typeof item === "object" && item !== null && !Array.isArray(item)) {
-        Object.keys(item).forEach((key) => keys.add(key));
-        Object.values(item).forEach((value) => {
-          if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-            collectKeys(value, depth + 1, maxDepth).forEach((k) => keys.add(k));
-          }
-        });
-      }
-    });
-  } else if (typeof data === "object" && data !== null) {
-    const obj = data as Record<string, unknown>;
-    Object.keys(obj).forEach((key) => keys.add(key));
-    Object.values(obj).forEach((value) => {
-      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-        collectKeys(value, depth + 1, maxDepth).forEach((k) => keys.add(k));
-      }
-    });
-  }
-
-  return keys;
 };
 
 const convertDictOfDicts = (data: Record<string, unknown>, minionId: string): TableData => {
@@ -506,37 +421,6 @@ export const convertToTable = (data: unknown, minionId: string): TableData => {
     canConvert: false,
     reason: "Unknown data type",
   };
-};
-
-const getDataType = (data: unknown): string => {
-  if (data === null || data === undefined) {
-    return "null";
-  }
-
-  if (Array.isArray(data)) {
-    if (data.length === 0) {
-      return "empty_array";
-    }
-    const firstItem = data[0];
-    if (typeof firstItem === "object" && firstItem !== null && !Array.isArray(firstItem)) {
-      return "array_of_objects";
-    }
-    return "array_of_values";
-  }
-
-  if (typeof data === "object") {
-    const keys = Object.keys(data as Record<string, unknown>);
-    if (keys.length === 0) {
-      return "empty_object";
-    }
-    const firstValue = (data as Record<string, unknown>)[keys[0]];
-    if (typeof firstValue === "object" && firstValue !== null && !Array.isArray(firstValue)) {
-      return "dict_of_dicts";
-    }
-    return "simple_object";
-  }
-
-  return "simple_value";
 };
 
 export const mergeJobReturnsToTable = (

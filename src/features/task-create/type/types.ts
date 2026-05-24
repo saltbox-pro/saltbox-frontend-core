@@ -14,7 +14,7 @@ export type TaskTemplateWithRepository = TaskTemplateShortSchema & {
 };
 
 export type TemplateListFilterOptions = {
-  searchQuery: string;
+  appliedSearchQuery: string;
   repositoryFilter: string | null;
 };
 
@@ -54,4 +54,5 @@ export type TaskCreatePlugin = {
 export type PluginRenderData = {
   taskCreateRequest: TaskCreateRequestSchema;
   templateDescription: string;
+  collectionName?: string;
 };

@@ -1,58 +1,40 @@
 import { Flex, Select } from "antd";
-import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+
+import {
+  DEFAULT_JOB_DATE_RANGE_PRESET,
+  getJobDateRangeForPreset,
+  JOB_DATE_RANGE_PRESET,
+  type JobDateRangePreset,
+} from "saltbox-core/shared/constants/job-date-range-presets";
 
 type JobDatetimeRangeSelectorProps = {
   className?: string;
   label?: string;
   disabled?: boolean;
-  onChange: (range: [dayjs.Dayjs, dayjs.Dayjs]) => void;
+  value?: JobDateRangePreset;
+  onChange: (
+    range: ReturnType<typeof getJobDateRangeForPreset>,
+    preset: JobDateRangePreset
+  ) => void;
 };
-
-interface JobDatetimeRangeSelectorOption {
-  value: number;
-  label: string;
-  dtValue: number;
-  unut: dayjs.ManipulateType;
-}
-
-const optionsDefaultValue = 1;
 
 export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
   const { t } = useTranslation();
-  const options: Array<JobDatetimeRangeSelectorOption> = [
-    { value: 1, label: t("jobs.date-range-today"), dtValue: -1, unut: "d" },
-    {
-      value: 2,
-      label: t("jobs.date-range-10-minutes"),
-      dtValue: -10,
-      unut: "m",
-    },
-    {
-      value: 3,
-      label: t("jobs.date-range-30-minutes"),
-      dtValue: -30,
-      unut: "m",
-    },
-    { value: 4, label: t("jobs.date-range-1-hour"), dtValue: -1, unut: "h" },
-    { value: 5, label: t("jobs.date-range-3-hours"), dtValue: -3, unut: "h" },
-    { value: 6, label: t("jobs.date-range-12-hours"), dtValue: -12, unut: "h" },
-    { value: 7, label: t("jobs.date-range-1-day"), dtValue: -1, unut: "d" },
+
+  const options: Array<{ value: JobDateRangePreset; label: string }> = [
+    { value: JOB_DATE_RANGE_PRESET.ALL_TIME, label: t("jobs.date-range-all-time") },
+    { value: JOB_DATE_RANGE_PRESET.TODAY, label: t("jobs.date-range-today") },
+    { value: JOB_DATE_RANGE_PRESET.MINUTES_10, label: t("jobs.date-range-10-minutes") },
+    { value: JOB_DATE_RANGE_PRESET.MINUTES_30, label: t("jobs.date-range-30-minutes") },
+    { value: JOB_DATE_RANGE_PRESET.HOUR_1, label: t("jobs.date-range-1-hour") },
+    { value: JOB_DATE_RANGE_PRESET.HOUR_3, label: t("jobs.date-range-3-hours") },
+    { value: JOB_DATE_RANGE_PRESET.HOUR_12, label: t("jobs.date-range-12-hours") },
+    { value: JOB_DATE_RANGE_PRESET.DAY_1, label: t("jobs.date-range-1-day") },
   ];
-  const handleChangeRange = (value: number) => {
-    if (value === optionsDefaultValue) {
-      const range: [dayjs.Dayjs, dayjs.Dayjs] = [dayjs().startOf("day"), dayjs()];
-      props.onChange(range);
-    } else {
-      const option = options.find((option) => option.value === value);
-      if (option) {
-        const range: [dayjs.Dayjs, dayjs.Dayjs] = [
-          dayjs().add(option.dtValue, option.unut),
-          dayjs(),
-        ];
-        props.onChange(range);
-      }
-    }
+
+  const handleChangeRange = (preset: JobDateRangePreset) => {
+    props.onChange(getJobDateRangeForPreset(preset), preset);
   };
 
   return (
@@ -62,7 +44,7 @@ export function JobDatetimeRangeSelector(props: JobDatetimeRangeSelectorProps) {
         options={options}
         style={{ minWidth: 125 }}
         optionLabelProp="label"
-        defaultValue={optionsDefaultValue}
+        value={props.value ?? DEFAULT_JOB_DATE_RANGE_PRESET}
         styles={{
           popup: {
             root: {

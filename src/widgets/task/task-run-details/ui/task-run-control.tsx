@@ -1,4 +1,5 @@
 import { CaretRightOutlined, IssuesCloseOutlined, StopOutlined } from "@ant-design/icons";
+import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message } from "antd";
 import { useTranslation } from "react-i18next";
 
@@ -31,7 +32,8 @@ export function TaskRunControl({
   const handleRunClick = async () => {
     try {
       await onRunTask();
-    } catch {
+    } catch (e) {
+      if (isGlobalServerError(e)) return;
       messageApi.error(t("task.run-error"));
     }
   };
@@ -39,7 +41,8 @@ export function TaskRunControl({
   const handleStopClick = async () => {
     try {
       await onStopTask();
-    } catch {
+    } catch (e) {
+      if (isGlobalServerError(e)) return;
       messageApi.error(t("task.stop-error"));
     }
   };
@@ -47,7 +50,8 @@ export function TaskRunControl({
   const handleRestartFailedClick = async () => {
     try {
       await onRestartFailed();
-    } catch {
+    } catch (e) {
+      if (isGlobalServerError(e)) return;
       messageApi.error(t("task.restart-failed-error"));
     }
   };

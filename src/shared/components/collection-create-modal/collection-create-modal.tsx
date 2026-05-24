@@ -71,7 +71,11 @@ function CollectionCreateModal({
         setIsModalOpen(false);
         onClose?.(true);
         if (response.slug) {
-          navigate(`/core/minions/${response.slug}`);
+          navigate(`/core/minions/${response.slug}`, {
+            state: {
+              resetFilters: true,
+            },
+          });
         }
       })
       .catch((e) => {

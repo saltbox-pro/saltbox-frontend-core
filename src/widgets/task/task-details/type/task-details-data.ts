@@ -14,7 +14,7 @@ export type TaskDetailsData = {
     retryDelay: number;
   };
   target: {
-    collection: string;
+    collection?: string;
     minionIds?: string[];
     isQueryBased?: boolean;
     showMinionsDetails?: boolean;

@@ -9,9 +9,11 @@ import {
   MinionsApi,
   PillarsApi,
   SettingsApi,
+  SaltKeysApi,
   TaskTemplatesApi,
   TasksApi,
 } from "@saltbox/saltbox-core-api-client";
+import { createServerErrorMiddleware } from "@saltbox/saltbox-frontend-common";
 import { computed, makeObservable, observable } from "mobx";
 
 import { appStore, envStore } from "saltbox-core/store";
@@ -28,6 +30,7 @@ class ApiCoreStore {
       headers: {
         Authorization: `Bearer ${appStore.authStore.user.access_token}`,
       },
+      middleware: [createServerErrorMiddleware()],
     });
   }
 
@@ -83,6 +86,10 @@ class ApiCoreStore {
 
   @computed get pillarsApi() {
     return this.apiConfig && new PillarsApi(this.apiConfig);
+  }
+
+  @computed get saltKeysApi() {
+    return this.apiConfig && new SaltKeysApi(this.apiConfig);
   }
 }
 

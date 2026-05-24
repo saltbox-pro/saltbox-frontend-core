@@ -1,11 +1,15 @@
 import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
-import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { CreateJobRequestTgtTypeEnum, JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
 import { Flex, Typography } from "antd";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { JobModal } from "saltbox-core/shared/components/job-modal/job-modal";
+import {
+  JobModalShell,
+  type JobReplayBaseline,
+} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { jobStore } from "saltbox-core/store";
 
 import styles from "./minions-popover.module.css";
@@ -33,6 +37,43 @@ export function MinionsPopover({
   );
   const minionNamesCommaSeparated = minionNames.join(",");
 
+  const {
+    pickerOpen,
+    setPickerOpen,
+    configureFunction,
+    setConfigureFunction,
+    targeting,
+    setTargeting,
+    openConfigureWithFunction,
+  } = useJobModalFlowState();
+  const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
+
+  const handleReplayClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      const job = jobStore.job;
+      if (!job?.fun) {
+        return;
+      }
+      setReplayBaseline({
+        fun: job.fun,
+        arg: job.arg ?? undefined,
+        kwarg: job.kwarg ?? undefined,
+      });
+      openConfigureWithFunction(job.fun, {
+        target: minionNamesCommaSeparated,
+        targetType: CreateJobRequestTgtTypeEnum.List,
+        defaultMaster: job.salt_master ?? "",
+        ttlSeconds: job.ttl,
+      });
+    },
+    [minionNamesCommaSeparated, openConfigureWithFunction]
+  );
+
+  const handleJobModalAfterConfigureClose = useCallback(() => {
+    setReplayBaseline(null);
+  }, []);
+
   const defaultTrigger = <span className={styles.trigger}>{minions.length}</span>;
   const triggerNode = trigger ?? defaultTrigger;
 
@@ -41,57 +82,58 @@ export function MinionsPopover({
   }
 
   return (
-    <Popover
-      content={
-        <div className={styles.content}>
-          {minionNames.map((minionName) => (
-            <div key={minionName} className={styles.minionItem}>
-              <Text code>{minionName}</Text>
-            </div>
-          ))}
-        </div>
-      }
-      title={
-        <Flex justify="space-between" align="center">
-          <span>{title}</span>
-          <Flex gap={8}>
-            <CopyToClipboardButton
-              text={minionNamesCommaSeparated}
-              successMessage={t("jobs.table-copy-success")}
-            />
-            <JobModal
-              target={minionNamesCommaSeparated}
-              targetType="list"
-              fun={jobStore.job?.fun}
-              arg={jobStore.job?.arg}
-              kwarg={jobStore.job?.kwarg}
-              renderButton={(openModal) => (
-                <BaseActionButton
-                  icon={<ReloadOutlined />}
-                  title={t("jobs.replay-job")}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openModal();
-                  }}
-                />
-              )}
-            />
-            <BaseActionButton
-              icon={<CloseOutlined />}
-              title={t("action-button.close", { ns: "common" })}
-              onClick={() => setIsPopoverOpen(false)}
-            />
+    <>
+      <Popover
+        content={
+          <div className={styles.content}>
+            {minionNames.map((minionName) => (
+              <div key={minionName} className={styles.minionItem}>
+                <Text code>{minionName}</Text>
+              </div>
+            ))}
+          </div>
+        }
+        title={
+          <Flex justify="space-between" align="center">
+            <span>{title}</span>
+            <Flex gap={8}>
+              <CopyToClipboardButton
+                text={minionNamesCommaSeparated}
+                successMessage={t("jobs.table-copy-success")}
+              />
+              <BaseActionButton
+                icon={<ReloadOutlined />}
+                title={t("jobs.replay-job")}
+                onClick={handleReplayClick}
+              />
+              <BaseActionButton
+                icon={<CloseOutlined />}
+                title={t("action-button.close", { ns: "common" })}
+                onClick={() => setIsPopoverOpen(false)}
+              />
+            </Flex>
           </Flex>
-        </Flex>
-      }
-      trigger="click"
-      overlayStyle={{ maxWidth }}
-      placement="bottomRight"
-      open={isPopoverOpen}
-      onOpenChange={setIsPopoverOpen}
-      zIndex={500}
-    >
-      {triggerNode}
-    </Popover>
+        }
+        trigger="click"
+        overlayStyle={{ maxWidth }}
+        placement="bottomRight"
+        open={isPopoverOpen}
+        onOpenChange={setIsPopoverOpen}
+        zIndex={500}
+      >
+        {triggerNode}
+      </Popover>
+
+      <JobModalShell
+        pickerOpen={pickerOpen}
+        onPickerOpenChange={setPickerOpen}
+        configureFunction={configureFunction}
+        onConfigureFunctionChange={setConfigureFunction}
+        targeting={targeting}
+        onTargetingChange={setTargeting}
+        repeatBaseline={replayBaseline}
+        onAfterConfigureClose={handleJobModalAfterConfigureClose}
+      />
+    </>
   );
 }

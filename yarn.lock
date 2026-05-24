@@ -2201,10 +2201,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@saltbox/react-jsonschema-form-generator@0.1.2":
-  version "0.1.2"
-  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.2.tgz#4870fa9c5696367bd1cfa7f9d1ffa126597b4e65"
-  integrity sha1-SHD6nFaWNnvRz6f50f+hJll7TmU=
+"@saltbox/react-jsonschema-form-generator@0.1.4":
+  version "0.1.4"
+  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.4.tgz#bd30ad783768b85014e8adf95af7caa7843d8085"
+  integrity sha1-vTCteDdouFAU6K35WvfKp4Q9gIU=
   dependencies:
     "@monaco-editor/react" "^4.7.0"
     "@radix-ui/react-checkbox" "^1.3.3"
@@ -2226,15 +2226,15 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@^0.2.0-038a239dcb73704bfcd645e9cfcd7fedd18741fa":
-  version "0.2.0-038a239dcb73704bfcd645e9cfcd7fedd18741fa"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.0-038a239dcb73704bfcd645e9cfcd7fedd18741fa.tgz#797dcebc7ebc37b0244ba2cc5a94080cb66c09d7"
-  integrity sha1-eX3OvH68N7AkS6LMWpQIDLZsCdc=
+"@saltbox/saltbox-core-api-client@^0.2.0-2eef9f9d7ca434271661cd0779c97f5bf390d66b":
+  version "0.2.0-2eef9f9d7ca434271661cd0779c97f5bf390d66b"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.0-2eef9f9d7ca434271661cd0779c97f5bf390d66b.tgz#9ab65f50a9797f67f8453519b7d81c70ce105f50"
+  integrity sha1-mrZfUKl5f2f4RTUZt9gccM4QX1A=
 
-"@saltbox/saltbox-frontend-common@^0.1.1":
-  version "0.1.1"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.1.1.tgz#d61e59343a15f10392edc1dfcbd6fdfdc4a27400"
-  integrity sha1-1h5ZNDoV8QOS7cHfy9b9/cSidAA=
+"@saltbox/saltbox-frontend-common@^0.2.0":
+  version "0.2.0"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.2.0.tgz#5c047bb48c19c0f33bf61e511b178d27f27648ee"
+  integrity sha1-XAR7tIwZwPM79h5RGxeNJ/J2SO4=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -2244,7 +2244,7 @@
     "@rjsf/core" "^6.4.2"
     "@rjsf/utils" "^6.4.2"
     "@rjsf/validator-ajv8" "^6.4.2"
-    "@saltbox/react-jsonschema-form-generator" "0.1.2"
+    "@saltbox/react-jsonschema-form-generator" "0.1.4"
     "@tanstack/react-table" "^8.21.3"
     "@tanstack/react-virtual" "^3.13.12"
     ajv "^8.17.1"

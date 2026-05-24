@@ -1,19 +1,7 @@
-import { SearchOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal } from "@saltbox/saltbox-frontend-common";
-import {
-  Badge,
-  Empty,
-  Flex,
-  Input,
-  InputRef,
-  List,
-  Select,
-  Tooltip,
-  Typography,
-  message,
-} from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Modal, SearchInput, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Badge, Empty, Flex, List, Select, Tooltip, Typography, message } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -35,27 +23,15 @@ export type TemplateListModalProps = {
   onSelectTemplate: (templateId: string) => void;
 };
 
-const useSearch = ({ isOpen }: TemplateListModalProps) => {
-  const searchInputRef = useRef<InputRef>(null);
-
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, [isOpen]);
-
-  return { searchInputRef };
-};
-
 export function TemplateListModal(props: TemplateListModalProps) {
   const { isOpen, onClose, onSelectTemplate } = props;
   const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
-  const { searchInputRef } = useSearch(props);
-
   const [isLoading, setIsLoading] = useState(false);
   const [templates, setTemplates] = useState<TaskTemplateWithRepository[]>([]);
   const [filters, setFilters] = useState<TemplateListFilterOptions>({
-    searchQuery: "",
+    appliedSearchQuery: "",
     repositoryFilter: null,
   });
 
@@ -76,6 +52,7 @@ export function TemplateListModal(props: TemplateListModalProps) {
         const loadedTemplates = await taskTemplateService.loadTemplates();
         setTemplates(loadedTemplates);
       } catch (error) {
+        if (isGlobalServerError(error)) return;
         messageApi.error(t("task-create.error-loading-templates"));
       } finally {
         setIsLoading(false);
@@ -88,7 +65,7 @@ export function TemplateListModal(props: TemplateListModalProps) {
   }, [isOpen, messageApi, t]);
 
   const handleSearchChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, searchQuery: value }));
+    setFilters((prev) => ({ ...prev, appliedSearchQuery: value }));
   };
 
   const handleRepositoryChange = (value: string | null) => {
@@ -115,14 +92,12 @@ export function TemplateListModal(props: TemplateListModalProps) {
         width="min(80vw, 600px)"
       >
         <Flex className={styles.root} vertical gap="middle">
-          <Input
-            ref={searchInputRef}
+          <SearchInput
             placeholder={t("task-create.search-templates-placeholder")}
-            prefix={<SearchOutlined />}
-            value={filters.searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            allowClear
+            autoFocus={isOpen}
+            onSearch={handleSearchChange}
           />
+
           <Select
             placeholder={t("task-create.filter-by-repository")}
             value={filters.repositoryFilter}
@@ -137,7 +112,7 @@ export function TemplateListModal(props: TemplateListModalProps) {
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
-                filters.searchQuery || filters.repositoryFilter
+                filters.appliedSearchQuery || filters.repositoryFilter
                   ? t("task-create.no-templates-found")
                   : t("task-create.no-templates-available")
               }

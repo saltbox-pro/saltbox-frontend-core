@@ -1,13 +1,13 @@
 import { IssuesCloseOutlined } from "@ant-design/icons";
-import type { TaskMinionModel } from "@saltbox/saltbox-core-api-client";
+import type { TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
 import { Button } from "antd";
 import { useTranslation } from "react-i18next";
 
 import { useRestartFailedMinionHandler } from "../hooks/useRestartFailedMinionHandler";
 
 export interface MinionTaskRestartFailedButtonProps {
-  minionId: TaskMinionModel["minion_id"];
-  minionInnerId: TaskMinionModel["minion_inner_id"];
+  minionId: TaskMinionListResponse["minion_id"];
+  minionInnerId: TaskMinionListResponse["minion_inner_id"];
   onRestartFailedMinion?: (minionInnerId: string) => Promise<void>;
 }
 
