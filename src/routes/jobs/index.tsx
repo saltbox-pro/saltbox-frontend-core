@@ -281,6 +281,11 @@ const JobsPage = observer(() => {
   };
 
   const openFunctionPicker = useCallback(() => {
+    setTargeting({
+      target: "*",
+      targetType: CreateJobRequestTgtTypeEnum.Glob,
+      defaultMaster: "",
+    });
     setPickerOpen(true);
   }, []);
 
