@@ -46,13 +46,16 @@ export const MinionPillarsTab = observer(function MinionPillarsTab({
 
   useEffect(() => {
     filterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema, filterStore]);
+
+  useEffect(() => {
     pillarsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     loadPillars();
 
     return () => {
       reset();
     };
-  }, [filterSchema, filterStore, loadPillars, pillarsStore, reset]);
+  }, [filterStore, loadPillars, pillarsStore, reset]);
 
   useEffect(() => {
     setFiltersExtraContainer(document.getElementById("minion-pillars-filters-extra"));

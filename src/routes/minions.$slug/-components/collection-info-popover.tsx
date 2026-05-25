@@ -26,7 +26,7 @@ export const CollectionInfoPopover = observer(
     }, [collectionStore.collection, filterStore]);
 
     useEffect(() => {
-      filterStore.filterSchema = filterSchema;
+      filterStore.updateFilterSchema(filterSchema);
     }, [filterSchema, filterStore]);
 
     return (

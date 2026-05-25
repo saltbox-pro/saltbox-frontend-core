@@ -198,10 +198,13 @@ export default observer(function PoliciesPage() {
   );
 
   useEffect(() => {
-    filterStore.filterSchema = filterSchema;
+    filterStore.updateFilterSchema(filterSchema);
+  }, [filterSchema, filterStore]);
+
+  useEffect(() => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.loadTasks();
-  }, [filterSchema, filterStore, tasksStore]);
+  }, [filterStore, tasksStore]);
 
   useEffect(() => {
     webSocketService.connect(
