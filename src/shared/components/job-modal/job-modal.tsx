@@ -1,47 +1,29 @@
-import { SearchOutlined } from "@ant-design/icons";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
 } from "@saltbox/saltbox-core-api-client";
-import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import {
-  Alert,
-  Button,
-  Flex,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  message,
-  type FormProps,
-} from "antd";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { publish, Modal, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
+import { Button, Flex, Form, Tabs, message } from "antd";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
-import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import {
   fetchJobFunctionSchema,
   getArgAndKwargForRequest,
   getRepeatJsonFormValue,
-  isTimeoutInputKeyAllowed,
-  isTimeoutPasteAllowed,
   parseTtlValue,
   totalSecondsToTtlParts,
   ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
-import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
-import styles from "./job-modal.module.css";
-
-interface MasterOption {
-  value: string;
-  label: string;
-}
+import { JobModalOverviewTab } from "./job-modal-overview-tab";
+import { JobModalSettingsTab } from "./job-modal-settings-tab";
+import type { JobConfigurationData } from "./job-modal-types";
 
 export type JobReturnToPickerSnapshot = {
   salt_master: string;
@@ -50,6 +32,11 @@ export type JobReturnToPickerSnapshot = {
   jsonFormData: unknown;
   ttlSeconds?: number;
 };
+
+interface MasterOption {
+  value: string;
+  label: string;
+}
 
 interface JobModalProps {
   target?: string;
@@ -65,7 +52,12 @@ interface JobModalProps {
   onJobModalClosed?: () => void;
 }
 
-type JobFormData = Pick<CreateJobRequest, "tgt" | "tgt_type" | "salt_master">;
+type JobFormData = Pick<JobConfigurationData, "tgt" | "tgt_type" | "salt_master">;
+
+const enum TabKey {
+  Settings = "Settings",
+  Overview = "Overview",
+}
 
 export function JobModal({
   target,
@@ -88,8 +80,11 @@ export function JobModal({
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
   const [isMasterListLoading, setIsMasterListLoading] = useState(false);
   const [isSchemaLoading, setIsSchemaLoading] = useState(false);
+  const [isSchemaError, setIsSchemaError] = useState(false);
   const [isJobCreating, setIsJobCreating] = useState(false);
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
+  const [configuration, setConfiguration] = useState<JobConfigurationData>();
+  const [activeTabKey, setActiveTabKey] = useState<string>(TabKey.Settings);
   const [messageApi, contextHolder] = message.useMessage();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
@@ -100,6 +95,7 @@ export function JobModal({
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
   const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
@@ -147,29 +143,6 @@ export function JobModal({
       .finally(() => setIsMasterListLoading(false));
   }, [messageApi, onAfterClose, t]);
 
-  const keydownHandler = useCallback(
-    (event: KeyboardEvent) => {
-      if (event.repeat) return;
-
-      if (!isModalOpen) {
-        return;
-      }
-
-      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
-        if (isLoading || isSubmittingRef.current) return;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        isSubmittingRef.current = true;
-        form.submit();
-      }
-    },
-    [form, isLoading, isModalOpen]
-  );
-
-  useDocumentEvent("keydown", keydownHandler, true);
-
   useEffect(() => {
     if (openOnMount && !hasAutoOpenedRef.current) {
       hasAutoOpenedRef.current = true;
@@ -178,15 +151,32 @@ export function JobModal({
   }, [openOnMount, showModal]);
 
   useEffect(() => {
+    const scrollToTop = () => {
+      const scrollableContainer = contentRef.current?.closest(".ant-modal-wrap");
+      if (scrollableContainer) {
+        scrollableContainer.scrollTop = 0;
+      }
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      requestAnimationFrame(scrollToTop);
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [activeTabKey]);
+
+  useEffect(() => {
     if (!isModalOpen) {
       return;
     }
 
     closeReasonRef.current = null;
+    setActiveTabKey(TabKey.Settings);
+    setConfiguration(undefined);
+    setIsSchemaError(false);
 
     form.resetFields();
     form.setFieldsValue({
-      tgt: target,
+      tgt: target ?? "*",
       tgt_type: targetType,
       salt_master: defaultMaster || masterList[0]?.value,
     });
@@ -202,7 +192,7 @@ export function JobModal({
   }, [isModalOpen, target, targetType, defaultMaster, initialTtlSeconds, form, masterList]);
 
   useLayoutEffect(() => {
-    if (!saltFunction || !isModalOpen) {
+    if (!saltFunction || !isModalOpen || activeTabKey !== TabKey.Settings) {
       return;
     }
 
@@ -219,28 +209,18 @@ export function JobModal({
     } else {
       form.focusField("tgt");
     }
-  }, [saltFunction, isModalOpen, form]);
+  }, [saltFunction, isModalOpen, activeTabKey, form]);
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
-
-  const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isTimeoutInputKeyAllowed(event)) {
-      event.preventDefault();
-    }
-  };
-
-  const handleTimeoutInputPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    const pasted = event.clipboardData.getData("text") ?? "";
-    if (!isTimeoutPasteAllowed(pasted)) {
-      event.preventDefault();
-    }
-  };
 
   const resetModalState = () => {
     form.resetFields();
     refJobParamsForm.current?.reset();
     setSaltFunction(undefined);
     setJsonFormValue({});
+    setConfiguration(undefined);
+    setActiveTabKey(TabKey.Settings);
+    setIsSchemaError(false);
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
   };
@@ -262,7 +242,7 @@ export function JobModal({
     setIsModalOpen(false);
   };
 
-  const handleFooterDismiss = () => {
+  const handleReturnToFunctionPicker = () => {
     if (isJobCreating) {
       return;
     }
@@ -270,8 +250,8 @@ export function JobModal({
       salt_master: form.getFieldValue("salt_master") as string,
       tgt: form.getFieldValue("tgt") as string,
       tgt_type: form.getFieldValue("tgt_type") as CreateJobRequestTgtTypeEnum,
-      jsonFormData: jsonFormValue,
-      ttlSeconds: getTtlValue(),
+      jsonFormData: configuration?.jsonFormValue ?? jsonFormValue,
+      ttlSeconds: configuration?.ttlSeconds ?? getTtlValue(),
     };
     closeReasonRef.current = "return-to-picker";
     resetModalState();
@@ -287,66 +267,117 @@ export function JobModal({
     return refJobParamsForm.current?.validateForm() === true;
   };
 
-  const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
-    if (handleFormFinishInProgressRef.current) return;
+  const createJob = useCallback(
+    (config: JobConfigurationData) => {
+      if (handleFormFinishInProgressRef.current) return;
 
-    if (!validateJsonForm()) {
-      isSubmittingRef.current = false;
-      messageApi.error(t("errors.form-validation"));
+      if (!validateJsonForm()) {
+        isSubmittingRef.current = false;
+        messageApi.error(t("errors.form-validation"));
+        setActiveTabKey(TabKey.Settings);
+        return;
+      }
+
+      handleFormFinishInProgressRef.current = true;
+      setIsJobCreating(true);
+
+      const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
+        jsonFormValue: config.jsonFormValue,
+        arg,
+        kwarg,
+      });
+
+      apiCoreStore.jobsApi
+        ?.jobCreate({
+          CreateJobRequest: {
+            tgt: config.tgt,
+            fun,
+            tgt_type: config.tgt_type,
+            salt_master: config.salt_master,
+            arg: requestArg,
+            kwarg: requestKwarg,
+            ttl: config.ttlSeconds,
+          },
+        })
+        .then((response) => {
+          resetModalState();
+          setIsModalOpen(false);
+          onAfterClose?.();
+          if (response?.jid) {
+            navigate(`/core/jobs/${response.jid}`);
+          }
+        })
+        .catch(() => {
+          messageApi.error(t("job-modal.error-job-create"));
+        })
+        .finally(() => {
+          setIsJobCreating(false);
+          isSubmittingRef.current = false;
+          handleFormFinishInProgressRef.current = false;
+        });
+    },
+    [arg, fun, kwarg, messageApi, navigate, onAfterClose, t]
+  );
+
+  const handleConfigurationSubmit = (data: JobConfigurationData) => {
+    isSubmittingRef.current = false;
+    setConfiguration(data);
+    setActiveTabKey(TabKey.Overview);
+  };
+
+  const handleBackToSettings = () => {
+    if (!configuration) {
       return;
     }
 
-    handleFormFinishInProgressRef.current = true;
-    setIsJobCreating(true);
-
-    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      jsonFormValue,
-      arg,
-      kwarg,
+    form.setFieldsValue({
+      tgt: configuration.tgt,
+      tgt_type: configuration.tgt_type,
+      salt_master: configuration.salt_master,
     });
+    setJsonFormValue(configuration.jsonFormValue);
 
-    apiCoreStore.jobsApi
-      ?.jobCreate({
-        CreateJobRequest: {
-          tgt: formValue.tgt,
-          fun,
-          tgt_type: formValue.tgt_type,
-          salt_master: formValue.salt_master,
-          arg: requestArg,
-          kwarg: requestKwarg,
-          ttl: getTtlValue(),
-        },
-      })
-      .then((response) => {
-        resetModalState();
-        setIsModalOpen(false);
-        onAfterClose?.();
-        if (response?.jid) {
-          navigate(`/core/jobs/${response.jid}`);
+    if (configuration.ttlSeconds != null) {
+      applyTotalSecondsToTtlState(configuration.ttlSeconds);
+    }
+
+    setActiveTabKey(TabKey.Settings);
+  };
+
+  const handleExecuteJob = useCallback(() => {
+    if (!configuration) {
+      return;
+    }
+    createJob(configuration);
+  }, [configuration, createJob]);
+
+  const keydownHandler = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.repeat) return;
+
+      if (!isModalOpen) {
+        return;
+      }
+
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        if (isLoading || isSubmittingRef.current) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (activeTabKey === TabKey.Overview) {
+          handleExecuteJob();
+          return;
         }
-      })
-      .catch((_) => {
-        messageApi.error(t("job-modal.error-job-create"));
-      })
-      .finally(() => {
-        setIsJobCreating(false);
-        isSubmittingRef.current = false;
-        handleFormFinishInProgressRef.current = false;
-      });
-  };
 
-  const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
-    isSubmittingRef.current = false;
-    handleFormFinishInProgressRef.current = false;
+        isSubmittingRef.current = true;
+        form.submit();
+      }
+    },
+    [activeTabKey, form, handleExecuteJob, isLoading, isModalOpen]
+  );
 
-    messageApi.error(t("errors.form-validation"));
-
-    form.scrollToField(errorInfo.errorFields[0].name, {
-      focus: true,
-      block: "center",
-      scrollMode: "always",
-    });
-  };
+  useDocumentEvent("keydown", keydownHandler, true);
 
   useEffect(() => {
     if (!isModalOpen || !fun) {
@@ -358,6 +389,7 @@ export function JobModal({
 
     setSaltFunction(undefined);
     setJsonFormValue({});
+    setIsSchemaError(false);
     refJobParamsForm.current?.reset();
 
     let isCancelled = false;
@@ -391,6 +423,7 @@ export function JobModal({
         applySchemaResult(schema);
       } catch {
         if (!isCancelled) {
+          setIsSchemaError(true);
           messageApi.error(t("job-modal.error-load-function-schema"));
         }
       } finally {
@@ -402,6 +435,7 @@ export function JobModal({
 
     loadSchema().catch(() => {
       if (!isCancelled) {
+        setIsSchemaError(true);
         messageApi.error(t("job-modal.error-load-function-schema"));
         setIsSchemaLoading(false);
       }
@@ -412,55 +446,103 @@ export function JobModal({
     };
   }, [fun, isModalOpen, arg, kwarg, messageApi, initialTtlSeconds, t]);
 
-  const handleCreateJobPlugin = (pluginKey: string) => {
-    if (!validateJsonForm()) {
-      return;
-    }
-    publish("jobs.jobmodal.create", {
-      pluginKey: pluginKey,
-      jobCreateRequest: getJobCreateRequest(),
-    });
-    closeModalResettingState();
-  };
+  const handleCreateJobPlugin = useCallback(
+    (pluginKey: string) => {
+      if (!configuration || !validateJsonForm()) {
+        return;
+      }
+      publish("jobs.jobmodal.create", {
+        pluginKey: pluginKey,
+        jobCreateRequest: getJobCreateRequest(configuration),
+      });
+      closeModalResettingState();
+    },
+    [configuration, arg, fun, kwarg]
+  );
 
-  const getJobCreateRequest = (): CreateJobRequest => {
+  const getJobCreateRequest = (config: JobConfigurationData): CreateJobRequest => {
     const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      jsonFormValue,
+      jsonFormValue: config.jsonFormValue,
       arg,
       kwarg,
     });
     return {
-      tgt: form.getFieldValue("tgt"),
+      tgt: config.tgt,
       fun,
-      tgt_type: form.getFieldValue("tgt_type"),
-      salt_master: form.getFieldValue("salt_master"),
+      tgt_type: config.tgt_type,
+      salt_master: config.salt_master,
       arg: requestArg,
       kwarg: requestKwarg,
-      ttl: getTtlValue(),
+      ttl: config.ttlSeconds,
     };
   };
 
-  let jobsJobModalCreateButtonsPlugins: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
-    const jobsJobModalCreateButtonPlugin = (
-      <Button type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
-        {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
-      </Button>
-    );
-    jobsJobModalCreateButtonsPlugins = (
-      <>
-        {jobsJobModalCreateButtonsPlugins}
-        {jobsJobModalCreateButtonPlugin}
-      </>
-    );
-  });
+  const pluginButtons = useMemo(() => {
+    const buttons: React.ReactNode[] = [];
+    appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
+      buttons.push(
+        <Button key={plugin.key} type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
+          {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+        </Button>
+      );
+    });
+    return buttons;
+  }, [handleCreateJobPlugin]);
+
+  const tabs = [
+    {
+      key: TabKey.Settings,
+      label: t("job-modal.settings-tab"),
+      children: (
+        <JobModalSettingsTab
+          fun={fun}
+          saltFunction={saltFunction}
+          isLoading={isMasterListLoading || isSchemaLoading}
+          isSchemaError={isSchemaError}
+          masterList={masterList}
+          form={form}
+          jsonFormValue={jsonFormValue}
+          onJsonFormValueChange={setJsonFormValue}
+          jsonFormRef={refJobParamsForm}
+          ttlValue={ttlValue}
+          ttlUnit={ttlUnit}
+          onTtlValueChange={setTtlValue}
+          onTtlUnitChange={setTtlUnit}
+          onGatherClick={() => setIsGatherModalOpen(true)}
+          isGatherDisabled={!saltMaster || !tgt || !tgtType}
+          onBack={handleReturnToFunctionPicker}
+          onNext={handleConfigurationSubmit}
+        />
+      ),
+    },
+    {
+      key: TabKey.Overview,
+      label: t("job-modal.overview-tab"),
+      disabled: activeTabKey !== TabKey.Overview,
+      children: (
+        <JobModalOverviewTab
+          fun={fun}
+          saltFunction={saltFunction}
+          configuration={configuration}
+          masterList={masterList}
+          isLoading={isJobCreating}
+          isError={isSchemaError}
+          arg={arg}
+          kwarg={kwarg}
+          pluginButtons={pluginButtons}
+          onBack={handleBackToSettings}
+          onExecute={handleExecuteJob}
+        />
+      ),
+    },
+  ];
 
   return (
     <>
       {contextHolder}
 
       <Modal
-        title={t("job-modal.title")}
+        title={t("job-modal.configure-title")}
         open={isModalOpen}
         onCancel={handleModalDismiss}
         afterClose={() => {
@@ -476,126 +558,12 @@ export function JobModal({
         width="min(80vw, 800px)"
         maskClosable={false}
         style={{ top: 50 }}
-        footer={
-          <>
-            <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
-              {t("job-modal.return-to-function-picker")}
-            </Button>
-
-            {jobsJobModalCreateButtonsPlugins}
-
-            <Button
-              loading={isLoading}
-              type="primary"
-              form="job-form"
-              key="submit"
-              htmlType="submit"
-              title="Ctrl+Enter"
-            >
-              {t("job-modal.create")}
-            </Button>
-          </>
-        }
+        footer={null}
+        closable={!isJobCreating}
       >
-        <Form
-          form={form}
-          name="job-form"
-          id="job-form"
-          layout="vertical"
-          autoComplete="off"
-          onFinish={handleFormFinish}
-          onFinishFailed={handleFormFinishFailed}
-        >
-          <Form.Item<JobFormData>
-            label={t("job-modal.salt-master")}
-            name="salt_master"
-            rules={[
-              {
-                required: true,
-                message: t("job-modal.salt-master-error-required"),
-              },
-            ]}
-          >
-            <Select allowClear options={masterList} />
-          </Form.Item>
-          <Flex gap={8}>
-            <Form.Item<JobFormData>
-              label={t("job-modal.target-type")}
-              name="tgt_type"
-              rules={[
-                {
-                  required: true,
-                  message: t("job-modal.tgt-type-error-required"),
-                },
-              ]}
-              className={styles.jobFormTgtType}
-            >
-              <TargetTypeSelect />
-            </Form.Item>
-
-            <Form.Item<JobFormData>
-              label={t("job-modal.target")}
-              name="tgt"
-              rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
-              className={styles.jobFormTgt}
-            >
-              <Input />
-            </Form.Item>
-
-            <Button
-              icon={<SearchOutlined />}
-              onClick={() => setIsGatherModalOpen(true)}
-              disabled={!saltMaster || !tgt || !tgtType}
-              className={styles.jobFormGather}
-            />
-          </Flex>
-
-          <Form.Item label={t("job-modal.function")}>
-            <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
-          </Form.Item>
-
-          <Form.Item label={t("job-modal.timeout-label")}>
-            <Flex gap={8} align="center" wrap>
-              <InputNumber
-                min={0}
-                precision={0}
-                value={ttlValue ?? undefined}
-                onChange={(value) => setTtlValue(value ?? null)}
-                placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                onKeyDown={handleTimeoutInputKeyDown}
-                onPaste={handleTimeoutInputPaste}
-              />
-              <Select
-                value={ttlUnit}
-                onChange={(value) => setTtlUnit(value)}
-                options={[
-                  { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                  { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                  { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                ]}
-                style={{ width: 100 }}
-              />
-            </Flex>
-          </Form.Item>
-        </Form>
-
-        {saltFunction?.json_schema && (
-          <JsonForm
-            ref={refJobParamsForm}
-            schema={saltFunction.json_schema}
-            uiSchema={saltFunction?.ui_schema}
-            id="job-params-form"
-            className={styles.jobParamsForm}
-            idPrefix="job-params-form"
-            idSeparator="-"
-            formData={jsonFormValue}
-            onChange={(d) => setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>)}
-          >
-            <Fragment />
-          </JsonForm>
-        )}
+        <Flex ref={contentRef} vertical>
+          <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
+        </Flex>
       </Modal>
 
       <MinionGatherModal

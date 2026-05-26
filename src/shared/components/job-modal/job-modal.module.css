@@ -16,6 +16,10 @@
   width: 80%;
 }
 
+.jobFormTgtFull {
+  flex: 1;
+}
+
 .jobFormGather {
   margin-top: calc(var(--app-layout-gap) / 3 + 23px);
 }
