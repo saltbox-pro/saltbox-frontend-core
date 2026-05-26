@@ -5,30 +5,21 @@ import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
-import {
-  buildSaltCommandPreview,
-  getJobFunctionDescription,
-  getJobOverviewParameters,
-  hasJobOverviewParameters,
-} from "saltbox-core/shared/utils/job-modal-utils";
+import { getJobFunctionDescription } from "../params-form-schema";
+import { buildSaltCommandPreview, getJobOverviewParameters } from "../request";
+import type { JobConfigurationData, JobMasterOption } from "../types";
+import { CodeBlock } from "../ui/code-block/code-block";
+import { JobModalFooter } from "../ui/footer";
 
-import { CodeBlock } from "./components/code-block/code-block";
-import { JobModalFooter } from "./job-modal-footer";
-import styles from "./job-modal-overview-tab.module.css";
-import type { JobConfigurationData } from "./job-modal-types";
+import styles from "./overview-tab.module.css";
 
 const { Text } = Typography;
-
-type MasterOption = {
-  value: string;
-  label: string;
-};
 
 export type JobModalOverviewTabProps = {
   fun: string;
   saltFunction?: JobSchemaModel;
   configuration?: JobConfigurationData;
-  masterList: MasterOption[];
+  masterList: JobMasterOption[];
   isLoading: boolean;
   isError: boolean;
   arg?: unknown[];
@@ -36,6 +27,25 @@ export type JobModalOverviewTabProps = {
   pluginButtons?: ReactNode;
   onBack: () => void;
   onExecute: () => void;
+};
+
+const renderOverviewValue = (value: unknown) => {
+  if (typeof value === "object" && value !== null) {
+    return (
+      <Flex vertical className={styles.objectContent}>
+        <ReactJson
+          src={value as object}
+          displayDataTypes={false}
+          displayObjectSize={false}
+          name={false}
+          collapsed={3}
+          enableClipboard={false}
+        />
+      </Flex>
+    );
+  }
+
+  return String(value);
 };
 
 export const JobModalOverviewTab = ({
@@ -63,11 +73,7 @@ export const JobModalOverviewTab = ({
       return {};
     }
 
-    return getJobOverviewParameters({
-      jsonFormValue: configuration.jsonFormValue,
-      arg,
-      kwarg,
-    });
+    return getJobOverviewParameters(configuration, { arg, kwarg });
   }, [configuration, arg, kwarg]);
 
   const maskedParameters = useMemo(
@@ -93,27 +99,15 @@ export const JobModalOverviewTab = ({
     ];
   }, [configuration?.tgt, fun, functionDescription, t]);
 
-  const parametersItems = useMemo(() => {
-    return Object.entries(maskedParameters).map(([key, value]) => ({
-      key,
-      label: key,
-      children:
-        typeof value === "object" && value !== null ? (
-          <Flex vertical className={styles.objectContent}>
-            <ReactJson
-              src={value as object}
-              displayDataTypes={false}
-              displayObjectSize={false}
-              name={false}
-              collapsed={3}
-              enableClipboard={false}
-            />
-          </Flex>
-        ) : (
-          String(value)
-        ),
-    }));
-  }, [maskedParameters]);
+  const parametersItems = useMemo(
+    () =>
+      Object.entries(maskedParameters).map(([key, value]) => ({
+        key,
+        label: key,
+        children: renderOverviewValue(value),
+      })),
+    [maskedParameters]
+  );
 
   const targetInfoItems = useMemo(() => {
     if (!configuration) {
@@ -152,11 +146,13 @@ export const JobModalOverviewTab = ({
     );
   }
 
+  const hasParameters = Object.keys(overviewParameters).length > 0;
+
   return (
     <Flex vertical gap="large">
       <InfoDescriptions title={t("job-modal.overview-general-info")} items={generalInfoItems} />
 
-      {hasJobOverviewParameters(overviewParameters) && (
+      {hasParameters && (
         <Collapse
           defaultActiveKey={[]}
           items={[

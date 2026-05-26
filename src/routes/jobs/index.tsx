@@ -21,10 +21,7 @@ import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
-import {
-  JobModalShell,
-  type JobModalTargeting,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import { JobModalShell, type JobModalTargeting } from "saltbox-core/shared/components/job-modal";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";

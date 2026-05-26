@@ -28,8 +28,8 @@ import { useNavigate } from "react-router";
 import {
   JobModalShell,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
+  useJobModalFlowState,
+} from "saltbox-core/shared/components/job-modal";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";

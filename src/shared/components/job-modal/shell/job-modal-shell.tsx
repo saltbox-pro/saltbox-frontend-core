@@ -1,8 +1,8 @@
 import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
-import { JobModalFunctionSelect } from "./job-modal-function-select";
+import { JobModal, type JobReturnToPickerSnapshot } from "../configure/job-modal";
+import { JobModalFunctionSelect } from "../function-picker/function-select";
 
 export type JobModalTargeting = {
   target: string;

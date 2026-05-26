@@ -24,7 +24,7 @@ import {
   JobModalShell,
   type JobModalTargeting,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+} from "saltbox-core/shared/components/job-modal";
 import {
   DefaultJobReturnTable,
   exportToCSV,

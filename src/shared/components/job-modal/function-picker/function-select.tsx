@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-import styles from "./job-modal-function-select.module.css";
+import styles from "./function-select.module.css";
 
 interface JobModalFunctionSelectProps {
   open: boolean;

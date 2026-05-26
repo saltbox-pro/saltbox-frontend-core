@@ -8,8 +8,8 @@ import { useTranslation } from "react-i18next";
 import {
   JobModalShell,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
+  useJobModalFlowState,
+} from "saltbox-core/shared/components/job-modal";
 import { jobStore } from "saltbox-core/store";
 
 import styles from "./minions-popover.module.css";

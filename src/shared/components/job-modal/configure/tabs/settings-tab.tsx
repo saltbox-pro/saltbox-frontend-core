@@ -7,7 +7,6 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   Select,
   Spin,
   Switch,
@@ -19,42 +18,35 @@ import {
 import { Fragment, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
-import {
-  buildJobFormVisibilityUiSchema,
-  isTimeoutInputKeyAllowed,
-  isTimeoutPasteAllowed,
-  ttlPartsToTotalSeconds,
-} from "saltbox-core/shared/utils/job-modal-utils";
+import { ttlPartsToTotalSeconds, type TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
 
-import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
-import { JobModalFooter } from "./job-modal-footer";
-import type { JobConfigurationData } from "./job-modal-types";
-import styles from "./job-modal.module.css";
+import styles from "../job-modal.module.css";
+import {
+  JOB_PARAMS_FORM_ID,
+  prepareJobParamsForm,
+  validateJobParamsForm,
+} from "../params-form-schema";
+import type { JobConfigurationData, JobMasterOption, JobTargetingFormData } from "../types";
+import { JobModalFooter } from "../ui/footer";
+import { TargetTypeSelect } from "../ui/target-type-select/target-type-select";
+import { JobModalTimeoutFields } from "../ui/timeout-fields";
 
 const { Title } = Typography;
-
-type JobFormData = Pick<JobConfigurationData, "tgt" | "tgt_type" | "salt_master">;
-
-interface MasterOption {
-  value: string;
-  label: string;
-}
 
 export type JobModalSettingsTabProps = {
   fun: string;
   saltFunction?: JobSchemaModel;
   isLoading: boolean;
   isSchemaError: boolean;
-  masterList: MasterOption[];
-  form: FormInstance<JobFormData>;
+  masterList: JobMasterOption[];
+  form: FormInstance<JobTargetingFormData>;
   jsonFormValue: Record<string, unknown>;
   onJsonFormValueChange: (value: Record<string, unknown>) => void;
   jsonFormRef: React.RefObject<JsonFormRef | null>;
   ttlValue: number | null;
-  ttlUnit: "seconds" | "minutes" | "hours";
+  ttlUnit: TtlUnit;
   onTtlValueChange: (value: number | null) => void;
-  onTtlUnitChange: (unit: "seconds" | "minutes" | "hours") => void;
+  onTtlUnitChange: (unit: TtlUnit) => void;
   onGatherClick: () => void;
   isGatherDisabled: boolean;
   onBack: () => void;
@@ -84,33 +76,17 @@ export const JobModalSettingsTab = ({
   const [messageApi, contextHolder] = message.useMessage();
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const visibilityUiSchema = useMemo(() => {
-    if (!saltFunction?.json_schema) {
-      return saltFunction?.ui_schema;
-    }
+  const paramsForm = useMemo(
+    () => prepareJobParamsForm(saltFunction?.json_schema, saltFunction?.ui_schema, showAdvanced),
+    [saltFunction?.json_schema, saltFunction?.ui_schema, showAdvanced]
+  );
 
-    return buildJobFormVisibilityUiSchema(
-      saltFunction.json_schema,
-      saltFunction.ui_schema,
-      showAdvanced
-    );
-  }, [saltFunction?.json_schema, saltFunction?.ui_schema, showAdvanced]);
-
-  const showValidationError = () => {
+  const handleValidationError = () => {
     messageApi.error(t("errors.form-validation"));
   };
 
-  const validateJsonForm = () => {
-    if (!saltFunction?.json_schema) {
-      return true;
-    }
-
-    return jsonFormRef.current?.validateForm() === true;
-  };
-
-  const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
-    showValidationError();
-    setShowAdvanced(true);
+  const handleFormFinishFailed: FormProps<JobTargetingFormData>["onFinishFailed"] = (errorInfo) => {
+    handleValidationError();
 
     setTimeout(
       () =>
@@ -123,10 +99,9 @@ export const JobModalSettingsTab = ({
     );
   };
 
-  const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
-    if (!validateJsonForm()) {
-      showValidationError();
-      setShowAdvanced(true);
+  const handleFormFinish: FormProps<JobTargetingFormData>["onFinish"] = (formValue) => {
+    if (!validateJobParamsForm(jsonFormRef, paramsForm.validationSchema)) {
+      handleValidationError();
       return;
     }
 
@@ -135,19 +110,6 @@ export const JobModalSettingsTab = ({
       jsonFormValue,
       ttlSeconds: ttlPartsToTotalSeconds(ttlValue, ttlUnit),
     });
-  };
-
-  const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isTimeoutInputKeyAllowed(event)) {
-      event.preventDefault();
-    }
-  };
-
-  const handleTimeoutInputPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    const pasted = event.clipboardData.getData("text") ?? "";
-    if (!isTimeoutPasteAllowed(pasted)) {
-      event.preventDefault();
-    }
   };
 
   if (isLoading) {
@@ -187,7 +149,7 @@ export const JobModalSettingsTab = ({
             style={{ display: showAdvanced ? "flex" : "none" }}
             aria-hidden={!showAdvanced}
           >
-            <Form.Item<JobFormData>
+            <Form.Item<JobTargetingFormData>
               label={t("job-modal.salt-master")}
               name="salt_master"
               rules={[
@@ -200,35 +162,16 @@ export const JobModalSettingsTab = ({
               <Select allowClear options={masterList} />
             </Form.Item>
 
-            <Form.Item label={t("job-modal.timeout-label")}>
-              <Flex gap={8} align="center" wrap>
-                <InputNumber
-                  min={0}
-                  precision={0}
-                  value={ttlValue ?? undefined}
-                  onChange={(value) => onTtlValueChange(value ?? null)}
-                  placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  onKeyDown={handleTimeoutInputKeyDown}
-                  onPaste={handleTimeoutInputPaste}
-                />
-                <Select
-                  value={ttlUnit}
-                  onChange={onTtlUnitChange}
-                  options={[
-                    { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                    { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                    { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                  ]}
-                  style={{ width: 100 }}
-                />
-              </Flex>
-            </Form.Item>
+            <JobModalTimeoutFields
+              ttlValue={ttlValue}
+              ttlUnit={ttlUnit}
+              onTtlValueChange={onTtlValueChange}
+              onTtlUnitChange={onTtlUnitChange}
+            />
           </Flex>
 
           <Flex gap={8}>
-            <Form.Item<JobFormData>
+            <Form.Item<JobTargetingFormData>
               label={t("job-modal.target-type")}
               name="tgt_type"
               hidden={!showAdvanced}
@@ -243,7 +186,7 @@ export const JobModalSettingsTab = ({
               <TargetTypeSelect />
             </Form.Item>
 
-            <Form.Item<JobFormData>
+            <Form.Item<JobTargetingFormData>
               label={t("job-modal.target")}
               name="tgt"
               rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
@@ -267,16 +210,17 @@ export const JobModalSettingsTab = ({
           {fun}
         </Title>
 
-        {saltFunction?.json_schema && (
+        {paramsForm.validationSchema && (
           <JsonForm
             ref={jsonFormRef}
-            schema={saltFunction.json_schema}
-            uiSchema={visibilityUiSchema}
-            id="job-params-form"
+            schema={paramsForm.validationSchema}
+            uiSchema={paramsForm.uiSchema}
+            id={JOB_PARAMS_FORM_ID}
             className={styles.jobParamsForm}
-            idPrefix="job-params-form"
+            idPrefix={JOB_PARAMS_FORM_ID}
             idSeparator="-"
             formData={jsonFormValue}
+            focusOnFirstError
             onChange={(data) =>
               onJsonFormValueChange((data?.formData ?? {}) as Record<string, unknown>)
             }

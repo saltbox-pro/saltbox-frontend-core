@@ -1,7 +1,7 @@
 import { Flex } from "antd";
 import type { PropsWithChildren } from "react";
 
-import styles from "./job-modal-footer.module.css";
+import styles from "./footer.module.css";
 
 type JobModalFooterProps = PropsWithChildren;
 
