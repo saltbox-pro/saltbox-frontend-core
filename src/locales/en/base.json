@@ -412,7 +412,9 @@
     "delete-all-confirm-title": "Delete all keys",
     "delete-all-confirm-description": "Are you sure you want to delete all keys: {{count}}?",
     "delete-all-success": "All keys were deleted successfully: {{count}}",
-    "delete-all-failed": "Failed to delete all keys"
+    "delete-all-failed": "Failed to delete all keys",
+    "filter-by-status": "Filter by key status",
+    "refresh": "Refresh"
   },
   "pillar": {
     "title": "Pillar",
