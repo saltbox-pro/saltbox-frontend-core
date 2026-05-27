@@ -1,5 +1,9 @@
 import { ExportOutlined } from "@ant-design/icons";
-import { SaltKeyMinionWithStatus, SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
+import {
+  SaltKeyMinion,
+  SaltKeyMinionWithStatus,
+  SaltKeyStatusType,
+} from "@saltbox/saltbox-core-api-client";
 import {
   createSelectColumn,
   FastTablePaginated,
@@ -20,9 +24,10 @@ import {
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
-import styles from "./index.module.css";
 import { SaltKeysToolbar } from "./-components/salt-keys-toolbar";
 import { SaltKeysActionsDropdown } from "./-components/saltkeys-actions-dropdown";
+
+import styles from "./index.module.css";
 
 const saltKeysColumnHelper = createColumnHelper<SaltKeyMinionWithStatus>();
 
@@ -120,10 +125,13 @@ const MasterPage = observer(() => {
         try {
           const response = await apiCoreStore.saltKeysApi?.saltKeysAccept({
             SaltKeySetStatusRequestBody: {
-              minions: Object.keys(selection).map((minionId) => ({
-                minion_id: minionId,
-                salt_master: masterId,
-              })),
+              minions: Object.keys(selection).map(
+                (minionId) =>
+                  ({
+                    minion_id: minionId,
+                    salt_master: masterId,
+                  }) as SaltKeyMinion
+              ),
             },
           });
           messageApi.success(
@@ -159,10 +167,13 @@ const MasterPage = observer(() => {
         try {
           const response = await apiCoreStore.saltKeysApi?.saltKeysReject({
             SaltKeySetStatusRequestBody: {
-              minions: Object.keys(selection).map((minionId) => ({
-                minion_id: minionId,
-                salt_master: masterId,
-              })),
+              minions: Object.keys(selection).map(
+                (minionId) =>
+                  ({
+                    minion_id: minionId,
+                    salt_master: masterId,
+                  }) as SaltKeyMinion
+              ),
             },
           });
           messageApi.success(
@@ -198,10 +209,13 @@ const MasterPage = observer(() => {
         try {
           await apiCoreStore.saltKeysApi?.saltKeysDelete({
             SaltKeySetStatusRequestBody: {
-              minions: Object.keys(selection).map((minionId) => ({
-                minion_id: minionId,
-                salt_master: masterId,
-              })),
+              minions: Object.keys(selection).map(
+                (minionId) =>
+                  ({
+                    minion_id: minionId,
+                    salt_master: masterId,
+                  }) as SaltKeyMinion
+              ),
             },
           });
           messageApi.success(
@@ -225,7 +239,7 @@ const MasterPage = observer(() => {
 
     modalApi.confirm({
       title: t("master.accept-all-confirm-title"),
-      content: t("master.accept-all-confirm-description", { count: saltKeysStore.total }),
+      content: t("master.accept-all-confirm-description", { count: saltKeysStore.unacceptedCount }),
       icon: null,
       okText: t("common.yes"),
       cancelText: t("common.no"),
@@ -259,7 +273,7 @@ const MasterPage = observer(() => {
 
     modalApi.confirm({
       title: t("master.reject-all-confirm-title"),
-      content: t("master.reject-all-confirm-description", { count: saltKeysStore.total }),
+      content: t("master.reject-all-confirm-description", { count: saltKeysStore.unacceptedCount }),
       icon: null,
       okText: t("common.yes"),
       cancelText: t("common.no"),
@@ -333,6 +347,7 @@ const MasterPage = observer(() => {
                 <SaltKeysActionsDropdown
                   selectedSaltKeys={selection}
                   isSendingAction={isSendingAction}
+                  unacceptedCount={saltKeysStore.unacceptedCount}
                   onAcceptSelected={handleAcceptSelected}
                   onRejectSelected={handleRejectSelected}
                   onDeleteSelected={handleDeleteSelected}
@@ -390,6 +405,7 @@ const MasterPage = observer(() => {
       drawer.toggle,
       saltKeysColumns,
       saltKeysStore,
+      saltKeysStore.unacceptedCount,
       isSendingAction,
       selection,
       handleAcceptSelected,

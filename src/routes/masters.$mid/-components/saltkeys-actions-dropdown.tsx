@@ -8,6 +8,7 @@ import { RowSelectionState } from "@tanstack/react-table";
 type SaltKeysActionsDropdownProps = {
   selectedSaltKeys: RowSelectionState;
   isSendingAction: boolean;
+  unacceptedCount: number;
   onAcceptSelected?: () => void;
   onRejectSelected?: () => void;
   onDeleteSelected?: () => void;
@@ -19,6 +20,7 @@ type SaltKeysActionsDropdownProps = {
 export function SaltKeysActionsDropdown({
   selectedSaltKeys,
   isSendingAction,
+  unacceptedCount,
   onAcceptSelected,
   onRejectSelected,
   onDeleteSelected,
@@ -52,31 +54,37 @@ export function SaltKeysActionsDropdown({
         },
       ];
     } else {
-      return [
-        {
+      const allItems = [];
+
+      if (unacceptedCount > 0) {
+        allItems.push({
           key: "accept-all",
           label: t("master.action-accept-all-label"),
           icon: <CheckOutlined />,
           onClick: () => onAcceptAll?.(),
-        },
-        {
+        });
+        allItems.push({
           key: "reject-all",
           label: t("master.action-reject-all-label"),
           icon: <CloseOutlined />,
           onClick: () => onRejectAll?.(),
-        },
-        {
-          key: "delete-all",
-          label: t("master.action-delete-all-label"),
-          icon: <DeleteOutlined />,
-          danger: true,
-          onClick: () => onDeleteAll?.(),
-        },
-      ];
+        });
+      }
+
+      allItems.push({
+        key: "delete-all",
+        label: t("master.action-delete-all-label"),
+        icon: <DeleteOutlined />,
+        danger: true,
+        onClick: () => onDeleteAll?.(),
+      });
+
+      return allItems;
     }
   }, [
     t,
     selectedSaltKeys,
+    unacceptedCount,
     onAcceptSelected,
     onRejectSelected,
     onDeleteSelected,
