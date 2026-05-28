@@ -169,7 +169,12 @@ function MastersPage() {
         pagination={mastersStore.pagination}
         sorting={mastersStore.sorting}
         onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(master) => navigate(`/core/masters/${master.master_id}`)}
+        onRowClick={(master) => {
+          if (master.status === "accepted") {
+            navigate(`/core/masters/${master.master_id}`);
+          }
+        }}
+        isRowClickable={(master) => master.status === "accepted"}
       />
     </>
   );

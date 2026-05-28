@@ -45,6 +45,13 @@ export const JobModalShell = ({
   const [jobModalFun, setJobModalFun] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!pickerOpen) {
+      jsonFormByFunRef.current = {};
+      setFormCacheRevision(0);
+    }
+  }, [pickerOpen]);
+
+  useEffect(() => {
     if (configureFunction) {
       setJobModalFun(configureFunction);
     }
