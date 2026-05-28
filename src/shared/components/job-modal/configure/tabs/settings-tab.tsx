@@ -143,38 +143,23 @@ export const JobModalSettingsTab = ({
           onFinish={handleFormFinish}
           onFinishFailed={handleFormFinishFailed}
         >
-          <Flex
-            vertical
-            gap="small"
-            style={{ display: showAdvanced ? "flex" : "none" }}
-            aria-hidden={!showAdvanced}
+          <Form.Item<JobTargetingFormData>
+            label={t("job-modal.salt-master")}
+            name="salt_master"
+            rules={[
+              {
+                required: true,
+                message: t("job-modal.salt-master-error-required"),
+              },
+            ]}
           >
-            <Form.Item<JobTargetingFormData>
-              label={t("job-modal.salt-master")}
-              name="salt_master"
-              rules={[
-                {
-                  required: true,
-                  message: t("job-modal.salt-master-error-required"),
-                },
-              ]}
-            >
-              <Select allowClear options={masterList} />
-            </Form.Item>
-
-            <JobModalTimeoutFields
-              ttlValue={ttlValue}
-              ttlUnit={ttlUnit}
-              onTtlValueChange={onTtlValueChange}
-              onTtlUnitChange={onTtlUnitChange}
-            />
-          </Flex>
+            <Select allowClear options={masterList} />
+          </Form.Item>
 
           <Flex gap={8}>
             <Form.Item<JobTargetingFormData>
               label={t("job-modal.target-type")}
               name="tgt_type"
-              hidden={!showAdvanced}
               rules={[
                 {
                   required: true,
@@ -190,19 +175,31 @@ export const JobModalSettingsTab = ({
               label={t("job-modal.target")}
               name="tgt"
               rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
-              className={showAdvanced ? styles.jobFormTgt : styles.jobFormTgtFull}
+              className={styles.jobFormTgt}
             >
               <Input />
             </Form.Item>
 
-            {showAdvanced && (
-              <Button
-                icon={<SearchOutlined />}
-                onClick={onGatherClick}
-                disabled={isGatherDisabled}
-                className={styles.jobFormGather}
-              />
-            )}
+            <Button
+              icon={<SearchOutlined />}
+              onClick={onGatherClick}
+              disabled={isGatherDisabled}
+              className={styles.jobFormGather}
+            />
+          </Flex>
+
+          <Flex
+            vertical
+            gap="small"
+            style={{ display: showAdvanced ? "flex" : "none" }}
+            aria-hidden={!showAdvanced}
+          >
+            <JobModalTimeoutFields
+              ttlValue={ttlValue}
+              ttlUnit={ttlUnit}
+              onTtlValueChange={onTtlValueChange}
+              onTtlUnitChange={onTtlUnitChange}
+            />
           </Flex>
         </Form>
 
