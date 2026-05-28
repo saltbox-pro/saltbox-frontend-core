@@ -1,11 +1,11 @@
 import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { ActionDropdown, type ActionDropdownItem } from "@saltbox/saltbox-frontend-common";
 import { message } from "antd";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import type { RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
-import { useDeleteSelectedMinionsFlow } from "saltbox-core/features/minions/delete-keys";
+import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
 
 type SelectedMinion = TaskTargetMinion & { mid: string };
 
@@ -33,22 +33,14 @@ export function MinionsActionsDropdown({
     messageApi,
   });
 
-  const saltKeyTargets = useMemo(
-    () => selectedMinions.map(({ minion_id, salt_master }) => ({ minion_id, salt_master })),
-    [selectedMinions]
-  );
-
-  const handleDeleteSuccess = useCallback(() => {
-    reloadMinions();
-    clearSelection();
-  }, [reloadMinions, clearSelection]);
-
-  const deleteFlow = useDeleteSelectedMinionsFlow({
+  const removeAction = useRemoveMinionsDropdownItem({
     collectionSlug: slug,
     minionMongoIds: selectedMinions.map((minion) => minion.mid),
-    saltKeyTargets,
     messageApi,
-    onSuccess: handleDeleteSuccess,
+    onDeleted: () => {
+      reloadMinions();
+      clearSelection();
+    },
   });
 
   const items = useMemo<ActionDropdownItem[]>(() => {
@@ -56,14 +48,14 @@ export function MinionsActionsDropdown({
 
     if (selectedMinions.length <= 0) return base;
 
-    const deleteItem = deleteFlow.item;
+    const deleteItem = removeAction.item;
     return deleteItem ? [...base, deleteItem] : base;
-  }, [exportAction.item, deleteFlow.item, selectedMinions.length]);
+  }, [exportAction.item, removeAction.item, selectedMinions.length]);
 
   return (
     <>
       {messageContextHolder}
-      {deleteFlow.modalContextHolder}
+      {removeAction.modalContextHolder}
 
       <ActionDropdown menu={{ items }} />
     </>

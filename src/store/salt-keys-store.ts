@@ -58,6 +58,10 @@ export class SaltKeysStore {
     return this.filteredKeys.length;
   }
 
+  @computed get unacceptedCount(): number {
+    return this.allSaltKeys.filter((k) => k.status === SaltKeyStatusType.Unaccepted).length;
+  }
+
   @action setStatusFilter = (status: SaltKeyStatusType) => {
     this.statusFilter = status;
     this.pagination.pageIndex = 0;
