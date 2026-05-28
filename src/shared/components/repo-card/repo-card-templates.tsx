@@ -1,16 +1,31 @@
-import type { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
+import type { Description, TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { Alert, Button, Collapse, CollapseProps, Flex, List, Tag } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import styles from "./repo-card-templates.module.css";
 
+function resolveDescription(
+  description: Description | null | undefined,
+  language: string
+): string | undefined {
+  if (description == null) return undefined;
+  if (typeof description === "string") return description;
+  if (typeof description === "object") {
+    const localized = (description as Record<string, string>)[language];
+    if (localized) return localized;
+    const fallback = Object.values(description as Record<string, string>)[0];
+    return fallback;
+  }
+  return undefined;
+}
+
 export interface RepoCardTemplatesProps {
-  items: TaskTemplateShortSchema[];
+  items: TaskTemplatePublicSchema[];
   isLoading: boolean;
   isLoadedOnce: boolean;
   hasMore: boolean;
-  error?: string | null;
+  hasError?: boolean;
   onOpen: () => void;
   onLoadMore: () => void;
 }
@@ -20,7 +35,7 @@ export function RepoCardTemplates({
   isLoading,
   isLoadedOnce,
   hasMore,
-  error,
+  hasError = false,
   onOpen,
   onLoadMore,
 }: RepoCardTemplatesProps) {
@@ -33,7 +48,7 @@ export function RepoCardTemplates({
         label: t("configuration-templates.repo.templates"),
         children: (
           <Flex vertical gap="small">
-            {error ? (
+            {hasError ? (
               <Alert
                 message={t("configuration-templates.repo.templates-load-error")}
                 type="error"
@@ -46,11 +61,11 @@ export function RepoCardTemplates({
                 loading={isLoading && items.length === 0}
                 dataSource={items}
                 locale={{ emptyText: t("configuration-templates.repo.templates-empty") }}
-                renderItem={({ title, description, fun }) => (
-                  <List.Item className={styles.templateItem} extra={<Tag>{fun}</Tag>}>
+                renderItem={({ title, description, name }) => (
+                  <List.Item className={styles.templateItem} extra={<Tag>{name}</Tag>}>
                     <List.Item.Meta
                       title={title}
-                      description={!!description && description[i18n.language]}
+                      description={resolveDescription(description, i18n.language)}
                     />
                   </List.Item>
                 )}
@@ -76,7 +91,7 @@ export function RepoCardTemplates({
         ),
       },
     ],
-    [error, hasMore, i18n.language, isLoadedOnce, isLoading, onLoadMore, t, items]
+    [hasError, hasMore, i18n.language, isLoadedOnce, isLoading, onLoadMore, t, items]
   );
 
   return (

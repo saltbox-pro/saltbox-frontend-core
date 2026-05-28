@@ -849,34 +849,90 @@
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"
-    }
+    },
+    "add": "Add",
+    "connect": "Connect",
+    "sync": "Sync"
   },
   "configuration-templates": {
     "page-title": "Configuration Templates",
-    "load-error": "Failed to load data",
-    "empty": "No available templates",
+    "load-error": "Failed to load configuration template sources",
+    "empty": "No templates available",
     "search": {
-      "placeholder": "Search"
+      "placeholder": "Search",
+      "no-results": "Nothing found matching your search"
     },
     "filter": {
       "placeholder": "Filter (soon)"
+    },
+    "actions": {
+      "add-local-source": "Local source",
+      "add-git-source": "From Git repository"
+    },
+    "local-source-modal": {
+      "title": "Add local source",
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
+      "create-success": "Source \"{{name}}\" has been added",
+      "create-error": "Failed to create source"
+    },
+    "git-source-modal": {
+      "title": "Add Git repository source",
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
+      "repo-url": "Repository URL",
+      "repo-url-required": "Repository URL is required",
+      "repo-url-placeholder": "https://github.com/org/repo.git",
+      "repo-user": "Username",
+      "repo-user-placeholder": "Enter username",
+      "repo-pass": "Password/token",
+      "repo-pass-placeholder": "Enter password or token",
+      "create-success": "Source \"{{name}}\" has been added",
+      "create-error": "Failed to create source"
+    },
+    "source": {
+      "type": {
+        "local_bundle": "Local",
+        "git_repo": "Git",
+        "archive_bundle": "Archive"
+      },
+      "status": {
+        "not-synced": "Not synced",
+        "syncing": "Syncing"
+      },
+      "action": {
+        "plug-error": "Failed to connect source",
+        "sync-error": "Failed to sync source",
+        "delete-error": "Failed to delete source"
+      },
+      "operation": {
+        "discover": "Discovering…",
+        "prepare_sls": "Preparing SLS…",
+        "prepare_files": "Preparing files…",
+        "sync": "Syncing…"
+      },
+      "delete-confirm-title": "Delete source",
+      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?"
     },
     "repo": {
       "connection": {
         "connected": "Connected",
         "disconnected": "Not connected"
       },
-      "visibility": {
-        "private": "Private",
-        "internal": "Internal",
-        "public": "Public"
-      },
       "created-at": "Created",
       "updated-at": "Updated",
       "synced-at": "Synced",
       "synced-never": "never",
-      "star-count-title": "Stars",
-      "fork-count-title": "Forks",
       "templates": "Templates",
       "templates-empty": "No templates",
       "templates-load-more": "Load more",

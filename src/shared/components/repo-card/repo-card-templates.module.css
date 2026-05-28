@@ -41,6 +41,13 @@
   margin: 0;
 }
 
+.templates :global(.ant-spin-nested-loading),
+.templates :global(.ant-spin-container),
+.templates :global(.ant-list-items) {
+  max-height: 500px;
+  overflow: auto;
+}
+
 .loadMoreButton {
   margin-top: 10px;
   font-size: 13px;

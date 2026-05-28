@@ -849,34 +849,90 @@
     "copy-to-clipboard-button": {
       "copy": "Копировать",
       "copied": "Скопировано в буфер обмена"
-    }
+    },
+    "add": "Добавить",
+    "connect": "Подключить",
+    "sync": "Синхронизировать"
   },
   "configuration-templates": {
     "page-title": "Шаблоны конфигураций",
-    "load-error": "Не удалось загрузить данные",
+    "load-error": "Не удалось загрузить источники шаблонов конфигураций",
     "empty": "Нет доступных шаблонов",
     "search": {
-      "placeholder": "Поиск"
+      "placeholder": "Поиск",
+      "no-results": "Ничего не найдено по запросу"
     },
     "filter": {
       "placeholder": "Фильтр (скоро)"
+    },
+    "actions": {
+      "add-local-source": "Локальный источник",
+      "add-git-source": "Из git-репозитория"
+    },
+    "local-source-modal": {
+      "title": "Добавление локального источника",
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
+      "create-success": "Источник \"{{name}}\" успешно добавлен",
+      "create-error": "Не удалось создать источник"
+    },
+    "git-source-modal": {
+      "title": "Добавление источника из git-репозитория",
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
+      "repo-url": "URL репозитория",
+      "repo-url-required": "Укажите URL репозитория",
+      "repo-url-placeholder": "https://github.com/org/repo.git",
+      "repo-user": "Пользователь",
+      "repo-user-placeholder": "Введите пользователя",
+      "repo-pass": "Пароль/токен",
+      "repo-pass-placeholder": "Введите пароль или токен",
+      "create-success": "Источник \"{{name}}\" успешно добавлен",
+      "create-error": "Не удалось создать источник"
+    },
+    "source": {
+      "type": {
+        "local_bundle": "Локальный",
+        "git_repo": "Git",
+        "archive_bundle": "Архив"
+      },
+      "status": {
+        "not-synced": "Не синхронизирован",
+        "syncing": "Синхронизация"
+      },
+      "action": {
+        "plug-error": "Не удалось подключить источник",
+        "sync-error": "Не удалось синхронизировать источник",
+        "delete-error": "Не удалось удалить источник"
+      },
+      "operation": {
+        "discover": "Обнаружение…",
+        "prepare_sls": "Подготовка SLS…",
+        "prepare_files": "Подготовка файлов…",
+        "sync": "Синхронизация…"
+      },
+      "delete-confirm-title": "Удаление источника",
+      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?"
     },
     "repo": {
       "connection": {
         "connected": "Подключен",
         "disconnected": "Не подключен"
       },
-      "visibility": {
-        "private": "Приватный",
-        "internal": "Внутренний",
-        "public": "Публичный"
-      },
       "created-at": "Создан",
       "updated-at": "Обновлён",
       "synced-at": "Синхронизирован",
       "synced-never": "никогда",
-      "star-count-title": "Звёзды",
-      "fork-count-title": "Форки",
       "templates": "Шаблоны",
       "templates-empty": "Нет шаблонов",
       "templates-load-more": "Загрузить ещё",

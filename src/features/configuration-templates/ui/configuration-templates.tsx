@@ -1,24 +1,25 @@
-import { SearchOutlined, SettingOutlined } from "@ant-design/icons";
-import { Alert, Button, Dropdown, Empty, Flex, Input, Skeleton, Space } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { SearchInput } from "@saltbox/saltbox-frontend-common";
+import { type MenuProps, Alert, Button, Dropdown, Empty, Flex, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ChangeEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { normalizeSearch } from "../helpers/search";
 import { ConfigurationTemplatesStore } from "../model/configuration-templates-store";
 
-import { ConnectedRepoCard } from "./connected-repo-card";
-import { DisconnectedRepoCard } from "./disconnected-repo-card";
+import { CreateGitSourceModal } from "./create-git-source-modal";
+import { CreateLocalSourceModal } from "./create-local-source-modal";
+import { SourceCard } from "./source-card";
 
-const DEBOUNCE_MS = 250;
+type AddSourceModal = "local" | "git" | null;
 
 export const ConfigurationTemplates = observer(() => {
   const { t } = useTranslation();
 
   const [store] = useState(() => new ConfigurationTemplatesStore());
-
   const [search, setSearch] = useState("");
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [addSourceModal, setAddSourceModal] = useState<AddSourceModal>(null);
 
   useEffect(() => {
     store.load();
@@ -26,101 +27,104 @@ export const ConfigurationTemplates = observer(() => {
     return () => store.reset();
   }, [store]);
 
-  useEffect(
-    () => () => {
-      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+  const filteredSources = useMemo(() => {
+    const q = normalizeSearch(search);
+    const sorted = store.sortedSources;
+
+    if (!q) return sorted;
+
+    return sorted.filter((source) => {
+      const name = source.name?.toLowerCase() ?? "";
+      const desc = source.description?.toLowerCase() ?? "";
+      return name.includes(q) || desc.includes(q);
+    });
+  }, [search, store.sortedSources]);
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+  }, []);
+
+  const addMenuItems: MenuProps["items"] = [
+    {
+      key: "add-local",
+      label: t("configuration-templates.actions.add-local-source"),
     },
-    []
-  );
+    {
+      key: "add-git",
+      label: t("configuration-templates.actions.add-git-source"),
+    },
+  ];
 
-  const filteredConnectedRepos = useMemo(() => {
-    const q = normalizeSearch(search);
-    if (!q) return store.connectedRepos;
-
-    return store.connectedRepos.filter((repo) => {
-      const name = repo.name?.toLowerCase() ?? "";
-      const desc = repo.description?.toLowerCase() ?? "";
-      return name.includes(q) || desc.includes(q);
-    });
-  }, [search, store.connectedRepos]);
-
-  const filteredDisconnectedProjects = useMemo(() => {
-    const q = normalizeSearch(search);
-    if (!q) return store.filteredAvailableProjects;
-
-    return store.filteredAvailableProjects.filter((p) => {
-      const name = p.name?.toLowerCase() ?? "";
-      const desc = p.description?.toLowerCase() ?? "";
-      return name.includes(q) || desc.includes(q);
-    });
-  }, [search, store.filteredAvailableProjects]);
-
-  const handleSearch = useCallback<ChangeEventHandler<HTMLInputElement>>((e) => {
-    const next = e.target.value;
-    if (debounceTimer.current != null) {
-      clearTimeout(debounceTimer.current);
+  const handleAddMenuClick: MenuProps["onClick"] = ({ key }) => {
+    if (key === "add-local") {
+      setAddSourceModal("local");
+      return;
     }
-    debounceTimer.current = setTimeout(() => {
-      setSearch(next);
-      debounceTimer.current = null;
-    }, DEBOUNCE_MS);
-  }, []);
+    if (key === "add-git") {
+      setAddSourceModal("git");
+    }
+  };
 
-  const handleClear = useCallback(() => {
-    clearTimeout(debounceTimer.current);
-    setSearch("");
-    debounceTimer.current = null;
-  }, []);
+  const searchQuery = normalizeSearch(search);
+  const hasSearchQuery = searchQuery.length > 0;
 
-  const isEmptyForView =
-    filteredConnectedRepos.length === 0 && filteredDisconnectedProjects.length === 0;
+  const renderSourcesList = () => {
+    if (filteredSources.length === 0) {
+      return (
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            hasSearchQuery
+              ? t("configuration-templates.search.no-results")
+              : t("configuration-templates.empty")
+          }
+        />
+      );
+    }
+
+    return (
+      <Flex vertical gap="large">
+        {filteredSources.map((source) => (
+          <SourceCard key={source.id} source={source} store={store} />
+        ))}
+      </Flex>
+    );
+  };
 
   return (
-    <Skeleton loading={store.isLoading} active={store.isLoading}>
+    <Skeleton loading={store.isLoading && store.sources.length === 0} active>
       <Space direction="vertical" size="middle">
         <Flex align="stretch" gap="middle">
-          <Input
-            onChange={handleSearch}
-            onClear={handleClear}
+          <SearchInput
             placeholder={t("configuration-templates.search.placeholder")}
-            allowClear
-            prefix={<SearchOutlined />}
+            onSearch={handleSearchChange}
           />
 
-          <Dropdown
-            menu={{
-              items: [],
-              onClick: () => {},
-            }}
-            trigger={["click"]}
-          >
-            <Button icon={<SettingOutlined />} />
+          <Dropdown menu={{ items: addMenuItems, onClick: handleAddMenuClick }} trigger={["click"]}>
+            <Button type="primary" icon={<PlusOutlined />}>
+              {t("common.add")}
+            </Button>
           </Dropdown>
         </Flex>
 
-        {store.hasError ? (
+        {!!store.hasError && (
           <Alert message={t("configuration-templates.load-error")} type="error" showIcon />
-        ) : store.isEmpty || isEmptyForView ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={t("configuration-templates.empty")}
-          />
-        ) : (
-          <Flex vertical gap="large">
-            {filteredConnectedRepos.map((project) => (
-              <ConnectedRepoCard
-                key={project.id}
-                project={project}
-                templatesStore={store.templatesStore}
-              />
-            ))}
-
-            {filteredDisconnectedProjects.map((project) => (
-              <DisconnectedRepoCard key={project.id} project={project} />
-            ))}
-          </Flex>
         )}
+
+        {renderSourcesList()}
       </Space>
+
+      <CreateLocalSourceModal
+        open={addSourceModal === "local"}
+        store={store}
+        onClose={() => setAddSourceModal(null)}
+      />
+
+      <CreateGitSourceModal
+        open={addSourceModal === "git"}
+        store={store}
+        onClose={() => setAddSourceModal(null)}
+      />
     </Skeleton>
   );
 });

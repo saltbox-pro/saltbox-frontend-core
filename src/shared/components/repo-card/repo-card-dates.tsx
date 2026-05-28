@@ -1,6 +1,6 @@
 import { CalendarOutlined, ClockCircleOutlined, HistoryOutlined } from "@ant-design/icons";
-import { RelativeTime } from "@saltbox/saltbox-frontend-common";
-import { Divider, Space, Typography } from "antd";
+import { formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { Divider, Space, Tag, Typography } from "antd";
 import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
@@ -9,9 +9,15 @@ export interface RepoCardDatesProps {
   createdAt?: string;
   updatedAt?: string;
   syncedAt?: string | null;
+  showNotSynced?: boolean;
 }
 
-export function RepoCardDates({ createdAt, updatedAt, syncedAt }: RepoCardDatesProps) {
+export function RepoCardDates({
+  createdAt,
+  updatedAt,
+  syncedAt,
+  showNotSynced = false,
+}: RepoCardDatesProps) {
   const { t } = useTranslation();
 
   return (
@@ -21,7 +27,7 @@ export function RepoCardDates({ createdAt, updatedAt, syncedAt }: RepoCardDatesP
           <Text type="secondary">
             <CalendarOutlined /> {t("configuration-templates.repo.created-at")}:
           </Text>
-          <RelativeTime date={createdAt} />
+          <Text>{formatTimeByUserTZ(createdAt)}</Text>
         </Space>
       )}
 
@@ -30,19 +36,19 @@ export function RepoCardDates({ createdAt, updatedAt, syncedAt }: RepoCardDatesP
           <Text type="secondary">
             <ClockCircleOutlined /> {t("configuration-templates.repo.updated-at")}:
           </Text>
-          <RelativeTime date={updatedAt} />
+          <Text>{formatTimeByUserTZ(updatedAt)}</Text>
         </Space>
       )}
 
-      {(!!syncedAt || syncedAt === null) && (
+      {(!!syncedAt || showNotSynced) && (
         <Space size={3}>
           <Text type="secondary">
             <HistoryOutlined /> {t("configuration-templates.repo.synced-at")}:
           </Text>
           {syncedAt ? (
-            <RelativeTime date={syncedAt} />
+            <Text>{formatTimeByUserTZ(syncedAt)}</Text>
           ) : (
-            t("configuration-templates.repo.synced-never")
+            <Tag color="orange">{t("configuration-templates.source.status.not-synced")}</Tag>
           )}
         </Space>
       )}

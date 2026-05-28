@@ -1,5 +1,26 @@
 .card .title {
-  flex: unset;
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+}
+
+.headerRow {
+  width: 100%;
+  min-width: 0;
+}
+
+.headerLeading {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.headerTrailing {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .cardDisconnected {
@@ -16,6 +37,14 @@
 
 .name {
   vertical-align: middle;
+}
+
+.titleSuffix {
+  margin-left: 8px;
+}
+
+.titleSuffix :global(.ant-tag) {
+  font-weight: 400;
 }
 
 .avatar {
