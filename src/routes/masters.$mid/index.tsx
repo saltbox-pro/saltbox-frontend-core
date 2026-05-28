@@ -373,7 +373,7 @@ const MasterPage = observer(() => {
               <FastTablePaginated
                 columns={saltKeysColumns}
                 data={saltKeysStore.pagedKeys}
-                total={saltKeysStore.total}
+                total={saltKeysStore.totalFiltred}
                 isLoading={saltKeysStore.isLoading}
                 pagination={saltKeysStore.pagination}
                 sorting={saltKeysStore.sorting}

@@ -54,8 +54,12 @@ export class SaltKeysStore {
     return this.sortedKeys.slice(start, end);
   }
 
-  @computed get total(): number {
+  @computed get totalFiltred(): number {
     return this.filteredKeys.length;
+  }
+
+  @computed get total(): number {
+    return this.allSaltKeys.length;
   }
 
   @computed get unacceptedCount(): number {
