@@ -13,10 +13,20 @@ import {
   Input,
   InputNumber,
   Select,
+  Switch,
+  Typography,
   message,
   type FormProps,
 } from "antd";
-import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -33,6 +43,10 @@ import {
   totalSecondsToTtlParts,
   ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
+import {
+  getJobParamsDisplaySchema,
+  hasJsonSchemaProperties,
+} from "saltbox-core/shared/utils/job-schema-split";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
@@ -93,6 +107,7 @@ export function JobModal({
   const [messageApi, contextHolder] = message.useMessage();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
+  const [isAdvancedSettingsEnabled, setIsAdvancedSettingsEnabled] = useState(false);
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
@@ -106,6 +121,16 @@ export function JobModal({
   const tgtType = Form.useWatch("tgt_type", form);
 
   const isLoading = isMasterListLoading || isSchemaLoading || isJobCreating;
+
+  const jobParamsDisplay = useMemo(
+    () =>
+      getJobParamsDisplaySchema(
+        saltFunction?.json_schema as Record<string, unknown> | undefined,
+        saltFunction?.ui_schema as Record<string, unknown> | undefined,
+        isAdvancedSettingsEnabled
+      ),
+    [saltFunction?.json_schema, saltFunction?.ui_schema, isAdvancedSettingsEnabled]
+  );
 
   const applyTotalSecondsToTtlState = (totalSeconds: number) => {
     const parts = totalSecondsToTtlParts(totalSeconds);
@@ -195,6 +220,7 @@ export function JobModal({
     setJsonFormValue({});
     setTtlValue(null);
     setTtlUnit("seconds");
+    setIsAdvancedSettingsEnabled(false);
 
     if (initialTtlSeconds != null && Number.isFinite(initialTtlSeconds) && initialTtlSeconds >= 0) {
       applyTotalSecondsToTtlState(initialTtlSeconds);
@@ -213,13 +239,15 @@ export function JobModal({
       firstInput?.focus({ preventScroll: true });
     };
 
-    const hasJsonFields = !!Object.keys(saltFunction.json_schema?.properties || {}).length;
+    const hasJsonFields = hasJsonSchemaProperties(
+      jobParamsDisplay.schema as Record<string, unknown> | null
+    );
     if (hasJsonFields) {
       focusFirstJsonInput();
     } else {
       form.focusField("tgt");
     }
-  }, [saltFunction, isModalOpen, form]);
+  }, [saltFunction, isModalOpen, form, jobParamsDisplay.schema]);
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
 
@@ -241,6 +269,7 @@ export function JobModal({
     refJobParamsForm.current?.reset();
     setSaltFunction(undefined);
     setJsonFormValue({});
+    setIsAdvancedSettingsEnabled(false);
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
   };
@@ -280,7 +309,7 @@ export function JobModal({
   };
 
   const validateJsonForm = () => {
-    if (!saltFunction?.json_schema) {
+    if (!hasJsonSchemaProperties(jobParamsDisplay.schema as Record<string, unknown> | null)) {
       return true;
     }
 
@@ -497,6 +526,15 @@ export function JobModal({
           </>
         }
       >
+        <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>
+          <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
+          <Switch
+            checked={isAdvancedSettingsEnabled}
+            onChange={setIsAdvancedSettingsEnabled}
+            disabled={isLoading}
+          />
+        </Flex>
+
         <Form
           form={form}
           name="job-form"
@@ -554,38 +592,42 @@ export function JobModal({
             <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
           </Form.Item>
 
-          <Form.Item label={t("job-modal.timeout-label")}>
-            <Flex gap={8} align="center" wrap>
-              <InputNumber
-                min={0}
-                precision={0}
-                value={ttlValue ?? undefined}
-                onChange={(value) => setTtlValue(value ?? null)}
-                placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                onKeyDown={handleTimeoutInputKeyDown}
-                onPaste={handleTimeoutInputPaste}
-              />
-              <Select
-                value={ttlUnit}
-                onChange={(value) => setTtlUnit(value)}
-                options={[
-                  { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                  { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                  { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                ]}
-                style={{ width: 100 }}
-              />
-            </Flex>
-          </Form.Item>
+          {isAdvancedSettingsEnabled && (
+            <Form.Item label={t("job-modal.timeout-label")}>
+              <Flex gap={8} align="center" wrap>
+                <InputNumber
+                  min={0}
+                  precision={0}
+                  value={ttlValue ?? undefined}
+                  onChange={(value) => setTtlValue(value ?? null)}
+                  placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  onKeyDown={handleTimeoutInputKeyDown}
+                  onPaste={handleTimeoutInputPaste}
+                />
+                <Select
+                  value={ttlUnit}
+                  onChange={(value) => setTtlUnit(value)}
+                  options={[
+                    { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
+                    { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
+                    { label: t("job-modal.timeout-unit-hours"), value: "hours" },
+                  ]}
+                  style={{ width: 100 }}
+                />
+              </Flex>
+            </Form.Item>
+          )}
         </Form>
 
-        {saltFunction?.json_schema && (
+        {jobParamsDisplay.schema && (
           <JsonForm
+            key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
             ref={refJobParamsForm}
-            schema={saltFunction.json_schema}
-            uiSchema={saltFunction?.ui_schema}
+            schema={jobParamsDisplay.schema}
+            uiSchema={jobParamsDisplay.uiSchema}
+            omitExtraData={false}
             id="job-params-form"
             className={styles.jobParamsForm}
             idPrefix="job-params-form"

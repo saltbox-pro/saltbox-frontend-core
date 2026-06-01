@@ -557,6 +557,7 @@
     "tgt-error-required": "Цель обязательна",
     "warning-message": "Для создания команды, активируйте мастера на странице Мастера",
     "hint-example-label": "Пример:",
+    "advanced-settings": "Расширенные настройки",
     "timeout-label": "Время ожидания ответа команды",
     "timeout-unit-seconds": "Сек",
     "timeout-unit-minutes": "Мин",

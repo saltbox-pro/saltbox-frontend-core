@@ -1,3 +1,7 @@
+.advancedSettings {
+  margin-bottom: var(--app-layout-gap, 16px);
+}
+
 .jobParamsForm label[for="job-params-form__title"] {
   display: none;
 }

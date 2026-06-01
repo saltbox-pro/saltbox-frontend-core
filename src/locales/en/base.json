@@ -557,6 +557,7 @@
     "tgt-error-required": "Target is required",
     "warning-message": "To create a job, activate the master on the Masters page",
     "hint-example-label": "Example:",
+    "advanced-settings": "Advanced settings",
     "timeout-label": "Command response timeout",
     "timeout-unit-seconds": "Sec",
     "timeout-unit-minutes": "Min",
