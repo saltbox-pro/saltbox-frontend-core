@@ -377,6 +377,7 @@
     "table-status-rejected": "Отклонён",
     "table-status-denied": "Заблокирован",
     "table-status-unknown": "Неизвестный статус",
+    "table-status-duplicates": "Дубликаты",
     "load-salt-keys-failed": "Не удалось загрузить ключи мастера",
     "action-accept-selected-label": "Принять",
     "action-reject-selected-label": "Отклонить",

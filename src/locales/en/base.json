@@ -377,6 +377,7 @@
     "table-status-rejected": "Rejected",
     "table-status-denied": "Denied",
     "table-status-unknown": "Unknown status",
+    "table-status-duplicates": "Duplicates",
     "load-salt-keys-failed": "Failed to load master keys",
     "action-accept-selected-label": "Accept",
     "action-reject-selected-label": "Reject",
