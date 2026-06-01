@@ -9,6 +9,7 @@ import {
   type TemplateDescriptionValue,
 } from "saltbox-core/shared/utils/template-description";
 
+import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskTemplateService, taskCreationService } from "../service";
 import type {
   PluginRenderData,
@@ -17,7 +18,7 @@ import type {
   TaskOverviewData,
 } from "../type/types";
 
-import { TaskApplyToWholeCollectionWarning } from "./task-apply-to-whole-collection-warning";
+import { TaskTargetScopeWarning } from "./task-target-scope-warning";
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";
 
@@ -121,25 +122,32 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
     setActiveTabKey(TabKey.Configuration);
   };
 
-  const confirmApplyToWholeCollection = (): Promise<boolean> => {
+  const confirmTaskTargetScope = (
+    targetMode: "filtered" | "whole-collection"
+  ): Promise<boolean> => {
     const entityType = t(
       context.taskType === TaskType.Policy
         ? "task.type-policy-accusative"
         : "task.type-classic-accusative"
     );
 
+    const descriptionKey =
+      targetMode === "filtered"
+        ? "task-create.confirm-apply-to-filtered-collection-description"
+        : "task-create.confirm-apply-to-whole-collection-description";
+
     return new Promise((resolve) => {
       modalApi.confirm({
-        title: t("task-create.confirm-apply-to-whole-collection-title"),
+        title: t("common.launch-confirmation-title"),
         content: (
           <>
             <Paragraph>
-              {t("task-create.confirm-apply-to-whole-collection-description", {
+              {t(descriptionKey, {
                 entityType,
                 collectionName,
               })}
             </Paragraph>
-            <Text>{t("task-create.confirm-apply-to-whole-collection-question")}</Text>
+            <Text>{t("common.confirm-continue-question")}</Text>
           </>
         ),
         icon: null,
@@ -158,9 +166,9 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
       return;
     }
 
-    const shouldConfirmApplyToWholeCollection = !context.minionList?.length;
-    if (shouldConfirmApplyToWholeCollection) {
-      const confirmed = await confirmApplyToWholeCollection();
+    const targetMode = getTaskTargetMode(context);
+    if (targetMode === "filtered" || targetMode === "whole-collection") {
+      const confirmed = await confirmTaskTargetScope(targetMode);
       if (!confirmed) {
         return;
       }
@@ -217,16 +225,17 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   }, [context, pluginData]);
 
   const configurationTopContent = useMemo(() => {
-    const shouldShow = !context.minionList?.length;
-    if (!shouldShow) return null;
+    const targetMode = getTaskTargetMode(context);
+    if (targetMode === "selected") return null;
 
     return (
-      <TaskApplyToWholeCollectionWarning
+      <TaskTargetScopeWarning
+        mode={targetMode}
         taskType={context.taskType}
         collectionName={collectionName}
       />
     );
-  }, [collectionName, context.minionList?.length, context.taskType]);
+  }, [collectionName, context]);
 
   const tabs = [
     {

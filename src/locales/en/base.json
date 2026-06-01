@@ -207,9 +207,9 @@
     "task-created-successfully": "Task created successfully",
     "error-on-load-salt-masters": "Error on load salt masters",
     "warning-apply-to-whole-collection": "{{entityType}} will be applied to all minions in the \"{{collectionName}}\" collection",
-    "confirm-apply-to-whole-collection-title": "Launch confirmation",
+    "warning-apply-to-filtered-collection": "{{entityType}} will be applied to filtered minions in the \"{{collectionName}}\" collection",
     "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
-    "confirm-apply-to-whole-collection-question": "Are you sure you want to continue?",
+    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
     "warning-on-create-task": "To create a task, activate a master on the Masters page",
     "warning-on-create-policy": "To create a policy, activate a master on the Masters page"
   },
@@ -839,6 +839,8 @@
   "common": {
     "yes": "Yes",
     "no": "No",
+    "launch-confirmation-title": "Launch confirmation",
+    "confirm-continue-question": "Are you sure you want to continue?",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
