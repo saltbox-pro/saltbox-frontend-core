@@ -1,5 +1,14 @@
 import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
+import type { RJSFSchema } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
 import type { KeyboardEvent } from "react";
+
+import {
+  hasJsonSchemaProperties,
+  isValidationErrorInOptionalSections,
+  type JsonSchemaRecord,
+  type UiSchemaRecord,
+} from "./job-schema-split";
 
 export type TtlUnit = "seconds" | "minutes" | "hours";
 
@@ -134,6 +143,46 @@ export const isTimeoutInputKeyAllowed = (event: KeyboardEvent<HTMLInputElement>)
 
 export const isTimeoutPasteAllowed = (pasted: string): boolean => {
   return /^\d+$/.test(pasted);
+};
+
+export type JobJsonFormValidationOutcome =
+  | { status: "valid" }
+  | { status: "invalid"; shouldOpenAdvancedSettings: boolean };
+
+export const resolveJobJsonFormValidation = (
+  formData: Record<string, unknown>,
+  jsonSchema: JsonSchemaRecord | undefined,
+  uiSchema: UiSchemaRecord | undefined,
+  isAdvancedSettingsEnabled: boolean,
+  optionalTopLevelPropertyNames: string[]
+): JobJsonFormValidationOutcome => {
+  if (!jsonSchema || !hasJsonSchemaProperties(jsonSchema)) {
+    return { status: "valid" };
+  }
+
+  const { errors } = validator.validateFormData(
+    formData,
+    jsonSchema as RJSFSchema,
+    undefined,
+    undefined,
+    uiSchema as UiSchemaRecord
+  );
+
+  if (errors.length === 0) {
+    return { status: "valid" };
+  }
+
+  if (isAdvancedSettingsEnabled) {
+    return { status: "invalid", shouldOpenAdvancedSettings: false };
+  }
+
+  return {
+    status: "invalid",
+    shouldOpenAdvancedSettings: isValidationErrorInOptionalSections(
+      errors,
+      optionalTopLevelPropertyNames
+    ),
+  };
 };
 
 export const fetchJobFunctionSchema = async (

@@ -40,12 +40,14 @@ import {
   isTimeoutInputKeyAllowed,
   isTimeoutPasteAllowed,
   parseTtlValue,
+  resolveJobJsonFormValidation,
   totalSecondsToTtlParts,
   ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import {
-  getJobParamsDisplaySchema,
+  getJobParamsSchemaLayout,
   hasJsonSchemaProperties,
+  type JsonSchemaRecord,
 } from "saltbox-core/shared/utils/job-schema-split";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
@@ -115,6 +117,7 @@ export function JobModal({
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
   const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
+  const shouldFocusJsonFormAfterAdvancedOpenRef = useRef(false);
 
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
@@ -122,14 +125,12 @@ export function JobModal({
 
   const isLoading = isMasterListLoading || isSchemaLoading || isJobCreating;
 
-  const jobParamsDisplay = useMemo(
-    () =>
-      getJobParamsDisplaySchema(
-        saltFunction?.json_schema as Record<string, unknown> | undefined,
-        saltFunction?.ui_schema as Record<string, unknown> | undefined,
-        isAdvancedSettingsEnabled
-      ),
-    [saltFunction?.json_schema, saltFunction?.ui_schema, isAdvancedSettingsEnabled]
+  const functionJsonSchema = saltFunction?.json_schema as JsonSchemaRecord | undefined;
+  const functionUiSchema = saltFunction?.ui_schema as JsonSchemaRecord | undefined;
+
+  const jobParamsSchemaLayout = useMemo(
+    () => getJobParamsSchemaLayout(functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled),
+    [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
   );
 
   const applyTotalSecondsToTtlState = (totalSeconds: number) => {
@@ -228,26 +229,36 @@ export function JobModal({
   }, [isModalOpen, target, targetType, defaultMaster, initialTtlSeconds, form, masterList]);
 
   useLayoutEffect(() => {
-    if (!saltFunction || !isModalOpen) {
+    if (!isModalOpen) {
       return;
     }
 
-    const focusFirstJsonInput = () => {
-      const jsonInputSelector =
-        "#job-params-form input, #job-params-form textarea, #job-params-form select";
-      const firstInput = document.querySelector<HTMLElement>(jsonInputSelector);
-      firstInput?.focus({ preventScroll: true });
-    };
-
-    const hasJsonFields = hasJsonSchemaProperties(
-      jobParamsDisplay.schema as Record<string, unknown> | null
-    );
-    if (hasJsonFields) {
-      focusFirstJsonInput();
-    } else {
-      form.focusField("tgt");
+    if (shouldFocusJsonFormAfterAdvancedOpenRef.current && isAdvancedSettingsEnabled) {
+      shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
+      refJobParamsForm.current?.validateForm();
+      return;
     }
-  }, [saltFunction, isModalOpen, form, jobParamsDisplay.schema]);
+
+    if (!saltFunction) {
+      return;
+    }
+
+    if (hasJsonSchemaProperties(jobParamsSchemaLayout.displaySchema)) {
+      const firstInput = document.querySelector<HTMLElement>(
+        "#job-params-form input, #job-params-form textarea, #job-params-form select"
+      );
+      firstInput?.focus({ preventScroll: true });
+      return;
+    }
+
+    form.focusField("tgt");
+  }, [
+    saltFunction,
+    isModalOpen,
+    isAdvancedSettingsEnabled,
+    jobParamsSchemaLayout.displaySchema,
+    form,
+  ]);
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
 
@@ -270,6 +281,7 @@ export function JobModal({
     setSaltFunction(undefined);
     setJsonFormValue({});
     setIsAdvancedSettingsEnabled(false);
+    shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
   };
@@ -309,8 +321,22 @@ export function JobModal({
   };
 
   const validateJsonForm = () => {
-    if (!hasJsonSchemaProperties(jobParamsDisplay.schema as Record<string, unknown> | null)) {
+    const validation = resolveJobJsonFormValidation(
+      jsonFormValue,
+      functionJsonSchema,
+      functionUiSchema,
+      isAdvancedSettingsEnabled,
+      jobParamsSchemaLayout.optionalTopLevelPropertyNames
+    );
+
+    if (validation.status === "valid") {
       return true;
+    }
+
+    if (validation.status === "invalid" && validation.shouldOpenAdvancedSettings) {
+      shouldFocusJsonFormAfterAdvancedOpenRef.current = true;
+      setIsAdvancedSettingsEnabled(true);
+      return false;
     }
 
     return refJobParamsForm.current?.validateForm() === true;
@@ -621,13 +647,14 @@ export function JobModal({
           )}
         </Form>
 
-        {jobParamsDisplay.schema && (
+        {jobParamsSchemaLayout.displaySchema && (
           <JsonForm
             key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
             ref={refJobParamsForm}
-            schema={jobParamsDisplay.schema}
-            uiSchema={jobParamsDisplay.uiSchema}
+            schema={jobParamsSchemaLayout.displaySchema}
+            uiSchema={jobParamsSchemaLayout.displayUiSchema}
             omitExtraData={false}
+            focusOnFirstError
             id="job-params-form"
             className={styles.jobParamsForm}
             idPrefix="job-params-form"
