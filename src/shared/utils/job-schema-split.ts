@@ -4,7 +4,6 @@ export type UiSchemaRecord = Record<string, unknown>;
 export type JobParamsSchemaLayout = {
   displaySchema: JsonSchemaRecord | null;
   displayUiSchema: UiSchemaRecord | undefined;
-  optionalTopLevelPropertyNames: string[];
 };
 
 const isRecord = (value: unknown): value is JsonSchemaRecord =>
@@ -61,6 +60,39 @@ const pickUiSchemaFields = (
   return Object.fromEntries(pickedEntries);
 };
 
+const allowExtraFormDataInSubsetSchema = (schema: JsonSchemaRecord): JsonSchemaRecord => {
+  const properties = schema.properties;
+  if (!isRecord(properties)) {
+    return {
+      ...schema,
+      additionalProperties: true,
+    };
+  }
+
+  return {
+    ...schema,
+    additionalProperties: true,
+    properties: Object.fromEntries(
+      Object.entries(properties).map(([propertyName, propertySchema]) => {
+        if (!isRecord(propertySchema)) {
+          return [propertyName, propertySchema];
+        }
+
+        const isObjectSchema =
+          propertySchema.type === "object" ||
+          isRecord(propertySchema.properties) ||
+          propertySchema.additionalProperties !== undefined;
+
+        if (!isObjectSchema) {
+          return [propertyName, propertySchema];
+        }
+
+        return [propertyName, allowExtraFormDataInSubsetSchema(propertySchema)];
+      })
+    ),
+  };
+};
+
 const buildObjectSubsetSchema = (
   baseSchema: JsonSchemaRecord,
   properties: JsonSchemaRecord,
@@ -82,6 +114,16 @@ const buildObjectSubsetSchema = (
   }
 
   return subset;
+};
+
+export const toDisplayValidationSchema = (
+  displaySchema: JsonSchemaRecord | null | undefined
+): JsonSchemaRecord | null => {
+  if (!displaySchema) {
+    return null;
+  }
+
+  return allowExtraFormDataInSubsetSchema(displaySchema);
 };
 
 const splitKwargsSchema = (
@@ -203,14 +245,6 @@ const splitJobFunctionSchema = (
   };
 };
 
-const getOptionalTopLevelPropertyNamesFromSplit = (optionalSchema: JsonSchemaRecord | null) => {
-  const properties = optionalSchema?.properties;
-  if (!isRecord(properties)) {
-    return [];
-  }
-  return Object.keys(properties);
-};
-
 export const hasJsonSchemaProperties = (schema: JsonSchemaRecord | null | undefined): boolean => {
   if (!schema) {
     return false;
@@ -229,7 +263,6 @@ export const getJobParamsSchemaLayout = (
     return {
       displaySchema: null,
       displayUiSchema: undefined,
-      optionalTopLevelPropertyNames: [],
     };
   }
 
@@ -237,7 +270,6 @@ export const getJobParamsSchemaLayout = (
     return {
       displaySchema: jsonSchema,
       displayUiSchema: uiSchema ?? undefined,
-      optionalTopLevelPropertyNames: [],
     };
   }
 
@@ -246,33 +278,99 @@ export const getJobParamsSchemaLayout = (
   return {
     displaySchema: split.requiredSchema,
     displayUiSchema: split.requiredUiSchema,
-    optionalTopLevelPropertyNames: getOptionalTopLevelPropertyNamesFromSplit(split.optionalSchema),
   };
 };
 
-export const isValidationErrorInOptionalSections = (
-  errors: { property?: string }[],
-  optionalTopLevelPropertyNames: string[]
+const normalizeValidationPropertyPath = (propertyPath: string): string => {
+  const trimmed = propertyPath.trim();
+  if (!trimmed) {
+    return "";
+  }
+  return trimmed.startsWith(".") ? trimmed : `.${trimmed}`;
+};
+
+const getValidationPathSegments = (propertyPath: string): string[] => {
+  const normalizedPath = normalizeValidationPropertyPath(propertyPath);
+  if (!normalizedPath) {
+    return [];
+  }
+
+  return normalizedPath
+    .slice(1)
+    .split(/\.|\[|\]/)
+    .filter((segment) => segment !== "");
+};
+
+const resolveSchemaAtPathSegments = (
+  schema: JsonSchemaRecord,
+  segments: string[],
+  segmentIndex: number
+): JsonSchemaRecord | null => {
+  if (segmentIndex >= segments.length) {
+    return schema;
+  }
+
+  const segment = segments[segmentIndex];
+  const isArrayIndex = /^\d+$/.test(segment);
+
+  if (isArrayIndex) {
+    const itemsSchema = schema.items;
+    if (!isRecord(itemsSchema) || Array.isArray(itemsSchema)) {
+      return null;
+    }
+    return resolveSchemaAtPathSegments(itemsSchema, segments, segmentIndex + 1);
+  }
+
+  const properties = schema.properties;
+  if (!isRecord(properties) || !(segment in properties)) {
+    return null;
+  }
+
+  const childSchema = properties[segment];
+  if (!isRecord(childSchema)) {
+    return null;
+  }
+
+  return resolveSchemaAtPathSegments(childSchema, segments, segmentIndex + 1);
+};
+
+export const isValidationErrorCoveredByDisplaySchema = (
+  error: { property?: string },
+  displaySchema: JsonSchemaRecord | null | undefined
 ): boolean => {
-  if (optionalTopLevelPropertyNames.length === 0 || errors.length === 0) {
+  if (!displaySchema) {
     return false;
   }
 
-  return errors.some((error) => {
-    const propertyPath = (error.property ?? "").trim();
-    if (!propertyPath) {
-      return false;
-    }
+  const segments = getValidationPathSegments(error.property ?? "");
+  if (segments.length === 0) {
+    return false;
+  }
 
-    const normalizedPath = propertyPath.startsWith(".") ? propertyPath : `.${propertyPath}`;
+  const rootProperties = displaySchema.properties;
+  if (!isRecord(rootProperties) || !(segments[0] in rootProperties)) {
+    return false;
+  }
 
-    return optionalTopLevelPropertyNames.some((propertyName) => {
-      const rootPrefix = `.${propertyName}`;
-      return (
-        normalizedPath === rootPrefix ||
-        normalizedPath.startsWith(`${rootPrefix}.`) ||
-        normalizedPath.startsWith(`${rootPrefix}[`)
-      );
-    });
-  });
+  const rootPropertySchema = rootProperties[segments[0]];
+  if (!isRecord(rootPropertySchema)) {
+    return false;
+  }
+
+  if (segments.length === 1) {
+    return true;
+  }
+
+  return resolveSchemaAtPathSegments(rootPropertySchema, segments, 1) !== null;
+};
+
+export const shouldOpenAdvancedSettingsForValidationErrors = (
+  errors: { property?: string }[],
+  displaySchema: JsonSchemaRecord | null | undefined
+): boolean => {
+  if (errors.length === 0) {
+    return false;
+  }
+
+  return errors.some((error) => !isValidationErrorCoveredByDisplaySchema(error, displaySchema));
 };

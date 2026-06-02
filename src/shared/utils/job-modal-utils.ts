@@ -1,11 +1,12 @@
 import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
-import type { RJSFSchema } from "@rjsf/utils";
+import type { ErrorSchema, RJSFSchema, RJSFValidationError } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import type { KeyboardEvent } from "react";
 
 import {
   hasJsonSchemaProperties,
-  isValidationErrorInOptionalSections,
+  shouldOpenAdvancedSettingsForValidationErrors,
+  toDisplayValidationSchema,
   type JsonSchemaRecord,
   type UiSchemaRecord,
 } from "./job-schema-split";
@@ -149,24 +150,31 @@ export type JobJsonFormValidationOutcome =
   | { status: "valid" }
   | { status: "invalid"; shouldOpenAdvancedSettings: boolean };
 
+const validateWithRjsf = (
+  formData: Record<string, unknown>,
+  schema: JsonSchemaRecord,
+  uiSchema?: UiSchemaRecord
+) =>
+  validator.validateFormData(
+    formData,
+    schema as RJSFSchema,
+    undefined,
+    undefined,
+    uiSchema as UiSchemaRecord
+  );
+
 export const resolveJobJsonFormValidation = (
   formData: Record<string, unknown>,
   jsonSchema: JsonSchemaRecord | undefined,
   uiSchema: UiSchemaRecord | undefined,
   isAdvancedSettingsEnabled: boolean,
-  optionalTopLevelPropertyNames: string[]
+  displaySchema: JsonSchemaRecord | null | undefined
 ): JobJsonFormValidationOutcome => {
   if (!jsonSchema || !hasJsonSchemaProperties(jsonSchema)) {
     return { status: "valid" };
   }
 
-  const { errors } = validator.validateFormData(
-    formData,
-    jsonSchema as RJSFSchema,
-    undefined,
-    undefined,
-    uiSchema as UiSchemaRecord
-  );
+  const { errors } = validateWithRjsf(formData, jsonSchema, uiSchema);
 
   if (errors.length === 0) {
     return { status: "valid" };
@@ -178,11 +186,26 @@ export const resolveJobJsonFormValidation = (
 
   return {
     status: "invalid",
-    shouldOpenAdvancedSettings: isValidationErrorInOptionalSections(
+    shouldOpenAdvancedSettings: shouldOpenAdvancedSettingsForValidationErrors(
       errors,
-      optionalTopLevelPropertyNames
+      displaySchema
     ),
   };
+};
+
+export const validateDisplayJsonFormData = (
+  formData: Record<string, unknown>,
+  displaySchema: JsonSchemaRecord | null | undefined,
+  uiSchema?: UiSchemaRecord
+): { errors: RJSFValidationError[]; errorSchema: ErrorSchema } => {
+  const validationSchema = toDisplayValidationSchema(displaySchema);
+  if (!validationSchema) {
+    return { errors: [], errorSchema: {} };
+  }
+
+  const { errors, errorSchema } = validateWithRjsf(formData, validationSchema, uiSchema);
+
+  return { errors, errorSchema };
 };
 
 export const fetchJobFunctionSchema = async (
