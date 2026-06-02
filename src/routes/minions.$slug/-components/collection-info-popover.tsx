@@ -1,11 +1,12 @@
 import { InfoCircleOutlined } from "@ant-design/icons";
-import { Popover, SaltBoxReadonlyQueryBuilder } from "@saltbox/saltbox-frontend-common";
-import { Button } from "antd";
+import { Popover } from "@saltbox/saltbox-frontend-common";
+import { Button, Divider } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { CollectionFilterQueryBlock } from "saltbox-core/shared/components/collection-filter-query-block";
 import { CollectionPopoverFilterStore, CollectionStore } from "saltbox-core/store";
 
 interface CollectionInfoPopoverProps {
@@ -36,44 +37,27 @@ export const CollectionInfoPopover = observer(
             <div style={{ maxWidth: 300 }}>{t("minions.root-collection-info")}</div>
           ) : (
             <div>
-              <div
-                style={{
-                  marginBottom: 12,
-                }}
-              >
-                {t("minions.subcollection-info")}
-                <Link to={`/core/minions/${collectionStore.collection?.parent_slug || ""}`}>
-                  <Button type="link" size={"small"}>
-                    {collectionStore.collection?.parent_title}
-                  </Button>
-                </Link>
-              </div>
-              <div
-                style={{
-                  borderTop: "1px solid rgba(0, 0, 0, 0.06)",
-                  paddingTop: 12,
-                  marginBottom: 8,
-                }}
-              >
-                <div
-                  style={{
-                    marginBottom: 8,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    maxWidth: 700,
-                    maxHeight: 500,
-                    overflow: "auto",
-                  }}
-                >
-                  {t("minions.collection-query")}
-                </div>
-                <SaltBoxReadonlyQueryBuilder filterStore={filterStore} />
-              </div>
+              {t("minions.subcollection-info")}
+
+              <Link to={`/core/minions/${collectionStore.collection?.parent_slug || ""}`}>
+                <Button type="link" size={"small"}>
+                  {collectionStore.collection?.parent_title}
+                </Button>
+              </Link>
+
+              <Divider size="small" />
+
+              {collectionStore.collection?.query && (
+                <CollectionFilterQueryBlock
+                  title={t("minions.collection-query")}
+                  filterStore={filterStore}
+                />
+              )}
             </div>
           )
         }
       >
-        <InfoCircleOutlined style={{ cursor: "pointer" }} />
+        <InfoCircleOutlined style={{ cursor: "help" }} />
       </Popover>
     );
   }

@@ -18,9 +18,9 @@ import type {
   TaskOverviewData,
 } from "../type/types";
 
-import { TaskTargetScopeWarning } from "./task-target-scope-warning";
 import { TaskConfigurationTab } from "./task-configuration-tab";
 import { TaskOverviewTab } from "./task-overview-tab";
+import { TaskTargetScopeWarning } from "./task-target-scope-warning";
 
 const { Paragraph, Text } = Typography;
 
@@ -233,6 +233,8 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         mode={targetMode}
         taskType={context.taskType}
         collectionName={collectionName}
+        userQuery={context.query}
+        userQueryFilterSchema={context.queryFilterSchema}
       />
     );
   }, [collectionName, context]);

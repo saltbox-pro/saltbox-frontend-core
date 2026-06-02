@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
+import { CollectionAppliedFilterPopover } from "saltbox-core/shared/components/collection-applied-filter-popover";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
 import type { TaskDetailsData } from "../type/task-details-data";
@@ -145,7 +146,16 @@ export function TaskDetails({
         return t("task.details.no-query-selection");
       }
 
-      return t("task.details.query-based-selection");
+      return (
+        <Flex align="center" gap={5}>
+          <span>{t("task.details.query-based-selection")}</span>
+
+          <CollectionAppliedFilterPopover
+            query={target.userQuery}
+            filterSchema={target.userQueryFilterSchema}
+          />
+        </Flex>
+      );
     };
 
     const items: InfoDescriptionsProps["items"] = [

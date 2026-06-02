@@ -8,6 +8,7 @@ import {
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
 import { ReactNode } from "react";
+import type { OptionList } from "react-querybuilder";
 
 export type TaskTemplateWithRepository = TaskTemplateShortSchema & {
   repository?: string;
@@ -41,6 +42,7 @@ export type TaskCreationContext = {
   collection?: CollectionModel;
   minionList?: Array<TaskTargetMinion>;
   query?: object;
+  queryFilterSchema?: OptionList;
   slug: string;
   renderPluginButtons?: (data: PluginRenderData) => ReactNode;
 };
