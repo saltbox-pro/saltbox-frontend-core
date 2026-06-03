@@ -38,17 +38,17 @@ import {
   fetchJobFunctionSchema,
   getArgAndKwargForRequest,
   getRepeatJsonFormValue,
+  hasBaselineJobArgs,
   isTimeoutInputKeyAllowed,
   isTimeoutPasteAllowed,
   parseTtlValue,
-  resolveJobJsonFormValidation,
   totalSecondsToTtlParts,
   ttlPartsToTotalSeconds,
-  validateDisplayJsonFormData,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getJobParamsSchemaLayout,
   hasJsonSchemaProperties,
+  validateJobJsonFormData,
   type JsonSchemaRecord,
 } from "saltbox-core/shared/utils/job-schema-split";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
@@ -140,11 +140,23 @@ export function JobModal({
     [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
   );
 
-  const applyTotalSecondsToTtlState = (totalSeconds: number) => {
+  const applyTotalSecondsToTtlState = useCallback((totalSeconds: number) => {
     const parts = totalSecondsToTtlParts(totalSeconds);
     setTtlValue(parts.value);
     setTtlUnit(parts.unit);
-  };
+  }, []);
+
+  const applyTtlFromInitialOrDefault = useCallback(
+    (totalSeconds: number | null | undefined, defaultTtl: unknown) => {
+      if (totalSeconds != null && Number.isFinite(totalSeconds) && totalSeconds >= 0) {
+        applyTotalSecondsToTtlState(totalSeconds);
+        return;
+      }
+      setTtlValue(parseTtlValue(defaultTtl));
+      setTtlUnit("seconds");
+    },
+    [applyTotalSecondsToTtlState]
+  );
 
   const showModal = useCallback(() => {
     setIsMasterListLoading(true);
@@ -230,10 +242,17 @@ export function JobModal({
     setTtlUnit("seconds");
     setIsAdvancedSettingsEnabled(false);
 
-    if (initialTtlSeconds != null && Number.isFinite(initialTtlSeconds) && initialTtlSeconds >= 0) {
-      applyTotalSecondsToTtlState(initialTtlSeconds);
-    }
-  }, [isModalOpen, target, targetType, defaultMaster, initialTtlSeconds, form, masterList]);
+    applyTtlFromInitialOrDefault(initialTtlSeconds, null);
+  }, [
+    isModalOpen,
+    target,
+    targetType,
+    defaultMaster,
+    initialTtlSeconds,
+    form,
+    masterList,
+    applyTtlFromInitialOrDefault,
+  ]);
 
   useLayoutEffect(() => {
     if (!isModalOpen) {
@@ -296,21 +315,19 @@ export function JobModal({
     handleFormFinishInProgressRef.current = false;
   };
 
-  const closeModalResettingState = () => {
+  const closeModal = (reason?: "return-to-picker" | "dismiss") => {
     if (isJobCreating) {
       return;
+    }
+    if (reason) {
+      closeReasonRef.current = reason;
     }
     resetModalState();
     setIsModalOpen(false);
   };
 
   const handleModalDismiss = () => {
-    if (isJobCreating) {
-      return;
-    }
-    closeReasonRef.current = "dismiss";
-    resetModalState();
-    setIsModalOpen(false);
+    closeModal("dismiss");
   };
 
   const handleFooterDismiss = () => {
@@ -324,10 +341,8 @@ export function JobModal({
       jsonFormData: jsonFormValue,
       ttlSeconds: getTtlValue(),
     };
-    closeReasonRef.current = "return-to-picker";
-    resetModalState();
     onReturnToFunctionPicker(snapshot);
-    setIsModalOpen(false);
+    closeModal("return-to-picker");
   };
 
   const focusFirstVisibleJsonFormError = () => {
@@ -335,46 +350,41 @@ export function JobModal({
     firstInvalidField?.focus({ preventScroll: true });
   };
 
-  const validateJsonForm = () => {
-    const validation = resolveJobJsonFormValidation(
-      jsonFormValue,
+  const validateJsonForm = (): boolean => {
+    const formStateData = refJobParamsForm.current?.state?.formData;
+    const formData =
+      formStateData && typeof formStateData === "object" && !Array.isArray(formStateData)
+        ? (formStateData as Record<string, unknown>)
+        : jsonFormValue;
+
+    const result = validateJobJsonFormData(
+      formData,
       functionJsonSchema,
       functionUiSchema,
       isAdvancedSettingsEnabled,
-      jobParamsSchemaLayout.displaySchema
+      jobParamsSchemaLayout.displaySchema,
+      jobParamsSchemaLayout.displayUiSchema
     );
 
-    if (validation.status === "valid") {
+    if (result.ok) {
       clearJsonFormValidation();
       return true;
     }
-
-    if (validation.status === "invalid" && validation.shouldOpenAdvancedSettings) {
+    if ("openAdvanced" in result) {
       clearJsonFormValidation();
       shouldFocusJsonFormAfterAdvancedOpenRef.current = true;
       setIsAdvancedSettingsEnabled(true);
       return false;
     }
-
-    if (isAdvancedSettingsEnabled) {
+    if ("useFormRef" in result) {
       clearJsonFormValidation();
       return refJobParamsForm.current?.validateForm() === true;
     }
-
-    const displayValidation = validateDisplayJsonFormData(
-      jsonFormValue,
-      jobParamsSchemaLayout.displaySchema,
-      jobParamsSchemaLayout.displayUiSchema
-    );
-    setJsonFormExtraErrors(displayValidation.errorSchema);
-
-    if (displayValidation.errors.length > 0) {
-      requestAnimationFrame(() => {
-        focusFirstVisibleJsonFormError();
-      });
+    if ("errorSchema" in result) {
+      setJsonFormExtraErrors(result.errorSchema);
+      requestAnimationFrame(() => focusFirstVisibleJsonFormError());
     }
-
-    return displayValidation.errors.length === 0;
+    return false;
   };
 
   const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
@@ -443,8 +453,7 @@ export function JobModal({
       return;
     }
 
-    const hasBaselineArgs =
-      (Array.isArray(arg) && arg.length > 0) || (kwarg != null && Object.keys(kwarg).length > 0);
+    const hasBaselineArgs = hasBaselineJobArgs(arg, kwarg);
 
     setSaltFunction(undefined);
     setJsonFormValue({});
@@ -458,15 +467,7 @@ export function JobModal({
       }
       setSaltFunction(result);
       setJsonFormValue(hasBaselineArgs ? getRepeatJsonFormValue(arg, kwarg) : {});
-      if (
-        initialTtlSeconds != null &&
-        Number.isFinite(initialTtlSeconds) &&
-        initialTtlSeconds >= 0
-      ) {
-        applyTotalSecondsToTtlState(initialTtlSeconds);
-      } else {
-        setTtlValue(parseTtlValue(result?.default_ttl));
-      }
+      applyTtlFromInitialOrDefault(initialTtlSeconds, result?.default_ttl);
     };
 
     const loadSchema = async () => {
@@ -500,7 +501,16 @@ export function JobModal({
     return () => {
       isCancelled = true;
     };
-  }, [fun, isModalOpen, arg, kwarg, messageApi, initialTtlSeconds, t]);
+  }, [
+    fun,
+    isModalOpen,
+    arg,
+    kwarg,
+    messageApi,
+    initialTtlSeconds,
+    t,
+    applyTtlFromInitialOrDefault,
+  ]);
 
   const handleCreateJobPlugin = (pluginKey: string) => {
     if (!validateJsonForm()) {
@@ -510,7 +520,7 @@ export function JobModal({
       pluginKey: pluginKey,
       jobCreateRequest: getJobCreateRequest(),
     });
-    closeModalResettingState();
+    closeModal();
   };
 
   const getJobCreateRequest = (): CreateJobRequest => {
@@ -530,20 +540,7 @@ export function JobModal({
     };
   };
 
-  let jobsJobModalCreateButtonsPlugins: React.ReactNode = null;
-  appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"]?.forEach((plugin) => {
-    const jobsJobModalCreateButtonPlugin = (
-      <Button type="default" onClick={() => handleCreateJobPlugin(plugin.key)}>
-        {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
-      </Button>
-    );
-    jobsJobModalCreateButtonsPlugins = (
-      <>
-        {jobsJobModalCreateButtonsPlugins}
-        {jobsJobModalCreateButtonPlugin}
-      </>
-    );
-  });
+  const jobsJobModalCreatePlugins = appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"];
 
   return (
     <>
@@ -572,7 +569,15 @@ export function JobModal({
               {t("job-modal.return-to-function-picker")}
             </Button>
 
-            {jobsJobModalCreateButtonsPlugins}
+            {jobsJobModalCreatePlugins?.map((plugin) => (
+              <Button
+                key={plugin.key}
+                type="default"
+                onClick={() => handleCreateJobPlugin(plugin.key)}
+              >
+                {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+              </Button>
+            ))}
 
             <Button
               loading={isLoading}

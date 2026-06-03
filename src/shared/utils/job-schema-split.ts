@@ -1,3 +1,6 @@
+import type { ErrorSchema, RJSFSchema } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
+
 export type JsonSchemaRecord = Record<string, unknown>;
 export type UiSchemaRecord = Record<string, unknown>;
 
@@ -20,7 +23,7 @@ type SplitKwargsSchemaResult = {
   optionalUi?: UiSchemaRecord;
 };
 
-const isRecord = (value: unknown): value is JsonSchemaRecord =>
+export const isJsonSchemaRecord = (value: unknown): value is JsonSchemaRecord =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const getRequiredPropertyNames = (schema: JsonSchemaRecord): string[] => {
@@ -44,7 +47,9 @@ const isTopLevelPropertyRequired = (
 
   return (
     requiredPropertyNames.includes(propertyName) ||
-    (propertyName === "args" && isRecord(propertySchema) && isArrayFieldRequired(propertySchema))
+    (propertyName === "args" &&
+      isJsonSchemaRecord(propertySchema) &&
+      isArrayFieldRequired(propertySchema))
   );
 };
 
@@ -94,43 +99,18 @@ const buildObjectSubsetSchema = (
   return subset;
 };
 
-const allowExtraFormDataInSubsetSchema = (schema: JsonSchemaRecord): JsonSchemaRecord => {
-  const properties = schema.properties;
-  if (!isRecord(properties)) {
-    return {
-      ...schema,
-      additionalProperties: true,
-    };
+const getRootRequiredForSubsetSchema = (
+  jsonSchema: JsonSchemaRecord,
+  requiredProperties: JsonSchemaRecord
+): string[] => {
+  const rootRequired = new Set(getRequiredPropertyNames(jsonSchema));
+  const kwargsSchema = requiredProperties.kwargs;
+
+  if (isJsonSchemaRecord(kwargsSchema) && getRequiredPropertyNames(kwargsSchema).length > 0) {
+    rootRequired.add("kwargs");
   }
 
-  return {
-    ...schema,
-    additionalProperties: true,
-    properties: Object.fromEntries(
-      Object.entries(properties).map(([propertyName, propertySchema]) => {
-        if (!isRecord(propertySchema)) {
-          return [propertyName, propertySchema];
-        }
-
-        const isObjectSchema =
-          propertySchema.type === "object" ||
-          isRecord(propertySchema.properties) ||
-          propertySchema.additionalProperties !== undefined;
-
-        if (!isObjectSchema) {
-          return [propertyName, propertySchema];
-        }
-
-        return [propertyName, allowExtraFormDataInSubsetSchema(propertySchema)];
-      })
-    ),
-  };
-};
-
-export const toDisplayValidationSchema = (
-  displaySchema: JsonSchemaRecord | null | undefined
-): JsonSchemaRecord | null => {
-  return displaySchema ? allowExtraFormDataInSubsetSchema(displaySchema) : null;
+  return [...rootRequired];
 };
 
 const splitKwargsSchema = (
@@ -138,7 +118,7 @@ const splitKwargsSchema = (
   uiKwargs?: UiSchemaRecord
 ): SplitKwargsSchemaResult => {
   const properties = kwargsSchema.properties;
-  const hasNamedProperties = isRecord(properties) && Object.keys(properties).length > 0;
+  const hasNamedProperties = isJsonSchemaRecord(properties) && Object.keys(properties).length > 0;
 
   if (!hasNamedProperties) {
     const requiredNames = getRequiredPropertyNames(kwargsSchema);
@@ -191,12 +171,12 @@ const splitJobFunctionSchema = (
   const optionalUiSchema: UiSchemaRecord = {};
 
   for (const [propertyName, propertySchema] of Object.entries(rootProperties)) {
-    if (!isRecord(propertySchema)) {
+    if (!isJsonSchemaRecord(propertySchema)) {
       continue;
     }
 
     const propertyUiSchema = uiSchema?.[propertyName];
-    const propertyUi = isRecord(propertyUiSchema) ? propertyUiSchema : undefined;
+    const propertyUi = isJsonSchemaRecord(propertyUiSchema) ? propertyUiSchema : undefined;
 
     if (propertyName === "kwargs") {
       const splitKwargs = splitKwargsSchema(propertySchema, propertyUi);
@@ -235,7 +215,7 @@ const splitJobFunctionSchema = (
     requiredSchema: buildObjectSubsetSchema(
       jsonSchema,
       requiredProperties,
-      getRequiredPropertyNames(jsonSchema)
+      getRootRequiredForSubsetSchema(jsonSchema, requiredProperties)
     ),
     optionalSchema: buildObjectSubsetSchema(jsonSchema, optionalProperties),
     requiredUiSchema: Object.keys(requiredUiSchema).length > 0 ? requiredUiSchema : undefined,
@@ -244,7 +224,9 @@ const splitJobFunctionSchema = (
 };
 
 export const hasJsonSchemaProperties = (schema: JsonSchemaRecord | null | undefined): boolean => {
-  return !!schema && isRecord(schema.properties) && Object.keys(schema.properties).length > 0;
+  return (
+    !!schema && isJsonSchemaRecord(schema.properties) && Object.keys(schema.properties).length > 0
+  );
 };
 
 export const getJobParamsSchemaLayout = (
@@ -274,21 +256,38 @@ export const getJobParamsSchemaLayout = (
   };
 };
 
-const normalizeValidationPropertyPath = (propertyPath: string): string => {
-  const trimmed = propertyPath.trim();
-  if (!trimmed) {
-    return "";
+const allowExtraFormDataInSubsetSchema = (schema: JsonSchemaRecord): JsonSchemaRecord => {
+  const properties = schema.properties;
+  if (!isJsonSchemaRecord(properties)) {
+    return { ...schema, additionalProperties: true };
   }
-  return trimmed.startsWith(".") ? trimmed : `.${trimmed}`;
+
+  return {
+    ...schema,
+    additionalProperties: true,
+    properties: Object.fromEntries(
+      Object.entries(properties).map(([name, propertySchema]) => {
+        if (
+          !isJsonSchemaRecord(propertySchema) ||
+          (propertySchema.type !== "object" &&
+            !isJsonSchemaRecord(propertySchema.properties) &&
+            propertySchema.additionalProperties === undefined)
+        ) {
+          return [name, propertySchema];
+        }
+        return [name, allowExtraFormDataInSubsetSchema(propertySchema)];
+      })
+    ),
+  };
 };
 
 const getValidationPathSegments = (propertyPath: string): string[] => {
-  const normalizedPath = normalizeValidationPropertyPath(propertyPath);
-  if (!normalizedPath) {
+  const trimmed = propertyPath.trim();
+  if (!trimmed) {
     return [];
   }
-
-  return normalizedPath
+  const normalized = trimmed.startsWith(".") ? trimmed : `.${trimmed}`;
+  return normalized
     .slice(1)
     .split(/\.|\[|\]/)
     .filter((segment) => segment !== "");
@@ -298,57 +297,101 @@ const resolveSchemaAtPath = (
   schema: JsonSchemaRecord,
   segments: string[]
 ): JsonSchemaRecord | null => {
-  let currentSchema: JsonSchemaRecord | null = schema;
+  let current: JsonSchemaRecord | null = schema;
 
   for (const segment of segments) {
-    if (!currentSchema) {
+    if (!current) {
       return null;
     }
-
     if (/^\d+$/.test(segment)) {
-      const itemsSchema = currentSchema.items;
-      if (!isRecord(itemsSchema) || Array.isArray(itemsSchema)) {
-        return null;
-      }
-      currentSchema = itemsSchema;
+      const items = current.items;
+      current = isJsonSchemaRecord(items) && !Array.isArray(items) ? items : null;
       continue;
     }
-
-    const properties = currentSchema.properties;
-    if (!isRecord(properties) || !(segment in properties)) {
+    const properties = current.properties;
+    if (!isJsonSchemaRecord(properties) || !(segment in properties)) {
       return null;
     }
-
-    const childSchema = properties[segment];
-    if (!isRecord(childSchema)) {
-      return null;
-    }
-
-    currentSchema = childSchema;
+    const child = properties[segment];
+    current = isJsonSchemaRecord(child) ? child : null;
   }
 
-  return currentSchema;
+  return current;
 };
 
-export const isValidationErrorCoveredByDisplaySchema = (
-  error: { property?: string },
+const hasHiddenValidationErrors = (
+  errors: { property?: string }[],
   displaySchema: JsonSchemaRecord | null | undefined
 ): boolean => {
   if (!displaySchema) {
     return false;
   }
-
-  const segments = getValidationPathSegments(error.property ?? "");
-  if (segments.length === 0) {
-    return false;
-  }
-
-  return resolveSchemaAtPath(displaySchema, segments) !== null;
+  return errors.some((error) => {
+    const segments = getValidationPathSegments(error.property ?? "");
+    return segments.length > 0 && resolveSchemaAtPath(displaySchema, segments) === null;
+  });
 };
 
-export const shouldOpenAdvancedSettingsForValidationErrors = (
-  errors: { property?: string }[],
-  displaySchema: JsonSchemaRecord | null | undefined
-): boolean => {
-  return errors.some((error) => !isValidationErrorCoveredByDisplaySchema(error, displaySchema));
+const validateFormDataWithSchema = (
+  formData: Record<string, unknown>,
+  schema: JsonSchemaRecord,
+  uiSchema?: UiSchemaRecord
+) =>
+  validator.validateFormData(
+    formData,
+    schema as RJSFSchema,
+    undefined,
+    undefined,
+    uiSchema as UiSchemaRecord
+  );
+
+export type JobJsonFormValidationResult =
+  | { ok: true }
+  | { ok: false; openAdvanced: true }
+  | { ok: false; useFormRef: true }
+  | { ok: false; errorSchema: ErrorSchema };
+
+export const validateJobJsonFormData = (
+  formData: Record<string, unknown>,
+  jsonSchema: JsonSchemaRecord | undefined,
+  uiSchema: UiSchemaRecord | undefined,
+  isAdvancedSettingsEnabled: boolean,
+  displaySchema: JsonSchemaRecord | null | undefined,
+  displayUiSchema: UiSchemaRecord | undefined
+): JobJsonFormValidationResult => {
+  if (!hasJsonSchemaProperties(displaySchema)) {
+    return { ok: true };
+  }
+
+  if (jsonSchema && hasJsonSchemaProperties(jsonSchema)) {
+    const { errors: fullErrors } = validateFormDataWithSchema(formData, jsonSchema, uiSchema);
+    if (
+      fullErrors.length > 0 &&
+      !isAdvancedSettingsEnabled &&
+      hasHiddenValidationErrors(fullErrors, displaySchema)
+    ) {
+      return { ok: false, openAdvanced: true };
+    }
+  }
+
+  if (isAdvancedSettingsEnabled) {
+    return { ok: false, useFormRef: true };
+  }
+
+  const validationSchema = displaySchema ? allowExtraFormDataInSubsetSchema(displaySchema) : null;
+  if (!validationSchema) {
+    return { ok: true };
+  }
+
+  const { errors, errorSchema } = validateFormDataWithSchema(
+    formData,
+    validationSchema,
+    displayUiSchema
+  );
+
+  if (errors.length > 0) {
+    return { ok: false, errorSchema };
+  }
+
+  return { ok: true };
 };
