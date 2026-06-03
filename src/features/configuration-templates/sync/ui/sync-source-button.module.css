@@ -1,0 +1,12 @@
+.syncingTag {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  margin-inline-end: 0;
+  font-size: 14px;
+}
+
+.syncingTag :global(.ant-tag-icon) {
+  display: inline-flex;
+  align-items: center;
+}

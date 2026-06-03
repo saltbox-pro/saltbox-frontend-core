@@ -1,0 +1,51 @@
+.cardClickable {
+  cursor: pointer;
+}
+
+.card .title {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+}
+
+.headerRow {
+  width: 100%;
+  min-width: 0;
+}
+
+.headerLeading {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cardDisconnected {
+  background: #fbfbfb;
+}
+
+.card .extra {
+  margin-inline-start: 10px;
+}
+
+.name {
+  vertical-align: middle;
+}
+
+.titleMeta {
+  margin-left: 10px;
+}
+
+.titleMeta :global(.ant-tag) {
+  font-weight: 400;
+  margin: 0;
+}
+
+.avatar {
+  font-weight: normal;
+  margin-right: 6px;
+}
+
+.divider {
+  margin: 7px 0 3px;
+}
