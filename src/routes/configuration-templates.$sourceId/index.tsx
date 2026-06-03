@@ -42,7 +42,7 @@ const TemplateSourceDetailPage = observer(function TemplateSourceDetailPage() {
   }, [navigate, store?.notFound]);
 
   return (
-    <PageLayout title={store?.source?.name}>
+    <PageLayout title={store?.source?.name ?? ""}>
       {!!store && <TemplateSourceDetail store={store} />}
     </PageLayout>
   );
