@@ -203,6 +203,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             collection={props.collectionStore.collection}
             minionList={selectedMinions}
             query={props.filterStore?.searchMongoDBQuery ?? {}}
+            queryFilterSchema={props.filterStore.filterSchema}
             onClose={closeModal}
             onTaskCreated={(taskId) => goToTaskPage(taskId, props.slug)}
           />
@@ -214,6 +215,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             slug={props.slug}
             collection={props.collectionStore.collection}
             query={props.filterStore?.searchMongoDBQuery ?? {}}
+            queryFilterSchema={props.filterStore.filterSchema}
             onClose={closeModal}
             onTaskCreated={(taskId) => goToTaskPage(taskId, props.slug)}
           />
