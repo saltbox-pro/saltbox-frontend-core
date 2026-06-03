@@ -1,4 +1,5 @@
 import type { TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
+import type { OptionList } from "react-querybuilder";
 
 export type TaskDetailsData = {
   template: {
@@ -17,6 +18,8 @@ export type TaskDetailsData = {
     collection?: string;
     minionIds?: string[];
     isQueryBased?: boolean;
+    userQuery?: object;
+    userQueryFilterSchema?: OptionList;
     showMinionsDetails?: boolean;
   };
   pillars?: TaskModel["pillars"];

@@ -4,12 +4,14 @@ import { Button, Flex, Select } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { DUPLICATES_FILTER, type SaltKeyFilterType } from "saltbox-core/store";
+
 import styles from "./salt-keys-toolbar.module.css";
 
 type SaltKeysToolbarProps = {
-  value: SaltKeyStatusType;
+  value: SaltKeyFilterType;
   isLoading?: boolean;
-  onChange: (status: SaltKeyStatusType) => void;
+  onChange: (status: SaltKeyFilterType) => void;
   onRefresh: () => void;
 };
 
@@ -22,6 +24,7 @@ export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltK
       { value: SaltKeyStatusType.Accepted, label: t("master.table-status-accepted") },
       { value: SaltKeyStatusType.Rejected, label: t("master.table-status-rejected") },
       { value: SaltKeyStatusType.Denied, label: t("master.table-status-denied") },
+      { value: DUPLICATES_FILTER, label: t("master.table-status-duplicates") },
     ],
     [t]
   );
@@ -29,7 +32,7 @@ export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltK
   return (
     <Flex align="center" className={styles.saltKeysToolbar}>
       <div className={styles.saltKeysToolbarLabel}>{t("master.filter-by-status")}</div>
-      <Select<SaltKeyStatusType>
+      <Select<SaltKeyFilterType>
         options={options}
         value={value}
         optionLabelProp="label"

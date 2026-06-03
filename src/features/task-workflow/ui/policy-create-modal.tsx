@@ -1,5 +1,6 @@
 import { type CollectionModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { type FC, useMemo } from "react";
+import type { OptionList } from "react-querybuilder";
 
 import { TaskCreate } from "saltbox-core/features/task-create";
 
@@ -8,6 +9,7 @@ export type PolicyCreateModalProps = {
   slug: string;
   collection?: CollectionModel;
   query?: object;
+  queryFilterSchema?: OptionList;
   onClose: () => void;
   onTaskCreated: (taskId: string) => void;
 };
@@ -17,6 +19,7 @@ export const PolicyCreateModal: FC<PolicyCreateModalProps> = ({
   slug,
   collection,
   query,
+  queryFilterSchema,
   onClose,
   onTaskCreated,
 }) => {
@@ -26,8 +29,9 @@ export const PolicyCreateModal: FC<PolicyCreateModalProps> = ({
       slug,
       collection,
       query,
+      queryFilterSchema,
     }),
-    [slug, collection, query]
+    [slug, collection, query, queryFilterSchema]
   );
 
   return (

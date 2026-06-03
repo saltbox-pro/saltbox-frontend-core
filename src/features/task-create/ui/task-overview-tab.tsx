@@ -65,6 +65,8 @@ export function TaskOverviewTab({
         collection: context.collection?.title ?? context.collection?.slug,
         minionIds: context.minionList?.map((minion) => minion.minion_id),
         isQueryBased: !isMongoQueryEmpty(context.query),
+        userQuery: context.query,
+        userQueryFilterSchema: context.queryFilterSchema,
       },
     }),
     [template, configuration, context]

@@ -6,6 +6,7 @@ import {
 import { publish } from "@saltbox/saltbox-frontend-common";
 import { Button } from "antd";
 import { type FC, useCallback, useMemo } from "react";
+import type { OptionList } from "react-querybuilder";
 
 import { TaskCreate, PluginRenderData, TaskCreatePlugin } from "saltbox-core/features/task-create";
 import { appStore, i18nStore } from "saltbox-core/store";
@@ -16,6 +17,7 @@ export type TaskCreateModalProps = {
   collection?: CollectionModel;
   minionList?: TaskTargetMinion[];
   query?: object;
+  queryFilterSchema?: OptionList;
   onClose: () => void;
   onTaskCreated: (taskId: string) => void;
 };
@@ -26,6 +28,7 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
   collection,
   minionList,
   query,
+  queryFilterSchema,
   onClose,
   onTaskCreated,
 }) => {
@@ -60,9 +63,10 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
       collection,
       minionList,
       query,
+      queryFilterSchema,
       renderPluginButtons,
     }),
-    [slug, collection, minionList, query, renderPluginButtons]
+    [slug, collection, minionList, query, queryFilterSchema, renderPluginButtons]
   );
 
   return (

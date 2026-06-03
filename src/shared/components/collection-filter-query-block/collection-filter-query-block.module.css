@@ -1,0 +1,11 @@
+.content {
+  max-width: 700px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.title {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+}

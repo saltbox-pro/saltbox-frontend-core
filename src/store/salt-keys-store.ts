@@ -4,14 +4,18 @@ import { action, computed, makeObservable, observable, runInAction } from "mobx"
 
 import { apiCoreStore } from "saltbox-core/store";
 
+export const DUPLICATES_FILTER = "duplicates" as const;
+export type SaltKeyFilterType = SaltKeyStatusType | typeof DUPLICATES_FILTER;
+export type SaltKeyWithId = SaltKeyMinionWithStatus & { _index: string };
+
 const DEFAULT_PAGINATION: PaginationState = {
   pageIndex: 0,
   pageSize: 50,
 };
 
 export class SaltKeysStore {
-  @observable allSaltKeys: Array<SaltKeyMinionWithStatus>;
-  @observable statusFilter: SaltKeyStatusType;
+  @observable allSaltKeys: Array<SaltKeyWithId>;
+  @observable statusFilter: SaltKeyFilterType;
   @observable sorting: SortingState;
   @observable pagination: PaginationState;
   @observable isLoading: boolean;
@@ -29,11 +33,23 @@ export class SaltKeysStore {
     makeObservable(this);
   }
 
-  @computed get filteredKeys(): Array<SaltKeyMinionWithStatus> {
+  @computed get filteredKeys(): Array<SaltKeyWithId> {
+    if (this.statusFilter === DUPLICATES_FILTER) {
+      const countByKey = new Map<string, number>();
+      for (const key of this.allSaltKeys) {
+        const ck = `${key.minion_id}::${key.salt_master}`;
+        countByKey.set(ck, (countByKey.get(ck) ?? 0) + 1);
+      }
+      return [...this.allSaltKeys]
+        .filter((key) => (countByKey.get(`${key.minion_id}::${key.salt_master}`) ?? 0) > 1)
+        .sort((a, b) =>
+          `${a.minion_id}::${a.salt_master}`.localeCompare(`${b.minion_id}::${b.salt_master}`)
+        );
+    }
     return this.allSaltKeys.filter((saltKey) => saltKey.status === this.statusFilter);
   }
 
-  @computed get sortedKeys(): Array<SaltKeyMinionWithStatus> {
+  @computed get sortedKeys(): Array<SaltKeyWithId> {
     if (!this.sorting.length) {
       return this.filteredKeys;
     }
@@ -48,7 +64,7 @@ export class SaltKeysStore {
     });
   }
 
-  @computed get pagedKeys(): Array<SaltKeyMinionWithStatus> {
+  @computed get pagedKeys(): Array<SaltKeyWithId> {
     const start = this.pagination.pageIndex * this.pagination.pageSize;
     const end = start + this.pagination.pageSize;
     return this.sortedKeys.slice(start, end);
@@ -66,7 +82,7 @@ export class SaltKeysStore {
     return this.allSaltKeys.filter((k) => k.status === SaltKeyStatusType.Unaccepted).length;
   }
 
-  @action setStatusFilter = (status: SaltKeyStatusType) => {
+  @action setStatusFilter = (status: SaltKeyFilterType) => {
     this.statusFilter = status;
     this.pagination.pageIndex = 0;
   };
@@ -84,7 +100,10 @@ export class SaltKeysStore {
       })
       .then((response) => {
         runInAction(() => {
-          this.allSaltKeys = response?.data ?? [];
+          this.allSaltKeys = (response?.data ?? []).map((item, index) => ({
+            ...item,
+            _index: String(index),
+          }));
         });
       })
       .catch(() => {
@@ -117,7 +136,7 @@ export class SaltKeysStore {
     this.error = null;
   };
 
-  private getSortableValue = (saltKey: SaltKeyMinionWithStatus, id: string): string => {
+  private getSortableValue = (saltKey: SaltKeyWithId, id: string): string => {
     if (id === "status") {
       return saltKey.status ?? "";
     }
