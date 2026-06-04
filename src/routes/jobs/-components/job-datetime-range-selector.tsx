@@ -14,7 +14,7 @@ type JobDatetimeRangeSelectorProps = {
   disabled?: boolean;
   value?: JobDateRangePreset;
   onChange: (
-    range: ReturnType<typeof getJobDateRangeForPreset>,
+    createdSince: ReturnType<typeof getJobDateRangeForPreset>,
     preset: JobDateRangePreset
   ) => void;
 };

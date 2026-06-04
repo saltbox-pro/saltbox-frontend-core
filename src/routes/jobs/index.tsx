@@ -342,8 +342,8 @@ const JobsPage = observer(() => {
             label={t("jobs.date-range-label")}
             value={jobsStore.dateRangePreset}
             disabled={jobsStore.isJobsLoading}
-            onChange={(range, preset) => {
-              jobsStore.handleDateRangeChange(range, preset);
+            onChange={(createdSince, preset) => {
+              jobsStore.handleDateRangeChange(createdSince, preset);
             }}
           />
           <Button
