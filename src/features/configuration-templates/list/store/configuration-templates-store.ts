@@ -9,14 +9,21 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
+import { canAddSourceFiles } from "../../files/helpers/can-add-source-files";
+import { SourceFilesStore } from "../../files/model/source-files-store";
+import { addSourceFileWithPolling } from "../../files/service/add-source-file.service";
+import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { SourcePollingService } from "../../service/source-polling.service";
-import { SourceTemplatesStore } from "../../shared/model/source-templates-store";
 import { TemplateSourceActionsService } from "../../shared/service/template-source-actions.service";
+import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
+import { SourceTemplatesStore } from "../../templates/model/source-templates-store";
 import { sortSources } from "../helpers/sort-sources";
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
   templatesStore: SourceTemplatesStore;
+  filesStore: SourceFilesStore;
+  addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
 };
 
 export class ConfigurationTemplatesStore implements ConfigurationTemplatesListStore {
@@ -27,6 +34,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   actionBySourceId = new Map<string, SourceActionKind>();
 
   templatesStore = new SourceTemplatesStore();
+  filesStore = new SourceFilesStore();
 
   private readonly sourcePolling: SourcePollingService;
   private readonly sourceActions: TemplateSourceActionsService;
@@ -66,6 +74,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     this.hasError = false;
     this.actionBySourceId.clear();
     this.templatesStore.reset();
+    this.filesStore.reset();
   };
 
   private fetchSources = async (): Promise<TemplateSourcePublicSchema[]> => {
@@ -206,9 +215,35 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     this.sources[index] = { ...source, current_operation: operation };
   };
 
+  addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> => {
+    const source = this.sources.find((item) => item.id === sourceId);
+    if (!source || !canAddSourceFiles(source, this)) {
+      throw new Error("Cannot add file while source operation is in progress");
+    }
+
+    return addSourceFileWithPolling(
+      {
+        filesStore: this.filesStore,
+        polling: this.sourcePolling,
+        markOptimisticOperation: (id, operation) => this.patchOptimisticOperation(id, operation),
+        setActionState: (id) =>
+          runInAction(() => {
+            this.actionBySourceId.set(id, "add_file");
+          }),
+        clearActionState: (id) =>
+          runInAction(() => {
+            this.actionBySourceId.delete(id);
+          }),
+      },
+      sourceId,
+      payload
+    );
+  };
+
   plugSource = (sourceId: string): Promise<void> => this.sourceActions.plugSource(sourceId);
 
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
 
-  deleteSource = (sourceId: string): Promise<void> => this.sourceActions.deleteSource(sourceId);
+  deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
+    this.sourceActions.deleteSource(sourceId);
 }

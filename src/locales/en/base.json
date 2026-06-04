@@ -910,6 +910,31 @@
       "create-success": "Source \"{{name}}\" has been added",
       "create-error": "Failed to create source"
     },
+    "add-file-modal": {
+      "title": "Adding file to source \"{{name}}\"",
+      "rel-path": "Destination path",
+      "rel-path-required": "Enter a path",
+      "rel-path-placeholder": "configs/myfile.conf",
+      "rel-path-hint": "Path relative to the sshfs root",
+      "source-mode": "File source",
+      "mode-file": "Upload file",
+      "mode-url": "From URL",
+      "file": "File",
+      "file-drag-title": "Click or drag a file to this area",
+      "file-drag-hint": "You can upload a single file of any type",
+      "file-required": "Select a file",
+      "url": "URL",
+      "url-required": "Enter a URL",
+      "url-invalid": "Enter a valid URL",
+      "url-placeholder": "https://example.com/file.tar.gz",
+      "unpack-as": "Unpack as",
+      "unpack-as-none": "— do not unpack —",
+      "unpack-as-hint": "Specify archive format if unpacking is needed",
+      "add": "Add",
+      "cancel": "Cancel",
+      "success": "File added",
+      "error": "Failed to add file"
+    },
     "archive-source-modal": {
       "title": "Add archive source",
       "name": "Name",
@@ -943,7 +968,8 @@
         "plug-error": "Failed to connect source",
         "sync-error": "Failed to sync source",
         "delete-error": "Failed to delete source",
-        "delete-success": "Source \"{{name}}\" has been deleted"
+        "delete-success": "Source \"{{name}}\" has been deleted",
+        "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
       },
       "operation": {
         "discover": "Discovering…",
@@ -962,6 +988,16 @@
       "templates": "Templates",
       "templates-empty": "No templates",
       "templates-load-error": "Failed to load data",
+      "files": "Files (sshfs)",
+      "files-empty": "No files",
+      "files-load-error": "Failed to load files",
+      "add-file": "+ Add file",
+      "files-delete": "Delete file",
+      "files-delete-confirm-title": "Delete file",
+      "files-delete-confirm-content": "Are you sure you want to delete file \"{{path}}\"?",
+      "files-delete-success": "File \"{{path}}\" has been deleted",
+      "files-delete-not-found": "File \"{{path}}\" was already deleted or does not exist",
+      "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
       "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?"
     }

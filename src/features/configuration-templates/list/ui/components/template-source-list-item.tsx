@@ -3,25 +3,35 @@ import { Avatar, Card, Divider, Flex, Typography } from "antd";
 import type { MouseEvent, ReactNode } from "react";
 import { useNavigate } from "react-router";
 
+import {
+  TemplateSourceFilesSection,
+  type TemplateSourceFilesSectionProps,
+} from "../../../files/ui/template-source-files-section";
 import { TemplateSourceActiveStatusTag } from "../../../shared/ui/template-source-active-status-tag";
 import { TemplateSourceConnectionTag } from "../../../shared/ui/template-source-connection-tag";
 import { TemplateSourceInfo } from "../../../shared/ui/template-source-info";
 import infoStyles from "../../../shared/ui/template-source-info.module.css";
+import { TemplateSourceTypeTag } from "../../../shared/ui/template-source-type-tag";
 import {
   TemplateSourceTemplatesSection,
   type TemplateSourceTemplatesSectionProps,
-} from "../../../shared/ui/template-source-templates-section";
-import { TemplateSourceTypeTag } from "../../../shared/ui/template-source-type-tag";
+} from "../../../templates/ui/template-source-templates-section";
 
 import styles from "./template-source-list-item.module.css";
 
 const { Text } = Typography;
 
 const CARD_NAV_IGNORE_SELECTOR =
-  "a, button, [role='button'], input, textarea, select, .ant-collapse, .ant-collapse-header";
+  "a, button, [role='button'], input, textarea, select, .ant-collapse, .ant-collapse-header, .ant-modal-wrap, .ant-modal, .ant-upload, .ant-segmented";
+
+function isOverlayOpen(): boolean {
+  return typeof document !== "undefined" && Boolean(document.querySelector(".ant-modal-open"));
+}
 
 function shouldIgnoreCardNavigation(event: MouseEvent<HTMLElement>): boolean {
-  return Boolean((event.target as HTMLElement).closest(CARD_NAV_IGNORE_SELECTOR));
+  return (
+    isOverlayOpen() || Boolean((event.target as HTMLElement).closest(CARD_NAV_IGNORE_SELECTOR))
+  );
 }
 
 export interface TemplateSourceListItemProps {
@@ -35,6 +45,7 @@ export interface TemplateSourceListItemProps {
   syncedAt?: string | null;
   showNotSynced?: boolean;
   templates?: TemplateSourceTemplatesSectionProps;
+  files?: TemplateSourceFilesSectionProps;
   betweenInfoAndTemplates?: ReactNode;
   headerExtra?: ReactNode;
   forceDimmed?: boolean;
@@ -52,6 +63,7 @@ export function TemplateSourceListItem({
   showNotSynced,
   webUrl,
   templates,
+  files,
   betweenInfoAndTemplates,
   headerExtra,
   forceDimmed = false,
@@ -123,12 +135,13 @@ export function TemplateSourceListItem({
 
       {!!betweenInfoAndTemplates && <div>{betweenInfoAndTemplates}</div>}
 
-      {!!templates && (
+      {(!!templates || !!files) && (
         <>
           <Divider className={styles.divider} />
 
           <div className={dimmed ? infoStyles.dimmed : undefined}>
-            <TemplateSourceTemplatesSection {...templates} />
+            {!!templates && <TemplateSourceTemplatesSection {...templates} />}
+            {!!files && <TemplateSourceFilesSection {...files} />}
           </div>
         </>
       )}

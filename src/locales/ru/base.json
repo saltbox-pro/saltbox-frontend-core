@@ -910,6 +910,31 @@
       "create-success": "Источник \"{{name}}\" успешно добавлен",
       "create-error": "Не удалось создать источник"
     },
+    "add-file-modal": {
+      "title": "Добавление файла в источник \"{{name}}\"",
+      "rel-path": "Путь назначения",
+      "rel-path-required": "Укажите путь",
+      "rel-path-placeholder": "configs/myfile.conf",
+      "rel-path-hint": "Путь относительно корня sshfs",
+      "source-mode": "Источник файла",
+      "mode-file": "Загрузить файл",
+      "mode-url": "По URL",
+      "file": "Файл",
+      "file-drag-title": "Нажмите или перетащите файл в эту область",
+      "file-drag-hint": "Можно загрузить один файл любого типа",
+      "file-required": "Выберите файл",
+      "url": "URL",
+      "url-required": "Укажите URL",
+      "url-invalid": "Укажите корректный URL",
+      "url-placeholder": "https://example.com/file.tar.gz",
+      "unpack-as": "Распаковать как",
+      "unpack-as-none": "— не распаковывать —",
+      "unpack-as-hint": "Укажите формат архива, если нужно распаковать",
+      "add": "Добавить",
+      "cancel": "Отмена",
+      "success": "Файл добавлен",
+      "error": "Не удалось добавить файл"
+    },
     "archive-source-modal": {
       "title": "Добавление источника из архива",
       "name": "Название",
@@ -943,7 +968,8 @@
         "plug-error": "Не удалось подключить источник",
         "sync-error": "Не удалось синхронизировать источник",
         "delete-error": "Не удалось удалить источник",
-        "delete-success": "Источник \"{{name}}\" успешно удалён"
+        "delete-success": "Источник \"{{name}}\" успешно удалён",
+        "delete-not-found": "Источник «{{name}}» уже удалён или не существует"
       },
       "operation": {
         "discover": "Обнаружение…",
@@ -962,6 +988,16 @@
       "templates": "Шаблоны",
       "templates-empty": "Нет шаблонов",
       "templates-load-error": "Не удалось загрузить данные",
+      "files": "Файлы (sshfs)",
+      "files-empty": "Нет файлов",
+      "files-load-error": "Не удалось загрузить файлы",
+      "add-file": "+ Добавить файл",
+      "files-delete": "Удалить файл",
+      "files-delete-confirm-title": "Удаление файла",
+      "files-delete-confirm-content": "Вы действительно хотите удалить файл \"{{path}}\"?",
+      "files-delete-success": "Файл «{{path}}» успешно удалён",
+      "files-delete-not-found": "Файл «{{path}}» уже удалён или не существует",
+      "files-delete-error": "Не удалось удалить файл",
       "delete-confirm-title": "Удаление источника",
       "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?"
     }

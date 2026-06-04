@@ -1,22 +1,3 @@
-.container :global(.ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box) {
-  padding: 0;
-}
-
-.container :global(.ant-collapse-item > .ant-collapse-header) {
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.68);
-  padding: 0;
-  align-items: center;
-}
-
-.container :global(.ant-collapse-item .ant-collapse-header-text) {
-  text-transform: uppercase;
-}
-
-.container :global(.ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box) {
-  padding: 6px 0 0 0;
-}
-
 .templates .templateItem {
   padding: 10px;
   margin: 5px 10px;
@@ -39,6 +20,11 @@
   font-size: 13px;
   line-height: 1.25;
   margin: 0;
+}
+
+.templates .templateItem :global(.ant-list-item-meta-content .ant-list-item-meta-title) {
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .templatesConstrained :global(.ant-spin-nested-loading),

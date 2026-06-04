@@ -37,13 +37,12 @@ export class SourceTemplatesStore {
     return created;
   };
 
-  loadAll = async (sourceId: string) => {
+  loadAll = async (sourceId: string, options?: { force?: boolean }) => {
     const key = String(sourceId);
     const state = this.getState(key);
-    if (state.isLoading) return;
+    if (state.isLoading && !options?.force) return;
 
     runInAction(() => {
-      state.items = [];
       state.hasError = false;
       state.isLoading = true;
     });

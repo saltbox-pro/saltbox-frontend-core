@@ -2,6 +2,8 @@ import type { Description, TaskTemplatePublicSchema } from "@saltbox/saltbox-cor
 import { Alert, List, Tag } from "antd";
 import { useTranslation } from "react-i18next";
 
+import { TemplateSourceSectionEmpty } from "../../shared/ui/template-source-section-empty";
+
 import styles from "./template-source-templates-section.module.css";
 
 function resolveDescription(
@@ -55,7 +57,13 @@ export function TemplateSourceTemplatesList({
       size="small"
       loading={isLoading && items.length === 0}
       dataSource={items}
-      locale={{ emptyText: t("configuration-templates.source.templates-empty") }}
+      locale={{
+        emptyText: (
+          <TemplateSourceSectionEmpty
+            description={t("configuration-templates.source.templates-empty")}
+          />
+        ),
+      }}
       renderItem={({ title, description, name }) => (
         <List.Item className={styles.templateItem} extra={<Tag>{name}</Tag>}>
           <List.Item.Meta

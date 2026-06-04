@@ -12,6 +12,7 @@ import {
   SettingsApi,
   SaltKeysApi,
   TaskTemplateSourcesApi,
+  TemplateSourceFilesApi,
   TaskTemplatesApi,
   TasksApi,
 } from "@saltbox/saltbox-core-api-client";
@@ -76,6 +77,10 @@ class ApiCoreStore {
 
   @computed get taskTemplateSourcesApi() {
     return this.apiConfig && new TaskTemplateSourcesApi(this.apiConfig);
+  }
+
+  @computed get templateSourceFilesApi() {
+    return this.apiConfig && new TemplateSourceFilesApi(this.apiConfig);
   }
 
   @computed get newTaskTemplatesApi() {

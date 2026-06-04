@@ -31,6 +31,10 @@ export function isDeleteInProgress({ actionKind }: SourceActionContext): boolean
   return actionKind === "delete";
 }
 
+export function isAddFileInProgress({ actionKind }: SourceActionContext): boolean {
+  return actionKind === "add_file";
+}
+
 export function isSyncRequestLoading({ actionKind }: SourceActionContext): boolean {
   return actionKind === "sync";
 }

@@ -7,6 +7,8 @@ import {
   PLUG_OPTIMISTIC_OPERATION,
   SYNC_OPTIMISTIC_OPERATION,
 } from "../constants/source-operations";
+import { isApiNotFoundError } from "../helpers/is-api-not-found-error";
+import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { SourceActionKind } from "../types/source-action";
 
 export type TemplateSourceActionsCallbacks = {
@@ -36,13 +38,27 @@ export class TemplateSourceActionsService {
     );
   };
 
-  deleteSource = async (sourceId: string): Promise<void> => {
+  deleteSource = async (sourceId: string): Promise<ResourceDeleteResult> => {
+    let result: ResourceDeleteResult = "deleted";
+
     await this.runSourceAction(
       sourceId,
       "delete",
-      () => this.getTaskTemplateSourcesApi().templateSourceDelete({ source_id: sourceId }),
+      async () => {
+        try {
+          await this.getTaskTemplateSourcesApi().templateSourceDelete({ source_id: sourceId });
+        } catch (error) {
+          if (isApiNotFoundError(error)) {
+            result = "not_found";
+          } else {
+            throw error;
+          }
+        }
+      },
       { refresh: false, remove: true }
     );
+
+    return result;
   };
 
   private getTaskTemplateSourcesApi = () => {

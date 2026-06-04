@@ -4,10 +4,15 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
+import { canAddSourceFiles } from "../../files/helpers/can-add-source-files";
+import { SourceFilesStore } from "../../files/model/source-files-store";
+import { addSourceFileWithPolling } from "../../files/service/add-source-file.service";
+import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { SourcePollingService } from "../../service/source-polling.service";
-import { SourceTemplatesStore } from "../../shared/model/source-templates-store";
 import { TemplateSourceActionsService } from "../../shared/service/template-source-actions.service";
+import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
+import { SourceTemplatesStore } from "../../templates/model/source-templates-store";
 
 export class TemplateSourceDetailStore implements SourceActionsPort {
   source: TemplateSourcePublicSchema | null = null;
@@ -18,6 +23,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
   actionBySourceId = new Map<string, SourceActionKind>();
 
   readonly templatesStore = new SourceTemplatesStore();
+  readonly filesStore = new SourceFilesStore();
 
   private readonly sourcePolling: SourcePollingService;
   private readonly sourceActions: TemplateSourceActionsService;
@@ -68,6 +74,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       this.actionBySourceId.clear();
     });
     this.templatesStore.reset();
+    this.filesStore.reset();
   };
 
   load = async () => {
@@ -127,9 +134,38 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     this.source = { ...this.source, current_operation: operation };
   };
 
+  addSourceFile = (payload: AddSourceFilePayload): Promise<void> => {
+    if (!this.source) {
+      throw new Error("Source is not loaded");
+    }
+
+    if (!canAddSourceFiles(this.source, this)) {
+      throw new Error("Cannot add file while source operation is in progress");
+    }
+
+    return addSourceFileWithPolling(
+      {
+        filesStore: this.filesStore,
+        polling: this.sourcePolling,
+        markOptimisticOperation: (id, operation) => this.patchOptimisticOperation(id, operation),
+        setActionState: (id) =>
+          runInAction(() => {
+            this.actionBySourceId.set(id, "add_file");
+          }),
+        clearActionState: (id) =>
+          runInAction(() => {
+            this.actionBySourceId.delete(id);
+          }),
+      },
+      this.source.id,
+      payload
+    );
+  };
+
   plugSource = (sourceId: string): Promise<void> => this.sourceActions.plugSource(sourceId);
 
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
 
-  deleteSource = (sourceId: string): Promise<void> => this.sourceActions.deleteSource(sourceId);
+  deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
+    this.sourceActions.deleteSource(sourceId);
 }

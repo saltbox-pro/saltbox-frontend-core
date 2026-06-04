@@ -30,17 +30,25 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
 
   const handleDeleteConfirm = useCallback(async () => {
     try {
-      await actions.deleteSource(sourceId);
-      message.success(
-        t("configuration-templates.source.action.delete-success", {
-          name: sourceName,
-        })
-      );
+      const result = await actions.deleteSource(sourceId);
+
+      if (result === "not_found") {
+        message.warning(
+          t("configuration-templates.source.action.delete-not-found", {
+            name: sourceName,
+          })
+        );
+      } else {
+        message.success(
+          t("configuration-templates.source.action.delete-success", {
+            name: sourceName,
+          })
+        );
+      }
     } catch (error) {
       console.error(error);
       if (isGlobalServerError(error)) return;
       message.error(t("configuration-templates.source.action.delete-error"));
-      throw error;
     }
   }, [actions, sourceId, sourceName, t]);
 

@@ -1,0 +1,39 @@
+.container :global(.ant-collapse-item > .ant-collapse-header) {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.68);
+  padding: 0;
+  align-items: center;
+}
+
+.container :global(.ant-collapse-item .ant-collapse-header-text) {
+  text-transform: uppercase;
+}
+
+.container :global(.ant-collapse-item > .ant-collapse-content > .ant-collapse-content-box) {
+  padding: 6px 0 0 0;
+}
+
+.container + .container {
+  margin-top: 8px;
+}
+
+.sectionEmpty {
+  padding: 12px 8px;
+  margin: 0;
+}
+
+.sectionEmpty :global(.ant-empty-image) {
+  height: 32px;
+  margin-bottom: 4px;
+}
+
+.sectionEmpty :global(.ant-empty-image svg) {
+  width: 48px;
+  height: 32px;
+}
+
+.sectionEmpty :global(.ant-empty-description) {
+  font-size: 12px;
+  line-height: 1.25;
+  color: rgba(0, 0, 0, 0.45);
+}

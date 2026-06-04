@@ -3,8 +3,9 @@ import { Collapse, type CollapseProps, Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import collapseStyles from "../../shared/ui/collapse-section.module.css";
+
 import { TemplateSourceTemplatesList } from "./template-source-templates-list";
-import styles from "./template-source-templates-section.module.css";
 
 const TEMPLATES_PANEL_KEY = "templates";
 
@@ -47,7 +48,7 @@ export function TemplateSourceTemplatesSection({
 
   return (
     <Collapse
-      className={styles.container}
+      className={collapseStyles.container}
       items={collapses}
       size="small"
       ghost
