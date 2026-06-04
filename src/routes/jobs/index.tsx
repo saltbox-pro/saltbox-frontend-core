@@ -27,6 +27,10 @@ import {
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
+import {
+  JOB_DATE_RANGE_PRESET,
+  type JobDateRangePreset,
+} from "saltbox-core/shared/constants/job-date-range-presets";
 import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -35,6 +39,26 @@ import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
 
 const JobsTable = FastTablePaginated<JobsListResponse>;
+
+const PRESET_TO_DATE_RANGE_KEY: Record<JobDateRangePreset, string> = {
+  [JOB_DATE_RANGE_PRESET.TODAY]: "jobs.date-range-today",
+  [JOB_DATE_RANGE_PRESET.MINUTES_10]: "jobs.date-range-10-minutes",
+  [JOB_DATE_RANGE_PRESET.MINUTES_30]: "jobs.date-range-30-minutes",
+  [JOB_DATE_RANGE_PRESET.HOUR_1]: "jobs.date-range-1-hour",
+  [JOB_DATE_RANGE_PRESET.HOUR_3]: "jobs.date-range-3-hours",
+  [JOB_DATE_RANGE_PRESET.HOUR_12]: "jobs.date-range-12-hours",
+  [JOB_DATE_RANGE_PRESET.DAY_1]: "jobs.date-range-1-day",
+  [JOB_DATE_RANGE_PRESET.ALL_TIME]: "jobs.date-range-all-time",
+};
+
+function normalizePeriodLabel(label: string): string {
+  return label
+    .replace(/^[Зз]а /, "")
+    .replace(/ назад$/, "")
+    .replace(/ ago$/, "")
+    .toLowerCase()
+    .trim();
+}
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
@@ -81,6 +105,11 @@ const JobsPage = observer(() => {
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
   const didInitFromLocationRef = useRef(false);
   const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
+
+  const jobsEmptyText = useMemo(() => {
+    const period = normalizePeriodLabel(t(PRESET_TO_DATE_RANGE_KEY[jobsStore.dateRangePreset]));
+    return t("jobs.empty-for-period", { period });
+  }, [jobsStore.dateRangePreset, t]);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -337,6 +366,7 @@ const JobsPage = observer(() => {
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
         onRowClick={(job) => handleNavigateToJob(job.jid)}
         useVirtualScroll={false}
+        locale={{ empty: jobsEmptyText }}
       />
 
       <JobModalShell

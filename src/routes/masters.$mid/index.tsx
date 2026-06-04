@@ -14,7 +14,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
-import { apiCoreStore, SaltKeysStore, type SaltKeyWithId } from "saltbox-core/store";
+import {
+  apiCoreStore,
+  DUPLICATES_FILTER,
+  SaltKeysStore,
+  type SaltKeyWithId,
+} from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
@@ -119,6 +124,21 @@ const MasterPage = observer(() => {
     ],
     [t]
   );
+
+  const saltKeysEmptyText = useMemo(() => {
+    if (saltKeysStore.statusFilter === DUPLICATES_FILTER) {
+      return t("master.salt-keys-empty-duplicates");
+    }
+    const statusLabelKey: Record<SaltKeyStatusType, string> = {
+      [SaltKeyStatusType.Unaccepted]: "master.table-status-unaccepted",
+      [SaltKeyStatusType.Accepted]: "master.table-status-accepted",
+      [SaltKeyStatusType.Rejected]: "master.table-status-rejected",
+      [SaltKeyStatusType.Denied]: "master.table-status-denied",
+    };
+    return t("master.salt-keys-empty-with-status", {
+      status: t(statusLabelKey[saltKeysStore.statusFilter as SaltKeyStatusType]),
+    });
+  }, [saltKeysStore.statusFilter, t]);
 
   const handleAcceptSelected = useCallback(() => {
     if (Object.keys(selection).length === 0) return;
@@ -396,6 +416,7 @@ const MasterPage = observer(() => {
                     drawerId: saltKey._index,
                   });
                 }}
+                locale={{ empty: saltKeysEmptyText }}
               />
             </div>
           </Flex>
@@ -406,6 +427,7 @@ const MasterPage = observer(() => {
       drawer,
       saltKeysColumns,
       saltKeysStore,
+      saltKeysEmptyText,
       isSendingAction,
       selection,
       handleAcceptSelected,
