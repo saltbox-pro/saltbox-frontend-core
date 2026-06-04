@@ -1,5 +1,5 @@
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Form, message } from "antd";
+import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Alert, Form, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,10 +34,12 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
 
   const [form] = Form.useForm<LocalSourceFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       form.resetFields();
+      setApiError(null);
     }
   }, [open, form]);
 
@@ -49,6 +51,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
 
   const handleFinish = async (values: LocalSourceFormValues) => {
     setIsSubmitting(true);
+    setApiError(null);
     try {
       const name = trimRequired(values.name);
 
@@ -65,7 +68,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      messageApi.error(t(`${I18N_PREFIX}.create-error`));
+      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +93,17 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
           />
         }
       >
-        <Form id={FORM_ID} form={form} layout="vertical" onFinish={handleFinish} autoComplete="off">
+        <Form
+          id={FORM_ID}
+          form={form}
+          layout="vertical"
+          onFinish={handleFinish}
+          onValuesChange={() => setApiError(null)}
+          autoComplete="off"
+        >
           <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} descriptionRows={3} />
+
+          {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>
       </Modal>
     </>

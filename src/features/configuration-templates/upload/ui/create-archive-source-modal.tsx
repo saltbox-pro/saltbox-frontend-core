@@ -1,6 +1,6 @@
 import { InboxOutlined } from "@ant-design/icons";
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Form, Upload, type UploadFile, message } from "antd";
+import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Alert, Form, Upload, type UploadFile, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,10 +42,12 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
   const [form] = Form.useForm<ArchiveSourceFormValues>();
   const [messageApi, contextHolder] = message.useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       form.resetFields();
+      setApiError(null);
     }
   }, [open, form]);
 
@@ -67,6 +69,7 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
 
   const handleFinish = async (values: ArchiveSourceFormValues) => {
     setIsSubmitting(true);
+    setApiError(null);
     try {
       const name = trimRequired(values.name);
       const fileObj = values.file?.[0]?.originFileObj;
@@ -87,7 +90,8 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
     } catch (reason) {
       console.error("Failed to create archive template source:", reason);
       if (isGlobalServerError(reason)) return;
-      messageApi.error(t(`${I18N_PREFIX}.create-error`));
+
+      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +116,14 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
           />
         }
       >
-        <Form id={FORM_ID} form={form} layout="vertical" onFinish={handleFinish} autoComplete="off">
+        <Form
+          id={FORM_ID}
+          form={form}
+          layout="vertical"
+          onFinish={handleFinish}
+          onValuesChange={() => setApiError(null)}
+          autoComplete="off"
+        >
           <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} descriptionRows={3} />
 
           <Form.Item<ArchiveSourceFormValues>
@@ -148,6 +159,8 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
               </p>
             </Dragger>
           </Form.Item>
+
+          {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>
       </Modal>
     </>

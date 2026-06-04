@@ -1,5 +1,5 @@
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Col, Form, Input, Row, message } from "antd";
+import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Alert, Col, Form, Input, Row, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,10 +42,12 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
 
   const [form] = Form.useForm<GitSourceFormValues>();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       form.resetFields();
+      setApiError(null);
     }
   }, [open, form]);
 
@@ -57,6 +59,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
 
   const handleFinish = async (values: GitSourceFormValues) => {
     setIsSubmitting(true);
+    setApiError(null);
     try {
       const name = trimRequired(values.name);
 
@@ -77,7 +80,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      messageApi.error(t(`${I18N_PREFIX}.create-error`));
+      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -108,6 +111,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
           layout="vertical"
           initialValues={{ branch: "master" }}
           onFinish={handleFinish}
+          onValuesChange={() => setApiError(null)}
           autoComplete="off"
         >
           <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} />
@@ -165,6 +169,8 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
           >
             <Input placeholder={t(`${I18N_PREFIX}.branch-placeholder`)} />
           </Form.Item>
+
+          {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>
       </Modal>
     </>

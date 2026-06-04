@@ -967,6 +967,7 @@
       "action": {
         "plug-error": "Failed to connect source",
         "sync-error": "Failed to sync source",
+        "sync-success": "Source \"{{name}}\" has been synced",
         "delete-error": "Failed to delete source",
         "delete-success": "Source \"{{name}}\" has been deleted",
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"

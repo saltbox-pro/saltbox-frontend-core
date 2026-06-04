@@ -42,12 +42,17 @@ export const SyncSourceButton = observer(function SyncSourceButton({
   const handleSync = useCallback(async () => {
     try {
       await actions.syncSource(source.id);
+      message.success(
+        t("configuration-templates.source.action.sync-success", {
+          name: source.name,
+        })
+      );
     } catch (error) {
       console.error(error);
       if (isGlobalServerError(error)) return;
       message.error(t("configuration-templates.source.action.sync-error"));
     }
-  }, [actions, source.id, t]);
+  }, [actions, source.id, source.name, t]);
 
   if (!showSync) return null;
 
