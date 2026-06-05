@@ -1,7 +1,3 @@
-.minionDetailsDashboard :global(.ant-collapse .ant-descriptions-view) {
-  border: none;
-}
-
 .interfaceBlock {
   margin: 8px 0;
   padding: 8px;

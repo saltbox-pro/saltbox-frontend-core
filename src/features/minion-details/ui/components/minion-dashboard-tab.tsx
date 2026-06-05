@@ -2,16 +2,21 @@ import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
   FilterActionButton,
+  formatInfoCardTextValue,
+  InfoCardsGrid,
+  type InfoCardsGridProps,
   InfoDescriptions,
   type InfoDescriptionsProps,
 } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
 import type { TFunction } from "i18next";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
+import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
 import { OnFilterButtonParams } from "../../types/minion-details-props";
 
 import styles from "./minion-dashboard-tab.module.css";
@@ -49,6 +54,7 @@ interface MinionDetailViewGroup {
 interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
+  isInDrawer?: boolean;
   onFilterButton?: (params: OnFilterButtonParams) => void;
 }
 
@@ -164,18 +170,49 @@ const minionDetailViewGroupsToCollapseItems = (
 export function MinionDashboardTab({
   minion,
   isMinionLoading,
+  isInDrawer = false,
   onFilterButton,
 }: MinionDashboardTabProps) {
   const { t } = useTranslation();
 
+  const infoCardItems = useMemo((): InfoCardsGridProps["items"] => {
+    if (!minion) {
+      return [];
+    }
+
+    return MINION_DASHBOARD_SUMMARY_TILES.map((tile) => {
+      const title = t(tile.labelKey);
+
+      if (tile.kind === "lastActivity") {
+        return {
+          key: tile.labelKey,
+          title,
+          value: (
+            <MinionLastActivityCell
+              date={minion.last_activity}
+              lastActivitySeconds={minion.last_activity_seconds}
+              fallback={<>{t("minions.never-synced")}</>}
+            />
+          ),
+        };
+      }
+
+      const grainValue = minion.grains[tile.grainKey];
+      const copyText = transformGrainValueToString(grainValue as ReactNode);
+
+      return {
+        key: tile.grainKey,
+        title,
+        value: formatInfoCardTextValue(copyText),
+        copyText: copyText.trim() !== "" ? copyText : undefined,
+      };
+    });
+  }, [minion, t]);
+
   const minionGeneralDetailViews: MinionDetailView[] = [
-    { key: "id", name: t("minions.minion-id") },
     { key: "virtual", name: t("minions.virtualization") },
-    { key: "osfullname", name: t("minions.os-full-name") },
-    { key: "host", name: t("minions.hostname") },
     { key: "localhost", name: t("minions.local-hostname") },
     { key: "master", name: t("minions.salt-master") },
-    { key: "domain", name: t("minions.domain") },
     { key: "fqdn", name: t("minions.fqdn") },
     { key: "uuid", name: t("minions.uuid") },
   ];
@@ -358,7 +395,12 @@ export function MinionDashboardTab({
   }
 
   return (
-    <Flex vertical gap={10} className={styles.minionDetailsDashboard}>
+    <Flex vertical gap="large">
+      <InfoCardsGrid
+        items={infoCardItems}
+        colProps={isInDrawer ? { span: 12 } : { xs: 12, xl: 6 }}
+      />
+
       <InfoDescriptions
         items={minionDetailsViewsToDescriptionItems(
           t,
@@ -367,6 +409,7 @@ export function MinionDashboardTab({
           onFilterButton
         )}
       />
+
       <Collapse
         items={minionDetailViewGroupsToCollapseItems(
           t,

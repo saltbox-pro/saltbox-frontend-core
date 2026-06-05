@@ -94,6 +94,7 @@ export function MinionDetailsTabsView({
           <MinionDashboardTab
             minion={minion}
             isMinionLoading={isMinionLoading}
+            isInDrawer={isInDrawer}
             onFilterButton={onFilterButton}
           />
         ),
