@@ -571,7 +571,7 @@
     "pending-minions-popover": "Ожидает"
   },
   "job-modal": {
-    "title": "Создание команды",
+    "title": "Настройки команды",
     "create-job": "Создать команду",
     "create": "Создать",
     "salt-master": "Мастер",

@@ -1,4 +1,7 @@
 import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
+import { JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS } from "@saltbox/saltbox-frontend-common";
+import { getDefaultFormState } from "@rjsf/utils";
+import validator from "@rjsf/validator-ajv8";
 import type { KeyboardEvent } from "react";
 
 export type TtlUnit = "seconds" | "minutes" | "hours";
@@ -65,6 +68,34 @@ export const getRepeatJsonFormValue = (
   args: Array.isArray(arg) ? arg : arg != null ? [arg] : [],
   kwargs: cleanNullsFromKwargs(kwarg),
 });
+
+export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unknown> => {
+  if (
+    !jsonSchema ||
+    typeof jsonSchema !== "object" ||
+    Array.isArray(jsonSchema) ||
+    Object.keys(jsonSchema).length === 0
+  ) {
+    return {};
+  }
+
+  try {
+    const defaults = getDefaultFormState(
+      validator,
+      jsonSchema as never,
+      undefined,
+      jsonSchema as never,
+      undefined,
+      JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
+    );
+
+    return defaults && typeof defaults === "object" && !Array.isArray(defaults)
+      ? (defaults as Record<string, unknown>)
+      : {};
+  } catch {
+    return {};
+  }
+};
 
 export const hasBaselineJobArgs = (
   arg: unknown[] | undefined,

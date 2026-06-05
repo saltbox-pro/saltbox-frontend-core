@@ -14,6 +14,7 @@ import {
   Input,
   InputNumber,
   Select,
+  Spin,
   Switch,
   Typography,
   message,
@@ -37,6 +38,7 @@ import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import {
   fetchJobFunctionSchema,
   getArgAndKwargForRequest,
+  getDefaultJsonFormValue,
   getRepeatJsonFormValue,
   hasBaselineJobArgs,
   isTimeoutInputKeyAllowed,
@@ -466,7 +468,11 @@ export function JobModal({
         return;
       }
       setSaltFunction(result);
-      setJsonFormValue(hasBaselineArgs ? getRepeatJsonFormValue(arg, kwarg) : {});
+      setJsonFormValue(
+        hasBaselineArgs
+          ? getRepeatJsonFormValue(arg, kwarg)
+          : getDefaultJsonFormValue(result.json_schema)
+      );
       applyTtlFromInitialOrDefault(initialTtlSeconds, result?.default_ttl);
     };
 
@@ -690,7 +696,13 @@ export function JobModal({
           )}
         </Form>
 
-        {jobParamsSchemaLayout.displaySchema && (
+        {isSchemaLoading && (
+          <div className={styles.spinnerContainer}>
+            <Spin />
+          </div>
+        )}
+
+        {!isSchemaLoading && jobParamsSchemaLayout.displaySchema && (
           <JsonForm
             key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
             ref={refJobParamsForm}

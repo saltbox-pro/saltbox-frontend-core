@@ -571,7 +571,7 @@
     "pending-minions-popover": "Pending"
   },
   "job-modal": {
-    "title": "Create Job",
+    "title": "Job Settings",
     "create-job": "Create Job",
     "create": "Create",
     "salt-master": "Salt Master",

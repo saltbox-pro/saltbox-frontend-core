@@ -2,6 +2,11 @@
   margin-bottom: var(--app-layout-gap, 16px);
 }
 
+.spinnerContainer {
+  text-align: center;
+  padding: 32px 0;
+}
+
 .jobParamsForm label[for="job-params-form__title"] {
   display: none;
 }
