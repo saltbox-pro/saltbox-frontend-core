@@ -40,25 +40,16 @@ import styles from "./index.module.css";
 
 const JobsTable = FastTablePaginated<JobsListResponse>;
 
-const PRESET_TO_DATE_RANGE_KEY: Record<JobDateRangePreset, string> = {
-  [JOB_DATE_RANGE_PRESET.TODAY]: "jobs.date-range-today",
-  [JOB_DATE_RANGE_PRESET.MINUTES_10]: "jobs.date-range-10-minutes",
-  [JOB_DATE_RANGE_PRESET.MINUTES_30]: "jobs.date-range-30-minutes",
-  [JOB_DATE_RANGE_PRESET.HOUR_1]: "jobs.date-range-1-hour",
-  [JOB_DATE_RANGE_PRESET.HOUR_3]: "jobs.date-range-3-hours",
-  [JOB_DATE_RANGE_PRESET.HOUR_12]: "jobs.date-range-12-hours",
-  [JOB_DATE_RANGE_PRESET.DAY_1]: "jobs.date-range-1-day",
-  [JOB_DATE_RANGE_PRESET.ALL_TIME]: "jobs.date-range-all-time",
+const PRESET_TO_PERIOD_KEY: Record<JobDateRangePreset, string> = {
+  [JOB_DATE_RANGE_PRESET.TODAY]: "jobs.period-today",
+  [JOB_DATE_RANGE_PRESET.MINUTES_10]: "jobs.period-10-minutes",
+  [JOB_DATE_RANGE_PRESET.MINUTES_30]: "jobs.period-30-minutes",
+  [JOB_DATE_RANGE_PRESET.HOUR_1]: "jobs.period-1-hour",
+  [JOB_DATE_RANGE_PRESET.HOUR_3]: "jobs.period-3-hours",
+  [JOB_DATE_RANGE_PRESET.HOUR_12]: "jobs.period-12-hours",
+  [JOB_DATE_RANGE_PRESET.DAY_1]: "jobs.period-1-day",
+  [JOB_DATE_RANGE_PRESET.ALL_TIME]: "jobs.period-all-time",
 };
-
-function normalizePeriodLabel(label: string): string {
-  return label
-    .replace(/^[Зз]а /, "")
-    .replace(/ назад$/, "")
-    .replace(/ ago$/, "")
-    .toLowerCase()
-    .trim();
-}
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
@@ -107,7 +98,7 @@ const JobsPage = observer(() => {
   const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
 
   const jobsEmptyText = useMemo(() => {
-    const period = normalizePeriodLabel(t(PRESET_TO_DATE_RANGE_KEY[jobsStore.dateRangePreset]));
+    const period = t(PRESET_TO_PERIOD_KEY[jobsStore.dateRangePreset]);
     return t("jobs.empty-for-period", { period });
   }, [jobsStore.dateRangePreset, t]);
 
