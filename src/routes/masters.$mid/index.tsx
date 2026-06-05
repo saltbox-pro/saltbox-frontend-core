@@ -25,8 +25,11 @@ import {
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
+import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
+import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
 import { SaltKeysToolbar } from "./-components/salt-keys-toolbar";
 import { SaltKeysActionsDropdown } from "./-components/saltkeys-actions-dropdown";
+import { useAcceptSelectedFlow } from "./-components/use-accept-selected-flow";
 import styles from "./index.module.css";
 
 const saltKeysColumnHelper = createColumnHelper<SaltKeyWithId>();
@@ -140,44 +143,15 @@ const MasterPage = observer(() => {
     });
   }, [saltKeysStore.statusFilter, t]);
 
-  const handleAcceptSelected = useCallback(() => {
-    if (Object.keys(selection).length === 0) return;
-
-    modalApi.confirm({
-      title: t("master.accept-selected-confirm-title"),
-      content: t("master.accept-selected-confirm-description", {
-        count: Object.keys(selection).length,
-      }),
-      icon: null,
-      okText: t("common.yes"),
-      cancelText: t("common.no"),
-      okButtonProps: { loading: isSendingAction },
-      onOk: async () => {
-        setIsSendingAction(true);
-        try {
-          const selectedMinions = getSelectedSaltKeyMinions(
-            saltKeysStore.allSaltKeys,
-            selection,
-            masterId
-          );
-          const response = await apiCoreStore.saltKeysApi?.saltKeysAccept({
-            SaltKeySetStatusRequestBody: { minions: selectedMinions },
-          });
-          messageApi.success(
-            t("master.accept-selected-success", { count: response?.minions?.length ?? 0 })
-          );
-        } catch (error) {
-          console.error("Failed to accept selected salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.accept-selected-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
-        }
-      },
-    });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+  const { handleAcceptSelected, conflictModalProps, perKeyModalProps } = useAcceptSelectedFlow({
+    saltKeysStore,
+    selection,
+    modalApi,
+    messageApi,
+    setSelection,
+    isSendingAction,
+    setIsSendingAction,
+  });
 
   const handleRejectSelected = useCallback(() => {
     if (Object.keys(selection).length === 0) return;
@@ -456,6 +430,9 @@ const MasterPage = observer(() => {
       />
 
       <MinionDetailsDrawer drawer={drawer} />
+
+      <SaltKeysAcceptConflictModal {...conflictModalProps} />
+      <SaltKeysAcceptPerKeyModal {...perKeyModalProps} />
     </>
   );
 });

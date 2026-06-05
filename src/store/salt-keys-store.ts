@@ -1,4 +1,8 @@
-import { SaltKeyMinionWithStatus, SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
+import {
+  SaltKeyMinion,
+  SaltKeyMinionWithStatus,
+  SaltKeyStatusType,
+} from "@saltbox/saltbox-core-api-client";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
@@ -134,6 +138,43 @@ export class SaltKeysStore {
 
   @action resetError = () => {
     this.error = null;
+  };
+
+  getAcceptConflicts = (
+    selectedKeys: Array<SaltKeyWithId>
+  ): { conflictMinions: SaltKeyMinion[]; nonConflictMinions: SaltKeyMinion[] } => {
+    const acceptedSet = new Set(
+      this.allSaltKeys
+        .filter((key) => key.status === SaltKeyStatusType.Accepted)
+        .map((key) => `${key.minion_id}::${key.salt_master}`)
+    );
+
+    const groups = new Map<string, { minion: SaltKeyMinion; hasNonAccepted: boolean }>();
+    for (const key of selectedKeys) {
+      const ck = `${key.minion_id}::${key.salt_master}`;
+      const group = groups.get(ck);
+      const isNonAccepted = key.status !== SaltKeyStatusType.Accepted;
+      if (group) {
+        group.hasNonAccepted = group.hasNonAccepted || isNonAccepted;
+      } else {
+        groups.set(ck, {
+          minion: { minion_id: key.minion_id, salt_master: key.salt_master },
+          hasNonAccepted: isNonAccepted,
+        });
+      }
+    }
+
+    const conflictMinions: SaltKeyMinion[] = [];
+    const nonConflictMinions: SaltKeyMinion[] = [];
+    for (const [ck, { minion, hasNonAccepted }] of groups) {
+      if (acceptedSet.has(ck) && hasNonAccepted) {
+        conflictMinions.push(minion);
+      } else {
+        nonConflictMinions.push(minion);
+      }
+    }
+
+    return { conflictMinions, nonConflictMinions };
   };
 
   private getSortableValue = (saltKey: SaltKeyWithId, id: string): string => {
