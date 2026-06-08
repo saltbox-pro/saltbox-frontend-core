@@ -227,7 +227,7 @@ const JobsPage = observer(() => {
             case JobStatus.LaunchError:
               return (
                 <LaunchErrorPopover
-                  errorTypeText={data.row.original.launch_error_type}
+                  errorTypeText={data.row.original.launch_error_type ?? ""}
                   tagText={t("jobs.table-status-launch-error")}
                 />
               );

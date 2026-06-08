@@ -1,11 +1,11 @@
 import { SearchOutlined } from "@ant-design/icons";
+import type { ErrorSchema } from "@rjsf/utils";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
 } from "@saltbox/saltbox-core-api-client";
 import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import type { ErrorSchema } from "@rjsf/utils";
 import {
   Alert,
   Button,
@@ -407,10 +407,15 @@ export function JobModal({
       kwarg,
     });
 
+    let requestTgt = formValue.tgt;
+    if (formValue.tgt_type === "list") {
+      requestTgt = (requestTgt as String)?.split(",") ?? requestTgt;
+    }
+
     apiCoreStore.jobsApi
       ?.jobCreate({
         CreateJobRequest: {
-          tgt: formValue.tgt,
+          tgt: requestTgt,
           fun,
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
