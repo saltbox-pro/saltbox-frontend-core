@@ -575,159 +575,163 @@ export function JobModal({
         maskClosable={false}
         style={{ top: 50 }}
         footer={
-          <>
-            <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
-              {t("job-modal.return-to-function-picker")}
-            </Button>
-
-            {jobsJobModalCreatePlugins?.map((plugin) => (
-              <Button
-                key={plugin.key}
-                type="default"
-                onClick={() => handleCreateJobPlugin(plugin.key)}
-              >
-                {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+          isSchemaLoading ? null : (
+            <>
+              <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
+                {t("job-modal.return-to-function-picker")}
               </Button>
-            ))}
 
-            <Button
-              loading={isLoading}
-              type="primary"
-              form="job-form"
-              key="submit"
-              htmlType="submit"
-              title="Ctrl+Enter"
-            >
-              {t("job-modal.create")}
-            </Button>
-          </>
+              {jobsJobModalCreatePlugins?.map((plugin) => (
+                <Button
+                  key={plugin.key}
+                  type="default"
+                  onClick={() => handleCreateJobPlugin(plugin.key)}
+                >
+                  {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+                </Button>
+              ))}
+
+              <Button
+                loading={isLoading}
+                type="primary"
+                form="job-form"
+                key="submit"
+                htmlType="submit"
+                title="Ctrl+Enter"
+              >
+                {t("job-modal.create")}
+              </Button>
+            </>
+          )
         }
       >
-        <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>
-          <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
-          <Switch
-            checked={isAdvancedSettingsEnabled}
-            onChange={(checked) => {
-              clearJsonFormValidation();
-              setIsAdvancedSettingsEnabled(checked);
-            }}
-            disabled={isLoading}
-          />
-        </Flex>
-
-        <Form
-          form={form}
-          name="job-form"
-          id="job-form"
-          layout="vertical"
-          autoComplete="off"
-          onFinish={handleFormFinish}
-          onFinishFailed={handleFormFinishFailed}
-        >
-          <Form.Item<JobFormData>
-            label={t("job-modal.salt-master")}
-            name="salt_master"
-            rules={[
-              {
-                required: true,
-                message: t("job-modal.salt-master-error-required"),
-              },
-            ]}
-          >
-            <Select allowClear options={masterList} />
-          </Form.Item>
-          <Flex gap={8}>
-            <Form.Item<JobFormData>
-              label={t("job-modal.target-type")}
-              name="tgt_type"
-              rules={[
-                {
-                  required: true,
-                  message: t("job-modal.tgt-type-error-required"),
-                },
-              ]}
-              className={styles.jobFormTgtType}
-            >
-              <TargetTypeSelect />
-            </Form.Item>
-
-            <Form.Item<JobFormData>
-              label={t("job-modal.target")}
-              name="tgt"
-              rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
-              className={styles.jobFormTgt}
-            >
-              <Input />
-            </Form.Item>
-
-            <Button
-              icon={<SearchOutlined />}
-              onClick={() => setIsGatherModalOpen(true)}
-              disabled={!saltMaster || !tgt || !tgtType}
-              className={styles.jobFormGather}
-            />
-          </Flex>
-
-          <Form.Item label={t("job-modal.function")}>
-            <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
-          </Form.Item>
-
-          {isAdvancedSettingsEnabled && (
-            <Form.Item label={t("job-modal.timeout-label")}>
-              <Flex gap={8} align="center" wrap>
-                <InputNumber
-                  min={0}
-                  precision={0}
-                  value={ttlValue ?? undefined}
-                  onChange={(value) => setTtlValue(value ?? null)}
-                  placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  onKeyDown={handleTimeoutInputKeyDown}
-                  onPaste={handleTimeoutInputPaste}
-                />
-                <Select
-                  value={ttlUnit}
-                  onChange={(value) => setTtlUnit(value)}
-                  options={[
-                    { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                    { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                    { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                  ]}
-                  style={{ width: 100 }}
-                />
-              </Flex>
-            </Form.Item>
-          )}
-        </Form>
-
-        {isSchemaLoading && (
+        {isSchemaLoading ? (
           <div className={styles.spinnerContainer}>
             <Spin />
           </div>
-        )}
+        ) : (
+          <>
+            <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>
+              <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
+              <Switch
+                checked={isAdvancedSettingsEnabled}
+                onChange={(checked) => {
+                  clearJsonFormValidation();
+                  setIsAdvancedSettingsEnabled(checked);
+                }}
+                disabled={isLoading}
+              />
+            </Flex>
 
-        {!isSchemaLoading && jobParamsSchemaLayout.displaySchema && (
-          <JsonForm
-            key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
-            ref={refJobParamsForm}
-            schema={jobParamsSchemaLayout.displaySchema}
-            uiSchema={jobParamsSchemaLayout.displayUiSchema}
-            omitExtraData={false}
-            extraErrors={jsonFormExtraErrors}
-            focusOnFirstError
-            id="job-params-form"
-            className={styles.jobParamsForm}
-            idPrefix="job-params-form"
-            idSeparator="-"
-            formData={jsonFormValue}
-            onChange={(d) => {
-              clearJsonFormValidation();
-              setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>);
-            }}
-          >
-            <Fragment />
-          </JsonForm>
+            <Form
+              form={form}
+              name="job-form"
+              id="job-form"
+              layout="vertical"
+              autoComplete="off"
+              onFinish={handleFormFinish}
+              onFinishFailed={handleFormFinishFailed}
+            >
+              <Form.Item<JobFormData>
+                label={t("job-modal.salt-master")}
+                name="salt_master"
+                rules={[
+                  {
+                    required: true,
+                    message: t("job-modal.salt-master-error-required"),
+                  },
+                ]}
+              >
+                <Select allowClear options={masterList} />
+              </Form.Item>
+              <Flex gap={8}>
+                <Form.Item<JobFormData>
+                  label={t("job-modal.target-type")}
+                  name="tgt_type"
+                  rules={[
+                    {
+                      required: true,
+                      message: t("job-modal.tgt-type-error-required"),
+                    },
+                  ]}
+                  className={styles.jobFormTgtType}
+                >
+                  <TargetTypeSelect />
+                </Form.Item>
+
+                <Form.Item<JobFormData>
+                  label={t("job-modal.target")}
+                  name="tgt"
+                  rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
+                  className={styles.jobFormTgt}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Button
+                  icon={<SearchOutlined />}
+                  onClick={() => setIsGatherModalOpen(true)}
+                  disabled={!saltMaster || !tgt || !tgtType}
+                  className={styles.jobFormGather}
+                />
+              </Flex>
+
+              <Form.Item label={t("job-modal.function")}>
+                <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
+              </Form.Item>
+
+              {isAdvancedSettingsEnabled && (
+                <Form.Item label={t("job-modal.timeout-label")}>
+                  <Flex gap={8} align="center" wrap>
+                    <InputNumber
+                      min={0}
+                      precision={0}
+                      value={ttlValue ?? undefined}
+                      onChange={(value) => setTtlValue(value ?? null)}
+                      placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      onKeyDown={handleTimeoutInputKeyDown}
+                      onPaste={handleTimeoutInputPaste}
+                    />
+                    <Select
+                      value={ttlUnit}
+                      onChange={(value) => setTtlUnit(value)}
+                      options={[
+                        { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
+                        { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
+                        { label: t("job-modal.timeout-unit-hours"), value: "hours" },
+                      ]}
+                      style={{ width: 100 }}
+                    />
+                  </Flex>
+                </Form.Item>
+              )}
+            </Form>
+
+            {jobParamsSchemaLayout.displaySchema && (
+              <JsonForm
+                key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
+                ref={refJobParamsForm}
+                schema={jobParamsSchemaLayout.displaySchema}
+                uiSchema={jobParamsSchemaLayout.displayUiSchema}
+                omitExtraData={false}
+                extraErrors={jsonFormExtraErrors}
+                focusOnFirstError
+                id="job-params-form"
+                className={styles.jobParamsForm}
+                idPrefix="job-params-form"
+                idSeparator="-"
+                formData={jsonFormValue}
+                onChange={(d) => {
+                  clearJsonFormValidation();
+                  setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>);
+                }}
+              >
+                <Fragment />
+              </JsonForm>
+            )}
+          </>
         )}
       </Modal>
 
