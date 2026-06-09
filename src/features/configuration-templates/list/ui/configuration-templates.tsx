@@ -1,4 +1,4 @@
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import { SettingOutlined, SyncOutlined } from "@ant-design/icons";
 import { SearchInput } from "@saltbox/saltbox-frontend-common";
 import { type MenuProps, Alert, Button, Dropdown, Empty, Flex, Skeleton, Space, Spin } from "antd";
 import { observer } from "mobx-react-lite";
@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
+import { getGitlabSyncErrorMessageKey } from "../helpers/gitlab-sync-error";
 import {
   getActiveSearchQuery,
   MIN_SOURCE_SEARCH_LENGTH,
@@ -15,6 +16,7 @@ import {
 } from "../helpers/source-search";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
+import { SyncGitlabSourcesButton } from "./components/sync-gitlab-sources-button";
 import { TemplateSourceListEntry } from "./components/template-source-list-entry";
 
 type AddSourceModal = "local" | "git" | "archive" | null;
@@ -41,6 +43,12 @@ export const ConfigurationTemplates = observer(() => {
     setAddSourceModal(null);
   };
 
+  const handleLoadSources = useCallback(() => store.load(), [store]);
+
+  const handleSyncGitlabSources = useCallback(() => {
+    store.refreshWithExternalCheck();
+  }, [store]);
+
   const filteredSources = useMemo(() => {
     const query = getActiveSearchQuery(search);
     const sorted = store.sortedSources;
@@ -50,8 +58,15 @@ export const ConfigurationTemplates = observer(() => {
     return sorted.filter((source) => sourceMatchesQuery(source, query, i18n.language));
   }, [i18n.language, search, store.sortedSources]);
 
-  const addMenuItems: MenuProps["items"] = useMemo(
+  const settingsMenuItems: MenuProps["items"] = useMemo(
     () => [
+      {
+        key: "sync-gitlab-sources",
+        label: t("configuration-templates.actions.sync-gitlab-sources"),
+        disabled: store.isCheckingExternal,
+        onClick: () => handleSyncGitlabSources(),
+      },
+      { type: "divider" },
       {
         key: "add-local",
         label: t("configuration-templates.actions.add-local-source"),
@@ -68,12 +83,20 @@ export const ConfigurationTemplates = observer(() => {
         onClick: () => setAddSourceModal("archive"),
       },
     ],
-    [t]
+    [handleSyncGitlabSources, store.isCheckingExternal, t]
   );
 
   const searchQuery = useMemo(() => getActiveSearchQuery(search), [search]);
   const hasSearchQuery = searchQuery !== undefined;
   const hasPendingSearch = search.trim().length > 0 && !hasSearchQuery;
+  const isSourcesListEmpty = store.sortedSources.length === 0;
+  const showGitlabSourcesAlert =
+    store.hasLoadedOnce &&
+    !store.hasError &&
+    isSourcesListEmpty &&
+    !hasSearchQuery &&
+    !hasPendingSearch;
+  const isListLoading = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
 
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
@@ -86,19 +109,17 @@ export const ConfigurationTemplates = observer(() => {
 
           <Space>
             <Button
-              icon={<SyncOutlined spin={store.isLoading} />}
-              onClick={() => {
-                store
-                  .load()
-                  .catch((error) => console.error("Failed to load template sources:", error));
-              }}
-              disabled={store.isLoading}
+              icon={<SyncOutlined spin={isListLoading} />}
+              onClick={handleLoadSources}
+              disabled={store.isLoading || store.isCheckingExternal}
               title={t("configuration-templates.actions.refresh")}
             />
 
-            <Dropdown menu={{ items: addMenuItems }} trigger={["click"]}>
-              <Button type="primary" icon={<PlusOutlined />}>
-                {t("common.add")}
+            <Dropdown menu={{ items: settingsMenuItems }} trigger={["click"]}>
+              <Button>
+                <Flex gap={8} align="center">
+                  <SettingOutlined />
+                </Flex>
               </Button>
             </Dropdown>
           </Space>
@@ -108,32 +129,56 @@ export const ConfigurationTemplates = observer(() => {
           <Alert message={t("configuration-templates.load-error")} type="error" showIcon />
         )}
 
-        <Spin spinning={store.isLoading && store.hasLoadedOnce}>
-          {filteredSources.length === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                hasSearchQuery
-                  ? t("configuration-templates.search.no-results")
-                  : hasPendingSearch
-                    ? t("configuration-templates.search.min-length", {
-                        count: MIN_SOURCE_SEARCH_LENGTH,
-                      })
-                    : t("configuration-templates.empty")
-              }
-            />
-          ) : (
-            <Flex vertical gap="large">
-              {filteredSources.map((source) => (
+        {store.gitlabSyncError && (
+          <Alert
+            message={t(getGitlabSyncErrorMessageKey(store.gitlabSyncError))}
+            description={store.gitlabSyncErrorDetail ?? undefined}
+            type="error"
+            showIcon
+          />
+        )}
+
+        <Spin spinning={isListLoading}>
+          <Flex vertical gap="large">
+            {showGitlabSourcesAlert && (
+              <Alert
+                type="info"
+                showIcon
+                message={t("configuration-templates.sync-gitlab-sources-not-loaded.message")}
+                action={
+                  <SyncGitlabSourcesButton
+                    isSyncing={store.isCheckingExternal}
+                    onSync={handleSyncGitlabSources}
+                    size="small"
+                  />
+                }
+              />
+            )}
+
+            {filteredSources.length === 0 ? (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={
+                  hasSearchQuery
+                    ? t("configuration-templates.search.no-results")
+                    : hasPendingSearch
+                      ? t("configuration-templates.search.min-length", {
+                          count: MIN_SOURCE_SEARCH_LENGTH,
+                        })
+                      : t("configuration-templates.empty")
+                }
+              />
+            ) : (
+              filteredSources.map((source) => (
                 <TemplateSourceListEntry
                   key={source.id}
                   source={source}
                   store={store}
                   searchQuery={searchQuery}
                 />
-              ))}
-            </Flex>
-          )}
+              ))
+            )}
+          </Flex>
         </Spin>
       </Space>
 

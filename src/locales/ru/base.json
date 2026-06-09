@@ -889,7 +889,12 @@
       "load-error": "Не удалось загрузить источник"
     },
     "load-error": "Не удалось загрузить источники шаблонов конфигураций",
+    "sync-gitlab-sources-error": "Не удалось синхронизировать репозитории с GitLab",
+    "sync-gitlab-sources-failed": "Синхронизация репозиториев с GitLab завершилась с ошибкой",
     "empty": "Нет доступных шаблонов",
+    "sync-gitlab-sources-not-loaded": {
+      "message": "Репозитории GitLab не синхронизированы. Синхронизируйте с GitLab, чтобы отобразить источники шаблонов"
+    },
     "search": {
       "placeholder": "Поиск по источнику, шаблону, файлу",
       "min-length": "Введите минимум {{count}} символа для поиска",
@@ -900,9 +905,10 @@
     },
     "actions": {
       "refresh": "Обновить",
-      "add-local-source": "Локальный источник",
-      "add-git-source": "Из git-репозитория",
-      "add-archive-source": "Из архива"
+      "sync-gitlab-sources": "Синхронизировать с GitLab",
+      "add-local-source": "Добавить локальный источник",
+      "add-git-source": "Добавить из git-репозитория",
+      "add-archive-source": "Добавить из архива"
     },
     "local-source-modal": {
       "title": "Добавление локального источника",

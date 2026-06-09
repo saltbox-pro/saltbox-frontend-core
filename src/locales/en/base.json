@@ -889,7 +889,12 @@
       "page-title": "Template source"
     },
     "load-error": "Failed to load configuration template sources",
+    "sync-gitlab-sources-error": "Failed to sync repositories with GitLab",
+    "sync-gitlab-sources-failed": "GitLab repository sync failed",
     "empty": "No templates available",
+    "sync-gitlab-sources-not-loaded": {
+      "message": "GitLab repositories are not synced. Sync with GitLab to display template sources"
+    },
     "search": {
       "placeholder": "Search by source, template, file",
       "min-length": "Enter at least {{count}} characters to search",
@@ -900,9 +905,10 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "add-local-source": "Local source",
-      "add-git-source": "From Git repository",
-      "add-archive-source": "From archive"
+      "sync-gitlab-sources": "Sync with GitLab",
+      "add-local-source": "Add local source",
+      "add-git-source": "Add from Git repository",
+      "add-archive-source": "Add from archive"
     },
     "local-source-modal": {
       "title": "Add local source",

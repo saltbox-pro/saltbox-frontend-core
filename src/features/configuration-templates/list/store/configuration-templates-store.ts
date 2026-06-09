@@ -12,6 +12,10 @@ import { apiCoreStore } from "saltbox-core/store";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import {
+  isBgTaskPollAborted,
+  rethrowIfAborted,
+} from "../../shared/errors/bg-task-poll-aborted.error";
+import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
 } from "../../shared/helpers/normalize-source-list-item";
@@ -20,10 +24,22 @@ import { TemplateSourceRuntime } from "../../shared/service/template-source-runt
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
+import {
+  getGitlabSyncErrorDetail,
+  resolveGitlabSyncErrorKind,
+  type GitlabSyncErrorKind,
+} from "../helpers/gitlab-sync-error";
 import { sortSources } from "../helpers/sort-sources";
+import { syncGitlabSources } from "../service/sync-gitlab-sources.service";
+
+type LoadOptions = {
+  signal?: AbortSignal;
+  isCancelled?: () => boolean;
+};
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
-  load: () => Promise<void>;
+  load: (options?: LoadOptions) => Promise<void>;
+  refreshWithExternalCheck: () => Promise<void>;
   reloadSource: (sourceId: string) => Promise<void>;
   addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
   deleteSourceFile: (sourceId: string, fileId: string) => Promise<ResourceDeleteResult>;
@@ -32,12 +48,19 @@ export type ConfigurationTemplatesListStore = SourceActionsPort & {
 export class ConfigurationTemplatesStore implements ConfigurationTemplatesListStore {
   sources: SourceListWithExtrasSchema[] = [];
   isLoading = false;
+  isCheckingExternal = false;
   hasLoadedOnce = false;
   hasError = false;
+  gitlabSyncError: GitlabSyncErrorKind | null = null;
+  gitlabSyncErrorDetail: string | null = null;
 
   actionBySourceId = new Map<string, SourceActionKind>();
 
   private readonly runtime: TemplateSourceRuntime;
+  private externalCheckAbortController: AbortController | null = null;
+  private externalCheckGeneration = 0;
+  private loadAbortController: AbortController | null = null;
+  private loadGeneration = 0;
 
   constructor() {
     makeAutoObservable(this);
@@ -50,11 +73,28 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   }
 
   reset = () => {
+    this.cancelExternalCheck();
+    this.cancelLoad();
     this.runtime.reset();
     this.sources = [];
     this.isLoading = false;
+    this.isCheckingExternal = false;
     this.hasLoadedOnce = false;
     this.hasError = false;
+    this.gitlabSyncError = null;
+    this.gitlabSyncErrorDetail = null;
+  };
+
+  private cancelExternalCheck = () => {
+    this.externalCheckAbortController?.abort();
+    this.externalCheckAbortController = null;
+    this.externalCheckGeneration += 1;
+  };
+
+  private cancelLoad = () => {
+    this.loadAbortController?.abort();
+    this.loadAbortController = null;
+    this.loadGeneration += 1;
   };
 
   private createStatePort(): TemplateSourceStatePort {
@@ -71,27 +111,61 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     };
   }
 
-  private fetchSources = async (): Promise<SourceListWithExtrasSchema[]> => {
-    const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
-      TemplateSourceListBody: {},
-    });
+  private fetchSources = async (signal?: AbortSignal): Promise<SourceListWithExtrasSchema[]> => {
+    const api = apiCoreStore.taskTemplateSourcesApi;
+    if (!api) {
+      throw new Error("API is not configured");
+    }
 
-    return (response?.data ?? []).map(normalizeSourceListItem);
+    try {
+      const response = await api.templateSourceList(
+        { TemplateSourceListBody: {} },
+        signal ? { signal } : undefined
+      );
+
+      return (response.data ?? []).map(normalizeSourceListItem);
+    } catch (error) {
+      rethrowIfAborted(error, signal);
+      throw error;
+    }
   };
 
-  load = async () => {
+  load = async (options?: LoadOptions) => {
+    const ownsAbort = !options?.signal;
+
+    if (ownsAbort) {
+      this.cancelLoad();
+    }
+
+    const generation = ownsAbort ? this.loadGeneration : undefined;
+    const abortController = ownsAbort ? new AbortController() : null;
+
+    if (ownsAbort && abortController) {
+      this.loadAbortController = abortController;
+    }
+
+    const signal = options?.signal ?? abortController?.signal;
+    const isCancelled =
+      options?.isCancelled ??
+      (generation !== undefined ? () => generation !== this.loadGeneration : () => false);
+
     runInAction(() => {
       this.isLoading = true;
       this.hasError = false;
     });
 
     try {
-      const sources = await this.fetchSources();
+      const sources = await this.fetchSources(signal);
+
+      if (isCancelled()) return;
+
       runInAction(() => {
         this.sources = sources;
       });
       this.runtime.syncForSources(sources);
     } catch (reason) {
+      if (isBgTaskPollAborted(reason) || isCancelled()) return;
+
       console.error("Failed to load template sources:", reason);
       runInAction(() => {
         if (isGlobalServerError(reason)) return;
@@ -101,10 +175,68 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
         }
       });
     } finally {
+      const cancelled = isCancelled();
+
       runInAction(() => {
         this.isLoading = false;
-        this.hasLoadedOnce = true;
+        if (!cancelled) {
+          this.hasLoadedOnce = true;
+        }
       });
+
+      if (ownsAbort && generation === this.loadGeneration) {
+        this.loadAbortController = null;
+      }
+    }
+  };
+
+  refreshWithExternalCheck = async () => {
+    if (this.isCheckingExternal) return;
+
+    runInAction(() => {
+      this.isCheckingExternal = true;
+      this.hasError = false;
+      this.gitlabSyncError = null;
+      this.gitlabSyncErrorDetail = null;
+    });
+
+    this.cancelExternalCheck();
+
+    const generation = this.externalCheckGeneration;
+    const abortController = new AbortController();
+    this.externalCheckAbortController = abortController;
+
+    try {
+      await syncGitlabSources({
+        signal: abortController.signal,
+        isCancelled: () => generation !== this.externalCheckGeneration,
+      });
+
+      if (generation !== this.externalCheckGeneration) return;
+
+      await this.load({
+        signal: abortController.signal,
+        isCancelled: () => generation !== this.externalCheckGeneration,
+      });
+
+      if (generation !== this.externalCheckGeneration) return;
+    } catch (reason) {
+      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return;
+
+      console.error("Failed to check external template sources:", reason);
+      if (isGlobalServerError(reason)) return;
+
+      runInAction(() => {
+        this.gitlabSyncError = resolveGitlabSyncErrorKind(reason);
+        this.gitlabSyncErrorDetail = getGitlabSyncErrorDetail(reason);
+      });
+    } finally {
+      if (generation === this.externalCheckGeneration) {
+        runInAction(() => {
+          this.isCheckingExternal = false;
+        });
+        this.externalCheckAbortController = null;
+      }
     }
   };
 

@@ -15,6 +15,7 @@ import {
   TemplateSourceFilesApi,
   TaskTemplatesApi,
   TasksApi,
+  UtilsApi,
 } from "@saltbox/saltbox-core-api-client";
 import { createServerErrorMiddleware } from "@saltbox/saltbox-frontend-common";
 import { computed, makeObservable, observable } from "mobx";
@@ -105,6 +106,10 @@ class ApiCoreStore {
 
   @computed get saltKeysApi() {
     return this.apiConfig && new SaltKeysApi(this.apiConfig);
+  }
+
+  @computed get utilsApi() {
+    return this.apiConfig && new UtilsApi(this.apiConfig);
   }
 }
 

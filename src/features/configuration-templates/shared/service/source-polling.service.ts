@@ -1,4 +1,5 @@
 import { SourceState, type SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
+import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 
 import { isSourceOperationInProgress } from "../helpers/source-action-progress";
 
@@ -53,6 +54,7 @@ export class SourcePollingService {
     if (wait) return pollPromise;
 
     pollPromise.catch((error) => {
+      if (isGlobalServerError(error)) return;
       console.error("Failed to poll template source state:", error);
     });
 
