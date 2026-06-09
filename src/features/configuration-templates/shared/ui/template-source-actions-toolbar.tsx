@@ -5,15 +5,15 @@ import { observer } from "mobx-react-lite";
 import { ConnectSourceButton } from "../../connect/ui/connect-source-button";
 import { SourceOperationSpinner } from "../../connect/ui/source-operation-spinner";
 import { DeleteSourceButton } from "../../remove/ui/delete-source-button";
+import { SyncSourceButton } from "../../sync/ui/sync-source-button";
 import {
   getSourceActionContext,
   isDeleteInProgress,
   isPlugInProgress,
   isSyncInProgress,
   shouldShowSourceOperationSpinner,
-} from "../../shared/helpers/source-action-progress";
-import type { SourceActionsPort } from "../../shared/types/source-action";
-import { SyncSourceButton } from "../../sync/ui/sync-source-button";
+} from "../helpers/source-action-progress";
+import type { SourceActionsPort } from "../types/source-action";
 
 import styles from "./template-source-actions-toolbar.module.css";
 

@@ -1,8 +1,8 @@
-import { SourceType, type TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
+import { SourceType, type SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 
 function compareSourceCreatedDesc(
-  a: TemplateSourcePublicSchema,
-  b: TemplateSourcePublicSchema
+  a: SourceListWithExtrasSchema,
+  b: SourceListWithExtrasSchema
 ): number {
   const aTime = Date.parse(a.created);
   const bTime = Date.parse(b.created);
@@ -14,7 +14,7 @@ function compareSourceCreatedDesc(
   return bTime - aTime;
 }
 
-export function sortSources(sources: TemplateSourcePublicSchema[]): TemplateSourcePublicSchema[] {
+export function sortSources(sources: SourceListWithExtrasSchema[]): SourceListWithExtrasSchema[] {
   return [...sources].sort((a, b) => {
     const aIsLocal = a.source_type === SourceType.LocalBundle;
     const bIsLocal = b.source_type === SourceType.LocalBundle;

@@ -1,6 +1,6 @@
-import { SourceState, type TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
+import { SourceState, type SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 
-import { isSourceOperationInProgress } from "../shared/helpers/source-action-progress";
+import { isSourceOperationInProgress } from "../helpers/source-action-progress";
 
 export const SOURCE_POLL_INTERVAL_MS = 2000;
 
@@ -11,8 +11,8 @@ export type SourcePollMode =
 const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 export type SourcePollingCallbacks = {
-  refreshSource: (sourceId: string) => Promise<TemplateSourcePublicSchema | null>;
-  applySourceUpdate: (source: TemplateSourcePublicSchema) => void;
+  refreshSource: (sourceId: string) => Promise<SourceListWithExtrasSchema | null>;
+  applySourceUpdate: (source: SourceListWithExtrasSchema) => void;
   isSourcePresent: (sourceId: string) => boolean;
 };
 
@@ -29,7 +29,7 @@ export class SourcePollingService {
     this.bumpSourcePollGeneration(sourceId);
   };
 
-  syncForSources = (sources: TemplateSourcePublicSchema[]) => {
+  syncForSources = (sources: SourceListWithExtrasSchema[]) => {
     for (const source of sources) {
       if (!this.shouldPollSource(source)) continue;
 
@@ -37,7 +37,7 @@ export class SourcePollingService {
     }
   };
 
-  scheduleForSource = (source: TemplateSourcePublicSchema, wait = false) => {
+  scheduleForSource = (source: SourceListWithExtrasSchema, wait = false) => {
     if (!this.shouldPollSource(source)) return Promise.resolve();
 
     return this.schedule(source.id, this.resolvePollMode(source), wait);
@@ -68,7 +68,7 @@ export class SourcePollingService {
   private isPollCancelled = (sourceId: string, generation: number): boolean =>
     this.sourcePollGeneration.get(sourceId) !== generation;
 
-  private resolvePollMode = (source: TemplateSourcePublicSchema): SourcePollMode => {
+  private resolvePollMode = (source: SourceListWithExtrasSchema): SourcePollMode => {
     if (source.state === SourceState.Pending) {
       return { type: "untilStateChange", initialState: SourceState.Pending };
     }
@@ -76,7 +76,7 @@ export class SourcePollingService {
     return { type: "untilOperationEnd" };
   };
 
-  private shouldPollSource = (source: TemplateSourcePublicSchema): boolean => {
+  private shouldPollSource = (source: SourceListWithExtrasSchema): boolean => {
     if (source.state === SourceState.Broken) return false;
     if (source.state === SourceState.Pending) return true;
 
@@ -84,7 +84,7 @@ export class SourcePollingService {
   };
 
   private isPollingComplete = (
-    source: TemplateSourcePublicSchema,
+    source: SourceListWithExtrasSchema,
     mode: SourcePollMode
   ): boolean => {
     if (source.state === SourceState.Broken) return true;

@@ -1,0 +1,12 @@
+.root {
+  margin: 0;
+}
+
+.root .image {
+  height: 32px;
+  margin-bottom: 5px;
+}
+
+.root .description {
+  font-size: 12px;
+}

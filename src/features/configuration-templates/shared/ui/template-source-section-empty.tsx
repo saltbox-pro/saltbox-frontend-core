@@ -1,6 +1,6 @@
 import { Empty } from "antd";
 
-import styles from "./collapse-section.module.css";
+import styles from "./template-source-section-empty.module.css";
 
 type TemplateSourceSectionEmptyProps = {
   description: string;
@@ -9,10 +9,12 @@ type TemplateSourceSectionEmptyProps = {
 export function TemplateSourceSectionEmpty({ description }: TemplateSourceSectionEmptyProps) {
   return (
     <Empty
-      className={styles.sectionEmpty}
       image={Empty.PRESENTED_IMAGE_SIMPLE}
-      imageStyle={{ height: 32 }}
-      styles={{ description: { fontSize: 12 } }}
+      classNames={{
+        root: styles.root,
+        image: styles.image,
+        description: styles.description,
+      }}
       description={description}
     />
   );

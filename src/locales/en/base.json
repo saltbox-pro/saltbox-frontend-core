@@ -864,7 +864,8 @@
     "load-error": "Failed to load configuration template sources",
     "empty": "No templates available",
     "search": {
-      "placeholder": "Search",
+      "placeholder": "Search by source, template, file",
+      "min-length": "Enter at least {{count}} characters to search",
       "no-results": "Nothing found matching your search"
     },
     "filter": {
@@ -974,7 +975,9 @@
       },
       "operation": {
         "discover": "Discovering…",
-        "prepare_sls": "Preparing SLS…",
+        "prepare_templates": "Preparing templates…",
+        "update_template_content": "Updating template…",
+        "delete_template": "Deleting template…",
         "prepare_files": "Preparing files…",
         "add_user_file": "Processing…",
         "sync": "Syncing…",
@@ -992,7 +995,7 @@
       "files": "Files (sshfs)",
       "files-empty": "No files",
       "files-load-error": "Failed to load files",
-      "add-file": "+ Add file",
+      "add-file": "Add file",
       "files-delete": "Delete file",
       "files-delete-confirm-title": "Delete file",
       "files-delete-confirm-content": "Are you sure you want to delete file \"{{path}}\"?",

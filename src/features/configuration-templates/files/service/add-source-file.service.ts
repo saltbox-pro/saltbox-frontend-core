@@ -1,15 +1,15 @@
 import { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
-import type { SourcePollingService } from "../../service/source-polling.service";
-import type { SourceFilesStore } from "../model/source-files-store";
+import type { SourcePollingService } from "../../shared/service/source-polling.service";
 import { isAsyncSourceFileAdd, type AddSourceFilePayload } from "../types/source-file-payload";
 
 export type AddSourceFileServiceDeps = {
-  filesStore: SourceFilesStore;
+  uploadFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
   polling: SourcePollingService;
   markOptimisticOperation: (sourceId: string, operation: SourceOperation) => void;
   setActionState: (sourceId: string) => void;
   clearActionState: (sourceId: string) => void;
+  onComplete?: () => Promise<void>;
 };
 
 export async function addSourceFileWithPolling(
@@ -22,7 +22,7 @@ export async function addSourceFileWithPolling(
   deps.setActionState(sourceId);
 
   try {
-    await deps.filesStore.addFile(sourceId, payload);
+    await deps.uploadFile(sourceId, payload);
 
     if (isAsync) {
       deps.markOptimisticOperation(sourceId, SourceOperation.AddUserFile);
@@ -30,6 +30,6 @@ export async function addSourceFileWithPolling(
     }
   } finally {
     deps.clearActionState(sourceId);
-    await deps.filesStore.loadAll(sourceId, { force: true });
+    await deps.onComplete?.();
   }
 }

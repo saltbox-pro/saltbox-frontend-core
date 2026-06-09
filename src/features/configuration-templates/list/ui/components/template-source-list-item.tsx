@@ -1,28 +1,25 @@
 import type { SourceType } from "@saltbox/saltbox-core-api-client";
+import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import { Avatar, Card, Divider, Flex, Typography } from "antd";
 import type { MouseEvent, ReactNode } from "react";
 import { useNavigate } from "react-router";
 
-import {
-  TemplateSourceFilesSection,
-  type TemplateSourceFilesSectionProps,
-} from "../../../files/ui/template-source-files-section";
 import { TemplateSourceActiveStatusTag } from "../../../shared/ui/template-source-active-status-tag";
 import { TemplateSourceConnectionTag } from "../../../shared/ui/template-source-connection-tag";
+import {
+  TemplateSourceExtrasCollapse,
+  type TemplateSourceExtrasCollapseProps,
+} from "../../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceInfo } from "../../../shared/ui/template-source-info";
 import infoStyles from "../../../shared/ui/template-source-info.module.css";
 import { TemplateSourceTypeTag } from "../../../shared/ui/template-source-type-tag";
-import {
-  TemplateSourceTemplatesSection,
-  type TemplateSourceTemplatesSectionProps,
-} from "../../../templates/ui/template-source-templates-section";
 
 import styles from "./template-source-list-item.module.css";
 
 const { Text } = Typography;
 
 const CARD_NAV_IGNORE_SELECTOR =
-  "a, button, [role='button'], input, textarea, select, .ant-collapse, .ant-collapse-header, .ant-modal-wrap, .ant-modal, .ant-upload, .ant-segmented";
+  "a, button, [role='button'], input, textarea, select, .ant-modal-wrap, .ant-modal, .ant-upload, .ant-segmented, .ant-collapse, .ant-collapse-header";
 
 function isOverlayOpen(): boolean {
   return typeof document !== "undefined" && Boolean(document.querySelector(".ant-modal-open"));
@@ -44,12 +41,12 @@ export interface TemplateSourceListItemProps {
   createdAt?: string;
   syncedAt?: string | null;
   showNotSynced?: boolean;
-  templates?: TemplateSourceTemplatesSectionProps;
-  files?: TemplateSourceFilesSectionProps;
+  extras?: TemplateSourceExtrasCollapseProps;
   betweenInfoAndTemplates?: ReactNode;
   headerExtra?: ReactNode;
   forceDimmed?: boolean;
   detailHref?: string;
+  searchQuery?: string;
 }
 
 export function TemplateSourceListItem({
@@ -62,12 +59,12 @@ export function TemplateSourceListItem({
   syncedAt,
   showNotSynced,
   webUrl,
-  templates,
-  files,
+  extras,
   betweenInfoAndTemplates,
   headerExtra,
   forceDimmed = false,
   detailHref,
+  searchQuery,
 }: TemplateSourceListItemProps) {
   const navigate = useNavigate();
   const cardClassName = [
@@ -78,7 +75,6 @@ export function TemplateSourceListItem({
     .filter(Boolean)
     .join(" ");
   const dimmed = !isConnected || forceDimmed;
-  const hasTags = sourceType !== undefined || showActiveStatusTag;
 
   const handleCardClick = (event: MouseEvent<HTMLElement>) => {
     if (!detailHref || shouldIgnoreCardNavigation(event)) {
@@ -104,47 +100,45 @@ export function TemplateSourceListItem({
               {name[0]}
             </Avatar>
 
-            <Text className={styles.name}>{name}</Text>
+            <Text className={styles.name}>
+              <SearchHighlightText text={name} query={searchQuery} />
+            </Text>
 
             <Flex align="center" gap="small" className={styles.titleMeta}>
               <TemplateSourceTypeTag sourceType={sourceType} />
 
               <Divider type="vertical" />
 
-              {hasTags && (
-                <Flex align="center" gap={5}>
-                  <TemplateSourceConnectionTag isConnected={isConnected} />
+              <Flex align="center" gap={5}>
+                <TemplateSourceConnectionTag isConnected={isConnected} />
 
-                  {showActiveStatusTag && <TemplateSourceActiveStatusTag />}
-                </Flex>
-              )}
+                {showActiveStatusTag && <TemplateSourceActiveStatusTag />}
+              </Flex>
             </Flex>
           </span>
         </Flex>
       }
       extra={headerExtra ?? <TemplateSourceConnectionTag isConnected={isConnected} />}
     >
-      <TemplateSourceInfo
-        description={description}
-        webUrl={webUrl}
-        createdAt={createdAt}
-        syncedAt={syncedAt}
-        showNotSynced={showNotSynced}
-        dimmed={dimmed}
-      />
+      <Flex vertical gap="small">
+        <TemplateSourceInfo
+          description={description}
+          webUrl={webUrl}
+          createdAt={createdAt}
+          syncedAt={syncedAt}
+          showNotSynced={showNotSynced}
+          dimmed={dimmed}
+          searchQuery={searchQuery}
+        />
 
-      {!!betweenInfoAndTemplates && <div>{betweenInfoAndTemplates}</div>}
+        {!!betweenInfoAndTemplates && betweenInfoAndTemplates}
 
-      {(!!templates || !!files) && (
-        <>
-          <Divider className={styles.divider} />
-
+        {!!extras && (
           <div className={dimmed ? infoStyles.dimmed : undefined}>
-            {!!templates && <TemplateSourceTemplatesSection {...templates} />}
-            {!!files && <TemplateSourceFilesSection {...files} />}
+            <TemplateSourceExtrasCollapse {...extras} />
           </div>
-        </>
-      )}
+        )}
+      </Flex>
     </Card>
   );
 }

@@ -1,6 +1,7 @@
 import {
   SourceOperation,
   SourceType,
+  type SourceListWithExtrasSchema,
   type TemplateSourceCreateSchema,
   type TemplateSourcePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
@@ -9,58 +10,39 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-import { canAddSourceFiles } from "../../files/helpers/can-add-source-files";
-import { SourceFilesStore } from "../../files/model/source-files-store";
-import { addSourceFileWithPolling } from "../../files/service/add-source-file.service";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
-import { SourcePollingService } from "../../service/source-polling.service";
-import { TemplateSourceActionsService } from "../../shared/service/template-source-actions.service";
+import {
+  mergeSourceListItemUpdate,
+  normalizeSourceListItem,
+} from "../../shared/helpers/normalize-source-list-item";
+import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
+import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
-import { SourceTemplatesStore } from "../../templates/model/source-templates-store";
+import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 import { sortSources } from "../helpers/sort-sources";
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
-  templatesStore: SourceTemplatesStore;
-  filesStore: SourceFilesStore;
+  load: () => Promise<void>;
+  reloadSource: (sourceId: string) => Promise<void>;
   addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
+  deleteSourceFile: (sourceId: string, fileId: string) => Promise<ResourceDeleteResult>;
 };
 
 export class ConfigurationTemplatesStore implements ConfigurationTemplatesListStore {
-  sources: TemplateSourcePublicSchema[] = [];
+  sources: SourceListWithExtrasSchema[] = [];
   isLoading = false;
+  hasLoadedOnce = false;
   hasError = false;
 
   actionBySourceId = new Map<string, SourceActionKind>();
 
-  templatesStore = new SourceTemplatesStore();
-  filesStore = new SourceFilesStore();
-
-  private readonly sourcePolling: SourcePollingService;
-  private readonly sourceActions: TemplateSourceActionsService;
+  private readonly runtime: TemplateSourceRuntime;
 
   constructor() {
     makeAutoObservable(this);
 
-    this.sourcePolling = new SourcePollingService({
-      refreshSource: (sourceId) => this.refreshSource(sourceId),
-      applySourceUpdate: (updated) => runInAction(() => this.applySourceUpdate(updated)),
-      isSourcePresent: (sourceId) => this.sources.some((item) => item.id === sourceId),
-    });
-
-    this.sourceActions = new TemplateSourceActionsService(this.sourcePolling, {
-      setActionState: (sourceId, kind) =>
-        runInAction(() => {
-          this.actionBySourceId.set(sourceId, kind);
-        }),
-      clearActionState: (sourceId) =>
-        runInAction(() => {
-          this.actionBySourceId.delete(sourceId);
-        }),
-      markOptimisticOperation: (sourceId, operation) =>
-        runInAction(() => this.patchOptimisticOperation(sourceId, operation)),
-      removeSource: (sourceId) => runInAction(() => this.removeSourceFromList(sourceId)),
-    });
+    this.runtime = new TemplateSourceRuntime(this.createStatePort());
   }
 
   get sortedSources() {
@@ -68,20 +50,33 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   }
 
   reset = () => {
-    this.sourcePolling.reset();
+    this.runtime.reset();
     this.sources = [];
     this.isLoading = false;
+    this.hasLoadedOnce = false;
     this.hasError = false;
-    this.actionBySourceId.clear();
-    this.templatesStore.reset();
-    this.filesStore.reset();
   };
 
-  private fetchSources = async (): Promise<TemplateSourcePublicSchema[]> => {
+  private createStatePort(): TemplateSourceStatePort {
+    return {
+      actionBySourceId: this.actionBySourceId,
+      isSourcePresent: (sourceId) => this.sources.some((item) => item.id === sourceId),
+      refreshSource: (sourceId) => this.refreshSource(sourceId),
+      applySourceUpdate: (updated) => this.applySourceUpdate(updated),
+      patchOptimisticOperation: (sourceId, operation) =>
+        this.patchOptimisticOperation(sourceId, operation),
+      removeSource: (sourceId) => this.removeSourceFromList(sourceId),
+      reloadSource: (sourceId) => this.reloadSource(sourceId),
+      getSource: (sourceId) => this.sources.find((item) => item.id === sourceId),
+    };
+  }
+
+  private fetchSources = async (): Promise<SourceListWithExtrasSchema[]> => {
     const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
       TemplateSourceListBody: {},
     });
-    return response?.data ?? [];
+
+    return (response?.data ?? []).map(normalizeSourceListItem);
   };
 
   load = async () => {
@@ -95,27 +90,44 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       runInAction(() => {
         this.sources = sources;
       });
-      this.sourcePolling.syncForSources(sources);
+      this.runtime.syncForSources(sources);
     } catch (reason) {
       console.error("Failed to load template sources:", reason);
       runInAction(() => {
         if (isGlobalServerError(reason)) return;
         this.hasError = true;
-        this.sources = [];
+        if (!this.hasLoadedOnce) {
+          this.sources = [];
+        }
       });
     } finally {
       runInAction(() => {
         this.isLoading = false;
+        this.hasLoadedOnce = true;
       });
     }
   };
 
-  refreshSource = async (sourceId: string): Promise<TemplateSourcePublicSchema | null> => {
+  reloadSource = async (sourceId: string): Promise<void> => {
     try {
-      return (
-        (await apiCoreStore.taskTemplateSourcesApi?.templateSourceGet({ source_id: sourceId })) ??
-        null
-      );
+      const source = await this.refreshSource(sourceId);
+      if (!source) return;
+
+      runInAction(() => {
+        const index = this.sources.findIndex((item) => item.id === sourceId);
+        if (index === -1) return;
+
+        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], source);
+      });
+    } catch (reason) {
+      if (isGlobalServerError(reason)) return;
+      console.error("Failed to reload template source:", reason);
+    }
+  };
+
+  refreshSource = async (sourceId: string): Promise<SourceListWithExtrasSchema | null> => {
+    try {
+      return await fetchTemplateSource(sourceId);
     } catch (reason) {
       if (isGlobalServerError(reason)) return null;
       console.error("Failed to refresh template source:", reason);
@@ -123,28 +135,31 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  applySourceUpdate = (updated: TemplateSourcePublicSchema) => {
+  applySourceUpdate = (updated: SourceListWithExtrasSchema) => {
     const index = this.sources.findIndex((item) => item.id === updated.id);
     if (index === -1) return;
-    this.sources[index] = updated;
+
+    this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
   };
 
   addSource = (source: TemplateSourcePublicSchema) => {
-    this.sources = [source, ...this.sources.filter((item) => item.id !== source.id)];
+    const normalized = normalizeSourceListItem(source);
+    this.sources = [normalized, ...this.sources.filter((item) => item.id !== normalized.id)];
   };
 
   private registerCreatedSource = (
     created: TemplateSourcePublicSchema
-  ): TemplateSourcePublicSchema => {
-    runInAction(() => this.addSource(created));
-    this.sourcePolling.scheduleForSource(created);
+  ): SourceListWithExtrasSchema => {
+    const normalized = normalizeSourceListItem(created);
+    runInAction(() => this.addSource(normalized));
+    this.runtime.scheduleForSource(normalized);
 
-    return created;
+    return normalized;
   };
 
   private createTemplateSource = async (
     schema: TemplateSourceCreateSchema
-  ): Promise<TemplateSourcePublicSchema> => {
+  ): Promise<SourceListWithExtrasSchema> => {
     const created = await apiCoreStore.taskTemplateSourcesApi?.templateSourceCreate({
       TemplateSourceCreateSchema: schema,
     });
@@ -159,7 +174,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   createLocalSource = async (payload: {
     name: string;
     description?: string;
-  }): Promise<TemplateSourcePublicSchema> =>
+  }): Promise<SourceListWithExtrasSchema> =>
     this.createTemplateSource({
       source_type: SourceType.LocalBundle,
       name: payload.name,
@@ -173,7 +188,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     repo_user?: string;
     repo_pass?: string;
     branch?: string;
-  }): Promise<TemplateSourcePublicSchema> =>
+  }): Promise<SourceListWithExtrasSchema> =>
     this.createTemplateSource({
       source_type: SourceType.GitRepo,
       name: payload.name,
@@ -188,7 +203,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     name: string;
     description?: string;
     file: File;
-  }): Promise<TemplateSourcePublicSchema> => {
+  }): Promise<SourceListWithExtrasSchema> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
 
@@ -215,35 +230,16 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     this.sources[index] = { ...source, current_operation: operation };
   };
 
-  addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> => {
-    const source = this.sources.find((item) => item.id === sourceId);
-    if (!source || !canAddSourceFiles(source, this)) {
-      throw new Error("Cannot add file while source operation is in progress");
-    }
+  addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> =>
+    this.runtime.addSourceFile(sourceId, payload);
 
-    return addSourceFileWithPolling(
-      {
-        filesStore: this.filesStore,
-        polling: this.sourcePolling,
-        markOptimisticOperation: (id, operation) => this.patchOptimisticOperation(id, operation),
-        setActionState: (id) =>
-          runInAction(() => {
-            this.actionBySourceId.set(id, "add_file");
-          }),
-        clearActionState: (id) =>
-          runInAction(() => {
-            this.actionBySourceId.delete(id);
-          }),
-      },
-      sourceId,
-      payload
-    );
-  };
+  deleteSourceFile = (sourceId: string, fileId: string): Promise<ResourceDeleteResult> =>
+    this.runtime.deleteSourceFile(sourceId, fileId);
 
-  plugSource = (sourceId: string): Promise<void> => this.sourceActions.plugSource(sourceId);
+  plugSource = (sourceId: string): Promise<void> => this.runtime.plugSource(sourceId);
 
-  syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
+  syncSource = (sourceId: string): Promise<void> => this.runtime.syncSource(sourceId);
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
-    this.sourceActions.deleteSource(sourceId);
+    this.runtime.deleteSource(sourceId);
 }

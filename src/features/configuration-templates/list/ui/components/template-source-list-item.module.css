@@ -21,7 +21,7 @@
 }
 
 .cardDisconnected {
-  background: #fbfbfb;
+  background: rgba(0, 0, 0, 0.02);
 }
 
 .card .extra {
@@ -44,8 +44,4 @@
 .avatar {
   font-weight: normal;
   margin-right: 6px;
-}
-
-.divider {
-  margin: 7px 0 3px;
 }

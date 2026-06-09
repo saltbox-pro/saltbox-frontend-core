@@ -1,3 +1,4 @@
+import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import { Flex, Typography } from "antd";
 
 import { TemplateSourceDates } from "./template-source-dates";
@@ -13,6 +14,7 @@ export type TemplateSourceInfoProps = {
   syncedAt?: string | null;
   showNotSynced?: boolean;
   dimmed?: boolean;
+  searchQuery?: string;
 };
 
 export function TemplateSourceInfo({
@@ -22,6 +24,7 @@ export function TemplateSourceInfo({
   syncedAt,
   showNotSynced,
   dimmed = false,
+  searchQuery,
 }: TemplateSourceInfoProps) {
   return (
     <>
@@ -31,7 +34,7 @@ export function TemplateSourceInfo({
           className={dimmed ? styles.dimmed : undefined}
           style={{ margin: 0 }}
         >
-          {description}
+          <SearchHighlightText text={description} query={searchQuery} />
         </Paragraph>
       )}
 

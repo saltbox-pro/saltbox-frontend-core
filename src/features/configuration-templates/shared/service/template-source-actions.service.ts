@@ -2,7 +2,6 @@ import type { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-import type { SourcePollingService } from "../../service/source-polling.service";
 import {
   PLUG_OPTIMISTIC_OPERATION,
   SYNC_OPTIMISTIC_OPERATION,
@@ -10,6 +9,8 @@ import {
 import { isApiNotFoundError } from "../helpers/is-api-not-found-error";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { SourceActionKind } from "../types/source-action";
+
+import type { SourcePollingService } from "./source-polling.service";
 
 export type TemplateSourceActionsCallbacks = {
   setActionState: (sourceId: string, kind: SourceActionKind) => void;

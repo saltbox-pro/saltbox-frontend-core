@@ -1,35 +1,43 @@
-import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { SshfsFileType, type SshfsFilePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { formatTimeByUserTZ, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Flex, List, Tag, Tooltip, message } from "antd";
+import {
+  BaseActionButton,
+  formatTimeByUserTZ,
+  isGlobalServerError,
+  SearchHighlightText,
+} from "@saltbox/saltbox-frontend-common";
+import { Flex, List, Tag, Tooltip, message } from "antd";
 import { useCallback, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import { TemplateSourceSectionEmpty } from "../../shared/ui/template-source-section-empty";
 import { useConfirmDeleteFile } from "../hooks/use-confirm-delete-file";
-import type { SourceFilesStore } from "../model/source-files-store";
 
-import styles from "./source-files-section.module.css";
+import styles from "./template-source-files-list.module.css";
 
 export type TemplateSourceFilesListProps = {
-  sourceId: string;
-  filesStore: SourceFilesStore;
+  onDeleteFile: (fileId: string) => Promise<ResourceDeleteResult>;
+  onDeleteError?: () => Promise<void>;
   items: SshfsFilePublicSchema[];
-  isLoading: boolean;
-  hasError?: boolean;
   constrainHeight?: boolean;
+  searchQuery?: string;
   canAddFile?: boolean;
   isAddFileInProgress?: boolean;
   onAddFileClick?: () => void;
 };
 
 export function TemplateSourceFilesList({
-  sourceId,
-  filesStore,
+  onDeleteFile,
+  onDeleteError,
   items,
-  isLoading,
-  hasError = false,
   constrainHeight = true,
+  searchQuery,
   canAddFile = false,
   isAddFileInProgress = false,
   onAddFileClick,
@@ -38,7 +46,7 @@ export function TemplateSourceFilesList({
   const [messageApi, contextHolder] = message.useMessage();
   const { confirmDeleteFile, modalContextHolder } = useConfirmDeleteFile();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const showAddFile = isAddFileInProgress || (canAddFile && !!onAddFileClick);
+  const showAddFile = !!onAddFileClick;
 
   const handleAddFileClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -51,7 +59,7 @@ export function TemplateSourceFilesList({
 
       setDeletingId(file.id);
       try {
-        const result = await filesStore.deleteFile(sourceId, file.id);
+        const result = await onDeleteFile(file.id);
 
         if (result === "not_found") {
           messageApi.warning(
@@ -70,12 +78,12 @@ export function TemplateSourceFilesList({
         if (isGlobalServerError(reason)) return;
         console.error("Failed to delete source file:", reason);
         messageApi.error(t("configuration-templates.source.files-delete-error"));
-        await filesStore.loadAll(sourceId, { force: true });
+        await onDeleteError?.();
       } finally {
         setDeletingId(null);
       }
     },
-    [deletingId, filesStore, messageApi, sourceId, t]
+    [deletingId, messageApi, onDeleteError, onDeleteFile, t]
   );
 
   const handleDeleteClick = useCallback(
@@ -95,18 +103,15 @@ export function TemplateSourceFilesList({
     }
 
     return (
-      <Tooltip title={t("configuration-templates.source.files-delete")}>
-        <Button
-          type="text"
-          size="small"
-          danger
-          className={styles.fileDelete}
-          icon={<DeleteOutlined />}
-          loading={deletingId === file.id}
-          disabled={deletingId !== null && deletingId !== file.id}
-          onClick={(event) => handleDeleteClick(event, file)}
-        />
-      </Tooltip>
+      <BaseActionButton
+        className={styles.fileDelete}
+        color="danger"
+        icon={<DeleteOutlined />}
+        title={t("configuration-templates.source.files-delete")}
+        loading={deletingId === file.id}
+        disabled={deletingId !== null && deletingId !== file.id}
+        onClick={(event) => handleDeleteClick(event, file)}
+      />
     );
   };
 
@@ -116,73 +121,64 @@ export function TemplateSourceFilesList({
       {modalContextHolder}
       {showAddFile && (
         <Flex justify="flex-end" className={styles.filesHeader}>
-          <Button
-            type="primary"
-            size="small"
+          <BaseActionButton
+            icon={<PlusOutlined />}
+            title={t("configuration-templates.source.add-file")}
             loading={isAddFileInProgress}
-            disabled={isAddFileInProgress}
+            disabled={!canAddFile || isAddFileInProgress}
             onClick={handleAddFileClick}
-          >
-            {t("configuration-templates.source.add-file")}
-          </Button>
+          />
         </Flex>
       )}
 
-      {hasError ? (
-        <Alert
-          message={t("configuration-templates.source.files-load-error")}
-          type="error"
-          showIcon
-        />
-      ) : (
-        <List
-          className={constrainHeight ? `${styles.files} ${styles.filesConstrained}` : styles.files}
-          size="small"
-          loading={isLoading && items.length === 0}
-          dataSource={items}
-          locale={{
-            emptyText: (
-              <TemplateSourceSectionEmpty
-                description={t("configuration-templates.source.files-empty")}
-              />
-            ),
-          }}
-          renderItem={(file) => {
-            const deleteAction = renderDeleteAction(file);
+      <List
+        className={constrainHeight ? `${styles.files} ${styles.filesConstrained}` : styles.files}
+        size="small"
+        dataSource={items}
+        locale={{
+          emptyText: (
+            <TemplateSourceSectionEmpty
+              description={t("configuration-templates.source.files-empty")}
+            />
+          ),
+        }}
+        renderItem={(file) => {
+          const deleteAction = renderDeleteAction(file);
 
-            return (
-              <List.Item
-                className={styles.fileItem}
-                actions={deleteAction ? [deleteAction] : undefined}
-                extra={<Tag className={styles.fileChecksum}>{file.checksum_type}</Tag>}
-              >
-                <List.Item.Meta
-                  title={
-                    <Flex align="center" gap={8} className={styles.fileTitle}>
-                      <Tooltip
-                        title={
-                          !file.synced_on_sshfs && file.last_sync_error
-                            ? file.last_sync_error
-                            : undefined
-                        }
-                      >
-                        {file.synced_on_sshfs ? (
-                          <CheckCircleOutlined className={styles.fileSyncOk} />
-                        ) : (
-                          <CloseCircleOutlined className={styles.fileSyncError} />
-                        )}
-                      </Tooltip>
-                      <span className={styles.filePath}>{file.rel_path}</span>
-                    </Flex>
-                  }
-                  description={formatTimeByUserTZ(file.modified)}
-                />
-              </List.Item>
-            );
-          }}
-          split={false}
-        />
-      )}
+          return (
+            <List.Item
+              className={styles.fileItem}
+              actions={deleteAction ? [deleteAction] : undefined}
+              extra={<Tag className={styles.fileChecksum}>{file.checksum_type}</Tag>}
+            >
+              <List.Item.Meta
+                title={
+                  <Flex align="center" gap={8} className={styles.fileTitle}>
+                    <Tooltip
+                      title={
+                        !file.synced_on_sshfs && file.last_sync_error
+                          ? file.last_sync_error
+                          : undefined
+                      }
+                    >
+                      {file.synced_on_sshfs ? (
+                        <CheckCircleOutlined className={styles.fileSyncOk} />
+                      ) : (
+                        <CloseCircleOutlined className={styles.fileSyncError} />
+                      )}
+                    </Tooltip>
+                    <span className={styles.filePath}>
+                      <SearchHighlightText text={file.rel_path} query={searchQuery} />
+                    </span>
+                  </Flex>
+                }
+                description={formatTimeByUserTZ(file.modified)}
+              />
+            </List.Item>
+          );
+        }}
+        split={false}
+      />
     </>
   );
 }

@@ -864,7 +864,8 @@
     "load-error": "Не удалось загрузить источники шаблонов конфигураций",
     "empty": "Нет доступных шаблонов",
     "search": {
-      "placeholder": "Поиск",
+      "placeholder": "Поиск по источнику, шаблону, файлу",
+      "min-length": "Введите минимум {{count}} символа для поиска",
       "no-results": "Ничего не найдено по запросу"
     },
     "filter": {
@@ -974,7 +975,9 @@
       },
       "operation": {
         "discover": "Обнаружение…",
-        "prepare_sls": "Подготовка SLS…",
+        "prepare_templates": "Подготовка шаблонов…",
+        "update_template_content": "Обновление шаблона…",
+        "delete_template": "Удаление шаблона…",
         "prepare_files": "Подготовка файлов…",
         "add_user_file": "Обработка…",
         "sync": "Синхронизация…",
@@ -992,7 +995,7 @@
       "files": "Файлы (sshfs)",
       "files-empty": "Нет файлов",
       "files-load-error": "Не удалось загрузить файлы",
-      "add-file": "+ Добавить файл",
+      "add-file": "Добавить файл",
       "files-delete": "Удалить файл",
       "files-delete-confirm-title": "Удаление файла",
       "files-delete-confirm-content": "Вы действительно хотите удалить файл \"{{path}}\"?",

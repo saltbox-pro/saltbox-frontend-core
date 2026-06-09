@@ -1,53 +1,25 @@
-import type { Description, TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { Alert, List, Tag } from "antd";
+import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
+import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
+import { Flex, List, Tag } from "antd";
 import { useTranslation } from "react-i18next";
 
+import { resolveTemplateDescription } from "../../shared/helpers/resolve-template-description";
 import { TemplateSourceSectionEmpty } from "../../shared/ui/template-source-section-empty";
 
-import styles from "./template-source-templates-section.module.css";
-
-function resolveDescription(
-  description: Description | null | undefined,
-  language: string
-): string | undefined {
-  if (description == null) return undefined;
-
-  if (typeof description === "string") return description;
-
-  if (typeof description === "object") {
-    const localized = (description as Record<string, string>)[language];
-    if (localized) return localized;
-
-    return Object.values(description as Record<string, string>)[0];
-  }
-
-  return undefined;
-}
+import styles from "./template-source-templates-list.module.css";
 
 export type TemplateSourceTemplatesListProps = {
   items: TaskTemplatePublicSchema[];
-  isLoading: boolean;
-  hasError?: boolean;
   constrainHeight?: boolean;
+  searchQuery?: string;
 };
 
 export function TemplateSourceTemplatesList({
   items,
-  isLoading,
-  hasError = false,
   constrainHeight = true,
+  searchQuery,
 }: TemplateSourceTemplatesListProps) {
   const { t, i18n } = useTranslation();
-
-  if (hasError) {
-    return (
-      <Alert
-        message={t("configuration-templates.source.templates-load-error")}
-        type="error"
-        showIcon
-      />
-    );
-  }
 
   return (
     <List
@@ -55,7 +27,6 @@ export function TemplateSourceTemplatesList({
         constrainHeight ? `${styles.templates} ${styles.templatesConstrained}` : styles.templates
       }
       size="small"
-      loading={isLoading && items.length === 0}
       dataSource={items}
       locale={{
         emptyText: (
@@ -64,14 +35,35 @@ export function TemplateSourceTemplatesList({
           />
         ),
       }}
-      renderItem={({ title, description, name }) => (
-        <List.Item className={styles.templateItem} extra={<Tag>{name}</Tag>}>
-          <List.Item.Meta
-            title={title}
-            description={resolveDescription(description, i18n.language)}
-          />
-        </List.Item>
-      )}
+      renderItem={({ title, description, fun, name }) => {
+        const resolvedDescription = resolveTemplateDescription(description, i18n.language);
+
+        return (
+          <List.Item
+            className={styles.templateItem}
+            extra={
+              <Flex wrap="wrap" justify="flex-end">
+                <Tag>
+                  <SearchHighlightText text={name} query={searchQuery} />
+                </Tag>
+
+                <Tag>
+                  <SearchHighlightText text={fun} query={searchQuery} />
+                </Tag>
+              </Flex>
+            }
+          >
+            <List.Item.Meta
+              title={<SearchHighlightText text={title} query={searchQuery} />}
+              description={
+                resolvedDescription ? (
+                  <SearchHighlightText text={resolvedDescription} query={searchQuery} />
+                ) : undefined
+              }
+            />
+          </List.Item>
+        );
+      }}
       split={false}
     />
   );

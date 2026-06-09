@@ -1,39 +1,65 @@
-import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
+import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import { TemplateSourceActionsToolbar } from "../../../actions/ui/template-source-actions-toolbar";
-import { canAddSourceFiles } from "../../../files/helpers/can-add-source-files";
+import {
+  canAddSourceFiles,
+  canShowAddSourceFileButton,
+} from "../../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../../files/ui/add-source-file-modal";
+import { getTemplateSourceViewState } from "../../../shared/helpers/get-template-source-view-state";
 import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../../shared/helpers/source-action-progress";
-import { getTemplateSourceViewState } from "../../../shared/helpers/get-template-source-view-state";
 import { getTemplateSourceDetailPath } from "../../../shared/helpers/source-presentation";
+import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
+import {
+  filterSourceFilesForSearch,
+  filterSourceTemplatesForSearch,
+  getSourceSearchForcedActiveKeys,
+} from "../../helpers/source-search";
 import type { ConfigurationTemplatesListStore } from "../../store/configuration-templates-store";
 
 import { TemplateSourceListItem } from "./template-source-list-item";
 
 export interface TemplateSourceListEntryProps {
-  source: TemplateSourcePublicSchema;
+  source: SourceListWithExtrasSchema;
   store: ConfigurationTemplatesListStore;
+  searchQuery?: string;
 }
 
 export const TemplateSourceListEntry = observer(
-  ({ source, store }: TemplateSourceListEntryProps) => {
+  ({ source, store, searchQuery }: TemplateSourceListEntryProps) => {
+    const { i18n } = useTranslation();
     const view = getTemplateSourceViewState(source, store);
-    const templatesState = store.templatesStore.getState(source.id);
-    const filesState = store.filesStore.getState(source.id);
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
+    const showAddFileButton = canShowAddSourceFileButton(source);
     const addingFile = isAddFileInProgress(getSourceActionContext(store, source.id));
+
+    const forcedActiveKeys = useMemo(
+      () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
+      [i18n.language, searchQuery, source]
+    );
+
+    const visibleTemplates = useMemo(
+      () => filterSourceTemplatesForSearch(source, searchQuery, i18n.language),
+      [i18n.language, searchQuery, source]
+    );
+
+    const visibleFiles = useMemo(
+      () => filterSourceFilesForSearch(source, searchQuery),
+      [searchQuery, source]
+    );
 
     return (
       <>
         <TemplateSourceListItem
           name={source.name}
+          searchQuery={searchQuery}
           detailHref={getTemplateSourceDetailPath(source.id)}
           sourceType={source.source_type}
           showActiveStatusTag={view.presentation.showActiveStatus}
@@ -54,22 +80,23 @@ export const TemplateSourceListEntry = observer(
             />
           }
           betweenInfoAndTemplates={<TemplateSourceLastErrorAlert source={source} />}
-          templates={{
-            items: templatesState.items,
-            isLoading: templatesState.isLoading,
-            hasError: templatesState.hasError,
-            onOpen: () => store.templatesStore.loadAll(source.id),
-          }}
-          files={{
-            items: filesState.items,
-            isLoading: filesState.isLoading,
-            hasError: filesState.hasError,
-            onOpen: () => store.filesStore.loadAll(source.id),
-            sourceId: source.id,
-            filesStore: store.filesStore,
-            canAddFile,
-            isAddFileInProgress: addingFile,
-            onAddFileClick: canAddFile ? () => setAddFileModalOpen(true) : undefined,
+          extras={{
+            templates: {
+              items: visibleTemplates,
+              totalCount: source.templates?.length ?? 0,
+              searchQuery,
+            },
+            files: {
+              items: visibleFiles,
+              totalCount: source.files?.length ?? 0,
+              searchQuery,
+              onDeleteFile: (fileId) => store.deleteSourceFile(source.id, fileId),
+              onDeleteError: () => store.reloadSource(source.id),
+              canAddFile,
+              isAddFileInProgress: addingFile,
+              onAddFileClick: showAddFileButton ? () => setAddFileModalOpen(true) : undefined,
+            },
+            forcedActiveKeys,
           }}
         />
 

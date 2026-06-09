@@ -1,20 +1,22 @@
-import { Alert, Flex, Skeleton, Space } from "antd";
+import { Alert, Card, Flex, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TemplateSourceActionsToolbar } from "../../actions/ui/template-source-actions-toolbar";
-import { canAddSourceFiles } from "../../files/helpers/can-add-source-files";
+import {
+  canAddSourceFiles,
+  canShowAddSourceFileButton,
+} from "../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../files/ui/add-source-file-modal";
-import { TemplateSourceFilesSection } from "../../files/ui/template-source-files-section";
+import { getTemplateSourceViewState } from "../../shared/helpers/get-template-source-view-state";
 import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../shared/helpers/source-action-progress";
-import { getTemplateSourceViewState } from "../../shared/helpers/get-template-source-view-state";
+import { TemplateSourceActionsToolbar } from "../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceContent } from "../../shared/ui/template-source-content";
+import { TemplateSourceExtrasCollapse } from "../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceTags } from "../../shared/ui/template-source-tags";
-import { TemplateSourceTemplatesSection } from "../../templates/ui/template-source-templates-section";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
 type TemplateSourceDetailProps = {
@@ -40,55 +42,50 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   }
 
   const view = getTemplateSourceViewState(store.source, store);
-  const templatesState = store.templatesStore.getState(store.source.id);
-  const filesState = store.filesStore.getState(store.source.id);
   const canAddFile = canAddSourceFiles(store.source, store);
+  const showAddFileButton = canShowAddSourceFileButton(store.source);
   const addingFile = isAddFileInProgress(getSourceActionContext(store, store.source.id));
 
   return (
     <Space direction="vertical" size="large">
-      <Flex vertical gap="middle">
-        <Flex align="flex-start" justify="space-between" gap="middle" wrap>
-          <TemplateSourceTags
-            sourceType={store.source.source_type}
-            isConnected={view.isConnected}
-            showActiveStatus={view.presentation.showActiveStatus}
-          />
+      <Card size="small">
+        <Flex vertical gap="middle">
+          <Flex align="flex-start" justify="space-between" gap="middle" wrap>
+            <TemplateSourceTags
+              sourceType={store.source.source_type}
+              isConnected={view.isConnected}
+              showActiveStatus={view.presentation.showActiveStatus}
+            />
 
-          <TemplateSourceActionsToolbar
+            <TemplateSourceActionsToolbar
+              source={store.source}
+              actions={store}
+              canConnect={view.canConnect}
+              canSync={view.canSync}
+              showDelete={view.showDelete}
+            />
+          </Flex>
+
+          <TemplateSourceContent
             source={store.source}
-            actions={store}
-            canConnect={view.canConnect}
-            canSync={view.canSync}
-            showDelete={view.showDelete}
+            showNotSynced={view.showNotSynced}
+            dimmed={view.forceDimmed}
           />
         </Flex>
+      </Card>
 
-        <TemplateSourceContent
-          source={store.source}
-          showNotSynced={view.showNotSynced}
-          dimmed={view.forceDimmed}
-        />
-      </Flex>
-
-      <TemplateSourceTemplatesSection
-        defaultExpanded
-        items={templatesState.items}
-        isLoading={templatesState.isLoading}
-        hasError={templatesState.hasError}
-        onOpen={() => store.templatesStore.loadAll(store.source.id)}
-      />
-
-      <TemplateSourceFilesSection
-        items={filesState.items}
-        isLoading={filesState.isLoading}
-        hasError={filesState.hasError}
-        onOpen={() => store.filesStore.loadAll(store.source.id)}
-        sourceId={store.source.id}
-        filesStore={store.filesStore}
-        canAddFile={canAddFile}
-        isAddFileInProgress={addingFile}
-        onAddFileClick={canAddFile ? () => setAddFileModalOpen(true) : undefined}
+      <TemplateSourceExtrasCollapse
+        templates={{
+          items: store.source.templates ?? [],
+        }}
+        files={{
+          items: store.source.files ?? [],
+          onDeleteFile: (fileId) => store.deleteSourceFile(fileId),
+          onDeleteError: () => store.reloadSource(),
+          canAddFile,
+          isAddFileInProgress: addingFile,
+          onAddFileClick: showAddFileButton ? () => setAddFileModalOpen(true) : undefined,
+        }}
       />
 
       <AddSourceFileModal

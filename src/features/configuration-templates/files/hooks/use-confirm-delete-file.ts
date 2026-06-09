@@ -20,7 +20,7 @@ export function useConfirmDeleteFile(): {
         okText: t("common.delete"),
         cancelText: t("common.cancel"),
         okButtonProps: { danger: true },
-        onOk: params.onOk,
+        onOk: () => Promise.resolve(params.onOk()),
       });
     },
     [modalApi, t]

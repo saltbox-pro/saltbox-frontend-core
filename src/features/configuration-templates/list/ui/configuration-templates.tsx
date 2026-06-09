@@ -8,7 +8,11 @@ import { useTranslation } from "react-i18next";
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
-import { normalizeSearch } from "../helpers/search";
+import {
+  getActiveSearchQuery,
+  MIN_SOURCE_SEARCH_LENGTH,
+  sourceMatchesQuery,
+} from "../helpers/source-search";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
 import { TemplateSourceListEntry } from "./components/template-source-list-entry";
@@ -16,7 +20,7 @@ import { TemplateSourceListEntry } from "./components/template-source-list-entry
 type AddSourceModal = "local" | "git" | "archive" | null;
 
 export const ConfigurationTemplates = observer(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [store] = useState(() => new ConfigurationTemplatesStore());
 
@@ -38,17 +42,13 @@ export const ConfigurationTemplates = observer(() => {
   };
 
   const filteredSources = useMemo(() => {
-    const q = normalizeSearch(search);
+    const query = getActiveSearchQuery(search);
     const sorted = store.sortedSources;
 
-    if (!q) return sorted;
+    if (!query) return sorted;
 
-    return sorted.filter((source) => {
-      const name = source.name?.toLowerCase() ?? "";
-      const desc = source.description?.toLowerCase() ?? "";
-      return name.includes(q) || desc.includes(q);
-    });
-  }, [search, store.sortedSources]);
+    return sorted.filter((source) => sourceMatchesQuery(source, query, i18n.language));
+  }, [i18n.language, search, store.sortedSources]);
 
   const addMenuItems: MenuProps["items"] = useMemo(
     () => [
@@ -71,11 +71,12 @@ export const ConfigurationTemplates = observer(() => {
     [t]
   );
 
-  const searchQuery = useMemo(() => normalizeSearch(search), [search]);
-  const hasSearchQuery = searchQuery.length > 0;
+  const searchQuery = useMemo(() => getActiveSearchQuery(search), [search]);
+  const hasSearchQuery = searchQuery !== undefined;
+  const hasPendingSearch = search.trim().length > 0 && !hasSearchQuery;
 
   return (
-    <Skeleton loading={store.isLoading && store.sources.length === 0} active>
+    <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
       <Space direction="vertical" size="middle">
         <Flex align="stretch" gap="middle">
           <SearchInput
@@ -107,20 +108,29 @@ export const ConfigurationTemplates = observer(() => {
           <Alert message={t("configuration-templates.load-error")} type="error" showIcon />
         )}
 
-        <Spin spinning={store.isLoading && store.sources.length > 0}>
+        <Spin spinning={store.isLoading && store.hasLoadedOnce}>
           {filteredSources.length === 0 ? (
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 hasSearchQuery
                   ? t("configuration-templates.search.no-results")
-                  : t("configuration-templates.empty")
+                  : hasPendingSearch
+                    ? t("configuration-templates.search.min-length", {
+                        count: MIN_SOURCE_SEARCH_LENGTH,
+                      })
+                    : t("configuration-templates.empty")
               }
             />
           ) : (
             <Flex vertical gap="large">
               {filteredSources.map((source) => (
-                <TemplateSourceListEntry key={source.id} source={source} store={store} />
+                <TemplateSourceListEntry
+                  key={source.id}
+                  source={source}
+                  store={store}
+                  searchQuery={searchQuery}
+                />
               ))}
             </Flex>
           )}

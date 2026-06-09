@@ -6,6 +6,12 @@ import {
 } from "../../shared/helpers/source-action-progress";
 import type { SourceActionState } from "../../shared/types/source-action";
 
+export function canShowAddSourceFileButton(
+  source: Pick<TemplateSourcePublicSchema, "state">
+): boolean {
+  return source.state === SourceState.Plugged || source.state === SourceState.Active;
+}
+
 export function canAddSourceFiles(
   source: Pick<TemplateSourcePublicSchema, "id" | "state" | "current_operation" | "last_error">,
   actionState?: SourceActionState
