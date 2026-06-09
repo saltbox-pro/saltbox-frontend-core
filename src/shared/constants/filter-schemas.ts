@@ -141,7 +141,7 @@ export const getJobsFilterSchema = (
     {
       name: "tgt",
       label: t("jobs.table-targets"),
-      operators: defaultStringOperators,
+      operators: defaultListOperators,
     },
     {
       name: "tgt_type",

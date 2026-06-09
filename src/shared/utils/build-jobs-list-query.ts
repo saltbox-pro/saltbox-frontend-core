@@ -1,17 +1,16 @@
 import dayjs from "dayjs";
 
 export function buildJobsListQuery(
-  dateRange: [dayjs.Dayjs, dayjs.Dayjs] | null,
+  createdSince: dayjs.Dayjs | null,
   mongoDBQuery: object | undefined
 ): Record<string, unknown> {
-  if (!dateRange) {
+  if (!createdSince) {
     return (mongoDBQuery as Record<string, unknown>) ?? {};
   }
 
   const periodFilter = {
     created: {
-      $gte: dateRange[0].toDate(),
-      $lte: dateRange[1].toDate(),
+      $gte: createdSince.toDate(),
     },
   };
 

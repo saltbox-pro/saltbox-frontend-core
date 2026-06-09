@@ -27,6 +27,10 @@ import {
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
+import {
+  JOB_DATE_RANGE_PRESET,
+  type JobDateRangePreset,
+} from "saltbox-core/shared/constants/job-date-range-presets";
 import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -35,6 +39,17 @@ import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
 
 const JobsTable = FastTablePaginated<JobsListResponse>;
+
+const PRESET_TO_PERIOD_KEY: Record<JobDateRangePreset, string> = {
+  [JOB_DATE_RANGE_PRESET.TODAY]: "jobs.period-today",
+  [JOB_DATE_RANGE_PRESET.MINUTES_10]: "jobs.period-10-minutes",
+  [JOB_DATE_RANGE_PRESET.MINUTES_30]: "jobs.period-30-minutes",
+  [JOB_DATE_RANGE_PRESET.HOUR_1]: "jobs.period-1-hour",
+  [JOB_DATE_RANGE_PRESET.HOUR_3]: "jobs.period-3-hours",
+  [JOB_DATE_RANGE_PRESET.HOUR_12]: "jobs.period-12-hours",
+  [JOB_DATE_RANGE_PRESET.DAY_1]: "jobs.period-1-day",
+  [JOB_DATE_RANGE_PRESET.ALL_TIME]: "jobs.period-all-time",
+};
 
 const columnHelper = createColumnHelper<JobsListResponse>();
 
@@ -81,6 +96,11 @@ const JobsPage = observer(() => {
   const [jobsStore] = useState(new JobsStore(jobFilterStore));
   const didInitFromLocationRef = useRef(false);
   const [isFilterButtonClick, setIsFilterButtonClick] = useState(false);
+
+  const jobsEmptyText = useMemo(() => {
+    const period = t(PRESET_TO_PERIOD_KEY[jobsStore.dateRangePreset]);
+    return t("jobs.empty-for-period", { period });
+  }, [jobsStore.dateRangePreset, t]);
 
   const handleNavigateToJob = useCallback(
     (jobId: string | null | undefined) => {
@@ -207,7 +227,7 @@ const JobsPage = observer(() => {
             case JobStatus.LaunchError:
               return (
                 <LaunchErrorPopover
-                  errorTypeText={data.row.original.launch_error_type}
+                  errorTypeText={data.row.original.launch_error_type ?? ""}
                   tagText={t("jobs.table-status-launch-error")}
                 />
               );
@@ -313,8 +333,8 @@ const JobsPage = observer(() => {
             label={t("jobs.date-range-label")}
             value={jobsStore.dateRangePreset}
             disabled={jobsStore.isJobsLoading}
-            onChange={(range, preset) => {
-              jobsStore.handleDateRangeChange(range, preset);
+            onChange={(createdSince, preset) => {
+              jobsStore.handleDateRangeChange(createdSince, preset);
             }}
           />
           <Button
@@ -337,6 +357,7 @@ const JobsPage = observer(() => {
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
         onRowClick={(job) => handleNavigateToJob(job.jid)}
         useVirtualScroll={false}
+        locale={{ empty: jobsEmptyText }}
       />
 
       <JobModalShell

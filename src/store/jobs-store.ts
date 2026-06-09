@@ -37,7 +37,7 @@ export class JobsStore {
   @observable isJobsLoading: boolean;
   @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
-  @observable dateRange: [dayjs.Dayjs, dayjs.Dayjs] | null;
+  @observable createdSince: dayjs.Dayjs | null;
   @observable dateRangePreset: JobDateRangePreset;
   @observable jobFilterStore: JobFilterStore;
   @observable appliedFiltersHadCreated: boolean;
@@ -48,7 +48,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
+    this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.appliedFiltersHadCreated = false;
     this.sorting = [...DEFAULT_SORTING];
@@ -66,7 +66,7 @@ export class JobsStore {
     this.isInitialized = false;
     this.isJobsLoading = false;
     this.error = null;
-    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
+    this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.sorting = [...DEFAULT_SORTING];
     this.total = 0;
@@ -78,7 +78,7 @@ export class JobsStore {
 
   @action
   refreshJobs = () => {
-    this.dateRange = getJobDateRangeForPreset(this.dateRangePreset);
+    this.createdSince = getJobDateRangeForPreset(this.dateRangePreset);
     this.loadJobs();
   };
 
@@ -95,7 +95,7 @@ export class JobsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          query: buildJobsListQuery(this.dateRange, this.mongoDBQuery),
+          query: buildJobsListQuery(this.createdSince, this.mongoDBQuery),
         },
       })
       .then((response) => {
@@ -127,13 +127,13 @@ export class JobsStore {
   @action
   resetDateRangeToAllTime = () => {
     this.dateRangePreset = JOB_DATE_RANGE_PRESET.ALL_TIME;
-    this.dateRange = null;
+    this.createdSince = null;
   };
 
   @action
   resetDateRangeToDefault = () => {
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
-    this.dateRange = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
+    this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
   };
 
   @action
@@ -150,11 +150,8 @@ export class JobsStore {
   };
 
   @action
-  handleDateRangeChange = (
-    range: [dayjs.Dayjs, dayjs.Dayjs] | null,
-    preset: JobDateRangePreset
-  ) => {
-    this.dateRange = range;
+  handleDateRangeChange = (createdSince: dayjs.Dayjs | null, preset: JobDateRangePreset) => {
+    this.createdSince = createdSince;
     this.dateRangePreset = preset;
     this.pagination.pageIndex = 0;
     this.loadJobs();
