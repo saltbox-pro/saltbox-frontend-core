@@ -27,6 +27,7 @@ import {
 
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
 import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
+import { SaltKeysDeleteConfirmModal } from "./-components/salt-keys-delete-confirm-modal";
 import { SaltKeysToolbar } from "./-components/salt-keys-toolbar";
 import { SaltKeysActionsDropdown } from "./-components/saltkeys-actions-dropdown";
 import { useAcceptSelectedFlow } from "./-components/use-accept-selected-flow";
@@ -67,6 +68,10 @@ const MasterPage = observer(() => {
 
   const [selection, setSelection] = useState<RowSelectionState>({});
   const [isSendingAction, setIsSendingAction] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteConfirmTitle, setDeleteConfirmTitle] = useState("");
+  const [deleteConfirmDescription, setDeleteConfirmDescription] = useState("");
+  const [deleteConfirmAction, setDeleteConfirmAction] = useState<() => Promise<void>>();
 
   useEffect(() => {
     if (masterId) {
@@ -195,41 +200,37 @@ const MasterPage = observer(() => {
   const handleDeleteSelected = useCallback(() => {
     if (Object.keys(selection).length === 0) return;
 
-    modalApi.confirm({
-      title: t("master.delete-selected-confirm-title"),
-      content: t("master.delete-selected-confirm-description", {
+    setDeleteConfirmTitle(t("master.delete-selected-confirm-title"));
+    setDeleteConfirmDescription(
+      t("master.delete-selected-confirm-description", {
         count: Object.keys(selection).length,
-      }),
-      icon: null,
-      okText: t("common.delete"),
-      cancelText: t("common.cancel"),
-      okButtonProps: { danger: true, loading: isSendingAction },
-      onOk: async () => {
-        setIsSendingAction(true);
-        try {
-          const selectedMinions = getSelectedSaltKeyMinions(
-            saltKeysStore.allSaltKeys,
-            selection,
-            masterId
-          );
-          await apiCoreStore.saltKeysApi?.saltKeysDelete({
-            SaltKeySetStatusRequestBody: { minions: selectedMinions },
-          });
-          messageApi.success(
-            t("master.delete-selected-success", { count: selectedMinions.length })
-          );
-        } catch (error) {
-          console.error("Failed to delete selected salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.delete-selected-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
-        }
-      },
+        master: masterId,
+      })
+    );
+    setDeleteConfirmAction(() => async () => {
+      setIsSendingAction(true);
+      try {
+        const selectedMinions = getSelectedSaltKeyMinions(
+          saltKeysStore.allSaltKeys,
+          selection,
+          masterId
+        );
+        await apiCoreStore.saltKeysApi?.saltKeysDelete({
+          SaltKeySetStatusRequestBody: { minions: selectedMinions },
+        });
+        messageApi.success(t("master.delete-selected-success", { count: selectedMinions.length }));
+      } catch (error) {
+        console.error("Failed to delete selected salt keys:", error);
+        if (isGlobalServerError(error)) return;
+        messageApi.error(t("master.delete-selected-failed"));
+      } finally {
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
+      }
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+    setDeleteConfirmOpen(true);
+  }, [masterId, messageApi, saltKeysStore, selection, t]);
 
   const handleAcceptAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
@@ -302,34 +303,29 @@ const MasterPage = observer(() => {
   const handleDeleteAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
 
-    modalApi.confirm({
-      title: t("master.delete-all-confirm-title"),
-      content: t("master.delete-all-confirm-description", { count: saltKeysStore.total }),
-      icon: null,
-      okText: t("common.delete"),
-      cancelText: t("common.cancel"),
-      okButtonProps: { danger: true, loading: isSendingAction },
-      onOk: async () => {
-        setIsSendingAction(true);
-        try {
-          await apiCoreStore.saltKeysApi?.saltKeysDeleteAll({
-            SaltKeySetStatusToAllRequestBody: {
-              masters: [masterId!],
-            },
-          });
-          messageApi.success(t("master.delete-all-success", { count: saltKeysStore.total }));
-        } catch (error) {
-          console.error("Failed to delete all salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.delete-all-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
-        }
-      },
+    setDeleteConfirmTitle(t("master.delete-all-confirm-title"));
+    setDeleteConfirmDescription(t("master.delete-all-confirm-description", { master: masterId }));
+    setDeleteConfirmAction(() => async () => {
+      setIsSendingAction(true);
+      try {
+        await apiCoreStore.saltKeysApi?.saltKeysDeleteAll({
+          SaltKeySetStatusToAllRequestBody: {
+            masters: [masterId!],
+          },
+        });
+        messageApi.success(t("master.delete-all-success", { count: saltKeysStore.total }));
+      } catch (error) {
+        console.error("Failed to delete all salt keys:", error);
+        if (isGlobalServerError(error)) return;
+        messageApi.error(t("master.delete-all-failed"));
+      } finally {
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
+      }
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+    setDeleteConfirmOpen(true);
+  }, [masterId, messageApi, saltKeysStore, selection, t]);
 
   const tabItems = useMemo(
     () => [
@@ -433,6 +429,16 @@ const MasterPage = observer(() => {
 
       <SaltKeysAcceptConflictModal {...conflictModalProps} />
       <SaltKeysAcceptPerKeyModal {...perKeyModalProps} />
+      <SaltKeysDeleteConfirmModal
+        open={deleteConfirmOpen}
+        title={deleteConfirmTitle}
+        description={deleteConfirmDescription}
+        isSending={isSendingAction}
+        onConfirm={() => {
+          deleteConfirmAction?.().finally(() => setDeleteConfirmOpen(false));
+        }}
+        onClose={() => setDeleteConfirmOpen(false)}
+      />
     </>
   );
 });
