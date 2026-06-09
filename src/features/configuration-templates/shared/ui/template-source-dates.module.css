@@ -1,0 +1,20 @@
+.dates {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
+.dates :global(.ant-space) {
+  height: 100%;
+  align-items: center;
+}
+
+.dates :global(.ant-space-item) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dates :global(.ant-tag) {
+  margin: 0;
+  line-height: 16px;
+}

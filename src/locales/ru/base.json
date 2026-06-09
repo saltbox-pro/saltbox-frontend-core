@@ -152,7 +152,6 @@
     "jobs": "Команды",
     "jobs-templates": "Шаблоны команд",
     "task-templates": "Шаблоны задач",
-    "settings-sls-repositories": "Репозитории конфигураций",
     "pillars": "Данные Pillars",
     "logout": "Выйти",
     "popover-support-help-center": "Поддержка и помощь",
@@ -879,6 +878,159 @@
     "copy-to-clipboard-button": {
       "copy": "Копировать",
       "copied": "Скопировано в буфер обмена"
+    },
+    "add": "Добавить",
+    "connect": "Подключить",
+    "sync": "Синхронизировать"
+  },
+  "configuration-templates": {
+    "page-title": "Шаблоны конфигураций",
+    "detail": {
+      "load-error": "Не удалось загрузить источник"
+    },
+    "load-error": "Не удалось загрузить источники шаблонов конфигураций",
+    "empty": "Нет доступных шаблонов",
+    "search": {
+      "placeholder": "Поиск по источнику, шаблону, файлу",
+      "min-length": "Введите минимум {{count}} символа для поиска",
+      "no-results": "Ничего не найдено по запросу"
+    },
+    "filter": {
+      "placeholder": "Фильтр (скоро)"
+    },
+    "actions": {
+      "refresh": "Обновить",
+      "add-local-source": "Локальный источник",
+      "add-git-source": "Из git-репозитория",
+      "add-archive-source": "Из архива"
+    },
+    "local-source-modal": {
+      "title": "Добавление локального источника",
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
+      "create-success": "Источник \"{{name}}\" успешно добавлен",
+      "create-error": "Не удалось создать источник"
+    },
+    "git-source-modal": {
+      "title": "Добавление источника из git-репозитория",
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
+      "repo-url": "URL репозитория",
+      "repo-url-required": "Укажите URL репозитория",
+      "repo-url-placeholder": "https://github.com/org/repo.git",
+      "repo-user": "Пользователь",
+      "repo-user-placeholder": "Введите пользователя",
+      "repo-pass": "Пароль/токен",
+      "repo-pass-placeholder": "Введите пароль или токен",
+      "branch": "Ветка",
+      "branch-max": "Не более {{max}} символов",
+      "branch-placeholder": "master",
+      "create-success": "Источник \"{{name}}\" успешно добавлен",
+      "create-error": "Не удалось создать источник"
+    },
+    "add-file-modal": {
+      "title": "Добавление файла в источник \"{{name}}\"",
+      "rel-path": "Путь назначения",
+      "rel-path-required": "Укажите путь",
+      "rel-path-placeholder": "configs/myfile.conf",
+      "rel-path-hint": "Путь относительно корня sshfs",
+      "source-mode": "Источник файла",
+      "mode-file": "Загрузить файл",
+      "mode-url": "По URL",
+      "file": "Файл",
+      "file-drag-title": "Нажмите или перетащите файл в эту область",
+      "file-drag-hint": "Можно загрузить один файл любого типа",
+      "file-required": "Выберите файл",
+      "url": "URL",
+      "url-required": "Укажите URL",
+      "url-invalid": "Укажите корректный URL",
+      "url-placeholder": "https://example.com/file.tar.gz",
+      "unpack-as": "Распаковать как",
+      "unpack-as-none": "— не распаковывать —",
+      "unpack-as-hint": "Укажите формат архива, если нужно распаковать",
+      "add": "Добавить",
+      "cancel": "Отмена",
+      "success": "Файл добавлен",
+      "error": "Не удалось добавить файл"
+    },
+    "archive-source-modal": {
+      "title": "Добавление источника из архива",
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
+      "file": "Архив",
+      "file-button": "Выбрать файл",
+      "file-drag-title": "Нажмите или перетащите файл в эту область",
+      "file-drag-hint": "Поддерживаются: {{formats}}",
+      "file-hint": "Поддерживаются: {{formats}}",
+      "file-required": "Выберите архив",
+      "create-success": "Источник \"{{name}}\" успешно добавлен",
+      "create-error": "Не удалось создать источник"
+    },
+    "source": {
+      "type": {
+        "local_bundle": "Локальный",
+        "git_repo": "Git",
+        "archive_bundle": "Архив"
+      },
+      "status": {
+        "active": "Активен",
+        "not-synced": "Не синхронизирован",
+        "syncing": "Синхронизация"
+      },
+      "action": {
+        "plug-error": "Не удалось подключить источник",
+        "sync-error": "Не удалось синхронизировать источник",
+        "sync-success": "Источник \"{{name}}\" успешно синхронизирован",
+        "delete-error": "Не удалось удалить источник",
+        "delete-success": "Источник \"{{name}}\" успешно удалён",
+        "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует"
+      },
+      "operation": {
+        "discover": "Обнаружение…",
+        "prepare_templates": "Подготовка шаблонов…",
+        "update_template_content": "Обновление шаблона…",
+        "delete_template": "Удаление шаблона…",
+        "prepare_files": "Подготовка файлов…",
+        "add_user_file": "Обработка…",
+        "sync": "Синхронизация…",
+        "unknown": "Выполняется операция…"
+      },
+      "connection": {
+        "connected": "Подключен",
+        "disconnected": "Не подключен"
+      },
+      "created-at": "Создан",
+      "synced-at": "Синхронизирован",
+      "templates": "Шаблоны",
+      "templates-empty": "Нет шаблонов",
+      "templates-load-error": "Не удалось загрузить данные",
+      "files": "Файлы (sshfs)",
+      "files-empty": "Нет файлов",
+      "files-load-error": "Не удалось загрузить файлы",
+      "add-file": "Добавить файл",
+      "files-delete": "Удалить файл",
+      "files-delete-confirm-title": "Удаление файла",
+      "files-delete-confirm-content": "Вы действительно хотите удалить файл \"{{path}}\"?",
+      "files-delete-success": "Файл «{{path}}» успешно удалён",
+      "files-delete-not-found": "Файл «{{path}}» уже удалён или не существует",
+      "files-delete-error": "Не удалось удалить файл",
+      "delete-confirm-title": "Удаление источника",
+      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?"
     }
   },
   "aggregated-tasks": {

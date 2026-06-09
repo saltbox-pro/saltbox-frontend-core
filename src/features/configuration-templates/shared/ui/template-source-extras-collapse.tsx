@@ -1,0 +1,126 @@
+import type {
+  SshfsFilePublicSchema,
+  TaskTemplatePublicSchema,
+} from "@saltbox/saltbox-core-api-client";
+import { Collapse, type CollapseProps, Flex } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { TemplateSourceFilesList } from "../../files/ui/template-source-files-list";
+import { TemplateSourceTemplatesList } from "../../templates/ui/template-source-templates-list";
+import {
+  TEMPLATE_SOURCE_FILES_PANEL_KEY,
+  TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY,
+  type TemplateSourceExtrasPanelKey,
+} from "../constants/template-source-extras-panel-keys";
+import type { ResourceDeleteResult } from "../types/resource-delete-result";
+
+import styles from "./template-source-extras-collapse.module.css";
+
+export type TemplateSourceExtrasCollapseProps = {
+  templates: {
+    items: TaskTemplatePublicSchema[];
+    totalCount?: number;
+    searchQuery?: string;
+  };
+  files: {
+    items: SshfsFilePublicSchema[];
+    totalCount?: number;
+    searchQuery?: string;
+    onDeleteFile: (fileId: string) => Promise<ResourceDeleteResult>;
+    onDeleteError?: () => Promise<void>;
+    canAddFile?: boolean;
+    isAddFileInProgress?: boolean;
+    onAddFileClick?: () => void;
+  };
+  constrainHeight?: boolean;
+  defaultActiveKey?: TemplateSourceExtrasPanelKey[];
+  forcedActiveKeys?: TemplateSourceExtrasPanelKey[];
+};
+
+function formatPanelLabel(title: string, count: number): string {
+  return `${title} (${count})`;
+}
+
+export function TemplateSourceExtrasCollapse({
+  templates,
+  files,
+  constrainHeight = true,
+  defaultActiveKey,
+  forcedActiveKeys,
+}: TemplateSourceExtrasCollapseProps) {
+  const { t } = useTranslation();
+  const wasSearchControlledRef = useRef(false);
+  const [activeKey, setActiveKey] = useState<string[]>(defaultActiveKey ?? []);
+
+  useEffect(() => {
+    if (forcedActiveKeys !== undefined) {
+      wasSearchControlledRef.current = true;
+      setActiveKey(forcedActiveKeys);
+      return;
+    }
+
+    if (wasSearchControlledRef.current) {
+      wasSearchControlledRef.current = false;
+      setActiveKey(defaultActiveKey ?? []);
+    }
+  }, [defaultActiveKey, forcedActiveKeys]);
+
+  const items = useMemo<CollapseProps["items"]>(
+    () => [
+      {
+        key: TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY,
+        label: formatPanelLabel(
+          t("configuration-templates.source.templates"),
+          templates.totalCount ?? templates.items.length
+        ),
+        children: (
+          <Flex vertical gap="small">
+            <TemplateSourceTemplatesList
+              items={templates.items}
+              constrainHeight={constrainHeight}
+              searchQuery={templates.searchQuery}
+            />
+          </Flex>
+        ),
+      },
+      {
+        key: TEMPLATE_SOURCE_FILES_PANEL_KEY,
+        label: formatPanelLabel(
+          t("configuration-templates.source.files"),
+          files.totalCount ?? files.items.length
+        ),
+        children: (
+          <Flex vertical gap="small">
+            <TemplateSourceFilesList
+              onDeleteFile={files.onDeleteFile}
+              onDeleteError={files.onDeleteError}
+              items={files.items}
+              constrainHeight={constrainHeight}
+              searchQuery={files.searchQuery}
+              canAddFile={files.canAddFile}
+              isAddFileInProgress={files.isAddFileInProgress}
+              onAddFileClick={files.onAddFileClick}
+            />
+          </Flex>
+        ),
+      },
+    ],
+    [constrainHeight, files, t, templates]
+  );
+
+  const handleChange = (keys: string | string[]) => {
+    setActiveKey(Array.isArray(keys) ? keys : [keys]);
+  };
+
+  return (
+    <Collapse
+      className={styles.collapse}
+      size="small"
+      destroyOnHidden
+      activeKey={activeKey}
+      onChange={handleChange}
+      items={items}
+    />
+  );
+}

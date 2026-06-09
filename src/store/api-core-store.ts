@@ -8,8 +8,11 @@ import {
   MinionCollectionsApi,
   MinionsApi,
   PillarsApi,
+  NEWTaskTemplatesApi,
   SettingsApi,
   SaltKeysApi,
+  TaskTemplateSourcesApi,
+  TemplateSourceFilesApi,
   TaskTemplatesApi,
   TasksApi,
 } from "@saltbox/saltbox-core-api-client";
@@ -70,6 +73,18 @@ class ApiCoreStore {
 
   @computed get taskTemplatesApi() {
     return this.apiConfig && new TaskTemplatesApi(this.apiConfig);
+  }
+
+  @computed get taskTemplateSourcesApi() {
+    return this.apiConfig && new TaskTemplateSourcesApi(this.apiConfig);
+  }
+
+  @computed get templateSourceFilesApi() {
+    return this.apiConfig && new TemplateSourceFilesApi(this.apiConfig);
+  }
+
+  @computed get newTaskTemplatesApi() {
+    return this.apiConfig && new NEWTaskTemplatesApi(this.apiConfig);
   }
 
   @computed get settingsApi() {

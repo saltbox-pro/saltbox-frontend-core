@@ -152,7 +152,6 @@
     "jobs": "Jobs",
     "jobs-templates": "Job Templates",
     "task-templates": "Task Templates",
-    "settings-sls-repositories": "Configuration Repositories",
     "pillars": "Pillars",
     "logout": "Logout",
     "popover-support-help-center": "Support & Help Center",
@@ -879,6 +878,159 @@
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"
+    },
+    "add": "Add",
+    "connect": "Connect",
+    "sync": "Sync"
+  },
+  "configuration-templates": {
+    "page-title": "Configuration Templates",
+    "detail": {
+      "page-title": "Template source"
+    },
+    "load-error": "Failed to load configuration template sources",
+    "empty": "No templates available",
+    "search": {
+      "placeholder": "Search by source, template, file",
+      "min-length": "Enter at least {{count}} characters to search",
+      "no-results": "Nothing found matching your search"
+    },
+    "filter": {
+      "placeholder": "Filter (soon)"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "add-local-source": "Local source",
+      "add-git-source": "From Git repository",
+      "add-archive-source": "From archive"
+    },
+    "local-source-modal": {
+      "title": "Add local source",
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
+      "create-success": "Source \"{{name}}\" has been added",
+      "create-error": "Failed to create source"
+    },
+    "git-source-modal": {
+      "title": "Add Git repository source",
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
+      "repo-url": "Repository URL",
+      "repo-url-required": "Repository URL is required",
+      "repo-url-placeholder": "https://github.com/org/repo.git",
+      "repo-user": "Username",
+      "repo-user-placeholder": "Enter username",
+      "repo-pass": "Password/token",
+      "repo-pass-placeholder": "Enter password or token",
+      "branch": "Branch",
+      "branch-max": "Maximum {{max}} characters",
+      "branch-placeholder": "master",
+      "create-success": "Source \"{{name}}\" has been added",
+      "create-error": "Failed to create source"
+    },
+    "add-file-modal": {
+      "title": "Adding file to source \"{{name}}\"",
+      "rel-path": "Destination path",
+      "rel-path-required": "Enter a path",
+      "rel-path-placeholder": "configs/myfile.conf",
+      "rel-path-hint": "Path relative to the sshfs root",
+      "source-mode": "File source",
+      "mode-file": "Upload file",
+      "mode-url": "From URL",
+      "file": "File",
+      "file-drag-title": "Click or drag a file to this area",
+      "file-drag-hint": "You can upload a single file of any type",
+      "file-required": "Select a file",
+      "url": "URL",
+      "url-required": "Enter a URL",
+      "url-invalid": "Enter a valid URL",
+      "url-placeholder": "https://example.com/file.tar.gz",
+      "unpack-as": "Unpack as",
+      "unpack-as-none": "— do not unpack —",
+      "unpack-as-hint": "Specify archive format if unpacking is needed",
+      "add": "Add",
+      "cancel": "Cancel",
+      "success": "File added",
+      "error": "Failed to add file"
+    },
+    "archive-source-modal": {
+      "title": "Add archive source",
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
+      "file": "Archive",
+      "file-button": "Choose file",
+      "file-drag-title": "Click or drag file to this area",
+      "file-drag-hint": "Supported: {{formats}}",
+      "file-hint": "Supported: {{formats}}",
+      "file-required": "Select an archive file",
+      "create-success": "Source \"{{name}}\" has been added",
+      "create-error": "Failed to create source"
+    },
+    "source": {
+      "type": {
+        "local_bundle": "Local",
+        "git_repo": "Git",
+        "archive_bundle": "Archive"
+      },
+      "status": {
+        "active": "Active",
+        "not-synced": "Not synced",
+        "syncing": "Syncing"
+      },
+      "action": {
+        "plug-error": "Failed to connect source",
+        "sync-error": "Failed to sync source",
+        "sync-success": "Source \"{{name}}\" has been synced",
+        "delete-error": "Failed to delete source",
+        "delete-success": "Source \"{{name}}\" has been deleted",
+        "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
+      },
+      "operation": {
+        "discover": "Discovering…",
+        "prepare_templates": "Preparing templates…",
+        "update_template_content": "Updating template…",
+        "delete_template": "Deleting template…",
+        "prepare_files": "Preparing files…",
+        "add_user_file": "Processing…",
+        "sync": "Syncing…",
+        "unknown": "Operation in progress…"
+      },
+      "connection": {
+        "connected": "Connected",
+        "disconnected": "Not connected"
+      },
+      "created-at": "Created",
+      "synced-at": "Synced",
+      "templates": "Templates",
+      "templates-empty": "No templates",
+      "templates-load-error": "Failed to load data",
+      "files": "Files (sshfs)",
+      "files-empty": "No files",
+      "files-load-error": "Failed to load files",
+      "add-file": "Add file",
+      "files-delete": "Delete file",
+      "files-delete-confirm-title": "Delete file",
+      "files-delete-confirm-content": "Are you sure you want to delete file \"{{path}}\"?",
+      "files-delete-success": "File \"{{path}}\" has been deleted",
+      "files-delete-not-found": "File \"{{path}}\" was already deleted or does not exist",
+      "files-delete-error": "Failed to delete file",
+      "delete-confirm-title": "Delete source",
+      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?"
     }
   },
   "aggregated-tasks": {
