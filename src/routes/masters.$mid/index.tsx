@@ -200,37 +200,42 @@ const MasterPage = observer(() => {
   const handleDeleteSelected = useCallback(() => {
     if (Object.keys(selection).length === 0) return;
 
-    setDeleteConfirmTitle(t("master.delete-selected-confirm-title"));
-    setDeleteConfirmDescription(
-      t("master.delete-selected-confirm-description", {
+    modalApi.confirm({
+      title: t("master.delete-selected-confirm-title"),
+      content: t("master.delete-selected-confirm-description", {
         count: Object.keys(selection).length,
         master: masterId,
-      })
-    );
-    setDeleteConfirmAction(() => async () => {
-      setIsSendingAction(true);
-      try {
-        const selectedMinions = getSelectedSaltKeyMinions(
-          saltKeysStore.allSaltKeys,
-          selection,
-          masterId
-        );
-        await apiCoreStore.saltKeysApi?.saltKeysDelete({
-          SaltKeySetStatusRequestBody: { minions: selectedMinions },
-        });
-        messageApi.success(t("master.delete-selected-success", { count: selectedMinions.length }));
-      } catch (error) {
-        console.error("Failed to delete selected salt keys:", error);
-        if (isGlobalServerError(error)) return;
-        messageApi.error(t("master.delete-selected-failed"));
-      } finally {
-        setIsSendingAction(false);
-        setSelection({});
-        saltKeysStore.refresh();
-      }
+      }),
+      icon: null,
+      okText: t("common.delete"),
+      cancelText: t("common.cancel"),
+      okButtonProps: { danger: true, loading: isSendingAction },
+      onOk: async () => {
+        setIsSendingAction(true);
+        try {
+          const selectedMinions = getSelectedSaltKeyMinions(
+            saltKeysStore.allSaltKeys,
+            selection,
+            masterId
+          );
+          await apiCoreStore.saltKeysApi?.saltKeysDelete({
+            SaltKeySetStatusRequestBody: { minions: selectedMinions },
+          });
+          messageApi.success(
+            t("master.delete-selected-success", { count: selectedMinions.length })
+          );
+        } catch (error) {
+          console.error("Failed to delete selected salt keys:", error);
+          if (isGlobalServerError(error)) return;
+          messageApi.error(t("master.delete-selected-failed"));
+        } finally {
+          setIsSendingAction(false);
+          setSelection({});
+          saltKeysStore.refresh();
+        }
+      },
     });
-    setDeleteConfirmOpen(true);
-  }, [masterId, messageApi, saltKeysStore, selection, t]);
+  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
 
   const handleAcceptAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
