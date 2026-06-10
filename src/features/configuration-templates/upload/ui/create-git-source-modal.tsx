@@ -122,6 +122,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
             rules={[
               {
                 required: true,
+                whitespace: true,
                 message: t(`${I18N_PREFIX}.repo-url-required`),
               },
             ]}

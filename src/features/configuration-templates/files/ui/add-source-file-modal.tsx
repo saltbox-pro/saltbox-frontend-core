@@ -131,7 +131,9 @@ export function AddSourceFileModal({
             name="rel_path"
             label={t(`${I18N_PREFIX}.rel-path`)}
             required
-            rules={[{ required: true, message: t(`${I18N_PREFIX}.rel-path-required`) }]}
+            rules={[
+              { required: true, whitespace: true, message: t(`${I18N_PREFIX}.rel-path-required`) },
+            ]}
             extra={t(`${I18N_PREFIX}.rel-path-hint`)}
           >
             <Input placeholder={t(`${I18N_PREFIX}.rel-path-placeholder`)} />
@@ -182,7 +184,7 @@ export function AddSourceFileModal({
               label={t(`${I18N_PREFIX}.url`)}
               required
               rules={[
-                { required: true, message: t(`${I18N_PREFIX}.url-required`) },
+                { required: true, whitespace: true, message: t(`${I18N_PREFIX}.url-required`) },
                 { type: "url", message: t(`${I18N_PREFIX}.url-invalid`) },
               ]}
             >

@@ -25,6 +25,7 @@ export function TemplateSourceNameDescriptionFields({
   const nameRules: FormRule[] = [
     {
       required: true,
+      whitespace: true,
       message: t(`${i18nKeyPrefix}.name-required`),
     },
     {
