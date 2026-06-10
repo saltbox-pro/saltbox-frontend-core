@@ -132,7 +132,8 @@ export function JobModal({
   const tgt = Form.useWatch("tgt", form);
   const tgtType = Form.useWatch("tgt_type", form);
 
-  const isLoading = isMasterListLoading || isSchemaLoading || isJobCreating;
+  const isInitialLoading = isMasterListLoading || isSchemaLoading;
+  const isLoading = isInitialLoading || isJobCreating;
 
   const functionJsonSchema = saltFunction?.json_schema as JsonSchemaRecord | undefined;
   const functionUiSchema = saltFunction?.ui_schema as JsonSchemaRecord | undefined;
@@ -161,6 +162,7 @@ export function JobModal({
   );
 
   const showModal = useCallback(() => {
+    setIsModalOpen(true);
     setIsMasterListLoading(true);
     apiCoreStore.mastersApi
       ?.mastersList({
@@ -186,10 +188,11 @@ export function JobModal({
             return list;
           }, []) ?? []
         );
-        setIsModalOpen(true);
       })
       .catch(() => {
         messageApi.error(t("job-modal.error-load-salt-masters"));
+        setIsModalOpen(false);
+        onAfterClose?.();
       })
       .finally(() => setIsMasterListLoading(false));
   }, [messageApi, onAfterClose, t]);
@@ -575,7 +578,7 @@ export function JobModal({
         maskClosable={false}
         style={{ top: 50 }}
         footer={
-          isSchemaLoading ? null : (
+          isInitialLoading ? null : (
             <>
               <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
                 {t("job-modal.return-to-function-picker")}
@@ -605,7 +608,7 @@ export function JobModal({
           )
         }
       >
-        {isSchemaLoading ? (
+        {isInitialLoading ? (
           <div className={styles.spinnerContainer}>
             <Spin />
           </div>
