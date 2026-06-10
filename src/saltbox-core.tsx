@@ -170,7 +170,7 @@ export const saltboxModule = {
       {
         key: "policies",
         label: { en: "Policies", ru: "Политики" },
-        icon: "policy",
+        icon: "article_shortcut",
         path: "/core/policies",
       },
       {

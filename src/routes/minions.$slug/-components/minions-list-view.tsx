@@ -1,6 +1,6 @@
 import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
+import { MatIcon, SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
 import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
@@ -151,7 +151,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         <div className="page-actions-buttons">
           <Button
             type="primary"
-            icon={<PlusOutlined />}
+            icon={<MatIcon icon="assignment_add" />}
             onClick={() => handleOpenCreateTaskModal("task")}
             loading={mastersStore.isLoading}
           >
@@ -159,7 +159,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           </Button>
 
           <Button
-            icon={<PlusOutlined />}
+            icon={<MatIcon icon="add_notes" />}
             onClick={() => handleOpenCreateTaskModal("policy")}
             loading={mastersStore.isLoading}
             disabled={!!selectedMinionsCount}
