@@ -54,7 +54,20 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
         type="warning"
         showIcon
         message={t("task-template-editor.visual-editor-unavailable")}
-        description={t("task-template-editor.visual-editor-use-full")}
+        description={
+          <>
+            <div>{t("task-template-editor.visual-editor-use-full")}</div>
+            {compatibility?.unsupportedFeatures.length ? (
+              <ul className={styles.unsupportedList}>
+                {compatibility.unsupportedFeatures.map((feature, index) => (
+                  <li key={`${feature.path}-${index}`}>
+                    <code>{feature.path || "/"}</code> — {feature.description}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </>
+        }
       />
     </div>
   ) : (
