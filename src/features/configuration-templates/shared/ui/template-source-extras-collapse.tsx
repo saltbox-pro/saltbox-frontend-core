@@ -111,6 +111,18 @@ export function TemplateSourceExtrasCollapse({
           t("configuration-templates.source.files"),
           files.totalCount ?? files.items.length
         ),
+        extra: files.onAddFileClick ? (
+          <BaseActionButton
+            icon={<PlusOutlined />}
+            title={t("configuration-templates.source.add-file")}
+            loading={files.isAddFileInProgress}
+            disabled={!files.canAddFile || files.isAddFileInProgress}
+            onClick={(event: MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              files.onAddFileClick?.();
+            }}
+          />
+        ) : undefined,
         children: (
           <Flex vertical gap="small">
             <TemplateSourceFilesList
@@ -119,9 +131,6 @@ export function TemplateSourceExtrasCollapse({
               items={files.items}
               constrainHeight={constrainHeight}
               searchQuery={files.searchQuery}
-              canAddFile={files.canAddFile}
-              isAddFileInProgress={files.isAddFileInProgress}
-              onAddFileClick={files.onAddFileClick}
             />
           </Flex>
         ),

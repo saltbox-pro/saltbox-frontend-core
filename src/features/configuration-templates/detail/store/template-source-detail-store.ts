@@ -10,8 +10,8 @@ import {
 } from "../../shared/helpers/normalize-source-list-item";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
-import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
+import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 

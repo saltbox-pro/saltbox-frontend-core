@@ -921,6 +921,7 @@
     "load-error": "Failed to load configuration template sources",
     "sync-gitlab-sources-error": "Failed to sync repositories with GitLab",
     "sync-gitlab-sources-failed": "GitLab repository sync failed",
+    "sync-gitlab-sources-success": "Repositories have been synced with GitLab",
     "empty": "No templates available",
     "sync-gitlab-sources-not-loaded": {
       "message": "GitLab repositories are not synced. Sync with GitLab to display template sources"
@@ -969,6 +970,7 @@
       "repo-pass": "Password/token",
       "repo-pass-placeholder": "Enter password or token",
       "branch": "Branch",
+      "branch-required": "Branch is required",
       "branch-max": "Maximum {{max}} characters",
       "branch-placeholder": "master",
       "create-success": "Source \"{{name}}\" has been added",
@@ -1030,6 +1032,7 @@
       },
       "action": {
         "plug-error": "Failed to connect source",
+        "plug-success": "Source \"{{name}}\" has been connected",
         "sync-error": "Failed to sync source",
         "sync-success": "Source \"{{name}}\" has been synced",
         "delete-error": "Failed to delete source",

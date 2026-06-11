@@ -38,12 +38,17 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
   const handleConnect = useCallback(async () => {
     try {
       await actions.plugSource(source.id);
+      message.success(
+        t("configuration-templates.source.action.plug-success", {
+          name: source.name,
+        })
+      );
     } catch (error) {
       console.error(error);
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
       message.error(t("configuration-templates.source.action.plug-error"));
     }
-  }, [actions, source.id, t]);
+  }, [actions, source.id, source.name, t]);
 
   if (!showConnect) return null;
 

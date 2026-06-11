@@ -22,9 +22,9 @@ import {
 } from "../../shared/helpers/normalize-source-list-item";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
+import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
-import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 import {
   getGitlabSyncErrorDetail,
@@ -41,7 +41,7 @@ type LoadOptions = {
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
   load: (options?: LoadOptions) => Promise<void>;
-  refreshWithExternalCheck: () => Promise<void>;
+  refreshWithExternalCheck: () => Promise<boolean>;
   reloadSource: (sourceId: string) => Promise<void>;
   addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
   deleteSourceFile: (sourceId: string, fileId: string) => Promise<ResourceDeleteResult>;
@@ -190,8 +190,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  refreshWithExternalCheck = async () => {
-    if (this.isCheckingExternal) return;
+  refreshWithExternalCheck = async (): Promise<boolean> => {
+    if (this.isCheckingExternal) return false;
 
     runInAction(() => {
       this.isCheckingExternal = true;
@@ -212,24 +212,28 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
         isCancelled: () => generation !== this.externalCheckGeneration,
       });
 
-      if (generation !== this.externalCheckGeneration) return;
+      if (generation !== this.externalCheckGeneration) return false;
 
       await this.load({
         signal: abortController.signal,
         isCancelled: () => generation !== this.externalCheckGeneration,
       });
 
-      if (generation !== this.externalCheckGeneration) return;
+      if (generation !== this.externalCheckGeneration) return false;
+
+      return true;
     } catch (reason) {
-      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return;
+      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return false;
 
       console.error("Failed to check external template sources:", reason);
-      if (isGlobalServerError(reason)) return;
+      if (isGlobalServerError(reason)) return false;
 
       runInAction(() => {
         this.gitlabSyncError = resolveGitlabSyncErrorKind(reason);
         this.gitlabSyncErrorDetail = getGitlabSyncErrorDetail(reason);
       });
+
+      return false;
     } finally {
       if (generation === this.externalCheckGeneration) {
         runInAction(() => {
@@ -314,7 +318,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     repo_url: string;
     repo_user?: string;
     repo_pass?: string;
-    branch?: string;
+    branch: string;
   }): Promise<SourceListWithExtrasSchema> =>
     this.createTemplateSource({
       source_type: SourceType.GitRepo,
@@ -323,7 +327,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       repo_url: payload.repo_url,
       repo_user: payload.repo_user ?? null,
       repo_pass: payload.repo_pass ?? null,
-      branch: payload.branch || "master",
+      branch: payload.branch,
     });
 
   createArchiveSource = async (payload: {

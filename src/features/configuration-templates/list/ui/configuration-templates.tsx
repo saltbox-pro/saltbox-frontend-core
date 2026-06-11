@@ -1,6 +1,17 @@
 import { SettingOutlined, SyncOutlined } from "@ant-design/icons";
 import { SearchInput } from "@saltbox/saltbox-frontend-common";
-import { type MenuProps, Alert, Button, Dropdown, Empty, Flex, Skeleton, Space, Spin } from "antd";
+import {
+  type MenuProps,
+  Alert,
+  Button,
+  Dropdown,
+  Empty,
+  Flex,
+  message,
+  Skeleton,
+  Space,
+  Spin,
+} from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -45,9 +56,12 @@ export const ConfigurationTemplates = observer(() => {
 
   const handleLoadSources = useCallback(() => store.load(), [store]);
 
-  const handleSyncGitlabSources = useCallback(() => {
-    store.refreshWithExternalCheck();
-  }, [store]);
+  const handleSyncGitlabSources = useCallback(async () => {
+    const succeeded = await store.refreshWithExternalCheck();
+    if (succeeded) {
+      message.success(t("configuration-templates.sync-gitlab-sources-success"));
+    }
+  }, [store, t]);
 
   const filteredSources = useMemo(() => {
     const query = getActiveSearchQuery(search);

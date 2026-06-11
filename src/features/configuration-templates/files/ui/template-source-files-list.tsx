@@ -1,9 +1,4 @@
-import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  DeleteOutlined,
-  PlusOutlined,
-} from "@ant-design/icons";
+import { CheckCircleOutlined, CloseCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { SshfsFileType, type SshfsFilePublicSchema } from "@saltbox/saltbox-core-api-client";
 import {
   BaseActionButton,
@@ -27,9 +22,6 @@ export type TemplateSourceFilesListProps = {
   items: SshfsFilePublicSchema[];
   constrainHeight?: boolean;
   searchQuery?: string;
-  canAddFile?: boolean;
-  isAddFileInProgress?: boolean;
-  onAddFileClick?: () => void;
 };
 
 export function TemplateSourceFilesList({
@@ -38,20 +30,11 @@ export function TemplateSourceFilesList({
   items,
   constrainHeight = true,
   searchQuery,
-  canAddFile = false,
-  isAddFileInProgress = false,
-  onAddFileClick,
 }: TemplateSourceFilesListProps) {
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
   const { confirmDeleteFile, modalContextHolder } = useConfirmDeleteFile();
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const showAddFile = !!onAddFileClick;
-
-  const handleAddFileClick = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    onAddFileClick?.();
-  };
 
   const handleDelete = useCallback(
     async (file: SshfsFilePublicSchema) => {
@@ -119,18 +102,6 @@ export function TemplateSourceFilesList({
     <>
       {contextHolder}
       {modalContextHolder}
-      {showAddFile && (
-        <Flex justify="flex-end" className={styles.filesHeader}>
-          <BaseActionButton
-            icon={<PlusOutlined />}
-            title={t("configuration-templates.source.add-file")}
-            loading={isAddFileInProgress}
-            disabled={!canAddFile || isAddFileInProgress}
-            onClick={handleAddFileClick}
-          />
-        </Flex>
-      )}
-
       <List
         className={constrainHeight ? `${styles.files} ${styles.filesConstrained}` : styles.files}
         size="small"

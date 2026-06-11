@@ -10,8 +10,8 @@ import {
   getSourceActionContext,
   isDeleteInProgress,
 } from "../../shared/helpers/source-action-progress";
-import type { SourceOperationProgressSnapshot } from "../../shared/types/source-operation-progress";
 import type { SourceActionsPort } from "../../shared/types/source-action";
+import type { SourceOperationProgressSnapshot } from "../../shared/types/source-operation-progress";
 import { useConfirmDeleteSource } from "../hooks/use-confirm-delete-source";
 
 export type DeleteSourceButtonProps = {

@@ -23,7 +23,7 @@ type GitSourceFormValues = {
   repo_url: string;
   repo_user?: string;
   repo_pass?: string;
-  branch?: string;
+  branch: string;
 };
 
 type CreateGitSourceModalProps = {
@@ -69,7 +69,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
         repo_url: trimRequired(values.repo_url),
         repo_user: trimOptional(values.repo_user),
         repo_pass: trimOptional(values.repo_pass),
-        branch: trimOptional(values.branch),
+        branch: trimRequired(values.branch),
       });
 
       messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
@@ -160,6 +160,11 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
             label={t(`${I18N_PREFIX}.branch`)}
             name="branch"
             rules={[
+              {
+                required: true,
+                whitespace: true,
+                message: t(`${I18N_PREFIX}.branch-required`),
+              },
               {
                 max: TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
                 message: t(`${I18N_PREFIX}.branch-max`, {
