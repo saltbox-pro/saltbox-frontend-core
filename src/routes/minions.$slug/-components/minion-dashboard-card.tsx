@@ -1,462 +1,229 @@
 import {
+  CopyOutlined,
   DashOutlined,
   DeleteOutlined,
   EditOutlined,
-  FilterOutlined,
+  FullscreenExitOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { Dropdown, FastTableListed } from "@saltbox/saltbox-frontend-common";
-import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import { Card, Spin } from "antd";
+import { Dropdown } from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Card, Flex, message, Modal, Spin, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useState } from "react";
+import { ComponentProps, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { generateID } from "react-querybuilder";
-import { Cell, Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 
-import { HeaderSelect } from "saltbox-core/shared/components/header-select/header-select";
+import { copyText } from "saltbox-core/shared/utils/copy-text";
 import {
+  DashboardCardConfig,
   DashboardCardStore,
   dashboardStore,
   MinionFilterStore,
-  ViewMode,
 } from "saltbox-core/store";
 
+import {
+  DonutChart,
+  GrainTable,
+  HorizontalBarChart,
+  KpiPanel,
+  LollipopList,
+  TreemapChart,
+  VerticalBarChart,
+} from "./charts";
+import {
+  BooleanLabels,
+  ChartDatum,
+  toBooleanData,
+  toChartData,
+  toHistogramData,
+  valueToText,
+} from "./dashboard-chart-data";
 import styles from "./minion-dashboard-card.module.css";
 
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
-const columnHelper = createColumnHelper<GrainValue>();
-
-const grainsOptions = [
-  {
-    value: "cpu_model",
-    label: "cpu_model",
-  },
-  {
-    value: "osfullname",
-    label: "osfullname",
-  },
-  {
-    value: "boardname",
-    label: "boardname",
-  },
-  {
-    value: "kernel",
-    label: "kernel",
-  },
-  {
-    value: "saltversion",
-    label: "saltversion",
-  },
-  {
-    value: "pythonversion",
-    label: "pythonversion",
-  },
-  {
-    value: "host",
-    label: "host",
-  },
-  {
-    value: "fqdn",
-    label: "fqdn",
-  },
-  {
-    value: "master",
-    label: "master",
-  },
-  {
-    value: "cpuarch",
-    label: "cpuarch",
-  },
-  {
-    value: "os",
-    label: "os",
-  },
-  {
-    value: "osfinger",
-    label: "osfinger",
-  },
-  {
-    value: "osrelease",
-    label: "osrelease",
-  },
-  {
-    value: "oscodename",
-    label: "oscodename",
-  },
-  {
-    value: "os_family",
-    label: "os_family",
-  },
-  {
-    value: "osarch",
-    label: "osarch",
-  },
-  {
-    value: "cwd",
-    label: "cwd",
-  },
-  {
-    value: "localhost",
-    label: "localhost",
-  },
-  {
-    value: "hwaddr_interfaces",
-    label: "hwaddr_interfaces",
-  },
-  {
-    value: "nodename",
-    label: "nodename",
-  },
-  {
-    value: "kernelrelease",
-    label: "kernelrelease",
-  },
-  {
-    value: "kernelversion",
-    label: "kernelversion",
-  },
-  {
-    value: "init",
-    label: "init",
-  },
-  {
-    value: "lsb_distrib_id",
-    label: "lsb_distrib_id",
-  },
-  {
-    value: "lsb_distrib_release",
-    label: "lsb_distrib_release",
-  },
-  {
-    value: "lsb_distrib_codename",
-    label: "lsb_distrib_codename",
-  },
-  {
-    value: "biosversion",
-    label: "biosversion",
-  },
-  {
-    value: "biosvendor",
-    label: "biosvendor",
-  },
-  {
-    value: "productname",
-    label: "productname",
-  },
-  {
-    value: "manufacturer",
-    label: "manufacturer",
-  },
-  {
-    value: "biosreleasedate",
-    label: "biosreleasedate",
-  },
-  {
-    value: "serialnumber",
-    label: "serialnumber",
-  },
-  {
-    value: "virtual",
-    label: "virtual",
-  },
-  {
-    value: "ps",
-    label: "ps",
-  },
-  {
-    value: "pythonexecutable",
-    label: "pythonexecutable",
-  },
-  {
-    value: "saltpath",
-    label: "saltpath",
-  },
-  {
-    value: "zmqversion",
-    label: "zmqversion",
-  },
-  {
-    value: "shell",
-    label: "shell",
-  },
-  {
-    value: "username",
-    label: "username",
-  },
-  {
-    value: "groupname",
-    label: "groupname",
-  },
-];
-
-const renderActiveShape = (props: any) => {
-  const RADIAN = Math.PI / 180;
-  const {
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    startAngle,
-    endAngle,
-    fill,
-    payload,
-    percent,
-    value,
-  } = props;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
-  const textAnchor = cos >= 0 ? "start" : "end";
-
-  return (
-    <g>
-      <text x={cx} y={cy - 135} dy={8} textAnchor="middle" fill={fill}>
-        {payload.value}
-      </text>
-      <Sector
-        cx={cx}
-        cy={cy}
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        fill={fill}
-      />
-      <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
-        fill={fill}
-      />
-      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" />
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-      <text
-        x={ex + (cos >= 0 ? 1 : -1) * 12}
-        y={ey}
-        textAnchor={textAnchor}
-        fill="#333"
-      >{`${value}`}</text>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999">
-        {`(${(percent * 100).toFixed(2)}%)`}
-      </text>
-    </g>
-  );
-};
-
 type MinionDashboardCardProps = {
-  grains: string;
-  view: ViewMode;
+  card: DashboardCardConfig;
+  onEdit: () => void;
   onRemove?: () => void;
-  onUpdateGrains: (newGrains: string) => void;
-  onChangeView: (newView: ViewMode) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
-  isLoading?: boolean;
-  isLoaded?: boolean;
 };
 
 export const MinionDashboardCard = observer(
-  ({
-    grains,
-    view,
-    onRemove,
-    onUpdateGrains,
-    onChangeView,
-    slug,
-    filterStore,
-    isLoading = false,
-    isLoaded = false,
-  }: MinionDashboardCardProps) => {
+  ({ card, onEdit, onRemove, slug, filterStore }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
-    const [sorting, setSorting] = useState<SortingState>([
-      {
-        id: "count",
-        desc: true,
-      },
-    ]);
-    const [currentGrains, setCurrentGrains] =
-      useState<(typeof grainsOptions)[number]["value"]>(grains);
-    const [activeIndex, setActiveIndex] = useState(0);
-    const [viewMode, setViewMode] = useState(view);
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
-    const [isFullScreen, setIsFullScreen] = useState<boolean>(false);
+
+    const emptyLabel = t("dashboard.empty-name");
+    const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
 
     useEffect(() => {
-      if (isLoaded && !isLoading) {
-        updateCard();
+      if (slug) {
+        dashboardCardStore.loadGrain(card.fieldSource, slug, filterStore.searchMongoDBQuery);
       }
-    }, [filterStore.searchMongoDBQuery, isLoaded, isLoading, currentGrains, slug]);
+    }, [card.fieldSource, dashboardCardStore, filterStore.searchMongoDBQuery, slug]);
 
-    const columns = [
-      columnHelper.accessor("value", {
-        header: t("dashboard.table-value"),
-        enableSorting: false,
-        cell: (data) => {
-          let fieldName = data.getValue() as string | null | undefined;
-          if (fieldName === null || fieldName === undefined) {
-            fieldName = t("dashboard.empty-name");
-          }
-          return <span>{fieldName}</span>;
-        },
-        meta: {
-          showCopy: true,
-          actions: [
-            {
-              icon: <FilterOutlined />,
-              onClick: (value) => {
-                filterStore.currentFilters = {
-                  ...filterStore.currentFilters,
-                  rules: [
-                    ...filterStore.currentFilters.rules,
-                    {
-                      field: `grains.${grains}`,
-                      operator: "=",
-                      valueSource: "value",
-                      value: value?.toString(),
-                      id: generateID(),
-                    },
-                  ],
-                };
-                filterStore.handleSearch();
-              },
-              title: t("dashboard.apply-value-to-filters"),
-            },
-          ],
-          tdClassName: styles.minionDashboardCardGrainCol,
-        },
-      }),
-      columnHelper.accessor("count", {
-        header: t("dashboard.table-count"),
-        enableColumnFilter: false,
-      }),
-    ];
+    const isFullScreenRef = useRef(isFullScreen);
+    isFullScreenRef.current = isFullScreen;
 
-    const onPieEnter = (_: any, index: any) => {
-      setActiveIndex(index);
-    };
+    useEffect(
+      () => () => {
+        if (isFullScreenRef.current) {
+          dashboardStore.setCardFullScreen(false);
+        }
+      },
+      []
+    );
 
-    const updateCard = () => {
-      if (!slug) return;
-      dashboardCardStore.loadGrain(currentGrains, slug, filterStore?.searchMongoDBQuery);
-    };
-
-    const handleGrainsChange = (newGrains: string) => {
-      setCurrentGrains(newGrains);
-      onUpdateGrains(newGrains);
-    };
-
-    const toggleFullscreen = () => {
+    const toggleFullScreen = () => {
       setIsFullScreen(!isFullScreen);
-      dashboardStore.isCardFullScreen = !dashboardStore.isCardFullScreen;
+      dashboardStore.setCardFullScreen(!isFullScreen);
     };
 
-    const toggleView = () => {
-      const nextViewMode = viewMode === "table" ? "graph" : "table";
-      setViewMode(nextViewMode);
-      onChangeView(nextViewMode);
+    const handleCopyData = async () => {
+      const rows = dashboardCardStore.grainValues.map(
+        (item) => `${valueToText(item.value, emptyLabel)}\t${item.count}`
+      );
+      await copyText(
+        [`${t("dashboard.table-value")}\t${t("dashboard.table-count")}`, ...rows].join("\n")
+      );
+      message.success(t("dashboard.copy-success"));
+    };
+
+    const handleDeleteClick = () => {
+      Modal.confirm({
+        title: t("dashboard.delete-card-confirm-title"),
+        content: t("dashboard.delete-card-confirm-description"),
+        okButtonProps: { danger: true },
+        onOk: onRemove,
+      });
     };
 
     const items: MenuItems = [
       {
         icon: <EditOutlined />,
-        label: t("dashboard.change-view"),
-        key: "0",
-        onClick: toggleView,
+        label: t("dashboard.edit-card"),
+        onClick: onEdit,
+        key: "edit",
         disabled: isFullScreen,
       },
       {
-        icon: <FullscreenOutlined />,
+        icon: isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />,
         label: isFullScreen ? t("dashboard.windowed") : t("dashboard.fullscreen"),
-        onClick: toggleFullscreen,
-        key: "1",
-        disabled: !isFullScreen && view === "graph",
+        onClick: toggleFullScreen,
+        key: "fullscreen",
       },
       {
         icon: <DeleteOutlined />,
-        label: t("dashboard.remove"),
-        onClick: onRemove,
-        key: "2",
+        label: t("dashboard.delete-card"),
+        onClick: handleDeleteClick,
+        key: "remove",
         disabled: isFullScreen,
       },
     ];
 
-    const COLORS = [
-      "#0088FE",
-      "#AED581",
-      "#F1948B",
-      "#FFA726",
-      "#CA3433",
-      "#993333",
-      "#CC6671",
-      "#996666",
-    ];
+    const getLimitedChartData = (limit: number): ChartDatum[] => {
+      const { grainValues } = dashboardCardStore;
+      if (grainValues.length <= limit) {
+        return toChartData(grainValues, limit, emptyLabel);
+      }
+
+      const hiddenValues = grainValues.slice(limit);
+
+      return [
+        ...toChartData(grainValues, limit, emptyLabel),
+        {
+          name: t("dashboard.other-values", { count: hiddenValues.length }),
+          count: hiddenValues.reduce((sum, item) => sum + item.count, 0),
+          value: null,
+          isOther: true,
+        },
+      ];
+    };
+
+    const renderChart = () => {
+      if (dashboardCardStore.hasError) {
+        return (
+          <Alert
+            type="warning"
+            showIcon
+            message={t("dashboard.statistics-unavailable")}
+            description={t("dashboard.statistics-unavailable-description")}
+          />
+        );
+      }
+
+      const { grainValues } = dashboardCardStore;
+
+      switch (card.preset) {
+        case "donut":
+          return <DonutChart data={getLimitedChartData(8)} />;
+        case "horizontal-bar":
+          return <HorizontalBarChart data={getLimitedChartData(14)} />;
+        case "vertical-bar":
+          return <VerticalBarChart data={getLimitedChartData(12)} />;
+        case "treemap":
+          return <TreemapChart data={getLimitedChartData(24)} />;
+        case "histogram":
+          return <VerticalBarChart data={toHistogramData(grainValues)} />;
+        case "boolean-donut":
+          return <DonutChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />;
+        case "boolean-bars":
+          return (
+            <HorizontalBarChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />
+          );
+        case "kpi":
+          return <KpiPanel values={grainValues} />;
+        case "lollipop":
+          return <LollipopList data={getLimitedChartData(10)} />;
+        case "table":
+        default:
+          return (
+            <GrainTable
+              values={grainValues}
+              fieldSource={card.fieldSource}
+              filterStore={filterStore}
+            />
+          );
+      }
+    };
+
+    const showChartActions = card.preset !== "table" && dashboardCardStore.grainValues.length > 0;
 
     return (
       <Card
         size="small"
-        className={`${styles.dashboardTableBlock} ${isFullScreen && styles.fullscreen}`}
-        classNames={{
-          body: `${view === "table" && styles.dashboardTableBlockBody}`,
-        }}
+        className={`${styles.dashboardTableBlock} ${isFullScreen ? styles.fullscreen : ""}`}
+        classNames={{ body: styles.dashboardTableBlockBody }}
       >
-        <Spin spinning={isLoading || dashboardCardStore.isFilterLoading}>
+        <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
           <div className={styles.dashboardTableBlockHeader}>
-            <HeaderSelect
-              value={currentGrains}
-              onChange={handleGrainsChange}
-              options={grainsOptions}
-              className={styles.dashboardTableBlockHeaderSelect}
-              placeholder={t("dashboard.change-grains")}
-            />
+            <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
+              <Typography.Text strong ellipsis title={card.fieldLabel}>
+                {card.fieldLabel}
+              </Typography.Text>
+              <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
+                {t(`dashboard.preset-${card.preset}`)}
+              </Typography.Text>
+            </Flex>
             <div className={styles.dashboardTableBlockHeaderSettings}>
+              {showChartActions && (
+                <Tooltip title={t("dashboard.copy-data")}>
+                  <Button
+                    size="small"
+                    type="text"
+                    icon={<CopyOutlined />}
+                    onClick={handleCopyData}
+                  />
+                </Tooltip>
+              )}
               <Dropdown menu={{ items }} trigger={["click"]}>
-                <DashOutlined />
+                <DashOutlined className={styles.cardMenuIcon} />
               </Dropdown>
             </div>
           </div>
-          {view === "graph" ? (
-            <ResponsiveContainer minHeight={400}>
-              <PieChart>
-                <Pie
-                  activeIndex={activeIndex}
-                  activeShape={renderActiveShape}
-                  data={dashboardCardStore.roundedGrainValues}
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill="#1677ff"
-                  dataKey="count"
-                  onMouseEnter={onPieEnter}
-                >
-                  {dashboardCardStore.roundedGrainValues.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          ) : dashboardCardStore.grainValues.length > 0 ? (
-            <FastTableListed
-              columns={columns}
-              data={dashboardCardStore.grainValues}
-              isEmpty={!dashboardCardStore.grainValues.length}
-              sorting={sorting}
-              onSortingChange={setSorting}
-              hideFooter
-            />
-          ) : (
-            <div>{t("dashboard.no-information")}</div>
-          )}
+          <div className={styles.chartBody}>{renderChart()}</div>
         </Spin>
       </Card>
     );

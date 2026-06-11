@@ -1,163 +1,98 @@
 .dashboardTableBlock {
-  transition: all 0.3s ease-in-out;
-  overflow: auto;
-  padding: 10px;
   height: 100%;
-}
-
-.dashboardTableBlock table th:nth-child(2) {
-  width: 80px;
-}
-
-.dashboardTableBlock table th:nth-child(1) {
-  text-wrap: wrap;
-}
-
-.dashboardTableBlock :global(.fast-table-wrapper) thead {
-  position: sticky;
-  top: -1px;
-  z-index: 1;
-}
-
-.dashboardTableBlock :global(.fast-table-wrapper) {
-  flex: 1;
-  overflow: auto;
-  max-height: 400px;
-}
-
-.dashboardTableBlock :global(.fast-table) {
-  position: relative;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.dashboardTableBlock :global(.fast-table table > thead > tr > th) {
-  background: white;
-  border: none;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.dashboardTableBlock :global(.fast-table table > tbody > tr > td) {
-  border: none;
-}
-
-.dashboardTableBlock :global(.fast-table-summary) {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.dashboardTableBlockHeader {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.dashboardTableBlockHeaderTitle {
-  font-weight: bold;
-  font-size: large;
-}
-
-.dashboardTableBlockHeaderSettings {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-.dashboardTableBlockHeaderSelect {
-  position: relative;
-  cursor: pointer;
+  overflow: hidden;
+  border: 1px solid var(--ant-color-border-secondary, #edf0f5);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container, #fff);
+  box-shadow: 0 4px 18px rgb(15 23 42 / 6%);
 }
 
 .dashboardTableBlock.fullscreen {
   position: absolute;
+  z-index: 1000;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-}
-
-:global(.ant-select-dropdown) {
-  z-index: 1001;
-}
-
-.dashboardTableBlock :global(.ant-spin-nested-loading) {
-  z-index: 1;
-  height: 100%;
-}
-
-.dashboardTableBlock :global(.ant-spin-container) {
-  z-index: 1;
-}
-
-.dashboardTableBlock :global(.ant-spin) {
-  z-index: 1;
-}
-
-.dashboardTableBlock :global(.ant-spin-dot) {
-  z-index: 1;
-}
-
-.dashboardTableBlock :global(.ant-spin-text) {
-  z-index: 1;
-}
-
-.dashboardTableBlockBody {
-  height: 100%;
-}
-
-.dashboardTableBlockBody :global(.ant-spin-container) {
-  display: flex;
-  flex-direction: column;
-}
-
-.dashboardTableBlock.fullscreen .dashboardTableBlockHeader {
-  width: 100%;
-  text-align: center;
-}
-
-.dashboardTableBlock.fullscreen .dashboardTableBlockHeader button {
-  margin-right: 10px;
+  min-height: 500px;
 }
 
 .dashboardTableBlock.fullscreen :global(.fast-table-wrapper) {
-  max-height: none;
   height: calc(100vh - 150px);
+  max-height: none;
   overflow-y: auto;
 }
 
-.dashboardTableBlock.fullscreen :global(.fast-table) {
+.dashboardTableBlock :global(.ant-card-body) {
+  height: 100%;
+  padding: 14px;
+}
+
+.dashboardTableBlockBody,
+.dashboardTableBlockBody :global(.ant-spin-nested-loading),
+.dashboardTableBlockBody :global(.ant-spin-container) {
   height: 100%;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainCol {
-  padding-right: 0.5rem;
+.dashboardTableBlockHeader {
+  display: flex;
+  min-height: 40px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainTitle {
-  padding-top: 2px;
+.dashboardTableBlockTitleGroup {
+  min-width: 0;
+  flex: 1;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainActions {
-  min-height: 24px;
+.dashboardTableBlockSubtitle {
+  font-size: 12px;
 }
 
-.dashboardTableBlock .minionDashboardCardGrainActions button {
-  visibility: hidden;
-  opacity: 0;
-  transition:
-    visibility 0s,
-    opacity 0.1s linear;
+.dashboardTableBlockHeaderSettings {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
 }
 
-.dashboardTableBlock tr:hover .minionDashboardCardGrainActions button {
-  visibility: visible;
-  opacity: 1;
+.cardMenuIcon {
+  cursor: pointer;
+  color: var(--ant-color-text-secondary, #667085);
+  padding: 4px;
+}
+
+.chartBody {
+  height: calc(100% - 52px);
+  min-height: 210px;
+}
+
+.dashboardTableBlock :global(.fast-table-wrapper) {
+  height: 100%;
+  max-height: none;
+  overflow: auto;
+}
+
+.dashboardTableBlock :global(.fast-table) {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.dashboardTableBlock :global(.fast-table table > thead > tr > th) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: none;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #edf0f5);
+  background: var(--ant-color-bg-container, #fff);
+  color: var(--ant-color-text-secondary, #475467);
+}
+
+.dashboardTableBlock :global(.fast-table table > tbody > tr > td) {
+  border: none;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #f2f4f7);
 }

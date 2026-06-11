@@ -1,42 +1,54 @@
-.dashboardMainHeader {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  gap: 5px;
-}
+.dashboardContainer {
+  --dashboard-card-height: 500px;
+  --dashboard-grid-gap: 8px;
 
-.dashboardTablesContainer {
   display: grid;
   position: relative;
   grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-  grid-column-gap: 5px;
-  grid-row-gap: 5px;
+  grid-auto-flow: dense;
+  gap: var(--dashboard-grid-gap);
 }
 
-.dashboardTableBlock {
-  height: 100%;
-  min-height: 500px;
+.dashboardCardWrapper {
+  height: var(--dashboard-card-height);
 }
 
-.dashboardTableBlock h2 {
-  margin-top: 0;
+.wideCard {
+  grid-column: span 2;
 }
 
-.dashboardTableBlock1 {
-  grid-area: 1 / 1 / 2 / 2;
+.tallCard {
+  grid-row: span 2;
+  height: calc(var(--dashboard-card-height) * 2 + var(--dashboard-grid-gap));
 }
-.dashboardTableBlock2 {
-  grid-area: 1 / 2 / 2 / 3;
+
+@media (max-width: 950px) {
+  .wideCard {
+    grid-column: auto;
+  }
+
+  .tallCard {
+    grid-row: auto;
+    height: var(--dashboard-card-height);
+  }
 }
-.dashboardTableBlock3 {
-  grid-area: 1 / 3 / 2 / 4;
+
+.emptyState {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 1px dashed var(--ant-color-border, #d0d5dd);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container, #fff);
 }
-.dashboardTableBlock4 {
-  grid-area: 2 / 1 / 3 / 2;
+
+.emptyState :global(.ant-empty-description) {
+  color: var(--ant-color-text-secondary, #667085);
 }
-.dashboardTableBlock5 {
-  grid-area: 2 / 2 / 3 / 3;
-}
-.dashboardTableBlock6 {
-  grid-area: 2 / 3 / 3 / 4;
+
+.emptyStateIcon {
+  color: var(--ant-color-primary, #1677ff);
+  font-size: 56px;
 }

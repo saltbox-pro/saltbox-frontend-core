@@ -1,72 +1,62 @@
 import { makeAutoObservable } from "mobx";
 
-const MAX_BLOCKS = 12;
+import {
+  createDashboardCard,
+  DASHBOARD_MAX_CARDS,
+  DashboardCardConfig,
+  DashboardFieldOption,
+  DashboardPreset,
+  getUpdatedDashboardCard,
+  normalizeDashboardStorage,
+} from "./dashboard-model";
 
-type BlockType = {
-  title: string;
-  grains: string;
-  view: ViewMode;
-};
-
-export type ViewMode = "table" | "graph";
+const STORAGE_KEY = "savedBlocks";
 
 export class DashboardStore {
-  blocks: BlockType[];
+  cards: DashboardCardConfig[];
   isCardFullScreen: boolean;
 
   constructor() {
     makeAutoObservable(this);
+    this.cards = this.loadFromLocalStorage();
     this.isCardFullScreen = false;
-
-    this.blocks = this.loadFromLocalStorage();
   }
 
-  get canAddBlock(): boolean {
-    return this.blocks.length < MAX_BLOCKS;
+  setCardFullScreen(isFullScreen: boolean) {
+    this.isCardFullScreen = isFullScreen;
   }
 
-  get maxBlocks(): number {
-    return MAX_BLOCKS;
+  get canAddCard(): boolean {
+    return this.cards.length < DASHBOARD_MAX_CARDS;
   }
 
-  loadFromLocalStorage(): BlockType[] {
-    const savedBlocks = localStorage.getItem("savedBlocks");
-    if (savedBlocks) {
-      return JSON.parse(savedBlocks);
-    }
-    return [
-      { title: "cpu", grains: "cpu_model", view: "table" },
-      { title: "osfullname", grains: "osfullname", view: "table" },
-      { title: "boardname", grains: "boardname", view: "table" },
-      { title: "kernel", grains: "kernel", view: "table" },
-      { title: "saltversion", grains: "saltversion", view: "table" },
-      { title: "pythonversion", grains: "pythonversion", view: "table" },
-    ];
+  loadFromLocalStorage(): DashboardCardConfig[] {
+    return normalizeDashboardStorage(localStorage.getItem(STORAGE_KEY)).cards;
   }
 
   saveToLocalStorage() {
-    localStorage.setItem("savedBlocks", JSON.stringify(this.blocks));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, cards: this.cards }));
   }
 
-  updateGrains(index: number, newGrains: string) {
-    this.blocks[index].grains = newGrains;
-    this.saveToLocalStorage();
-  }
-
-  updateView(index: number, newView: ViewMode) {
-    this.blocks[index].view = newView;
-    this.saveToLocalStorage();
-  }
-
-  addBlock(newBlock: BlockType) {
-    if (this.canAddBlock) {
-      this.blocks.push(newBlock);
-      this.saveToLocalStorage();
+  addCard(fieldOption: DashboardFieldOption, preset: DashboardPreset) {
+    if (!this.canAddCard) {
+      return;
     }
+    this.cards.unshift(createDashboardCard(fieldOption, preset));
+    this.saveToLocalStorage();
   }
 
-  removeBlock(index: number) {
-    this.blocks.splice(index, 1);
+  updateCard(cardId: string, fieldOption: DashboardFieldOption, preset: DashboardPreset) {
+    const cardIndex = this.cards.findIndex((item) => item.id === cardId);
+    if (cardIndex === -1) {
+      return;
+    }
+    this.cards[cardIndex] = getUpdatedDashboardCard(this.cards[cardIndex], fieldOption, preset);
+    this.saveToLocalStorage();
+  }
+
+  removeCard(cardId: string) {
+    this.cards = this.cards.filter((card) => card.id !== cardId);
     this.saveToLocalStorage();
   }
 }

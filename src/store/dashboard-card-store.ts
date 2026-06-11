@@ -1,32 +1,27 @@
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 export class DashboardCardStore {
   isFilterLoading: boolean;
   grainValues: Array<GrainValue>;
-
-  get roundedGrainValues(): GrainValue[] {
-    const grainsTop = this.grainValues.slice(0, 5).map((garin) => {
-      return { ...garin, value: garin.value || "No name info" };
-    });
-    return [
-      ...grainsTop,
-      {
-        count: this.grainValues.slice(5).reduce((acc, item) => acc + item.count, 0),
-        value: "other",
-      },
-    ];
-  }
+  hasError: boolean;
+  private lastRequestKey?: string;
 
   constructor() {
     makeAutoObservable(this);
     this.grainValues = [];
+    this.hasError = false;
     this.isFilterLoading = false;
   }
 
-  loadGrain = (currentGrains: string, slug: string, mongoDBQuery: object | undefined) => {
+  loadGrain = (fieldSource: string, slug: string, mongoDBQuery: object | undefined) => {
+    const requestKey = JSON.stringify({ fieldSource, slug, mongoDBQuery });
+    if (this.lastRequestKey === requestKey && !this.hasError) return;
+
+    this.lastRequestKey = requestKey;
+    this.hasError = false;
     this.isFilterLoading = true;
 
     apiCoreStore.filtersApi
@@ -34,16 +29,23 @@ export class DashboardCardStore {
         MinionFilterValuesBody: {
           collection_slug: slug,
           query: mongoDBQuery,
-          field: "grains." + currentGrains,
+          field: fieldSource,
         },
       })
       .then((response) => {
-        this.isFilterLoading = false;
-        this.grainValues = response.data;
+        if (this.lastRequestKey !== requestKey) return;
+        runInAction(() => {
+          this.isFilterLoading = false;
+          this.grainValues = response.data;
+        });
       })
-      .catch((error) => {
-        this.isFilterLoading = false;
-        throw error;
+      .catch(() => {
+        if (this.lastRequestKey !== requestKey) return;
+        runInAction(() => {
+          this.isFilterLoading = false;
+          this.grainValues = [];
+          this.hasError = true;
+        });
       });
   };
 }

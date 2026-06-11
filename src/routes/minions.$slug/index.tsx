@@ -30,12 +30,14 @@ import {
   CollectionStore,
   collectionsTreeStore,
   dashboardStore,
+  getDashboardFieldOptions,
   i18nStore,
   MinionFilterStore,
   TasksFilterStore,
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
+import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsTaskView } from "./-components/minions-task-view";
@@ -58,6 +60,8 @@ const MinionsPage = observer(() => {
   const [collectionStore] = useState(new CollectionStore());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isAddDashboardBlockModalOpen, setIsAddDashboardBlockModalOpen] = useState(false);
+  const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
 
   const minionFilterStore = useMemo(
     () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`),
@@ -101,12 +105,19 @@ const MinionsPage = observer(() => {
     }
   }, [minionFilterStore, openMinionsFilters]);
 
-  const addBlock = () => {
-    dashboardStore.addBlock({
-      title: "",
-      grains: "cpu_model",
-      view: "table",
-    });
+  const dashboardFieldOptions = useMemo(
+    () => getDashboardFieldOptions(minionFilterStore.filterSchema),
+    [minionFilterStore.filterSchema]
+  );
+
+  const addDashboardCard = () => {
+    setEditingDashboardCardId(null);
+    setIsAddDashboardBlockModalOpen(true);
+  };
+
+  const editDashboardCard = (cardId: string) => {
+    setEditingDashboardCardId(cardId);
+    setIsAddDashboardBlockModalOpen(true);
   };
 
   const handleEditCollection = () => {
@@ -223,6 +234,8 @@ const MinionsPage = observer(() => {
               slug={slug}
               filterStore={minionFilterStore}
               showFilter={shownMinionsFilters}
+              onEditCard={editDashboardCard}
+              onAddCard={addDashboardCard}
             />
           ) : null,
       },
@@ -305,16 +318,16 @@ const MinionsPage = observer(() => {
                 {tabKey === "statistics" && !dashboardStore.isCardFullScreen && (
                   <Flex gap={8} align="center">
                     <Button
-                      onClick={addBlock}
+                      onClick={addDashboardCard}
                       type="default"
-                      disabled={!dashboardStore.canAddBlock}
+                      disabled={!dashboardStore.canAddCard}
                     >
                       <Flex gap={8}>
                         <PlusOutlined />
                         {t("minions.add-block-button")}
                       </Flex>
                     </Button>
-                    {!dashboardStore.canAddBlock && (
+                    {!dashboardStore.canAddCard && (
                       <Popover
                         style={{ width: 300 }}
                         content={t("minions.blocks-limit-tooltip")}
@@ -417,6 +430,23 @@ const MinionsPage = observer(() => {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false);
+        }}
+      />
+
+      <MinionsDashboardAddBlockModal
+        open={isAddDashboardBlockModalOpen}
+        initialCard={
+          dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
+        }
+        fieldOptions={dashboardFieldOptions}
+        onClose={() => setIsAddDashboardBlockModalOpen(false)}
+        onSubmit={(fieldOption, preset) => {
+          if (editingDashboardCardId) {
+            dashboardStore.updateCard(editingDashboardCardId, fieldOption, preset);
+          } else {
+            dashboardStore.addCard(fieldOption, preset);
+          }
+          setIsAddDashboardBlockModalOpen(false);
         }}
       />
     </>
