@@ -1044,6 +1044,8 @@
         "prepare_files": "Подготовка файлов…",
         "add_user_file": "Обработка…",
         "sync": "Синхронизация…",
+        "remove": "Удаление…",
+        "add_template_from_raw": "Создание шаблона…",
         "unknown": "Выполняется операция…"
       },
       "connection": {

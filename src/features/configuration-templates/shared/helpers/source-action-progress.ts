@@ -3,6 +3,7 @@ import { SourceOperation, SourceState } from "@saltbox/saltbox-core-api-client";
 import {
   DISCOVER_SOURCE_OPERATIONS,
   PLUG_SOURCE_OPERATIONS,
+  REMOVE_SOURCE_OPERATIONS,
   SYNC_SOURCE_OPERATIONS,
 } from "../constants/source-operations";
 import type { SourceActionKind, SourceActionState } from "../types/source-action";
@@ -23,16 +24,52 @@ export function getSourceActionContext(
   };
 }
 
-export function isPlugInProgress({ actionKind }: SourceActionContext): boolean {
-  return actionKind === "plug";
+type IsPlugInProgressParams = SourceActionContext & {
+  source?: SourceOperationProgressSnapshot;
+};
+
+export function isRemoveSourceOperation(operation: SourceOperation | null): boolean {
+  return operation != null && REMOVE_SOURCE_OPERATIONS.has(operation);
 }
 
-export function isDeleteInProgress({ actionKind }: SourceActionContext): boolean {
-  return actionKind === "delete";
+export function isRemoveInProgress(source: SourceOperationProgressSnapshot): boolean {
+  return isSourceOperationInProgress(source) && isRemoveSourceOperation(source.current_operation);
 }
 
-export function isAddFileInProgress({ actionKind }: SourceActionContext): boolean {
-  return actionKind === "add_file";
+export function isPlugInProgress({ actionKind, source }: IsPlugInProgressParams): boolean {
+  if (actionKind === "sync") return false;
+  if (actionKind === "plug") return true;
+  if (!source) return false;
+
+  if (isSourceOperationInProgress(source) && isSyncSourceOperation(source.current_operation)) {
+    return false;
+  }
+
+  return isSourceOperationInProgress(source) && isPlugSourceOperation(source.current_operation);
+}
+
+type IsDeleteInProgressParams = SourceActionContext & {
+  source?: SourceOperationProgressSnapshot;
+};
+
+export function isDeleteInProgress({ actionKind, source }: IsDeleteInProgressParams): boolean {
+  if (actionKind === "delete") return true;
+  if (!source) return false;
+
+  return isRemoveInProgress(source);
+}
+
+type IsAddFileInProgressParams = SourceActionContext & {
+  source?: SourceOperationProgressSnapshot;
+};
+
+export function isAddFileInProgress({ actionKind, source }: IsAddFileInProgressParams): boolean {
+  if (actionKind === "add_file") return true;
+  if (!source) return false;
+
+  return (
+    isSourceOperationInProgress(source) && source.current_operation === SourceOperation.AddUserFile
+  );
 }
 
 export function isSyncRequestLoading({ actionKind }: SourceActionContext): boolean {
@@ -79,6 +116,7 @@ type ShouldShowSourceOperationSpinnerParams = {
   showSync: boolean;
   isPlugInProgress: boolean;
   syncInProgress: boolean;
+  deleteInProgress: boolean;
 };
 
 export function shouldShowSourceOperationSpinner({
@@ -87,6 +125,7 @@ export function shouldShowSourceOperationSpinner({
   showSync,
   isPlugInProgress,
   syncInProgress,
+  deleteInProgress,
 }: ShouldShowSourceOperationSpinnerParams): boolean {
   if (isDiscoverInProgress(source)) return true;
 
@@ -95,6 +134,7 @@ export function shouldShowSourceOperationSpinner({
     !showConnect &&
     !showSync &&
     !isPlugInProgress &&
-    !syncInProgress
+    !syncInProgress &&
+    !deleteInProgress
   );
 }

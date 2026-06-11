@@ -7,13 +7,13 @@ import type { AddSourceFilePayload } from "../types/source-file-payload";
 export async function uploadSourceFile(
   sourceId: string,
   payload: AddSourceFilePayload
-): Promise<void> {
+): Promise<string> {
   const api = apiCoreStore.templateSourceFilesApi;
   if (!api) {
     throw new Error("API is not configured");
   }
 
-  await api.sshfsFileAdd({
+  return api.sshfsFileAdd({
     source_id: sourceId,
     rel_path: payload.rel_path,
     file: payload.file ?? undefined,

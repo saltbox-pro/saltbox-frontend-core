@@ -15,6 +15,7 @@ import {
   isBgTaskPollAborted,
   rethrowIfAborted,
 } from "../../shared/errors/bg-task-poll-aborted.error";
+import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
@@ -23,6 +24,7 @@ import { fetchTemplateSource } from "../../shared/service/fetch-template-source.
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
+import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 import {
   getGitlabSyncErrorDetail,
@@ -101,10 +103,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     return {
       actionBySourceId: this.actionBySourceId,
       isSourcePresent: (sourceId) => this.sources.some((item) => item.id === sourceId),
-      refreshSource: (sourceId) => this.refreshSource(sourceId),
-      applySourceUpdate: (updated) => this.applySourceUpdate(updated),
-      patchOptimisticOperation: (sourceId, operation) =>
-        this.patchOptimisticOperation(sourceId, operation),
+      patchOptimisticTask: (sourceId, operation, taskId) =>
+        this.patchOptimisticTask(sourceId, operation, taskId),
       removeSource: (sourceId) => this.removeSourceFromList(sourceId),
       reloadSource: (sourceId) => this.reloadSource(sourceId),
       getSource: (sourceId) => this.sources.find((item) => item.id === sourceId),
@@ -160,9 +160,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       if (isCancelled()) return;
 
       runInAction(() => {
-        this.sources = sources;
+        this.sources = this.mergeSourcesPreservingActiveTasks(sources);
       });
-      this.runtime.syncForSources(sources);
+      this.runtime.syncForSources(this.sources);
     } catch (reason) {
       if (isBgTaskPollAborted(reason) || isCancelled()) return;
 
@@ -242,14 +242,14 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   reloadSource = async (sourceId: string): Promise<void> => {
     try {
-      const source = await this.refreshSource(sourceId);
-      if (!source) return;
+      const refreshResult = await this.refreshSource(sourceId);
+      if (refreshResult.status !== "found") return;
 
       runInAction(() => {
         const index = this.sources.findIndex((item) => item.id === sourceId);
         if (index === -1) return;
 
-        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], source);
+        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], refreshResult.source);
       });
     } catch (reason) {
       if (isGlobalServerError(reason)) return;
@@ -257,21 +257,16 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  refreshSource = async (sourceId: string): Promise<SourceListWithExtrasSchema | null> => {
+  refreshSource = async (sourceId: string): Promise<RefreshSourceResult> => {
     try {
-      return await fetchTemplateSource(sourceId);
+      const source = await fetchTemplateSource(sourceId);
+      return source ? { status: "found", source } : { status: "not_found" };
     } catch (reason) {
-      if (isGlobalServerError(reason)) return null;
+      if (isApiNotFoundError(reason)) return { status: "not_found" };
+      if (isGlobalServerError(reason)) return { status: "failed" };
       console.error("Failed to refresh template source:", reason);
-      return null;
+      return { status: "failed" };
     }
-  };
-
-  applySourceUpdate = (updated: SourceListWithExtrasSchema) => {
-    const index = this.sources.findIndex((item) => item.id === updated.id);
-    if (index === -1) return;
-
-    this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
   };
 
   addSource = (source: TemplateSourcePublicSchema) => {
@@ -348,18 +343,47 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     return this.registerCreatedSource(created);
   };
 
+  private mergeSourcesPreservingActiveTasks = (
+    incoming: SourceListWithExtrasSchema[]
+  ): SourceListWithExtrasSchema[] => {
+    return incoming.map((source) => {
+      const existing = this.sources.find((item) => item.id === source.id);
+      if (!existing) return source;
+
+      const hasActiveClientAction = this.actionBySourceId.has(source.id);
+      const hasStaleServerTaskFields = Boolean(existing.current_task_id) && !source.current_task_id;
+
+      if (!hasActiveClientAction && !hasStaleServerTaskFields) {
+        return source;
+      }
+
+      if (!existing.current_task_id && !existing.current_operation) {
+        return source;
+      }
+
+      return {
+        ...source,
+        current_operation: existing.current_operation ?? source.current_operation,
+        current_task_id: existing.current_task_id,
+        last_error: existing.last_error,
+      };
+    });
+  };
+
   private removeSourceFromList = (sourceId: string) => {
     this.sources = this.sources.filter((item) => item.id !== sourceId);
   };
 
-  private patchOptimisticOperation = (sourceId: string, operation: SourceOperation) => {
+  private patchOptimisticTask = (sourceId: string, operation: SourceOperation, taskId: string) => {
     const index = this.sources.findIndex((item) => item.id === sourceId);
     if (index === -1) return;
 
-    const source = this.sources[index];
-    if (source.current_operation !== null) return;
-
-    this.sources[index] = { ...source, current_operation: operation };
+    this.sources[index] = {
+      ...this.sources[index],
+      current_operation: operation,
+      current_task_id: taskId,
+      last_error: null,
+    };
   };
 
   addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> =>

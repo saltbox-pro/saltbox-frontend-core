@@ -48,7 +48,10 @@ export const TemplateSourceListEntry = observer(
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
     const showAddFileButton = canShowAddSourceFileButton(source);
-    const addingFile = isAddFileInProgress(getSourceActionContext(store, source.id));
+    const addingFile = isAddFileInProgress({
+      ...getSourceActionContext(store, source.id),
+      source,
+    });
 
     const isLocalSource = isEditableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);

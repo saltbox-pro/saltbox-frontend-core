@@ -10,10 +10,10 @@ export const DISCOVER_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set(
   SourceOperation.Discover,
 ]);
 
-export const SYNC_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set([
-  SourceOperation.Sync,
-  SourceOperation.PrepareTemplates,
-  SourceOperation.PrepareFiles,
+export const SYNC_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set([SourceOperation.Sync]);
+
+export const REMOVE_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set([
+  SourceOperation.Remove,
 ]);
 
 export const SOURCE_OPERATION_LABEL_KEYS: Record<SourceOperation, string> = {
@@ -21,10 +21,13 @@ export const SOURCE_OPERATION_LABEL_KEYS: Record<SourceOperation, string> = {
   [SourceOperation.PrepareTemplates]: "configuration-templates.source.operation.prepare_templates",
   [SourceOperation.UpdateTemplateContent]:
     "configuration-templates.source.operation.update_template_content",
+  [SourceOperation.AddTemplateFromRaw]:
+    "configuration-templates.source.operation.add_template_from_raw",
   [SourceOperation.DeleteTemplate]: "configuration-templates.source.operation.delete_template",
   [SourceOperation.PrepareFiles]: "configuration-templates.source.operation.prepare_files",
   [SourceOperation.AddUserFile]: "configuration-templates.source.operation.add_user_file",
   [SourceOperation.Sync]: "configuration-templates.source.operation.sync",
+  [SourceOperation.Remove]: "configuration-templates.source.operation.remove",
 };
 
 export function getSourceOperationLabelKey(operation: SourceOperation | null): string | undefined {
@@ -33,6 +36,8 @@ export function getSourceOperationLabelKey(operation: SourceOperation | null): s
   return SOURCE_OPERATION_LABEL_KEYS[operation];
 }
 
-export const PLUG_OPTIMISTIC_OPERATION = SourceOperation.PrepareFiles;
+export const PLUG_OPTIMISTIC_OPERATION = SourceOperation.PrepareTemplates;
 
-export const SYNC_OPTIMISTIC_OPERATION = SourceOperation.PrepareTemplates;
+export const SYNC_OPTIMISTIC_OPERATION = SourceOperation.Sync;
+
+export const REMOVE_OPTIMISTIC_OPERATION = SourceOperation.Remove;

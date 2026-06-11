@@ -52,7 +52,10 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const view = getTemplateSourceViewState(store.source, store);
   const canAddFile = canAddSourceFiles(store.source, store);
   const showAddFileButton = canShowAddSourceFileButton(store.source);
-  const addingFile = isAddFileInProgress(getSourceActionContext(store, store.source.id));
+  const addingFile = isAddFileInProgress({
+    ...getSourceActionContext(store, store.source.id),
+    source: store.source,
+  });
 
   const sourceId = store.source.id;
   const isLocalSource = isEditableTemplateSource(store.source);

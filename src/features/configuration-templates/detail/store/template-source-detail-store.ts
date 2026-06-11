@@ -3,6 +3,7 @@ import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
+import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
@@ -10,6 +11,7 @@ import {
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
+import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 
@@ -46,10 +48,8 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     return {
       actionBySourceId: this.actionBySourceId,
       isSourcePresent: (sourceId) => this.source?.id === sourceId,
-      refreshSource: (_sourceId) => this.fetchSource(),
-      applySourceUpdate: (updated) => this.applySourceUpdate(updated),
-      patchOptimisticOperation: (sourceId, operation) =>
-        this.patchOptimisticOperation(sourceId, operation),
+      patchOptimisticTask: (sourceId, operation, taskId) =>
+        this.patchOptimisticTask(sourceId, operation, taskId),
       removeSource: (_sourceId) =>
         runInAction(() => {
           this.source = null;
@@ -68,19 +68,27 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     });
 
     try {
-      const source = await this.fetchSource();
-      if (!source) {
+      const refreshResult = await this.fetchRefreshResult();
+
+      if (refreshResult.status === "not_found") {
         runInAction(() => {
           this.notFound = true;
         });
         return;
       }
 
+      if (refreshResult.status === "failed") {
+        runInAction(() => {
+          this.hasError = true;
+        });
+        return;
+      }
+
       runInAction(() => {
-        this.source = source;
+        this.source = refreshResult.source;
       });
 
-      this.runtime.scheduleForSource(source);
+      this.runtime.scheduleForSource(refreshResult.source);
     } catch (reason) {
       console.error("Failed to load template source:", reason);
       runInAction(() => {
@@ -96,16 +104,16 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
   reloadSource = async (): Promise<void> => {
     try {
-      const source = await this.fetchSource();
-      if (!source) return;
+      const refreshResult = await this.fetchRefreshResult();
+      if (refreshResult.status !== "found") return;
 
       runInAction(() => {
         if (!this.source) {
-          this.source = normalizeSourceListItem(source);
+          this.source = normalizeSourceListItem(refreshResult.source);
           return;
         }
 
-        this.source = mergeSourceListItemUpdate(this.source, source);
+        this.source = mergeSourceListItemUpdate(this.source, refreshResult.source);
       });
     } catch (reason) {
       if (isGlobalServerError(reason)) return;
@@ -113,28 +121,27 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     }
   };
 
-  fetchSource = async (): Promise<SourceListWithExtrasSchema | null> => {
+  private fetchRefreshResult = async (): Promise<RefreshSourceResult> => {
     try {
-      return await fetchTemplateSource(this.sourceId);
+      const source = await fetchTemplateSource(this.sourceId);
+      return source ? { status: "found", source } : { status: "not_found" };
     } catch (reason) {
-      if (isGlobalServerError(reason)) {
-        throw reason;
-      }
+      if (isApiNotFoundError(reason)) return { status: "not_found" };
+      if (isGlobalServerError(reason)) return { status: "failed" };
       console.error("Failed to fetch template source:", reason);
-      throw reason;
+      return { status: "failed" };
     }
   };
 
-  applySourceUpdate = (updated: SourceListWithExtrasSchema) => {
-    if (!this.source || updated.id !== this.sourceId) return;
+  private patchOptimisticTask = (sourceId: string, operation: SourceOperation, taskId: string) => {
+    if (this.source?.id !== sourceId) return;
 
-    this.source = mergeSourceListItemUpdate(this.source, updated);
-  };
-
-  private patchOptimisticOperation = (sourceId: string, operation: SourceOperation) => {
-    if (this.source?.id !== sourceId || this.source.current_operation !== null) return;
-
-    this.source = { ...this.source, current_operation: operation };
+    this.source = {
+      ...this.source,
+      current_operation: operation,
+      current_task_id: taskId,
+      last_error: null,
+    };
   };
 
   addSourceFile = (payload: AddSourceFilePayload): Promise<void> =>

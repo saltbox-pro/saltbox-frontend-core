@@ -162,12 +162,6 @@ export function AddSourceFileModal({
                   min: 1,
                   message: t(`${I18N_PREFIX}.file-required`),
                 },
-                {
-                  validator: async (_, value: UploadFile[] | undefined) => {
-                    if (value?.[0]?.originFileObj) return;
-                    throw new Error(t(`${I18N_PREFIX}.file-required`));
-                  },
-                },
               ]}
             >
               <Dragger {...uploadProps}>

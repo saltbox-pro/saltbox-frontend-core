@@ -2,7 +2,11 @@ import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-clien
 
 import type { SourceActionState } from "../types/source-action";
 
-import { getSourceActionContext, isPlugInProgress } from "./source-action-progress";
+import {
+  getSourceActionContext,
+  isPlugInProgress,
+  isSyncInProgress,
+} from "./source-action-progress";
 import { getSourcePresentation, getSourceWebUrl } from "./source-presentation";
 
 export function getTemplateSourceViewState(
@@ -10,22 +14,26 @@ export function getTemplateSourceViewState(
   actionState: SourceActionState
 ) {
   const presentation = getSourcePresentation(source);
-  const plugInProgress = isPlugInProgress(getSourceActionContext(actionState, source.id));
+  const actionContext = getSourceActionContext(actionState, source.id);
+  const plugInProgress = isPlugInProgress({ ...actionContext, source });
+  const syncInProgress = isSyncInProgress({ source, ...actionContext });
 
   const canConnect = presentation.actions.includes("plug");
   const canSync = presentation.actions.includes("sync");
   const showDelete = presentation.actions.includes("delete");
-  const showSync = canSync && !plugInProgress;
+  const isActuallyPlugging = plugInProgress && canConnect;
 
   return {
     presentation,
     canConnect,
-    canSync,
+    canSync: canSync || syncInProgress,
     showDelete,
-    plugInProgress,
-    isConnected: presentation.isConnected && !plugInProgress,
-    forceDimmed: presentation.isDimmed || plugInProgress,
+    plugInProgress: isActuallyPlugging,
+    isConnected: (presentation.isConnected || syncInProgress) && !isActuallyPlugging,
+    forceDimmed: (presentation.isDimmed && !syncInProgress) || isActuallyPlugging,
     webUrl: getSourceWebUrl(source),
-    showNotSynced: presentation.showNotSynced && showSync,
+    showNotSynced:
+      (presentation.showNotSynced || (syncInProgress && !presentation.showActiveStatus)) &&
+      !isActuallyPlugging,
   };
 }

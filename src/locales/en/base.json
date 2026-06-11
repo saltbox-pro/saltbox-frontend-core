@@ -1044,6 +1044,8 @@
         "prepare_files": "Preparing files…",
         "add_user_file": "Processing…",
         "sync": "Syncing…",
+        "remove": "Deleting…",
+        "add_template_from_raw": "Creating template…",
         "unknown": "Operation in progress…"
       },
       "connection": {

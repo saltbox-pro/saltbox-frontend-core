@@ -34,20 +34,21 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
 }: TemplateSourceActionsToolbarProps) {
   const actionContext = getSourceActionContext(actions, source.id);
 
-  const plugInProgress = isPlugInProgress(actionContext);
-  const deleteInProgress = isDeleteInProgress(actionContext);
-
-  const showConnect = canConnect || plugInProgress;
-  const showSync = canSync && !plugInProgress;
-
+  const plugInProgress = isPlugInProgress({ ...actionContext, source });
+  const deleteInProgress = isDeleteInProgress({ ...actionContext, source });
   const syncInProgress = isSyncInProgress({ source, ...actionContext });
+  const isActuallyPlugging = plugInProgress && canConnect;
+
+  const showConnect = canConnect || isActuallyPlugging;
+  const showSync = (canSync || syncInProgress) && !isActuallyPlugging;
 
   const showOperationSpinner = shouldShowSourceOperationSpinner({
     source,
     showConnect,
     showSync,
-    isPlugInProgress: plugInProgress,
+    isPlugInProgress: isActuallyPlugging,
     syncInProgress,
+    deleteInProgress,
   });
 
   return (
@@ -74,13 +75,11 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
       <SyncSourceButton
         source={source}
         actions={actions}
-        canSync={canSync}
+        showSync={showSync}
         disabled={deleteInProgress}
       />
 
-      {showDelete && (
-        <DeleteSourceButton sourceId={source.id} sourceName={source.name} actions={actions} />
-      )}
+      {showDelete && <DeleteSourceButton source={source} actions={actions} />}
     </Flex>
   );
 });

@@ -6,9 +6,9 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
-  isPlugInProgress,
   isSyncInProgress,
   isSyncRequestLoading,
 } from "../../shared/helpers/source-action-progress";
@@ -19,24 +19,21 @@ import styles from "./sync-source-button.module.css";
 export type SyncSourceButtonProps = {
   source: TemplateSourcePublicSchema;
   actions: SourceActionsPort;
-  canSync: boolean;
+  showSync: boolean;
   disabled?: boolean;
 };
 
 export const SyncSourceButton = observer(function SyncSourceButton({
   source,
   actions,
-  canSync,
+  showSync,
   disabled = false,
 }: SyncSourceButtonProps) {
   const { t } = useTranslation();
 
   const actionContext = getSourceActionContext(actions, source.id);
 
-  const showSync = canSync && !isPlugInProgress(actionContext);
-
   const syncProgress = isSyncInProgress({ source, ...actionContext });
-
   const syncRequestLoading = isSyncRequestLoading(actionContext);
 
   const handleSync = useCallback(async () => {
@@ -49,7 +46,7 @@ export const SyncSourceButton = observer(function SyncSourceButton({
       );
     } catch (error) {
       console.error(error);
-      if (isGlobalServerError(error)) return;
+      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
       message.error(t("configuration-templates.source.action.sync-error"));
     }
   }, [actions, source.id, source.name, t]);

@@ -6,11 +6,10 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
   isPlugInProgress,
-  isPlugSourceOperation,
-  isSourceOperationInProgress,
 } from "../../shared/helpers/source-action-progress";
 import type { SourceActionsPort } from "../../shared/types/source-action";
 
@@ -31,21 +30,17 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
 
   const actionContext = getSourceActionContext(actions, source.id);
 
-  const plugInProgress = isPlugInProgress(actionContext);
-  const showConnect = canConnect || plugInProgress;
-
-  const isLoading =
-    plugInProgress ||
-    (canConnect &&
-      isSourceOperationInProgress(source) &&
-      isPlugSourceOperation(source.current_operation));
+  const plugInProgress = isPlugInProgress({ ...actionContext, source });
+  const isActuallyPlugging = plugInProgress && canConnect;
+  const showConnect = canConnect || isActuallyPlugging;
+  const isLoading = isActuallyPlugging;
 
   const handleConnect = useCallback(async () => {
     try {
       await actions.plugSource(source.id);
     } catch (error) {
       console.error(error);
-      if (isGlobalServerError(error)) return;
+      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
       message.error(t("configuration-templates.source.action.plug-error"));
     }
   }, [actions, source.id, t]);
