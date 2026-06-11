@@ -1,9 +1,11 @@
+import { PlusOutlined } from "@ant-design/icons";
 import type {
   SshfsFilePublicSchema,
   TaskTemplatePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
+import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceFilesList } from "../../files/ui/template-source-files-list";
@@ -22,6 +24,10 @@ export type TemplateSourceExtrasCollapseProps = {
     items: TaskTemplatePublicSchema[];
     totalCount?: number;
     searchQuery?: string;
+    onCreateTemplate?: () => void;
+    canCreateTemplate?: boolean;
+    canEditTemplates?: boolean;
+    canDuplicateTemplates?: boolean;
   };
   files: {
     items: SshfsFilePublicSchema[];
@@ -74,12 +80,25 @@ export function TemplateSourceExtrasCollapse({
           t("configuration-templates.source.templates"),
           templates.totalCount ?? templates.items.length
         ),
+        extra: templates.onCreateTemplate ? (
+          <BaseActionButton
+            icon={<PlusOutlined />}
+            title={t("configuration-templates.source.add-template")}
+            disabled={!templates.canCreateTemplate}
+            onClick={(event: MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              templates.onCreateTemplate?.();
+            }}
+          />
+        ) : undefined,
         children: (
           <Flex vertical gap="small">
             <TemplateSourceTemplatesList
               items={templates.items}
               constrainHeight={constrainHeight}
               searchQuery={templates.searchQuery}
+              canEditTemplates={templates.canEditTemplates}
+              canDuplicateTemplates={templates.canDuplicateTemplates}
             />
           </Flex>
         ),

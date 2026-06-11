@@ -2,6 +2,7 @@ import { Alert, Card, Flex, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import {
   canAddSourceFiles,
@@ -13,10 +14,16 @@ import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../shared/helpers/source-action-progress";
+import { getCreateTemplatePath } from "../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceContent } from "../../shared/ui/template-source-content";
 import { TemplateSourceExtrasCollapse } from "../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceTags } from "../../shared/ui/template-source-tags";
+import {
+  canDuplicateSourceTemplate,
+  canEditSourceTemplates,
+  canShowCreateTemplateButton,
+} from "../../templates/helpers/can-manage-source-templates";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
 type TemplateSourceDetailProps = {
@@ -27,6 +34,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   store,
 }: TemplateSourceDetailProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
 
   if (store.isLoading) {
@@ -45,6 +53,11 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const canAddFile = canAddSourceFiles(store.source, store);
   const showAddFileButton = canShowAddSourceFileButton(store.source);
   const addingFile = isAddFileInProgress(getSourceActionContext(store, store.source.id));
+
+  const sourceId = store.source.id;
+  const showCreateTemplate = canShowCreateTemplateButton(store.source);
+  const canEditTemplates = canEditSourceTemplates(store.source, store);
+  const canDuplicateTemplates = canDuplicateSourceTemplate(store.source, store);
 
   return (
     <Space direction="vertical" size="large">
@@ -77,6 +90,12 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
       <TemplateSourceExtrasCollapse
         templates={{
           items: store.source.templates ?? [],
+          onCreateTemplate: showCreateTemplate
+            ? () => navigate(getCreateTemplatePath(sourceId))
+            : undefined,
+          canCreateTemplate: canEditTemplates,
+          canEditTemplates,
+          canDuplicateTemplates,
         }}
         files={{
           items: store.source.files ?? [],

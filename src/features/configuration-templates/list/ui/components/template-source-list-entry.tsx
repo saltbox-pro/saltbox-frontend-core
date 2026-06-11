@@ -2,6 +2,7 @@ import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-clien
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import {
   canAddSourceFiles,
@@ -13,9 +14,17 @@ import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../../shared/helpers/source-action-progress";
-import { getTemplateSourceDetailPath } from "../../../shared/helpers/source-presentation";
+import {
+  getCreateTemplatePath,
+  getTemplateSourceDetailPath,
+} from "../../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
+import {
+  canDuplicateSourceTemplate,
+  canEditSourceTemplates,
+  canShowCreateTemplateButton,
+} from "../../../templates/helpers/can-manage-source-templates";
 import {
   filterSourceFilesForSearch,
   filterSourceTemplatesForSearch,
@@ -34,11 +43,16 @@ export interface TemplateSourceListEntryProps {
 export const TemplateSourceListEntry = observer(
   ({ source, store, searchQuery }: TemplateSourceListEntryProps) => {
     const { i18n } = useTranslation();
+    const navigate = useNavigate();
     const view = getTemplateSourceViewState(source, store);
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
     const showAddFileButton = canShowAddSourceFileButton(source);
     const addingFile = isAddFileInProgress(getSourceActionContext(store, source.id));
+
+    const showCreateTemplate = canShowCreateTemplateButton(source);
+    const canEditTemplates = canEditSourceTemplates(source, store);
+    const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -85,6 +99,12 @@ export const TemplateSourceListEntry = observer(
               items: visibleTemplates,
               totalCount: source.templates?.length ?? 0,
               searchQuery,
+              onCreateTemplate: showCreateTemplate
+                ? () => navigate(getCreateTemplatePath(source.id))
+                : undefined,
+              canCreateTemplate: canEditTemplates,
+              canEditTemplates,
+              canDuplicateTemplates,
             },
             files: {
               items: visibleFiles,

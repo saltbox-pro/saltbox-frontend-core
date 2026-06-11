@@ -23,6 +23,9 @@ export const ExistingTemplateEditor = observer(
     useEffect(() => {
       store.loadTemplate();
       store.loadSource();
+      if (store.isDuplicate) {
+        store.loadTargetSources();
+      }
     }, [store]);
 
     if (store.isLoadingTemplate) {

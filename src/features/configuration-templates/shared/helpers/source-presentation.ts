@@ -57,3 +57,19 @@ export function getSourceWebUrl(source: TemplateSourcePublicSchema): string | un
 export function getTemplateSourceDetailPath(sourceId: string): string {
   return `/core/configuration-templates/${encodeURIComponent(sourceId)}`;
 }
+
+export function getCreateTemplatePath(sourceId: string): string {
+  return `/core/configuration-templates/sources/${encodeURIComponent(sourceId)}/templates/new`;
+}
+
+export function getEditTemplatePath(sourceId: string, templateId: string): string {
+  return `/core/configuration-templates/sources/${encodeURIComponent(
+    sourceId
+  )}/templates/${encodeURIComponent(templateId)}/edit`;
+}
+
+export function getDuplicateTemplatePath(sourceId: string, templateId: string): string {
+  return `/core/configuration-templates/sources/${encodeURIComponent(
+    sourceId
+  )}/templates/${encodeURIComponent(templateId)}/duplicate`;
+}

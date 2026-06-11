@@ -1,4 +1,5 @@
 import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
+import { SourceState, SourceType } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -26,6 +27,11 @@ interface ParsedSls {
   error: string | null;
 }
 
+export interface DuplicateTargetSource {
+  id: string;
+  name: string;
+}
+
 export class TemplateEditorStore {
   readonly mode: TemplateEditorMode;
   readonly sourceId: string;
@@ -38,6 +44,10 @@ export class TemplateEditorStore {
   isLoadingTemplate = false;
   hasLoadError = false;
 
+  targetSourceId: string | null = null;
+  targetSources: DuplicateTargetSource[] = [];
+  isLoadingTargetSources = false;
+
   constructor(params: TemplateEditorParams) {
     this.mode = params.mode;
     this.sourceId = params.sourceId;
@@ -49,6 +59,15 @@ export class TemplateEditorStore {
 
   get createsNewTemplate(): boolean {
     return this.mode !== "edit";
+  }
+
+  get isDuplicate(): boolean {
+    return this.mode === "duplicate";
+  }
+
+  /** Источник, в который будет записан шаблон при сохранении. */
+  get effectiveTargetSourceId(): string | null {
+    return this.isDuplicate ? this.targetSourceId : this.sourceId;
   }
 
   loadTemplate = async () => {
@@ -82,6 +101,40 @@ export class TemplateEditorStore {
         this.isLoadingTemplate = false;
       });
     }
+  };
+
+  loadTargetSources = async () => {
+    runInAction(() => {
+      this.isLoadingTargetSources = true;
+    });
+
+    try {
+      const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+        TemplateSourceListBody: {},
+      });
+
+      const editable = (response?.data ?? [])
+        .filter(
+          (source) =>
+            source.source_type === SourceType.LocalBundle &&
+            (source.state === SourceState.Plugged || source.state === SourceState.Active)
+        )
+        .map((source) => ({ id: source.id, name: source.name }));
+
+      runInAction(() => {
+        this.targetSources = editable;
+      });
+    } catch (error) {
+      console.error("Failed to load target template sources:", error);
+    } finally {
+      runInAction(() => {
+        this.isLoadingTargetSources = false;
+      });
+    }
+  };
+
+  setTargetSourceId = (value: string | null) => {
+    this.targetSourceId = value;
   };
 
   loadSource = async () => {
@@ -128,6 +181,7 @@ export class TemplateEditorStore {
   get canSave(): boolean {
     if (this.hasParseError) return false;
     if (!this.createsNewTemplate) return true;
+    if (this.isDuplicate && !this.targetSourceId) return false;
     return this.fileName.trim().length > 0;
   }
 
@@ -151,9 +205,13 @@ export class TemplateEditorStore {
 
     try {
       if (this.createsNewTemplate) {
+        const targetSourceId = this.effectiveTargetSourceId;
+        if (!targetSourceId) {
+          throw new Error("target source is required to create a template");
+        }
         await apiCoreStore.newTaskTemplatesApi?.newTemplateCreate({
           TaskTemplateFromRawCreateSchema: {
-            source_id: this.sourceId,
+            source_id: targetSourceId,
             file_name: this.fileName.trim(),
             content: this.rawSls,
           },
