@@ -66,15 +66,15 @@ export default observer(function Root() {
               element={<TemplateSourceDetailPage />}
             />
             <Route
-              path="/core/configuration-templates/sources/:sourceId/templates/new"
+              path="/core/configuration-templates/:sourceId/templates/new"
               element={<CreateTemplatePage />}
             />
             <Route
-              path="/core/configuration-templates/sources/:sourceId/templates/:templateId/edit"
+              path="/core/configuration-templates/:sourceId/templates/:templateId/edit"
               element={<EditTemplatePage />}
             />
             <Route
-              path="/core/configuration-templates/sources/:sourceId/templates/:templateId/duplicate"
+              path="/core/configuration-templates/:sourceId/templates/:templateId/duplicate"
               element={<DuplicateTemplatePage />}
             />
             <Route path="/not-found" element={<NotFound />} />

@@ -59,17 +59,17 @@ export function getTemplateSourceDetailPath(sourceId: string): string {
 }
 
 export function getCreateTemplatePath(sourceId: string): string {
-  return `/core/configuration-templates/sources/${encodeURIComponent(sourceId)}/templates/new`;
+  return `/core/configuration-templates/${encodeURIComponent(sourceId)}/templates/new`;
 }
 
 export function getEditTemplatePath(sourceId: string, templateId: string): string {
-  return `/core/configuration-templates/sources/${encodeURIComponent(
+  return `/core/configuration-templates/${encodeURIComponent(
     sourceId
   )}/templates/${encodeURIComponent(templateId)}/edit`;
 }
 
 export function getDuplicateTemplatePath(sourceId: string, templateId: string): string {
-  return `/core/configuration-templates/sources/${encodeURIComponent(
+  return `/core/configuration-templates/${encodeURIComponent(
     sourceId
   )}/templates/${encodeURIComponent(templateId)}/duplicate`;
 }
