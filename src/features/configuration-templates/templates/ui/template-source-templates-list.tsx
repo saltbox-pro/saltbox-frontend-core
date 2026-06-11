@@ -19,6 +19,7 @@ export type TemplateSourceTemplatesListProps = {
   items: TaskTemplatePublicSchema[];
   constrainHeight?: boolean;
   searchQuery?: string;
+  showEditTemplate?: boolean;
   canEditTemplates?: boolean;
   canDuplicateTemplates?: boolean;
 };
@@ -27,6 +28,7 @@ export function TemplateSourceTemplatesList({
   items,
   constrainHeight = true,
   searchQuery,
+  showEditTemplate = false,
   canEditTemplates = false,
   canDuplicateTemplates = false,
 }: TemplateSourceTemplatesListProps) {
@@ -79,25 +81,23 @@ export function TemplateSourceTemplatesList({
                   </Tag>
                 </Flex>
 
-                {(canEditTemplates || canDuplicateTemplates) && (
-                  <Flex align="center" gap={4}>
-                    {canEditTemplates && (
-                      <BaseActionButton
-                        icon={<EditOutlined />}
-                        title={t("configuration-templates.source.edit-template")}
-                        onClick={(event) => handleEditClick(event, template)}
-                      />
-                    )}
+                <Flex align="center" gap={4}>
+                  {showEditTemplate && (
+                    <BaseActionButton
+                      icon={<EditOutlined />}
+                      title={t("configuration-templates.source.edit-template")}
+                      disabled={!canEditTemplates}
+                      onClick={(event) => handleEditClick(event, template)}
+                    />
+                  )}
 
-                    {canDuplicateTemplates && (
-                      <BaseActionButton
-                        icon={<CopyOutlined />}
-                        title={t("configuration-templates.source.duplicate-template")}
-                        onClick={(event) => handleDuplicateClick(event, template)}
-                      />
-                    )}
-                  </Flex>
-                )}
+                  <BaseActionButton
+                    icon={<CopyOutlined />}
+                    title={t("configuration-templates.source.duplicate-template")}
+                    disabled={!canDuplicateTemplates}
+                    onClick={(event) => handleDuplicateClick(event, template)}
+                  />
+                </Flex>
               </Flex>
             }
           >

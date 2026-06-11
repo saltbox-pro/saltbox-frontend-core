@@ -26,6 +26,7 @@ export type TemplateSourceExtrasCollapseProps = {
     searchQuery?: string;
     onCreateTemplate?: () => void;
     canCreateTemplate?: boolean;
+    showEditTemplate?: boolean;
     canEditTemplates?: boolean;
     canDuplicateTemplates?: boolean;
   };
@@ -97,6 +98,7 @@ export function TemplateSourceExtrasCollapse({
               items={templates.items}
               constrainHeight={constrainHeight}
               searchQuery={templates.searchQuery}
+              showEditTemplate={templates.showEditTemplate}
               canEditTemplates={templates.canEditTemplates}
               canDuplicateTemplates={templates.canDuplicateTemplates}
             />

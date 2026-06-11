@@ -1,29 +1,18 @@
-import {
-  SourceState,
-  SourceType,
-  type TemplateSourcePublicSchema,
-} from "@saltbox/saltbox-core-api-client";
+import { SourceType, type TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 
-import {
-  getSourceActionContext,
-  isSourceOperationInProgress,
-} from "../../shared/helpers/source-action-progress";
+import { getSourceActionContext } from "../../shared/helpers/source-action-progress";
 import type { SourceActionState } from "../../shared/types/source-action";
 
 type ManageTemplatesSource = Pick<
   TemplateSourcePublicSchema,
-  "id" | "state" | "source_type" | "current_operation" | "last_error"
+  "id" | "source_type" | "current_operation"
 >;
 
-function isSourceReadable(source: Pick<TemplateSourcePublicSchema, "state">): boolean {
-  return source.state === SourceState.Plugged || source.state === SourceState.Active;
-}
-
 function isSourceFree(
-  source: Pick<TemplateSourcePublicSchema, "id" | "state" | "current_operation" | "last_error">,
+  source: Pick<TemplateSourcePublicSchema, "id" | "current_operation">,
   actionState?: SourceActionState
 ): boolean {
-  if (isSourceOperationInProgress(source)) {
+  if (source.current_operation !== null) {
     return false;
   }
 
@@ -37,27 +26,12 @@ function isSourceFree(
   return true;
 }
 
-/** Показывать ли блок действий над шаблонами источника. */
-export function canShowManageTemplatesControls(
-  source: Pick<TemplateSourcePublicSchema, "state">
+export function isEditableTemplateSource(
+  source: Pick<TemplateSourcePublicSchema, "source_type">
 ): boolean {
-  return isSourceReadable(source);
+  return source.source_type === SourceType.LocalBundle;
 }
 
-/**
- * Показывать ли кнопку создания шаблона — только для локальных (редактируемых)
- * источников в читаемом состоянии (доступность кнопки гейтится отдельно).
- */
-export function canShowCreateTemplateButton(
-  source: Pick<TemplateSourcePublicSchema, "state" | "source_type">
-): boolean {
-  return source.source_type === SourceType.LocalBundle && isSourceReadable(source);
-}
-
-/**
- * Создание и редактирование шаблонов доступны только для локальных (редактируемых)
- * источников, которые сейчас не заняты операцией.
- */
 export function canEditSourceTemplates(
   source: ManageTemplatesSource,
   actionState?: SourceActionState
@@ -66,24 +40,12 @@ export function canEditSourceTemplates(
     return false;
   }
 
-  if (!isSourceReadable(source)) {
-    return false;
-  }
-
   return isSourceFree(source, actionState);
 }
 
-/**
- * Дублирование доступно для шаблонов любого читаемого источника — целевой
- * локальный источник пользователь выбирает в модалке сохранения.
- */
 export function canDuplicateSourceTemplate(
   source: ManageTemplatesSource,
   actionState?: SourceActionState
 ): boolean {
-  if (!isSourceReadable(source)) {
-    return false;
-  }
-
   return isSourceFree(source, actionState);
 }

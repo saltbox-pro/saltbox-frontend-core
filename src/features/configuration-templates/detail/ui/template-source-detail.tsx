@@ -22,7 +22,7 @@ import { TemplateSourceTags } from "../../shared/ui/template-source-tags";
 import {
   canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  canShowCreateTemplateButton,
+  isEditableTemplateSource,
 } from "../../templates/helpers/can-manage-source-templates";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
@@ -55,7 +55,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const addingFile = isAddFileInProgress(getSourceActionContext(store, store.source.id));
 
   const sourceId = store.source.id;
-  const showCreateTemplate = canShowCreateTemplateButton(store.source);
+  const isLocalSource = isEditableTemplateSource(store.source);
   const canEditTemplates = canEditSourceTemplates(store.source, store);
   const canDuplicateTemplates = canDuplicateSourceTemplate(store.source, store);
 
@@ -90,10 +90,11 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
       <TemplateSourceExtrasCollapse
         templates={{
           items: store.source.templates ?? [],
-          onCreateTemplate: showCreateTemplate
+          onCreateTemplate: isLocalSource
             ? () => navigate(getCreateTemplatePath(sourceId))
             : undefined,
           canCreateTemplate: canEditTemplates,
+          showEditTemplate: isLocalSource,
           canEditTemplates,
           canDuplicateTemplates,
         }}

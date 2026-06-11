@@ -23,7 +23,7 @@ import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source
 import {
   canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  canShowCreateTemplateButton,
+  isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
 import {
   filterSourceFilesForSearch,
@@ -50,7 +50,7 @@ export const TemplateSourceListEntry = observer(
     const showAddFileButton = canShowAddSourceFileButton(source);
     const addingFile = isAddFileInProgress(getSourceActionContext(store, source.id));
 
-    const showCreateTemplate = canShowCreateTemplateButton(source);
+    const isLocalSource = isEditableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
     const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
 
@@ -99,10 +99,11 @@ export const TemplateSourceListEntry = observer(
               items: visibleTemplates,
               totalCount: source.templates?.length ?? 0,
               searchQuery,
-              onCreateTemplate: showCreateTemplate
+              onCreateTemplate: isLocalSource
                 ? () => navigate(getCreateTemplatePath(source.id))
                 : undefined,
               canCreateTemplate: canEditTemplates,
+              showEditTemplate: isLocalSource,
               canEditTemplates,
               canDuplicateTemplates,
             },
