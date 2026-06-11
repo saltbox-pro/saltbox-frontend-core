@@ -24,6 +24,9 @@ import PillarsPage from "./routes/pillars";
 import AggregatedPoliciesPage from "./routes/policies";
 import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
+import CreateTemplatePage from "./routes/task-template-editor.create";
+import DuplicateTemplatePage from "./routes/task-template-editor.duplicate";
+import EditTemplatePage from "./routes/task-template-editor.edit";
 import TaskTemplatesPage from "./routes/task-templates";
 import TaskPage from "./routes/task.$taskid";
 import AggregatedTasksPage from "./routes/tasks";
@@ -61,6 +64,18 @@ export default observer(function Root() {
             <Route
               path="/core/configuration-templates/:sourceId"
               element={<TemplateSourceDetailPage />}
+            />
+            <Route
+              path="/core/configuration-templates/sources/:sourceId/templates/new"
+              element={<CreateTemplatePage />}
+            />
+            <Route
+              path="/core/configuration-templates/sources/:sourceId/templates/:templateId/edit"
+              element={<EditTemplatePage />}
+            />
+            <Route
+              path="/core/configuration-templates/sources/:sourceId/templates/:templateId/duplicate"
+              element={<DuplicateTemplatePage />}
             />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

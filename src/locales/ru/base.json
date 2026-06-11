@@ -883,6 +883,33 @@
     "connect": "Подключить",
     "sync": "Синхронизировать"
   },
+  "task-template-editor": {
+    "create-title": "Создание шаблона задачи",
+    "edit-title": "Редактирование шаблона задачи",
+    "duplicate-title": "Дублирование шаблона задачи",
+    "file-name-label": "Имя файла",
+    "file-name-placeholder": "Имя файла, например reboot.sls",
+    "save-modal-title": "Сохранение шаблона",
+    "save-modal-target": "Шаблон будет сохранён в источник:",
+    "save-modal-target-fallback": "выбранный источник",
+    "save-modal-update-info": "Изменения будут сохранены в существующий шаблон:",
+    "tab-visual-editor": "Визуальный редактор формы",
+    "tab-full-editor": "Полный редактор шаблона",
+    "visual-editor-unavailable": "Визуальный редактор недоступен для этой схемы",
+    "visual-editor-use-full": "Отредактируйте схему через полный редактор шаблона",
+    "schema-parse-error": "Не удалось разобрать схему шаблона",
+    "form-preview-title": "Предпросмотр формы",
+    "preview-empty": "Схема пуста",
+    "preview-empty-description": "Добавьте поля в визуальном редакторе, чтобы увидеть форму",
+    "preview-render-error": "Не удалось отобразить форму по текущей схеме",
+    "validate": "Проверить",
+    "form-valid": "Форма заполнена корректно",
+    "preview-form-data": "Данные формы",
+    "form-data-preview-title": "Результирующие данные формы",
+    "save-success": "Шаблон сохранён",
+    "save-error": "Не удалось сохранить шаблон",
+    "load-error": "Не удалось загрузить шаблон"
+  },
   "configuration-templates": {
     "page-title": "Шаблоны конфигураций",
     "detail": {

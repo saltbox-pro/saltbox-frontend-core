@@ -883,6 +883,33 @@
     "connect": "Connect",
     "sync": "Sync"
   },
+  "task-template-editor": {
+    "create-title": "Create task template",
+    "edit-title": "Edit task template",
+    "duplicate-title": "Duplicate task template",
+    "file-name-label": "File name",
+    "file-name-placeholder": "File name, e.g. reboot.sls",
+    "save-modal-title": "Save template",
+    "save-modal-target": "The template will be saved to source:",
+    "save-modal-target-fallback": "the selected source",
+    "save-modal-update-info": "The changes will be saved to the existing template:",
+    "tab-visual-editor": "Visual form editor",
+    "tab-full-editor": "Full template editor",
+    "visual-editor-unavailable": "Visual editor is unavailable for this schema",
+    "visual-editor-use-full": "Edit the schema via the full template editor",
+    "schema-parse-error": "Failed to parse template schema",
+    "form-preview-title": "Form preview",
+    "preview-empty": "Schema is empty",
+    "preview-empty-description": "Add fields in the visual editor to see the form",
+    "preview-render-error": "Failed to render the form for the current schema",
+    "validate": "Validate",
+    "form-valid": "The form is valid",
+    "preview-form-data": "Form data",
+    "form-data-preview-title": "Resulting form data",
+    "save-success": "Template saved",
+    "save-error": "Failed to save template",
+    "load-error": "Failed to load template"
+  },
   "configuration-templates": {
     "page-title": "Configuration Templates",
     "detail": {
