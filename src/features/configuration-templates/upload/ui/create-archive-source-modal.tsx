@@ -19,8 +19,8 @@ import {
   validateArchiveSourceFile,
 } from "../helpers/validate-archive-source-file";
 
-import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
 import styles from "./create-archive-source-modal.module.css";
+import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
 import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
 const FORM_ID = "archive-source-form";

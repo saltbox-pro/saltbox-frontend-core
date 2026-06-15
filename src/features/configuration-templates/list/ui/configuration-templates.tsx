@@ -110,7 +110,8 @@ export const ConfigurationTemplates = observer(() => {
     isSourcesListEmpty &&
     !hasSearchQuery &&
     !hasPendingSearch;
-  const isListLoading = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
+  const isRefreshingList = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
+  const isListAreaLoading = isRefreshingList || store.isCheckingExternal;
 
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
@@ -123,7 +124,7 @@ export const ConfigurationTemplates = observer(() => {
 
           <Space>
             <Button
-              icon={<SyncOutlined spin={isListLoading} />}
+              icon={<SyncOutlined spin={isRefreshingList} />}
               onClick={handleLoadSources}
               disabled={store.isLoading || store.isCheckingExternal}
               title={t("configuration-templates.actions.refresh")}
@@ -152,23 +153,23 @@ export const ConfigurationTemplates = observer(() => {
           />
         )}
 
-        <Spin spinning={isListLoading}>
-          <Flex vertical gap="large">
-            {showGitlabSourcesAlert && (
-              <Alert
-                type="info"
-                showIcon
-                message={t("configuration-templates.sync-gitlab-sources-not-loaded.message")}
-                action={
-                  <SyncGitlabSourcesButton
-                    isSyncing={store.isCheckingExternal}
-                    onSync={handleSyncGitlabSources}
-                    size="small"
-                  />
-                }
-              />
-            )}
+        <Flex vertical gap="large">
+          {showGitlabSourcesAlert && (
+            <Alert
+              type="info"
+              showIcon
+              message={t("configuration-templates.sync-gitlab-sources-not-loaded.message")}
+              action={
+                <SyncGitlabSourcesButton
+                  isSyncing={store.isCheckingExternal}
+                  onSync={handleSyncGitlabSources}
+                  size="small"
+                />
+              }
+            />
+          )}
 
+          <Spin spinning={isListAreaLoading}>
             {filteredSources.length === 0 ? (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -183,17 +184,19 @@ export const ConfigurationTemplates = observer(() => {
                 }
               />
             ) : (
-              filteredSources.map((source) => (
-                <TemplateSourceListEntry
-                  key={source.id}
-                  source={source}
-                  store={store}
-                  searchQuery={searchQuery}
-                />
-              ))
+              <Flex vertical gap="large">
+                {filteredSources.map((source) => (
+                  <TemplateSourceListEntry
+                    key={source.id}
+                    source={source}
+                    store={store}
+                    searchQuery={searchQuery}
+                  />
+                ))}
+              </Flex>
             )}
-          </Flex>
-        </Spin>
+          </Spin>
+        </Flex>
       </Space>
 
       <CreateLocalSourceModal
