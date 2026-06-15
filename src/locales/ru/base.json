@@ -1028,7 +1028,9 @@
       "status": {
         "active": "Активен",
         "not-synced": "Не синхронизирован",
-        "syncing": "Синхронизация"
+        "connecting": "Подключение",
+        "syncing": "Синхронизация",
+        "deleting": "Удаление"
       },
       "action": {
         "plug-error": "Не удалось подключить источник",
@@ -1038,6 +1040,19 @@
         "delete-error": "Не удалось удалить источник",
         "delete-success": "Источник \"{{name}}\" успешно удалён",
         "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует"
+      },
+      "broken-operation": "Ошибка при {{operation}}",
+      "operation-broken": {
+        "discover": "обнаружении",
+        "prepare_templates": "подготовке шаблонов",
+        "update_template_content": "обновлении шаблона",
+        "delete_template": "удалении шаблона",
+        "prepare_files": "подготовке файлов",
+        "add_user_file": "добавлении файла",
+        "sync": "синхронизации",
+        "remove": "удалении",
+        "add_template_from_raw": "создании шаблона",
+        "unknown": "выполнении операции"
       },
       "operation": {
         "discover": "Обнаружение…",
@@ -1074,7 +1089,7 @@
       "files-delete-not-found": "Файл «{{path}}» уже удалён или не существует",
       "files-delete-error": "Не удалось удалить файл",
       "delete-confirm-title": "Удаление источника",
-      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?"
+      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?\n\nИсточник будет удалён из системы. Связанные шаблоны и файлы станут недоступны. Действие необратимо"
     }
   },
   "aggregated-tasks": {

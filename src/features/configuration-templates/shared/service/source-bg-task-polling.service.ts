@@ -1,19 +1,18 @@
 import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 
-import { BgTaskFailedError } from "../errors/bg-task-failed.error";
-import { BgTaskPollAbortedError } from "../errors/bg-task-poll-aborted.error";
 import {
   resolveSourceBgTaskOutcome,
   shouldTrackSourceBgTask,
   type SourceBgTaskOutcome,
 } from "../helpers/source-bg-task";
+import type { BgTaskPollResult } from "../types/bg-task-poll-result";
 
 import { isBgTaskFailed, pollBgTaskResult } from "./poll-bg-task-result.service";
 
 type InFlightPoll = {
   taskId: string;
-  promise: Promise<void>;
+  promise: Promise<BgTaskPollResult>;
 };
 
 export type SourceBgTaskPollingCallbacks = {
@@ -63,14 +62,14 @@ export class SourceBgTaskPollingService {
     taskId: string,
     outcome: SourceBgTaskOutcome,
     wait = false
-  ): Promise<void> => {
+  ): Promise<BgTaskPollResult> => {
     const inFlight = this.inFlightPolls.get(sourceId);
     if (inFlight?.taskId === taskId) {
       return inFlight.promise;
     }
 
     const generation = this.bumpPollGeneration(sourceId);
-    const pollPromise = this.pollBgTaskUntilSettled(sourceId, taskId, outcome, generation, wait);
+    const pollPromise = this.pollBgTaskUntilSettled(sourceId, taskId, outcome, generation);
 
     this.inFlightPolls.set(sourceId, { taskId, promise: pollPromise });
 
@@ -84,7 +83,8 @@ export class SourceBgTaskPollingService {
     if (wait) return pollPromise;
 
     pollPromise.catch((error) => {
-      if (isGlobalServerError(error) || error instanceof BgTaskPollAbortedError) return;
+      if (isGlobalServerError(error)) return;
+
       console.error("Failed to poll template source background task:", error);
     });
 
@@ -100,37 +100,31 @@ export class SourceBgTaskPollingService {
   private isPollCancelled = (sourceId: string, generation: number): boolean =>
     this.pollGeneration.get(sourceId) !== generation;
 
-  private ensureNotCancelled = (sourceId: string, generation: number, wait: boolean): void => {
-    if (!wait || !this.isPollCancelled(sourceId, generation)) return;
-
-    throw new BgTaskPollAbortedError();
-  };
-
   private async pollBgTaskUntilSettled(
     sourceId: string,
     taskId: string,
     outcome: SourceBgTaskOutcome,
-    generation: number,
-    wait: boolean
-  ): Promise<void> {
-    this.ensureNotCancelled(sourceId, generation, wait);
-    if (!this.callbacks.isSourcePresent(sourceId)) return;
+    generation: number
+  ): Promise<BgTaskPollResult> {
+    if (this.isPollCancelled(sourceId, generation)) return "aborted";
+    if (!this.callbacks.isSourcePresent(sourceId)) return "aborted";
 
     const result = await pollBgTaskResult(taskId);
 
-    this.ensureNotCancelled(sourceId, generation, wait);
-    if (!this.callbacks.isSourcePresent(sourceId)) return;
+    if (this.isPollCancelled(sourceId, generation)) return "aborted";
+    if (!this.callbacks.isSourcePresent(sourceId)) return "aborted";
 
     if (isBgTaskFailed(result)) {
       await this.callbacks.reloadSource(sourceId);
-      throw new BgTaskFailedError(result.error);
+      return "failed";
     }
 
     if (outcome === "remove") {
       this.callbacks.removeSource(sourceId);
-      return;
+      return "ok";
     }
 
     await this.callbacks.reloadSource(sourceId);
+    return "ok";
   }
 }

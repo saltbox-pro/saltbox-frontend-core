@@ -69,6 +69,8 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
           <Flex align="flex-start" justify="space-between" gap="middle" wrap>
             <TemplateSourceTags
               sourceType={store.source.source_type}
+              state={store.source.state}
+              currentOperation={store.source.current_operation}
               isConnected={view.isConnected}
               showActiveStatus={view.presentation.showActiveStatus}
             />

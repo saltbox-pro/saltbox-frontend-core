@@ -30,10 +30,34 @@ export const SOURCE_OPERATION_LABEL_KEYS: Record<SourceOperation, string> = {
   [SourceOperation.Remove]: "configuration-templates.source.operation.remove",
 };
 
+export const SOURCE_OPERATION_BROKEN_CONTEXT_KEYS: Record<SourceOperation, string> = {
+  [SourceOperation.Discover]: "configuration-templates.source.operation-broken.discover",
+  [SourceOperation.PrepareTemplates]:
+    "configuration-templates.source.operation-broken.prepare_templates",
+  [SourceOperation.UpdateTemplateContent]:
+    "configuration-templates.source.operation-broken.update_template_content",
+  [SourceOperation.AddTemplateFromRaw]:
+    "configuration-templates.source.operation-broken.add_template_from_raw",
+  [SourceOperation.DeleteTemplate]:
+    "configuration-templates.source.operation-broken.delete_template",
+  [SourceOperation.PrepareFiles]: "configuration-templates.source.operation-broken.prepare_files",
+  [SourceOperation.AddUserFile]: "configuration-templates.source.operation-broken.add_user_file",
+  [SourceOperation.Sync]: "configuration-templates.source.operation-broken.sync",
+  [SourceOperation.Remove]: "configuration-templates.source.operation-broken.remove",
+};
+
 export function getSourceOperationLabelKey(operation: SourceOperation | null): string | undefined {
   if (operation === null) return undefined;
 
   return SOURCE_OPERATION_LABEL_KEYS[operation];
+}
+
+export function getSourceOperationBrokenContextKey(operation: SourceOperation | null): string {
+  if (operation === null) {
+    return "configuration-templates.source.operation-broken.unknown";
+  }
+
+  return SOURCE_OPERATION_BROKEN_CONTEXT_KEYS[operation];
 }
 
 export const PLUG_OPTIMISTIC_OPERATION = SourceOperation.PrepareTemplates;

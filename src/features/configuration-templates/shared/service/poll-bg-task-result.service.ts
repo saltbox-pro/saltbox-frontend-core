@@ -37,11 +37,11 @@ const sleep = (ms: number, signal?: AbortSignal): Promise<void> => {
   });
 };
 
-export const isBgTaskSettled = (result: TaskiqTaskResult): boolean =>
-  result.progress === TaskState.Success || result.progress === TaskState.Failure;
-
 export const isBgTaskFailed = (result: TaskiqTaskResult): boolean =>
   result.is_err || result.progress === TaskState.Failure;
+
+export const isBgTaskSettled = (result: TaskiqTaskResult): boolean =>
+  isBgTaskFailed(result) || result.progress === TaskState.Success;
 
 const readBgTaskResult = async (
   taskId: string,

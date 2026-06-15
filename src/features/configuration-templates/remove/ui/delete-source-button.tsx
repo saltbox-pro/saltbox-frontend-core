@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useCallback, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
   isDeleteInProgress,
@@ -35,22 +36,29 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
     try {
       const result = await actions.deleteSource(source.id);
 
+      if (result === "failed") {
+        message.error(t("configuration-templates.source.action.delete-error"));
+        return;
+      }
+
       if (result === "not_found") {
         message.warning(
           t("configuration-templates.source.action.delete-not-found", {
             name: source.name,
           })
         );
-      } else {
-        message.success(
-          t("configuration-templates.source.action.delete-success", {
-            name: source.name,
-          })
-        );
+        return;
       }
+
+      message.success(
+        t("configuration-templates.source.action.delete-success", {
+          name: source.name,
+        })
+      );
     } catch (error) {
+      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
+
       console.error(error);
-      if (isGlobalServerError(error)) return;
       message.error(t("configuration-templates.source.action.delete-error"));
     }
   }, [actions, source.id, source.name, t]);
@@ -72,7 +80,7 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
         loading={deleteLoading}
         onClick={handleClick}
       >
-        {t("common.delete")}
+        {deleteLoading ? t("configuration-templates.source.status.deleting") : t("common.delete")}
       </Button>
     </>
   );

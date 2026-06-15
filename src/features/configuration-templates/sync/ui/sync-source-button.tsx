@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
@@ -45,8 +46,14 @@ export const SyncSourceButton = observer(function SyncSourceButton({
         })
       );
     } catch (error) {
-      console.error(error);
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
+
+      if (isBgTaskFailedError(error)) {
+        message.error(t("configuration-templates.source.action.sync-error"));
+        return;
+      }
+
+      console.error(error);
       message.error(t("configuration-templates.source.action.sync-error"));
     }
   }, [actions, source.id, source.name, t]);

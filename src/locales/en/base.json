@@ -1028,7 +1028,9 @@
       "status": {
         "active": "Active",
         "not-synced": "Not synced",
-        "syncing": "Syncing"
+        "connecting": "Connecting",
+        "syncing": "Syncing",
+        "deleting": "Deleting"
       },
       "action": {
         "plug-error": "Failed to connect source",
@@ -1038,6 +1040,19 @@
         "delete-error": "Failed to delete source",
         "delete-success": "Source \"{{name}}\" has been deleted",
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
+      },
+      "broken-operation": "Error during {{operation}}",
+      "operation-broken": {
+        "discover": "discovery",
+        "prepare_templates": "template preparation",
+        "update_template_content": "template update",
+        "delete_template": "template deletion",
+        "prepare_files": "file preparation",
+        "add_user_file": "file upload",
+        "sync": "sync",
+        "remove": "removal",
+        "add_template_from_raw": "template creation",
+        "unknown": "operation"
       },
       "operation": {
         "discover": "Discovering…",
@@ -1074,7 +1089,7 @@
       "files-delete-not-found": "File \"{{path}}\" was already deleted or does not exist",
       "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
-      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?"
+      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?\n\nThe source will be removed from the system. Related templates and files will become unavailable. This action cannot be undone"
     }
   },
   "aggregated-tasks": {

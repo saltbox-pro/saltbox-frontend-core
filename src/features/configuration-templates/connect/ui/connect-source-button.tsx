@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
@@ -44,8 +45,14 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
         })
       );
     } catch (error) {
-      console.error(error);
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
+
+      if (isBgTaskFailedError(error)) {
+        message.error(t("configuration-templates.source.action.plug-error"));
+        return;
+      }
+
+      console.error(error);
       message.error(t("configuration-templates.source.action.plug-error"));
     }
   }, [actions, source.id, source.name, t]);
@@ -61,7 +68,7 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
       loading={isLoading}
       onClick={handleConnect}
     >
-      {t("common.connect")}
+      {isLoading ? t("configuration-templates.source.status.connecting") : t("common.connect")}
     </Button>
   );
 });
