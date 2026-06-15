@@ -1013,9 +1013,10 @@
       "file": "Archive",
       "file-button": "Choose file",
       "file-drag-title": "Click or drag file to this area",
-      "file-drag-hint": "Supported: {{formats}}",
-      "file-hint": "Supported: {{formats}}",
+      "file-drag-hint": "Supported: {{formats}}. Maximum size: {{maxSizeGb}} GB",
       "file-required": "Select an archive file",
+      "file-unsupported-format": "Format \"{{extension}}\" is not supported. Allowed formats: {{formats}}",
+      "file-too-large": "File size exceeds {{maxSizeGb}} GB",
       "create-success": "Source \"{{name}}\" has been added",
       "create-error": "Failed to create source"
     },

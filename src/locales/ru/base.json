@@ -1013,9 +1013,11 @@
       "file": "Архив",
       "file-button": "Выбрать файл",
       "file-drag-title": "Нажмите или перетащите файл в эту область",
-      "file-drag-hint": "Поддерживаются: {{formats}}",
-      "file-hint": "Поддерживаются: {{formats}}",
+      "file-drag-hint": "Поддерживаются: {{formats}}. Максимальный размер: {{maxSizeGb}} ГБ",
+      "file-hint": "Поддерживаются: {{formats}}. Максимальный размер: {{maxSizeGb}} ГБ",
       "file-required": "Выберите архив",
+      "file-unsupported-format": "Формат \"{{extension}}\" не поддерживается. Допустимые форматы: {{formats}}",
+      "file-too-large": "Размер файла превышает {{maxSizeGb}} ГБ",
       "create-success": "Источник \"{{name}}\" успешно добавлен",
       "create-error": "Не удалось создать источник"
     },
