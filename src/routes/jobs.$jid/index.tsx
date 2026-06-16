@@ -25,6 +25,7 @@ import {
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import { runWithAcceptedMastersCheck } from "saltbox-core/shared/components/job-modal/run-with-accepted-masters-check";
 import {
   DefaultJobReturnTable,
   exportToCSV,
@@ -33,7 +34,7 @@ import {
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
-import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore, mastersStore } from "saltbox-core/store";
 
 import { ErrorsPopover } from "./-components/errors-popover";
 import styles from "./index.module.css";
@@ -179,20 +180,22 @@ const JobPage = observer(() => {
     if (!job?.fun) {
       return;
     }
-    setRepeatBaseline({
-      fun: job.fun,
-      arg: job.arg ?? undefined,
-      kwarg: job.kwarg ?? undefined,
+    runWithAcceptedMastersCheck(t, () => {
+      setRepeatBaseline({
+        fun: job.fun,
+        arg: job.arg ?? undefined,
+        kwarg: job.kwarg ?? undefined,
+      });
+      setRepeatTargeting({
+        target: jobStore.jobTargets ?? "*",
+        targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
+        defaultMaster: job.salt_master,
+        ttlSeconds: job.ttl,
+      });
+      setRepeatConfigureFun(job.fun);
+      setRepeatPickerOpen(true);
     });
-    setRepeatTargeting({
-      target: jobStore.jobTargets ?? "*",
-      targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
-      defaultMaster: job.salt_master,
-      ttlSeconds: job.ttl,
-    });
-    setRepeatConfigureFun(job.fun);
-    setRepeatPickerOpen(true);
-  }, [jobStore.job, jobStore.jobTargets]);
+  }, [jobStore.job, jobStore.jobTargets, t]);
 
   const handleRepeatConfigureClose = useCallback(() => {
     setRepeatBaseline(null);
@@ -312,6 +315,7 @@ const JobPage = observer(() => {
               title={t("jobs.repeat-job")}
               onClick={openRepeatConfigure}
               disabled={!jobStore.job}
+              loading={mastersStore.isLoading}
             />
 
             <JobModalShell

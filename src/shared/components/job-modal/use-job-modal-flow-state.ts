@@ -1,7 +1,9 @@
 import { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { JobModalTargeting } from "./job-modal-shell";
+import { runWithAcceptedMastersCheck } from "./run-with-accepted-masters-check";
 
 export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
   target: "*",
@@ -10,21 +12,26 @@ export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
 });
 
 export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
+  const { t } = useTranslation();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [configureFunction, setConfigureFunction] = useState<string | null>(null);
   const [targeting, setTargeting] = useState(initialTargeting ?? createDefaultJobModalTargeting());
 
   const openFunctionPicker = useCallback(() => {
-    setPickerOpen(true);
-  }, []);
+    runWithAcceptedMastersCheck(t, () => {
+      setPickerOpen(true);
+    });
+  }, [t]);
 
   const openConfigureWithFunction = useCallback(
     (functionName: string, nextTargeting: JobModalTargeting) => {
-      setTargeting(nextTargeting);
-      setConfigureFunction(functionName);
-      setPickerOpen(true);
+      runWithAcceptedMastersCheck(t, () => {
+        setTargeting(nextTargeting);
+        setConfigureFunction(functionName);
+        setPickerOpen(true);
+      });
     },
-    []
+    [t]
   );
 
   return {
