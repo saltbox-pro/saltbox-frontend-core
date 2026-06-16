@@ -8,7 +8,7 @@ import {
   DashboardFieldOption,
   DashboardPreset,
   getPresetOptionsForFieldType,
-} from "saltbox-core/store";
+} from "../model/dashboard-model";
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
 

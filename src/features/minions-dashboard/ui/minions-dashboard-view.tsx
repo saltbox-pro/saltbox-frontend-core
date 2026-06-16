@@ -1,13 +1,16 @@
 import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
 import { observer } from "mobx-react-lite";
+import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { dashboardStore, DashboardPreset, MinionFilterStore } from "saltbox-core/store";
+import { MinionFilterStore } from "saltbox-core/store";
 
-import { MinionDashboardCard } from "./minion-dashboard-card";
+import { DashboardPreset } from "../model/dashboard-model";
+import { dashboardStore } from "../model/dashboard-store";
+
+import { MinionDashboardCard } from "./components/minion-dashboard-card";
 import styles from "./minions-dashboard-view.module.css";
-import { MinionsQueryBuilder } from "./minions-query-builder";
 
 const PRESET_WRAPPER_CLASSNAMES: Partial<Record<DashboardPreset, string>> = {
   donut: styles.wideCard,
@@ -19,7 +22,7 @@ export const MinionsDashboardView = observer(
   (props: {
     slug: string;
     filterStore: MinionFilterStore;
-    showFilter: boolean;
+    filterControls?: ReactNode;
     onEditCard: (cardId: string) => void;
     onAddCard: () => void;
   }) => {
@@ -27,9 +30,7 @@ export const MinionsDashboardView = observer(
 
     return (
       <Flex gap={12} vertical>
-        {props.showFilter && (
-          <MinionsQueryBuilder slug={props.slug} filterStore={props.filterStore} />
-        )}
+        {props.filterControls}
 
         {dashboardStore.cards.length === 0 ? (
           <div className={styles.emptyState}>

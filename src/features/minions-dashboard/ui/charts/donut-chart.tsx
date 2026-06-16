@@ -8,10 +8,10 @@ import {
   Tooltip as ChartTooltip,
 } from "recharts";
 
-import { ChartDatum, CHART_COLORS } from "../dashboard-chart-data";
+import { ChartDatum, CHART_COLORS } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
-import styles from "./charts.module.css";
+import styles from "./donut-chart.module.css";
 
 const renderLegendText: LegendProps["formatter"] = (value, entry) => {
   const count = (entry.payload as unknown as ChartDatum | undefined)?.count;

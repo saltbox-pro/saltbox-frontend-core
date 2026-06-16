@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 
-import { ChartDatum } from "../dashboard-chart-data";
+import { ChartDatum } from "../../model/dashboard-chart-data";
 
-import styles from "./charts.module.css";
+import styles from "./chart-tooltip-content.module.css";
 
 type ChartTooltipContentProps = {
   active?: boolean;

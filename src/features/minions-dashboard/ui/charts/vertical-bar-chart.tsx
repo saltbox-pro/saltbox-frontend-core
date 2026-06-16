@@ -8,7 +8,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { ChartDatum } from "../dashboard-chart-data";
+import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
 

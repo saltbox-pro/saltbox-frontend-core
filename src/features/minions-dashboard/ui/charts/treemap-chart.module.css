@@ -1,0 +1,10 @@
+.treemapOtherNode {
+  opacity: 0.72;
+}
+
+.treemapLabel {
+  pointer-events: none;
+  fill: rgba(16, 24, 40, 0.86);
+  font-size: 12px;
+  font-weight: 500;
+}

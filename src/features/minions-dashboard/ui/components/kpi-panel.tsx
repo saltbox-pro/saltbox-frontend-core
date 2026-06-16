@@ -2,9 +2,9 @@ import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { Flex, Statistic } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { valueToText } from "../dashboard-chart-data";
+import { valueToText } from "../../model/dashboard-chart-data";
 
-import styles from "./charts.module.css";
+import styles from "./kpi-panel.module.css";
 
 type KpiPanelProps = {
   values: GrainValue[];

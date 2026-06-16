@@ -7,9 +7,9 @@ import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
-import { valueToText } from "../dashboard-chart-data";
+import { valueToText } from "../../model/dashboard-chart-data";
 
-import styles from "./charts.module.css";
+import styles from "./grain-table.module.css";
 
 const columnHelper = createColumnHelper<GrainValue>();
 

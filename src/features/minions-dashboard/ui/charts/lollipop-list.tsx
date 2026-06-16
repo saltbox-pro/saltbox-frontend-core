@@ -1,8 +1,8 @@
 import { Flex } from "antd";
 
-import { ChartDatum } from "../dashboard-chart-data";
+import { ChartDatum } from "../../model/dashboard-chart-data";
 
-import styles from "./charts.module.css";
+import styles from "./lollipop-list.module.css";
 
 type LollipopListProps = {
   data: ChartDatum[];

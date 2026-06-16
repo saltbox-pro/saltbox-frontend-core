@@ -1,9 +1,9 @@
 import { ResponsiveContainer, Tooltip as ChartTooltip, Treemap as RechartsTreemap } from "recharts";
 
-import { ChartDatum, CHART_COLORS } from "../dashboard-chart-data";
+import { ChartDatum, CHART_COLORS } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
-import styles from "./charts.module.css";
+import styles from "./treemap-chart.module.css";
 
 type TreemapContentProps = {
   x?: number;
@@ -58,12 +58,12 @@ type TreemapChartProps = {
 };
 
 export const TreemapChart = ({ data }: TreemapChartProps) => (
-  <ResponsiveContainer width="100%" height="100%" minHeight={260}>
+  <ResponsiveContainer>
     <RechartsTreemap
       data={data}
       dataKey="count"
       nameKey="name"
-      aspectRatio={4 / 3}
+      content={<TreemapContent />}
       isAnimationActive={false}
     >
       <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />

@@ -24,22 +24,25 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import {
+  dashboardStore,
+  getDashboardFieldOptions,
+  MinionsDashboardAddBlockModal,
+  MinionsDashboardView,
+} from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
   appStore,
   CollectionStore,
   collectionsTreeStore,
-  dashboardStore,
-  getDashboardFieldOptions,
   i18nStore,
   MinionFilterStore,
   TasksFilterStore,
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
-import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
-import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
+import { MinionsQueryBuilder } from "./-components/minions-query-builder";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
 
@@ -233,7 +236,11 @@ const MinionsPage = observer(() => {
             <MinionsDashboardView
               slug={slug}
               filterStore={minionFilterStore}
-              showFilter={shownMinionsFilters}
+              filterControls={
+                shownMinionsFilters && (
+                  <MinionsQueryBuilder slug={slug} filterStore={minionFilterStore} />
+                )
+              }
               onEditCard={editDashboardCard}
               onAddCard={addDashboardCard}
             />

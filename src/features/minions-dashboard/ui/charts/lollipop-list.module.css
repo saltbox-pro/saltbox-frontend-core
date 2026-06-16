@@ -1,20 +1,3 @@
-.grainValueCol {
-  padding-right: 0.5rem;
-}
-
-.kpiBody {
-  height: 100%;
-  padding: 12px;
-}
-
-.kpiBody :global(.ant-statistic-title) {
-  color: var(--ant-color-text-secondary, #667085);
-}
-
-.kpiBody :global(.ant-statistic-content) {
-  color: var(--ant-color-text, #101828);
-}
-
 .lollipopList {
   height: 100%;
   overflow: auto;
@@ -69,46 +52,4 @@
 .lollipopCount {
   color: var(--ant-color-text, #101828);
   font-weight: 600;
-}
-
-.treemapOtherNode {
-  opacity: 0.72;
-}
-
-.treemapLabel {
-  pointer-events: none;
-  fill: rgba(16, 24, 40, 0.86);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.donutLegendLabel {
-  display: inline-block;
-  max-width: 240px;
-  overflow: hidden;
-  color: var(--ant-color-text-secondary, #344054);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.chartTooltip {
-  max-width: 280px;
-  padding: 10px;
-  border: 1px solid var(--ant-color-border, #e4e7ec);
-  border-radius: 6px;
-  background: var(--ant-color-bg-container, #fff);
-  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
-  color: var(--ant-color-text, #101828);
-}
-
-.chartTooltipTitle {
-  font-weight: 600;
-}
-
-.chartTooltipCount {
-  margin-top: 2px;
-  color: var(--ant-color-text-secondary, #475467);
-  font-size: 12px;
 }

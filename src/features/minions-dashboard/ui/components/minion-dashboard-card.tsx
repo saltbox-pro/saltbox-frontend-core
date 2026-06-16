@@ -13,22 +13,9 @@ import { ComponentProps, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { copyText } from "saltbox-core/shared/utils/copy-text";
-import {
-  DashboardCardConfig,
-  DashboardCardStore,
-  dashboardStore,
-  MinionFilterStore,
-} from "saltbox-core/store";
+import { MinionFilterStore } from "saltbox-core/store";
 
-import {
-  DonutChart,
-  GrainTable,
-  HorizontalBarChart,
-  KpiPanel,
-  LollipopList,
-  TreemapChart,
-  VerticalBarChart,
-} from "./charts";
+import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
   ChartDatum,
@@ -36,7 +23,19 @@ import {
   toChartData,
   toHistogramData,
   valueToText,
-} from "./dashboard-chart-data";
+} from "../../model/dashboard-chart-data";
+import { DashboardCardConfig } from "../../model/dashboard-model";
+import { dashboardStore } from "../../model/dashboard-store";
+import {
+  DonutChart,
+  HorizontalBarChart,
+  LollipopList,
+  TreemapChart,
+  VerticalBarChart,
+} from "../charts";
+
+import { GrainTable } from "./grain-table";
+import { KpiPanel } from "./kpi-panel";
 import styles from "./minion-dashboard-card.module.css";
 
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];

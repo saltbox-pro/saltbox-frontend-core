@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { ChartDatum, truncateAxisLabel } from "../dashboard-chart-data";
+import { ChartDatum, truncateAxisLabel } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
 
