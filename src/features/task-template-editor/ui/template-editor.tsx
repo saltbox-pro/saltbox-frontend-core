@@ -52,7 +52,6 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
           tabBarExtra={
             <Button
               type="primary"
-              size="small"
               icon={<SaveOutlined />}
               disabled={store.hasParseError}
               onClick={handleSaveClick}
