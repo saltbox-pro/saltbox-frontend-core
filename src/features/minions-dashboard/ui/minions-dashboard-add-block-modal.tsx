@@ -4,6 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
+  DEFAULT_PREVIEW_SWATCH_COUNT,
+  PRESET_PREVIEW_SWATCH_COUNT,
+} from "../constants/dashboard-preview";
+import {
   DashboardCardConfig,
   DashboardFieldOption,
   DashboardPreset,
@@ -107,9 +111,9 @@ export const MinionsDashboardAddBlockModal = ({
           {fieldOption ? (
             <div className={styles.presetsGrid}>
               {presetOptions.map((preset) => (
-                <button
+                <Button
                   key={preset.value}
-                  type="button"
+                  type="text"
                   className={`${styles.presetCard} ${selectedPreset === preset.value ? styles.selected : ""}`}
                   onClick={() => setSelectedPreset(preset.value)}
                 >
@@ -117,18 +121,18 @@ export const MinionsDashboardAddBlockModal = ({
                     className={`${styles.presetPreview} ${styles[`preview-${preset.value}`]}`}
                     aria-hidden
                   >
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
-                    <span />
+                    {Array.from({
+                      length:
+                        PRESET_PREVIEW_SWATCH_COUNT[preset.value] ?? DEFAULT_PREVIEW_SWATCH_COUNT,
+                    }).map((_, index) => (
+                      <span key={index} />
+                    ))}
                   </span>
                   <span className={styles.presetContent}>
                     <span className={styles.presetName}>{t(preset.labelKey)}</span>
                     <span className={styles.presetDescription}>{t(preset.descriptionKey)}</span>
                   </span>
-                </button>
+                </Button>
               ))}
             </div>
           ) : (

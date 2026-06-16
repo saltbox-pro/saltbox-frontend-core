@@ -5,16 +5,20 @@
 }
 
 .presetCard {
-  display: grid;
+  display: grid !important;
+  height: auto !important;
+  align-items: stretch !important;
+  justify-content: normal !important;
+  white-space: normal !important;
   min-height: 142px;
   cursor: pointer;
   grid-template-rows: 70px 1fr;
   gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--ant-color-border, #d9d9d9);
-  border-radius: 8px;
-  background: var(--ant-color-bg-container, #fff);
-  text-align: left;
+  padding: 12px !important;
+  border: 1px solid var(--ant-color-border, #d9d9d9) !important;
+  border-radius: 8px !important;
+  background: var(--ant-color-bg-container, #fff) !important;
+  text-align: left !important;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -22,15 +26,15 @@
 }
 
 .presetCard:hover {
-  border-color: var(--ant-color-primary, #1677ff);
-  box-shadow: 0 6px 18px rgb(22 119 255 / 12%);
+  border-color: var(--ant-color-primary, #1677ff) !important;
+  box-shadow: 0 6px 18px rgb(22 119 255 / 12%) !important;
   transform: translateY(-1px);
 }
 
 .selected {
-  border-color: var(--ant-color-primary, #1677ff);
-  background: linear-gradient(180deg, #f5faff 0%, #fff 100%);
-  box-shadow: 0 0 0 2px rgb(22 119 255 / 10%);
+  border-color: var(--ant-color-primary, #1677ff) !important;
+  background: linear-gradient(180deg, #f5faff 0%, #fff 100%) !important;
+  box-shadow: 0 0 0 2px rgb(22 119 255 / 10%) !important;
 }
 
 .presetPreview {
@@ -81,11 +85,6 @@
   border-bottom-color: #faad14;
   border-radius: 50%;
   background: transparent;
-}
-
-.preview-donut span:not(:first-child),
-.preview-boolean-donut span:not(:first-child) {
-  display: none;
 }
 
 .preview-horizontal-bar,

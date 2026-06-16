@@ -2,15 +2,21 @@
   --dashboard-card-height: 500px;
   --dashboard-grid-gap: 8px;
 
+  flex: 1;
   display: grid;
   position: relative;
   grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
   grid-auto-flow: dense;
   gap: var(--dashboard-grid-gap);
+  margin: 0 0 20px;
 }
 
 .dashboardCardWrapper {
   height: var(--dashboard-card-height);
+}
+
+.hiddenCard {
+  display: none;
 }
 
 .wideCard {

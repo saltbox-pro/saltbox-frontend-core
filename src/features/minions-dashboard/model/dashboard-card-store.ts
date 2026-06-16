@@ -18,7 +18,9 @@ export class DashboardCardStore {
 
   loadGrain = (fieldSource: string, slug: string, mongoDBQuery: object | undefined) => {
     const requestKey = JSON.stringify({ fieldSource, slug, mongoDBQuery });
-    if (this.lastRequestKey === requestKey && !this.hasError) return;
+    if (this.lastRequestKey === requestKey && !this.hasError) {
+      return;
+    }
 
     this.lastRequestKey = requestKey;
     this.hasError = false;
@@ -33,14 +35,18 @@ export class DashboardCardStore {
         },
       })
       .then((response) => {
-        if (this.lastRequestKey !== requestKey) return;
+        if (this.lastRequestKey !== requestKey) {
+          return;
+        }
         runInAction(() => {
           this.isFilterLoading = false;
           this.grainValues = response.data;
         });
       })
       .catch(() => {
-        if (this.lastRequestKey !== requestKey) return;
+        if (this.lastRequestKey !== requestKey) {
+          return;
+        }
         runInAction(() => {
           this.isFilterLoading = false;
           this.grainValues = [];

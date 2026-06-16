@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { copyText } from "saltbox-core/shared/utils/copy-text";
 import { MinionFilterStore } from "saltbox-core/store";
 
+import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -69,15 +70,16 @@ export const MinionDashboardCard = observer(
     useEffect(
       () => () => {
         if (isFullScreenRef.current) {
-          dashboardStore.setCardFullScreen(false);
+          dashboardStore.setCardFullScreen(null);
         }
       },
       []
     );
 
     const toggleFullScreen = () => {
-      setIsFullScreen(!isFullScreen);
-      dashboardStore.setCardFullScreen(!isFullScreen);
+      const nextIsFullScreen = !isFullScreen;
+      setIsFullScreen(nextIsFullScreen);
+      dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
     };
 
     const handleCopyData = async () => {
@@ -157,13 +159,21 @@ export const MinionDashboardCard = observer(
 
       switch (card.preset) {
         case "donut":
-          return <DonutChart data={getLimitedChartData(8)} />;
+          return <DonutChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)} />;
         case "horizontal-bar":
-          return <HorizontalBarChart data={getLimitedChartData(14)} />;
+          return (
+            <HorizontalBarChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["horizontal-bar"])}
+            />
+          );
         case "vertical-bar":
-          return <VerticalBarChart data={getLimitedChartData(12)} />;
+          return (
+            <VerticalBarChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["vertical-bar"])}
+            />
+          );
         case "treemap":
-          return <TreemapChart data={getLimitedChartData(24)} />;
+          return <TreemapChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)} />;
         case "histogram":
           return <VerticalBarChart data={toHistogramData(grainValues)} />;
         case "boolean-donut":
@@ -175,7 +185,7 @@ export const MinionDashboardCard = observer(
         case "kpi":
           return <KpiPanel values={grainValues} />;
         case "lollipop":
-          return <LollipopList data={getLimitedChartData(10)} />;
+          return <LollipopList data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)} />;
         case "table":
         default:
           return (

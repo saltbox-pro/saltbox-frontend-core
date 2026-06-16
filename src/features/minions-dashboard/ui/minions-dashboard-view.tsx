@@ -29,7 +29,7 @@ export const MinionsDashboardView = observer(
     const { t } = useTranslation();
 
     return (
-      <Flex gap={12} vertical>
+      <Flex gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
 
         {dashboardStore.cards.length === 0 ? (
@@ -50,22 +50,31 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div className={styles.dashboardContainer}>
-            {dashboardStore.cards.map((card) => (
-              <div
-                key={card.id}
-                className={[styles.dashboardCardWrapper, PRESET_WRAPPER_CLASSNAMES[card.preset]]
-                  .filter(Boolean)
-                  .join(" ")}
-              >
-                <MinionDashboardCard
-                  card={card}
-                  onEdit={() => props.onEditCard(card.id)}
-                  onRemove={() => dashboardStore.removeCard(card.id)}
-                  slug={props.slug}
-                  filterStore={props.filterStore}
-                />
-              </div>
-            ))}
+            {dashboardStore.cards.map((card) => {
+              const isHiddenByFullScreen =
+                dashboardStore.isCardFullScreen && dashboardStore.fullScreenCardId !== card.id;
+
+              return (
+                <div
+                  key={card.id}
+                  className={[
+                    styles.dashboardCardWrapper,
+                    PRESET_WRAPPER_CLASSNAMES[card.preset],
+                    isHiddenByFullScreen ? styles.hiddenCard : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  <MinionDashboardCard
+                    card={card}
+                    onEdit={() => props.onEditCard(card.id)}
+                    onRemove={() => dashboardStore.removeCard(card.id)}
+                    slug={props.slug}
+                    filterStore={props.filterStore}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </Flex>

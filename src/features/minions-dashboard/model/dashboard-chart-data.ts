@@ -1,5 +1,11 @@
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 
+import {
+  BOOLEAN_FALSE_VALUES,
+  BOOLEAN_TRUE_VALUES,
+  Y_AXIS_LABEL_MAX_CHARS,
+} from "../constants/chart-data";
+
 export type ChartDatum = {
   name: string;
   count: number;
@@ -12,24 +18,11 @@ export type BooleanLabels = {
   no: string;
 };
 
-export const CHART_COLORS = [
-  "#4d5a8f",
-  "#5cc48a",
-  "#ff7a45",
-  "#666a67",
-  "#e43f5a",
-  "#3fc4c4",
-  "#b28f78",
-  "#8fd0df",
-  "#a7adc4",
-  "#f6c343",
-  "#a564ba",
-];
-
-const Y_AXIS_LABEL_MAX_CHARS = 30;
-
-export const truncateAxisLabel = (value: string): string =>
-  value.length > Y_AXIS_LABEL_MAX_CHARS ? `${value.slice(0, Y_AXIS_LABEL_MAX_CHARS - 1)}…` : value;
+export const truncateAxisLabel = (value: string): string => {
+  return value.length > Y_AXIS_LABEL_MAX_CHARS
+    ? `${value.slice(0, Y_AXIS_LABEL_MAX_CHARS - 1)}…`
+    : value;
+};
 
 export const valueToText = (value: GrainValue["value"], emptyLabel: string): string => {
   if (value === null || value === undefined || value === "") {
@@ -47,10 +40,10 @@ const normalizeBooleanLabel = (
   emptyLabel: string
 ): string => {
   const text = valueToText(value, emptyLabel).toLowerCase();
-  if (["true", "yes", "1", "enabled"].includes(text)) {
+  if (BOOLEAN_TRUE_VALUES.includes(text)) {
     return labels.yes;
   }
-  if (["false", "no", "0", "disabled"].includes(text)) {
+  if (BOOLEAN_FALSE_VALUES.includes(text)) {
     return labels.no;
   }
   return valueToText(value, emptyLabel);
@@ -60,23 +53,25 @@ export const toChartData = (
   values: GrainValue[],
   limit: number,
   emptyLabel: string
-): ChartDatum[] =>
-  values.slice(0, limit).map((item) => ({
+): ChartDatum[] => {
+  return values.slice(0, limit).map((item) => ({
     name: valueToText(item.value, emptyLabel),
     count: item.count,
     value: item.value,
   }));
+};
 
 export const toBooleanData = (
   values: GrainValue[],
   labels: BooleanLabels,
   emptyLabel: string
-): ChartDatum[] =>
-  values.map((item) => ({
+): ChartDatum[] => {
+  return values.map((item) => ({
     name: normalizeBooleanLabel(item.value, labels, emptyLabel),
     count: item.count,
     value: item.value,
   }));
+};
 
 export const toHistogramData = (values: GrainValue[]): ChartDatum[] => {
   const numericValues = values

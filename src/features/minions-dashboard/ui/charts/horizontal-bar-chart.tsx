@@ -24,7 +24,7 @@ export const HorizontalBarChart = ({ data }: HorizontalBarChartProps) => {
   }, [data]);
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minHeight={260}>
+    <ResponsiveContainer>
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 22, top: 10, bottom: 10 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
         <XAxis type="number" allowDecimals={false} />

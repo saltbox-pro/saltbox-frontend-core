@@ -1,8 +1,10 @@
 import { makeAutoObservable } from "mobx";
 
+import { DASHBOARD_MAX_CARDS } from "../constants/dashboard-cards";
+import { DASHBOARD_STORAGE_KEY, DASHBOARD_STORAGE_VERSION } from "../constants/dashboard-storage";
+
 import {
   createDashboardCard,
-  DASHBOARD_MAX_CARDS,
   DashboardCardConfig,
   DashboardFieldOption,
   DashboardPreset,
@@ -10,20 +12,22 @@ import {
   normalizeDashboardStorage,
 } from "./dashboard-model";
 
-const STORAGE_KEY = "savedBlocks";
-
 export class DashboardStore {
   cards: DashboardCardConfig[];
-  isCardFullScreen: boolean;
+  fullScreenCardId: string | null;
 
   constructor() {
     makeAutoObservable(this);
     this.cards = this.loadFromLocalStorage();
-    this.isCardFullScreen = false;
+    this.fullScreenCardId = null;
   }
 
-  setCardFullScreen(isFullScreen: boolean) {
-    this.isCardFullScreen = isFullScreen;
+  get isCardFullScreen(): boolean {
+    return this.fullScreenCardId !== null;
+  }
+
+  setCardFullScreen(cardId: string | null) {
+    this.fullScreenCardId = cardId;
   }
 
   get canAddCard(): boolean {
@@ -31,11 +35,14 @@ export class DashboardStore {
   }
 
   loadFromLocalStorage(): DashboardCardConfig[] {
-    return normalizeDashboardStorage(localStorage.getItem(STORAGE_KEY)).cards;
+    return normalizeDashboardStorage(localStorage.getItem(DASHBOARD_STORAGE_KEY)).cards;
   }
 
   saveToLocalStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, cards: this.cards }));
+    localStorage.setItem(
+      DASHBOARD_STORAGE_KEY,
+      JSON.stringify({ version: DASHBOARD_STORAGE_VERSION, cards: this.cards })
+    );
   }
 
   addCard(fieldOption: DashboardFieldOption, preset: DashboardPreset) {
