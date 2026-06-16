@@ -905,6 +905,7 @@
     "preview-empty": "Schema is empty",
     "preview-empty-description": "Add fields in the visual editor to see the form",
     "preview-render-error": "Failed to render the form for the current schema",
+    "schema-invalid": "The schema is invalid — validation is unavailable",
     "validate": "Validate",
     "form-valid": "The form is valid",
     "preview-form-data": "Form data",

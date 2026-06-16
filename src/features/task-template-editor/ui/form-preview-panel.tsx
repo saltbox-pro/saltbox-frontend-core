@@ -4,7 +4,7 @@ import {
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
 } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Flex, Typography, message } from "antd";
+import { Alert, Button, Flex, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -63,6 +63,18 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
   const isEmpty = useMemo(() => {
     return !jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0;
+  }, [jsonSchema]);
+
+  const isSchemaValid = useMemo(() => {
+    if (!jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0) {
+      return false;
+    }
+    try {
+      validator.ajv.compile(toRjsfSchema(jsonSchema));
+      return true;
+    } catch {
+      return false;
+    }
   }, [jsonSchema]);
 
   useEffect(() => {
@@ -128,12 +140,20 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
             onSubmit={() => message.success(t("task-template-editor.form-valid"))}
           >
             <Flex gap="small" justify="flex-end" className={styles.actions}>
-              <Button htmlType="submit" type="primary">
-                {t("task-template-editor.validate")}
-              </Button>
-              <Button htmlType="button" onClick={() => setDataModalOpen(true)}>
-                {t("task-template-editor.preview-form-data")}
-              </Button>
+              <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
+                <Button htmlType="submit" type="primary" disabled={!isSchemaValid}>
+                  {t("task-template-editor.validate")}
+                </Button>
+              </Tooltip>
+              <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
+                <Button
+                  htmlType="button"
+                  disabled={!isSchemaValid}
+                  onClick={() => setDataModalOpen(true)}
+                >
+                  {t("task-template-editor.preview-form-data")}
+                </Button>
+              </Tooltip>
             </Flex>
           </JsonForm>
         </PreviewErrorBoundary>
