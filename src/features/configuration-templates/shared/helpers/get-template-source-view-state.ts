@@ -6,6 +6,7 @@ import {
   getSourceActionContext,
   isPlugInProgress,
   isSyncInProgress,
+  isUnplugInProgress,
 } from "./source-action-progress";
 import { getSourcePresentation, getSourceWebUrl } from "./source-presentation";
 
@@ -17,9 +18,11 @@ export function getTemplateSourceViewState(
   const actionContext = getSourceActionContext(actionState, source.id);
   const plugInProgress = isPlugInProgress({ ...actionContext, source });
   const syncInProgress = isSyncInProgress({ source, ...actionContext });
+  const unplugInProgress = isUnplugInProgress({ ...actionContext, source });
 
   const canConnect = presentation.actions.includes("plug");
   const canSync = presentation.actions.includes("sync");
+  const canUnplug = presentation.actions.includes("unplug");
   const showDelete = presentation.actions.includes("delete");
   const isActuallyPlugging = plugInProgress && canConnect;
 
@@ -27,8 +30,10 @@ export function getTemplateSourceViewState(
     presentation,
     canConnect,
     canSync: canSync || syncInProgress,
+    canUnplug: canUnplug || unplugInProgress,
     showDelete,
     plugInProgress: isActuallyPlugging,
+    unplugInProgress,
     isConnected: (presentation.isConnected || syncInProgress) && !isActuallyPlugging,
     forceDimmed: (presentation.isDimmed && !syncInProgress) || isActuallyPlugging,
     webUrl: getSourceWebUrl(source),

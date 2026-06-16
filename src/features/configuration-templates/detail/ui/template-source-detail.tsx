@@ -80,6 +80,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
               actions={store}
               canConnect={view.canConnect}
               canSync={view.canSync}
+              canUnplug={view.canUnplug}
               showDelete={view.showDelete}
             />
           </Flex>

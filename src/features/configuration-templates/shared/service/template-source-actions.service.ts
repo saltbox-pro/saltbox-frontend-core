@@ -6,6 +6,7 @@ import {
   PLUG_OPTIMISTIC_OPERATION,
   REMOVE_OPTIMISTIC_OPERATION,
   SYNC_OPTIMISTIC_OPERATION,
+  UNPLUG_OPTIMISTIC_OPERATION,
 } from "../constants/source-operations";
 import { BgTaskFailedError } from "../errors/bg-task-failed.error";
 import { BgTaskPollAbortedError } from "../errors/bg-task-poll-aborted.error";
@@ -50,6 +51,15 @@ export class TemplateSourceActionsService {
       "sync",
       () => this.getTaskTemplateSourcesApi().templateSourceSync({ source_id: sourceId }),
       { operation: SYNC_OPTIMISTIC_OPERATION, outcome: "reload" }
+    );
+  };
+
+  unplugSource = async (sourceId: string): Promise<void> => {
+    await this.runSourceAction(
+      sourceId,
+      "unplug",
+      () => this.getTaskTemplateSourcesApi().templateSourceUnplug({ source_id: sourceId }),
+      { operation: UNPLUG_OPTIMISTIC_OPERATION, outcome: "reload" }
     );
   };
 

@@ -881,6 +881,7 @@
     },
     "add": "Add",
     "connect": "Connect",
+    "disconnect": "Disconnect",
     "sync": "Sync"
   },
   "task-template-editor": {
@@ -1032,6 +1033,7 @@
         "not-synced": "Not synced",
         "connecting": "Connecting",
         "syncing": "Syncing",
+        "disconnecting": "Disconnecting",
         "deleting": "Deleting"
       },
       "action": {
@@ -1039,6 +1041,8 @@
         "plug-success": "Source \"{{name}}\" has been connected",
         "sync-error": "Failed to sync source",
         "sync-success": "Source \"{{name}}\" has been synced",
+        "unplug-error": "Failed to disconnect source",
+        "unplug-success": "Source \"{{name}}\" has been disconnected",
         "delete-error": "Failed to delete source",
         "delete-success": "Source \"{{name}}\" has been deleted",
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
@@ -1054,6 +1058,7 @@
         "sync": "sync",
         "remove": "removal",
         "add_template_from_raw": "template creation",
+        "unplug": "disconnecting",
         "unknown": "operation"
       },
       "operation": {
@@ -1066,6 +1071,7 @@
         "sync": "Syncing…",
         "remove": "Deleting…",
         "add_template_from_raw": "Creating template…",
+        "unplug": "Disconnecting…",
         "unknown": "Operation in progress…"
       },
       "connection": {

@@ -22,14 +22,14 @@ export const SOURCE_PRESENTATION_BY_STATE: Record<SourceState, SourcePresentatio
     isConnected: true,
     showNotSynced: true,
     showActiveStatus: false,
-    actions: ["sync", "delete"],
+    actions: ["sync", "unplug", "delete"],
   },
   [SourceState.Active]: {
     isDimmed: false,
     isConnected: true,
     showNotSynced: false,
     showActiveStatus: true,
-    actions: ["sync", "delete"],
+    actions: ["sync", "unplug", "delete"],
   },
   [SourceState.Broken]: {
     isDimmed: true,

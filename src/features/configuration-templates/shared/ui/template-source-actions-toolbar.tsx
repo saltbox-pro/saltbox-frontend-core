@@ -4,6 +4,7 @@ import { observer } from "mobx-react-lite";
 
 import { ConnectSourceButton } from "../../connect/ui/connect-source-button";
 import { SourceOperationSpinner } from "../../connect/ui/source-operation-spinner";
+import { DisconnectSourceButton } from "../../disconnect/ui/disconnect-source-button";
 import { DeleteSourceButton } from "../../remove/ui/delete-source-button";
 import { SyncSourceButton } from "../../sync/ui/sync-source-button";
 import {
@@ -11,6 +12,7 @@ import {
   isDeleteInProgress,
   isPlugInProgress,
   isSyncInProgress,
+  isUnplugInProgress,
   shouldShowSourceOperationSpinner,
 } from "../helpers/source-action-progress";
 import type { SourceActionsPort } from "../types/source-action";
@@ -22,6 +24,7 @@ export type TemplateSourceActionsToolbarProps = {
   actions: SourceActionsPort;
   canConnect: boolean;
   canSync: boolean;
+  canUnplug: boolean;
   showDelete: boolean;
 };
 
@@ -30,6 +33,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
   actions,
   canConnect,
   canSync,
+  canUnplug,
   showDelete,
 }: TemplateSourceActionsToolbarProps) {
   const actionContext = getSourceActionContext(actions, source.id);
@@ -37,17 +41,27 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
   const plugInProgress = isPlugInProgress({ ...actionContext, source });
   const deleteInProgress = isDeleteInProgress({ ...actionContext, source });
   const syncInProgress = isSyncInProgress({ source, ...actionContext });
+  const unplugInProgress = isUnplugInProgress({ ...actionContext, source });
   const isActuallyPlugging = plugInProgress && canConnect;
+  const isActuallyUnplugging = unplugInProgress && canUnplug;
 
   const showConnect = canConnect || isActuallyPlugging;
-  const showSync = (canSync || syncInProgress) && !isActuallyPlugging;
+  const showSync = (canSync || syncInProgress) && !isActuallyPlugging && !isActuallyUnplugging;
+  const showUnplug = (canUnplug || isActuallyUnplugging) && !isActuallyPlugging;
+
+  const connectDisabled = deleteInProgress || syncInProgress || unplugInProgress;
+  const syncDisabled =
+    deleteInProgress || unplugInProgress || isActuallyPlugging || isActuallyUnplugging;
+  const unplugDisabled = deleteInProgress || syncInProgress || isActuallyPlugging;
 
   const showOperationSpinner = shouldShowSourceOperationSpinner({
     source,
     showConnect,
     showSync,
+    showUnplug,
     isPlugInProgress: isActuallyPlugging,
     syncInProgress,
+    unplugInProgress: isActuallyUnplugging,
     deleteInProgress,
   });
 
@@ -69,14 +83,21 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
         source={source}
         actions={actions}
         canConnect={canConnect}
-        disabled={deleteInProgress}
+        disabled={connectDisabled}
       />
 
       <SyncSourceButton
         source={source}
         actions={actions}
         showSync={showSync}
-        disabled={deleteInProgress}
+        disabled={syncDisabled}
+      />
+
+      <DisconnectSourceButton
+        source={source}
+        actions={actions}
+        canUnplug={canUnplug}
+        disabled={unplugDisabled}
       />
 
       {showDelete && <DeleteSourceButton source={source} actions={actions} />}

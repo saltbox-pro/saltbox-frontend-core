@@ -30,7 +30,7 @@
 
 .name {
   display: inline-block;
-  max-width: 50%;
+  max-width: 60%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

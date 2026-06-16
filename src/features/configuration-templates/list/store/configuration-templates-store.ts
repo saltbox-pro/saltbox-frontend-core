@@ -400,6 +400,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   syncSource = (sourceId: string): Promise<void> => this.runtime.syncSource(sourceId);
 
+  unplugSource = (sourceId: string): Promise<void> => this.runtime.unplugSource(sourceId);
+
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
 }

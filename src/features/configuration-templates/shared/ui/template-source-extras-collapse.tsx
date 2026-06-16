@@ -4,7 +4,7 @@ import type {
   TaskTemplatePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
-import { Collapse, type CollapseProps, Flex } from "antd";
+import { Collapse, type CollapseProps, Flex, Tag } from "antd";
 import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -45,8 +45,13 @@ export type TemplateSourceExtrasCollapseProps = {
   forcedActiveKeys?: TemplateSourceExtrasPanelKey[];
 };
 
-function formatPanelLabel(title: string, count: number): string {
-  return `${title} (${count})`;
+function PanelLabel({ title, count }: { title: string; count: number }) {
+  return (
+    <Flex align="center" gap={8}>
+      <span>{title}</span>
+      <Tag bordered>{count}</Tag>
+    </Flex>
+  );
 }
 
 export function TemplateSourceExtrasCollapse({
@@ -77,9 +82,11 @@ export function TemplateSourceExtrasCollapse({
     () => [
       {
         key: TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY,
-        label: formatPanelLabel(
-          t("configuration-templates.source.templates"),
-          templates.totalCount ?? templates.items.length
+        label: (
+          <PanelLabel
+            title={t("configuration-templates.source.templates")}
+            count={templates.totalCount ?? templates.items.length}
+          />
         ),
         extra: templates.onCreateTemplate ? (
           <BaseActionButton
@@ -107,9 +114,11 @@ export function TemplateSourceExtrasCollapse({
       },
       {
         key: TEMPLATE_SOURCE_FILES_PANEL_KEY,
-        label: formatPanelLabel(
-          t("configuration-templates.source.files"),
-          files.totalCount ?? files.items.length
+        label: (
+          <PanelLabel
+            title={t("configuration-templates.source.files")}
+            count={files.totalCount ?? files.items.length}
+          />
         ),
         extra: files.onAddFileClick ? (
           <BaseActionButton

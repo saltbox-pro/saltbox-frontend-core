@@ -60,6 +60,8 @@ export class TemplateSourceRuntime {
 
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
 
+  unplugSource = (sourceId: string): Promise<void> => this.sourceActions.unplugSource(sourceId);
+
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);
 
