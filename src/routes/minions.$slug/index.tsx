@@ -76,6 +76,7 @@ const MinionsPage = observer(() => {
     isOpen: shownMinionsFilters,
     toggle: toggleShownMinionsFilters,
     open: openMinionsFilters,
+    close: closeMinionsFilters,
   } = useFiltersToggle(false);
   const {
     isOpen: shownTasksFilters,
@@ -161,13 +162,14 @@ const MinionsPage = observer(() => {
   useEffect(() => {
     if (location.state?.resetFilters) {
       minionFilterStore.handleResetFiltersSilent();
+      closeMinionsFilters();
 
       navigate(location.pathname + location.search, {
         replace: true,
         state: {},
       });
     }
-  }, [location, navigate, minionFilterStore]);
+  }, [location, navigate, minionFilterStore, closeMinionsFilters]);
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -415,6 +417,10 @@ const MinionsPage = observer(() => {
         query={minionFilterStore.searchMongoDBQuery as object}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
+        onBeforeNavigate={() => {
+          minionFilterStore.handleResetFiltersSilent();
+          closeMinionsFilters();
+        }}
         onClose={() => {
           setIsCreateModalOpen(false);
         }}

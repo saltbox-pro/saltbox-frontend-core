@@ -15,6 +15,7 @@ export class MinionsStore {
   mongoDBQuery: object | undefined;
   pagination: PaginationState;
   sorting: SortingState;
+  private loadRequestId = 0;
 
   constructor(mongoDBQueryInit: object | undefined, collectionSlug: string | undefined) {
     makeAutoObservable(this);
@@ -31,6 +32,7 @@ export class MinionsStore {
   }
 
   loadMinions = (collectionSlug: string) => {
+    const requestId = ++this.loadRequestId;
     this.isLoading = true;
     this.collectionSlug = collectionSlug;
     apiCoreStore.minionsApi
@@ -44,18 +46,21 @@ export class MinionsStore {
         },
       })
       .then((response) => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.minions = response.data;
           this.totalMinions = response.total;
         });
       })
       .catch(() => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.minions = [];
           this.totalMinions = 0;
         });
       })
       .finally(() => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.isLoading = false;
         });
