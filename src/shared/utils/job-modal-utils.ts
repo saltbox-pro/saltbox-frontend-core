@@ -1,7 +1,7 @@
-import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
-import { JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS } from "@saltbox/saltbox-frontend-common";
 import { getDefaultFormState } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
+import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
+import { JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS } from "@saltbox/saltbox-frontend-common";
 import type { KeyboardEvent } from "react";
 
 export type TtlUnit = "seconds" | "minutes" | "hours";

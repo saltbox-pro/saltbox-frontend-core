@@ -45,11 +45,11 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   const [selection, setSelection] = useState<RowSelectionState>({});
 
   useLayoutEffect(() => {
-    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery as object);
+    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);
   }, [props.slug, minionsStore]);
 
   const applySearchFilters = useCallback(() => {
-    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery as object);
+    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);
   }, [minionsStore, props.slug, props.filterStore]);
 
   const clearSelection = useCallback(() => {

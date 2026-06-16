@@ -418,7 +418,7 @@ const MinionsPage = observer(() => {
       </Modal>
 
       <CollectionCreateModal
-        query={minionFilterStore.searchMongoDBQuery as object}
+        query={minionFilterStore.searchMongoDBQuery}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
         onBeforeNavigate={() => {
