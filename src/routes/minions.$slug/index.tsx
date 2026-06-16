@@ -19,7 +19,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useMemo, useState } from "react";
+import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -159,17 +159,21 @@ const MinionsPage = observer(() => {
     }
   }, [slug]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (location.state?.resetFilters) {
       minionFilterStore.handleResetFiltersSilent();
       closeMinionsFilters();
+    }
+  }, [location.pathname, location.search, location.state, minionFilterStore, closeMinionsFilters]);
 
+  useEffect(() => {
+    if (location.state?.resetFilters) {
       navigate(location.pathname + location.search, {
         replace: true,
         state: {},
       });
     }
-  }, [location, navigate, minionFilterStore, closeMinionsFilters]);
+  }, [location, navigate]);
 
   useEffect(() => {
     if (collectionStore.error) {
@@ -418,7 +422,6 @@ const MinionsPage = observer(() => {
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
         onBeforeNavigate={() => {
-          minionFilterStore.handleResetFiltersSilent();
           closeMinionsFilters();
         }}
         onClose={() => {

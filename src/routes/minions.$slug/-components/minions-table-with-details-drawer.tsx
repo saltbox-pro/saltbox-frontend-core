@@ -30,6 +30,7 @@ export type MinionsTableWithDetailsDrawerProps = {
 
   filterStore: MinionFilterStore;
   onAddFilter: () => void;
+  onFiltersApplied?: () => void;
 };
 
 export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer(
@@ -152,10 +153,11 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         value: ruleValue,
       });
       props.filterStore.handleSearch();
+      props.onFiltersApplied?.();
       props.onAddFilter();
       drawer.close();
     },
-    [drawer.close, props.filterStore, props.onAddFilter]
+    [drawer.close, props.filterStore, props.onAddFilter, props.onFiltersApplied]
   );
 
   const handleRowClick = useCallback(
