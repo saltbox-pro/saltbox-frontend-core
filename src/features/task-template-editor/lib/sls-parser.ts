@@ -94,3 +94,6 @@ export function getEmptySchema(): FormSchema {
 export function getEmptySlsBody(): string {
   return "";
 }
+
+export const stripSlsExtension = (fileName: string): string =>
+  fileName.trim().replace(/\.sls$/i, "");
