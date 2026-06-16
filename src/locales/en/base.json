@@ -55,6 +55,27 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
+    "extra-data": {
+      "tab": "Extra data",
+      "category-column": "Category",
+      "empty": "No extra data available",
+      "apply-to-filters": "Apply value to filters",
+      "load-error": "Failed to load extra data",
+      "search-label": "Search records",
+      "search-placeholder": "Enter value",
+      "categories": {
+        "local_groups": "Local Groups",
+        "storages": "Storages",
+        "softwares": "Software",
+        "bios": "BIOS",
+        "cpus": "CPUs",
+        "hardware": "Hardware",
+        "inputs": "Inputs",
+        "drives": "Drives",
+        "networks": "Networks",
+        "local_users": "Local Users"
+      }
+    },
     "minion-id": "Minion ID",
     "virtualization": "Virtualization",
     "os-full-name": "OS Full Name",

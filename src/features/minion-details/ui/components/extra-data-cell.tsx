@@ -1,0 +1,85 @@
+import { CopyOutlined, FilterOutlined } from "@ant-design/icons";
+import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
+import { Typography, message } from "antd";
+import { type MouseEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { JsonPreview } from "saltbox-core/shared/components/json-preview";
+
+import styles from "./extra-data-cell.module.css";
+
+export function isPrimitive(value: unknown): value is string | number | boolean {
+  return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
+}
+
+export function toCopyValue(value: unknown): string {
+  if (value == null) return "";
+  if (isPrimitive(value)) return String(value);
+  return JSON.stringify(value);
+}
+
+export type ExtraDataCellProps = {
+  value: unknown;
+  field: string;
+  filterTitle: string;
+  onFilter: () => void;
+};
+
+export function ExtraDataCell({ value, field, filterTitle, onFilter }: ExtraDataCellProps) {
+  const { t } = useTranslation("common");
+  const [hovered, setHovered] = useState(false);
+
+  const handleCopy = (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+
+    navigator.clipboard
+      .writeText(toCopyValue(value))
+      .then(() => {
+        message.success(t("copy-to-clipboard-button.copied"));
+      })
+      .catch(() => {
+        message.error(t("copy-to-clipboard-button.error"));
+      });
+  };
+
+  const handleFilter = (e: MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    onFilter();
+  };
+
+  const renderContent = () => {
+    if (value == null) return null;
+
+    if (isPrimitive(value)) {
+      const text = String(value);
+      return (
+        <Typography.Text ellipsis title={text}>
+          {text}
+        </Typography.Text>
+      );
+    }
+
+    return <JsonPreview value={value} title={field} />;
+  };
+
+  return (
+    <span
+      className={styles.cell}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <span className={styles.content}>{renderContent()}</span>
+
+      {hovered && value != null && (
+        <span className={styles.actions}>
+          <BaseActionButton
+            icon={<CopyOutlined />}
+            title={t("copy-to-clipboard-button.copy")}
+            onClick={handleCopy}
+          />
+          <BaseActionButton icon={<FilterOutlined />} title={filterTitle} onClick={handleFilter} />
+        </span>
+      )}
+    </span>
+  );
+}
