@@ -8,7 +8,6 @@ const { Search } = Input;
 
 type ExtraDataSearchFieldProps = {
   onSearch: (value: string) => void;
-  isLoading: boolean;
 };
 
 export function ExtraDataSearchField(props: ExtraDataSearchFieldProps) {
@@ -24,7 +23,6 @@ export function ExtraDataSearchField(props: ExtraDataSearchFieldProps) {
         onSearch={props.onSearch}
         allowClear
         enterButton
-        disabled={props.isLoading}
         placeholder={t("minions.extra-data.search-placeholder")}
         style={{ minWidth: 200 }}
       />

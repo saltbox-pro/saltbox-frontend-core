@@ -133,11 +133,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       >
         <div className="page-actions-buttons">
           <div className={styles.rightGroup}>
-            <ExtraDataSearchField
-              key={category?.name}
-              onSearch={handleSearch}
-              isLoading={extraDataRecordsStore?.isLoading ?? false}
-            />
+            <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
           </div>
         </div>
 

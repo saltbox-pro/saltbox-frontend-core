@@ -83,6 +83,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
         open={categoryDrawer.isOpened}
         category={categoryDrawer.openedArg}
         minionId={minionId}
+        width={960}
         onClose={categoryDrawer.close}
       />
     </Flex>
