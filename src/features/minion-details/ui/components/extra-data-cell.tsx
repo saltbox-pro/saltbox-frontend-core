@@ -21,11 +21,12 @@ export function toCopyValue(value: unknown): string {
 export type ExtraDataCellProps = {
   value: unknown;
   field: string;
-  filterTitle: string;
-  onFilter: () => void;
+  filterTitle?: string;
+  onFilter?: () => void;
+  onCopy?: () => void;
 };
 
-export function ExtraDataCell({ value, field, filterTitle, onFilter }: ExtraDataCellProps) {
+export function ExtraDataCell({ value, field, filterTitle, onFilter, onCopy }: ExtraDataCellProps) {
   const { t } = useTranslation("common");
   const [hovered, setHovered] = useState(false);
 
@@ -36,6 +37,7 @@ export function ExtraDataCell({ value, field, filterTitle, onFilter }: ExtraData
       .writeText(toCopyValue(value))
       .then(() => {
         message.success(t("copy-to-clipboard-button.copied"));
+        onCopy?.();
       })
       .catch(() => {
         message.error(t("copy-to-clipboard-button.error"));
@@ -44,7 +46,7 @@ export function ExtraDataCell({ value, field, filterTitle, onFilter }: ExtraData
 
   const handleFilter = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
-    onFilter();
+    onFilter?.();
   };
 
   const renderContent = () => {
@@ -70,14 +72,22 @@ export function ExtraDataCell({ value, field, filterTitle, onFilter }: ExtraData
     >
       <span className={styles.content}>{renderContent()}</span>
 
-      {hovered && value != null && (
+      {hovered && value != null && (onCopy || onFilter) && (
         <span className={styles.actions}>
-          <BaseActionButton
-            icon={<CopyOutlined />}
-            title={t("copy-to-clipboard-button.copy")}
-            onClick={handleCopy}
-          />
-          <BaseActionButton icon={<FilterOutlined />} title={filterTitle} onClick={handleFilter} />
+          {onCopy && (
+            <BaseActionButton
+              icon={<CopyOutlined />}
+              title={t("copy-to-clipboard-button.copy")}
+              onClick={handleCopy}
+            />
+          )}
+          {onFilter && (
+            <BaseActionButton
+              icon={<FilterOutlined />}
+              title={filterTitle}
+              onClick={handleFilter}
+            />
+          )}
         </span>
       )}
     </span>

@@ -78,8 +78,6 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       }
     }, [extraDataRecordsStore?.error, t]);
 
-    const filterTitle = t("minions.extra-data.apply-to-filters");
-
     const records = extraDataRecordsStore?.records;
 
     const fields = useMemo(() => {
@@ -97,19 +95,14 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
             id: field,
             header: field,
             cell: ({ getValue }) => (
-              <ExtraDataCell
-                value={getValue()}
-                field={field}
-                filterTitle={filterTitle}
-                onFilter={() => {}}
-              />
+              <ExtraDataCell value={getValue()} field={field} onCopy={() => {}} />
             ),
             meta: {
               minWidth: 160,
             },
           })
         ),
-      [fields, filterTitle]
+      [fields]
     );
 
     const handleSearch = (value: string) => {
