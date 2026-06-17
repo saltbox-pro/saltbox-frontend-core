@@ -7,9 +7,13 @@ import {
   deleteSourceFileApi,
   uploadSourceFile,
 } from "../../files/service/source-file-mutations.service";
+import { deleteSourceTemplateWithPolling } from "../../templates/service/delete-source-template.service";
+import { canDeleteSourceTemplates } from "../../templates/helpers/can-manage-source-templates";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { TemplateSourceStatePort } from "../types/template-source-state-port";
+
+import { getSourceActionContext } from "../helpers/source-action-progress";
 
 import { SourceBgTaskPollingService } from "./source-bg-task-polling.service";
 import { TemplateSourceActionsService } from "./template-source-actions.service";
@@ -60,6 +64,8 @@ export class TemplateSourceRuntime {
 
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
 
+  unplugSource = (sourceId: string): Promise<void> => this.sourceActions.unplugSource(sourceId);
+
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);
 
@@ -95,5 +101,36 @@ export class TemplateSourceRuntime {
     const result = await deleteSourceFileApi(sourceId, fileId);
     await this.port.reloadSource(sourceId);
     return result;
+  };
+
+  deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> => {
+    const source = this.port.getSource(sourceId);
+
+    if (!source || !canDeleteSourceTemplates(source, this.port)) {
+      throw new Error("Cannot delete template while source operation is in progress");
+    }
+
+    if (getSourceActionContext(this.port, sourceId).actionKind === "delete_template") {
+      throw new Error("Template delete already in progress");
+    }
+
+    return deleteSourceTemplateWithPolling(
+      {
+        bgTaskPolling: this.bgTaskPolling,
+        patchOptimisticTask: (id, operation, taskId) =>
+          runInAction(() => this.port.patchOptimisticTask(id, operation, taskId)),
+        setActionState: (id) =>
+          runInAction(() => {
+            this.port.actionBySourceId.set(id, "delete_template");
+          }),
+        clearActionState: (id) =>
+          runInAction(() => {
+            this.port.actionBySourceId.delete(id);
+          }),
+        onComplete: () => this.port.reloadSource(sourceId),
+      },
+      sourceId,
+      templateId
+    );
   };
 }

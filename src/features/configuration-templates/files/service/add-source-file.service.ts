@@ -1,5 +1,6 @@
 import { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
+import { BgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
 import type { SourceBgTaskPollingService } from "../../shared/service/source-bg-task-polling.service";
 import { isAsyncSourceFileAdd, type AddSourceFilePayload } from "../types/source-file-payload";
 
@@ -26,7 +27,11 @@ export async function addSourceFileWithPolling(
 
     if (isAsync) {
       deps.patchOptimisticTask(sourceId, SourceOperation.AddUserFile, uploadResult);
-      await deps.bgTaskPolling.schedule(sourceId, uploadResult, "reload", true);
+      const pollResult = await deps.bgTaskPolling.schedule(sourceId, uploadResult, "reload", true);
+
+      if (pollResult === "failed") {
+        throw new BgTaskFailedError();
+      }
     }
   } finally {
     deps.clearActionState(sourceId);

@@ -17,11 +17,13 @@ function CollectionCreateModal({
   parentSlug,
   isOpen = false,
   onClose,
+  onBeforeNavigate,
 }: {
   query: object;
   parentSlug: string;
   isOpen?: boolean;
   onClose?: (success: boolean) => void;
+  onBeforeNavigate?: () => void;
 }) {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(isOpen);
@@ -71,6 +73,7 @@ function CollectionCreateModal({
         setIsModalOpen(false);
         onClose?.(true);
         if (response.slug) {
+          onBeforeNavigate?.();
           navigate(`/core/minions/${response.slug}`, {
             state: {
               resetFilters: true,

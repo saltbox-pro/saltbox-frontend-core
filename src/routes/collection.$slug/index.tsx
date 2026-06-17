@@ -12,7 +12,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Input, message, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -134,29 +134,40 @@ const CollectionEditPage = observer(() => {
     }
   }, [collectionStore.error]);
 
+  const minionsCollectionSlug = collectionStore.collection?.parent_slug || slug || "";
+  const serverQueryKey = JSON.stringify(collectionStore.collection?.query ?? null);
+
+  const applySearchFilters = useCallback(() => {
+    if (!minionsCollectionSlug) {
+      return;
+    }
+    minionsStore.syncAndLoad(minionsCollectionSlug, filterStore.searchMongoDBQuery);
+  }, [minionsCollectionSlug, minionsStore, filterStore]);
+
   useEffect(() => {
     filterStore.loadFiltersScheme();
-    filterStore.handleResetFilters();
-  }, []);
+  }, [filterStore]);
 
   useEffect(() => {
     if (slug === "root") {
       navigate(`/core/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
     }
-  }, [slug]);
+  }, [slug, navigate]);
 
   useEffect(() => {
-    collectionStore.setCollectionSlug(slug);
-    minionsStore.collectionSlug = collectionStore.collection?.parent_slug || slug;
-  }, [slug, collectionStore.collection?.parent_slug]);
-
-  useEffect(() => {
-    if (collectionStore.collection?.query) {
-      filterStore.initializeByQuery(collectionStore.collection.query);
-      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-      minionsStore.handleSearch();
+    if (slug) {
+      collectionStore.setCollectionSlug(slug);
     }
-  }, [collectionStore.collection]);
+  }, [slug, collectionStore]);
+
+  useLayoutEffect(() => {
+    const collectionQuery = collectionStore.collection?.query;
+    if (!collectionQuery || !minionsCollectionSlug) {
+      return;
+    }
+    filterStore.initializeByQuery(collectionQuery);
+    minionsStore.syncAndLoad(minionsCollectionSlug, filterStore.searchMongoDBQuery);
+  }, [minionsCollectionSlug, serverQueryKey, collectionStore, filterStore, minionsStore]);
 
   useEffect(() => {
     if (collectionStore.collection?.title) {
@@ -167,13 +178,6 @@ const CollectionEditPage = observer(() => {
       setOriginalQuery(JSON.stringify(collectionStore.collection.query));
     }
   }, [collectionStore.collection?.title, collectionStore.collection?.query]);
-
-  useEffect(() => {
-    if (collectionStore.collection?.query) {
-      minionsStore.mongoDBQuery = filterStore.searchMongoDBQuery;
-      minionsStore.handleSearch();
-    }
-  }, [filterStore.searchMongoDBQuery, collectionStore.collection?.query]);
 
   const handleSaveButton = async () => {
     try {
@@ -217,6 +221,8 @@ const CollectionEditPage = observer(() => {
           <CollectionQueryBuilder
             slug={collectionStore.collection?.parent_slug || ""}
             filterStore={filterStore}
+            onSearch={applySearchFilters}
+            onReset={applySearchFilters}
           />
         </div>
         <div className={styles.editButtonsContainer}>

@@ -618,7 +618,7 @@
     "title": "Выберите функцию",
     "search-placeholder": "Поиск или ввод module.function (например file.append)",
     "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
-    "create-with-function": "Создать команду с функцией «{{name}}»",
+    "create-with-function": "Создать команду с функцией \"{{name}}\"",
     "table-module": "Модуль",
     "table-functions": "Функции",
     "empty": "Нет доступных функций",
@@ -902,6 +902,7 @@
     },
     "add": "Добавить",
     "connect": "Подключить",
+    "disconnect": "Отключить",
     "sync": "Синхронизировать"
   },
   "task-template-editor": {
@@ -926,6 +927,7 @@
     "preview-empty": "Схема пуста",
     "preview-empty-description": "Добавьте поля в визуальном редакторе, чтобы увидеть форму",
     "preview-render-error": "Не удалось отобразить форму по текущей схеме",
+    "schema-invalid": "Схема невалидна — проверка недоступна",
     "validate": "Проверить",
     "form-valid": "Форма заполнена корректно",
     "preview-form-data": "Данные формы",
@@ -942,6 +944,7 @@
     "load-error": "Не удалось загрузить источники шаблонов конфигураций",
     "sync-gitlab-sources-error": "Не удалось синхронизировать репозитории с GitLab",
     "sync-gitlab-sources-failed": "Синхронизация репозиториев с GitLab завершилась с ошибкой",
+    "sync-gitlab-sources-success": "Репозитории с GitLab успешно синхронизированы",
     "empty": "Нет доступных шаблонов",
     "sync-gitlab-sources-not-loaded": {
       "message": "Репозитории GitLab не синхронизированы. Синхронизируйте с GitLab, чтобы отобразить источники шаблонов"
@@ -990,6 +993,7 @@
       "repo-pass": "Пароль/токен",
       "repo-pass-placeholder": "Введите пароль или токен",
       "branch": "Ветка",
+      "branch-required": "Укажите ветку",
       "branch-max": "Не более {{max}} символов",
       "branch-placeholder": "master",
       "create-success": "Источник \"{{name}}\" успешно добавлен",
@@ -1032,9 +1036,11 @@
       "file": "Архив",
       "file-button": "Выбрать файл",
       "file-drag-title": "Нажмите или перетащите файл в эту область",
-      "file-drag-hint": "Поддерживаются: {{formats}}",
-      "file-hint": "Поддерживаются: {{formats}}",
+      "file-drag-hint": "Поддерживаются: {{formats}}. Максимальный размер: {{maxSizeGb}} ГБ",
+      "file-hint": "Поддерживаются: {{formats}}. Максимальный размер: {{maxSizeGb}} ГБ",
       "file-required": "Выберите архив",
+      "file-unsupported-format": "Формат \"{{extension}}\" не поддерживается. Допустимые форматы: {{formats}}",
+      "file-too-large": "Размер файла превышает {{maxSizeGb}} ГБ",
       "create-success": "Источник \"{{name}}\" успешно добавлен",
       "create-error": "Не удалось создать источник"
     },
@@ -1047,15 +1053,35 @@
       "status": {
         "active": "Активен",
         "not-synced": "Не синхронизирован",
-        "syncing": "Синхронизация"
+        "connecting": "Подключение",
+        "syncing": "Синхронизация",
+        "disconnecting": "Отключение",
+        "deleting": "Удаление"
       },
       "action": {
         "plug-error": "Не удалось подключить источник",
+        "plug-success": "Источник \"{{name}}\" успешно подключён",
         "sync-error": "Не удалось синхронизировать источник",
         "sync-success": "Источник \"{{name}}\" успешно синхронизирован",
+        "unplug-error": "Не удалось отключить источник",
+        "unplug-success": "Источник \"{{name}}\" успешно отключён",
         "delete-error": "Не удалось удалить источник",
         "delete-success": "Источник \"{{name}}\" успешно удалён",
         "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует"
+      },
+      "broken-operation": "Ошибка при {{operation}}",
+      "operation-broken": {
+        "discover": "обнаружении",
+        "prepare_templates": "подготовке шаблонов",
+        "update_template_content": "обновлении шаблона",
+        "delete_template": "удалении шаблона",
+        "prepare_files": "подготовке файлов",
+        "add_user_file": "добавлении файла",
+        "sync": "синхронизации",
+        "remove": "удалении",
+        "add_template_from_raw": "создании шаблона",
+        "unplug": "отключении",
+        "unknown": "выполнении операции"
       },
       "operation": {
         "discover": "Обнаружение…",
@@ -1067,6 +1093,7 @@
         "sync": "Синхронизация…",
         "remove": "Удаление…",
         "add_template_from_raw": "Создание шаблона…",
+        "unplug": "Отключение…",
         "unknown": "Выполняется операция…"
       },
       "connection": {
@@ -1085,14 +1112,19 @@
       "add-template": "Создать шаблон",
       "edit-template": "Редактировать шаблон",
       "duplicate-template": "Дублировать шаблон",
+      "delete-template": "Удалить шаблон",
+      "template-delete-confirm-title": "Удаление шаблона",
+      "template-delete-confirm-content": "Удалить шаблон \"{{title}}\"?",
+      "template-delete-success": "Шаблон \"{{title}}\" успешно удалён",
+      "template-delete-error": "Не удалось удалить шаблон",
       "files-delete": "Удалить файл",
       "files-delete-confirm-title": "Удаление файла",
       "files-delete-confirm-content": "Вы действительно хотите удалить файл \"{{path}}\"?",
-      "files-delete-success": "Файл «{{path}}» успешно удалён",
-      "files-delete-not-found": "Файл «{{path}}» уже удалён или не существует",
+      "files-delete-success": "Файл \"{{path}}\" успешно удалён",
+      "files-delete-not-found": "Файл \"{{path}}\" уже удалён или не существует",
       "files-delete-error": "Не удалось удалить файл",
       "delete-confirm-title": "Удаление источника",
-      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?"
+      "delete-confirm-content": "Вы действительно хотите удалить источник \"{{name}}\"?\n\nИсточник будет удалён из системы. Связанные шаблоны и файлы станут недоступны. Действие необратимо"
     }
   },
   "aggregated-tasks": {

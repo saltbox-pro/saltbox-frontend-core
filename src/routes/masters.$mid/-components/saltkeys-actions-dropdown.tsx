@@ -1,9 +1,8 @@
+import { CheckOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ActionDropdown } from "@saltbox/saltbox-frontend-common";
+import type { RowSelectionState } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { CheckOutlined, CloseOutlined, DeleteOutlined } from "@ant-design/icons";
-import { RowSelectionState } from "@tanstack/react-table";
 
 type SaltKeysActionsDropdownProps = {
   selectedSaltKeys: RowSelectionState;

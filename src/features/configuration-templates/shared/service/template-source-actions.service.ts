@@ -6,7 +6,10 @@ import {
   PLUG_OPTIMISTIC_OPERATION,
   REMOVE_OPTIMISTIC_OPERATION,
   SYNC_OPTIMISTIC_OPERATION,
+  UNPLUG_OPTIMISTIC_OPERATION,
 } from "../constants/source-operations";
+import { BgTaskFailedError } from "../errors/bg-task-failed.error";
+import { BgTaskPollAbortedError } from "../errors/bg-task-poll-aborted.error";
 import { isApiNotFoundError } from "../helpers/is-api-not-found-error";
 import type { SourceBgTaskOutcome } from "../helpers/source-bg-task";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
@@ -51,7 +54,17 @@ export class TemplateSourceActionsService {
     );
   };
 
+  unplugSource = async (sourceId: string): Promise<void> => {
+    await this.runSourceAction(
+      sourceId,
+      "unplug",
+      () => this.getTaskTemplateSourcesApi().templateSourceUnplug({ source_id: sourceId }),
+      { operation: UNPLUG_OPTIMISTIC_OPERATION, outcome: "reload" }
+    );
+  };
+
   deleteSource = async (sourceId: string): Promise<ResourceDeleteResult> => {
+    this.bgTaskPolling.cancel(sourceId);
     this.callbacks.setActionState(sourceId, "delete");
 
     try {
@@ -70,7 +83,11 @@ export class TemplateSourceActionsService {
       }
 
       this.callbacks.patchOptimisticTask(sourceId, REMOVE_OPTIMISTIC_OPERATION, taskId);
-      await this.bgTaskPolling.schedule(sourceId, taskId, "remove", true);
+
+      const pollResult = await this.bgTaskPolling.schedule(sourceId, taskId, "remove", true);
+      if (pollResult !== "ok") {
+        return "failed";
+      }
 
       if (!this.callbacks.isSourcePresent(sourceId)) {
         return "deleted";
@@ -99,7 +116,16 @@ export class TemplateSourceActionsService {
     try {
       const taskId = await mutate();
       this.callbacks.patchOptimisticTask(sourceId, options.operation, taskId);
-      await this.bgTaskPolling.schedule(sourceId, taskId, options.outcome, true);
+
+      const pollResult = await this.bgTaskPolling.schedule(sourceId, taskId, options.outcome, true);
+
+      if (pollResult === "aborted") {
+        throw new BgTaskPollAbortedError();
+      }
+
+      if (pollResult === "failed") {
+        throw new BgTaskFailedError();
+      }
     } finally {
       this.callbacks.clearActionState(sourceId);
     }

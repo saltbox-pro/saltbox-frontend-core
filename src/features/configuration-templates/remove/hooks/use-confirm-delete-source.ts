@@ -17,10 +17,11 @@ export function useConfirmDeleteSource(): {
         content: t("configuration-templates.source.delete-confirm-content", {
           name: params.name,
         }),
+        styles: { content: { whiteSpace: "pre-line" } },
         okText: t("common.delete"),
         cancelText: t("common.cancel"),
         okButtonProps: { danger: true },
-        onOk: params.onOk,
+        onOk: () => Promise.resolve(params.onOk()).catch(() => undefined),
       });
     },
     [modalApi, t]

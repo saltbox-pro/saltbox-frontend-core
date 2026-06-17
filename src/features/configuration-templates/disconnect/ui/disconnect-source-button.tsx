@@ -1,4 +1,4 @@
-import { LinkOutlined } from "@ant-design/icons";
+import { DisconnectOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Button, message } from "antd";
@@ -10,37 +10,39 @@ import { isBgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import {
   getSourceActionContext,
-  isPlugInProgress,
+  isUnplugInProgress,
+  isUnplugRequestLoading,
 } from "../../shared/helpers/source-action-progress";
 import type { SourceActionsPort } from "../../shared/types/source-action";
 
-export type ConnectSourceButtonProps = {
+export type DisconnectSourceButtonProps = {
   source: TemplateSourcePublicSchema;
   actions: SourceActionsPort;
-  canConnect: boolean;
+  canUnplug: boolean;
   disabled?: boolean;
 };
 
-export const ConnectSourceButton = observer(function ConnectSourceButton({
+export const DisconnectSourceButton = observer(function DisconnectSourceButton({
   source,
   actions,
-  canConnect,
+  canUnplug,
   disabled = false,
-}: ConnectSourceButtonProps) {
+}: DisconnectSourceButtonProps) {
   const { t } = useTranslation();
 
   const actionContext = getSourceActionContext(actions, source.id);
 
-  const plugInProgress = isPlugInProgress({ ...actionContext, source });
-  const isActuallyPlugging = plugInProgress && canConnect;
-  const showConnect = canConnect || isActuallyPlugging;
-  const isLoading = isActuallyPlugging;
+  const unplugProgress = isUnplugInProgress({ ...actionContext, source });
+  const unplugRequestLoading = isUnplugRequestLoading(actionContext);
+  const isActuallyUnplugging = unplugProgress && canUnplug;
+  const showDisconnect = canUnplug || isActuallyUnplugging;
+  const isLoading = isActuallyUnplugging || unplugRequestLoading;
 
-  const handleConnect = useCallback(async () => {
+  const handleDisconnect = useCallback(async () => {
     try {
-      await actions.plugSource(source.id);
+      await actions.unplugSource(source.id);
       message.success(
-        t("configuration-templates.source.action.plug-success", {
+        t("configuration-templates.source.action.unplug-success", {
           name: source.name,
         })
       );
@@ -48,27 +50,28 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
 
       if (isBgTaskFailedError(error)) {
-        message.error(t("configuration-templates.source.action.plug-error"));
+        message.error(t("configuration-templates.source.action.unplug-error"));
         return;
       }
 
       console.error(error);
-      message.error(t("configuration-templates.source.action.plug-error"));
+      message.error(t("configuration-templates.source.action.unplug-error"));
     }
   }, [actions, source.id, source.name, t]);
 
-  if (!showConnect) return null;
+  if (!showDisconnect) return null;
 
   return (
     <Button
-      type="primary"
       size="small"
-      icon={<LinkOutlined />}
+      icon={<DisconnectOutlined />}
       disabled={disabled}
       loading={isLoading}
-      onClick={handleConnect}
+      onClick={handleDisconnect}
     >
-      {isLoading ? t("configuration-templates.source.status.connecting") : t("common.connect")}
+      {isLoading
+        ? t("configuration-templates.source.status.disconnecting")
+        : t("common.disconnect")}
     </Button>
   );
 });

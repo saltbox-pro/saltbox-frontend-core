@@ -1,0 +1,8 @@
+.fileField:global(.ant-form-item-has-error) :global(.ant-upload-drag) {
+  border-color: #ff4d4f;
+}
+
+.fileField:global(.ant-form-item-has-error)
+  :global(.ant-upload-drag:not(.ant-upload-disabled):hover) {
+  border-color: #ffa39e;
+}

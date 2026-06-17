@@ -10,8 +10,8 @@ import {
 } from "../../shared/helpers/normalize-source-list-item";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
-import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
+import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
 
@@ -154,6 +154,11 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
   syncSource = (sourceId: string): Promise<void> => this.runtime.syncSource(sourceId);
 
+  unplugSource = (sourceId: string): Promise<void> => this.runtime.unplugSource(sourceId);
+
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  deleteSourceTemplate = (templateId: string): Promise<void> =>
+    this.runtime.deleteSourceTemplate(this.sourceId, templateId);
 }
