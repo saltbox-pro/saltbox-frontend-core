@@ -29,6 +29,10 @@ export type TemplateSourceExtrasCollapseProps = {
     showEditTemplate?: boolean;
     canEditTemplates?: boolean;
     canDuplicateTemplates?: boolean;
+    showDeleteTemplate?: boolean;
+    canDeleteTemplates?: boolean;
+    onDeleteTemplate?: (templateId: string) => Promise<void>;
+    onDeleteTemplateError?: () => Promise<void>;
   };
   files: {
     items: SshfsFilePublicSchema[];
@@ -108,6 +112,10 @@ export function TemplateSourceExtrasCollapse({
               showEditTemplate={templates.showEditTemplate}
               canEditTemplates={templates.canEditTemplates}
               canDuplicateTemplates={templates.canDuplicateTemplates}
+              showDeleteTemplate={templates.showDeleteTemplate}
+              canDeleteTemplates={templates.canDeleteTemplates}
+              onDeleteTemplate={templates.onDeleteTemplate}
+              onDeleteError={templates.onDeleteTemplateError}
             />
           </Flex>
         ),

@@ -35,6 +35,7 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       errorMessage={error}
       mask={mask}
       transitionKey={minion?.minion_id}
+      push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
       onClose={drawer.close}
     >
       <MinionDetailsInDrawer

@@ -20,6 +20,10 @@ export const UNPLUG_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set([
   SourceOperation.Unplug,
 ]);
 
+export const DELETE_LOCAL_TEMPLATE_SOURCE_OPERATIONS: ReadonlySet<SourceOperation> = new Set([
+  SourceOperation.DeleteLocalTemplate,
+]);
+
 export const SOURCE_OPERATION_LABEL_KEYS: Record<SourceOperation, string> = {
   [SourceOperation.Discover]: "configuration-templates.source.operation.discover",
   [SourceOperation.PrepareTemplates]: "configuration-templates.source.operation.prepare_templates",
@@ -73,3 +77,5 @@ export const SYNC_OPTIMISTIC_OPERATION = SourceOperation.Sync;
 export const REMOVE_OPTIMISTIC_OPERATION = SourceOperation.Remove;
 
 export const UNPLUG_OPTIMISTIC_OPERATION = SourceOperation.Unplug;
+
+export const DELETE_LOCAL_TEMPLATE_OPTIMISTIC_OPERATION = SourceOperation.DeleteLocalTemplate;

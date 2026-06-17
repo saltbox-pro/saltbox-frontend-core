@@ -1,6 +1,12 @@
 import type { ResourceDeleteResult } from "./resource-delete-result";
 
-export type SourceActionKind = "plug" | "sync" | "unplug" | "delete" | "add_file";
+export type SourceActionKind =
+  | "plug"
+  | "sync"
+  | "unplug"
+  | "delete"
+  | "add_file"
+  | "delete_template";
 
 export type SourceActionState = {
   actionBySourceId: Map<string, SourceActionKind>;
