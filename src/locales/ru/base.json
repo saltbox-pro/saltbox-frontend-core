@@ -753,8 +753,6 @@
     "kpi-unique": "Уникальных значений",
     "kpi-top": "Лидер",
     "loading-chart": "Строим график...",
-    "copy-data": "Скопировать данные",
-    "copy-success": "Данные скопированы",
     "other-values": "Ещё {{count}} значений",
     "statistics-unavailable": "Статистика по этому полю недоступна",
     "statistics-unavailable-description": "Поле может быть вычисляемым или не поддерживаться этим типом группировки",

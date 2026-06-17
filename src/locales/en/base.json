@@ -753,8 +753,6 @@
     "kpi-unique": "Unique values",
     "kpi-top": "Top value",
     "loading-chart": "Building chart...",
-    "copy-data": "Copy data",
-    "copy-success": "Data copied",
     "other-values": "{{count}} more values",
     "statistics-unavailable": "Statistics are unavailable for this field",
     "statistics-unavailable-description": "The field may be computed or unsupported by this grouping endpoint",

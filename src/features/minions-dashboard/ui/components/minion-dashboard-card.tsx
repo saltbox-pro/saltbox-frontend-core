@@ -1,18 +1,16 @@
 import {
-  CopyOutlined,
   DashOutlined,
   DeleteOutlined,
   EditOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
 } from "@ant-design/icons";
-import { Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Card, Flex, message, Modal, Spin, Tooltip, Typography } from "antd";
+import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
+import { Alert, Card, Flex, Modal, Spin, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { copyText } from "saltbox-core/shared/utils/copy-text";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
@@ -82,15 +80,11 @@ export const MinionDashboardCard = observer(
       dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
     };
 
-    const handleCopyData = async () => {
-      const rows = dashboardCardStore.grainValues.map(
-        (item) => `${valueToText(item.value, emptyLabel)}\t${item.count}`
-      );
-      await copyText(
-        [`${t("dashboard.table-value")}\t${t("dashboard.table-count")}`, ...rows].join("\n")
-      );
-      message.success(t("dashboard.copy-success"));
-    };
+    const copyDataText = [
+      ...dashboardCardStore.grainValues.map(
+        (item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`
+      ),
+    ].join("\n");
 
     const handleDeleteClick = () => {
       Modal.confirm({
@@ -218,14 +212,7 @@ export const MinionDashboardCard = observer(
             </Flex>
             <div className={styles.dashboardTableBlockHeaderSettings}>
               {showChartActions && (
-                <Tooltip title={t("dashboard.copy-data")}>
-                  <Button
-                    size="small"
-                    type="text"
-                    icon={<CopyOutlined />}
-                    onClick={handleCopyData}
-                  />
-                </Tooltip>
+                <CopyToClipboardButton size="small" type="text" text={copyDataText} />
               )}
               <Dropdown menu={{ items }} trigger={["click"]}>
                 <DashOutlined className={styles.cardMenuIcon} />
