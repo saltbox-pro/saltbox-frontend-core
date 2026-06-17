@@ -73,7 +73,15 @@
         "inputs": "Устройства ввода",
         "drives": "Диски",
         "networks": "Сети",
-        "local_users": "Локальные пользователи"
+        "local_users": "Локальные пользователи",
+        "batteries": "Батареи",
+        "controllers": "Контроллеры устройств",
+        "memories": "Память",
+        "slots": "Слоты",
+        "sounds": "Звуковые устройства",
+        "usbdevices": "USB-устройства",
+        "videos": "Видеокарты",
+        "virtualmachines": "Виртуальные машины"
       }
     },
     "minion-id": "ID клиента",

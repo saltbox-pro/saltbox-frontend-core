@@ -73,7 +73,15 @@
         "inputs": "Inputs",
         "drives": "Drives",
         "networks": "Networks",
-        "local_users": "Local Users"
+        "local_users": "Local Users",
+        "batteries": "Batteries",
+        "controllers": "Controllers",
+        "memories": "Memories",
+        "slots": "Slots",
+        "sounds": "Sounds",
+        "usbdevices": "USB Devices",
+        "videos": "Video Adapters",
+        "virtualmachines": "Virtual Machines"
       }
     },
     "minion-id": "Minion ID",
