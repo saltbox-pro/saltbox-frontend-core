@@ -6,7 +6,7 @@ import {
   FullscreenOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Card, Flex, Modal, Spin, Typography } from "antd";
+import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,17 +41,18 @@ type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type MinionDashboardCardProps = {
   card: DashboardCardConfig;
-  onEdit: () => void;
-  onRemove?: () => void;
+  onEdit: (cardId: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
 };
 
 export const MinionDashboardCard = observer(
-  ({ card, onEdit, onRemove, slug, filterStore }: MinionDashboardCardProps) => {
+  ({ card, onEdit, slug, filterStore }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
+    const isFullScreenRef = useRef(isFullScreen);
+    const [isTogglingFullScreen, setIsTogglingFullScreen] = useState(false);
 
     const emptyLabel = t("dashboard.empty-name");
     const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
@@ -62,7 +63,6 @@ export const MinionDashboardCard = observer(
       }
     }, [card.fieldSource, dashboardCardStore, filterStore.searchMongoDBQuery, slug]);
 
-    const isFullScreenRef = useRef(isFullScreen);
     isFullScreenRef.current = isFullScreen;
 
     useEffect(
@@ -75,9 +75,13 @@ export const MinionDashboardCard = observer(
     );
 
     const toggleFullScreen = () => {
-      const nextIsFullScreen = !isFullScreen;
-      setIsFullScreen(nextIsFullScreen);
-      dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
+      setIsTogglingFullScreen(true);
+      setTimeout(() => {
+        const nextIsFullScreen = !isFullScreenRef.current;
+        setIsFullScreen(nextIsFullScreen);
+        dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
+        setIsTogglingFullScreen(false);
+      }, 0);
     };
 
     const copyDataText = [
@@ -91,7 +95,7 @@ export const MinionDashboardCard = observer(
         title: t("dashboard.delete-card-confirm-title"),
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
-        onOk: onRemove,
+        onOk: () => dashboardStore.removeCard(card.id),
       });
     };
 
@@ -99,7 +103,7 @@ export const MinionDashboardCard = observer(
       {
         icon: <EditOutlined />,
         label: t("dashboard.edit-card"),
-        onClick: onEdit,
+        onClick: () => onEdit(card.id),
         key: "edit",
         disabled: isFullScreen,
       },
@@ -214,8 +218,14 @@ export const MinionDashboardCard = observer(
               {showChartActions && (
                 <CopyToClipboardButton size="small" type="text" text={copyDataText} />
               )}
-              <Dropdown menu={{ items }} trigger={["click"]}>
-                <DashOutlined className={styles.cardMenuIcon} />
+              <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
+                <Button
+                  type="text"
+                  size="small"
+                  loading={isTogglingFullScreen}
+                  icon={<DashOutlined />}
+                  className={styles.cardMenuIcon}
+                />
               </Dropdown>
             </div>
           </div>

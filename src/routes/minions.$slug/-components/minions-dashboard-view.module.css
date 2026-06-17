@@ -11,12 +11,12 @@
   margin: 0 0 20px;
 }
 
-.dashboardCardWrapper {
-  height: var(--dashboard-card-height);
+.dashboardContainerFullscreen {
+  overflow: hidden;
 }
 
-.hiddenCard {
-  display: none;
+.dashboardCardWrapper {
+  height: var(--dashboard-card-height);
 }
 
 .wideCard {

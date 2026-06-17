@@ -1,16 +1,15 @@
 import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
 import { observer } from "mobx-react-lite";
-import { ReactNode } from "react";
+import { ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-
-import { MinionFilterStore } from "saltbox-core/store";
 
 import {
   DashboardPreset,
   dashboardStore,
   MinionDashboardCard,
 } from "saltbox-core/features/minions-dashboard";
+import { MinionFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-dashboard-view.module.css";
 
@@ -29,6 +28,14 @@ export const MinionsDashboardView = observer(
     onAddCard: () => void;
   }) => {
     const { t } = useTranslation();
+    const { onEditCard } = props;
+
+    const handleEditCard = useCallback(
+      (cardId: string) => {
+        return onEditCard(cardId);
+      },
+      [onEditCard]
+    );
 
     return (
       <Flex gap={12} vertical style={{ height: "100%" }}>
@@ -51,32 +58,29 @@ export const MinionsDashboardView = observer(
             </Empty>
           </div>
         ) : (
-          <div className={styles.dashboardContainer}>
-            {dashboardStore.cards.map((card) => {
-              const isHiddenByFullScreen =
-                dashboardStore.isCardFullScreen && dashboardStore.fullScreenCardId !== card.id;
-
-              return (
-                <div
-                  key={card.id}
-                  className={[
-                    styles.dashboardCardWrapper,
-                    PRESET_WRAPPER_CLASSNAMES[card.preset],
-                    isHiddenByFullScreen ? styles.hiddenCard : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                >
-                  <MinionDashboardCard
-                    card={card}
-                    onEdit={() => props.onEditCard(card.id)}
-                    onRemove={() => dashboardStore.removeCard(card.id)}
-                    slug={props.slug}
-                    filterStore={props.filterStore}
-                  />
-                </div>
-              );
-            })}
+          <div
+            className={[
+              styles.dashboardContainer,
+              dashboardStore.isCardFullScreen ? styles.dashboardContainerFullscreen : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {dashboardStore.cards.map((card) => (
+              <div
+                key={card.id}
+                className={[styles.dashboardCardWrapper, PRESET_WRAPPER_CLASSNAMES[card.preset]]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                <MinionDashboardCard
+                  card={card}
+                  onEdit={handleEditCard}
+                  slug={props.slug}
+                  filterStore={props.filterStore}
+                />
+              </div>
+            ))}
           </div>
         )}
       </Flex>
