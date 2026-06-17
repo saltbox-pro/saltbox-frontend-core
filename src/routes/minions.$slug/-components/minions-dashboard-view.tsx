@@ -6,10 +6,12 @@ import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
-import { DashboardPreset } from "../model/dashboard-model";
-import { dashboardStore } from "../model/dashboard-store";
+import {
+  DashboardPreset,
+  dashboardStore,
+  MinionDashboardCard,
+} from "saltbox-core/features/minions-dashboard";
 
-import { MinionDashboardCard } from "./components/minion-dashboard-card";
 import styles from "./minions-dashboard-view.module.css";
 
 const PRESET_WRAPPER_CLASSNAMES: Partial<Record<DashboardPreset, string>> = {
