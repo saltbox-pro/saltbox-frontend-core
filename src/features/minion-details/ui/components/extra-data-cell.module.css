@@ -12,6 +12,13 @@
   overflow: hidden;
 }
 
+.text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .actions {
   position: absolute;
   right: 0;

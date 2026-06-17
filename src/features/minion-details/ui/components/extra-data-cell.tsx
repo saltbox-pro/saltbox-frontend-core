@@ -1,10 +1,8 @@
 import { CopyOutlined, FilterOutlined } from "@ant-design/icons";
 import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
-import { Typography, message } from "antd";
+import { message } from "antd";
 import { type MouseEvent, useState } from "react";
 import { useTranslation } from "react-i18next";
-
-import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 
 import styles from "./extra-data-cell.module.css";
 
@@ -20,13 +18,12 @@ export function toCopyValue(value: unknown): string {
 
 export type ExtraDataCellProps = {
   value: unknown;
-  field: string;
   filterTitle?: string;
   onFilter?: () => void;
   onCopy?: () => void;
 };
 
-export function ExtraDataCell({ value, field, filterTitle, onFilter, onCopy }: ExtraDataCellProps) {
+export function ExtraDataCell({ value, filterTitle, onFilter, onCopy }: ExtraDataCellProps) {
   const { t } = useTranslation("common");
   const [hovered, setHovered] = useState(false);
 
@@ -49,28 +46,17 @@ export function ExtraDataCell({ value, field, filterTitle, onFilter, onCopy }: E
     onFilter?.();
   };
 
-  const renderContent = () => {
-    if (value == null) return null;
-
-    if (isPrimitive(value)) {
-      const text = String(value);
-      return (
-        <Typography.Text ellipsis title={text}>
-          {text}
-        </Typography.Text>
-      );
-    }
-
-    return <JsonPreview value={value} title={field} />;
-  };
-
   return (
     <span
       className={styles.cell}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <span className={styles.content}>{renderContent()}</span>
+      <span className={styles.content}>
+        <span className={styles.text} title={String(value)}>
+          {String(value)}
+        </span>
+      </span>
 
       {hovered && value != null && (onCopy || onFilter) && (
         <span className={styles.actions}>

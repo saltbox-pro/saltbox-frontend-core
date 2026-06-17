@@ -94,9 +94,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
           columnHelper.accessor((row) => row[field], {
             id: field,
             header: field,
-            cell: ({ getValue }) => (
-              <ExtraDataCell value={getValue()} field={field} onCopy={() => {}} />
-            ),
+            cell: ({ getValue }) => <ExtraDataCell value={getValue()} onCopy={() => {}} />,
             meta: {
               minWidth: 160,
             },
