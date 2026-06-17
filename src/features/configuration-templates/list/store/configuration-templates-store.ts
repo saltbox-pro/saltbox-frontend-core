@@ -45,6 +45,7 @@ export type ConfigurationTemplatesListStore = SourceActionsPort & {
   reloadSource: (sourceId: string) => Promise<void>;
   addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
   deleteSourceFile: (sourceId: string, fileId: string) => Promise<ResourceDeleteResult>;
+  deleteSourceTemplate: (sourceId: string, templateId: string) => Promise<void>;
 };
 
 export class ConfigurationTemplatesStore implements ConfigurationTemplatesListStore {
@@ -404,4 +405,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> =>
+    this.runtime.deleteSourceTemplate(sourceId, templateId);
 }

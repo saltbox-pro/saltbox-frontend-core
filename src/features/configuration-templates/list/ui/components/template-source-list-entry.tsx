@@ -21,8 +21,10 @@ import {
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
+  canDeleteSourceTemplates,
   canDuplicateSourceTemplate,
   canEditSourceTemplates,
+  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
 import {
@@ -54,8 +56,10 @@ export const TemplateSourceListEntry = observer(
     });
 
     const isLocalSource = isEditableTemplateSource(source);
+    const showDeleteTemplate = isDeletableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
     const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
+    const canDeleteTemplates = canDeleteSourceTemplates(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -112,6 +116,12 @@ export const TemplateSourceListEntry = observer(
               showEditTemplate: isLocalSource,
               canEditTemplates,
               canDuplicateTemplates,
+              showDeleteTemplate,
+              canDeleteTemplates,
+              onDeleteTemplate: showDeleteTemplate
+                ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
+                : undefined,
+              onDeleteTemplateError: () => store.reloadSource(source.id),
             },
             files: {
               items: visibleFiles,

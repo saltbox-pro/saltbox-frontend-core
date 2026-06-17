@@ -3,6 +3,7 @@
 }
 
 .files .fileItem {
+  gap: 40px;
   padding: 10px;
   border-radius: 4px;
   background-color: #fafafa;
@@ -57,24 +58,6 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  margin: 0;
-}
-
-.files .fileItem :global(.ant-list-item-action) {
-  margin-inline-start: 8px;
-}
-
-.fileDelete {
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.files .fileItem:hover .fileDelete {
-  opacity: 1;
-}
-
-.fileDelete:disabled {
-  opacity: 0.4;
 }
 
 .filesConstrained :global(.ant-spin-nested-loading),

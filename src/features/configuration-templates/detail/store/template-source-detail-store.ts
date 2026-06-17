@@ -158,4 +158,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  deleteSourceTemplate = (templateId: string): Promise<void> =>
+    this.runtime.deleteSourceTemplate(this.sourceId, templateId);
 }

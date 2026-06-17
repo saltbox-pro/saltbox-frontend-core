@@ -1,6 +1,7 @@
 import { SourceOperation, SourceState } from "@saltbox/saltbox-core-api-client";
 
 import {
+  DELETE_LOCAL_TEMPLATE_SOURCE_OPERATIONS,
   DISCOVER_SOURCE_OPERATIONS,
   PLUG_SOURCE_OPERATIONS,
   REMOVE_SOURCE_OPERATIONS,
@@ -38,7 +39,9 @@ export function isRemoveInProgress(source: SourceOperationProgressSnapshot): boo
 }
 
 export function isPlugInProgress({ actionKind, source }: IsPlugInProgressParams): boolean {
-  if (actionKind === "sync" || actionKind === "unplug") return false;
+  if (actionKind === "sync" || actionKind === "unplug" || actionKind === "delete_template") {
+    return false;
+  }
   if (actionKind === "plug") return true;
   if (!source) return false;
 
@@ -71,6 +74,10 @@ export function isAddFileInProgress({ actionKind, source }: IsAddFileInProgressP
   return (
     isSourceOperationInProgress(source) && source.current_operation === SourceOperation.AddUserFile
   );
+}
+
+export function isDeleteLocalTemplateSourceOperation(operation: SourceOperation | null): boolean {
+  return operation != null && DELETE_LOCAL_TEMPLATE_SOURCE_OPERATIONS.has(operation);
 }
 
 export function isSyncRequestLoading({ actionKind }: SourceActionContext): boolean {
@@ -124,7 +131,9 @@ type IsSyncInProgressParams = SourceActionContext & {
 };
 
 export function isSyncInProgress({ source, ...actionContext }: IsSyncInProgressParams): boolean {
-  if (actionContext.actionKind === "unplug") return false;
+  if (actionContext.actionKind === "unplug" || actionContext.actionKind === "delete_template") {
+    return false;
+  }
 
   return (
     isSyncRequestLoading(actionContext) ||
