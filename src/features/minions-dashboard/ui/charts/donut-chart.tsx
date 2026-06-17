@@ -47,6 +47,7 @@ export const DonutChart = ({ data }: DonutChartProps) => {
           dataKey="count"
           nameKey="name"
           paddingAngle={1}
+          isAnimationActive={false}
         >
           {data.map((entry, index) => (
             <Cell key={`${entry.name}-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
