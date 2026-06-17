@@ -29,6 +29,7 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       id={resolvedDisplayId}
       innerId={resolvedInnerId}
       slug={slug}
+      activeTab={tabKey}
       open={drawer.isOpened}
       loading={!!isMinionLoading}
       hasData={hasData}

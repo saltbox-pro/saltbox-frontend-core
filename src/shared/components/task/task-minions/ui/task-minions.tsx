@@ -10,6 +10,9 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+
+import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 
 import { MinionTaskResultsDrawer } from "saltbox-core/features/task/job-return";
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
@@ -53,13 +56,9 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           actions: [
             {
               icon: <ExportOutlined />,
-              onClick: (_, row) => {
-                const mid = row.minion_inner_id ?? "";
-                if (collectionSlug && mid) {
-                  window.open(`/core/minions/${collectionSlug}/${mid}`, "_blank");
-                }
-              },
-              title: t("minions.open-in-new-tab"),
+              getHref: (_, row) =>
+                buildMinionDetailsPagePath(collectionSlug, row.minion_inner_id ?? ""),
+              title: t("minions.open-minion-details-page"),
               visible: (_, row) => !!(collectionSlug && row.minion_inner_id),
             },
             {
@@ -132,6 +131,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           taskDrawer.toggle(toJS(minion));
         }}
         useVirtualScroll={false}
+        actionLinkComponent={Link}
       />
 
       <MinionTaskResultsDrawer

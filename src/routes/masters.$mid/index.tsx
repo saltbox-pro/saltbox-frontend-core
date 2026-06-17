@@ -12,7 +12,9 @@ import { Flex, message, Modal, Tabs, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
+
+import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 
 import {
   apiCoreStore,
@@ -96,10 +98,9 @@ const MasterPage = observer(() => {
           actions: [
             {
               icon: <ExportOutlined />,
-              onClick: (value, row) => {
-                window.open(`/core/masters/${row.salt_master}/minion/${value}`, "_blank");
-              },
-              title: t("minions.open-in-new-tab"),
+              getHref: (value, row) =>
+                buildMasterMinionRedirectPath(row.salt_master ?? masterId ?? "", String(value)),
+              title: t("minions.open-minion-details-page"),
             },
           ],
           tdClassName: "fast-table-column-nowrap",
@@ -130,7 +131,7 @@ const MasterPage = observer(() => {
         },
       }),
     ],
-    [t]
+    [masterId, t]
   );
 
   const saltKeysEmptyText = useMemo(() => {
@@ -392,6 +393,7 @@ const MasterPage = observer(() => {
                   });
                 }}
                 locale={{ empty: saltKeysEmptyText }}
+                actionLinkComponent={Link}
               />
             </div>
           </Flex>

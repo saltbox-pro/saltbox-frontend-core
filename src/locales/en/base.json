@@ -159,7 +159,6 @@
     "delete-selected-success": "Selected minions were deleted successfully: {{count}}",
     "delete-selected-failed": "Failed to delete minions: {{count}}",
     "job-returns": "Job Returns",
-    "open-in-new-tab": "Open in new tab",
     "open-minion-details-page": "Open minion details page",
     "show-details": "Show details",
     "copy-minion-id": "Copy Minion ID",
