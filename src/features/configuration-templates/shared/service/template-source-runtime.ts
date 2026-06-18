@@ -7,13 +7,12 @@ import {
   deleteSourceFileApi,
   uploadSourceFile,
 } from "../../files/service/source-file-mutations.service";
-import { deleteSourceTemplateWithPolling } from "../../templates/service/delete-source-template.service";
-import { canDeleteSourceTemplates } from "../../templates/helpers/can-manage-source-templates";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
+import { canDeleteSourceTemplates } from "../../templates/helpers/can-manage-source-templates";
+import { deleteSourceTemplateWithPolling } from "../../templates/service/delete-source-template.service";
+import { getSourceActionContext } from "../helpers/source-action-progress";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { TemplateSourceStatePort } from "../types/template-source-state-port";
-
-import { getSourceActionContext } from "../helpers/source-action-progress";
 
 import { SourceBgTaskPollingService } from "./source-bg-task-polling.service";
 import { TemplateSourceActionsService } from "./template-source-actions.service";

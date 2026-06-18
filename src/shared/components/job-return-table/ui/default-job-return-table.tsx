@@ -21,7 +21,6 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
-
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import type { JobStore } from "saltbox-core/store";
 import {

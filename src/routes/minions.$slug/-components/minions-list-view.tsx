@@ -6,6 +6,7 @@ import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import {
@@ -38,15 +39,32 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
+  const location = useLocation();
 
   const [minionsStore] = useState(
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
   const [selection, setSelection] = useState<RowSelectionState>({});
 
+  const searchQueryKey = JSON.stringify(props.filterStore.searchMongoDBQuery);
+  const shouldWaitForFilterSchema =
+    props.filterStore.activeFiltersCount > 0 && props.filterStore.isLoading;
+  const shouldDeferLoadForNavigationReset = location.state?.resetFilters === true;
+
   useLayoutEffect(() => {
+    if (shouldWaitForFilterSchema || shouldDeferLoadForNavigationReset) {
+      return;
+    }
+
     minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);
-  }, [props.slug, minionsStore]);
+  }, [
+    props.slug,
+    minionsStore,
+    searchQueryKey,
+    shouldWaitForFilterSchema,
+    shouldDeferLoadForNavigationReset,
+    props.filterStore,
+  ]);
 
   const applySearchFilters = useCallback(() => {
     minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);

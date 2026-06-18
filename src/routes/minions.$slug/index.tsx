@@ -45,6 +45,24 @@ type TabItems = ComponentProps<typeof Tabs>["items"];
 
 const STORAGE_KEY_PREFIX = "minions";
 
+const createMinionFilterStore = () => {
+  const store = new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`);
+  const saved = localStorage.getItem("minionsFilter");
+
+  if (saved) {
+    localStorage.removeItem("minionsFilter");
+    try {
+      const initialFilterWithIds = generateIdsForQuery(JSON.parse(saved));
+      store.currentFilters = initialFilterWithIds;
+      store.handleSearch();
+    } catch {
+      // ignore invalid filter payload
+    }
+  }
+
+  return store;
+};
+
 const MinionsPage = observer(() => {
   const { t } = useTranslation();
 
@@ -59,10 +77,7 @@ const MinionsPage = observer(() => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const minionFilterStore = useMemo(
-    () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`),
-    []
-  );
+  const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
   const tasksFilterStore = useMemo(
     () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
     []
@@ -91,16 +106,16 @@ const MinionsPage = observer(() => {
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
-  useEffect(() => {
-    const initialFilter = JSON.parse(localStorage.getItem("minionsFilter"));
-    if (initialFilter) {
-      localStorage.removeItem("minionsFilter");
-      const initialFilterWithIds = generateIdsForQuery(initialFilter);
-      minionFilterStore.searchFilters = initialFilterWithIds;
-      minionFilterStore.currentFilters = initialFilterWithIds;
-      openMinionsFilters();
+  useLayoutEffect(() => {
+    if (location.state?.resetFilters) {
+      minionFilterStore.handleResetFiltersSilent();
+      closeMinionsFilters();
     }
-  }, [minionFilterStore, openMinionsFilters]);
+  }, [location.pathname, location.search, location.state, minionFilterStore, closeMinionsFilters]);
+
+  useLayoutEffect(() => {
+    minionFilterStore.loadFiltersScheme();
+  }, [minionFilterStore]);
 
   const addBlock = () => {
     dashboardStore.addBlock({
@@ -159,13 +174,6 @@ const MinionsPage = observer(() => {
     }
   }, [slug]);
 
-  useLayoutEffect(() => {
-    if (location.state?.resetFilters) {
-      minionFilterStore.handleResetFiltersSilent();
-      closeMinionsFilters();
-    }
-  }, [location.pathname, location.search, location.state, minionFilterStore, closeMinionsFilters]);
-
   useEffect(() => {
     if (location.state?.resetFilters) {
       navigate(location.pathname + location.search, {
@@ -180,10 +188,6 @@ const MinionsPage = observer(() => {
       navigate("/core/not-found");
     }
   }, [collectionStore.error, navigate]);
-
-  useEffect(() => {
-    minionFilterStore.loadFiltersScheme();
-  }, [minionFilterStore]);
 
   useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {

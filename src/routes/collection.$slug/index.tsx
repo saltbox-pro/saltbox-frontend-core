@@ -17,7 +17,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
-
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import {
   CollectionStore,

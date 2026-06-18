@@ -13,7 +13,6 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
-
 import { MinionTaskResultsDrawer } from "saltbox-core/features/task/job-return";
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
 import type { TaskStore } from "saltbox-core/store";

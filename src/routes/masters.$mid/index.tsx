@@ -15,7 +15,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
-
 import {
   apiCoreStore,
   DUPLICATES_FILTER,
