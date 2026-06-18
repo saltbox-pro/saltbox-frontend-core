@@ -37,7 +37,12 @@ export const HorizontalBarChart = ({ data }: HorizontalBarChartProps) => {
           tickFormatter={truncateAxisLabel}
         />
         <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
-        <Bar dataKey="count" radius={[0, 6, 6, 0]} fill="#1677ff" isAnimationActive={false} />
+        <Bar
+          dataKey="count"
+          radius={[0, 6, 6, 0]}
+          fill="var(--ant-color-primary, #1677ff)"
+          isAnimationActive={false}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

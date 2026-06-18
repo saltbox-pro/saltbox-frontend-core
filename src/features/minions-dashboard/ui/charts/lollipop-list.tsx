@@ -18,11 +18,11 @@ export const LollipopList = ({ data }: LollipopListProps) => {
           <span className={styles.lollipopName}>{item.name}</span>
           <span className={styles.lollipopTrack}>
             <span
-              className={styles.lollipopBar}
+              className={styles.lollipopTrackBar}
               style={{ width: `${Math.max(8, (item.count / max) * 100)}%` }}
             />
             <span
-              className={styles.lollipopDot}
+              className={styles.lollipopTrackDot}
               style={{ left: `${Math.max(8, (item.count / max) * 100)}%` }}
             />
           </span>

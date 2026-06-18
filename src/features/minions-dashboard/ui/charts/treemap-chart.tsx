@@ -1,6 +1,6 @@
 import { ResponsiveContainer, Tooltip as ChartTooltip, Treemap as RechartsTreemap } from "recharts";
 
-import { CHART_COLORS } from "../../constants/chart-colors";
+import { generateChartColors } from "../../constants/chart-color-generator";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -15,6 +15,7 @@ type TreemapContentProps = {
   name?: string;
   count?: number;
   payload?: ChartDatum;
+  colors?: string[];
 };
 
 const TreemapContent = (props: TreemapContentProps) => {
@@ -22,7 +23,7 @@ const TreemapContent = (props: TreemapContentProps) => {
   const width = Number(props.width) || 0;
   const height = Number(props.height) || 0;
   const label = item?.name || props.name;
-  const count = item?.count || props.count;
+  const count = item?.count ?? props.count;
   const canShowText = width > 72 && height > 36;
 
   return (
@@ -32,7 +33,7 @@ const TreemapContent = (props: TreemapContentProps) => {
         y={props.y}
         width={width}
         height={height}
-        fill={CHART_COLORS[(props.index || 0) % CHART_COLORS.length]}
+        fill={props.colors?.[props.index || 0]}
         stroke="#fff"
         strokeWidth={3}
         rx={4}
@@ -55,13 +56,15 @@ type TreemapChartProps = {
 };
 
 export const TreemapChart = ({ data }: TreemapChartProps) => {
+  const colors = generateChartColors(data.length);
+
   return (
     <ResponsiveContainer>
       <RechartsTreemap
         data={data}
         dataKey="count"
         nameKey="name"
-        content={<TreemapContent />}
+        content={<TreemapContent colors={colors} />}
         isAnimationActive={false}
       >
         <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />

@@ -84,11 +84,9 @@ export const MinionDashboardCard = observer(
       }, 0);
     };
 
-    const copyDataText = [
-      ...dashboardCardStore.grainValues.map(
-        (item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`
-      ),
-    ].join("\n");
+    const copyDataText = dashboardCardStore.grainValues
+      .map((item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`)
+      .join("\n");
 
     const handleDeleteClick = () => {
       Modal.confirm({
@@ -224,12 +222,12 @@ export const MinionDashboardCard = observer(
                   size="small"
                   loading={isTogglingFullScreen}
                   icon={<DashOutlined />}
-                  className={styles.cardMenuIcon}
+                  className={styles.dashboardTableBlockMenuIcon}
                 />
               </Dropdown>
             </div>
           </div>
-          <div className={styles.chartBody}>{renderChart()}</div>
+          <div className={styles.dashboardTableBlockChartBody}>{renderChart()}</div>
         </Spin>
       </Card>
     );

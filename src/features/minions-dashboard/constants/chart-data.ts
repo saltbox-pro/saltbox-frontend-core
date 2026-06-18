@@ -8,9 +8,9 @@ export const CHART_DATA_LIMIT_BY_PRESET: Record<
   "donut" | "horizontal-bar" | "vertical-bar" | "treemap" | "lollipop",
   number
 > = {
-  donut: 8,
+  donut: 12,
   "horizontal-bar": 14,
   "vertical-bar": 12,
-  treemap: 24,
+  treemap: 28,
   lollipop: 10,
 };

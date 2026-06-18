@@ -59,13 +59,13 @@
   gap: 8px;
 }
 
-.cardMenuIcon {
+.dashboardTableBlockMenuIcon {
   cursor: pointer;
   color: var(--ant-color-text-secondary, #667085);
   padding: 4px;
 }
 
-.chartBody {
+.dashboardTableBlockChartBody {
   height: calc(100% - 52px);
   min-height: 210px;
 }

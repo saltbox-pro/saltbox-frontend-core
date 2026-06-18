@@ -43,7 +43,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
                 field: fieldSource,
                 operator: "=",
                 valueSource: "value",
-                value: value?.toString(),
+                value: String(value ?? ""),
               });
               filterStore.handleSearch();
             },

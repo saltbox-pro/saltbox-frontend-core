@@ -32,7 +32,12 @@ export const VerticalBarChart = ({ data }: VerticalBarChartProps) => {
         />
         <YAxis allowDecimals={false} />
         <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
-        <Bar dataKey="count" radius={[6, 6, 0, 0]} fill="#13a8c7" isAnimationActive={false} />
+        <Bar
+          dataKey="count"
+          radius={[6, 6, 0, 0]}
+          fill="var(--ant-color-primary, #1677ff)"
+          isAnimationActive={false}
+        />
       </BarChart>
     </ResponsiveContainer>
   );

@@ -8,7 +8,7 @@ import {
   Tooltip as ChartTooltip,
 } from "recharts";
 
-import { CHART_COLORS } from "../../constants/chart-colors";
+import { generateChartColors } from "../../constants/chart-color-generator";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -29,6 +29,8 @@ type DonutChartProps = {
 };
 
 export const DonutChart = ({ data }: DonutChartProps) => {
+  const colors = generateChartColors(data.length);
+
   return (
     <ResponsiveContainer>
       <PieChart>
@@ -50,7 +52,7 @@ export const DonutChart = ({ data }: DonutChartProps) => {
           isAnimationActive={false}
         >
           {data.map((entry, index) => (
-            <Cell key={`${entry.name}-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+            <Cell key={`${entry.name}-${index}`} fill={colors[index]} />
           ))}
         </Pie>
       </PieChart>
