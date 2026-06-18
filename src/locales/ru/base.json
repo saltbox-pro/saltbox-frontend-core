@@ -971,6 +971,13 @@
       "add-git-source": "Добавить из git-репозитория",
       "add-archive-source": "Добавить из архива"
     },
+    "source-form": {
+      "namespace": "Пространство имён",
+      "namespace-placeholder": "my_namespace",
+      "namespace-tooltip": "Префикс для имён шаблонов. Только строчные латинские буквы, цифры и подчёркивание",
+      "namespace-invalid": "Допустимы только строчные латинские буквы, цифры и подчёркивание",
+      "namespace-max": "Не более {{max}} символов"
+    },
     "local-source-modal": {
       "title": "Добавление локального источника",
       "name": "Название",
@@ -994,6 +1001,7 @@
       "description-placeholder": "Введите описание",
       "repo-url": "URL репозитория",
       "repo-url-required": "Укажите URL репозитория",
+      "repo-url-invalid": "Укажите корректный URL (http или https)",
       "repo-url-placeholder": "https://github.com/org/repo.git",
       "repo-user": "Пользователь",
       "repo-user-placeholder": "Введите пользователя",

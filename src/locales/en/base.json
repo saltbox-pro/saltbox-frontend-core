@@ -971,6 +971,13 @@
       "add-git-source": "Add from Git repository",
       "add-archive-source": "Add from archive"
     },
+    "source-form": {
+      "namespace": "Namespace",
+      "namespace-placeholder": "my_namespace",
+      "namespace-tooltip": "Prefix for template names. Lowercase letters, digits, and underscores only",
+      "namespace-invalid": "Only lowercase letters, digits, and underscores are allowed",
+      "namespace-max": "Maximum {{max}} characters"
+    },
     "local-source-modal": {
       "title": "Add local source",
       "name": "Name",
@@ -994,6 +1001,7 @@
       "description-placeholder": "Enter description",
       "repo-url": "Repository URL",
       "repo-url-required": "Repository URL is required",
+      "repo-url-invalid": "Enter a valid URL (http or https)",
       "repo-url-placeholder": "https://github.com/org/repo.git",
       "repo-user": "Username",
       "repo-user-placeholder": "Enter username",
