@@ -15,11 +15,22 @@ import {
 export class DashboardStore {
   cards: DashboardCardConfig[];
   fullScreenCardId: string | null;
+  private storageKey = DASHBOARD_STORAGE_KEY;
+  private initializedUserId: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
-    this.cards = this.loadFromLocalStorage();
+    this.cards = [];
     this.fullScreenCardId = null;
+  }
+
+  init(userId: string) {
+    if (this.initializedUserId === userId) {
+      return;
+    }
+    this.initializedUserId = userId;
+    this.storageKey = `${DASHBOARD_STORAGE_KEY}:${userId}`;
+    this.cards = this.loadFromLocalStorage();
   }
 
   get isCardFullScreen(): boolean {
@@ -35,12 +46,12 @@ export class DashboardStore {
   }
 
   loadFromLocalStorage(): DashboardCardConfig[] {
-    return normalizeDashboardStorage(localStorage.getItem(DASHBOARD_STORAGE_KEY)).cards;
+    return normalizeDashboardStorage(localStorage.getItem(this.storageKey)).cards;
   }
 
   saveToLocalStorage() {
     localStorage.setItem(
-      DASHBOARD_STORAGE_KEY,
+      this.storageKey,
       JSON.stringify({ version: DASHBOARD_STORAGE_VERSION, cards: this.cards })
     );
   }
