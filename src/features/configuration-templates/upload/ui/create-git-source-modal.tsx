@@ -122,6 +122,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
           <Form.Item<GitSourceFormValues>
             label={t(`${I18N_PREFIX}.repo-url`)}
             name="repo_url"
+            validateFirst
             rules={[
               {
                 required: true,
