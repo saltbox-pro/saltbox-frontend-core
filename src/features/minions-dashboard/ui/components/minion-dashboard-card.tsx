@@ -91,6 +91,7 @@ export const MinionDashboardCard = observer(
     const handleDeleteClick = () => {
       Modal.confirm({
         title: t("dashboard.delete-card-confirm-title"),
+        icon: <></>,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
         onOk: () => dashboardStore.removeCard(card.id),
