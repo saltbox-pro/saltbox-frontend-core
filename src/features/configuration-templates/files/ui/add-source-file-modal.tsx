@@ -162,12 +162,6 @@ export function AddSourceFileModal({
                   min: 1,
                   message: t(`${I18N_PREFIX}.file-required`),
                 },
-                {
-                  validator: async (_, value: UploadFile[] | undefined) => {
-                    if (value?.[0]?.originFileObj) return;
-                    throw new Error(t(`${I18N_PREFIX}.file-required`));
-                  },
-                },
               ]}
             >
               <Dragger {...uploadProps}>
@@ -183,6 +177,7 @@ export function AddSourceFileModal({
               name="url"
               label={t(`${I18N_PREFIX}.url`)}
               required
+              validateFirst
               rules={[
                 { required: true, whitespace: true, message: t(`${I18N_PREFIX}.url-required`) },
                 { type: "url", message: t(`${I18N_PREFIX}.url-invalid`) },

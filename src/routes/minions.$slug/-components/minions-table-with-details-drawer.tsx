@@ -11,7 +11,9 @@ import { Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
+import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
@@ -30,6 +32,7 @@ export type MinionsTableWithDetailsDrawerProps = {
 
   filterStore: MinionFilterStore;
   onAddFilter: () => void;
+  onFiltersApplied?: () => void;
 };
 
 export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer(
@@ -52,10 +55,8 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           actions: [
             {
               icon: <ExportOutlined />,
-              onClick: (_, row) => {
-                window.open(`/core/minions/${props.slug}/${row.id}`, "_blank");
-              },
-              title: t("minions.open-in-new-tab"),
+              getHref: (_, row) => buildMinionDetailsPagePath(props.slug, row.id),
+              title: t("minions.open-minion-details-page"),
             },
           ],
           color: "accent",
@@ -152,10 +153,11 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         value: ruleValue,
       });
       props.filterStore.handleSearch();
+      props.onFiltersApplied?.();
       props.onAddFilter();
       drawer.close();
     },
-    [drawer.close, props.filterStore, props.onAddFilter]
+    [drawer.close, props.filterStore, props.onAddFilter, props.onFiltersApplied]
   );
 
   const handleRowClick = useCallback(
@@ -187,6 +189,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         bodyRef={drawer.mainContentRef}
         onRowClick={handleRowClick}
         useVirtualScroll={false}
+        actionLinkComponent={Link}
       />
 
       <MinionDetailsDrawer drawer={drawer} onFilterButton={handleDrawerFilterButtonClick} />

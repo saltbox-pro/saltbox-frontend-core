@@ -18,7 +18,9 @@ import { Flex, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
 
+import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import type { JobStore } from "saltbox-core/store";
 import {
@@ -93,10 +95,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             actions: [
               {
                 icon: <ExportOutlined />,
-                onClick: (_, row) => {
-                  window.open(`/core/masters/${row.salt_master}/minion/${row.minion_id}`, "_blank");
-                },
-                title: t("minions.open-in-new-tab"),
+                getHref: (_, row) => buildMasterMinionRedirectPath(row.salt_master, row.minion_id),
+                title: t("minions.open-minion-details-page"),
               },
             ],
             color: "accent",
@@ -270,6 +270,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
               activeRowId={drawer.activeRowId}
               bodyRef={drawer.mainContentRef}
               onRowClick={handleRowClick}
+              actionLinkComponent={Link}
             />
           </>
         )}

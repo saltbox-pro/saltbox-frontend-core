@@ -1,1 +1,1 @@
-export type ResourceDeleteResult = "deleted" | "not_found";
+export type ResourceDeleteResult = "deleted" | "not_found" | "failed";

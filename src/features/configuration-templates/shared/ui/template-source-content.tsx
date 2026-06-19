@@ -18,9 +18,7 @@ export function TemplateSourceContent({
   dimmed = false,
 }: TemplateSourceContentProps) {
   return (
-    <Space direction="vertical" size="middle">
-      <TemplateSourceLastErrorAlert source={source} />
-
+    <Space direction="vertical" size="small">
       <TemplateSourceInfo
         description={source.description}
         webUrl={getSourceWebUrl(source)}
@@ -29,6 +27,8 @@ export function TemplateSourceContent({
         showNotSynced={showNotSynced}
         dimmed={dimmed}
       />
+
+      <TemplateSourceLastErrorAlert source={source} />
     </Space>
   );
 }

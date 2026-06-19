@@ -1,8 +1,6 @@
 import {
   SourceOperation,
-  SourceType,
   type SourceListWithExtrasSchema,
-  type TemplateSourceCreateSchema,
   type TemplateSourcePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
@@ -15,12 +13,14 @@ import {
   isBgTaskPollAborted,
   rethrowIfAborted,
 } from "../../shared/errors/bg-task-poll-aborted.error";
+import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
 } from "../../shared/helpers/normalize-source-list-item";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
+import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
@@ -39,10 +39,11 @@ type LoadOptions = {
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
   load: (options?: LoadOptions) => Promise<void>;
-  refreshWithExternalCheck: () => Promise<void>;
+  refreshWithExternalCheck: () => Promise<boolean>;
   reloadSource: (sourceId: string) => Promise<void>;
   addSourceFile: (sourceId: string, payload: AddSourceFilePayload) => Promise<void>;
   deleteSourceFile: (sourceId: string, fileId: string) => Promise<ResourceDeleteResult>;
+  deleteSourceTemplate: (sourceId: string, templateId: string) => Promise<void>;
 };
 
 export class ConfigurationTemplatesStore implements ConfigurationTemplatesListStore {
@@ -101,10 +102,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     return {
       actionBySourceId: this.actionBySourceId,
       isSourcePresent: (sourceId) => this.sources.some((item) => item.id === sourceId),
-      refreshSource: (sourceId) => this.refreshSource(sourceId),
-      applySourceUpdate: (updated) => this.applySourceUpdate(updated),
-      patchOptimisticOperation: (sourceId, operation) =>
-        this.patchOptimisticOperation(sourceId, operation),
+      patchOptimisticTask: (sourceId, operation, taskId) =>
+        this.patchOptimisticTask(sourceId, operation, taskId),
       removeSource: (sourceId) => this.removeSourceFromList(sourceId),
       reloadSource: (sourceId) => this.reloadSource(sourceId),
       getSource: (sourceId) => this.sources.find((item) => item.id === sourceId),
@@ -160,9 +159,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       if (isCancelled()) return;
 
       runInAction(() => {
-        this.sources = sources;
+        this.sources = this.mergeSourcesPreservingActiveTasks(sources);
       });
-      this.runtime.syncForSources(sources);
+      this.runtime.syncForSources(this.sources);
     } catch (reason) {
       if (isBgTaskPollAborted(reason) || isCancelled()) return;
 
@@ -190,8 +189,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  refreshWithExternalCheck = async () => {
-    if (this.isCheckingExternal) return;
+  refreshWithExternalCheck = async (): Promise<boolean> => {
+    if (this.isCheckingExternal) return false;
 
     runInAction(() => {
       this.isCheckingExternal = true;
@@ -212,24 +211,28 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
         isCancelled: () => generation !== this.externalCheckGeneration,
       });
 
-      if (generation !== this.externalCheckGeneration) return;
+      if (generation !== this.externalCheckGeneration) return false;
 
       await this.load({
         signal: abortController.signal,
         isCancelled: () => generation !== this.externalCheckGeneration,
       });
 
-      if (generation !== this.externalCheckGeneration) return;
+      if (generation !== this.externalCheckGeneration) return false;
+
+      return true;
     } catch (reason) {
-      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return;
+      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return false;
 
       console.error("Failed to check external template sources:", reason);
-      if (isGlobalServerError(reason)) return;
+      if (isGlobalServerError(reason)) return false;
 
       runInAction(() => {
         this.gitlabSyncError = resolveGitlabSyncErrorKind(reason);
         this.gitlabSyncErrorDetail = getGitlabSyncErrorDetail(reason);
       });
+
+      return false;
     } finally {
       if (generation === this.externalCheckGeneration) {
         runInAction(() => {
@@ -242,14 +245,14 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   reloadSource = async (sourceId: string): Promise<void> => {
     try {
-      const source = await this.refreshSource(sourceId);
-      if (!source) return;
+      const refreshResult = await this.refreshSource(sourceId);
+      if (refreshResult.status !== "found") return;
 
       runInAction(() => {
         const index = this.sources.findIndex((item) => item.id === sourceId);
         if (index === -1) return;
 
-        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], source);
+        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], refreshResult.source);
       });
     } catch (reason) {
       if (isGlobalServerError(reason)) return;
@@ -257,21 +260,16 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  refreshSource = async (sourceId: string): Promise<SourceListWithExtrasSchema | null> => {
+  refreshSource = async (sourceId: string): Promise<RefreshSourceResult> => {
     try {
-      return await fetchTemplateSource(sourceId);
+      const source = await fetchTemplateSource(sourceId);
+      return source ? { status: "found", source } : { status: "not_found" };
     } catch (reason) {
-      if (isGlobalServerError(reason)) return null;
+      if (isApiNotFoundError(reason)) return { status: "not_found" };
+      if (isGlobalServerError(reason)) return { status: "failed" };
       console.error("Failed to refresh template source:", reason);
-      return null;
+      return { status: "failed" };
     }
-  };
-
-  applySourceUpdate = (updated: SourceListWithExtrasSchema) => {
-    const index = this.sources.findIndex((item) => item.id === updated.id);
-    if (index === -1) return;
-
-    this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
   };
 
   addSource = (source: TemplateSourcePublicSchema) => {
@@ -289,51 +287,56 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     return normalized;
   };
 
-  private createTemplateSource = async (
-    schema: TemplateSourceCreateSchema
-  ): Promise<SourceListWithExtrasSchema> => {
-    const created = await apiCoreStore.taskTemplateSourcesApi?.templateSourceCreate({
-      TemplateSourceCreateSchema: schema,
-    });
+  createLocalSource = async (payload: {
+    name: string;
+    description?: string;
+    namespace?: string;
+  }): Promise<SourceListWithExtrasSchema> => {
+    const api = apiCoreStore.taskTemplateSourcesApi;
+    if (!api) throw new Error("API is not configured");
 
-    if (!created) {
-      throw new Error("Failed to create template source");
-    }
+    const created = await api.templateSourceCreateLocal({
+      TemplateSourceCreateLocalSchema: {
+        name: payload.name,
+        description: payload.description,
+        namespace: payload.namespace,
+      },
+    });
 
     return this.registerCreatedSource(created);
   };
 
-  createLocalSource = async (payload: {
-    name: string;
-    description?: string;
-  }): Promise<SourceListWithExtrasSchema> =>
-    this.createTemplateSource({
-      source_type: SourceType.LocalBundle,
-      name: payload.name,
-      description: payload.description,
-    });
-
   createGitSource = async (payload: {
     name: string;
     description?: string;
+    namespace?: string;
     repo_url: string;
     repo_user?: string;
     repo_pass?: string;
-    branch?: string;
-  }): Promise<SourceListWithExtrasSchema> =>
-    this.createTemplateSource({
-      source_type: SourceType.GitRepo,
-      name: payload.name,
-      description: payload.description,
-      repo_url: payload.repo_url,
-      repo_user: payload.repo_user ?? null,
-      repo_pass: payload.repo_pass ?? null,
-      branch: payload.branch || "master",
+    branch: string;
+  }): Promise<SourceListWithExtrasSchema> => {
+    const api = apiCoreStore.taskTemplateSourcesApi;
+    if (!api) throw new Error("API is not configured");
+
+    const created = await api.templateSourceCreateFromUrl({
+      TemplateSourceCreateFromURLSchema: {
+        name: payload.name,
+        description: payload.description,
+        namespace: payload.namespace,
+        repo_url: payload.repo_url,
+        repo_user: payload.repo_user ?? null,
+        repo_pass: payload.repo_pass ?? null,
+        branch: payload.branch,
+      },
     });
+
+    return this.registerCreatedSource(created);
+  };
 
   createArchiveSource = async (payload: {
     name: string;
     description?: string;
+    namespace?: string;
     file: File;
   }): Promise<SourceListWithExtrasSchema> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
@@ -342,24 +345,54 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     const created = await api.templateSourceCreateFromArchive({
       name: payload.name,
       description: payload.description ?? "",
+      namespace: payload.namespace,
       file: payload.file,
     });
 
     return this.registerCreatedSource(created);
   };
 
+  private mergeSourcesPreservingActiveTasks = (
+    incoming: SourceListWithExtrasSchema[]
+  ): SourceListWithExtrasSchema[] => {
+    return incoming.map((source) => {
+      const existing = this.sources.find((item) => item.id === source.id);
+      if (!existing) return source;
+
+      const hasActiveClientAction = this.actionBySourceId.has(source.id);
+      const hasStaleServerTaskFields = Boolean(existing.current_task_id) && !source.current_task_id;
+
+      if (!hasActiveClientAction && !hasStaleServerTaskFields) {
+        return source;
+      }
+
+      if (!existing.current_task_id && !existing.current_operation) {
+        return source;
+      }
+
+      return {
+        ...source,
+        current_operation: existing.current_operation ?? source.current_operation,
+        current_task_id: existing.current_task_id,
+        last_error: existing.last_error,
+      };
+    });
+  };
+
   private removeSourceFromList = (sourceId: string) => {
     this.sources = this.sources.filter((item) => item.id !== sourceId);
   };
 
-  private patchOptimisticOperation = (sourceId: string, operation: SourceOperation) => {
+  private patchOptimisticTask = (sourceId: string, operation: SourceOperation, taskId: string) => {
     const index = this.sources.findIndex((item) => item.id === sourceId);
     if (index === -1) return;
 
-    const source = this.sources[index];
-    if (source.current_operation !== null) return;
-
-    this.sources[index] = { ...source, current_operation: operation };
+    this.sources[index] = {
+      ...this.sources[index],
+      current_operation: operation,
+      current_task_id: taskId,
+      last_error: null,
+    };
   };
 
   addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> =>
@@ -372,6 +405,11 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   syncSource = (sourceId: string): Promise<void> => this.runtime.syncSource(sourceId);
 
+  unplugSource = (sourceId: string): Promise<void> => this.runtime.unplugSource(sourceId);
+
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> =>
+    this.runtime.deleteSourceTemplate(sourceId, templateId);
 }

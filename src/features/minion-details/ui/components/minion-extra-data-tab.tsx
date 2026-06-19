@@ -1,0 +1,91 @@
+import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
+import { FastTablePaginated, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Flex, message } from "antd";
+import { toJS } from "mobx";
+import { observer } from "mobx-react-lite";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { ExtraDataCategoriesStore } from "saltbox-core/store";
+
+import { MinionExtraDataCategoryDrawer } from "./minion-extra-data-category-drawer";
+
+const columnHelper = createColumnHelper<ExtraDataCategoryModel>();
+
+const ExtraDataCategoriesTable = FastTablePaginated<ExtraDataCategoryModel>;
+
+interface MinionExtraDataTabProps {
+  minionId: string;
+  minionName?: string;
+  isInDrawer?: boolean;
+  isFullView?: boolean;
+}
+
+export const MinionExtraDataTab = observer(function MinionExtraDataTab({
+  minionId,
+}: MinionExtraDataTabProps) {
+  const { t } = useTranslation();
+
+  const [store] = useState(() => new ExtraDataCategoriesStore());
+
+  const categoryDrawer = useInfoDrawer<ExtraDataCategoryModel, string, HTMLTableSectionElement>({
+    getId: (category) => category.id,
+    drawerId: DRAWER_IDS.extraDataCategoryDetails,
+  });
+
+  useEffect(() => {
+    store.loadCategories();
+
+    return () => {
+      store.reset();
+    };
+  }, [store]);
+
+  useEffect(() => {
+    if (store.error) {
+      message.error(t(store.error));
+    }
+  }, [store.error, t]);
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("name", {
+        header: t("minions.extra-data.category-column"),
+        cell: (info) =>
+          t(`minions.extra-data.categories.${info.getValue()}`, {
+            defaultValue: info.getValue(),
+          }),
+      }),
+    ],
+    [t]
+  );
+
+  return (
+    <Flex vertical gap="small" flex={1}>
+      <ExtraDataCategoriesTable
+        columns={columns}
+        data={toJS(store.categories)}
+        total={store.total}
+        isLoading={store.isLoading}
+        pagination={store.pagination}
+        sorting={store.sorting}
+        onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
+        getRowId={(row) => row.id}
+        activeRowId={categoryDrawer.activeRowId}
+        bodyRef={categoryDrawer.mainContentRef}
+        onRowClick={categoryDrawer.toggle}
+        locale={{ empty: t("minions.extra-data.empty") }}
+      />
+
+      <MinionExtraDataCategoryDrawer
+        open={categoryDrawer.isOpened}
+        category={categoryDrawer.openedArg}
+        minionId={minionId}
+        width={960}
+        onClose={categoryDrawer.close}
+      />
+    </Flex>
+  );
+});

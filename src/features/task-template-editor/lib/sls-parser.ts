@@ -3,6 +3,35 @@ import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
 const SCHEMA_BLOCK_REGEX = /{#start_schema\s*([\s\S]*?)\s*end_schema#}/;
 const SCHEMA_BLOCK_WITH_TAIL_REGEX = /{#start_schema\s*[\s\S]*?\s*end_schema#}\s*/;
 
+function offsetToLineColumn(text: string, offset: number): { line: number; column: number } {
+  let line = 1;
+  let lastNewline = -1;
+  const limit = Math.min(offset, text.length);
+
+  for (let i = 0; i < limit; i++) {
+    if (text[i] === "\n") {
+      line++;
+      lastNewline = i;
+    }
+  }
+
+  return { line, column: offset - lastNewline };
+}
+
+function describeJsonError(error: unknown, sls: string, contentStart: number): string {
+  const message = error instanceof Error ? error.message : String(error);
+  const positionMatch = message.match(/position (\d+)/);
+
+  if (!positionMatch) {
+    return message;
+  }
+
+  const relativePosition = Number(positionMatch[1]);
+  const { line, column } = offsetToLineColumn(sls, contentStart + relativePosition);
+
+  return `${message} (line ${line}, column ${column})`;
+}
+
 export function parseSchemaFromSls(sls: string): FormSchema {
   const match = sls.match(SCHEMA_BLOCK_REGEX);
 
@@ -10,7 +39,12 @@ export function parseSchemaFromSls(sls: string): FormSchema {
     throw new Error("Schema block not found");
   }
 
-  return JSON.parse(match[1]) as FormSchema;
+  try {
+    return JSON.parse(match[1]) as FormSchema;
+  } catch (error) {
+    const contentStart = (match.index ?? 0) + match[0].indexOf(match[1]);
+    throw new Error(describeJsonError(error, sls, contentStart));
+  }
 }
 
 export function extractSlsBody(sls: string): string {
@@ -60,3 +94,6 @@ export function getEmptySchema(): FormSchema {
 export function getEmptySlsBody(): string {
   return "";
 }
+
+export const stripSlsExtension = (fileName: string): string =>
+  fileName.trim().replace(/\.sls$/i, "");

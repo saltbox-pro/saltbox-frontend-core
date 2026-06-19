@@ -12,11 +12,32 @@
 
 .formWrapper {
   flex: 1;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  padding-right: 16px;
+}
+
+.formWrapper > :global(.ant-flex) {
+  min-height: 100%;
+}
+
+.formWrapper :global(form.rjsf) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.formWrapper :global(form.rjsf > .rjsf-field-object) {
+  flex: 1;
 }
 
 .actions {
-  margin-top: 16px;
+  position: sticky;
+  z-index: 1;
+  bottom: 0;
+  padding: 12px 0;
+  background: var(--ant-color-bg-container, #fff);
 }
 
 .stateWrapper {

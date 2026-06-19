@@ -19,7 +19,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useMemo, useState } from "react";
+import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -47,6 +47,24 @@ type TabItems = ComponentProps<typeof Tabs>["items"];
 
 const STORAGE_KEY_PREFIX = "minions";
 
+const createMinionFilterStore = () => {
+  const store = new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`);
+  const saved = localStorage.getItem("minionsFilter");
+
+  if (saved) {
+    localStorage.removeItem("minionsFilter");
+    try {
+      const initialFilterWithIds = generateIdsForQuery(JSON.parse(saved));
+      store.currentFilters = initialFilterWithIds;
+      store.handleSearch();
+    } catch {
+      // ignore invalid filter payload
+    }
+  }
+
+  return store;
+};
+
 const MinionsPage = observer(() => {
   const { t } = useTranslation();
 
@@ -63,10 +81,7 @@ const MinionsPage = observer(() => {
   const [isAddDashboardBlockModalOpen, setIsAddDashboardBlockModalOpen] = useState(false);
   const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
 
-  const minionFilterStore = useMemo(
-    () => new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`),
-    []
-  );
+  const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
   const tasksFilterStore = useMemo(
     () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
     []
@@ -80,6 +95,7 @@ const MinionsPage = observer(() => {
     isOpen: shownMinionsFilters,
     toggle: toggleShownMinionsFilters,
     open: openMinionsFilters,
+    close: closeMinionsFilters,
   } = useFiltersToggle(false);
   const {
     isOpen: shownTasksFilters,
@@ -94,16 +110,16 @@ const MinionsPage = observer(() => {
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
-  useEffect(() => {
-    const initialFilter = JSON.parse(localStorage.getItem("minionsFilter"));
-    if (initialFilter) {
-      localStorage.removeItem("minionsFilter");
-      const initialFilterWithIds = generateIdsForQuery(initialFilter);
-      minionFilterStore.searchFilters = initialFilterWithIds;
-      minionFilterStore.currentFilters = initialFilterWithIds;
-      openMinionsFilters();
+  useLayoutEffect(() => {
+    if (location.state?.resetFilters) {
+      minionFilterStore.handleResetFiltersSilent();
+      closeMinionsFilters();
     }
-  }, [minionFilterStore, openMinionsFilters]);
+  }, [location.pathname, location.search, location.state, minionFilterStore, closeMinionsFilters]);
+
+  useLayoutEffect(() => {
+    minionFilterStore.loadFiltersScheme();
+  }, [minionFilterStore]);
 
   const dashboardFieldOptions = useMemo(
     () => getDashboardFieldOptions(minionFilterStore.filterSchema),
@@ -171,24 +187,18 @@ const MinionsPage = observer(() => {
 
   useEffect(() => {
     if (location.state?.resetFilters) {
-      minionFilterStore.handleResetFiltersSilent();
-
       navigate(location.pathname + location.search, {
         replace: true,
         state: {},
       });
     }
-  }, [location, navigate, minionFilterStore]);
+  }, [location, navigate]);
 
   useEffect(() => {
     if (collectionStore.error) {
       navigate("/core/not-found");
     }
   }, [collectionStore.error, navigate]);
-
-  useEffect(() => {
-    minionFilterStore.loadFiltersScheme();
-  }, [minionFilterStore]);
 
   useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {
@@ -429,9 +439,12 @@ const MinionsPage = observer(() => {
       </Modal>
 
       <CollectionCreateModal
-        query={minionFilterStore.searchMongoDBQuery as object}
+        query={minionFilterStore.searchMongoDBQuery}
         parentSlug={slug || ""}
         isOpen={isCreateModalOpen}
+        onBeforeNavigate={() => {
+          closeMinionsFilters();
+        }}
         onClose={() => {
           setIsCreateModalOpen(false);
         }}

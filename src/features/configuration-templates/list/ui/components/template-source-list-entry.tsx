@@ -21,8 +21,10 @@ import {
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
+  canDeleteSourceTemplates,
   canDuplicateSourceTemplate,
   canEditSourceTemplates,
+  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
 import {
@@ -48,11 +50,16 @@ export const TemplateSourceListEntry = observer(
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
     const showAddFileButton = canShowAddSourceFileButton(source);
-    const addingFile = isAddFileInProgress(getSourceActionContext(store, source.id));
+    const addingFile = isAddFileInProgress({
+      ...getSourceActionContext(store, source.id),
+      source,
+    });
 
     const isLocalSource = isEditableTemplateSource(source);
+    const showDeleteTemplate = isDeletableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
     const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
+    const canDeleteTemplates = canDeleteSourceTemplates(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -76,6 +83,8 @@ export const TemplateSourceListEntry = observer(
           searchQuery={searchQuery}
           detailHref={getTemplateSourceDetailPath(source.id)}
           sourceType={source.source_type}
+          sourceState={source.state}
+          currentOperation={source.current_operation}
           showActiveStatusTag={view.presentation.showActiveStatus}
           description={source.description || undefined}
           webUrl={view.webUrl}
@@ -90,6 +99,7 @@ export const TemplateSourceListEntry = observer(
               actions={store}
               canConnect={view.canConnect}
               canSync={view.canSync}
+              canUnplug={view.canUnplug}
               showDelete={view.showDelete}
             />
           }
@@ -106,6 +116,12 @@ export const TemplateSourceListEntry = observer(
               showEditTemplate: isLocalSource,
               canEditTemplates,
               canDuplicateTemplates,
+              showDeleteTemplate,
+              canDeleteTemplates,
+              onDeleteTemplate: showDeleteTemplate
+                ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
+                : undefined,
+              onDeleteTemplateError: () => store.reloadSource(source.id),
             },
             files: {
               items: visibleFiles,

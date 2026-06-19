@@ -55,6 +55,35 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
+    "extra-data": {
+      "tab": "Extra data",
+      "category-column": "Category",
+      "empty": "No extra data available",
+      "apply-to-filters": "Apply value to filters",
+      "load-error": "Failed to load extra data",
+      "search-label": "Search records",
+      "search-placeholder": "Enter value",
+      "categories": {
+        "local_groups": "Local Groups",
+        "storages": "Storages",
+        "softwares": "Software",
+        "bios": "BIOS",
+        "cpus": "CPUs",
+        "hardware": "Hardware",
+        "inputs": "Inputs",
+        "drives": "Drives",
+        "networks": "Networks",
+        "local_users": "Local Users",
+        "batteries": "Batteries",
+        "controllers": "Controllers",
+        "memories": "Memories",
+        "slots": "Slots",
+        "sounds": "Sounds",
+        "usbdevices": "USB Devices",
+        "videos": "Video Adapters",
+        "virtualmachines": "Virtual Machines"
+      }
+    },
     "minion-id": "Minion ID",
     "virtualization": "Virtualization",
     "os-full-name": "OS Full Name",
@@ -138,7 +167,6 @@
     "delete-selected-success": "Selected minions were deleted successfully: {{count}}",
     "delete-selected-failed": "Failed to delete minions: {{count}}",
     "job-returns": "Job Returns",
-    "open-in-new-tab": "Open in new tab",
     "open-minion-details-page": "Open minion details page",
     "show-details": "Show details",
     "copy-minion-id": "Copy Minion ID",
@@ -919,6 +947,7 @@
     },
     "add": "Add",
     "connect": "Connect",
+    "disconnect": "Disconnect",
     "sync": "Sync"
   },
   "task-template-editor": {
@@ -943,6 +972,7 @@
     "preview-empty": "Schema is empty",
     "preview-empty-description": "Add fields in the visual editor to see the form",
     "preview-render-error": "Failed to render the form for the current schema",
+    "schema-invalid": "The schema is invalid — validation is unavailable",
     "validate": "Validate",
     "form-valid": "The form is valid",
     "preview-form-data": "Form data",
@@ -959,6 +989,7 @@
     "load-error": "Failed to load configuration template sources",
     "sync-gitlab-sources-error": "Failed to sync repositories with GitLab",
     "sync-gitlab-sources-failed": "GitLab repository sync failed",
+    "sync-gitlab-sources-success": "Repositories have been synced with GitLab",
     "empty": "No templates available",
     "sync-gitlab-sources-not-loaded": {
       "message": "GitLab repositories are not synced. Sync with GitLab to display template sources"
@@ -977,6 +1008,13 @@
       "add-local-source": "Add local source",
       "add-git-source": "Add from Git repository",
       "add-archive-source": "Add from archive"
+    },
+    "source-form": {
+      "namespace": "Namespace",
+      "namespace-placeholder": "my_namespace",
+      "namespace-tooltip": "Prefix for template names. Lowercase letters, digits, and underscores only",
+      "namespace-invalid": "Only lowercase letters, digits, and underscores are allowed",
+      "namespace-max": "Maximum {{max}} characters"
     },
     "local-source-modal": {
       "title": "Add local source",
@@ -1001,12 +1039,14 @@
       "description-placeholder": "Enter description",
       "repo-url": "Repository URL",
       "repo-url-required": "Repository URL is required",
+      "repo-url-invalid": "Enter a valid URL (http or https)",
       "repo-url-placeholder": "https://github.com/org/repo.git",
       "repo-user": "Username",
       "repo-user-placeholder": "Enter username",
       "repo-pass": "Password/token",
       "repo-pass-placeholder": "Enter password or token",
       "branch": "Branch",
+      "branch-required": "Branch is required",
       "branch-max": "Maximum {{max}} characters",
       "branch-placeholder": "master",
       "create-success": "Source \"{{name}}\" has been added",
@@ -1049,9 +1089,10 @@
       "file": "Archive",
       "file-button": "Choose file",
       "file-drag-title": "Click or drag file to this area",
-      "file-drag-hint": "Supported: {{formats}}",
-      "file-hint": "Supported: {{formats}}",
+      "file-drag-hint": "Supported: {{formats}}. Maximum size: {{maxSizeGb}} GB",
       "file-required": "Select an archive file",
+      "file-unsupported-format": "Format \"{{extension}}\" is not supported. Allowed formats: {{formats}}",
+      "file-too-large": "File size exceeds {{maxSizeGb}} GB",
       "create-success": "Source \"{{name}}\" has been added",
       "create-error": "Failed to create source"
     },
@@ -1064,15 +1105,35 @@
       "status": {
         "active": "Active",
         "not-synced": "Not synced",
-        "syncing": "Syncing"
+        "connecting": "Connecting",
+        "syncing": "Syncing",
+        "disconnecting": "Disconnecting",
+        "deleting": "Deleting"
       },
       "action": {
         "plug-error": "Failed to connect source",
+        "plug-success": "Source \"{{name}}\" has been connected",
         "sync-error": "Failed to sync source",
         "sync-success": "Source \"{{name}}\" has been synced",
+        "unplug-error": "Failed to disconnect source",
+        "unplug-success": "Source \"{{name}}\" has been disconnected",
         "delete-error": "Failed to delete source",
         "delete-success": "Source \"{{name}}\" has been deleted",
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
+      },
+      "broken-operation": "Error during {{operation}}",
+      "operation-broken": {
+        "discover": "discovery",
+        "prepare_templates": "template preparation",
+        "update_template_content": "template update",
+        "delete_template": "template deletion",
+        "prepare_files": "file preparation",
+        "add_user_file": "file upload",
+        "sync": "sync",
+        "remove": "removal",
+        "add_template_from_raw": "template creation",
+        "unplug": "disconnecting",
+        "unknown": "operation"
       },
       "operation": {
         "discover": "Discovering…",
@@ -1082,6 +1143,9 @@
         "prepare_files": "Preparing files…",
         "add_user_file": "Processing…",
         "sync": "Syncing…",
+        "remove": "Deleting…",
+        "add_template_from_raw": "Creating template…",
+        "unplug": "Disconnecting…",
         "unknown": "Operation in progress…"
       },
       "connection": {
@@ -1100,6 +1164,11 @@
       "add-template": "Create template",
       "edit-template": "Edit template",
       "duplicate-template": "Duplicate template",
+      "delete-template": "Delete template",
+      "template-delete-confirm-title": "Delete template",
+      "template-delete-confirm-content": "Delete template \"{{title}}\"?",
+      "template-delete-success": "Template \"{{title}}\" has been deleted",
+      "template-delete-error": "Failed to delete template",
       "files-delete": "Delete file",
       "files-delete-confirm-title": "Delete file",
       "files-delete-confirm-content": "Are you sure you want to delete file \"{{path}}\"?",
@@ -1107,7 +1176,7 @@
       "files-delete-not-found": "File \"{{path}}\" was already deleted or does not exist",
       "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
-      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?"
+      "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?\n\nThe source will be removed from the system. Related templates and files will become unavailable. This action cannot be undone"
     }
   },
   "aggregated-tasks": {

@@ -29,12 +29,14 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       id={resolvedDisplayId}
       innerId={resolvedInnerId}
       slug={slug}
+      activeTab={tabKey}
       open={drawer.isOpened}
       loading={!!isMinionLoading}
       hasData={hasData}
       errorMessage={error}
       mask={mask}
       transitionKey={minion?.minion_id}
+      push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
       onClose={drawer.close}
     >
       <MinionDetailsInDrawer

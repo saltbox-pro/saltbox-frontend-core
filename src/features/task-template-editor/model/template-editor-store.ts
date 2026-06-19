@@ -10,6 +10,7 @@ import {
   getEmptySchema,
   getEmptySlsBody,
   parseSchemaFromSls,
+  stripSlsExtension,
 } from "../lib/sls-parser";
 
 export type TemplateEditorMode = "create" | "edit" | "duplicate";
@@ -212,7 +213,7 @@ export class TemplateEditorStore {
         await apiCoreStore.newTaskTemplatesApi?.newTemplateCreate({
           TaskTemplateFromRawCreateSchema: {
             source_id: targetSourceId,
-            file_name: this.fileName.trim(),
+            file_name: stripSlsExtension(this.fileName),
             content: this.rawSls,
           },
         });

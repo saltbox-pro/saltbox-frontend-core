@@ -2226,15 +2226,15 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@0.2.1-a9ff7bc48e2c4b7c028574e4c705ff791fe51bc0":
-  version "0.2.1-a9ff7bc48e2c4b7c028574e4c705ff791fe51bc0"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.1-a9ff7bc48e2c4b7c028574e4c705ff791fe51bc0.tgz#2b998f89a2c808067e0c25a28b99f18095c9e57c"
-  integrity sha1-K5mPiaLICAZ+DCWii5nxgJXJ5Xw=
+"@saltbox/saltbox-core-api-client@^0.2.1-a6ac5f8394e103b58279b5a3bdcfdf8bf973b954":
+  version "0.2.1-a6ac5f8394e103b58279b5a3bdcfdf8bf973b954"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.1-a6ac5f8394e103b58279b5a3bdcfdf8bf973b954.tgz#034df2e11c9389cb8f1e72a1330800eb623b1fc0"
+  integrity sha1-A03y4RyTicuPHnKhMwgA62I7H8A=
 
-"@saltbox/saltbox-frontend-common@^0.2.7":
-  version "0.2.7"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.2.7.tgz#3c70a5b74cba267d7bf7a163739a2bf3654f6d2c"
-  integrity sha1-PHClt0y6Jn1796Fjc5or82VPbSw=
+"@saltbox/saltbox-frontend-common@^0.2.12":
+  version "0.2.12"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.2.12.tgz#0c7ea431e0fdd1f3c89908c3089640a0fcdc952c"
+  integrity sha1-DH6kMeD90fPImQjDCJZAoPzclSw=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
