@@ -565,9 +565,10 @@
     "table-view-info-total": "Showing {{count}} Job Return.",
     "table-view-info-success-only": "Only successfully completed Job Return are shown in the table",
     "table-view-load-error": "Failed to load Job Return table view",
+    "table-view-export-error": "Failed to export Job Return table to CSV",
     "table-view-pagination-total-label": "Total successful Job Return:",
     "export-to-csv-title": "Export to CSV",
-    "export-to-csv-warning": "Number of records to upload: {{count}}",
+    "export-to-csv-warning": "The CSV file will include all successfully completed Job Return for this command. It is generated on the server at export time and may differ from what is currently shown in the table",
     "download-to-csv": "Download to CSV",
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-empty": "No data available",
@@ -901,6 +902,7 @@
     "save": "Save",
     "no-data": "No data",
     "export": "Export",
+    "refresh": "Refresh",
     "copy-to-clipboard-button": {
       "copy": "Copy",
       "copied": "Copied"

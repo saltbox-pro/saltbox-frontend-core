@@ -1,4 +1,4 @@
-import { ReloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { ReloadOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -10,8 +10,22 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  getApiErrorMessage,
+  isGlobalServerError,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Radio, Skeleton, Spin, Statistic, Tag, Tooltip, Typography } from "antd";
+import {
+  Button,
+  Flex,
+  Modal,
+  Radio,
+  Skeleton,
+  Spin,
+  Statistic,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +39,7 @@ import {
   type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
+import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
@@ -47,6 +62,8 @@ const JobPage = observer(() => {
   const [webSocketService] = useState(new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isTableExportLoading, setIsTableExportLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -64,11 +81,13 @@ const JobPage = observer(() => {
     setRepeatConfigureFun(null);
     setRepeatPickerOpen(false);
     setRepeatBaseline(null);
+    setIsExportModalOpen(false);
   }, [jid]);
 
   const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const isTableViewAvailable = statusCounts.success > 0;
+  const showTableExportButton = isTableViewMode && isTableViewAvailable;
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -141,6 +160,37 @@ const JobPage = observer(() => {
     setViewMode(nextMode);
     jobStore.loadJobReturns();
   }, []);
+
+  const handleTableViewRefresh = useCallback(() => {
+    jobStore.loadJobReturnsTable();
+  }, []);
+
+  const handleExportToCsv = useCallback(async () => {
+    if (!jid) {
+      return;
+    }
+
+    setIsTableExportLoading(true);
+
+    try {
+      await downloadJobReturnsTableCsv(
+        {
+          ...jobStore.mongoDBQuery,
+          jid,
+        },
+        `job-returns-${jid}-${Date.now()}.csv`
+      );
+      setIsExportModalOpen(false);
+    } catch (error) {
+      console.error("Error exporting job returns table:", error);
+      if (isGlobalServerError(error)) {
+        return;
+      }
+      message.error(await getApiErrorMessage(error, t("jobs.table-view-export-error")));
+    } finally {
+      setIsTableExportLoading(false);
+    }
+  }, [jid, t]);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -365,6 +415,25 @@ const JobPage = observer(() => {
                   </Tag>
                 </Flex>
                 <Flex align="center" gap={8}>
+                  {showTableExportButton && (
+                    <Tooltip title={t("jobs.download-to-csv")}>
+                      <Button
+                        type="primary"
+                        icon={<UploadOutlined />}
+                        loading={isTableExportLoading}
+                        onClick={() => setIsExportModalOpen(true)}
+                      />
+                    </Tooltip>
+                  )}
+                  {isTableViewMode && (
+                    <Tooltip title={t("common.refresh")}>
+                      <Button
+                        icon={<ReloadOutlined />}
+                        loading={jobStore.isJobReturnTableLoading}
+                        onClick={handleTableViewRefresh}
+                      />
+                    </Tooltip>
+                  )}
                   <Radio.Group
                     value={viewMode}
                     onChange={(event) => handleViewModeChange(event.target.value)}
@@ -418,6 +487,18 @@ const JobPage = observer(() => {
           </>
         )}
       </Flex>
+
+      <Modal
+        title={t("jobs.export-to-csv-title")}
+        open={isExportModalOpen}
+        onOk={handleExportToCsv}
+        onCancel={() => setIsExportModalOpen(false)}
+        okText={t("common.export")}
+        cancelText={t("common.cancel")}
+        confirmLoading={isTableExportLoading}
+      >
+        <span>{t("jobs.export-to-csv-warning")}</span>
+      </Modal>
     </>
   );
 });

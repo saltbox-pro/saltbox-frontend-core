@@ -565,9 +565,10 @@
     "table-view-info-total": "Отображается {{count}} Job Return.",
     "table-view-info-success-only": "В таблице представлены только успешно выполненные Job Return",
     "table-view-load-error": "Не удалось загрузить табличное представление Job Return",
+    "table-view-export-error": "Не удалось выгрузить табличное представление Job Return в CSV",
     "table-view-pagination-total-label": "Всего успешных Job Return:",
     "export-to-csv-title": "Экспорт в CSV",
-    "export-to-csv-warning": "Количество записей для выгрузки: {{count}}",
+    "export-to-csv-warning": "CSV-файл будет содержать все успешно выполненные Job Return по этой команде. Файл формируется на сервере в момент выгрузки и может отличаться от того, что сейчас отображается в таблице",
     "download-to-csv": "Выгрузить в CSV",
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-empty": "Нет данных",
@@ -901,6 +902,7 @@
     "save": "Сохранить",
     "no-data": "Нет данных",
     "export": "Экспорт",
+    "refresh": "Обновить",
     "copy-to-clipboard-button": {
       "copy": "Копировать",
       "copied": "Скопировано в буфер обмена"
