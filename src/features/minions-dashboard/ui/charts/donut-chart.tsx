@@ -26,15 +26,19 @@ const renderLegendText: LegendProps["formatter"] = (value, entry) => {
 
 type DonutChartProps = {
   data: ChartDatum[];
+  onFilterByValue?: (item: ChartDatum) => void;
 };
 
-export const DonutChart = ({ data }: DonutChartProps) => {
+export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
   const colors = generateChartColors(data.length);
 
   return (
     <ResponsiveContainer>
       <PieChart>
-        <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
+        <ChartTooltip
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          isAnimationActive={false}
+        />
         <Legend
           layout="vertical"
           align="right"
@@ -52,7 +56,16 @@ export const DonutChart = ({ data }: DonutChartProps) => {
           isAnimationActive={false}
         >
           {data.map((entry, index) => (
-            <Cell key={`${entry.name}-${index}`} fill={colors[index]} />
+            <Cell
+              key={`${entry.name}-${index}`}
+              fill={colors[index]}
+              onClick={() => onFilterByValue?.(entry)}
+              tabIndex={-1}
+              style={{
+                cursor: onFilterByValue && !entry.isOther ? "pointer" : "default",
+                outline: "none",
+              }}
+            />
           ))}
         </Pie>
       </PieChart>

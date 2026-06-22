@@ -12,22 +12,31 @@ type TreemapContentProps = {
   width?: number;
   height?: number;
   index?: number;
+  depth?: number;
   name?: string;
   count?: number;
-  payload?: ChartDatum;
   colors?: string[];
+  onFilterByValue?: (item: ChartDatum) => void;
+  originalData?: ChartDatum[];
 };
 
 const TreemapContent = (props: TreemapContentProps) => {
-  const item = props.payload;
+  const item = (props.depth ?? 0) > 0 ? props.originalData?.[props.index ?? -1] : undefined;
   const width = Number(props.width) || 0;
   const height = Number(props.height) || 0;
   const label = item?.name || props.name;
   const count = item?.count ?? props.count;
   const canShowText = width > 72 && height > 36;
+  const isClickable = !!props.onFilterByValue && !!item;
 
   return (
-    <g className={item?.isOther ? styles.treemapOtherNode : undefined}>
+    <g
+      className={item?.isOther ? styles.treemapOtherNode : undefined}
+      onClick={isClickable ? () => props.onFilterByValue!(item!) : undefined}
+      style={{ cursor: isClickable && !item.isOther ? "pointer" : "default", outline: "none" }}
+      tabIndex={-1}
+      onMouseDown={isClickable ? (e) => e.preventDefault() : undefined}
+    >
       <rect
         x={props.x}
         y={props.y}
@@ -53,9 +62,10 @@ const TreemapContent = (props: TreemapContentProps) => {
 
 type TreemapChartProps = {
   data: ChartDatum[];
+  onFilterByValue?: (item: ChartDatum) => void;
 };
 
-export const TreemapChart = ({ data }: TreemapChartProps) => {
+export const TreemapChart = ({ data, onFilterByValue }: TreemapChartProps) => {
   const colors = generateChartColors(data.length);
 
   return (
@@ -64,10 +74,15 @@ export const TreemapChart = ({ data }: TreemapChartProps) => {
         data={data}
         dataKey="count"
         nameKey="name"
-        content={<TreemapContent colors={colors} />}
+        content={
+          <TreemapContent colors={colors} onFilterByValue={onFilterByValue} originalData={data} />
+        }
         isAnimationActive={false}
       >
-        <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
+        <ChartTooltip
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          isAnimationActive={false}
+        />
       </RechartsTreemap>
     </ResponsiveContainer>
   );

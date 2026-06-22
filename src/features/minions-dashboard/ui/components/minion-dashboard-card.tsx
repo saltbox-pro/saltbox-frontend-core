@@ -84,6 +84,19 @@ export const MinionDashboardCard = observer(
       }, 0);
     };
 
+    const handleApplyFilter = (item: ChartDatum) => {
+      if (item.isOther) {
+        return;
+      }
+      filterStore.addFilter({
+        field: card.fieldSource,
+        operator: "=",
+        valueSource: "value",
+        value: String(item.value ?? ""),
+      });
+      filterStore.handleSearch();
+    };
+
     const copyDataText = dashboardCardStore.grainValues
       .map((item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`)
       .join("\n");
@@ -156,33 +169,58 @@ export const MinionDashboardCard = observer(
 
       switch (card.preset) {
         case "donut":
-          return <DonutChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)} />;
+          return (
+            <DonutChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "horizontal-bar":
           return (
             <HorizontalBarChart
               data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["horizontal-bar"])}
+              onFilterByValue={handleApplyFilter}
             />
           );
         case "vertical-bar":
           return (
             <VerticalBarChart
               data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["vertical-bar"])}
+              onFilterByValue={handleApplyFilter}
             />
           );
         case "treemap":
-          return <TreemapChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)} />;
+          return (
+            <TreemapChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "histogram":
           return <VerticalBarChart data={toHistogramData(grainValues)} />;
         case "boolean-donut":
-          return <DonutChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />;
+          return (
+            <DonutChart
+              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "boolean-bars":
           return (
-            <HorizontalBarChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />
+            <HorizontalBarChart
+              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
+              onFilterByValue={handleApplyFilter}
+            />
           );
         case "kpi":
           return <KpiPanel values={grainValues} />;
         case "lollipop":
-          return <LollipopList data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)} />;
+          return (
+            <LollipopList
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "table":
         default:
           return (
