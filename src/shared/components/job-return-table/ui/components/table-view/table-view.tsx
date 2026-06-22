@@ -47,9 +47,9 @@ export const TableView: FC<BackendTableViewProps> = ({
         total={total}
         isLoading={isLoading}
         pagination={pagination}
-        onLazyLoad={(pagination) => onLazyLoad(pagination)}
+        onLazyLoad={onLazyLoad}
         getRowId={getTableRowId}
-        useVirtualScroll={false}
+        useVirtualScroll
         locale={{
           total: t("jobs.table-view-pagination-total-label"),
           empty: "",

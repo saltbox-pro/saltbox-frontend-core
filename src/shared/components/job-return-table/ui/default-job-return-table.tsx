@@ -202,8 +202,6 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       [drawer]
     );
 
-    const overscan = pagination.pageSize > 100 ? 10 : 100;
-
     const renderJobResult = useCallback(
       ({ row }: { row: Row<JobReturnModel> }) => (
         <JobReturnRow jobStore={jobStore} row={row.original} isFullOutput={isFullOutput} />
@@ -233,8 +231,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             pagination={pagination}
             sorting={sorting}
             onLazyLoad={onLazyLoad}
-            useVirtualScroll={false}
-            overscan={overscan}
+            useVirtualScroll
             forceExpandAll={forceExpand}
             getRowCanExpand={() => true}
             renderSubComponent={renderJobResult}

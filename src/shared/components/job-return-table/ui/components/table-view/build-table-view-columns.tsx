@@ -1,7 +1,5 @@
 import { type ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
-import { COLUMN_MIN_WIDTH_PX, MINION_ID_COLUMN } from "../../../constants/table-view-layout";
-import { getColumnWidth } from "../../../helpers/get-column-width";
 import type { TableRow } from "../../../model/table-view-types";
 
 import { TableViewCell } from "./table-view-cell";
@@ -10,7 +8,7 @@ const columnHelper = createColumnHelper<TableRow>();
 
 export const buildTableViewColumns = (columnNames: string[]): ColumnDef<TableRow>[] => {
   return columnNames.map((columnName) => {
-    const width = getColumnWidth(columnName, columnNames);
+    const cols = columnNames.length;
 
     return columnHelper.accessor((row) => row[columnName], {
       id: columnName,
@@ -18,9 +16,9 @@ export const buildTableViewColumns = (columnNames: string[]): ColumnDef<TableRow
       enableSorting: false,
       cell: (info) => <TableViewCell value={info.getValue()} columnName={columnName} />,
       meta: {
-        ellipsis: columnName !== MINION_ID_COLUMN,
-        width,
-        minWidth: COLUMN_MIN_WIDTH_PX,
+        ellipsis: true,
+        maxWidth: 400,
+        width: cols > 5 ? (columnName === "minion_id" ? 220 : 150) : `${100 / cols}%`,
       },
     });
   });

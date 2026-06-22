@@ -87,7 +87,7 @@ const JobPage = observer(() => {
   const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const isTableViewAvailable = statusCounts.success > 0;
-  const showTableExportButton = isTableViewMode && isTableViewAvailable;
+  const showExportButton = isTableViewAvailable;
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -161,9 +161,18 @@ const JobPage = observer(() => {
     jobStore.loadJobReturns();
   }, []);
 
-  const handleTableViewRefresh = useCallback(() => {
-    jobStore.loadJobReturnsTable();
-  }, []);
+  const handleJobReturnsRefresh = useCallback(() => {
+    if (isTableViewMode) {
+      jobStore.loadJobReturnsTable();
+      return;
+    }
+
+    jobStore.loadJobReturns();
+  }, [isTableViewMode]);
+
+  const isJobReturnsRefreshLoading = isTableViewMode
+    ? jobStore.isJobReturnTableLoading
+    : jobStore.isJobReturnsLoading;
 
   const handleExportToCsv = useCallback(async () => {
     if (!jid) {
@@ -415,22 +424,20 @@ const JobPage = observer(() => {
                   </Tag>
                 </Flex>
                 <Flex align="center" gap={8}>
-                  {showTableExportButton && (
+                  <Tooltip title={t("common.refresh")}>
+                    <Button
+                      icon={<ReloadOutlined />}
+                      loading={isJobReturnsRefreshLoading}
+                      onClick={handleJobReturnsRefresh}
+                    />
+                  </Tooltip>
+                  {showExportButton && (
                     <Tooltip title={t("jobs.download-to-csv")}>
                       <Button
                         type="primary"
                         icon={<UploadOutlined />}
                         loading={isTableExportLoading}
                         onClick={() => setIsExportModalOpen(true)}
-                      />
-                    </Tooltip>
-                  )}
-                  {isTableViewMode && (
-                    <Tooltip title={t("common.refresh")}>
-                      <Button
-                        icon={<ReloadOutlined />}
-                        loading={jobStore.isJobReturnTableLoading}
-                        onClick={handleTableViewRefresh}
                       />
                     </Tooltip>
                   )}

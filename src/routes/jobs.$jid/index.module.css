@@ -4,10 +4,6 @@
   overflow: hidden;
 }
 
-.jobReturnTableWrapper :global(.fast-table table > thead > tr > th:first-child) {
-  width: 1%;
-}
-
 .jobDetailsContainer {
   padding: 16px;
   border: 1px solid #d9d9d9;
