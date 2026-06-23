@@ -103,7 +103,7 @@ export class DashboardStore {
     }
     const card = createDashboardCard(fieldOption, preset);
     const size = getDefaultCardSize(preset);
-    const { x, y } = this.findFirstAvailablePosition(size.width, size.height);
+    const { x, y } = this.findFirstAvailablePosition(this.layout, size.width, size.height);
     this.cards.unshift(card);
     this.layout = [
       {
@@ -120,12 +120,16 @@ export class DashboardStore {
     this.saveToLocalStorage();
   }
 
-  private findFirstAvailablePosition(width: number, height: number): { x: number; y: number } {
-    const maxY = this.layout.reduce((max, item) => Math.max(max, item.y + item.height), 0);
+  private findFirstAvailablePosition(
+    layout: DashboardLayoutItem[],
+    width: number,
+    height: number
+  ): { x: number; y: number } {
+    const maxY = layout.reduce((max, item) => Math.max(max, item.y + item.height), 0);
     for (let y = 0; y <= maxY; y++) {
       for (let x = 0; x <= DASHBOARD_GRID_COLS - width; x++) {
         const candidate: DashboardLayoutItem = { id: "", x, y, width, height };
-        if (!this.layout.some((placed) => this.isCardsOverlap(candidate, placed))) {
+        if (!layout.some((placed) => this.isCardsOverlap(candidate, placed))) {
           return { x, y };
         }
       }
@@ -158,7 +162,7 @@ export class DashboardStore {
   removeCard(cardId: string) {
     this.cards = this.cards.filter((card) => card.id !== cardId);
     const remaining = this.layout.filter((item) => item.id !== cardId);
-    this.layout = this.compactVertical(remaining);
+    this.layout = this.compactCards(remaining);
     this.saveToLocalStorage();
   }
 
@@ -171,15 +175,12 @@ export class DashboardStore {
     );
   }
 
-  private compactVertical(layout: DashboardLayoutItem[]): DashboardLayoutItem[] {
+  private compactCards(layout: DashboardLayoutItem[]): DashboardLayoutItem[] {
     const sorted = [...layout].sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
     const compacted: DashboardLayoutItem[] = [];
-    for (const item of sorted) {
-      let newY = 0;
-      while (compacted.some((placed) => this.isCardsOverlap(placed, { ...item, y: newY }))) {
-        newY++;
-      }
-      compacted.push({ ...item, y: newY });
+    for (const card of sorted) {
+      const { x, y } = this.findFirstAvailablePosition(compacted, card.width, card.height);
+      compacted.push({ ...card, x, y });
     }
     return compacted;
   }

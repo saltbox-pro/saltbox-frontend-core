@@ -4,6 +4,7 @@ import {
   EditOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
+  HolderOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
@@ -243,8 +244,14 @@ export const MinionDashboardCard = observer(
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
           <div className={`${styles.dashboardTableBlockHeader} dashboardDragHandle`}>
+            <HolderOutlined className={styles.dashboardDragIcon} />
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
-              <Typography.Text strong ellipsis title={card.fieldLabel}>
+              <Typography.Text
+                strong
+                ellipsis
+                title={card.fieldLabel}
+                className={styles.dashboardTableBlockTitle}
+              >
                 {card.fieldLabel}
               </Typography.Text>
               <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>

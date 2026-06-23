@@ -1,10 +1,9 @@
 .dashboardTableBlock {
   height: 100%;
   overflow: hidden;
-  border: 1px solid var(--ant-color-border-secondary, #edf0f5);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--ant-color-bg-container, #fff);
-  box-shadow: 0 4px 18px rgb(15 23 42 / 6%);
+  box-shadow: 0 2px 16px rgb(15 23 42 / 10%);
 }
 
 .dashboardTableBlock.fullscreen {
@@ -40,7 +39,9 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #edf0f5);
 }
 
 .dashboardTableBlockTitleGroup {
@@ -48,13 +49,32 @@
   flex: 1;
 }
 
+.dashboardTableBlockTitle {
+  font-size: 16px;
+}
+
 .dashboardTableBlockSubtitle {
-  font-size: 12px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dashboardDragIcon {
+  flex-shrink: 0;
+  align-self: center;
+  color: var(--ant-color-text-secondary, #667085);
+  opacity: 0.2;
+  transition: opacity 0.15s;
+}
+
+.dashboardTableBlockHeader:hover .dashboardDragIcon {
+  opacity: 0.55;
 }
 
 .dashboardTableBlockHeaderSettings {
   display: flex;
   flex-shrink: 0;
+  align-self: center;
   align-items: center;
   gap: 8px;
 }
@@ -66,7 +86,7 @@
 }
 
 .dashboardTableBlockChartBody {
-  height: calc(100% - 52px);
+  height: calc(100% - 64px);
   min-height: 210px;
 }
 
