@@ -2,32 +2,19 @@ import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
+import { connectedSourcesQuery } from "../helpers/connected-sources-query";
+import { buildSourceRows } from "../helpers/template-picker-rows";
 
 export class TaskTemplateService {
-  async loadTemplates(): Promise<TaskTemplateWithRepository[]> {
+  async loadTemplateSourceRows() {
     try {
-      const [templatesResponse, sourcesResponse] = await Promise.all([
-        apiCoreStore.newTaskTemplatesApi?.newTemplateList({
-          TaskTemplateListBody: {},
-        }),
-        apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
-          TemplateSourceListBody: { limit: 1000 },
-        }),
-      ]);
+      const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+        TemplateSourceListBody: {
+          query: connectedSourcesQuery,
+        },
+      });
 
-      if (!templatesResponse?.data) {
-        return [];
-      }
-
-      const sourceById = new Map(
-        (sourcesResponse?.data ?? []).map((source) => [source.id, source.name])
-      );
-
-      return templatesResponse.data.map((template) => ({
-        ...template,
-        repository: sourceById.get(template.source_id),
-      }));
+      return buildSourceRows(response?.data ?? []);
     } catch (error) {
       console.error("Failed to load task templates:", error);
       throw new Error("Failed to load task templates");
@@ -47,33 +34,6 @@ export class TaskTemplateService {
       console.error(`Failed to load template ${templateId}:`, error);
       throw new Error("Failed to load task template");
     }
-  }
-
-  filterTemplates(
-    templates: TaskTemplateWithRepository[],
-    filters: TemplateListFilterOptions
-  ): TaskTemplateWithRepository[] {
-    let filtered = [...templates];
-
-    if (filters.appliedSearchQuery) {
-      const query = filters.appliedSearchQuery.toLowerCase();
-      filtered = filtered.filter((template) => {
-        return template.title?.toLowerCase().includes(query);
-      });
-    }
-
-    if (filters.repositoryFilter) {
-      filtered = filtered.filter((template) => template.repository === filters.repositoryFilter);
-    }
-
-    return filtered;
-  }
-
-  getUniqueRepositories(templates: TaskTemplateWithRepository[]): string[] {
-    const repositories = templates
-      .map((template) => template.repository)
-      .filter((repository) => Boolean(repository));
-    return Array.from(new Set(repositories)).sort();
   }
 }
 

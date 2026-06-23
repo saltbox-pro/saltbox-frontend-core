@@ -14,11 +14,6 @@ export type TaskTemplateWithRepository = TaskTemplatePublicSchema & {
   repository?: string;
 };
 
-export type TemplateListFilterOptions = {
-  appliedSearchQuery: string;
-  repositoryFilter: string | null;
-};
-
 export type CreateTaskModalStep = "template-selection" | "task-configuration";
 
 export type TaskOverviewData = {
