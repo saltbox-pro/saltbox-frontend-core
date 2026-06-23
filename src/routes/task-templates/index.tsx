@@ -1,5 +1,5 @@
 import { ExportOutlined } from "@ant-design/icons";
-import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next";
 
 import { taskTemplatesStore } from "saltbox-core/store";
 
-const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
+const TaskTemplatesTable = FastTablePaginated<TaskTemplatePublicSchema>;
 
-const columnHelper = createColumnHelper<TaskTemplateShortSchema>();
+const columnHelper = createColumnHelper<TaskTemplatePublicSchema>();
 
 const TaskTemplatesPage = observer(() => {
   const { t } = useTranslation();
@@ -24,37 +24,22 @@ const TaskTemplatesPage = observer(() => {
     columnHelper.accessor("name", {
       header: t("task-templates.table-name"),
     }),
-    columnHelper.accessor("repo_info.name", {
-      id: "repo_info.name",
+    columnHelper.accessor("source_id", {
+      id: "source_id",
       header: t("task-templates.table-repository"),
-      cell: (data) => data.getValue(),
-      meta: {
-        actions: [
-          {
-            icon: <ExportOutlined />,
-            onClick: (value, row) => {
-              window.open(row.repo_info.repo_url, "_blank");
-            },
-            title: t("task-templates.table-go-to-repository"),
-          },
-        ],
-      },
-    }),
-    columnHelper.accessor("commit_hash", {
-      header: t("task-templates.table-last-commit"),
       cell: (data) => {
-        const commitHash = data.getValue()?.slice(0, 7) + "...";
-        return commitHash;
+        const sourceId = data.getValue();
+        return taskTemplatesStore.getSourceInfo(sourceId)?.name ?? sourceId;
       },
       meta: {
-        showCopy: true,
         actions: [
           {
             icon: <ExportOutlined />,
-            onClick: (value, row) => {
-              const repoCommitUrl =
-                row.repo_info.repo_url.replace(".git", "") + `/-/commit/${row.commit_hash}`;
-              window.open(repoCommitUrl, "_blank");
+            onClick: (_value, row) => {
+              const repoUrl = taskTemplatesStore.getSourceInfo(row.source_id)?.repoUrl;
+              if (repoUrl) {
+                window.open(repoUrl, "_blank");
+              }
             },
             title: t("task-templates.table-go-to-repository"),
           },

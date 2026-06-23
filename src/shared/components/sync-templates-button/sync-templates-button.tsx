@@ -17,7 +17,7 @@ export function SyncTemplatesButton({ onSyncComplete }: SyncTemplatesButtonProps
 
   const checkTemplatesSyncTask = async (taskId: string): Promise<void> => {
     try {
-      const result = await apiCoreStore.settingsApi?.repoSyncStatus({
+      const result = await apiCoreStore.jsonSchemasApi?.jobsSchemasSyncStatus({
         task_id: taskId,
       });
 

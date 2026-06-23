@@ -1,12 +1,18 @@
-import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
+export type TaskTemplateSourceInfo = {
+  name: string;
+  repoUrl?: string | null;
+};
+
 export class TaskTemplatesStore {
-  taskTemplates: Array<TaskTemplateShortSchema>;
+  taskTemplates: Array<TaskTemplatePublicSchema>;
+  sourceById = new Map<string, TaskTemplateSourceInfo>();
   isTaskTemplatesLoading: boolean;
   isSyncTaskTemplates: boolean;
 
@@ -33,23 +39,53 @@ export class TaskTemplatesStore {
     this.loadTaskTemplates();
   };
 
-  loadTaskTemplates = () => {
-    this.isTaskTemplatesLoading = true;
-    apiCoreStore.taskTemplatesApi
-      ?.taskTemplatesList({
-        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-        },
-      })
-      .then((taskTemplates) => {
-        runInAction(() => {
-          this.isTaskTemplatesLoading = false;
-          this.total = taskTemplates.total as number;
-          this.taskTemplates = taskTemplates.data;
-        });
+  getSourceInfo = (sourceId: string): TaskTemplateSourceInfo | undefined => {
+    return this.sourceById.get(sourceId);
+  };
+
+  private loadSources = async () => {
+    const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+      TemplateSourceListBody: { limit: 1000 },
+    });
+
+    const sourceById = new Map<string, TaskTemplateSourceInfo>();
+    for (const source of response?.data ?? []) {
+      sourceById.set(source.id, {
+        name: source.name,
+        repoUrl: source.repo_url,
       });
+    }
+
+    runInAction(() => {
+      this.sourceById = sourceById;
+    });
+  };
+
+  loadTaskTemplates = async () => {
+    this.isTaskTemplatesLoading = true;
+
+    try {
+      const [taskTemplates, _] = await Promise.all([
+        apiCoreStore.newTaskTemplatesApi?.newTemplateList({
+          TaskTemplateListBody: {
+            limit: this.pagination.pageSize,
+            skip: this.pagination.pageIndex * this.pagination.pageSize,
+            sort: toBackendSorting(this.sorting),
+          },
+        }),
+        this.sourceById.size === 0 ? this.loadSources() : Promise.resolve(),
+      ]);
+
+      runInAction(() => {
+        this.isTaskTemplatesLoading = false;
+        this.total = taskTemplates?.total ?? 0;
+        this.taskTemplates = taskTemplates?.data ?? [];
+      });
+    } catch {
+      runInAction(() => {
+        this.isTaskTemplatesLoading = false;
+      });
+    }
   };
 
   handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {

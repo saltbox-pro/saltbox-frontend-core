@@ -205,12 +205,6 @@ export const saltboxModule = {
         path: "/core/task-templates",
       },
       {
-        key: "settings-sls",
-        label: { en: "Settings SLS", ru: "Репозитории конфигураций" },
-        icon: "source",
-        path: "/core/settings-sls",
-      },
-      {
         key: "configuration-templates",
         label: { en: "Configuration Templates", ru: "Шаблоны конфигураций" },
         icon: "source",

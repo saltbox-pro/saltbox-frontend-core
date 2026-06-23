@@ -1,4 +1,4 @@
-import { TaskTemplateExcludeSlsSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -7,16 +7,26 @@ import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/t
 export class TaskTemplateService {
   async loadTemplates(): Promise<TaskTemplateWithRepository[]> {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {},
-      });
-      if (!response?.data) {
+      const [templatesResponse, sourcesResponse] = await Promise.all([
+        apiCoreStore.newTaskTemplatesApi?.newTemplateList({
+          TaskTemplateListBody: {},
+        }),
+        apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+          TemplateSourceListBody: { limit: 1000 },
+        }),
+      ]);
+
+      if (!templatesResponse?.data) {
         return [];
       }
 
-      return response.data.map((template) => ({
+      const sourceById = new Map(
+        (sourcesResponse?.data ?? []).map((source) => [source.id, source.name])
+      );
+
+      return templatesResponse.data.map((template) => ({
         ...template,
-        repository: template.repo_info?.name,
+        repository: sourceById.get(template.source_id),
       }));
     } catch (error) {
       console.error("Failed to load task templates:", error);
@@ -24,10 +34,10 @@ export class TaskTemplateService {
     }
   }
 
-  async loadTemplateById(templateId: string): Promise<TaskTemplateExcludeSlsSchema> {
+  async loadTemplateById(templateId: string): Promise<TaskTemplateModel> {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieveWithDefaults({
-        tpl_id: templateId,
+      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateReadWithDefaults({
+        template_id: templateId,
       });
       if (!response) {
         throw new Error("Template not found");
