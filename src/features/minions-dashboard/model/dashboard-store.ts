@@ -144,8 +144,31 @@ export class DashboardStore {
 
   removeCard(cardId: string) {
     this.cards = this.cards.filter((card) => card.id !== cardId);
-    this.layout = this.layout.filter((item) => item.id !== cardId);
+    const remaining = this.layout.filter((item) => item.id !== cardId);
+    this.layout = this.compactVertical(remaining);
     this.saveToLocalStorage();
+  }
+
+  private isCardsOverlap(card: DashboardLayoutItem, placedCard: DashboardLayoutItem): boolean {
+    return (
+      card.x < placedCard.x + placedCard.width &&
+      card.x + card.width > placedCard.x &&
+      card.y < placedCard.y + placedCard.height &&
+      card.y + card.height > placedCard.y
+    );
+  }
+
+  private compactVertical(layout: DashboardLayoutItem[]): DashboardLayoutItem[] {
+    const sorted = [...layout].sort((a, b) => (a.y !== b.y ? a.y - b.y : a.x - b.x));
+    const compacted: DashboardLayoutItem[] = [];
+    for (const item of sorted) {
+      let newY = 0;
+      while (compacted.some((placed) => this.isCardsOverlap(placed, { ...item, y: newY }))) {
+        newY++;
+      }
+      compacted.push({ ...item, y: newY });
+    }
+    return compacted;
   }
 }
 
