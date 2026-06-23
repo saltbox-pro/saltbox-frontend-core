@@ -103,13 +103,13 @@ export class DashboardStore {
     }
     const card = createDashboardCard(fieldOption, preset);
     const size = getDefaultCardSize(preset);
-    const nextY = this.layout.reduce((max, item) => Math.max(max, item.y + item.height), 0);
+    const { x, y } = this.findFirstAvailablePosition(size.width, size.height);
     this.cards.unshift(card);
     this.layout = [
       {
         id: card.id,
-        x: 0,
-        y: nextY,
+        x,
+        y,
         width: size.width,
         height: size.height,
         minWidth: size.minWidth,
@@ -118,6 +118,19 @@ export class DashboardStore {
       ...this.layout,
     ];
     this.saveToLocalStorage();
+  }
+
+  private findFirstAvailablePosition(width: number, height: number): { x: number; y: number } {
+    const maxY = this.layout.reduce((max, item) => Math.max(max, item.y + item.height), 0);
+    for (let y = 0; y <= maxY; y++) {
+      for (let x = 0; x <= DASHBOARD_GRID_COLS - width; x++) {
+        const candidate: DashboardLayoutItem = { id: "", x, y, width, height };
+        if (!this.layout.some((placed) => this.isCardsOverlap(candidate, placed))) {
+          return { x, y };
+        }
+      }
+    }
+    return { x: 0, y: maxY };
   }
 
   updateCard(cardId: string, fieldOption: DashboardFieldOption, preset: DashboardPreset) {
