@@ -1,42 +1,10 @@
 .dashboardContainer {
-  --dashboard-card-height: 500px;
-  --dashboard-grid-gap: 8px;
-
-  flex: 1;
-  display: grid;
   position: relative;
-  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
-  grid-auto-flow: dense;
-  gap: var(--dashboard-grid-gap);
   margin: 0 0 20px;
 }
 
 .dashboardContainerFullscreen {
   overflow: hidden;
-}
-
-.dashboardCardWrapper {
-  height: var(--dashboard-card-height);
-}
-
-.wideCard {
-  grid-column: span 2;
-}
-
-.tallCard {
-  grid-row: span 2;
-  height: calc(var(--dashboard-card-height) * 2 + var(--dashboard-grid-gap));
-}
-
-@media (max-width: 950px) {
-  .wideCard {
-    grid-column: auto;
-  }
-
-  .tallCard {
-    grid-row: auto;
-    height: var(--dashboard-card-height);
-  }
 }
 
 .emptyState {

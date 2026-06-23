@@ -11,6 +11,6 @@ export const CHART_DATA_LIMIT_BY_PRESET: Record<
   donut: 12,
   "horizontal-bar": 14,
   "vertical-bar": 12,
-  treemap: 28,
+  treemap: 24,
   lollipop: 10,
 };

@@ -5,8 +5,10 @@ export type {
   DashboardPreset,
   DashboardCardConfig,
   DashboardFieldOption,
+  DashboardLayoutItem,
 } from "./model/dashboard-model";
 export {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "./constants/dashboard-preview";
+export { DASHBOARD_GRID_COLS } from "./constants/dashboard-cards";

@@ -242,7 +242,7 @@ export const MinionDashboardCard = observer(
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <div className={styles.dashboardTableBlockHeader}>
+          <div className={`${styles.dashboardTableBlockHeader} dashboardDragHandle`}>
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
               <Typography.Text strong ellipsis title={card.fieldLabel}>
                 {card.fieldLabel}

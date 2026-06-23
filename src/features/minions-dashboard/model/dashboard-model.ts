@@ -9,7 +9,6 @@ import {
   NUMERIC_METADATA_TYPES,
 } from "../constants/dashboard-field-types";
 import { PRESETS } from "../constants/dashboard-presets";
-import { DASHBOARD_STORAGE_VERSION } from "../constants/dashboard-storage";
 
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 
@@ -40,9 +39,19 @@ export type DashboardCardConfig = {
   preset: DashboardPreset;
 };
 
+export type DashboardLayoutItem = {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  minWidth?: number;
+  minHeight?: number;
+};
+
 export type DashboardStorageConfig = {
-  version: 2;
   cards: DashboardCardConfig[];
+  layout: DashboardLayoutItem[];
 };
 
 export type DashboardFieldOption = {
@@ -198,21 +207,25 @@ export const getUpdatedDashboardCard = (
 };
 
 export const normalizeDashboardStorage = (rawValue: string | null): DashboardStorageConfig => {
+  const defaultConfig: DashboardStorageConfig = {
+    cards: DEFAULT_DASHBOARD_CARDS,
+    layout: [],
+  };
+
   if (!rawValue) {
-    return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
+    return defaultConfig;
   }
 
   try {
     const parsed = JSON.parse(rawValue);
-    if (parsed?.version === DASHBOARD_STORAGE_VERSION && Array.isArray(parsed.cards)) {
+    if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
       return {
-        version: DASHBOARD_STORAGE_VERSION,
         cards: parsed.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard),
+        layout: parsed.layout,
       };
     }
+    return defaultConfig;
   } catch {
-    return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
+    return defaultConfig;
   }
-
-  return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
 };
