@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-table";
 import { Flex, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ComponentProps, useMemo, useCallback } from "react";
+import { type ComponentProps, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -76,6 +76,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     onTableLazyLoad,
   }) => {
     const { t } = useTranslation();
+    const [isTableInfoAlertVisible, setIsTableInfoAlertVisible] = useState(true);
+
     const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
       getId: (params) => params.drawerId ?? params.minionId,
     });
@@ -220,6 +222,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             isLoading={isTableLoading}
             loadError={tableLoadError}
             onLazyLoad={onTableLazyLoad}
+            isInfoAlertVisible={isTableInfoAlertVisible}
+            onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
           />
         ) : (
           <JobReturnsTable

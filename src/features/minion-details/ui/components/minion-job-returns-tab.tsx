@@ -33,7 +33,7 @@ import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/u
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
-import { JobFilterStore, JobStore } from "saltbox-core/store";
+import { JobFilterStore, JobStore, mastersStore } from "saltbox-core/store";
 
 import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
@@ -438,7 +438,12 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
 
   const jobReturnsTabActions = isFullView ? (
     <Flex justify="flex-end">
-      <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenCreateJob}>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={handleOpenCreateJob}
+        loading={mastersStore.isLoading}
+      >
         {t("job-modal.create-job")}
       </Button>
     </Flex>
