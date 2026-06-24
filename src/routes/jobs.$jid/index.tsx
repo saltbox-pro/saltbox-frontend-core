@@ -1,4 +1,4 @@
-import { ReloadOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -439,7 +439,7 @@ const JobPage = observer(() => {
                     <Tooltip title={t("jobs.download-to-csv")}>
                       <Button
                         type="primary"
-                        icon={<UploadOutlined />}
+                        icon={<DownloadOutlined />}
                         loading={isTableExportLoading}
                         onClick={() => setIsExportModalOpen(true)}
                       />
