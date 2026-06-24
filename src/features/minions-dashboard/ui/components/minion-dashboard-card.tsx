@@ -7,7 +7,7 @@ import {
   HolderOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
+import { Alert, Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -167,6 +167,16 @@ export const MinionDashboardCard = observer(
       }
 
       const { grainValues } = dashboardCardStore;
+
+      if (!dashboardCardStore.isFilterLoading && grainValues.length === 0) {
+        return (
+          <Empty
+            className={styles.dashboardEmptyState}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("common.no-data")}
+          />
+        );
+      }
 
       switch (card.preset) {
         case "donut":

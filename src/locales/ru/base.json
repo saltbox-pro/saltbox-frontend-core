@@ -761,6 +761,10 @@
     "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением"
   },
   "dashboard": {
+    "minions-total": "Клиентов в выборке",
+    "minions-top-os": "Основная ОС",
+    "minions-top-salt-version": "Основная версия Salt",
+    "minions-top-architecture": "Основная архитектура",
     "table-count": "Количество",
     "windowed": "Оконный",
     "fullscreen": "Полноэкранный",
