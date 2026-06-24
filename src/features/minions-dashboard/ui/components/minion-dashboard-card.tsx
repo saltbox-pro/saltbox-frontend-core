@@ -245,7 +245,9 @@ export const MinionDashboardCard = observer(
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <div className={`${styles.dashboardTableBlockHeader} dashboardDragHandle`}>
+          <div
+            className={`${styles.dashboardTableBlockHeader} ${isFullScreen ? "" : "dashboardDragHandle"}`}
+          >
             <HolderOutlined className={styles.dashboardDragIcon} />
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
               <Typography.Text
