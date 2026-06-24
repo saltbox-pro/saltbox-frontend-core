@@ -1,6 +1,11 @@
+export const TEMPLATE_SOURCE_FORM_I18N_PREFIX = "configuration-templates.source-form";
+
 export const TEMPLATE_SOURCE_NAME_MAX_LENGTH = 100;
 export const TEMPLATE_SOURCE_DESCRIPTION_MAX_LENGTH = 500;
 export const TEMPLATE_SOURCE_BRANCH_MAX_LENGTH = 100;
+export const TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH = 64;
+export const TEMPLATE_SOURCE_NAMESPACE_PATTERN = /^[a-z0-9_]*$/;
+export const TEMPLATE_SOURCE_REPO_URL_PATTERN = /^https?:\/\/.+/;
 
 export const TEMPLATE_SOURCE_ARCHIVE_ALLOWED_EXTENSIONS = [
   ".tar.bz2",

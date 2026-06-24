@@ -26,7 +26,6 @@
 }
 
 .jobReturnsWrapper :global(.fast-table table > thead > tr > th:first-child) {
-  width: 1%;
   white-space: nowrap;
 }
 

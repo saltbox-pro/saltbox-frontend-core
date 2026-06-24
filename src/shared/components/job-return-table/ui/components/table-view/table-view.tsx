@@ -1,239 +1,68 @@
-import type { OnChangeFn, SortingState } from "@tanstack/react-table";
-import { Table, type TableColumnsType, type TableProps } from "antd";
-import { useMemo, useState, useEffect, type FC } from "react";
+import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { Alert } from "antd";
+import { useMemo, type FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  convertToTable,
-  TableData,
-  maxDisplayLength,
-  maxFilterOptions,
-} from "../../../utils/table-converter";
+import { getMinionIdGroupKey } from "../../../helpers/get-minion-id-group-key";
+import { getTableRowId } from "../../../helpers/get-table-row-id";
+import type { BackendTableViewProps, TableRow } from "../../../model/table-view-types";
 
+import { buildTableViewColumns } from "./build-table-view-columns";
 import styles from "./table-view.module.css";
 
-interface TableViewProps {
-  data: unknown | TableData;
-  minionId: string;
-  onSortingChange?: OnChangeFn<SortingState>;
-  onFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
-  onPaginationChange?: (pageIndex: number, pageSize: number) => void;
-  onErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
-}
+const JobReturnDataTable = FastTablePaginated<TableRow>;
 
-const isEmptyBrackets = (value: unknown): boolean => {
-  if (value === null || value === undefined || value === "") {
-    return false;
-  }
-  const stringValue = String(value).trim();
-  return stringValue === "[]" || stringValue === "{}";
-};
-
-export const TableView: FC<TableViewProps> = ({
-  data,
-  minionId,
-  onSortingChange,
-  onFilteredDataChange,
-  onPaginationChange,
-  onErrorsChange,
+export const TableView: FC<BackendTableViewProps> = ({
+  columns,
+  rows,
+  total,
+  pagination,
+  isLoading,
+  loadError,
+  onLazyLoad,
+  isInfoAlertVisible = true,
+  onInfoAlertClose,
 }) => {
   const { t } = useTranslation();
-  const [filteredInfo, setFilteredInfo] = useState<Record<string, unknown[] | null>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-
-  const tableData = useMemo(() => {
-    if (
-      data &&
-      typeof data === "object" &&
-      "canConvert" in data &&
-      "columns" in data &&
-      "rows" in data
-    ) {
-      return data as TableData;
-    }
-    return convertToTable(data, minionId);
-  }, [data, minionId]);
-
-  useEffect(() => {
-    setFilteredInfo({});
-    setCurrentPage(1);
-    onErrorsChange?.(tableData.errors || []);
-  }, [tableData, onErrorsChange]);
-
-  const columns = useMemo<TableColumnsType<Record<string, unknown>>>(() => {
-    if (!tableData.canConvert || tableData.columns.length === 0) {
-      return [];
-    }
-
-    const displayColumns = tableData.columns.filter((col) => col !== "key");
-
-    return displayColumns.map((colName) => {
-      const uniqueValues = Array.from(
-        new Set(
-          tableData.rows
-            .map((row) => {
-              const value = row[colName];
-              if (value == null || value === "" || isEmptyBrackets(value)) return null;
-              return String(value);
-            })
-            .filter((v): v is string => v !== null)
-        )
-      )
-        .sort((a, b) =>
-          a.localeCompare(b, undefined, {
-            numeric: true,
-            sensitivity: "base",
-          })
-        )
-        .slice(0, maxFilterOptions);
-
-      const filters = uniqueValues.map((value) => {
-        const displayText =
-          value.length > maxDisplayLength ? `${value.slice(0, maxDisplayLength)}...` : value;
-        return {
-          text: displayText,
-          value: value,
-        };
-      });
-
-      return {
-        title: colName,
-        dataIndex: colName,
-        key: colName,
-        filters: filters.length > 0 ? filters : undefined,
-        filterSearch: filters.length > 0,
-        onFilter:
-          filters.length > 0
-            ? (value: unknown, record: Record<string, unknown>) => {
-                const recordValue = record[colName];
-                return (
-                  recordValue != null && recordValue !== "" && String(recordValue) === String(value)
-                );
-              }
-            : undefined,
-        sorter: (a: Record<string, unknown>, b: Record<string, unknown>) => {
-          const aValue = a[colName];
-          const bValue = b[colName];
-          if (aValue == null || aValue === "") return 1;
-          if (bValue == null || bValue === "") return -1;
-          return String(aValue).localeCompare(String(bValue), undefined, {
-            numeric: true,
-            sensitivity: "base",
-          });
-        },
-        render: (value: unknown) => {
-          if (value == null || value === "" || isEmptyBrackets(value)) {
-            return <span className={styles.emptyCell}>—</span>;
-          }
-          const stringValue = String(value);
-          if (stringValue.length > maxDisplayLength) {
-            return <span title={stringValue}>{stringValue.slice(0, maxDisplayLength - 3)}...</span>;
-          }
-          return <span>{stringValue}</span>;
-        },
-        width: 150,
-        ellipsis: colName !== "minion_id",
-      };
-    });
-  }, [tableData]);
-
-  const filteredRows = useMemo(() => {
-    if (!tableData.canConvert) return [];
-
-    const activeFilters = Object.entries(filteredInfo).filter(
-      ([, values]) => values && values.length > 0
-    );
-
-    if (activeFilters.length === 0) return tableData.rows;
-
-    return tableData.rows.filter((row) =>
-      activeFilters.every(([colName, filterValues]) => {
-        const rowValue = row[colName];
-        return (
-          rowValue != null &&
-          rowValue !== "" &&
-          filterValues!.some((filterValue) => String(rowValue) === String(filterValue))
-        );
-      })
-    );
-  }, [tableData, filteredInfo]);
-
-  useEffect(() => {
-    onFilteredDataChange?.(filteredRows);
-  }, [filteredRows, onFilteredDataChange]);
-
-  useEffect(() => {
-    onPaginationChange?.(currentPage, pageSize);
-  }, [currentPage, pageSize, onPaginationChange]);
-
-  const handleTableChange: TableProps<Record<string, unknown>>["onChange"] = (
-    pagination,
-    filters,
-    sorter
-  ) => {
-    setFilteredInfo((filters as Record<string, unknown[] | null>) || {});
-
-    if (pagination.current) {
-      setCurrentPage(pagination.current);
-    }
-    if (pagination.pageSize) {
-      setPageSize(pagination.pageSize);
-    }
-
-    if (onSortingChange && sorter) {
-      const sorters = Array.isArray(sorter) ? sorter : [sorter];
-      const sorting: SortingState = sorters
-        .filter((s) => s.order)
-        .map((s) => ({
-          id: String(s.field),
-          desc: s.order === "descend",
-        }));
-      onSortingChange(sorting);
-    }
-  };
-
-  const hasActiveFilters = useMemo(
-    () =>
-      Object.values(filteredInfo).some((filterValues) => filterValues && filterValues.length > 0),
-    [filteredInfo]
-  );
-
-  if (!tableData.canConvert) {
-    return (
-      <div className={styles.errorMessage}>
-        {t("jobs.table-conversion-error", { reason: tableData.reason || "Unknown error" })}
-      </div>
-    );
-  }
-
-  if (tableData.rows.length === 0) {
-    return <div className={styles.emptyMessage}>{t("jobs.table-empty")}</div>;
-  }
+  const tableColumns = useMemo(() => buildTableViewColumns(columns), [columns]);
 
   return (
     <div className={styles.tableContainer}>
-      <div className={styles.tableWrapper}>
-        <Table<Record<string, unknown>>
-          columns={columns}
-          dataSource={filteredRows}
-          rowKey={(record) => {
-            return String(record.key || record.minion_id || "");
-          }}
-          onChange={handleTableChange}
-          pagination={{
-            size: "small",
-            defaultPageSize: 50,
-            showSizeChanger: true,
-            pageSizeOptions: [10, 50, 100, 1000],
-            showTotal: (total) => `Total: ${total}`,
-            showQuickJumper: true,
-          }}
-          locale={{
-            emptyText: hasActiveFilters ? t("jobs.table-no-data-filtered") : t("jobs.table-empty"),
-          }}
+      {loadError && (
+        <Alert
+          className={styles.infoAlert}
+          type="error"
+          showIcon
+          message={t("jobs.table-view-load-error")}
         />
-      </div>
+      )}
+
+      {isInfoAlertVisible && (
+        <Alert
+          className={styles.infoAlert}
+          type="info"
+          showIcon
+          closable
+          onClose={onInfoAlertClose}
+          message={`${t("jobs.table-view-info-total", { count: total })} ${t("jobs.table-view-info-success-only")}`}
+        />
+      )}
+
+      <JobReturnDataTable
+        columns={tableColumns}
+        data={rows}
+        total={total}
+        isLoading={isLoading}
+        pagination={pagination}
+        onLazyLoad={onLazyLoad}
+        getRowId={getTableRowId}
+        getRowGroupKey={getMinionIdGroupKey}
+        useVirtualScroll
+        locale={{
+          total: t("jobs.table-view-pagination-total-label"),
+          empty: "",
+        }}
+      />
     </div>
   );
 };

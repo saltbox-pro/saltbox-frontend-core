@@ -177,6 +177,7 @@ export function AddSourceFileModal({
               name="url"
               label={t(`${I18N_PREFIX}.url`)}
               required
+              validateFirst
               rules={[
                 { required: true, whitespace: true, message: t(`${I18N_PREFIX}.url-required`) },
                 { type: "url", message: t(`${I18N_PREFIX}.url-invalid`) },

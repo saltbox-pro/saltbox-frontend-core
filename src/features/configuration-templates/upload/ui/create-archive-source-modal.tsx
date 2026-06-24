@@ -30,6 +30,7 @@ const { Dragger } = Upload;
 type ArchiveSourceFormValues = {
   name: string;
   description?: string;
+  namespace?: string;
   file: UploadFile[];
 };
 
@@ -121,6 +122,7 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
       await store.createArchiveSource({
         name,
         description: trimOptional(values.description),
+        namespace: trimOptional(values.namespace),
         file: fileObj,
       });
 

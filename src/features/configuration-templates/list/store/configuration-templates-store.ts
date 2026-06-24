@@ -1,8 +1,6 @@
 import {
   SourceOperation,
-  SourceType,
   type SourceListWithExtrasSchema,
-  type TemplateSourceCreateSchema,
   type TemplateSourcePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
@@ -289,51 +287,56 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     return normalized;
   };
 
-  private createTemplateSource = async (
-    schema: TemplateSourceCreateSchema
-  ): Promise<SourceListWithExtrasSchema> => {
-    const created = await apiCoreStore.taskTemplateSourcesApi?.templateSourceCreate({
-      TemplateSourceCreateSchema: schema,
-    });
+  createLocalSource = async (payload: {
+    name: string;
+    description?: string;
+    namespace?: string;
+  }): Promise<SourceListWithExtrasSchema> => {
+    const api = apiCoreStore.taskTemplateSourcesApi;
+    if (!api) throw new Error("API is not configured");
 
-    if (!created) {
-      throw new Error("Failed to create template source");
-    }
+    const created = await api.templateSourceCreateLocal({
+      TemplateSourceCreateLocalSchema: {
+        name: payload.name,
+        description: payload.description,
+        namespace: payload.namespace,
+      },
+    });
 
     return this.registerCreatedSource(created);
   };
 
-  createLocalSource = async (payload: {
-    name: string;
-    description?: string;
-  }): Promise<SourceListWithExtrasSchema> =>
-    this.createTemplateSource({
-      source_type: SourceType.LocalBundle,
-      name: payload.name,
-      description: payload.description,
-    });
-
   createGitSource = async (payload: {
     name: string;
     description?: string;
+    namespace?: string;
     repo_url: string;
     repo_user?: string;
     repo_pass?: string;
     branch: string;
-  }): Promise<SourceListWithExtrasSchema> =>
-    this.createTemplateSource({
-      source_type: SourceType.GitRepo,
-      name: payload.name,
-      description: payload.description,
-      repo_url: payload.repo_url,
-      repo_user: payload.repo_user ?? null,
-      repo_pass: payload.repo_pass ?? null,
-      branch: payload.branch,
+  }): Promise<SourceListWithExtrasSchema> => {
+    const api = apiCoreStore.taskTemplateSourcesApi;
+    if (!api) throw new Error("API is not configured");
+
+    const created = await api.templateSourceCreateFromUrl({
+      TemplateSourceCreateFromURLSchema: {
+        name: payload.name,
+        description: payload.description,
+        namespace: payload.namespace,
+        repo_url: payload.repo_url,
+        repo_user: payload.repo_user ?? null,
+        repo_pass: payload.repo_pass ?? null,
+        branch: payload.branch,
+      },
     });
+
+    return this.registerCreatedSource(created);
+  };
 
   createArchiveSource = async (payload: {
     name: string;
     description?: string;
+    namespace?: string;
     file: File;
   }): Promise<SourceListWithExtrasSchema> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
@@ -342,6 +345,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     const created = await api.templateSourceCreateFromArchive({
       name: payload.name,
       description: payload.description ?? "",
+      namespace: payload.namespace,
       file: payload.file,
     });
 

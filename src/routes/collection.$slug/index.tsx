@@ -14,8 +14,9 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
+import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import {
   CollectionStore,
@@ -62,10 +63,8 @@ const CollectionEditPage = observer(() => {
         actions: [
           {
             icon: <ExportOutlined />,
-            onClick: (_, row) => {
-              window.open(`/core/minions/${slug}/${row.id}`, "_blank");
-            },
-            title: t("minions.open-in-new-tab"),
+            getHref: (_, row) => buildMinionDetailsPagePath(slug ?? "", row.id),
+            title: t("minions.open-minion-details-page"),
           },
         ],
         color: "accent",
@@ -268,6 +267,7 @@ const CollectionEditPage = observer(() => {
               innerId: minion.id,
             });
           }}
+          actionLinkComponent={Link}
         />
       </Flex>
 

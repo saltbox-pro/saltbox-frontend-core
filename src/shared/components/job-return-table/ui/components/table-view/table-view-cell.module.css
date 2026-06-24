@@ -1,0 +1,9 @@
+.plainCell {
+  word-break: break-word;
+}
+
+.jsonPreviewCell {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}

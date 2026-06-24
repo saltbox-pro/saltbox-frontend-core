@@ -1,4 +1,5 @@
 export { useMinionDetailsDrawerTab } from "./hooks/use-minion-details-drawer-tab";
+export { buildMinionDetailsPagePath, buildMasterMinionRedirectPath } from "./model/paths";
 
 export {
   MinionDetailsFullPage,
