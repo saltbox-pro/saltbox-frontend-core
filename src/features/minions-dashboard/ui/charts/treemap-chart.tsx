@@ -26,7 +26,6 @@ const TreemapContent = (props: TreemapContentProps) => {
   const height = Number(props.height) || 0;
   const label = item?.name || props.name;
   const count = item?.count ?? props.count;
-  const canShowText = width > 72 && height > 36;
   const isClickable = !!props.onFilterByValue && !!item;
   const isNodeClickable = isClickable && !item?.isOther;
 
@@ -60,14 +59,12 @@ const TreemapContent = (props: TreemapContentProps) => {
         rx={4}
         ry={4}
       />
-      {canShowText && (
-        <text x={(props.x || 0) + 8} y={(props.y || 0) + 18} className={styles.treemapLabel}>
-          <tspan>{label}</tspan>
-          <tspan x={(props.x || 0) + 8} dy="16">
-            {count}
-          </tspan>
-        </text>
-      )}
+      <text x={(props.x || 0) + 8} y={(props.y || 0) + 18} className={styles.treemapLabel}>
+        <tspan>{label}</tspan>
+        <tspan x={(props.x || 0) + 8} dy="16">
+          {count}
+        </tspan>
+      </text>
     </g>
   );
 };

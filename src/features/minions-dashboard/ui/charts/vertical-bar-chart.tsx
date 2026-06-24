@@ -24,7 +24,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
     <ResponsiveContainer>
       <BarChart
         data={data}
-        margin={{ left: 10, right: 10, top: 10, bottom: 40 }}
+        margin={{ left: 10, right: 10, top: 10, bottom: 20 }}
         onClick={
           onFilterByValue
             ? (state) => {
