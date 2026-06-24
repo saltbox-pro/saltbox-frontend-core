@@ -33,6 +33,12 @@ export class JobStore {
     string,
     null | "not-found" | "access-denied" | "load-failed" | "api-unavailable"
   >;
+  @observable jobReturnTableColumns: string[];
+  @observable jobReturnTableRows: Array<Record<string, unknown>>;
+  @observable jobReturnTableTotal: number;
+  @observable isJobReturnTableLoading: boolean;
+  @observable jobReturnTableLoadError: boolean;
+  @observable tablePagination: PaginationState;
   @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
 
@@ -56,6 +62,15 @@ export class JobStore {
     this.jobReturnDataById = {};
     this.jobReturnDataStatusById = {};
     this.jobReturnDataErrorById = {};
+    this.jobReturnTableColumns = [];
+    this.jobReturnTableRows = [];
+    this.jobReturnTableTotal = 0;
+    this.isJobReturnTableLoading = false;
+    this.jobReturnTableLoadError = false;
+    this.tablePagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
     this.error = null;
     makeObservable(this);
   }
@@ -80,7 +95,30 @@ export class JobStore {
     this.inFlightJobReturnDataLoads.clear();
     this.staleJobReturnDataIds.clear();
     this.shouldLoadJobReturnsAfterStarting = false;
+    this.jobReturnTableColumns = [];
+    this.jobReturnTableRows = [];
+    this.jobReturnTableTotal = 0;
+    this.isJobReturnTableLoading = false;
+    this.jobReturnTableLoadError = false;
+    this.tablePagination = {
+      pageIndex: 0,
+      pageSize: PAGE_SIZE,
+    };
     this.error = null;
+  };
+
+  @action
+  prepareTableViewLoad = () => {
+    this.jobReturnTableColumns = [];
+    this.jobReturnTableRows = [];
+    this.jobReturnTableTotal = 0;
+    this.jobReturnTableLoadError = false;
+    this.isJobReturnTableLoading = true;
+  };
+
+  @action
+  beginJobReturnsReload = () => {
+    this.isJobReturnsLoading = true;
   };
 
   @action
@@ -305,11 +343,61 @@ export class JobStore {
   };
 
   @action
+  loadJobReturnsTable = () => {
+    if (this.jid && this.job?.status === JobStatus.Starting) {
+      this.isJobReturnTableLoading = false;
+      return;
+    }
+
+    this.isJobReturnTableLoading = true;
+    this.jobReturnTableLoadError = false;
+
+    apiCoreStore.jobsApi
+      ?.jobReturnsTable({
+        JobReturnsListBody: {
+          query: {
+            ...this.mongoDBQuery,
+            ...(this.jid ? { jid: this.jid } : {}),
+          },
+          limit: this.tablePagination.pageSize,
+          skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
+        },
+      })
+      .then((response) => {
+        runInAction(() => {
+          this.jobReturnTableColumns = response.columns;
+          this.jobReturnTableRows = (response.data ?? []).filter(
+            (row): row is Record<string, unknown> => row != null
+          );
+          this.jobReturnTableTotal = response.total;
+          this.jobReturnTableLoadError = false;
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading job returns table:", error);
+        runInAction(() => {
+          this.jobReturnTableLoadError = true;
+        });
+      })
+      .finally(() => {
+        runInAction(() => {
+          this.isJobReturnTableLoading = false;
+        });
+      });
+  };
+
+  @action
   handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
     this.pagination.pageIndex = pagination.pageIndex;
     this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;
     this.loadJobReturns();
+  };
+
+  @action
+  handleTableLazyLoad = (pagination: PaginationState) => {
+    this.tablePagination = pagination;
+    this.loadJobReturnsTable();
   };
 
   @action

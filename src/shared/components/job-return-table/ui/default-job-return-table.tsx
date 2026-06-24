@@ -7,7 +7,6 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import {
-  type OnChangeFn,
   type PaginationState,
   type SortingState,
   type ColumnDef,
@@ -16,7 +15,7 @@ import {
 } from "@tanstack/react-table";
 import { Flex, Tag, Typography } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ComponentProps, useMemo, useEffect, useCallback } from "react";
+import { type ComponentProps, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -27,8 +26,6 @@ import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
-
-import { canConvertToTable, mergeJobReturnsToTable } from "../utils/table-converter";
 
 import { ExecutionDuration } from "./components/execution-duration";
 import { TableView } from "./components/table-view/table-view";
@@ -52,10 +49,11 @@ interface DefaultJobReturnTableProps {
   sorting: SortingState;
   total: number;
   onLazyLoad: OnLazyLoad;
-  onTableViewSortingChange?: OnChangeFn<SortingState>;
-  onTableViewFilteredDataChange?: (filteredRows: Record<string, unknown>[]) => void;
-  onTableViewPaginationChange?: (pageIndex: number, pageSize: number) => void;
-  onTableViewErrorsChange?: (errors: Array<{ minion_id: string; error: string }>) => void;
+  tableColumns?: string[];
+  tableRows?: Array<Record<string, unknown>>;
+  isTableLoading?: boolean;
+  tableLoadError?: boolean;
+  onTableLazyLoad?: (pagination: PaginationState) => void;
 }
 
 export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
@@ -71,12 +69,15 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     sorting,
     total,
     onLazyLoad,
-    onTableViewSortingChange,
-    onTableViewFilteredDataChange,
-    onTableViewPaginationChange,
-    onTableViewErrorsChange,
+    tableColumns = [],
+    tableRows = [],
+    isTableLoading = false,
+    tableLoadError = false,
+    onTableLazyLoad,
   }) => {
     const { t } = useTranslation();
+    const [isTableInfoAlertVisible, setIsTableInfoAlertVisible] = useState(true);
+
     const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
       getId: (params) => params.drawerId ?? params.minionId,
     });
@@ -192,24 +193,6 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       [jobReturns, jobStartTimestamp, t]
     );
 
-    const mergedTableData = useMemo(() => {
-      if (!isTableViewMode) {
-        return null;
-      }
-
-      const jobReturnsData = jobReturns.map((jobReturn) => ({
-        data: jobReturn.data ?? null,
-        minion_id: jobReturn.minion_id || "",
-      }));
-
-      const canConvertAny = jobReturnsData.some((jr) => canConvertToTable(jr.data));
-      if (!canConvertAny) {
-        return null;
-      }
-
-      return mergeJobReturnsToTable(jobReturnsData);
-    }, [isTableViewMode, jobReturns]);
-
     const handleRowClick = useCallback(
       (jobReturn: JobReturnModel) => {
         drawer.toggle({
@@ -221,13 +204,6 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       [drawer]
     );
 
-    const overscan = pagination.pageSize > 100 ? 10 : 100;
-    const shouldShowMergedView =
-      isTableViewMode &&
-      mergedTableData &&
-      mergedTableData.canConvert &&
-      mergedTableData.rows.length > 0;
-
     const renderJobResult = useCallback(
       ({ row }: { row: Row<JobReturnModel> }) => (
         <JobReturnRow jobStore={jobStore} row={row.original} isFullOutput={isFullOutput} />
@@ -235,44 +211,39 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
       [isFullOutput, jobStore]
     );
 
-    useEffect(() => {
-      if (!isTableViewMode || !onTableViewErrorsChange) return;
-      onTableViewErrorsChange(mergedTableData?.errors || []);
-    }, [isTableViewMode, mergedTableData?.errors, onTableViewErrorsChange]);
-
     return (
       <Flex vertical className={styles.jobReturnTableContainer}>
-        {shouldShowMergedView ? (
+        {isTableViewMode && onTableLazyLoad ? (
           <TableView
-            data={mergedTableData}
-            minionId=""
-            onSortingChange={onTableViewSortingChange}
-            onFilteredDataChange={onTableViewFilteredDataChange}
-            onPaginationChange={onTableViewPaginationChange}
-            onErrorsChange={onTableViewErrorsChange}
+            columns={tableColumns}
+            rows={tableRows}
+            total={total}
+            pagination={pagination}
+            isLoading={isTableLoading}
+            loadError={tableLoadError}
+            onLazyLoad={onTableLazyLoad}
+            isInfoAlertVisible={isTableInfoAlertVisible}
+            onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
           />
         ) : (
-          <>
-            <JobReturnsTable
-              columns={columns}
-              getRowId={(row) => row.id}
-              data={jobReturns}
-              total={total}
-              isLoading={isLoading}
-              pagination={pagination}
-              sorting={sorting}
-              onLazyLoad={onLazyLoad}
-              useVirtualScroll={false}
-              overscan={overscan}
-              forceExpandAll={forceExpand}
-              getRowCanExpand={() => !isTableViewMode}
-              renderSubComponent={renderJobResult}
-              activeRowId={drawer.activeRowId}
-              bodyRef={drawer.mainContentRef}
-              onRowClick={handleRowClick}
-              actionLinkComponent={Link}
-            />
-          </>
+          <JobReturnsTable
+            columns={columns}
+            getRowId={(row) => row.id}
+            data={jobReturns}
+            total={total}
+            isLoading={isLoading}
+            pagination={pagination}
+            sorting={sorting}
+            onLazyLoad={onLazyLoad}
+            useVirtualScroll
+            forceExpandAll={forceExpand}
+            getRowCanExpand={() => true}
+            renderSubComponent={renderJobResult}
+            activeRowId={drawer.activeRowId}
+            bodyRef={drawer.mainContentRef}
+            onRowClick={handleRowClick}
+            actionLinkComponent={Link}
+          />
         )}
 
         <MinionDetailsDrawer drawer={drawer} />
