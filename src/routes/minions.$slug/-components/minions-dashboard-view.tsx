@@ -81,7 +81,7 @@ export const MinionsDashboardView = observer(
     );
 
     return (
-      <Flex gap={12} vertical style={{ height: "100%" }}>
+      <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
 
         <MinionsDashboardSummary slug={props.slug} filterStore={props.filterStore} />
@@ -104,7 +104,6 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div
-            ref={containerRef}
             className={[
               styles.dashboardContainer,
               dashboardStore.isCardFullScreen ? styles.dashboardContainerFullscreen : "",
