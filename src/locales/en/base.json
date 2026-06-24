@@ -650,7 +650,6 @@
   "jobs-templates": {
     "title": "Job Templates",
     "table-name": "Name",
-    "table-commit-hash": "Commit Hash",
     "table-created": "Created",
     "table-modified": "Modified"
   },
@@ -659,13 +658,6 @@
     "no-execution-result": "Execution result is missing",
     "load-error": "Failed to load job return result",
     "not-found": "Job return result not found"
-  },
-  "sync-templates-button": {
-    "sync-templates": "Sync Templates",
-    "sync-failed": "Sync templates failed",
-    "error-checking-task-status": "Error checking task status",
-    "task-failed": "Task failed",
-    "success-on-sync-templates": "Success on sync templates"
   },
   "collection": {
     "collections": "Collections",

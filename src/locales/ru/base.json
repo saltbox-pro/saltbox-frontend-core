@@ -650,7 +650,6 @@
   "jobs-templates": {
     "title": "Шаблоны команд",
     "table-name": "Имя",
-    "table-commit-hash": "Хеш коммита",
     "table-created": "Создан",
     "table-modified": "Изменен"
   },
@@ -659,13 +658,6 @@
     "no-execution-result": "Результат выполнения отсутствует",
     "load-error": "Не удалось загрузить результат выполнения команды",
     "not-found": "Результат выполнения команды не найден"
-  },
-  "sync-templates-button": {
-    "sync-templates": "Синхронизировать шаблоны",
-    "sync-failed": "Синхронизация шаблонов не удалась",
-    "error-checking-task-status": "Ошибка при проверке статуса задачи",
-    "task-failed": "Задача не выполнена",
-    "success-on-sync-templates": "Синхронизация шаблонов выполнена успешно"
   },
   "collection": {
     "collections": "Коллекции",
