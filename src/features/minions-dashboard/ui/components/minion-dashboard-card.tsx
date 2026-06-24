@@ -10,6 +10,7 @@ import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-commo
 import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
@@ -45,10 +46,11 @@ type MinionDashboardCardProps = {
   onEdit: (cardId: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
+  fullscreenContainer?: HTMLElement | null;
 };
 
 export const MinionDashboardCard = observer(
-  ({ card, onEdit, slug, filterStore }: MinionDashboardCardProps) => {
+  ({ card, onEdit, slug, filterStore, fullscreenContainer }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
@@ -236,7 +238,7 @@ export const MinionDashboardCard = observer(
 
     const showChartActions = card.preset !== "table" && dashboardCardStore.grainValues.length > 0;
 
-    return (
+    const cardElement = (
       <Card
         size="small"
         className={`${styles.dashboardTableBlock} ${isFullScreen ? styles.fullscreen : ""}`}
@@ -277,5 +279,9 @@ export const MinionDashboardCard = observer(
         </Spin>
       </Card>
     );
+
+    return isFullScreen && fullscreenContainer
+      ? createPortal(cardElement, fullscreenContainer)
+      : cardElement;
   }
 );

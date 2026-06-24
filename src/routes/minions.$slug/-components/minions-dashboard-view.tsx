@@ -140,6 +140,7 @@ export const MinionsDashboardView = observer(
                     onEdit={handleEditCard}
                     slug={props.slug}
                     filterStore={props.filterStore}
+                    fullscreenContainer={containerRef.current}
                   />
                 </div>
               ))}
