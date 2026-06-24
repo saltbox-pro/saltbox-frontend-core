@@ -1,7 +1,7 @@
 import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
 import { observer } from "mobx-react-lite";
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GridLayout, LayoutItem, useContainerWidth, verticalCompactor } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
@@ -17,8 +17,25 @@ import { MinionFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-dashboard-view.module.css";
 
-const GRID_ROW_HEIGHT = 400;
 const GRID_MARGIN: readonly [number, number] = [8, 8];
+
+const getRowHeight = () => {
+  return Math.max(240, Math.round(window.innerHeight * 0.38));
+};
+
+const useGridRowHeight = () => {
+  const [rowHeight, setRowHeight] = useState(getRowHeight);
+  useEffect(() => {
+    const handler = () => {
+      setRowHeight(getRowHeight());
+    };
+    window.addEventListener("resize", handler);
+    return () => {
+      window.removeEventListener("resize", handler);
+    };
+  }, []);
+  return rowHeight;
+};
 
 const toLayoutItems = (items: DashboardLayoutItem[]): LayoutItem[] =>
   items.map((item) => ({
@@ -53,6 +70,7 @@ export const MinionsDashboardView = observer(
     const { t } = useTranslation();
     const { onEditCard } = props;
     const { width, containerRef } = useContainerWidth();
+    const rowHeight = useGridRowHeight();
 
     const handleEditCard = useCallback(
       (cardId: string) => {
@@ -96,7 +114,7 @@ export const MinionsDashboardView = observer(
               layout={toLayoutItems(dashboardStore.layout)}
               gridConfig={{
                 cols: DASHBOARD_GRID_COLS,
-                rowHeight: GRID_ROW_HEIGHT,
+                rowHeight,
                 margin: GRID_MARGIN,
                 containerPadding: [0, 0],
                 maxRows: Infinity,

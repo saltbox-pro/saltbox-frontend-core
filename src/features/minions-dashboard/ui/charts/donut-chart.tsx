@@ -55,18 +55,20 @@ export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
           paddingAngle={1}
           isAnimationActive={false}
         >
-          {data.map((entry, index) => (
-            <Cell
-              key={`${entry.name}-${index}`}
-              fill={colors[index]}
-              onClick={() => onFilterByValue?.(entry)}
-              tabIndex={-1}
-              style={{
-                cursor: onFilterByValue && !entry.isOther ? "pointer" : "default",
-                outline: "none",
-              }}
-            />
-          ))}
+          {data.map((entry, index) => {
+            const isClickable = !!onFilterByValue && !entry.isOther;
+            return (
+              <Cell
+                key={`${entry.name}-${index}`}
+                fill={colors[index]}
+                onClick={() => {
+                  onFilterByValue?.(entry);
+                }}
+                tabIndex={-1}
+                className={`${styles.donutPieCell} ${isClickable ? styles.donutPieCellClickable : ""}`}
+              />
+            );
+          })}
         </Pie>
       </PieChart>
     </ResponsiveContainer>

@@ -8,9 +8,11 @@ import {
   YAxis,
 } from "recharts";
 
-import { ChartDatum } from "../../model/dashboard-chart-data";
+import { VERTICAL_BAR_XAXIS_HEIGHT } from "../../constants/chart-data";
+import { ChartDatum, truncateXAxisLabel } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
+import styles from "./vertical-bar-chart.module.css";
 
 type VerticalBarChartProps = {
   data: ChartDatum[];
@@ -22,7 +24,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
     <ResponsiveContainer>
       <BarChart
         data={data}
-        margin={{ left: 8, right: 18, top: 10, bottom: 42 }}
+        margin={{ left: 10, right: 10, top: 10, bottom: 40 }}
         onClick={
           onFilterByValue
             ? (state) => {
@@ -38,11 +40,12 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
         <XAxis
           dataKey="name"
           tick={{ fontSize: 11 }}
-          angle={-12}
+          angle={-15}
           textAnchor="middle"
           interval={0}
-          height={48}
+          height={VERTICAL_BAR_XAXIS_HEIGHT}
           tickMargin={8}
+          tickFormatter={truncateXAxisLabel}
         />
         <YAxis allowDecimals={false} />
         <ChartTooltip
@@ -54,7 +57,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
           radius={[6, 6, 0, 0]}
           fill="var(--ant-color-primary, #1677ff)"
           isAnimationActive={false}
-          style={{ outline: "none" }}
+          className={styles.verticalBar}
           background={onFilterByValue ? { fill: "transparent", cursor: "pointer" } : undefined}
         />
       </BarChart>

@@ -3,6 +3,7 @@ import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import {
   BOOLEAN_FALSE_VALUES,
   BOOLEAN_TRUE_VALUES,
+  X_AXIS_LABEL_MAX_CHARS,
   Y_AXIS_LABEL_MAX_CHARS,
 } from "../constants/chart-data";
 
@@ -21,6 +22,12 @@ export type BooleanLabels = {
 export const truncateAxisLabel = (value: string): string => {
   return value.length > Y_AXIS_LABEL_MAX_CHARS
     ? `${value.slice(0, Y_AXIS_LABEL_MAX_CHARS - 1)}…`
+    : value;
+};
+
+export const truncateXAxisLabel = (value: string): string => {
+  return value.length > X_AXIS_LABEL_MAX_CHARS
+    ? `${value.slice(0, X_AXIS_LABEL_MAX_CHARS - 1)}…`
     : value;
 };
 

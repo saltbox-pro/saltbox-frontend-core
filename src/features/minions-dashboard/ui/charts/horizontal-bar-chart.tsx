@@ -9,9 +9,15 @@ import {
   YAxis,
 } from "recharts";
 
+import {
+  HORIZONTAL_BAR_YAXIS_CHAR_PX,
+  HORIZONTAL_BAR_YAXIS_WIDTH_MAX,
+  HORIZONTAL_BAR_YAXIS_WIDTH_MIN,
+} from "../../constants/chart-data";
 import { ChartDatum, truncateAxisLabel } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
+import styles from "./horizontal-bar-chart.module.css";
 
 type HorizontalBarChartProps = {
   data: ChartDatum[];
@@ -21,7 +27,10 @@ type HorizontalBarChartProps = {
 export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChartProps) => {
   const yAxisWidth = useMemo(() => {
     const longest = data.reduce((max, item) => Math.max(max, item.name.length), 0);
-    return Math.min(220, Math.max(100, longest * 7));
+    return Math.min(
+      HORIZONTAL_BAR_YAXIS_WIDTH_MAX,
+      Math.max(HORIZONTAL_BAR_YAXIS_WIDTH_MIN, longest * HORIZONTAL_BAR_YAXIS_CHAR_PX)
+    );
   }, [data]);
 
   return (
@@ -29,7 +38,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ left: 8, right: 22, top: 10, bottom: 10 }}
+        margin={{ left: -80, right: 20, top: 10, bottom: 10 }}
         onClick={
           onFilterByValue
             ? (state) => {
@@ -60,7 +69,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
           radius={[0, 6, 6, 0]}
           fill="var(--ant-color-primary, #1677ff)"
           isAnimationActive={false}
-          style={{ outline: "none" }}
+          className={styles.horizontalBar}
           background={onFilterByValue ? { fill: "transparent", cursor: "pointer" } : undefined}
         />
       </BarChart>

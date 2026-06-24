@@ -28,14 +28,26 @@ const TreemapContent = (props: TreemapContentProps) => {
   const count = item?.count ?? props.count;
   const canShowText = width > 72 && height > 36;
   const isClickable = !!props.onFilterByValue && !!item;
+  const isNodeClickable = isClickable && !item?.isOther;
 
   return (
     <g
-      className={item?.isOther ? styles.treemapOtherNode : undefined}
-      onClick={isClickable ? () => props.onFilterByValue!(item!) : undefined}
-      style={{ cursor: isClickable && !item.isOther ? "pointer" : "default", outline: "none" }}
+      className={`${styles.treemapNode} ${isNodeClickable ? styles.treemapNodeClickable : ""}`}
+      onClick={
+        isClickable
+          ? () => {
+              props.onFilterByValue!(item!);
+            }
+          : undefined
+      }
       tabIndex={-1}
-      onMouseDown={isClickable ? (e) => e.preventDefault() : undefined}
+      onMouseDown={
+        isClickable
+          ? (e) => {
+              e.preventDefault();
+            }
+          : undefined
+      }
     >
       <rect
         x={props.x}
