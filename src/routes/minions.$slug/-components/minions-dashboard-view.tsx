@@ -122,7 +122,7 @@ export const MinionsDashboardView = observer(
                 maxRows: Infinity,
               }}
               dragConfig={{
-                enabled: true,
+                enabled: !dashboardStore.isCardFullScreen,
                 bounded: false,
                 handle: ".dashboardDragHandle",
                 threshold: 3,
