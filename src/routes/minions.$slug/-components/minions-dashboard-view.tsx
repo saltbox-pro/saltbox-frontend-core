@@ -1,5 +1,6 @@
 import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -59,19 +60,18 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div
-            className={[
+            className={clsx(
               styles.dashboardContainer,
-              dashboardStore.isCardFullScreen ? styles.dashboardContainerFullscreen : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+              dashboardStore.isCardFullScreen && styles.dashboardContainerFullscreen
+            )}
           >
             {dashboardStore.cards.map((card) => (
               <div
                 key={card.id}
-                className={[styles.dashboardCardWrapper, PRESET_WRAPPER_CLASSNAMES[card.preset]]
-                  .filter(Boolean)
-                  .join(" ")}
+                className={clsx(
+                  styles.dashboardCardWrapper,
+                  PRESET_WRAPPER_CLASSNAMES[card.preset]
+                )}
               >
                 <MinionDashboardCard
                   card={card}

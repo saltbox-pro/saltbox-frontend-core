@@ -1,6 +1,7 @@
 import { ResponsiveContainer, Tooltip as ChartTooltip, Treemap as RechartsTreemap } from "recharts";
 
-import { generateChartColors } from "../../constants/chart-color-generator";
+import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
+
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";

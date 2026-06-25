@@ -24,7 +24,11 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { dashboardStore, getDashboardFieldOptions } from "saltbox-core/features/minions-dashboard";
+import {
+  dashboardStore,
+  getDashboardFieldOptions,
+  MinionsDashboardAddBlockModal,
+} from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
   appStore,
@@ -36,9 +40,8 @@ import {
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
-import { MinionsListView } from "./-components/minions-list-view";
-import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
+import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsQueryBuilder } from "./-components/minions-query-builder";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
