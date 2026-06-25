@@ -1,6 +1,6 @@
-import { PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import { SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { MatIcon, SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
+import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
 import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
@@ -22,6 +22,7 @@ import {
   MinionsStore,
 } from "saltbox-core/store";
 
+import { AddTaskIcon, PolicyIcon, TaskIcon } from "saltbox-core/shared/components/icons";
 import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";
@@ -173,7 +174,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         <div className="page-actions-buttons">
           <Button
             type="primary"
-            icon={<MatIcon icon="assignment_add" />}
+            icon={<AddTaskIcon />}
             onClick={() => handleOpenCreateTaskModal("task")}
             loading={mastersStore.isLoading}
           >
@@ -181,7 +182,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           </Button>
 
           <Button
-            icon={<MatIcon icon="add_notes" />}
+            icon={<AddTaskIcon />}
             onClick={() => handleOpenCreateTaskModal("policy")}
             loading={mastersStore.isLoading}
             disabled={!!selectedMinionsCount}
