@@ -22,6 +22,7 @@ import {
   MinionDetailsDrawerWrapper,
   type MinionDetailsDrawerWrapperProps,
 } from "./features/minion-details-drawer";
+import { dashboardStore } from "./features/minions-dashboard";
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
 
@@ -215,6 +216,12 @@ export const saltboxModule = {
     });
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
+    });
+    autorun(() => {
+      const userId = authStore.user?.profile?.sub;
+      if (userId) {
+        dashboardStore.init(userId);
+      }
     });
   },
 };

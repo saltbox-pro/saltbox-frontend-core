@@ -1,0 +1,44 @@
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip as ChartTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import { ChartDatum } from "../../model/dashboard-chart-data";
+
+import { ChartTooltipContent } from "./chart-tooltip-content";
+
+type VerticalBarChartProps = {
+  data: ChartDatum[];
+};
+
+export const VerticalBarChart = ({ data }: VerticalBarChartProps) => {
+  return (
+    <ResponsiveContainer>
+      <BarChart data={data} margin={{ left: 8, right: 18, top: 10, bottom: 42 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis
+          dataKey="name"
+          tick={{ fontSize: 11 }}
+          angle={-12}
+          textAnchor="middle"
+          interval={0}
+          height={48}
+          tickMargin={8}
+        />
+        <YAxis allowDecimals={false} />
+        <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
+        <Bar
+          dataKey="count"
+          radius={[6, 6, 0, 0]}
+          fill="var(--ant-color-primary, #1677ff)"
+          isAnimationActive={false}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+};

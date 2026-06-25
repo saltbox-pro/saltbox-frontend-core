@@ -1,0 +1,10 @@
+.donutLegendLabel {
+  display: inline-block;
+  max-width: 240px;
+  overflow: hidden;
+  color: var(--ant-color-text-secondary, #344054);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}

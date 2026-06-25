@@ -1,0 +1,19 @@
+.chartTooltip {
+  max-width: 280px;
+  padding: 10px;
+  border: 1px solid var(--ant-color-border, #e4e7ec);
+  border-radius: 6px;
+  background: var(--ant-color-bg-container, #fff);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  color: var(--ant-color-text, #101828);
+}
+
+.chartTooltipTitle {
+  font-weight: 600;
+}
+
+.chartTooltipCount {
+  margin-top: 2px;
+  color: var(--ant-color-text-secondary, #475467);
+  font-size: 12px;
+}

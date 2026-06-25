@@ -1,0 +1,98 @@
+.dashboardTableBlock {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--ant-color-border-secondary, #edf0f5);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container, #fff);
+  box-shadow: 0 4px 18px rgb(15 23 42 / 6%);
+}
+
+.dashboardTableBlock.fullscreen {
+  position: absolute;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+}
+
+.dashboardTableBlock.fullscreen :global(.fast-table-wrapper) {
+  height: calc(100vh - 150px);
+  max-height: none;
+  overflow-y: auto;
+}
+
+.dashboardTableBlock :global(.ant-card-body) {
+  height: 100%;
+  padding: 14px;
+}
+
+.dashboardTableBlockBody,
+.dashboardTableBlockBody :global(.ant-spin-nested-loading),
+.dashboardTableBlockBody :global(.ant-spin-container) {
+  height: 100%;
+}
+
+.dashboardTableBlockHeader {
+  display: flex;
+  min-height: 40px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.dashboardTableBlockTitleGroup {
+  min-width: 0;
+  flex: 1;
+}
+
+.dashboardTableBlockSubtitle {
+  font-size: 12px;
+}
+
+.dashboardTableBlockHeaderSettings {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboardTableBlockMenuIcon {
+  cursor: pointer;
+  color: var(--ant-color-text-secondary, #667085);
+  padding: 4px;
+}
+
+.dashboardTableBlockChartBody {
+  height: calc(100% - 52px);
+  min-height: 210px;
+}
+
+.dashboardTableBlock :global(.fast-table-wrapper) {
+  height: 100%;
+  max-height: none;
+  overflow: auto;
+}
+
+.dashboardTableBlock :global(.fast-table) {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.dashboardTableBlock :global(.fast-table table > thead > tr > th) {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border: none;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #edf0f5);
+  background: var(--ant-color-bg-container, #fff);
+  color: var(--ant-color-text-secondary, #475467);
+}
+
+.dashboardTableBlock :global(.fast-table table > tbody > tr > td) {
+  border: none;
+  border-bottom: 1px solid var(--ant-color-border-secondary, #f2f4f7);
+}

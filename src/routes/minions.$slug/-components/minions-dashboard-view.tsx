@@ -1,55 +1,88 @@
-import { Flex } from "antd";
+import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Empty, Flex } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { ReactNode, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-import { dashboardStore, MinionFilterStore } from "saltbox-core/store";
+import {
+  DashboardPreset,
+  dashboardStore,
+  MinionDashboardCard,
+} from "saltbox-core/features/minions-dashboard";
+import { MinionFilterStore } from "saltbox-core/store";
 
-import { MinionDashboardCard } from "./minion-dashboard-card";
 import styles from "./minions-dashboard-view.module.css";
-import { MinionsQueryBuilder } from "./minions-query-builder";
+
+const PRESET_WRAPPER_CLASSNAMES: Partial<Record<DashboardPreset, string>> = {
+  donut: styles.wideCard,
+  "vertical-bar": styles.wideCard,
+  treemap: `${styles.wideCard} ${styles.tallCard}`,
+};
 
 export const MinionsDashboardView = observer(
-  (props: { slug: string; filterStore: MinionFilterStore; showFilter: boolean }) => {
-    const [visibleBlocks, setVisibleBlocks] = useState<number>(0);
+  (props: {
+    slug: string;
+    filterStore: MinionFilterStore;
+    filterControls?: ReactNode;
+    onEditCard: (cardId: string) => void;
+    onAddCard: () => void;
+  }) => {
+    const { t } = useTranslation();
+    const { onEditCard } = props;
 
-    useEffect(() => {
-      setVisibleBlocks(0);
-    }, [dashboardStore.blocks.length, props.filterStore.searchMongoDBQuery]);
-
-    useEffect(() => {
-      if (visibleBlocks < dashboardStore.blocks.length) {
-        setVisibleBlocks((prev) => prev + 1);
-      }
-    }, [visibleBlocks, dashboardStore.blocks.length]);
+    const handleEditCard = useCallback(
+      (cardId: string) => {
+        return onEditCard(cardId);
+      },
+      [onEditCard]
+    );
 
     return (
-      <Flex gap={8} vertical>
-        {props.showFilter && (
-          <MinionsQueryBuilder slug={props.slug} filterStore={props.filterStore} />
-        )}
+      <Flex gap={12} vertical style={{ height: "100%" }}>
+        {props.filterControls}
 
-        <div className={styles.dashboardTablesContainer}>
-          {dashboardStore.blocks.map((block, index) => (
-            <div
-              key={index}
-              className={`${styles.dashboardTableBlock} ${
-                styles[`dashboardTableBlock${index + 1}`]
-              }`}
+        {dashboardStore.cards.length === 0 ? (
+          <div className={styles.emptyState}>
+            <Empty
+              image={<BarChartOutlined className={styles.emptyStateIcon} />}
+              description={
+                <Flex vertical gap={4} align="center">
+                  <strong>{t("dashboard.empty-title")}</strong>
+                  <span>{t("dashboard.empty-description")}</span>
+                </Flex>
+              }
             >
-              <MinionDashboardCard
-                grains={block.grains}
-                view={block.view}
-                onUpdateGrains={(newGrains) => dashboardStore.updateGrains(index, newGrains)}
-                onRemove={() => dashboardStore.removeBlock(index)}
-                onChangeView={(newView) => dashboardStore.updateView(index, newView)}
-                slug={props.slug}
-                filterStore={props.filterStore}
-                isLoading={index >= visibleBlocks}
-                isLoaded={index < visibleBlocks}
-              />
-            </div>
-          ))}
-        </div>
+              <Button type="primary" icon={<PlusOutlined />} onClick={props.onAddCard}>
+                {t("minions.add-block-button")}
+              </Button>
+            </Empty>
+          </div>
+        ) : (
+          <div
+            className={[
+              styles.dashboardContainer,
+              dashboardStore.isCardFullScreen ? styles.dashboardContainerFullscreen : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {dashboardStore.cards.map((card) => (
+              <div
+                key={card.id}
+                className={[styles.dashboardCardWrapper, PRESET_WRAPPER_CLASSNAMES[card.preset]]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                <MinionDashboardCard
+                  card={card}
+                  onEdit={handleEditCard}
+                  slug={props.slug}
+                  filterStore={props.filterStore}
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </Flex>
     );
   }
