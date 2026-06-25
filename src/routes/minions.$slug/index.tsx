@@ -1,23 +1,22 @@
 import {
-  // DeleteOutlined,
   EditOutlined,
-  SettingOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
-  PageHeader,
-  Modal,
-  Popover,
-  generateIdsForQuery,
   FilterToggleButton,
+  generateIdsForQuery,
   isGlobalServerError,
+  Modal,
+  PageHeader,
+  Popover,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Tabs, message } from "antd";
+import { Button, Flex, message, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,9 +35,9 @@ import {
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
-import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
+import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsQueryBuilder } from "./-components/minions-query-builder";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
@@ -54,8 +53,7 @@ const createMinionFilterStore = () => {
   if (saved) {
     localStorage.removeItem("minionsFilter");
     try {
-      const initialFilterWithIds = generateIdsForQuery(JSON.parse(saved));
-      store.currentFilters = initialFilterWithIds;
+      store.currentFilters = generateIdsForQuery(JSON.parse(saved));
       store.handleSearch();
     } catch {
       // ignore invalid filter payload
