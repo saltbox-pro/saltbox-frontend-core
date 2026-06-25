@@ -1,7 +1,7 @@
+import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { rethrowIfAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
 
-import { BgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
-import { rethrowIfAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 import { isBgTaskFailed, pollBgTaskResult } from "../../shared/service/poll-bg-task-result.service";
 
 export type SyncGitlabSourcesDeps = {

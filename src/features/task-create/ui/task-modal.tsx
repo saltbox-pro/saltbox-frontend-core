@@ -1,13 +1,10 @@
-import { type TaskTemplateExcludeSlsSchema, TaskType } from "@saltbox/saltbox-core-api-client";
+import { type TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  getTemplateDescriptionText,
-  type TemplateDescriptionValue,
-} from "saltbox-core/shared/utils/template-description";
+import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-description";
 
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskTemplateService, taskCreationService } from "../service";
@@ -43,7 +40,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   const [modalApi, modalContextHolder] = Modal.useModal();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [template, setTemplate] = useState<TaskTemplateExcludeSlsSchema | undefined>();
+  const [template, setTemplate] = useState<TaskTemplateModel | undefined>();
   const [activeTabKey, setActiveTabKey] = useState<string>(TabKey.Configuration);
   const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>({
     ...taskCreationService.getDefaultConfiguration(),
@@ -209,10 +206,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
         template
       ),
       templateDescription:
-        (getTemplateDescriptionText(
-          (template?.description ?? null) as TemplateDescriptionValue,
-          i18n.language
-        ) ||
+        (getTemplateDescriptionText(template?.description ?? null, i18n.language) ||
           template?.title) ??
         "",
       collectionName,

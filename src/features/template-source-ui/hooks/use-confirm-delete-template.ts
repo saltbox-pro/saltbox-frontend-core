@@ -2,8 +2,13 @@ import { Modal } from "@saltbox/saltbox-frontend-common";
 import { type ReactNode, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+export type ConfirmDeleteTemplate = (params: {
+  title: string;
+  onOk: () => void | Promise<void>;
+}) => void;
+
 export function useConfirmDeleteTemplate(): {
-  confirmDeleteTemplate: (params: { title: string; onOk: () => void | Promise<void> }) => void;
+  confirmDeleteTemplate: ConfirmDeleteTemplate;
   modalContextHolder: ReactNode;
 } {
   const { t } = useTranslation();

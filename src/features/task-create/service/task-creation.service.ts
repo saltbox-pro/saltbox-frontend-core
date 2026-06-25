@@ -1,7 +1,7 @@
 import type {
   TaskCreateRequestSchema,
   TaskData,
-  TaskTemplateExcludeSlsSchema,
+  TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
 import { isValidDataWithAjv } from "@saltbox/saltbox-frontend-common";
 
@@ -13,7 +13,7 @@ export class TaskCreationService {
   buildCreateRequest(
     formData: TaskConfigurationFormData,
     context: TaskCreationContext,
-    taskTemplate?: TaskTemplateExcludeSlsSchema
+    taskTemplate?: TaskTemplateModel
   ): TaskCreateRequestSchema {
     return {
       task_template_id: formData.task_template_id,
@@ -51,10 +51,7 @@ export class TaskCreationService {
     };
   }
 
-  private filterTaskData(
-    data: TaskData,
-    taskTemplate?: TaskTemplateExcludeSlsSchema
-  ): TaskData | undefined {
+  private filterTaskData(data: TaskData, taskTemplate?: TaskTemplateModel): TaskData | undefined {
     const { json_schema: schema } = taskTemplate ?? {};
 
     if (!schema || isValidDataWithAjv({ data, schema })) {

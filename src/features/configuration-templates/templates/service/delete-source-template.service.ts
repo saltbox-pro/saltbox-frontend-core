@@ -1,10 +1,10 @@
 import { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
+import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { BgTaskPollAbortedError } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { DELETE_LOCAL_TEMPLATE_OPTIMISTIC_OPERATION } from "../../shared/constants/source-operations";
-import { BgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
-import { BgTaskPollAbortedError } from "../../shared/errors/bg-task-poll-aborted.error";
 import type { SourceBgTaskPollingService } from "../../shared/service/source-bg-task-polling.service";
 
 export type DeleteSourceTemplateServiceDeps = {
