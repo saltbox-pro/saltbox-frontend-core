@@ -27,6 +27,7 @@ import {
   isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
+import type { TemplatePreviewListProps } from "../../../templates/hooks/use-template-preview-drawer";
 import {
   filterSourceFilesForSearch,
   filterSourceTemplatesForSearch,
@@ -40,10 +41,11 @@ export interface TemplateSourceListEntryProps {
   source: SourceListWithExtrasSchema;
   store: ConfigurationTemplatesListStore;
   searchQuery?: string;
+  templatePreview?: TemplatePreviewListProps;
 }
 
 export const TemplateSourceListEntry = observer(
-  ({ source, store, searchQuery }: TemplateSourceListEntryProps) => {
+  ({ source, store, searchQuery, templatePreview }: TemplateSourceListEntryProps) => {
     const { i18n } = useTranslation();
     const navigate = useNavigate();
     const view = getTemplateSourceViewState(source, store);
@@ -122,6 +124,7 @@ export const TemplateSourceListEntry = observer(
                 ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
                 : undefined,
               onDeleteTemplateError: () => store.reloadSource(source.id),
+              ...templatePreview,
             },
             files: {
               items: visibleFiles,

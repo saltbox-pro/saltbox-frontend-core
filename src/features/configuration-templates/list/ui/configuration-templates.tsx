@@ -16,6 +16,9 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { canDuplicateSourceTemplate } from "../../templates/helpers/can-manage-source-templates";
+import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
+import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
@@ -36,6 +39,7 @@ export const ConfigurationTemplates = observer(() => {
   const { t, i18n } = useTranslation();
 
   const [store] = useState(() => new ConfigurationTemplatesStore());
+  const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
 
   const [search, setSearch] = useState("");
   const [addSourceModal, setAddSourceModal] = useState<AddSourceModal>(null);
@@ -113,6 +117,13 @@ export const ConfigurationTemplates = observer(() => {
   const isRefreshingList = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
   const isListAreaLoading = isRefreshingList || store.isCheckingExternal;
 
+  const openedSource = openedTemplate
+    ? store.sortedSources.find((source) => source.id === openedTemplate.source_id)
+    : undefined;
+  const canDuplicateOpenedTemplate = openedSource
+    ? canDuplicateSourceTemplate(openedSource, store)
+    : false;
+
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
       <Space direction="vertical" size="middle">
@@ -184,13 +195,14 @@ export const ConfigurationTemplates = observer(() => {
                 }
               />
             ) : (
-              <Flex vertical gap="large">
+              <Flex ref={drawer.mainContentRef} vertical gap="large">
                 {filteredSources.map((source) => (
                   <TemplateSourceListEntry
                     key={source.id}
                     source={source}
                     store={store}
                     searchQuery={searchQuery}
+                    templatePreview={templatesListProps}
                   />
                 ))}
               </Flex>
@@ -215,6 +227,14 @@ export const ConfigurationTemplates = observer(() => {
         open={addSourceModal === "archive"}
         store={store}
         onClose={handleCloseModal}
+      />
+
+      <TemplatePreviewDrawer
+        open={drawer.isOpened}
+        template={openedTemplate}
+        store={previewStore}
+        canDuplicate={canDuplicateOpenedTemplate}
+        onClose={drawer.close}
       />
     </Skeleton>
   );

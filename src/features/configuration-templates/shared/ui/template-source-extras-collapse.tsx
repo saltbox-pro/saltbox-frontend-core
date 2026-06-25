@@ -9,6 +9,7 @@ import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceFilesList } from "../../files/ui/template-source-files-list";
+import type { TemplatePreviewListProps } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplateSourceTemplatesList } from "../../templates/ui/template-source-templates-list";
 import {
   TEMPLATE_SOURCE_FILES_PANEL_KEY,
@@ -33,7 +34,7 @@ export type TemplateSourceExtrasCollapseProps = {
     canDeleteTemplates?: boolean;
     onDeleteTemplate?: (templateId: string) => Promise<void>;
     onDeleteTemplateError?: () => Promise<void>;
-  };
+  } & Partial<TemplatePreviewListProps>;
   files: {
     items: SshfsFilePublicSchema[];
     totalCount?: number;
@@ -116,6 +117,8 @@ export function TemplateSourceExtrasCollapse({
               canDeleteTemplates={templates.canDeleteTemplates}
               onDeleteTemplate={templates.onDeleteTemplate}
               onDeleteError={templates.onDeleteTemplateError}
+              onTemplateClick={templates.onTemplateClick}
+              activeTemplateId={templates.activeTemplateId}
             />
           </Flex>
         ),

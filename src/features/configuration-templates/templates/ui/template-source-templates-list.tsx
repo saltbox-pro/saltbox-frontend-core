@@ -33,6 +33,8 @@ export type TemplateSourceTemplatesListProps = {
   canDeleteTemplates?: boolean;
   onDeleteTemplate?: (templateId: string) => Promise<void>;
   onDeleteError?: () => Promise<void>;
+  onTemplateClick?: (template: TaskTemplatePublicSchema) => void;
+  activeTemplateId?: string | null;
 };
 
 export function TemplateSourceTemplatesList({
@@ -46,6 +48,8 @@ export function TemplateSourceTemplatesList({
   canDeleteTemplates = false,
   onDeleteTemplate,
   onDeleteError,
+  onTemplateClick,
+  activeTemplateId,
 }: TemplateSourceTemplatesListProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
@@ -132,7 +136,8 @@ export function TemplateSourceTemplatesList({
 
           return (
             <List.Item
-              className={styles.templateItem}
+              className={`${styles.templateItem}${activeTemplateId === template.id ? ` ${styles.templateItemActive}` : ""}${onTemplateClick ? ` ${styles.templateItemClickable}` : ""}`}
+              onClick={onTemplateClick ? () => onTemplateClick(template) : undefined}
               extra={
                 <Flex align="center" gap={8} wrap="wrap" justify="flex-end">
                   <Flex wrap="wrap" justify="flex-end">

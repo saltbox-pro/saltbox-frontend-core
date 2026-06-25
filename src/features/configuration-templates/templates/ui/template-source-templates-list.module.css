@@ -19,6 +19,14 @@
   }
 }
 
+.templates .templateItemClickable {
+  cursor: pointer;
+}
+
+.templates .templateItemActive {
+  background-color: #f5f8ff;
+}
+
 .templates .templateItem :global(.ant-list-item-meta-content .ant-list-item-meta-title),
 .templates .templateItem :global(.ant-list-item-meta-content .ant-list-item-meta-description) {
   font-size: 13px;

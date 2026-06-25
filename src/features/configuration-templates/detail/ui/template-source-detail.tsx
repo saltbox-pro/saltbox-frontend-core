@@ -26,6 +26,8 @@ import {
   isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../templates/helpers/can-manage-source-templates";
+import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
+import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
 type TemplateSourceDetailProps = {
@@ -38,6 +40,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
+  const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
 
   if (store.isLoading) {
     return <Skeleton active />;
@@ -67,7 +70,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const canDeleteTemplates = canDeleteSourceTemplates(store.source, store);
 
   return (
-    <Space direction="vertical" size="large">
+    <Space ref={drawer.mainContentRef} direction="vertical" size="large">
       <Card size="small">
         <Flex vertical gap="middle">
           <Flex align="flex-start" justify="space-between" gap="middle" wrap>
@@ -113,6 +116,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
             ? (templateId) => store.deleteSourceTemplate(templateId)
             : undefined,
           onDeleteTemplateError: () => store.reloadSource(),
+          ...templatesListProps,
         }}
         files={{
           items: store.source.files ?? [],
@@ -130,6 +134,14 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
         sourceName={store.source.name}
         onAddFile={(_, payload) => store.addSourceFile(payload)}
         onClose={() => setAddFileModalOpen(false)}
+      />
+
+      <TemplatePreviewDrawer
+        open={drawer.isOpened}
+        template={openedTemplate}
+        store={previewStore}
+        canDuplicate={canDuplicateTemplates}
+        onClose={drawer.close}
       />
     </Space>
   );
