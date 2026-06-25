@@ -1,7 +1,6 @@
 import {
   Configuration,
   FiltersApi,
-  GitLabApi,
   JSONSchemasApi,
   JobsApi,
   MastersApi,
@@ -9,11 +8,9 @@ import {
   MinionsApi,
   PillarsApi,
   NEWTaskTemplatesApi,
-  SettingsApi,
   SaltKeysApi,
   TaskTemplateSourcesApi,
   TemplateSourceFilesApi,
-  TaskTemplatesApi,
   TasksApi,
   UtilsApi,
 } from "@saltbox/saltbox-core-api-client";
@@ -72,10 +69,6 @@ class ApiCoreStore {
     return this.apiConfig && new TasksApi(this.apiConfig);
   }
 
-  @computed get taskTemplatesApi() {
-    return this.apiConfig && new TaskTemplatesApi(this.apiConfig);
-  }
-
   @computed get taskTemplateSourcesApi() {
     return this.apiConfig && new TaskTemplateSourcesApi(this.apiConfig);
   }
@@ -88,16 +81,8 @@ class ApiCoreStore {
     return this.apiConfig && new NEWTaskTemplatesApi(this.apiConfig);
   }
 
-  @computed get settingsApi() {
-    return this.apiConfig && new SettingsApi(this.apiConfig);
-  }
-
   @computed get mastersApi() {
     return this.apiConfig && new MastersApi(this.apiConfig);
-  }
-
-  @computed get gitLabApi() {
-    return this.apiConfig && new GitLabApi(this.apiConfig);
   }
 
   @computed get pillarsApi() {

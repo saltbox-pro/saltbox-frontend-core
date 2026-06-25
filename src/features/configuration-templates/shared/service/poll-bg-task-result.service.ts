@@ -1,8 +1,10 @@
 import { TaskState, type TaskiqTaskResult } from "@saltbox/saltbox-core-api-client";
 
+import {
+  BgTaskPollAbortedError,
+  rethrowIfAborted,
+} from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
-
-import { BgTaskPollAbortedError, rethrowIfAborted } from "../errors/bg-task-poll-aborted.error";
 
 export const BG_TASK_POLL_INTERVAL_MS = 1500;
 

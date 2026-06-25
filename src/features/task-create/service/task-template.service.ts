@@ -1,33 +1,30 @@
-import { TaskTemplateExcludeSlsSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
-import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
+import { connectedSourcesQuery } from "../helpers/connected-sources-query";
+import { buildSourceRows } from "../helpers/template-picker-rows";
 
 export class TaskTemplateService {
-  async loadTemplates(): Promise<TaskTemplateWithRepository[]> {
+  async loadTemplateSourceRows() {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {},
+      const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+        TemplateSourceListBody: {
+          query: connectedSourcesQuery,
+        },
       });
-      if (!response?.data) {
-        return [];
-      }
 
-      return response.data.map((template) => ({
-        ...template,
-        repository: template.repo_info?.name,
-      }));
+      return buildSourceRows(response?.data ?? []);
     } catch (error) {
       console.error("Failed to load task templates:", error);
       throw new Error("Failed to load task templates");
     }
   }
 
-  async loadTemplateById(templateId: string): Promise<TaskTemplateExcludeSlsSchema> {
+  async loadTemplateById(templateId: string): Promise<TaskTemplateModel> {
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieveWithDefaults({
-        tpl_id: templateId,
+      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateReadWithDefaults({
+        template_id: templateId,
       });
       if (!response) {
         throw new Error("Template not found");
@@ -37,33 +34,6 @@ export class TaskTemplateService {
       console.error(`Failed to load template ${templateId}:`, error);
       throw new Error("Failed to load task template");
     }
-  }
-
-  filterTemplates(
-    templates: TaskTemplateWithRepository[],
-    filters: TemplateListFilterOptions
-  ): TaskTemplateWithRepository[] {
-    let filtered = [...templates];
-
-    if (filters.appliedSearchQuery) {
-      const query = filters.appliedSearchQuery.toLowerCase();
-      filtered = filtered.filter((template) => {
-        return template.title?.toLowerCase().includes(query);
-      });
-    }
-
-    if (filters.repositoryFilter) {
-      filtered = filtered.filter((template) => template.repository === filters.repositoryFilter);
-    }
-
-    return filtered;
-  }
-
-  getUniqueRepositories(templates: TaskTemplateWithRepository[]): string[] {
-    const repositories = templates
-      .map((template) => template.repository)
-      .filter((repository) => Boolean(repository));
-    return Array.from(new Set(repositories)).sort();
   }
 }
 

@@ -1,11 +1,12 @@
-import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
-import { Flex, Typography } from "antd";
+import { Flex } from "antd";
+
+import {
+  TemplateSourceDescription,
+  TemplateSourceDimmed,
+} from "saltbox-core/features/template-source-ui";
 
 import { TemplateSourceDates } from "./template-source-dates";
-import styles from "./template-source-info.module.css";
 import { TemplateSourceLink } from "./template-source-link";
-
-const { Paragraph } = Typography;
 
 export type TemplateSourceInfoProps = {
   description?: string | null;
@@ -29,29 +30,29 @@ export function TemplateSourceInfo({
   return (
     <>
       {!!description && (
-        <Paragraph
-          type="secondary"
-          className={dimmed ? styles.dimmed : undefined}
-          style={{ margin: 0 }}
-        >
-          <SearchHighlightText text={description} query={searchQuery} />
-        </Paragraph>
+        <TemplateSourceDescription
+          description={description}
+          searchQuery={searchQuery}
+          dimmed={dimmed}
+        />
       )}
 
       <Flex vertical gap="small">
         {!!webUrl && (
-          <div className={dimmed ? styles.dimmed : undefined}>
+          <TemplateSourceDimmed dimmed={dimmed}>
             <TemplateSourceLink href={webUrl} />
-          </div>
+          </TemplateSourceDimmed>
         )}
 
-        <Flex vertical gap="middle" className={dimmed ? styles.dimmed : undefined}>
-          <TemplateSourceDates
-            createdAt={createdAt}
-            syncedAt={syncedAt}
-            showNotSynced={showNotSynced}
-          />
-        </Flex>
+        <TemplateSourceDimmed dimmed={dimmed}>
+          <Flex vertical gap="middle">
+            <TemplateSourceDates
+              createdAt={createdAt}
+              syncedAt={syncedAt}
+              showNotSynced={showNotSynced}
+            />
+          </Flex>
+        </TemplateSourceDimmed>
       </Flex>
     </>
   );

@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
+  filterSourceFilesForSearch,
+  filterSourceTemplatesForSearch,
+} from "saltbox-core/features/template-source-search";
+
+import {
   canAddSourceFiles,
   canShowAddSourceFileButton,
 } from "../../../files/helpers/can-add-source-files";
@@ -21,17 +26,12 @@ import {
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
-  canDeleteSourceTemplates,
-  canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
-import {
-  filterSourceFilesForSearch,
-  filterSourceTemplatesForSearch,
-  getSourceSearchForcedActiveKeys,
-} from "../../helpers/source-search";
+import { getSourceTemplateActionsPermissions } from "../../../templates/helpers/source-template-actions";
+import type { TemplatePreviewListProps } from "../../../templates/hooks/use-template-preview-drawer";
+import { getSourceSearchForcedActiveKeys } from "../../helpers/source-search";
 import type { ConfigurationTemplatesListStore } from "../../store/configuration-templates-store";
 
 import { TemplateSourceListItem } from "./template-source-list-item";
@@ -40,10 +40,11 @@ export interface TemplateSourceListEntryProps {
   source: SourceListWithExtrasSchema;
   store: ConfigurationTemplatesListStore;
   searchQuery?: string;
+  templatePreview?: TemplatePreviewListProps;
 }
 
 export const TemplateSourceListEntry = observer(
-  ({ source, store, searchQuery }: TemplateSourceListEntryProps) => {
+  ({ source, store, searchQuery, templatePreview }: TemplateSourceListEntryProps) => {
     const { i18n } = useTranslation();
     const navigate = useNavigate();
     const view = getTemplateSourceViewState(source, store);
@@ -56,10 +57,8 @@ export const TemplateSourceListEntry = observer(
     });
 
     const isLocalSource = isEditableTemplateSource(source);
-    const showDeleteTemplate = isDeletableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
-    const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
-    const canDeleteTemplates = canDeleteSourceTemplates(source, store);
+    const templateActionsPermissions = getSourceTemplateActionsPermissions(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -113,15 +112,12 @@ export const TemplateSourceListEntry = observer(
                 ? () => navigate(getCreateTemplatePath(source.id))
                 : undefined,
               canCreateTemplate: canEditTemplates,
-              showEditTemplate: isLocalSource,
-              canEditTemplates,
-              canDuplicateTemplates,
-              showDeleteTemplate,
-              canDeleteTemplates,
-              onDeleteTemplate: showDeleteTemplate
+              permissions: templateActionsPermissions,
+              onDeleteTemplate: templateActionsPermissions.showDelete
                 ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
                 : undefined,
               onDeleteTemplateError: () => store.reloadSource(source.id),
+              ...templatePreview,
             },
             files: {
               items: visibleFiles,
