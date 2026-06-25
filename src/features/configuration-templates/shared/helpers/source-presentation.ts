@@ -9,10 +9,6 @@ import {
   SOURCE_PRESENTATION_BY_STATE,
   UNKNOWN_SOURCE_PRESENTATION,
 } from "../constants/source-state-presentation";
-import {
-  SOURCE_TYPE_LABEL_KEY_PREFIX,
-  SOURCE_TYPE_TAG_COLORS,
-} from "../constants/source-type-presentation";
 import type { SourceActionKind } from "../types/source-action";
 import type { SourceBrokenRetryActionsSnapshot } from "../types/source-operation-progress";
 import type { SourcePresentation } from "../types/source-presentation";
@@ -36,14 +32,6 @@ export function getSourcePresentation(source: TemplateSourcePublicSchema): Sourc
   }
 
   return SOURCE_PRESENTATION_BY_STATE[source.state] ?? UNKNOWN_SOURCE_PRESENTATION;
-}
-
-export function getSourceTypeLabelKey(sourceType: SourceType): string {
-  return `${SOURCE_TYPE_LABEL_KEY_PREFIX}${sourceType}`;
-}
-
-export function getSourceTypeColor(sourceType: SourceType): string {
-  return SOURCE_TYPE_TAG_COLORS[sourceType] ?? "default";
 }
 
 export function getSourceWebUrl(source: TemplateSourcePublicSchema): string | undefined {

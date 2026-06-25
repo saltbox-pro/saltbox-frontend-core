@@ -1,8 +1,7 @@
 import { makeAutoObservable, runInAction } from "mobx";
 
+import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
-
-import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 
 export class TemplatePreviewStore {
   slsContent = "";

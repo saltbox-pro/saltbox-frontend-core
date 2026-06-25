@@ -16,6 +16,12 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  getActiveSearchQuery,
+  MIN_SOURCE_SEARCH_LENGTH,
+  sourceMatchesQuery,
+} from "saltbox-core/features/template-source-search";
+
 import { canDuplicateSourceTemplate } from "../../templates/helpers/can-manage-source-templates";
 import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
@@ -23,11 +29,6 @@ import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
 import { getGitlabSyncErrorMessageKey } from "../helpers/gitlab-sync-error";
-import {
-  getActiveSearchQuery,
-  MIN_SOURCE_SEARCH_LENGTH,
-  sourceMatchesQuery,
-} from "../helpers/source-search";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
 import { SyncGitlabSourcesButton } from "./components/sync-gitlab-sources-button";

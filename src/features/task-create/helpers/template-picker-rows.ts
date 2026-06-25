@@ -1,5 +1,12 @@
-import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
+import type { SourceListWithExtrasSchema, SourceType } from "@saltbox/saltbox-core-api-client";
 
+import {
+  filterSourceTemplatesForSearch,
+  getActiveSearchQuery,
+  getSourceSearchExpansion,
+  sourceMatchesQuery,
+  type TemplateSourceSearchShape,
+} from "saltbox-core/features/template-source-search";
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 
 import type { TaskTemplateWithRepository } from "../type/types";
@@ -7,14 +14,25 @@ import type { TaskTemplateWithRepository } from "../type/types";
 export type TemplateSourceRow = {
   key: string;
   source: string;
+  sourceType: SourceType;
+  description?: string;
   templates: TaskTemplateWithRepository[];
 };
+
+const toSourceShape = (sourceRow: TemplateSourceRow): TemplateSourceSearchShape => ({
+  name: sourceRow.source,
+  description: sourceRow.description,
+  templates: sourceRow.templates,
+  files: [],
+});
 
 export const buildSourceRows = (sources: SourceListWithExtrasSchema[]): TemplateSourceRow[] => {
   return sortSources(sources)
     .map((source) => ({
       key: source.id,
       source: source.name,
+      sourceType: source.source_type,
+      description: source.description ?? undefined,
       templates: (source.templates ?? [])
         .map((template) => ({
           ...template,
@@ -29,49 +47,34 @@ export const buildSourceRows = (sources: SourceListWithExtrasSchema[]): Template
     .filter((sourceRow) => sourceRow.templates.length > 0);
 };
 
-const matchesTemplateSearch = (
-  template: TaskTemplateWithRepository,
-  normalizedSearchValue: string
-): boolean => {
-  const searchableValues = [
-    template.title,
-    template.name,
-    template.fun,
-    template.repository,
-    template.id,
-  ];
-
-  return searchableValues.some((value) => value?.toLowerCase().includes(normalizedSearchValue));
-};
-
 export const filterSourceRows = (
   sourceRows: TemplateSourceRow[],
-  appliedSearchQuery: string
+  appliedSearchQuery: string,
+  language: string
 ): TemplateSourceRow[] => {
-  const normalizedSearchValue = appliedSearchQuery.trim().toLowerCase();
-  if (!normalizedSearchValue) {
+  const query = getActiveSearchQuery(appliedSearchQuery);
+  if (!query) {
     return sourceRows;
   }
 
-  return sourceRows
-    .map((sourceRow) => {
-      const filteredTemplates = sourceRow.templates.filter((template) =>
-        matchesTemplateSearch(template, normalizedSearchValue)
-      );
-      const sourceMatch = sourceRow.source.toLowerCase().includes(normalizedSearchValue);
+  return sourceRows.reduce<TemplateSourceRow[]>((result, sourceRow) => {
+    const sourceShape = toSourceShape(sourceRow);
 
-      if (sourceMatch) {
-        return sourceRow;
-      }
+    if (!sourceMatchesQuery(sourceShape, query, language)) {
+      return result;
+    }
 
-      if (filteredTemplates.length === 0) {
-        return null;
-      }
+    result.push({
+      ...sourceRow,
+      templates: filterSourceTemplatesForSearch(sourceShape, query, language),
+    });
 
-      return {
-        ...sourceRow,
-        templates: filteredTemplates,
-      };
-    })
-    .filter((sourceRow): sourceRow is TemplateSourceRow => sourceRow !== null);
+    return result;
+  }, []);
 };
+
+export const getSourceRowSearchExpansion = (
+  sourceRow: TemplateSourceRow,
+  query: string,
+  language: string
+) => getSourceSearchExpansion(toSourceShape(sourceRow), query, language);

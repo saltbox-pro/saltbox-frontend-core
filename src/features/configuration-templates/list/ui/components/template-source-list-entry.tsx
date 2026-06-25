@@ -5,6 +5,11 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
+  filterSourceFilesForSearch,
+  filterSourceTemplatesForSearch,
+} from "saltbox-core/features/template-source-search";
+
+import {
   canAddSourceFiles,
   canShowAddSourceFileButton,
 } from "../../../files/helpers/can-add-source-files";
@@ -16,6 +21,8 @@ import {
 } from "../../../shared/helpers/source-action-progress";
 import {
   getCreateTemplatePath,
+  getDuplicateTemplatePath,
+  getEditTemplatePath,
   getTemplateSourceDetailPath,
 } from "../../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
@@ -28,11 +35,7 @@ import {
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
 import type { TemplatePreviewListProps } from "../../../templates/hooks/use-template-preview-drawer";
-import {
-  filterSourceFilesForSearch,
-  filterSourceTemplatesForSearch,
-  getSourceSearchForcedActiveKeys,
-} from "../../helpers/source-search";
+import { getSourceSearchForcedActiveKeys } from "../../helpers/source-search";
 import type { ConfigurationTemplatesListStore } from "../../store/configuration-templates-store";
 
 import { TemplateSourceListItem } from "./template-source-list-item";
@@ -117,7 +120,12 @@ export const TemplateSourceListEntry = observer(
               canCreateTemplate: canEditTemplates,
               showEditTemplate: isLocalSource,
               canEditTemplates,
+              onEditTemplate: isLocalSource
+                ? (template) => navigate(getEditTemplatePath(source.id, template.id))
+                : undefined,
               canDuplicateTemplates,
+              onDuplicateTemplate: (template) =>
+                navigate(getDuplicateTemplatePath(source.id, template.id)),
               showDeleteTemplate,
               canDeleteTemplates,
               onDeleteTemplate: showDeleteTemplate

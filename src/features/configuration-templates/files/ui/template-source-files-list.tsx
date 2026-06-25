@@ -10,8 +10,9 @@ import { Flex, List, Tag, Tooltip, message } from "antd";
 import { useCallback, useRef, useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import { TemplateSourceSectionEmpty } from "saltbox-core/features/template-source-ui";
+
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
-import { TemplateSourceSectionEmpty } from "../../shared/ui/template-source-section-empty";
 import { useConfirmDeleteFile } from "../hooks/use-confirm-delete-file";
 
 import styles from "./template-source-files-list.module.css";

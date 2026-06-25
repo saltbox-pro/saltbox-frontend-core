@@ -1,23 +1,39 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Modal,
+  SearchHighlightText,
   SearchInput,
   isGlobalServerError,
   useFocusOnOpenChange,
 } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Empty, Flex, Spin, Table, Tooltip, message, type InputRef } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Avatar,
+  Collapse,
+  Empty,
+  Flex,
+  Spin,
+  Typography,
+  message,
+  type InputRef,
+} from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getActiveSearchQuery } from "saltbox-core/features/template-source-search";
 import {
-  getTemplateDescriptionText,
-  type TemplateDescriptionValue,
-} from "saltbox-core/shared/utils/template-description";
+  TemplateSourceDescription,
+  TemplateSourceTemplatesList,
+  TemplateSourceTypeTag,
+} from "saltbox-core/features/template-source-ui";
+import { INSTANT_COLLAPSE_MOTION } from "saltbox-core/shared/constants/collapse-motion";
 
-import { filterSourceRows, type TemplateSourceRow } from "../helpers/template-picker-rows";
+import {
+  filterSourceRows,
+  getSourceRowSearchExpansion,
+  type TemplateSourceRow,
+} from "../helpers/template-picker-rows";
 import { taskTemplateService } from "../service";
-import type { TaskTemplateWithRepository } from "../type/types";
 
 import styles from "./template-list-modal.module.css";
 
@@ -28,6 +44,38 @@ export type TemplateListModalProps = {
   onSelectTemplate: (templateId: string) => void;
 };
 
+function SourceCollapseLabel({
+  sourceRow,
+  searchQuery,
+  getSourceLabel,
+}: {
+  sourceRow: TemplateSourceRow;
+  searchQuery?: string;
+  getSourceLabel: (sourceName: string) => string;
+}) {
+  const sourceLabel = getSourceLabel(sourceRow.source);
+
+  return (
+    <Flex vertical gap={4} className={styles.sourceLabel}>
+      <Flex align="center" gap="small" className={styles.sourceHeader}>
+        <Avatar className={styles.sourceAvatar} size="small" shape="square">
+          {sourceLabel[0]}
+        </Avatar>
+
+        <Typography.Text strong className={styles.sourceName} title={sourceLabel}>
+          <SearchHighlightText text={sourceLabel} query={searchQuery} />
+        </Typography.Text>
+
+        <TemplateSourceTypeTag sourceType={sourceRow.sourceType} />
+      </Flex>
+
+      {!!sourceRow.description && (
+        <TemplateSourceDescription description={sourceRow.description} searchQuery={searchQuery} />
+      )}
+    </Flex>
+  );
+}
+
 export function TemplateListModal(props: TemplateListModalProps) {
   const { isOpen, onClose, onSelectTemplate } = props;
   const { t, i18n } = useTranslation();
@@ -37,6 +85,9 @@ export function TemplateListModal(props: TemplateListModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
   const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
+  const [manualActiveKeys, setManualActiveKeys] = useState<string[] | null>(null);
+  const isUserControlledRef = useRef(false);
+  const prevHasSearchQueryRef = useRef(false);
   const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
     useFocusOnOpenChange<InputRef>();
 
@@ -45,6 +96,9 @@ export function TemplateListModal(props: TemplateListModalProps) {
     setSourceRows([]);
     setIsLoading(false);
     setIsError(false);
+    setManualActiveKeys(null);
+    isUserControlledRef.current = false;
+    prevHasSearchQueryRef.current = false;
   }, []);
 
   useEffect(() => {
@@ -87,96 +141,94 @@ export function TemplateListModal(props: TemplateListModalProps) {
   }, [isOpen, messageApi, resetModalState, t]);
 
   const filteredRows = useMemo(
-    () => filterSourceRows(sourceRows, appliedSearchQuery),
-    [appliedSearchQuery, sourceRows]
+    () => filterSourceRows(sourceRows, appliedSearchQuery, i18n.language),
+    [appliedSearchQuery, i18n.language, sourceRows]
   );
+
+  const searchQuery = useMemo(() => getActiveSearchQuery(appliedSearchQuery), [appliedSearchQuery]);
+  const hasSearchQuery = searchQuery !== undefined;
+  const isSearchReset = !hasSearchQuery && prevHasSearchQueryRef.current;
+
+  const defaultActiveKeys = useMemo(
+    () => (filteredRows.length === 1 ? [filteredRows[0].key] : []),
+    [filteredRows]
+  );
+
+  const searchForcedActiveKeys = useMemo(() => {
+    if (!hasSearchQuery) {
+      return undefined;
+    }
+
+    return filteredRows
+      .filter(
+        (sourceRow) =>
+          getSourceRowSearchExpansion(sourceRow, searchQuery, i18n.language).expandTemplates
+      )
+      .map((sourceRow) => sourceRow.key);
+  }, [filteredRows, hasSearchQuery, i18n.language, searchQuery]);
+
+  const activeKeys = useMemo(() => {
+    if (isSearchReset) {
+      return defaultActiveKeys;
+    }
+
+    if (searchForcedActiveKeys !== undefined && !isUserControlledRef.current) {
+      return searchForcedActiveKeys;
+    }
+
+    return manualActiveKeys ?? defaultActiveKeys;
+  }, [defaultActiveKeys, isSearchReset, manualActiveKeys, searchForcedActiveKeys]);
+
+  useEffect(() => {
+    isUserControlledRef.current = false;
+    setManualActiveKeys(null);
+  }, [appliedSearchQuery]);
+
+  useEffect(() => {
+    if (isSearchReset) {
+      isUserControlledRef.current = false;
+      setManualActiveKeys(null);
+    }
+
+    prevHasSearchQueryRef.current = hasSearchQuery;
+  }, [hasSearchQuery, isSearchReset]);
+
+  const handleCollapseChange = useCallback((keys: string | string[]) => {
+    isUserControlledRef.current = true;
+    setManualActiveKeys(Array.isArray(keys) ? keys : keys ? [keys] : []);
+  }, []);
 
   const hasNoData = !isLoading && !isError && sourceRows.length === 0;
-  const hasNoResults = !isLoading && !isError && sourceRows.length > 0 && filteredRows.length === 0;
-  const shouldShowTable = !isLoading && !isError && filteredRows.length > 0;
-
-  const renderTemplateTooltip = useCallback(
-    (template: TaskTemplateWithRepository) => {
-      const description = getTemplateDescriptionText(
-        template.description as TemplateDescriptionValue,
-        i18n.language
-      );
-
-      return (
-        <div className={styles.tooltipContent} onWheel={(event) => event.stopPropagation()}>
-          <div className={styles.tooltipTitle}>{template.title || template.name}</div>
-
-          {template.name && (
-            <div className={styles.tooltipSection}>
-              <div className={styles.tooltipSectionTitle}>{t("task-create.tooltip-name")}</div>
-              <pre className={styles.tooltipName}>{template.name}</pre>
-            </div>
-          )}
-
-          {description && (
-            <div className={styles.tooltipSection}>
-              <div className={styles.tooltipSectionTitle}>
-                {t("job-function-select.tooltip-description")}
-              </div>
-              <div className={styles.tooltipDescription}>{description}</div>
-            </div>
-          )}
-        </div>
-      );
-    },
-    [i18n.language, t]
-  );
+  const hasNoResults =
+    !isLoading && !isError && hasSearchQuery && sourceRows.length > 0 && filteredRows.length === 0;
+  const shouldShowCollapse = !isLoading && !isError && filteredRows.length > 0;
 
   const getSourceLabel = useCallback(
     (sourceName: string) => sourceName.trim() || t("task-create.unknown-repository"),
     [t]
   );
 
-  const columns = useMemo<ColumnsType<TemplateSourceRow>>(
-    () => [
-      {
-        title: t("task-create.table-source"),
-        dataIndex: "source",
-        key: "source",
-        width: "35%",
-        render: (_, sourceRow) => (
-          <div className={styles.repositoryCell}>
-            <span className={styles.repositoryTitle}>{getSourceLabel(sourceRow.source)}</span>
-          </div>
+  const collapseItems = useMemo(
+    () =>
+      filteredRows.map((sourceRow) => ({
+        key: sourceRow.key,
+        label: (
+          <SourceCollapseLabel
+            sourceRow={sourceRow}
+            searchQuery={searchQuery}
+            getSourceLabel={getSourceLabel}
+          />
         ),
-      },
-      {
-        title: t("task-create.table-templates"),
-        dataIndex: "templates",
-        key: "templates",
-        render: (_, sourceRow) => (
-          <div className={styles.templatesCell}>
-            {sourceRow.templates.length === 0 ? (
-              <span className={styles.noTemplates}>{t("task-create.no-templates-in-source")}</span>
-            ) : (
-              sourceRow.templates.map((template) => (
-                <Tooltip
-                  key={template.id}
-                  title={renderTemplateTooltip(template)}
-                  mouseEnterDelay={0.45}
-                  classNames={{ root: styles.tooltip }}
-                  destroyOnHidden
-                >
-                  <Button
-                    size="small"
-                    className={styles.templateButton}
-                    onClick={() => onSelectTemplate(template.id)}
-                  >
-                    {template.title || template.name}
-                  </Button>
-                </Tooltip>
-              ))
-            )}
-          </div>
+        children: (
+          <TemplateSourceTemplatesList
+            items={sourceRow.templates}
+            constrainHeight={false}
+            searchQuery={searchQuery}
+            onTemplateClick={(template) => onSelectTemplate(template.id)}
+          />
         ),
-      },
-    ],
-    [getSourceLabel, onSelectTemplate, renderTemplateTooltip, t]
+      })),
+    [filteredRows, getSourceLabel, onSelectTemplate, searchQuery]
   );
 
   return (
@@ -224,17 +276,19 @@ export function TemplateListModal(props: TemplateListModalProps) {
             {hasNoResults && (
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={t("task-create.no-templates-found")}
+                description={t("configuration-templates.search.no-results")}
               />
             )}
 
-            {shouldShowTable && (
-              <Table
-                className={styles.templatesTable}
-                columns={columns}
-                dataSource={filteredRows}
-                pagination={false}
+            {shouldShowCollapse && (
+              <Collapse
+                className={styles.sourcesCollapse}
                 size="small"
+                destroyOnHidden
+                activeKey={activeKeys}
+                onChange={handleCollapseChange}
+                items={collapseItems}
+                {...(isSearchReset ? { openMotion: INSTANT_COLLAPSE_MOTION } : {})}
               />
             )}
           </div>

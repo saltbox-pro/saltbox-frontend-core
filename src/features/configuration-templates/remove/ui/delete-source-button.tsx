@@ -6,7 +6,8 @@ import { observer } from "mobx-react-lite";
 import { useCallback, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
+import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+
 import {
   getSourceActionContext,
   isDeleteInProgress,

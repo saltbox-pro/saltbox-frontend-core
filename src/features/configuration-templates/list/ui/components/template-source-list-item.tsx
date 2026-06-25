@@ -8,6 +8,11 @@ import { Avatar, Card, Divider, Flex, Typography } from "antd";
 import type { MouseEvent, ReactNode } from "react";
 import { useNavigate } from "react-router";
 
+import {
+  TemplateSourceDimmed,
+  TemplateSourceTypeTag,
+} from "saltbox-core/features/template-source-ui";
+
 import { TemplateSourceActiveStatusTag } from "../../../shared/ui/template-source-active-status-tag";
 import { TemplateSourceBrokenOperationTag } from "../../../shared/ui/template-source-broken-operation-tag";
 import { TemplateSourceConnectionTag } from "../../../shared/ui/template-source-connection-tag";
@@ -16,8 +21,6 @@ import {
   type TemplateSourceExtrasCollapseProps,
 } from "../../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceInfo } from "../../../shared/ui/template-source-info";
-import infoStyles from "../../../shared/ui/template-source-info.module.css";
-import { TemplateSourceTypeTag } from "../../../shared/ui/template-source-type-tag";
 
 import styles from "./template-source-list-item.module.css";
 
@@ -146,9 +149,9 @@ export function TemplateSourceListItem({
         {!!betweenInfoAndTemplates && betweenInfoAndTemplates}
 
         {!!extras && (
-          <div className={dimmed ? infoStyles.dimmed : undefined}>
+          <TemplateSourceDimmed dimmed={dimmed}>
             <TemplateSourceExtrasCollapse {...extras} />
-          </div>
+          </TemplateSourceDimmed>
         )}
       </Flex>
     </Card>
