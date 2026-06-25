@@ -1,20 +1,41 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal, SearchInput, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Badge, Empty, Flex, List, Select, Tooltip, Typography, message } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Modal,
+  SearchHighlightText,
+  SearchInput,
+  isGlobalServerError,
+  useFocusOnOpenChange,
+} from "@saltbox/saltbox-frontend-common";
+import {
+  Alert,
+  Avatar,
+  Collapse,
+  Empty,
+  Flex,
+  Spin,
+  Typography,
+  message,
+  type InputRef,
+} from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getActiveSearchQuery } from "saltbox-core/features/template-source-search";
 import {
-  getTemplateDescriptionText,
-  type TemplateDescriptionValue,
-} from "saltbox-core/shared/utils/template-description";
+  TemplateSourceDescription,
+  TemplateSourceTemplatesList,
+  TemplateSourceTypeTag,
+} from "saltbox-core/features/template-source-ui";
+import { INSTANT_COLLAPSE_MOTION } from "saltbox-core/shared/constants/collapse-motion";
 
+import {
+  filterSourceRows,
+  getSourceRowSearchExpansion,
+  type TemplateSourceRow,
+} from "../helpers/template-picker-rows";
 import { taskTemplateService } from "../service";
-import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
 
 import styles from "./template-list-modal.module.css";
-
-const { Title } = Typography;
 
 export type TemplateListModalProps = {
   type: TaskType;
@@ -23,58 +44,192 @@ export type TemplateListModalProps = {
   onSelectTemplate: (templateId: string) => void;
 };
 
+function SourceCollapseLabel({
+  sourceRow,
+  searchQuery,
+  getSourceLabel,
+}: {
+  sourceRow: TemplateSourceRow;
+  searchQuery?: string;
+  getSourceLabel: (sourceName: string) => string;
+}) {
+  const sourceLabel = getSourceLabel(sourceRow.source);
+
+  return (
+    <Flex vertical gap={4} className={styles.sourceLabel}>
+      <Flex align="center" gap="small" className={styles.sourceHeader}>
+        <Avatar className={styles.sourceAvatar} size="small" shape="square">
+          {sourceLabel[0]}
+        </Avatar>
+
+        <Typography.Text strong className={styles.sourceName} title={sourceLabel}>
+          <SearchHighlightText text={sourceLabel} query={searchQuery} />
+        </Typography.Text>
+
+        <TemplateSourceTypeTag sourceType={sourceRow.sourceType} />
+      </Flex>
+
+      {!!sourceRow.description && (
+        <TemplateSourceDescription description={sourceRow.description} searchQuery={searchQuery} />
+      )}
+    </Flex>
+  );
+}
+
 export function TemplateListModal(props: TemplateListModalProps) {
   const { isOpen, onClose, onSelectTemplate } = props;
   const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [sourceRows, setSourceRows] = useState<TemplateSourceRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [templates, setTemplates] = useState<TaskTemplateWithRepository[]>([]);
-  const [filters, setFilters] = useState<TemplateListFilterOptions>({
-    appliedSearchQuery: "",
-    repositoryFilter: null,
-  });
+  const [isError, setIsError] = useState(false);
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
+  const [manualActiveKeys, setManualActiveKeys] = useState<string[] | null>(null);
+  const isUserControlledRef = useRef(false);
+  const prevHasSearchQueryRef = useRef(false);
+  const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
+    useFocusOnOpenChange<InputRef>();
 
-  const repositories = useMemo(
-    () => taskTemplateService.getUniqueRepositories(templates),
-    [templates]
-  );
-
-  const filteredTemplates = useMemo(
-    () => taskTemplateService.filterTemplates(templates, filters),
-    [templates, filters]
-  );
+  const resetModalState = useCallback(() => {
+    setAppliedSearchQuery("");
+    setSourceRows([]);
+    setIsLoading(false);
+    setIsError(false);
+    setManualActiveKeys(null);
+    isUserControlledRef.current = false;
+    prevHasSearchQueryRef.current = false;
+  }, []);
 
   useEffect(() => {
-    const loadTemplates = async () => {
+    if (!isOpen) {
+      resetModalState();
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadSourceRows = async () => {
+      setIsError(false);
       setIsLoading(true);
+
       try {
-        const loadedTemplates = await taskTemplateService.loadTemplates();
-        setTemplates(loadedTemplates);
+        const loadedSourceRows = await taskTemplateService.loadTemplateSourceRows();
+        if (!isCancelled) {
+          setSourceRows(loadedSourceRows);
+        }
       } catch (error) {
-        if (isGlobalServerError(error)) return;
-        messageApi.error(t("task-create.error-loading-templates"));
+        if (isCancelled) {
+          return;
+        }
+        if (!isGlobalServerError(error)) {
+          messageApi.error(t("task-create.error-loading-templates"));
+        }
+        setIsError(true);
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
-    if (isOpen) {
-      loadTemplates();
+    loadSourceRows();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, messageApi, resetModalState, t]);
+
+  const filteredRows = useMemo(
+    () => filterSourceRows(sourceRows, appliedSearchQuery, i18n.language),
+    [appliedSearchQuery, i18n.language, sourceRows]
+  );
+
+  const searchQuery = useMemo(() => getActiveSearchQuery(appliedSearchQuery), [appliedSearchQuery]);
+  const hasSearchQuery = searchQuery !== undefined;
+  const isSearchReset = !hasSearchQuery && prevHasSearchQueryRef.current;
+
+  const defaultActiveKeys = useMemo(
+    () => (filteredRows.length === 1 ? [filteredRows[0].key] : []),
+    [filteredRows]
+  );
+
+  const searchForcedActiveKeys = useMemo(() => {
+    if (!hasSearchQuery) {
+      return undefined;
     }
-  }, [isOpen, messageApi, t]);
 
-  const handleSearchChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, appliedSearchQuery: value }));
-  };
+    return filteredRows
+      .filter(
+        (sourceRow) =>
+          getSourceRowSearchExpansion(sourceRow, searchQuery, i18n.language).expandTemplates
+      )
+      .map((sourceRow) => sourceRow.key);
+  }, [filteredRows, hasSearchQuery, i18n.language, searchQuery]);
 
-  const handleRepositoryChange = (value: string | null) => {
-    setFilters((prev) => ({ ...prev, repositoryFilter: value }));
-  };
+  const activeKeys = useMemo(() => {
+    if (isSearchReset) {
+      return defaultActiveKeys;
+    }
 
-  const handleTemplateSelect = (templateId: string) => {
-    onSelectTemplate(templateId);
-  };
+    if (searchForcedActiveKeys !== undefined && !isUserControlledRef.current) {
+      return searchForcedActiveKeys;
+    }
+
+    return manualActiveKeys ?? defaultActiveKeys;
+  }, [defaultActiveKeys, isSearchReset, manualActiveKeys, searchForcedActiveKeys]);
+
+  useEffect(() => {
+    isUserControlledRef.current = false;
+    setManualActiveKeys(null);
+  }, [appliedSearchQuery]);
+
+  useEffect(() => {
+    if (isSearchReset) {
+      isUserControlledRef.current = false;
+      setManualActiveKeys(null);
+    }
+
+    prevHasSearchQueryRef.current = hasSearchQuery;
+  }, [hasSearchQuery, isSearchReset]);
+
+  const handleCollapseChange = useCallback((keys: string | string[]) => {
+    isUserControlledRef.current = true;
+    setManualActiveKeys(Array.isArray(keys) ? keys : keys ? [keys] : []);
+  }, []);
+
+  const hasNoData = !isLoading && !isError && sourceRows.length === 0;
+  const hasNoResults =
+    !isLoading && !isError && hasSearchQuery && sourceRows.length > 0 && filteredRows.length === 0;
+  const shouldShowCollapse = !isLoading && !isError && filteredRows.length > 0;
+
+  const getSourceLabel = useCallback(
+    (sourceName: string) => sourceName.trim() || t("task-create.unknown-repository"),
+    [t]
+  );
+
+  const collapseItems = useMemo(
+    () =>
+      filteredRows.map((sourceRow) => ({
+        key: sourceRow.key,
+        label: (
+          <SourceCollapseLabel
+            sourceRow={sourceRow}
+            searchQuery={searchQuery}
+            getSourceLabel={getSourceLabel}
+          />
+        ),
+        children: (
+          <TemplateSourceTemplatesList
+            items={sourceRow.templates}
+            constrainHeight={false}
+            searchQuery={searchQuery}
+            onTemplateClick={(template) => onSelectTemplate(template.id)}
+          />
+        ),
+      })),
+    [filteredRows, getSourceLabel, onSelectTemplate, searchQuery]
+  );
 
   return (
     <>
@@ -87,76 +242,56 @@ export function TemplateListModal(props: TemplateListModalProps) {
         )}
         open={isOpen}
         onCancel={onClose}
+        afterOpenChange={handlePickerAfterOpenChange}
         footer={null}
         maskClosable={false}
-        width="min(80vw, 600px)"
+        width={900}
+        destroyOnHidden
       >
-        <Flex className={styles.root} vertical gap="middle">
+        <Flex vertical gap="middle">
           <SearchInput
+            ref={searchInputRef}
             placeholder={t("task-create.search-templates-placeholder")}
-            autoFocus={isOpen}
-            onSearch={handleSearchChange}
+            onSearch={setAppliedSearchQuery}
           />
 
-          <Select
-            placeholder={t("task-create.filter-by-repository")}
-            value={filters.repositoryFilter}
-            onChange={handleRepositoryChange}
-            allowClear
-            options={repositories.map((repo) => ({
-              label: repo,
-              value: repo,
-            }))}
-          />
-          {!isLoading && filteredTemplates.length === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                filters.appliedSearchQuery || filters.repositoryFilter
-                  ? t("task-create.no-templates-found")
-                  : t("task-create.no-templates-available")
-              }
-            />
-          ) : (
-            <List
-              className={styles.templateList}
-              dataSource={filteredTemplates}
-              loading={isLoading}
-              renderItem={(template) => {
-                const description = getTemplateDescriptionText(
-                  template.description as TemplateDescriptionValue,
-                  i18n.language
-                );
-                return (
-                  <List.Item
-                    className={styles.listItem}
-                    onClick={() => handleTemplateSelect(template.id)}
-                  >
-                    <Flex gap="small" justify="space-between" className={styles.listItemWrapper}>
-                      <Flex vertical gap={2} className={styles.listItemText}>
-                        <Tooltip title={template.title || template.id}>
-                          <Title className={styles.listItemPart} level={5} ellipsis>
-                            {template.title || template.id}
-                          </Title>
-                        </Tooltip>
-                        {description ? (
-                          <span className={styles.description} title={description}>
-                            {description}
-                          </span>
-                        ) : null}
-                      </Flex>
-                      {template.repository ? (
-                        <Badge
-                          count={template.repository}
-                          classNames={{ indicator: styles.repoBadge }}
-                        />
-                      ) : null}
-                    </Flex>
-                  </List.Item>
-                );
-              }}
-            />
-          )}
+          <div className={styles.modalContent}>
+            {isLoading && (
+              <div className={styles.spinnerContainer}>
+                <Spin />
+              </div>
+            )}
+
+            {!isLoading && isError && (
+              <Alert type="error" message={t("task-create.error-loading-templates")} showIcon />
+            )}
+
+            {hasNoData && (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t("task-create.no-sources-available")}
+              />
+            )}
+
+            {hasNoResults && (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t("configuration-templates.search.no-results")}
+              />
+            )}
+
+            {shouldShowCollapse && (
+              <Collapse
+                className={styles.sourcesCollapse}
+                size="small"
+                destroyOnHidden
+                activeKey={activeKeys}
+                onChange={handleCollapseChange}
+                items={collapseItems}
+                {...(isSearchReset ? { openMotion: INSTANT_COLLAPSE_MOTION } : {})}
+              />
+            )}
+          </div>
         </Flex>
       </Modal>
     </>

@@ -1,4 +1,4 @@
-import { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
+import type { JobSchemaShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   PageHeader,
   FastTablePaginated,
@@ -9,7 +9,6 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SyncTemplatesButton } from "saltbox-core/shared/components/sync-templates-button/sync-templates-button";
 import { JobTemplateStore } from "saltbox-core/store";
 
 const JobsTemplateTable = FastTablePaginated<JobSchemaShortSchema>;
@@ -21,17 +20,17 @@ const JobsTemplatePage = observer(() => {
   const columns = [
     columnHelper.accessor("name", {
       header: t("jobs-templates.table-name"),
-    }),
-    columnHelper.accessor("commit_hash", {
-      header: t("jobs-templates.table-commit-hash"),
+      meta: { width: "40%" },
     }),
     columnHelper.accessor("created", {
       header: t("jobs-templates.table-created"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
+      meta: { width: "30%" },
     }),
     columnHelper.accessor("modified", {
       header: t("jobs-templates.table-modified"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
+      meta: { width: "30%" },
     }),
   ];
   const [jobTemplateStore] = useState(() => new JobTemplateStore());
@@ -42,9 +41,6 @@ const JobsTemplatePage = observer(() => {
   return (
     <>
       <PageHeader title={t("jobs-templates.title")} />
-      <div className="page-actions-buttons">
-        <SyncTemplatesButton onSyncComplete={() => jobTemplateStore.reload()} />
-      </div>
       <JobsTemplateTable
         columns={columns}
         getRowId={(row) => row.id}

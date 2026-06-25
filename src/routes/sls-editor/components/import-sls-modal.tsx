@@ -1,4 +1,4 @@
-import { TaskTemplateShortSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, createColumnHelper } from "@tanstack/react-table";
 import { Modal, message } from "antd";
@@ -16,12 +16,12 @@ interface ImportSlsModalProps {
   onImport: (slsContent: string) => void;
 }
 
-const TaskTemplatesTable = FastTablePaginated<TaskTemplateShortSchema>;
-const columnHelper = createColumnHelper<TaskTemplateShortSchema>();
+const TaskTemplatesTable = FastTablePaginated<TaskTemplatePublicSchema>;
+const columnHelper = createColumnHelper<TaskTemplatePublicSchema>();
 
 export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsModalProps) => {
   const { t } = useTranslation();
-  const [templates, setTemplates] = useState<TaskTemplateShortSchema[]>([]);
+  const [templates, setTemplates] = useState<TaskTemplatePublicSchema[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationState>({
@@ -53,8 +53,8 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
   const loadTemplates = async () => {
     setLoading(true);
     try {
-      const response = await apiCoreStore.taskTemplatesApi?.taskTemplatesList({
-        SaltboxCoreTasksSchemasTasksTemplateTaskTemplateListBody: {
+      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateList({
+        TaskTemplateListBody: {
           limit: pagination.pageSize,
           skip: pagination.pageIndex * pagination.pageSize,
         },
@@ -72,11 +72,11 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
     }
   };
 
-  const handleRowClick = async (template: TaskTemplateShortSchema) => {
+  const handleRowClick = async (template: TaskTemplatePublicSchema) => {
     const performImport = async () => {
       try {
-        const fullTemplate = await apiCoreStore.taskTemplatesApi?.taskTemplateRetrieve({
-          tpl_id: template.id,
+        const fullTemplate = await apiCoreStore.newTaskTemplatesApi?.newTemplateRead({
+          template_id: template.id,
         });
 
         if (fullTemplate?.sls_content) {

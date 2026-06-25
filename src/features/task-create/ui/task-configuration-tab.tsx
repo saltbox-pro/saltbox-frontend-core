@@ -1,5 +1,5 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
-import type { TaskTemplateExcludeSlsSchema } from "@saltbox/saltbox-core-api-client";
+import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { deepOmitUndefined } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
@@ -28,7 +28,7 @@ import { TaskCreateFooter } from "./task-create-footer";
 import { TaskDataForm, type TaskDataFormHandle, type TaskDataFormProps } from "./task-data-form";
 
 export type TaskConfigurationTabProps = {
-  template?: TaskTemplateExcludeSlsSchema;
+  template?: TaskTemplateModel;
   initialData?: Partial<TaskConfigurationFormData>;
   topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;

@@ -22,12 +22,10 @@ import MinionPage from "./routes/minions.$slug.$mid";
 import NotFound from "./routes/not-found";
 import PillarsPage from "./routes/pillars";
 import AggregatedPoliciesPage from "./routes/policies";
-import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
 import CreateTemplatePage from "./routes/task-template-editor.create";
 import DuplicateTemplatePage from "./routes/task-template-editor.duplicate";
 import EditTemplatePage from "./routes/task-template-editor.edit";
-import TaskTemplatesPage from "./routes/task-templates";
 import TaskPage from "./routes/task.$taskid";
 import AggregatedTasksPage from "./routes/tasks";
 
@@ -54,8 +52,6 @@ export default observer(function Root() {
             <Route path="/core/jobs" element={<JobsPage />} />
             <Route path="/core/jobs/:jid" element={<JobPage />} />
             <Route path="/core/jobs-templates" element={<JobsTemplatesPage />} />
-            <Route path="/core/task-templates" element={<TaskTemplatesPage />} />
-            <Route path="/core/settings-sls" element={<SettingsSlsPage />} />
             <Route path="/core/sls-editor" element={<SlsEditorPage />} />
             <Route path="/core/tasks" element={<AggregatedTasksPage />} />
             <Route path="/core/policies" element={<AggregatedPoliciesPage />} />

@@ -1,6 +1,7 @@
 import { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
-import { BgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
+import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+
 import type { SourceBgTaskPollingService } from "../../shared/service/source-bg-task-polling.service";
 import { isAsyncSourceFileAdd, type AddSourceFilePayload } from "../types/source-file-payload";
 

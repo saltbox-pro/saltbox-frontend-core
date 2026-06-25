@@ -6,8 +6,9 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isBgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
-import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
+import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+
 import {
   getSourceActionContext,
   isUnplugInProgress,
