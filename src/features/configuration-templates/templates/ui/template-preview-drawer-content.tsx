@@ -31,6 +31,10 @@ export const TemplatePreviewDrawerContent = observer(function TemplatePreviewDra
     );
   }
 
+  if (!store.slsContent) {
+    return null;
+  }
+
   return (
     <div className={styles.editor}>
       <FullTemplateEditor value={store.slsContent} readOnly />

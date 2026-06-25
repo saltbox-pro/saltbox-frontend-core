@@ -9,6 +9,7 @@ import { TemplatePreviewStore } from "../store/template-preview-store";
 export type TemplatePreviewListProps = {
   onTemplateClick: (template: TaskTemplatePublicSchema) => void;
   activeTemplateId: string | null;
+  onDeleteTemplateSuccess?: (templateId: string) => void;
 };
 
 export function useTemplatePreviewDrawer() {
@@ -43,12 +44,22 @@ export function useTemplatePreviewDrawer() {
     [drawer, previewStore]
   );
 
+  const handleDeleteTemplateSuccess = useCallback(
+    (templateId: string) => {
+      if (drawer.openedId === templateId) {
+        drawer.close();
+      }
+    },
+    [drawer]
+  );
+
   const templatesListProps = useMemo<TemplatePreviewListProps>(
     () => ({
       onTemplateClick: handleTemplateClick,
       activeTemplateId: drawer.activeRowId,
+      onDeleteTemplateSuccess: handleDeleteTemplateSuccess,
     }),
-    [drawer.activeRowId, handleTemplateClick]
+    [drawer.activeRowId, handleDeleteTemplateSuccess, handleTemplateClick]
   );
 
   return {

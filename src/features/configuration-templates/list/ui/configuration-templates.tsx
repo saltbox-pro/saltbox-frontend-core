@@ -22,7 +22,7 @@ import {
   sourceMatchesQuery,
 } from "saltbox-core/features/template-source-search";
 
-import { canDuplicateSourceTemplate } from "../../templates/helpers/can-manage-source-templates";
+import { getSourceTemplateActionsPermissions } from "../../templates/helpers/source-template-actions";
 import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
@@ -121,9 +121,9 @@ export const ConfigurationTemplates = observer(() => {
   const openedSource = openedTemplate
     ? store.sortedSources.find((source) => source.id === openedTemplate.source_id)
     : undefined;
-  const canDuplicateOpenedTemplate = openedSource
-    ? canDuplicateSourceTemplate(openedSource, store)
-    : false;
+  const openedTemplateActionsPermissions = openedSource
+    ? getSourceTemplateActionsPermissions(openedSource, store)
+    : null;
 
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
@@ -234,7 +234,15 @@ export const ConfigurationTemplates = observer(() => {
         open={drawer.isOpened}
         template={openedTemplate}
         store={previewStore}
-        canDuplicate={canDuplicateOpenedTemplate}
+        permissions={openedTemplateActionsPermissions}
+        onDeleteTemplate={
+          openedSource && openedTemplateActionsPermissions?.showDelete
+            ? (templateId) => store.deleteSourceTemplate(openedSource.id, templateId)
+            : undefined
+        }
+        onDeleteError={() =>
+          openedSource ? store.reloadSource(openedSource.id) : Promise.resolve()
+        }
         onClose={drawer.close}
       />
     </Skeleton>

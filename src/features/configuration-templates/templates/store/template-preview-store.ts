@@ -35,6 +35,8 @@ export class TemplatePreviewStore {
       this.isLoading = true;
       this.hasError = false;
       this.isEmpty = false;
+      this.slsContent = "";
+      this.loadedTemplateId = null;
     });
 
     try {
@@ -79,10 +81,13 @@ export class TemplatePreviewStore {
 
   reset = () => {
     this.cancelLoad();
-    this.slsContent = "";
-    this.loadedTemplateId = null;
     this.isLoading = false;
     this.hasError = false;
+  };
+
+  clearContent = () => {
+    this.slsContent = "";
+    this.loadedTemplateId = null;
     this.isEmpty = false;
   };
 }

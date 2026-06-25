@@ -14,22 +14,16 @@ import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../shared/helpers/source-action-progress";
-import {
-  getCreateTemplatePath,
-  getDuplicateTemplatePath,
-  getEditTemplatePath,
-} from "../../shared/helpers/source-presentation";
+import { getCreateTemplatePath } from "../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceContent } from "../../shared/ui/template-source-content";
 import { TemplateSourceExtrasCollapse } from "../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceTags } from "../../shared/ui/template-source-tags";
 import {
-  canDeleteSourceTemplates,
-  canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../templates/helpers/can-manage-source-templates";
+import { getSourceTemplateActionsPermissions } from "../../templates/helpers/source-template-actions";
 import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
@@ -68,10 +62,8 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
 
   const sourceId = store.source.id;
   const isLocalSource = isEditableTemplateSource(store.source);
-  const showDeleteTemplate = isDeletableTemplateSource(store.source);
   const canEditTemplates = canEditSourceTemplates(store.source, store);
-  const canDuplicateTemplates = canDuplicateSourceTemplate(store.source, store);
-  const canDeleteTemplates = canDeleteSourceTemplates(store.source, store);
+  const templateActionsPermissions = getSourceTemplateActionsPermissions(store.source, store);
 
   return (
     <Space ref={drawer.mainContentRef} direction="vertical" size="large">
@@ -111,17 +103,8 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
             ? () => navigate(getCreateTemplatePath(sourceId))
             : undefined,
           canCreateTemplate: canEditTemplates,
-          showEditTemplate: isLocalSource,
-          canEditTemplates,
-          onEditTemplate: isLocalSource
-            ? (template) => navigate(getEditTemplatePath(sourceId, template.id))
-            : undefined,
-          canDuplicateTemplates,
-          onDuplicateTemplate: (template) =>
-            navigate(getDuplicateTemplatePath(sourceId, template.id)),
-          showDeleteTemplate,
-          canDeleteTemplates,
-          onDeleteTemplate: showDeleteTemplate
+          permissions: templateActionsPermissions,
+          onDeleteTemplate: templateActionsPermissions.showDelete
             ? (templateId) => store.deleteSourceTemplate(templateId)
             : undefined,
           onDeleteTemplateError: () => store.reloadSource(),
@@ -149,7 +132,13 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
         open={drawer.isOpened}
         template={openedTemplate}
         store={previewStore}
-        canDuplicate={canDuplicateTemplates}
+        permissions={templateActionsPermissions}
+        onDeleteTemplate={
+          templateActionsPermissions.showDelete
+            ? (templateId) => store.deleteSourceTemplate(templateId)
+            : undefined
+        }
+        onDeleteError={() => store.reloadSource()}
         onClose={drawer.close}
       />
     </Space>

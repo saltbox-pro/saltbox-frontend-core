@@ -21,19 +21,15 @@ import {
 } from "../../../shared/helpers/source-action-progress";
 import {
   getCreateTemplatePath,
-  getDuplicateTemplatePath,
-  getEditTemplatePath,
   getTemplateSourceDetailPath,
 } from "../../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
-  canDeleteSourceTemplates,
-  canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
+import { getSourceTemplateActionsPermissions } from "../../../templates/helpers/source-template-actions";
 import type { TemplatePreviewListProps } from "../../../templates/hooks/use-template-preview-drawer";
 import { getSourceSearchForcedActiveKeys } from "../../helpers/source-search";
 import type { ConfigurationTemplatesListStore } from "../../store/configuration-templates-store";
@@ -61,10 +57,8 @@ export const TemplateSourceListEntry = observer(
     });
 
     const isLocalSource = isEditableTemplateSource(source);
-    const showDeleteTemplate = isDeletableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
-    const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
-    const canDeleteTemplates = canDeleteSourceTemplates(source, store);
+    const templateActionsPermissions = getSourceTemplateActionsPermissions(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -118,17 +112,8 @@ export const TemplateSourceListEntry = observer(
                 ? () => navigate(getCreateTemplatePath(source.id))
                 : undefined,
               canCreateTemplate: canEditTemplates,
-              showEditTemplate: isLocalSource,
-              canEditTemplates,
-              onEditTemplate: isLocalSource
-                ? (template) => navigate(getEditTemplatePath(source.id, template.id))
-                : undefined,
-              canDuplicateTemplates,
-              onDuplicateTemplate: (template) =>
-                navigate(getDuplicateTemplatePath(source.id, template.id)),
-              showDeleteTemplate,
-              canDeleteTemplates,
-              onDeleteTemplate: showDeleteTemplate
+              permissions: templateActionsPermissions,
+              onDeleteTemplate: templateActionsPermissions.showDelete
                 ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
                 : undefined,
               onDeleteTemplateError: () => store.reloadSource(source.id),
