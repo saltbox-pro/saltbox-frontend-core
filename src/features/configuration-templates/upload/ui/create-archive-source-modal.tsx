@@ -1,18 +1,25 @@
 import { InboxOutlined } from "@ant-design/icons";
 import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Alert, Form, Upload, type UploadFile, message } from "antd";
+import type { RcFile } from "antd/es/upload";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
 import {
   TEMPLATE_SOURCE_ARCHIVE_ACCEPT,
   TEMPLATE_SOURCE_ARCHIVE_FORMATS_LABEL,
+  TEMPLATE_SOURCE_ARCHIVE_MAX_SIZE_GB,
   trimOptional,
   trimRequired,
 } from "../constants/template-source-form";
+import {
+  formatArchiveSourceFileValidationError,
+  validateArchiveSourceFile,
+} from "../helpers/validate-archive-source-file";
 
+import styles from "./create-archive-source-modal.module.css";
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
 import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
@@ -23,6 +30,7 @@ const { Dragger } = Upload;
 type ArchiveSourceFormValues = {
   name: string;
   description?: string;
+  namespace?: string;
   file: UploadFile[];
 };
 
@@ -51,14 +59,47 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
     }
   }, [open, form]);
 
+  const setFileFieldError = useCallback(
+    (errorMessage: string | null) => {
+      form.setFields([
+        {
+          name: "file",
+          errors: errorMessage ? [errorMessage] : [],
+        },
+      ]);
+    },
+    [form]
+  );
+
+  const validateFileOnUpload = useCallback(
+    (file: RcFile): boolean => {
+      const validationError = validateArchiveSourceFile(file);
+
+      if (validationError) {
+        setFileFieldError(formatArchiveSourceFileValidationError(validationError, t));
+        return false;
+      }
+
+      setFileFieldError(null);
+      return true;
+    },
+    [setFileFieldError, t]
+  );
+
   const uploadProps = useMemo(
     () => ({
       multiple: false,
       maxCount: 1,
-      beforeUpload: () => false,
       accept: TEMPLATE_SOURCE_ARCHIVE_ACCEPT,
+      beforeUpload: (file: RcFile) => {
+        if (!validateFileOnUpload(file)) {
+          return Upload.LIST_IGNORE;
+        }
+
+        return false;
+      },
     }),
-    []
+    [validateFileOnUpload]
   );
 
   const handleCancel = () => {
@@ -75,13 +116,13 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
       const fileObj = values.file?.[0]?.originFileObj;
 
       if (!fileObj) {
-        messageApi.error(t(`${I18N_PREFIX}.file-required`));
         return;
       }
 
       await store.createArchiveSource({
         name,
         description: trimOptional(values.description),
+        namespace: trimOptional(values.namespace),
         file: fileObj,
       });
 
@@ -127,6 +168,7 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
           <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} descriptionRows={3} />
 
           <Form.Item<ArchiveSourceFormValues>
+            className={styles.fileField}
             label={t(`${I18N_PREFIX}.file`)}
             required
             name="file"
@@ -140,9 +182,14 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
                 message: t(`${I18N_PREFIX}.file-required`),
               },
               {
-                validator: async (_, value: UploadFile[] | undefined) => {
-                  if (value?.[0]?.originFileObj) return;
-                  throw new Error(t(`${I18N_PREFIX}.file-required`));
+                validator: async (_, fileList: UploadFile[]) => {
+                  const fileObj = fileList?.[0]?.originFileObj;
+                  if (!fileObj) return;
+
+                  const validationError = validateArchiveSourceFile(fileObj);
+                  if (!validationError) return;
+
+                  throw new Error(formatArchiveSourceFileValidationError(validationError, t));
                 },
               },
             ]}
@@ -155,6 +202,7 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
               <p className="ant-upload-hint">
                 {t(`${I18N_PREFIX}.file-drag-hint`, {
                   formats: TEMPLATE_SOURCE_ARCHIVE_FORMATS_LABEL,
+                  maxSizeGb: TEMPLATE_SOURCE_ARCHIVE_MAX_SIZE_GB,
                 })}
               </p>
             </Dragger>

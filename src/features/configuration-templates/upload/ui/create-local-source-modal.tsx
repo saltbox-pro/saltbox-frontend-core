@@ -16,6 +16,7 @@ const I18N_PREFIX = "configuration-templates.local-source-modal";
 type LocalSourceFormValues = {
   name: string;
   description?: string;
+  namespace?: string;
 };
 
 type CreateLocalSourceModalProps = {
@@ -58,6 +59,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
       await store.createLocalSource({
         name,
         description: trimOptional(values.description),
+        namespace: trimOptional(values.namespace),
       });
 
       messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));

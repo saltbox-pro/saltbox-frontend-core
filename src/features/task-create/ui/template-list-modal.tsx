@@ -1,7 +1,13 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal, SearchInput, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Badge, Empty, Flex, List, Select, Tooltip, Typography, message } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Modal,
+  SearchInput,
+  isGlobalServerError,
+  useFocusOnOpenChange,
+} from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Empty, Flex, Spin, Table, Tooltip, message, type InputRef } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -9,12 +15,11 @@ import {
   type TemplateDescriptionValue,
 } from "saltbox-core/shared/utils/template-description";
 
+import { filterSourceRows, type TemplateSourceRow } from "../helpers/template-picker-rows";
 import { taskTemplateService } from "../service";
-import { TaskTemplateWithRepository, TemplateListFilterOptions } from "../type/types";
+import type { TaskTemplateWithRepository } from "../type/types";
 
 import styles from "./template-list-modal.module.css";
-
-const { Title } = Typography;
 
 export type TemplateListModalProps = {
   type: TaskType;
@@ -28,53 +33,151 @@ export function TemplateListModal(props: TemplateListModalProps) {
   const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
+  const [sourceRows, setSourceRows] = useState<TemplateSourceRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [templates, setTemplates] = useState<TaskTemplateWithRepository[]>([]);
-  const [filters, setFilters] = useState<TemplateListFilterOptions>({
-    appliedSearchQuery: "",
-    repositoryFilter: null,
-  });
+  const [isError, setIsError] = useState(false);
+  const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
+  const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
+    useFocusOnOpenChange<InputRef>();
 
-  const repositories = useMemo(
-    () => taskTemplateService.getUniqueRepositories(templates),
-    [templates]
-  );
-
-  const filteredTemplates = useMemo(
-    () => taskTemplateService.filterTemplates(templates, filters),
-    [templates, filters]
-  );
+  const resetModalState = useCallback(() => {
+    setAppliedSearchQuery("");
+    setSourceRows([]);
+    setIsLoading(false);
+    setIsError(false);
+  }, []);
 
   useEffect(() => {
-    const loadTemplates = async () => {
+    if (!isOpen) {
+      resetModalState();
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadSourceRows = async () => {
+      setIsError(false);
       setIsLoading(true);
+
       try {
-        const loadedTemplates = await taskTemplateService.loadTemplates();
-        setTemplates(loadedTemplates);
+        const loadedSourceRows = await taskTemplateService.loadTemplateSourceRows();
+        if (!isCancelled) {
+          setSourceRows(loadedSourceRows);
+        }
       } catch (error) {
-        if (isGlobalServerError(error)) return;
-        messageApi.error(t("task-create.error-loading-templates"));
+        if (isCancelled) {
+          return;
+        }
+        if (!isGlobalServerError(error)) {
+          messageApi.error(t("task-create.error-loading-templates"));
+        }
+        setIsError(true);
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
-    if (isOpen) {
-      loadTemplates();
-    }
-  }, [isOpen, messageApi, t]);
+    loadSourceRows();
 
-  const handleSearchChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, appliedSearchQuery: value }));
-  };
+    return () => {
+      isCancelled = true;
+    };
+  }, [isOpen, messageApi, resetModalState, t]);
 
-  const handleRepositoryChange = (value: string | null) => {
-    setFilters((prev) => ({ ...prev, repositoryFilter: value }));
-  };
+  const filteredRows = useMemo(
+    () => filterSourceRows(sourceRows, appliedSearchQuery),
+    [appliedSearchQuery, sourceRows]
+  );
 
-  const handleTemplateSelect = (templateId: string) => {
-    onSelectTemplate(templateId);
-  };
+  const hasNoData = !isLoading && !isError && sourceRows.length === 0;
+  const hasNoResults = !isLoading && !isError && sourceRows.length > 0 && filteredRows.length === 0;
+  const shouldShowTable = !isLoading && !isError && filteredRows.length > 0;
+
+  const renderTemplateTooltip = useCallback(
+    (template: TaskTemplateWithRepository) => {
+      const description = getTemplateDescriptionText(
+        template.description as TemplateDescriptionValue,
+        i18n.language
+      );
+
+      return (
+        <div className={styles.tooltipContent} onWheel={(event) => event.stopPropagation()}>
+          <div className={styles.tooltipTitle}>{template.title || template.name}</div>
+
+          {template.name && (
+            <div className={styles.tooltipSection}>
+              <div className={styles.tooltipSectionTitle}>{t("task-create.tooltip-name")}</div>
+              <pre className={styles.tooltipName}>{template.name}</pre>
+            </div>
+          )}
+
+          {description && (
+            <div className={styles.tooltipSection}>
+              <div className={styles.tooltipSectionTitle}>
+                {t("job-function-select.tooltip-description")}
+              </div>
+              <div className={styles.tooltipDescription}>{description}</div>
+            </div>
+          )}
+        </div>
+      );
+    },
+    [i18n.language, t]
+  );
+
+  const getSourceLabel = useCallback(
+    (sourceName: string) => sourceName.trim() || t("task-create.unknown-repository"),
+    [t]
+  );
+
+  const columns = useMemo<ColumnsType<TemplateSourceRow>>(
+    () => [
+      {
+        title: t("task-create.table-source"),
+        dataIndex: "source",
+        key: "source",
+        width: "35%",
+        render: (_, sourceRow) => (
+          <div className={styles.repositoryCell}>
+            <span className={styles.repositoryTitle}>{getSourceLabel(sourceRow.source)}</span>
+          </div>
+        ),
+      },
+      {
+        title: t("task-create.table-templates"),
+        dataIndex: "templates",
+        key: "templates",
+        render: (_, sourceRow) => (
+          <div className={styles.templatesCell}>
+            {sourceRow.templates.length === 0 ? (
+              <span className={styles.noTemplates}>{t("task-create.no-templates-in-source")}</span>
+            ) : (
+              sourceRow.templates.map((template) => (
+                <Tooltip
+                  key={template.id}
+                  title={renderTemplateTooltip(template)}
+                  mouseEnterDelay={0.45}
+                  classNames={{ root: styles.tooltip }}
+                  destroyOnHidden
+                >
+                  <Button
+                    size="small"
+                    className={styles.templateButton}
+                    onClick={() => onSelectTemplate(template.id)}
+                  >
+                    {template.title || template.name}
+                  </Button>
+                </Tooltip>
+              ))
+            )}
+          </div>
+        ),
+      },
+    ],
+    [getSourceLabel, onSelectTemplate, renderTemplateTooltip, t]
+  );
 
   return (
     <>
@@ -87,76 +190,54 @@ export function TemplateListModal(props: TemplateListModalProps) {
         )}
         open={isOpen}
         onCancel={onClose}
+        afterOpenChange={handlePickerAfterOpenChange}
         footer={null}
         maskClosable={false}
-        width="min(80vw, 600px)"
+        width={900}
+        destroyOnHidden
       >
-        <Flex className={styles.root} vertical gap="middle">
+        <Flex vertical gap="middle">
           <SearchInput
+            ref={searchInputRef}
             placeholder={t("task-create.search-templates-placeholder")}
-            autoFocus={isOpen}
-            onSearch={handleSearchChange}
+            onSearch={setAppliedSearchQuery}
           />
 
-          <Select
-            placeholder={t("task-create.filter-by-repository")}
-            value={filters.repositoryFilter}
-            onChange={handleRepositoryChange}
-            allowClear
-            options={repositories.map((repo) => ({
-              label: repo,
-              value: repo,
-            }))}
-          />
-          {!isLoading && filteredTemplates.length === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={
-                filters.appliedSearchQuery || filters.repositoryFilter
-                  ? t("task-create.no-templates-found")
-                  : t("task-create.no-templates-available")
-              }
-            />
-          ) : (
-            <List
-              className={styles.templateList}
-              dataSource={filteredTemplates}
-              loading={isLoading}
-              renderItem={(template) => {
-                const description = getTemplateDescriptionText(
-                  template.description as TemplateDescriptionValue,
-                  i18n.language
-                );
-                return (
-                  <List.Item
-                    className={styles.listItem}
-                    onClick={() => handleTemplateSelect(template.id)}
-                  >
-                    <Flex gap="small" justify="space-between" className={styles.listItemWrapper}>
-                      <Flex vertical gap={2} className={styles.listItemText}>
-                        <Tooltip title={template.title || template.id}>
-                          <Title className={styles.listItemPart} level={5} ellipsis>
-                            {template.title || template.id}
-                          </Title>
-                        </Tooltip>
-                        {description ? (
-                          <span className={styles.description} title={description}>
-                            {description}
-                          </span>
-                        ) : null}
-                      </Flex>
-                      {template.repository ? (
-                        <Badge
-                          count={template.repository}
-                          classNames={{ indicator: styles.repoBadge }}
-                        />
-                      ) : null}
-                    </Flex>
-                  </List.Item>
-                );
-              }}
-            />
-          )}
+          <div className={styles.modalContent}>
+            {isLoading && (
+              <div className={styles.spinnerContainer}>
+                <Spin />
+              </div>
+            )}
+
+            {!isLoading && isError && (
+              <Alert type="error" message={t("task-create.error-loading-templates")} showIcon />
+            )}
+
+            {hasNoData && (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t("task-create.no-sources-available")}
+              />
+            )}
+
+            {hasNoResults && (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t("task-create.no-templates-found")}
+              />
+            )}
+
+            {shouldShowTable && (
+              <Table
+                className={styles.templatesTable}
+                columns={columns}
+                dataSource={filteredRows}
+                pagination={false}
+                size="small"
+              />
+            )}
+          </div>
         </Flex>
       </Modal>
     </>

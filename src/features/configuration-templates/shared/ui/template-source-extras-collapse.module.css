@@ -2,3 +2,8 @@
 .collapse :global(.ant-collapse-item) {
   background: rgba(156, 156, 156, 0.01);
 }
+
+.collapse :global(.ant-collapse-header) {
+  min-height: 40px;
+  align-items: center;
+}

@@ -22,9 +22,10 @@ import MinionPage from "./routes/minions.$slug.$mid";
 import NotFound from "./routes/not-found";
 import PillarsPage from "./routes/pillars";
 import AggregatedPoliciesPage from "./routes/policies";
-import SettingsSlsPage from "./routes/settings-sls";
 import SlsEditorPage from "./routes/sls-editor";
-import TaskTemplatesPage from "./routes/task-templates";
+import CreateTemplatePage from "./routes/task-template-editor.create";
+import DuplicateTemplatePage from "./routes/task-template-editor.duplicate";
+import EditTemplatePage from "./routes/task-template-editor.edit";
 import TaskPage from "./routes/task.$taskid";
 import AggregatedTasksPage from "./routes/tasks";
 
@@ -51,8 +52,6 @@ export default observer(function Root() {
             <Route path="/core/jobs" element={<JobsPage />} />
             <Route path="/core/jobs/:jid" element={<JobPage />} />
             <Route path="/core/jobs-templates" element={<JobsTemplatesPage />} />
-            <Route path="/core/task-templates" element={<TaskTemplatesPage />} />
-            <Route path="/core/settings-sls" element={<SettingsSlsPage />} />
             <Route path="/core/sls-editor" element={<SlsEditorPage />} />
             <Route path="/core/tasks" element={<AggregatedTasksPage />} />
             <Route path="/core/policies" element={<AggregatedPoliciesPage />} />
@@ -61,6 +60,18 @@ export default observer(function Root() {
             <Route
               path="/core/configuration-templates/:sourceId"
               element={<TemplateSourceDetailPage />}
+            />
+            <Route
+              path="/core/configuration-templates/:sourceId/templates/new"
+              element={<CreateTemplatePage />}
+            />
+            <Route
+              path="/core/configuration-templates/:sourceId/templates/:templateId/edit"
+              element={<EditTemplatePage />}
+            />
+            <Route
+              path="/core/configuration-templates/:sourceId/templates/:templateId/duplicate"
+              element={<DuplicateTemplatePage />}
             />
             <Route path="/not-found" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />

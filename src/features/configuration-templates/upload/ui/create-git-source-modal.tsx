@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
 import {
   TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
+  TEMPLATE_SOURCE_REPO_URL_PATTERN,
   trimOptional,
   trimRequired,
 } from "../constants/template-source-form";
@@ -20,10 +21,11 @@ const I18N_PREFIX = "configuration-templates.git-source-modal";
 type GitSourceFormValues = {
   name: string;
   description?: string;
+  namespace?: string;
   repo_url: string;
   repo_user?: string;
   repo_pass?: string;
-  branch?: string;
+  branch: string;
 };
 
 type CreateGitSourceModalProps = {
@@ -66,10 +68,11 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
       await store.createGitSource({
         name,
         description: trimOptional(values.description),
+        namespace: trimOptional(values.namespace),
         repo_url: trimRequired(values.repo_url),
         repo_user: trimOptional(values.repo_user),
         repo_pass: trimOptional(values.repo_pass),
-        branch: trimOptional(values.branch),
+        branch: trimRequired(values.branch),
       });
 
       messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
@@ -119,10 +122,16 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
           <Form.Item<GitSourceFormValues>
             label={t(`${I18N_PREFIX}.repo-url`)}
             name="repo_url"
+            validateFirst
             rules={[
               {
                 required: true,
+                whitespace: true,
                 message: t(`${I18N_PREFIX}.repo-url-required`),
+              },
+              {
+                pattern: TEMPLATE_SOURCE_REPO_URL_PATTERN,
+                message: t(`${I18N_PREFIX}.repo-url-invalid`),
               },
             ]}
           >
@@ -159,6 +168,11 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
             label={t(`${I18N_PREFIX}.branch`)}
             name="branch"
             rules={[
+              {
+                required: true,
+                whitespace: true,
+                message: t(`${I18N_PREFIX}.branch-required`),
+              },
               {
                 max: TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
                 message: t(`${I18N_PREFIX}.branch-max`, {

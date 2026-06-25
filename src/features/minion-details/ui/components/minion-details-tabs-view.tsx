@@ -12,6 +12,7 @@ import type { MinionDetailsCommonProps } from "../../types/minion-details-props"
 
 import { MinionDashboardTab } from "./minion-dashboard-tab";
 import styles from "./minion-details.module.css";
+import { MinionExtraDataTab } from "./minion-extra-data-tab";
 import { MinionGrainsTab } from "./minion-grains-tab";
 import { MinionJobReturnsTab } from "./minion-job-returns-tab";
 import { MinionPillarsTab } from "./minion-pillars-tab";
@@ -119,6 +120,18 @@ export function MinionDetailsTabsView({
           <MinionPillarsTab
             targetId={minion.id}
             targetName={minion.minion_id}
+            isInDrawer={isInDrawer}
+            isFullView={isFullView}
+          />
+        ) : null,
+      },
+      "extra-data": {
+        key: "extra-data",
+        label: t("minions.extra-data.tab"),
+        children: minion?.id ? (
+          <MinionExtraDataTab
+            minionId={minion.id}
+            minionName={minion.minion_id}
             isInDrawer={isInDrawer}
             isFullView={isFullView}
           />

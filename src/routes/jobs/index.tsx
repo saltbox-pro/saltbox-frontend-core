@@ -25,13 +25,14 @@ import {
   JobModalShell,
   type JobModalTargeting,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
+import { runWithAcceptedMastersCheck } from "saltbox-core/shared/components/job-modal/run-with-accepted-masters-check";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
-import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+import { appStore, JobFilterStore, JobsStore, mastersStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
@@ -301,13 +302,15 @@ const JobsPage = observer(() => {
   };
 
   const openFunctionPicker = useCallback(() => {
-    setTargeting({
-      target: "*",
-      targetType: CreateJobRequestTgtTypeEnum.Glob,
-      defaultMaster: "",
+    runWithAcceptedMastersCheck(t, () => {
+      setTargeting({
+        target: "*",
+        targetType: CreateJobRequestTgtTypeEnum.Glob,
+        defaultMaster: "",
+      });
+      setPickerOpen(true);
     });
-    setPickerOpen(true);
-  }, []);
+  }, [t]);
 
   return (
     <>
@@ -324,7 +327,12 @@ const JobsPage = observer(() => {
 
       <div className="page-actions-buttons">
         <div className={styles.leftGroup}>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openFunctionPicker}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={openFunctionPicker}
+            loading={mastersStore.isLoading}
+          >
             {t("job-modal.create-job")}
           </Button>
         </div>

@@ -8,24 +8,27 @@ import {
   uploadSourceFile,
 } from "../../files/service/source-file-mutations.service";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
+import { canDeleteSourceTemplates } from "../../templates/helpers/can-manage-source-templates";
+import { deleteSourceTemplateWithPolling } from "../../templates/service/delete-source-template.service";
+import { getSourceActionContext } from "../helpers/source-action-progress";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { TemplateSourceStatePort } from "../types/template-source-state-port";
 
-import { SourcePollingService } from "./source-polling.service";
+import { SourceBgTaskPollingService } from "./source-bg-task-polling.service";
 import { TemplateSourceActionsService } from "./template-source-actions.service";
 
 export class TemplateSourceRuntime {
-  private readonly sourcePolling: SourcePollingService;
+  private readonly bgTaskPolling: SourceBgTaskPollingService;
   private readonly sourceActions: TemplateSourceActionsService;
 
   constructor(private readonly port: TemplateSourceStatePort) {
-    this.sourcePolling = new SourcePollingService({
-      refreshSource: (sourceId) => this.port.refreshSource(sourceId),
-      applySourceUpdate: (updated) => runInAction(() => this.port.applySourceUpdate(updated)),
+    this.bgTaskPolling = new SourceBgTaskPollingService({
       isSourcePresent: (sourceId) => this.port.isSourcePresent(sourceId),
+      removeSource: (sourceId) => runInAction(() => this.port.removeSource(sourceId)),
+      reloadSource: (sourceId) => this.port.reloadSource(sourceId),
     });
 
-    this.sourceActions = new TemplateSourceActionsService(this.sourcePolling, {
+    this.sourceActions = new TemplateSourceActionsService(this.bgTaskPolling, {
       setActionState: (sourceId, kind) =>
         runInAction(() => {
           this.port.actionBySourceId.set(sourceId, kind);
@@ -34,30 +37,33 @@ export class TemplateSourceRuntime {
         runInAction(() => {
           this.port.actionBySourceId.delete(sourceId);
         }),
-      markOptimisticOperation: (sourceId, operation) =>
-        runInAction(() => this.port.patchOptimisticOperation(sourceId, operation)),
+      patchOptimisticTask: (sourceId, operation, taskId) =>
+        runInAction(() => this.port.patchOptimisticTask(sourceId, operation, taskId)),
       removeSource: (sourceId) => runInAction(() => this.port.removeSource(sourceId)),
+      isSourcePresent: (sourceId) => this.port.isSourcePresent(sourceId),
     });
   }
 
   reset = () => {
-    this.sourcePolling.reset();
+    this.bgTaskPolling.reset();
     runInAction(() => {
       this.port.actionBySourceId.clear();
     });
   };
 
   syncForSources = (sources: SourceListWithExtrasSchema[]) => {
-    this.sourcePolling.syncForSources(sources);
+    this.bgTaskPolling.syncForSources(sources);
   };
 
   scheduleForSource = (source: SourceListWithExtrasSchema) => {
-    this.sourcePolling.scheduleForSource(source);
+    this.bgTaskPolling.scheduleForSource(source);
   };
 
   plugSource = (sourceId: string): Promise<void> => this.sourceActions.plugSource(sourceId);
 
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
+
+  unplugSource = (sourceId: string): Promise<void> => this.sourceActions.unplugSource(sourceId);
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);
@@ -72,9 +78,9 @@ export class TemplateSourceRuntime {
     return addSourceFileWithPolling(
       {
         uploadFile: (id, filePayload) => uploadSourceFile(id, filePayload),
-        polling: this.sourcePolling,
-        markOptimisticOperation: (id, operation) =>
-          runInAction(() => this.port.patchOptimisticOperation(id, operation)),
+        bgTaskPolling: this.bgTaskPolling,
+        patchOptimisticTask: (id, operation, taskId) =>
+          runInAction(() => this.port.patchOptimisticTask(id, operation, taskId)),
         setActionState: (id) =>
           runInAction(() => {
             this.port.actionBySourceId.set(id, "add_file");
@@ -94,5 +100,36 @@ export class TemplateSourceRuntime {
     const result = await deleteSourceFileApi(sourceId, fileId);
     await this.port.reloadSource(sourceId);
     return result;
+  };
+
+  deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> => {
+    const source = this.port.getSource(sourceId);
+
+    if (!source || !canDeleteSourceTemplates(source, this.port)) {
+      throw new Error("Cannot delete template while source operation is in progress");
+    }
+
+    if (getSourceActionContext(this.port, sourceId).actionKind === "delete_template") {
+      throw new Error("Template delete already in progress");
+    }
+
+    return deleteSourceTemplateWithPolling(
+      {
+        bgTaskPolling: this.bgTaskPolling,
+        patchOptimisticTask: (id, operation, taskId) =>
+          runInAction(() => this.port.patchOptimisticTask(id, operation, taskId)),
+        setActionState: (id) =>
+          runInAction(() => {
+            this.port.actionBySourceId.set(id, "delete_template");
+          }),
+        clearActionState: (id) =>
+          runInAction(() => {
+            this.port.actionBySourceId.delete(id);
+          }),
+        onComplete: () => this.port.reloadSource(sourceId),
+      },
+      sourceId,
+      templateId
+    );
   };
 }

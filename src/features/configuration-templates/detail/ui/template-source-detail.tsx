@@ -2,6 +2,7 @@ import { Alert, Card, Flex, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import {
   canAddSourceFiles,
@@ -13,10 +14,20 @@ import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../shared/helpers/source-action-progress";
+import { getCreateTemplatePath } from "../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceContent } from "../../shared/ui/template-source-content";
 import { TemplateSourceExtrasCollapse } from "../../shared/ui/template-source-extras-collapse";
 import { TemplateSourceTags } from "../../shared/ui/template-source-tags";
+import {
+  canDeleteSourceTemplates,
+  canDuplicateSourceTemplate,
+  canEditSourceTemplates,
+  isDeletableTemplateSource,
+  isEditableTemplateSource,
+} from "../../templates/helpers/can-manage-source-templates";
+import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
+import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
 type TemplateSourceDetailProps = {
@@ -27,7 +38,9 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   store,
 }: TemplateSourceDetailProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
+  const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
 
   if (store.isLoading) {
     return <Skeleton active />;
@@ -44,15 +57,27 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const view = getTemplateSourceViewState(store.source, store);
   const canAddFile = canAddSourceFiles(store.source, store);
   const showAddFileButton = canShowAddSourceFileButton(store.source);
-  const addingFile = isAddFileInProgress(getSourceActionContext(store, store.source.id));
+  const addingFile = isAddFileInProgress({
+    ...getSourceActionContext(store, store.source.id),
+    source: store.source,
+  });
+
+  const sourceId = store.source.id;
+  const isLocalSource = isEditableTemplateSource(store.source);
+  const showDeleteTemplate = isDeletableTemplateSource(store.source);
+  const canEditTemplates = canEditSourceTemplates(store.source, store);
+  const canDuplicateTemplates = canDuplicateSourceTemplate(store.source, store);
+  const canDeleteTemplates = canDeleteSourceTemplates(store.source, store);
 
   return (
-    <Space direction="vertical" size="large">
+    <Space ref={drawer.mainContentRef} direction="vertical" size="large">
       <Card size="small">
         <Flex vertical gap="middle">
           <Flex align="flex-start" justify="space-between" gap="middle" wrap>
             <TemplateSourceTags
               sourceType={store.source.source_type}
+              state={store.source.state}
+              currentOperation={store.source.current_operation}
               isConnected={view.isConnected}
               showActiveStatus={view.presentation.showActiveStatus}
             />
@@ -62,6 +87,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
               actions={store}
               canConnect={view.canConnect}
               canSync={view.canSync}
+              canUnplug={view.canUnplug}
               showDelete={view.showDelete}
             />
           </Flex>
@@ -77,6 +103,20 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
       <TemplateSourceExtrasCollapse
         templates={{
           items: store.source.templates ?? [],
+          onCreateTemplate: isLocalSource
+            ? () => navigate(getCreateTemplatePath(sourceId))
+            : undefined,
+          canCreateTemplate: canEditTemplates,
+          showEditTemplate: isLocalSource,
+          canEditTemplates,
+          canDuplicateTemplates,
+          showDeleteTemplate,
+          canDeleteTemplates,
+          onDeleteTemplate: showDeleteTemplate
+            ? (templateId) => store.deleteSourceTemplate(templateId)
+            : undefined,
+          onDeleteTemplateError: () => store.reloadSource(),
+          ...templatesListProps,
         }}
         files={{
           items: store.source.files ?? [],
@@ -94,6 +134,14 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
         sourceName={store.source.name}
         onAddFile={(_, payload) => store.addSourceFile(payload)}
         onClose={() => setAddFileModalOpen(false)}
+      />
+
+      <TemplatePreviewDrawer
+        open={drawer.isOpened}
+        template={openedTemplate}
+        store={previewStore}
+        canDuplicate={canDuplicateTemplates}
+        onClose={drawer.close}
       />
     </Space>
   );

@@ -4,19 +4,14 @@ import {
   TaskData,
   TaskTargetMinion,
   TaskTemplateModel,
-  TaskTemplateShortSchema,
+  TaskTemplatePublicSchema,
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
 import { ReactNode } from "react";
 import type { OptionList } from "react-querybuilder";
 
-export type TaskTemplateWithRepository = TaskTemplateShortSchema & {
+export type TaskTemplateWithRepository = TaskTemplatePublicSchema & {
   repository?: string;
-};
-
-export type TemplateListFilterOptions = {
-  appliedSearchQuery: string;
-  repositoryFilter: string | null;
 };
 
 export type CreateTaskModalStep = "template-selection" | "task-configuration";

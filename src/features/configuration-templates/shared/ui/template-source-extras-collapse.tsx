@@ -1,12 +1,15 @@
+import { PlusOutlined } from "@ant-design/icons";
 import type {
   SshfsFilePublicSchema,
   TaskTemplatePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
-import { Collapse, type CollapseProps, Flex } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
+import { Collapse, type CollapseProps, Flex, Tag } from "antd";
+import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceFilesList } from "../../files/ui/template-source-files-list";
+import type { TemplatePreviewListProps } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplateSourceTemplatesList } from "../../templates/ui/template-source-templates-list";
 import {
   TEMPLATE_SOURCE_FILES_PANEL_KEY,
@@ -22,7 +25,16 @@ export type TemplateSourceExtrasCollapseProps = {
     items: TaskTemplatePublicSchema[];
     totalCount?: number;
     searchQuery?: string;
-  };
+    onCreateTemplate?: () => void;
+    canCreateTemplate?: boolean;
+    showEditTemplate?: boolean;
+    canEditTemplates?: boolean;
+    canDuplicateTemplates?: boolean;
+    showDeleteTemplate?: boolean;
+    canDeleteTemplates?: boolean;
+    onDeleteTemplate?: (templateId: string) => Promise<void>;
+    onDeleteTemplateError?: () => Promise<void>;
+  } & Partial<TemplatePreviewListProps>;
   files: {
     items: SshfsFilePublicSchema[];
     totalCount?: number;
@@ -38,8 +50,13 @@ export type TemplateSourceExtrasCollapseProps = {
   forcedActiveKeys?: TemplateSourceExtrasPanelKey[];
 };
 
-function formatPanelLabel(title: string, count: number): string {
-  return `${title} (${count})`;
+function PanelLabel({ title, count }: { title: string; count: number }) {
+  return (
+    <Flex align="center" gap={8}>
+      <span>{title}</span>
+      <Tag bordered>{count}</Tag>
+    </Flex>
+  );
 }
 
 export function TemplateSourceExtrasCollapse({
@@ -70,26 +87,62 @@ export function TemplateSourceExtrasCollapse({
     () => [
       {
         key: TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY,
-        label: formatPanelLabel(
-          t("configuration-templates.source.templates"),
-          templates.totalCount ?? templates.items.length
+        label: (
+          <PanelLabel
+            title={t("configuration-templates.source.templates")}
+            count={templates.totalCount ?? templates.items.length}
+          />
         ),
+        extra: templates.onCreateTemplate ? (
+          <BaseActionButton
+            icon={<PlusOutlined />}
+            title={t("configuration-templates.source.add-template")}
+            disabled={!templates.canCreateTemplate}
+            onClick={(event: MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              templates.onCreateTemplate?.();
+            }}
+          />
+        ) : undefined,
         children: (
           <Flex vertical gap="small">
             <TemplateSourceTemplatesList
               items={templates.items}
               constrainHeight={constrainHeight}
               searchQuery={templates.searchQuery}
+              showEditTemplate={templates.showEditTemplate}
+              canEditTemplates={templates.canEditTemplates}
+              canDuplicateTemplates={templates.canDuplicateTemplates}
+              showDeleteTemplate={templates.showDeleteTemplate}
+              canDeleteTemplates={templates.canDeleteTemplates}
+              onDeleteTemplate={templates.onDeleteTemplate}
+              onDeleteError={templates.onDeleteTemplateError}
+              onTemplateClick={templates.onTemplateClick}
+              activeTemplateId={templates.activeTemplateId}
             />
           </Flex>
         ),
       },
       {
         key: TEMPLATE_SOURCE_FILES_PANEL_KEY,
-        label: formatPanelLabel(
-          t("configuration-templates.source.files"),
-          files.totalCount ?? files.items.length
+        label: (
+          <PanelLabel
+            title={t("configuration-templates.source.files")}
+            count={files.totalCount ?? files.items.length}
+          />
         ),
+        extra: files.onAddFileClick ? (
+          <BaseActionButton
+            icon={<PlusOutlined />}
+            title={t("configuration-templates.source.add-file")}
+            loading={files.isAddFileInProgress}
+            disabled={!files.canAddFile || files.isAddFileInProgress}
+            onClick={(event: MouseEvent<HTMLButtonElement>) => {
+              event.stopPropagation();
+              files.onAddFileClick?.();
+            }}
+          />
+        ) : undefined,
         children: (
           <Flex vertical gap="small">
             <TemplateSourceFilesList
@@ -98,9 +151,6 @@ export function TemplateSourceExtrasCollapse({
               items={files.items}
               constrainHeight={constrainHeight}
               searchQuery={files.searchQuery}
-              canAddFile={files.canAddFile}
-              isAddFileInProgress={files.isAddFileInProgress}
-              onAddFileClick={files.onAddFileClick}
             />
           </Flex>
         ),

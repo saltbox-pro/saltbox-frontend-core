@@ -4,8 +4,9 @@ import { MatIcon, SelectedItemsCounter } from "@saltbox/saltbox-frontend-common"
 import { RowSelectionState } from "@tanstack/react-table";
 import { Button, Flex, message, Spin } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import {
@@ -38,25 +39,50 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
+  const location = useLocation();
 
   const [minionsStore] = useState(
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
-  const isInitialSearchEffect = useRef(true);
   const [selection, setSelection] = useState<RowSelectionState>({});
 
-  useEffect(() => {
-    minionsStore.setCollectionSlug(props.slug);
-  }, [props.slug]);
+  const searchQueryKey = JSON.stringify(props.filterStore.searchMongoDBQuery);
+  const shouldWaitForFilterSchema =
+    props.filterStore.activeFiltersCount > 0 && props.filterStore.isLoading;
+  const shouldDeferLoadForNavigationReset = location.state?.resetFilters === true;
 
-  useEffect(() => {
-    if (isInitialSearchEffect.current) {
-      isInitialSearchEffect.current = false;
+  useLayoutEffect(() => {
+    if (shouldWaitForFilterSchema || shouldDeferLoadForNavigationReset) {
       return;
     }
-    minionsStore.mongoDBQuery = props.filterStore.searchMongoDBQuery;
-    minionsStore.handleSearch();
-  }, [props.filterStore.searchMongoDBQuery, minionsStore]);
+
+    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);
+  }, [
+    props.slug,
+    minionsStore,
+    searchQueryKey,
+    shouldWaitForFilterSchema,
+    shouldDeferLoadForNavigationReset,
+    props.filterStore,
+  ]);
+
+  const applySearchFilters = useCallback(() => {
+    minionsStore.syncAndLoad(props.slug, props.filterStore.searchMongoDBQuery);
+  }, [minionsStore, props.slug, props.filterStore]);
+
+  const clearSelection = useCallback(() => {
+    setSelection({});
+  }, []);
+
+  const handleFilterSearch = useCallback(() => {
+    clearSelection();
+    applySearchFilters();
+  }, [clearSelection, applySearchFilters]);
+
+  const handleFilterReset = useCallback(() => {
+    clearSelection();
+    applySearchFilters();
+  }, [clearSelection, applySearchFilters]);
 
   const selectedMinions: SelectedMinion[] = useMemo(() => {
     return Object.keys(selection)
@@ -67,10 +93,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         return { salt_master: minion.master, minion_id: minion.minion_id, mid: minion.id };
       });
   }, [minionsStore.minions, selection]);
-
-  const clearSelection = useCallback(() => {
-    setSelection({});
-  }, []);
 
   const selectedMinionsCount = selectedMinions.length;
 
@@ -142,8 +164,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             <MinionsQueryBuilder
               slug={props.slug}
               filterStore={props.filterStore}
-              onSearch={clearSelection}
-              onReset={clearSelection}
+              onSearch={handleFilterSearch}
+              onReset={handleFilterReset}
             />
           </Spin>
         )}
@@ -194,6 +216,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           onRowSelectionChange={setSelection}
           filterStore={props.filterStore}
           onAddFilter={props.onAddFilter}
+          onFiltersApplied={applySearchFilters}
         />
 
         {isTaskCreateOpen && (

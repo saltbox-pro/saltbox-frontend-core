@@ -15,6 +15,8 @@ export class MinionsStore {
   mongoDBQuery: object | undefined;
   pagination: PaginationState;
   sorting: SortingState;
+  private loadRequestId = 0;
+  private lastLoadedContextKey = "";
 
   constructor(mongoDBQueryInit: object | undefined, collectionSlug: string | undefined) {
     makeAutoObservable(this);
@@ -31,6 +33,8 @@ export class MinionsStore {
   }
 
   loadMinions = (collectionSlug: string) => {
+    const requestId = ++this.loadRequestId;
+    this.lastLoadedContextKey = this.getContextKey(collectionSlug, this.mongoDBQuery);
     this.isLoading = true;
     this.collectionSlug = collectionSlug;
     apiCoreStore.minionsApi
@@ -44,18 +48,21 @@ export class MinionsStore {
         },
       })
       .then((response) => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.minions = response.data;
           this.totalMinions = response.total;
         });
       })
       .catch(() => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.minions = [];
           this.totalMinions = 0;
         });
       })
       .finally(() => {
+        if (requestId !== this.loadRequestId) return;
         runInAction(() => {
           this.isLoading = false;
         });
@@ -84,5 +91,35 @@ export class MinionsStore {
     if (this.collectionSlug) {
       this.loadMinions(this.collectionSlug);
     }
+  };
+
+  private normalizeQueryForKey(query: object | undefined): string {
+    const serialized = JSON.stringify(query ?? {});
+    if (serialized === "{}" || serialized === '{"$and":[{"$expr":true}]}') {
+      return "{}";
+    }
+    return serialized;
+  }
+
+  private getContextKey(slug: string, query: object | undefined): string {
+    return `${slug}:${this.normalizeQueryForKey(query)}`;
+  }
+
+  syncAndLoad = (slug: string, query: object | undefined) => {
+    if (!slug) {
+      return;
+    }
+
+    const contextKey = this.getContextKey(slug, query);
+    if (this.lastLoadedContextKey === contextKey) {
+      return;
+    }
+
+    this.lastLoadedContextKey = contextKey;
+    this.pagination.pageIndex = 0;
+    this.sorting = [...DEFAULT_SORTING];
+    this.mongoDBQuery = query;
+    this.collectionSlug = slug;
+    this.loadMinions(slug);
   };
 }

@@ -1,0 +1,45 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.title {
+  margin-top: 0;
+}
+
+.formWrapper {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  padding-right: 16px;
+}
+
+.formWrapper > :global(.ant-flex) {
+  min-height: 100%;
+}
+
+.formWrapper :global(form.rjsf) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.formWrapper :global(form.rjsf > .rjsf-field-object) {
+  flex: 1;
+}
+
+.actions {
+  position: sticky;
+  z-index: 1;
+  bottom: 0;
+  padding: 12px 0;
+  background: var(--ant-color-bg-container, #fff);
+}
+
+.stateWrapper {
+  padding: 16px;
+}

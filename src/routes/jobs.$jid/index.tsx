@@ -1,4 +1,4 @@
-import { ReloadOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -10,11 +10,24 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  getApiErrorMessage,
+  isGlobalServerError,
 } from "@saltbox/saltbox-frontend-common";
-import type { SortingState } from "@tanstack/react-table";
-import { Button, Flex, Modal, Radio, Skeleton, Spin, Statistic, Tag, Typography } from "antd";
+import {
+  Button,
+  Flex,
+  Modal,
+  Radio,
+  Skeleton,
+  Spin,
+  Statistic,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
@@ -25,21 +38,20 @@ import {
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import {
-  DefaultJobReturnTable,
-  exportToCSV,
-  mergeJobReturnsToTable,
-} from "saltbox-core/shared/components/job-return-table";
+import { runWithAcceptedMastersCheck } from "saltbox-core/shared/components/job-modal/run-with-accepted-masters-check";
+import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
+import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
-import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore, mastersStore } from "saltbox-core/store";
 
-import { ErrorsPopover } from "./-components/errors-popover";
 import styles from "./index.module.css";
 
 const { Text } = Typography;
 const { Timer } = Statistic;
+
+type JobViewMode = "standard" | "detailed" | "table";
 
 type JobWebSocketMessage = JobModel | JobReturnModel;
 
@@ -50,13 +62,9 @@ const JobPage = observer(() => {
 
   const [webSocketService] = useState(new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
-  const [viewMode, setViewMode] = useState<"standard" | "detailed" | "table">("standard");
-  const [tableViewSorting, setTableViewSorting] = useState<SortingState>([]);
-  const [filteredTableRows, setFilteredTableRows] = useState<Record<string, unknown>[]>([]);
-  const [tableErrors, setTableErrors] = useState<Array<{ minion_id: string; error: string }>>([]);
+  const [viewMode, setViewMode] = useState<JobViewMode>("standard");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [tablePagination, setTablePagination] = useState({ pageIndex: 1, pageSize: 50 });
-  const savedPageSizeRef = useRef<number | null>(null);
+  const [isTableExportLoading, setIsTableExportLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -74,10 +82,14 @@ const JobPage = observer(() => {
     setRepeatConfigureFun(null);
     setRepeatPickerOpen(false);
     setRepeatBaseline(null);
+    setIsExportModalOpen(false);
   }, [jid]);
 
   const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
+  const isTableViewAvailable = statusCounts.success > 0;
+  const showExportButton = isTableViewAvailable;
+
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
   };
@@ -85,90 +97,6 @@ const JobPage = observer(() => {
   const showJobBodyLoader = isWebSocketConnecting || jobStore.isJobLoading || isCommandInitializing;
   const showJobReturnsToolbar =
     jobStore.totalMinions > 0 || jobStore.total > 0 || effectiveJobReturns.length > 0;
-
-  const tableConversionCheck = useMemo(() => {
-    const jobReturnsData = effectiveJobReturns.map((jobReturn) => ({
-      data: jobReturn.data ?? null,
-      minion_id: jobReturn.minion_id || "",
-    }));
-
-    return mergeJobReturnsToTable(jobReturnsData);
-  }, [effectiveJobReturns]);
-
-  const mergedTableData = useMemo(() => {
-    if (!isTableViewMode) {
-      return null;
-    }
-
-    return tableConversionCheck;
-  }, [isTableViewMode, tableConversionCheck]);
-
-  const rowsToExport = useMemo(() => {
-    const allRows =
-      filteredTableRows.length > 0
-        ? filteredTableRows
-        : mergedTableData?.canConvert
-          ? mergedTableData.rows
-          : [];
-
-    const sortedRows = [...allRows].sort((rowA, rowB) => {
-      for (const sortRule of tableViewSorting) {
-        const valueA = rowA[sortRule.id];
-        const valueB = rowB[sortRule.id];
-
-        if (valueA === valueB) continue;
-
-        const stringA = valueA == null ? "" : String(valueA);
-        const stringB = valueB == null ? "" : String(valueB);
-        const comparisonResult = stringA.localeCompare(stringB, undefined, {
-          numeric: true,
-          sensitivity: "base",
-        });
-
-        if (comparisonResult !== 0) {
-          return sortRule.desc ? -comparisonResult : comparisonResult;
-        }
-      }
-      return 0;
-    });
-
-    const startIndex = (tablePagination.pageIndex - 1) * tablePagination.pageSize;
-    const endIndex = startIndex + tablePagination.pageSize;
-
-    return sortedRows.slice(startIndex, endIndex);
-  }, [filteredTableRows, mergedTableData, tablePagination, tableViewSorting]);
-
-  // const handleExportToCSV = useCallback(() => {
-  //   if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
-  //     return;
-  //   }
-  //   setIsExportModalOpen(true);
-  // }, [mergedTableData, rowsToExport]);
-
-  const handleExportConfirm = useCallback(() => {
-    if (!mergedTableData || !mergedTableData.canConvert || rowsToExport.length === 0) {
-      return;
-    }
-    const filename = `job-returns-${jid}-${Date.now()}.csv`;
-
-    const sortedTableData = {
-      ...mergedTableData,
-      rows: rowsToExport,
-    };
-    exportToCSV(sortedTableData, filename);
-    setIsExportModalOpen(false);
-  }, [mergedTableData, jid, rowsToExport]);
-
-  const handleTableErrorsChange = useCallback(
-    (errors: Array<{ minion_id: string; error: string }>) => {
-      setTableErrors(errors);
-    },
-    []
-  );
-
-  const handleTablePaginationChange = useCallback((pageIndex: number, pageSize: number) => {
-    setTablePagination({ pageIndex, pageSize });
-  }, []);
 
   const shouldRepeat = useCallback((event: KeyboardEvent) => {
     return event.altKey && event.code === "KeyR";
@@ -179,20 +107,22 @@ const JobPage = observer(() => {
     if (!job?.fun) {
       return;
     }
-    setRepeatBaseline({
-      fun: job.fun,
-      arg: job.arg ?? undefined,
-      kwarg: job.kwarg ?? undefined,
+    runWithAcceptedMastersCheck(t, () => {
+      setRepeatBaseline({
+        fun: job.fun,
+        arg: job.arg ?? undefined,
+        kwarg: job.kwarg ?? undefined,
+      });
+      setRepeatTargeting({
+        target: jobStore.jobTargets ?? "*",
+        targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
+        defaultMaster: job.salt_master,
+        ttlSeconds: job.ttl,
+      });
+      setRepeatConfigureFun(job.fun);
+      setRepeatPickerOpen(true);
     });
-    setRepeatTargeting({
-      target: jobStore.jobTargets ?? "*",
-      targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
-      defaultMaster: job.salt_master,
-      ttlSeconds: job.ttl,
-    });
-    setRepeatConfigureFun(job.fun);
-    setRepeatPickerOpen(true);
-  }, [jobStore.job, jobStore.jobTargets]);
+  }, [jobStore.job, jobStore.jobTargets, t]);
 
   const handleRepeatConfigureClose = useCallback(() => {
     setRepeatBaseline(null);
@@ -221,30 +151,58 @@ const JobPage = observer(() => {
     );
   });
 
-  useEffect(() => {
-    if (isTableViewMode && jobStore.totalMinions > 0) {
-      if (savedPageSizeRef.current === null) {
-        savedPageSizeRef.current = jobStore.pagination.pageSize;
-      }
-
-      jobStore.handleLazyLoad({ pageIndex: 0, pageSize: jobStore.totalMinions }, tableViewSorting);
+  const handleViewModeChange = useCallback((nextMode: JobViewMode) => {
+    if (nextMode === "table") {
+      jobStore.prepareTableViewLoad();
+      setViewMode(nextMode);
+      jobStore.loadJobReturnsTable();
+      return;
     }
 
-    if (!isTableViewMode && savedPageSizeRef.current !== null) {
-      const pageSize = savedPageSizeRef.current;
-      savedPageSizeRef.current = null;
+    jobStore.beginJobReturnsReload();
+    setViewMode(nextMode);
+    jobStore.loadJobReturns();
+  }, []);
 
-      jobStore.handleLazyLoad({ pageIndex: 0, pageSize }, tableViewSorting);
+  const handleJobReturnsRefresh = useCallback(() => {
+    if (isTableViewMode) {
+      jobStore.loadJobReturnsTable();
+      return;
     }
+
+    jobStore.loadJobReturns();
   }, [isTableViewMode]);
 
-  useEffect(() => {
-    setFilteredTableRows([]);
-    setTablePagination({ pageIndex: 1, pageSize: 50 });
-    if (!isTableViewMode) {
-      setTableErrors([]);
+  const isJobReturnsRefreshLoading = isTableViewMode
+    ? jobStore.isJobReturnTableLoading
+    : jobStore.isJobReturnsLoading;
+
+  const handleExportToCsv = useCallback(async () => {
+    if (!jid) {
+      return;
     }
-  }, [mergedTableData, isTableViewMode]);
+
+    setIsTableExportLoading(true);
+
+    try {
+      await downloadJobReturnsTableCsv(
+        {
+          ...jobStore.mongoDBQuery,
+          jid,
+        },
+        `job-returns-${jid}-${Date.now()}.csv`
+      );
+      setIsExportModalOpen(false);
+    } catch (error) {
+      console.error("Error exporting job returns table:", error);
+      if (isGlobalServerError(error)) {
+        return;
+      }
+      message.error(await getApiErrorMessage(error, t("jobs.table-view-export-error")));
+    } finally {
+      setIsTableExportLoading(false);
+    }
+  }, [jid, t]);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -258,6 +216,7 @@ const JobPage = observer(() => {
     }
     jobStore.reset();
     jobStore.mongoDBQuery = undefined;
+    setViewMode("standard");
     if (webSocketService.isConnected()) {
       webSocketService.disconnect();
     }
@@ -312,6 +271,7 @@ const JobPage = observer(() => {
               title={t("jobs.repeat-job")}
               onClick={openRepeatConfigure}
               disabled={!jobStore.job}
+              loading={mastersStore.isLoading}
             />
 
             <JobModalShell
@@ -398,7 +358,7 @@ const JobPage = observer(() => {
           <div className={styles.jobDetailItem}>
             <span className={styles.jobDetailLabel}>{t("jobs.table-user")}:</span>
             <span className={styles.jobDetailValue}>
-              {jobStore.job?.user.name ?? <Skeleton.Input size="small" />}
+              {jobStore.job?.user?.name ?? <Skeleton.Input size="small" />}
             </span>
           </div>
 
@@ -467,61 +427,48 @@ const JobPage = observer(() => {
                     {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
                   </Tag>
                 </Flex>
-                <Flex align="center" gap={16}>
-                  {isTableViewMode && tableErrors.length > 0 && (
-                    <Flex align="center" gap={8}>
-                      <ExclamationCircleOutlined style={{ color: "#faad14", fontSize: "16px" }} />
-                      <span>
-                        {t("jobs.table-errors-found-short", { count: tableErrors.length })}
-                      </span>
-                      <ErrorsPopover errors={tableErrors} />
-                    </Flex>
-                  )}
-                  <Flex align="center" gap={8}>
-                    <Radio.Group
-                      value={viewMode}
-                      onChange={(e) => setViewMode(e.target.value)}
-                      options={[
-                        { label: t("jobs.standard-view"), value: "standard" },
-                        { label: t("jobs.detailed-view"), value: "detailed" },
-                        // {
-                        //   label: t("jobs.table-view"),
-                        //   value: "table",
-                        //   disabled:
-                        //     !tableConversionCheck?.canConvert ||
-                        //     tableConversionCheck.rows.length === 0,
-                        // },
-                      ]}
-                      optionType="button"
-                      buttonStyle="solid"
+                <Flex align="center" gap={8}>
+                  <Tooltip title={t("common.refresh")}>
+                    <Button
+                      icon={<ReloadOutlined />}
+                      loading={isJobReturnsRefreshLoading}
+                      onClick={handleJobReturnsRefresh}
                     />
-                    {/*{(!tableConversionCheck?.canConvert ||*/}
-                    {/*  tableConversionCheck.rows.length === 0) && (*/}
-                    {/*  <Tooltip*/}
-                    {/*    title={*/}
-                    {/*      tableConversionCheck?.reason || t("jobs.table-conversion-not-possible")*/}
-                    {/*    }*/}
-                    {/*    placement="left"*/}
-                    {/*    overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}*/}
-                    {/*  >*/}
-                    {/*    <QuestionCircleOutlined className={styles.helpIcon} />*/}
-                    {/*  </Tooltip>*/}
-                    {/*)}*/}
-                  </Flex>
-                  {/*{isTableViewMode && (*/}
-                  {/*  <Tooltip title={t("jobs.download-to-csv")}>*/}
-                  {/*    <Button*/}
-                  {/*      type="primary"*/}
-                  {/*      icon={<UploadOutlined />}*/}
-                  {/*      onClick={handleExportToCSV}*/}
-                  {/*      disabled={*/}
-                  {/*        !mergedTableData ||*/}
-                  {/*        !mergedTableData.canConvert ||*/}
-                  {/*        mergedTableData.rows.length === 0*/}
-                  {/*      }*/}
-                  {/*    />*/}
-                  {/*  </Tooltip>*/}
-                  {/*)}*/}
+                  </Tooltip>
+                  {showExportButton && (
+                    <Tooltip title={t("jobs.download-to-csv")}>
+                      <Button
+                        type="primary"
+                        icon={<DownloadOutlined />}
+                        loading={isTableExportLoading}
+                        onClick={() => setIsExportModalOpen(true)}
+                      />
+                    </Tooltip>
+                  )}
+                  <Radio.Group
+                    value={viewMode}
+                    onChange={(event) => handleViewModeChange(event.target.value)}
+                    options={[
+                      { label: t("jobs.standard-view"), value: "standard" },
+                      { label: t("jobs.detailed-view"), value: "detailed" },
+                      {
+                        label: t("jobs.table-view"),
+                        value: "table",
+                        disabled: !isTableViewAvailable,
+                      },
+                    ]}
+                    optionType="button"
+                    buttonStyle="solid"
+                  />
+                  {!isTableViewAvailable && (
+                    <Tooltip
+                      title={t("jobs.table-conversion-not-possible")}
+                      placement="left"
+                      overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
+                    >
+                      <QuestionCircleOutlined className={styles.helpIcon} />
+                    </Tooltip>
+                  )}
                 </Flex>
               </Flex>
             )}
@@ -533,16 +480,17 @@ const JobPage = observer(() => {
                 isFullOutput={isFullOutput}
                 isTableViewMode={isTableViewMode}
                 jobStartTimestamp={jobStore.jobStartTimestamp}
-                pagination={jobStore.pagination}
+                pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
                 sorting={jobStore.sorting}
-                total={jobStore.total}
+                total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
                 onLazyLoad={jobStore.handleLazyLoad}
                 isLoading={jobStore.isJobReturnsLoading}
                 forceExpand={jobStore.isSingleJobReturn}
-                onTableViewSortingChange={setTableViewSorting}
-                onTableViewFilteredDataChange={setFilteredTableRows}
-                onTableViewPaginationChange={handleTablePaginationChange}
-                onTableViewErrorsChange={handleTableErrorsChange}
+                tableColumns={jobStore.jobReturnTableColumns}
+                tableRows={jobStore.jobReturnTableRows}
+                isTableLoading={jobStore.isJobReturnTableLoading}
+                tableLoadError={jobStore.jobReturnTableLoadError}
+                onTableLazyLoad={jobStore.handleTableLazyLoad}
               />
             </Flex>
 
@@ -554,12 +502,13 @@ const JobPage = observer(() => {
       <Modal
         title={t("jobs.export-to-csv-title")}
         open={isExportModalOpen}
-        onOk={handleExportConfirm}
+        onOk={handleExportToCsv}
         onCancel={() => setIsExportModalOpen(false)}
         okText={t("common.export")}
         cancelText={t("common.cancel")}
+        confirmLoading={isTableExportLoading}
       >
-        <span>{t("jobs.export-to-csv-warning", { count: rowsToExport.length })}</span>
+        <span>{t("jobs.export-to-csv-warning")}</span>
       </Modal>
     </>
   );

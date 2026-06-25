@@ -1,10 +1,15 @@
-import type { SourceType } from "@saltbox/saltbox-core-api-client";
+import {
+  SourceState,
+  type SourceOperation,
+  type SourceType,
+} from "@saltbox/saltbox-core-api-client";
 import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import { Avatar, Card, Divider, Flex, Typography } from "antd";
 import type { MouseEvent, ReactNode } from "react";
 import { useNavigate } from "react-router";
 
 import { TemplateSourceActiveStatusTag } from "../../../shared/ui/template-source-active-status-tag";
+import { TemplateSourceBrokenOperationTag } from "../../../shared/ui/template-source-broken-operation-tag";
 import { TemplateSourceConnectionTag } from "../../../shared/ui/template-source-connection-tag";
 import {
   TemplateSourceExtrasCollapse,
@@ -34,6 +39,8 @@ function shouldIgnoreCardNavigation(event: MouseEvent<HTMLElement>): boolean {
 export interface TemplateSourceListItemProps {
   name: string;
   sourceType: SourceType;
+  sourceState: SourceState;
+  currentOperation: SourceOperation | null;
   showActiveStatusTag?: boolean;
   webUrl?: string;
   isConnected: boolean;
@@ -53,6 +60,8 @@ export function TemplateSourceListItem({
   description,
   name,
   sourceType,
+  sourceState,
+  currentOperation,
   showActiveStatusTag = false,
   isConnected,
   createdAt,
@@ -75,6 +84,7 @@ export function TemplateSourceListItem({
     .filter(Boolean)
     .join(" ");
   const dimmed = !isConnected || forceDimmed;
+  const isBroken = sourceState === SourceState.Broken;
 
   const handleCardClick = (event: MouseEvent<HTMLElement>) => {
     if (!detailHref || shouldIgnoreCardNavigation(event)) {
@@ -100,7 +110,7 @@ export function TemplateSourceListItem({
               {name[0]}
             </Avatar>
 
-            <Text className={styles.name}>
+            <Text className={styles.name} title={name}>
               <SearchHighlightText text={name} query={searchQuery} />
             </Text>
 
@@ -111,8 +121,10 @@ export function TemplateSourceListItem({
 
               <Flex align="center" gap={5}>
                 <TemplateSourceConnectionTag isConnected={isConnected} />
-
                 {showActiveStatusTag && <TemplateSourceActiveStatusTag />}
+                {isBroken && (
+                  <TemplateSourceBrokenOperationTag currentOperation={currentOperation} />
+                )}
               </Flex>
             </Flex>
           </span>

@@ -1,4 +1,4 @@
-import { type TaskTemplateExcludeSlsSchema, TaskType } from "@saltbox/saltbox-core-api-client";
+import { type TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -43,7 +43,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   const [modalApi, modalContextHolder] = Modal.useModal();
 
   const [isCreating, setIsCreating] = useState(false);
-  const [template, setTemplate] = useState<TaskTemplateExcludeSlsSchema | undefined>();
+  const [template, setTemplate] = useState<TaskTemplateModel | undefined>();
   const [activeTabKey, setActiveTabKey] = useState<string>(TabKey.Configuration);
   const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>({
     ...taskCreationService.getDefaultConfiguration(),
