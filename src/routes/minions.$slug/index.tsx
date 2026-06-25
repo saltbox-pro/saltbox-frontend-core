@@ -28,6 +28,7 @@ import {
   dashboardStore,
   getDashboardFieldOptions,
   MinionsDashboardAddBlockModal,
+  DASHBOARD_MAX_CARDS,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
@@ -347,7 +348,7 @@ const MinionsPage = observer(() => {
                     {!dashboardStore.canAddCard && (
                       <Popover
                         style={{ width: 300 }}
-                        content={t("minions.blocks-limit-tooltip")}
+                        content={t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
                         trigger="hover"
                       >
                         <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
@@ -459,7 +460,10 @@ const MinionsPage = observer(() => {
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
         fieldOptions={dashboardFieldOptions}
-        onClose={() => setIsAddDashboardBlockModalOpen(false)}
+        onClose={() => {
+          setIsAddDashboardBlockModalOpen(false);
+          setEditingDashboardCardId(null);
+        }}
         onSubmit={(fieldOption, preset) => {
           if (editingDashboardCardId) {
             dashboardStore.updateCard(editingDashboardCardId, fieldOption, preset);

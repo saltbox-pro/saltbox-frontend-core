@@ -2,7 +2,7 @@ import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
-import { ReactNode, useCallback } from "react";
+import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -29,14 +29,6 @@ export const MinionsDashboardView = observer(
     onAddCard: () => void;
   }) => {
     const { t } = useTranslation();
-    const { onEditCard } = props;
-
-    const handleEditCard = useCallback(
-      (cardId: string) => {
-        return onEditCard(cardId);
-      },
-      [onEditCard]
-    );
 
     return (
       <Flex gap={12} vertical style={{ height: "100%" }}>
@@ -75,7 +67,7 @@ export const MinionsDashboardView = observer(
               >
                 <MinionDashboardCard
                   card={card}
-                  onEdit={handleEditCard}
+                  onEdit={props.onEditCard}
                   slug={props.slug}
                   filterStore={props.filterStore}
                 />

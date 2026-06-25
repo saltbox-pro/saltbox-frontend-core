@@ -76,12 +76,12 @@ export const MinionDashboardCard = observer(
 
     const toggleFullScreen = () => {
       setIsTogglingFullScreen(true);
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         const nextIsFullScreen = !isFullScreenRef.current;
         setIsFullScreen(nextIsFullScreen);
         dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
         setIsTogglingFullScreen(false);
-      }, 0);
+      });
     };
 
     const copyDataText = dashboardCardStore.grainValues
@@ -91,7 +91,7 @@ export const MinionDashboardCard = observer(
     const handleDeleteClick = () => {
       Modal.confirm({
         title: t("dashboard.delete-card-confirm-title"),
-        icon: <></>,
+        icon: null,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
         onOk: () => dashboardStore.removeCard(card.id),

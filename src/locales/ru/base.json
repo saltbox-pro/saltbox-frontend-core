@@ -7,7 +7,7 @@
     "tab-statistics": "Статистика",
     "add-block-button": "Добавить блок",
     "filters-button": "Фильтры",
-    "blocks-limit-tooltip": "Для оптимизации работы страницы количество блоков ограничено",
+    "blocks-limit-tooltip": "Для оптимизации работы страницы количество блоков ограничено до {{limit}}",
     "table-minion-id": "ID клиента",
     "table-master": "Мастер",
     "table-fqdn": "FQDN",

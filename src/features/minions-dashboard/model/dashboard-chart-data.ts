@@ -75,7 +75,11 @@ export const toBooleanData = (
 
 export const toHistogramData = (values: GrainValue[]): ChartDatum[] => {
   const numericValues = values
-    .map((item) => ({ value: Number(item.value), count: item.count }))
+    .map((item) => {
+      const raw = Number(item.value);
+      const value = Number.isFinite(raw) ? raw : Date.parse(String(item.value ?? ""));
+      return { value, count: item.count };
+    })
     .filter((item) => Number.isFinite(item.value));
 
   if (numericValues.length === 0) {

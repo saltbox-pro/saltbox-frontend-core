@@ -11,3 +11,4 @@ export {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "./constants/dashboard-preview";
+export { DASHBOARD_MAX_CARDS } from "./constants/dashboard-cards";

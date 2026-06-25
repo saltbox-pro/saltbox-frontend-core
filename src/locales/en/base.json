@@ -7,7 +7,7 @@
     "tab-statistics": "Statistics",
     "add-block-button": "Add block",
     "filters-button": "Filters",
-    "blocks-limit-tooltip": "For page performance optimization, the number of blocks is limited",
+    "blocks-limit-tooltip": "For page performance optimization, the number of blocks is limited to {{limit}}",
     "table-minion-id": "Minion ID",
     "table-master": "Master",
     "table-fqdn": "FQDN",
