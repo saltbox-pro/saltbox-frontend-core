@@ -107,6 +107,7 @@ export const MinionDashboardCard = observer(
         icon: null,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
+        okText: t("dashboard.delete-card"),
         onOk: () => dashboardStore.removeCard(card.id),
       });
     };
@@ -131,6 +132,7 @@ export const MinionDashboardCard = observer(
         onClick: handleDeleteClick,
         key: "remove",
         disabled: isFullScreen,
+        danger: true,
       },
     ];
 
