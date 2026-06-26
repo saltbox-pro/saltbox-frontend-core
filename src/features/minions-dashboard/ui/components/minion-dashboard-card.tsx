@@ -91,7 +91,9 @@ export const MinionDashboardCard = observer(
     };
 
     const handleApplyFilter = (item: ChartDatum) => {
-      if (item.isOther) return;
+      if (item.isOther) {
+        return;
+      }
       applyFieldValueFilter(filterStore, card.fieldSource, item.value);
     };
 
@@ -195,12 +197,7 @@ export const MinionDashboardCard = observer(
             />
           );
         case "histogram":
-          return (
-            <VerticalBarChart
-              data={toHistogramData(grainValues)}
-              onFilterByValue={handleApplyFilter}
-            />
-          );
+          return <VerticalBarChart data={toHistogramData(grainValues, emptyLabel)} />;
         case "boolean-donut":
           return (
             <DonutChart
