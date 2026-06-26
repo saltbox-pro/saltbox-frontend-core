@@ -12,7 +12,7 @@ export function canShowAddSourceFileButton(
   return source.state === SourceState.Plugged || source.state === SourceState.Active;
 }
 
-export function canAddSourceFiles(
+function canMutateSourceFiles(
   source: Pick<TemplateSourcePublicSchema, "id" | "state" | "current_operation" | "last_error">,
   actionState?: SourceActionState
 ): boolean {
@@ -32,4 +32,18 @@ export function canAddSourceFiles(
   }
 
   return true;
+}
+
+export function canAddSourceFiles(
+  source: Pick<TemplateSourcePublicSchema, "id" | "state" | "current_operation" | "last_error">,
+  actionState?: SourceActionState
+): boolean {
+  return canMutateSourceFiles(source, actionState);
+}
+
+export function canDeleteSourceFiles(
+  source: Pick<TemplateSourcePublicSchema, "id" | "state" | "current_operation" | "last_error">,
+  actionState?: SourceActionState
+): boolean {
+  return canMutateSourceFiles(source, actionState);
 }

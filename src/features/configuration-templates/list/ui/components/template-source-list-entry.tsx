@@ -11,6 +11,7 @@ import {
 
 import {
   canAddSourceFiles,
+  canDeleteSourceFiles,
   canShowAddSourceFileButton,
 } from "../../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../../files/ui/add-source-file-modal";
@@ -50,6 +51,7 @@ export const TemplateSourceListEntry = observer(
     const view = getTemplateSourceViewState(source, store);
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
+    const canDeleteFile = canDeleteSourceFiles(source, store);
     const showAddFileButton = canShowAddSourceFileButton(source);
     const addingFile = isAddFileInProgress({
       ...getSourceActionContext(store, source.id),
@@ -126,6 +128,7 @@ export const TemplateSourceListEntry = observer(
               onDeleteFile: (fileId) => store.deleteSourceFile(source.id, fileId),
               onDeleteError: () => store.reloadSource(source.id),
               canAddFile,
+              canDeleteFile,
               isAddFileInProgress: addingFile,
               onAddFileClick: showAddFileButton ? () => setAddFileModalOpen(true) : undefined,
             },

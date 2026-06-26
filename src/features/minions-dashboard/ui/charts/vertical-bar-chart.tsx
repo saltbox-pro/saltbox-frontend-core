@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   Bar,
   BarChart,
@@ -29,7 +30,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
           onFilterByValue
             ? (state) => {
                 const payload = state?.activePayload?.[0]?.payload as ChartDatum | undefined;
-                if (payload) {
+                if (payload && !payload.isOther) {
                   onFilterByValue(payload);
                 }
               }
@@ -57,7 +58,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
           radius={[6, 6, 0, 0]}
           fill="var(--ant-color-primary, #1677ff)"
           isAnimationActive={false}
-          className={styles.verticalBar}
+          className={clsx(styles.verticalBar, onFilterByValue && styles.verticalBarFilterable)}
           background={onFilterByValue ? { fill: "transparent", cursor: "pointer" } : undefined}
         />
       </BarChart>

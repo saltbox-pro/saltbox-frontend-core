@@ -5,7 +5,7 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Tag } from "antd";
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { INSTANT_COLLAPSE_MOTION } from "saltbox-core/shared/constants/collapse-motion";
@@ -41,6 +41,7 @@ export type TemplateSourceExtrasCollapseProps = {
     onDeleteFile: (fileId: string) => Promise<ResourceDeleteResult>;
     onDeleteError?: () => Promise<void>;
     canAddFile?: boolean;
+    canDeleteFile?: boolean;
     isAddFileInProgress?: boolean;
     onAddFileClick?: () => void;
   };
@@ -115,10 +116,7 @@ export function TemplateSourceExtrasCollapse({
             icon={<PlusOutlined />}
             title={t("configuration-templates.source.add-template")}
             disabled={!templates.canCreateTemplate}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              event.stopPropagation();
-              templates.onCreateTemplate?.();
-            }}
+            onClick={() => templates.onCreateTemplate?.()}
           />
         ) : undefined,
         children: (
@@ -151,10 +149,7 @@ export function TemplateSourceExtrasCollapse({
             title={t("configuration-templates.source.add-file")}
             loading={files.isAddFileInProgress}
             disabled={!files.canAddFile || files.isAddFileInProgress}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              event.stopPropagation();
-              files.onAddFileClick?.();
-            }}
+            onClick={() => files.onAddFileClick?.()}
           />
         ) : undefined,
         children: (
@@ -165,6 +160,7 @@ export function TemplateSourceExtrasCollapse({
               items={files.items}
               constrainHeight={constrainHeight}
               searchQuery={files.searchQuery}
+              canDeleteFile={files.canDeleteFile}
             />
           </Flex>
         ),

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   Cell,
   Legend,
@@ -8,7 +9,8 @@ import {
   Tooltip as ChartTooltip,
 } from "recharts";
 
-import { generateChartColors } from "../../constants/chart-color-generator";
+import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
+
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -61,11 +63,9 @@ export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
               <Cell
                 key={`${entry.name}-${index}`}
                 fill={colors[index]}
-                onClick={() => {
-                  onFilterByValue?.(entry);
-                }}
+                onClick={isClickable ? () => onFilterByValue!(entry) : undefined}
                 tabIndex={-1}
-                className={`${styles.donutPieCell} ${isClickable ? styles.donutPieCellClickable : ""}`}
+                className={clsx(styles.donutPieCell, isClickable && styles.donutPieCellClickable)}
               />
             );
           })}

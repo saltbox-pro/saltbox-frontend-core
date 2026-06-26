@@ -6,11 +6,13 @@ import { useTranslation } from "react-i18next";
 import {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
-  DashboardCardConfig,
-  DashboardFieldOption,
-  DashboardPreset,
+} from "../../constants/dashboard-preview";
+import {
   getPresetOptionsForFieldType,
-} from "saltbox-core/features/minions-dashboard";
+  type DashboardCardConfig,
+  type DashboardFieldOption,
+  type DashboardPreset,
+} from "../../model/dashboard-model";
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
 

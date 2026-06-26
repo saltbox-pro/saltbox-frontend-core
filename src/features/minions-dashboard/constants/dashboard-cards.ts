@@ -11,6 +11,7 @@ const CARD_SIZE_BY_PRESET: Partial<Record<DashboardPreset, CardSizeConfig>> = {
   donut: { width: 2, height: 1, minWidth: 2, minHeight: 1 },
   "horizontal-bar": { width: 2, height: 1, minWidth: 2, minHeight: 1 },
   "vertical-bar": { width: 2, height: 1, minWidth: 2, minHeight: 1 },
+  histogram: { width: 2, height: 1, minWidth: 2, minHeight: 1 },
   treemap: { width: 2, height: 2, minWidth: 2, minHeight: 2 },
 };
 
@@ -22,6 +23,8 @@ export const getDefaultCardSize = (preset: DashboardPreset): CardSizeConfig =>
 export const DASHBOARD_MAX_CARDS = 10;
 
 export const DASHBOARD_GRID_COLS = 4;
+
+export const DASHBOARD_DRAG_HANDLE_CLASS = "dashboardDragHandle";
 
 export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
   {

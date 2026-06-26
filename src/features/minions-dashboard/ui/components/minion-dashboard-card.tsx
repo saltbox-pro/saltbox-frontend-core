@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -16,6 +17,8 @@ import { useTranslation } from "react-i18next";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
+import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
+import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -79,25 +82,19 @@ export const MinionDashboardCard = observer(
 
     const toggleFullScreen = () => {
       setIsTogglingFullScreen(true);
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         const nextIsFullScreen = !isFullScreenRef.current;
         setIsFullScreen(nextIsFullScreen);
         dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
         setIsTogglingFullScreen(false);
-      }, 0);
+      });
     };
 
     const handleApplyFilter = (item: ChartDatum) => {
       if (item.isOther) {
         return;
       }
-      filterStore.addFilter({
-        field: card.fieldSource,
-        operator: "=",
-        valueSource: "value",
-        value: String(item.value ?? ""),
-      });
-      filterStore.handleSearch();
+      applyFieldValueFilter(filterStore, card.fieldSource, item.value);
     };
 
     const copyDataText = dashboardCardStore.grainValues
@@ -107,7 +104,7 @@ export const MinionDashboardCard = observer(
     const handleDeleteClick = () => {
       Modal.confirm({
         title: t("dashboard.delete-card-confirm-title"),
-        icon: <></>,
+        icon: null,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
         onOk: () => dashboardStore.removeCard(card.id),
@@ -210,7 +207,7 @@ export const MinionDashboardCard = observer(
             />
           );
         case "histogram":
-          return <VerticalBarChart data={toHistogramData(grainValues)} />;
+          return <VerticalBarChart data={toHistogramData(grainValues, emptyLabel)} />;
         case "boolean-donut":
           return (
             <DonutChart
@@ -251,12 +248,15 @@ export const MinionDashboardCard = observer(
     const cardElement = (
       <Card
         size="small"
-        className={`${styles.dashboardTableBlock} ${isFullScreen ? styles.fullscreen : ""}`}
+        className={clsx(styles.dashboardTableBlock, isFullScreen && styles.fullscreen)}
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
           <div
-            className={`${styles.dashboardTableBlockHeader} ${isFullScreen ? "" : "dashboardDragHandle"}`}
+            className={clsx(
+              styles.dashboardTableBlockHeader,
+              !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
+            )}
           >
             <HolderOutlined className={styles.dashboardDragIcon} />
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>

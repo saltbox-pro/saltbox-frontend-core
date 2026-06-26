@@ -1,13 +1,15 @@
 import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { ReactNode, useEffect, useState } from "react";
 import { GridLayout, LayoutItem, useContainerWidth, verticalCompactor } from "react-grid-layout";
+import { useTranslation } from "react-i18next";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 import {
+  DASHBOARD_DRAG_HANDLE_CLASS,
   DASHBOARD_GRID_COLS,
   dashboardStore,
   DashboardLayoutItem,
@@ -19,9 +21,10 @@ import { MinionFilterStore } from "saltbox-core/store";
 import styles from "./minions-dashboard-view.module.css";
 
 const GRID_MARGIN: readonly [number, number] = [8, 8];
+const GRID_ROW_HEIGHT_RATIO = 0.38;
 
 const getRowHeight = () => {
-  return Math.max(240, Math.round(window.innerHeight * 0.38));
+  return Math.max(240, Math.round(window.innerHeight * GRID_ROW_HEIGHT_RATIO));
 };
 
 const useGridRowHeight = () => {
@@ -69,16 +72,8 @@ export const MinionsDashboardView = observer(
     onAddCard: () => void;
   }) => {
     const { t } = useTranslation();
-    const { onEditCard } = props;
     const { width, containerRef } = useContainerWidth();
     const rowHeight = useGridRowHeight();
-
-    const handleEditCard = useCallback(
-      (cardId: string) => {
-        return onEditCard(cardId);
-      },
-      [onEditCard]
-    );
 
     return (
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
@@ -104,12 +99,11 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div
-            className={[
+            ref={containerRef}
+            className={clsx(
               styles.dashboardContainer,
-              dashboardStore.isCardFullScreen ? styles.dashboardContainerFullscreen : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+              dashboardStore.isCardFullScreen && styles.dashboardContainerFullscreen
+            )}
           >
             <GridLayout
               width={width}
@@ -124,7 +118,7 @@ export const MinionsDashboardView = observer(
               dragConfig={{
                 enabled: !dashboardStore.isCardFullScreen,
                 bounded: false,
-                handle: ".dashboardDragHandle",
+                handle: `.${DASHBOARD_DRAG_HANDLE_CLASS}`,
                 threshold: 3,
               }}
               resizeConfig={{
@@ -139,7 +133,7 @@ export const MinionsDashboardView = observer(
                 <div key={card.id}>
                   <MinionDashboardCard
                     card={card}
-                    onEdit={handleEditCard}
+                    onEdit={props.onEditCard}
                     slug={props.slug}
                     filterStore={props.filterStore}
                     fullscreenContainer={containerRef.current}
