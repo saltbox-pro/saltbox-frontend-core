@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   Bar,
   BarChart,
@@ -57,7 +58,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
           radius={[6, 6, 0, 0]}
           fill="var(--ant-color-primary, #1677ff)"
           isAnimationActive={false}
-          className={styles.verticalBar}
+          className={clsx(styles.verticalBar, onFilterByValue && styles.verticalBarFilterable)}
           background={onFilterByValue ? { fill: "transparent", cursor: "pointer" } : undefined}
         />
       </BarChart>
