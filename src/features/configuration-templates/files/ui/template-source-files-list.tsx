@@ -7,7 +7,8 @@ import {
   SearchHighlightText,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex, List, Tag, Tooltip, message } from "antd";
-import { useCallback, useRef, useState, type MouseEvent } from "react";
+import clsx from "clsx";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceSectionEmpty } from "saltbox-core/features/template-source-ui";
@@ -77,8 +78,7 @@ export function TemplateSourceFilesList({
   );
 
   const handleDeleteClick = useCallback(
-    (event: MouseEvent<HTMLElement>, file: SshfsFilePublicSchema) => {
-      event.stopPropagation();
+    (file: SshfsFilePublicSchema) => {
       confirmDeleteFile({
         path: file.rel_path,
         onOk: () => handleDelete(file),
@@ -92,7 +92,7 @@ export function TemplateSourceFilesList({
       {contextHolder}
       {modalContextHolder}
       <List
-        className={constrainHeight ? `${styles.files} ${styles.filesConstrained}` : styles.files}
+        className={clsx(styles.files, constrainHeight && styles.filesConstrained)}
         size="small"
         dataSource={items}
         locale={{
@@ -116,7 +116,7 @@ export function TemplateSourceFilesList({
                       icon={<DeleteOutlined />}
                       title={t("configuration-templates.source.files-delete")}
                       loading={deletingIds.has(file.id)}
-                      onClick={(event) => handleDeleteClick(event, file)}
+                      onClick={() => handleDeleteClick(file)}
                     />
                   </Flex>
                 )}

@@ -38,7 +38,7 @@ export function TemplateSourceTemplatesListSection({
         template={template}
         permissions={permissions}
         confirmDeleteTemplate={confirmDeleteTemplate}
-        stopPropagation
+        stopPropagation={listProps.onTemplateClick !== undefined}
         onDeleteTemplate={onDeleteTemplate}
         onDeleteError={onDeleteError}
         onDeleteTemplateSuccess={
@@ -64,6 +64,7 @@ export function TemplateSourceTemplatesListSection({
     [
       confirmDeleteTemplate,
       deletingId,
+      listProps.onTemplateClick,
       onDeleteError,
       onDeleteTemplate,
       onDeleteTemplateSuccess,

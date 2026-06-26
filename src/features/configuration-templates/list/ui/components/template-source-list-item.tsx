@@ -5,8 +5,9 @@ import {
 } from "@saltbox/saltbox-core-api-client";
 import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import { Avatar, Card, Divider, Flex, Typography } from "antd";
-import type { MouseEvent, ReactNode } from "react";
-import { useNavigate } from "react-router";
+import clsx from "clsx";
+import type { ReactNode } from "react";
+import { Link } from "react-router";
 
 import {
   TemplateSourceDimmed,
@@ -25,19 +26,6 @@ import { TemplateSourceInfo } from "../../../shared/ui/template-source-info";
 import styles from "./template-source-list-item.module.css";
 
 const { Text } = Typography;
-
-const CARD_NAV_IGNORE_SELECTOR =
-  "a, button, [role='button'], input, textarea, select, .ant-modal-wrap, .ant-modal, .ant-upload, .ant-segmented, .ant-collapse, .ant-collapse-header";
-
-function isOverlayOpen(): boolean {
-  return typeof document !== "undefined" && Boolean(document.querySelector(".ant-modal-open"));
-}
-
-function shouldIgnoreCardNavigation(event: MouseEvent<HTMLElement>): boolean {
-  return (
-    isOverlayOpen() || Boolean((event.target as HTMLElement).closest(CARD_NAV_IGNORE_SELECTOR))
-  );
-}
 
 export interface TemplateSourceListItemProps {
   name: string;
@@ -78,60 +66,52 @@ export function TemplateSourceListItem({
   detailHref,
   searchQuery,
 }: TemplateSourceListItemProps) {
-  const navigate = useNavigate();
-  const cardClassName = [
-    styles.card,
-    !isConnected || forceDimmed ? styles.cardDisconnected : undefined,
-    detailHref ? styles.cardClickable : undefined,
-  ]
-    .filter(Boolean)
-    .join(" ");
   const dimmed = !isConnected || forceDimmed;
   const isBroken = sourceState === SourceState.Broken;
 
-  const handleCardClick = (event: MouseEvent<HTMLElement>) => {
-    if (!detailHref || shouldIgnoreCardNavigation(event)) {
-      return;
-    }
-    navigate(detailHref);
-  };
+  const titleContent = (
+    <Flex align="center" justify="space-between" gap="small" className={styles.headerRow}>
+      <span className={styles.headerLeading}>
+        <Avatar className={styles.avatar} size="small" shape="square">
+          {name[0]}
+        </Avatar>
+
+        <Text className={styles.name} title={name}>
+          <SearchHighlightText text={name} query={searchQuery} />
+        </Text>
+
+        <Flex align="center" gap="small" className={styles.titleMeta}>
+          <TemplateSourceTypeTag sourceType={sourceType} />
+
+          <Divider type="vertical" />
+
+          <Flex align="center" gap={5}>
+            <TemplateSourceConnectionTag isConnected={isConnected} />
+            {showActiveStatusTag && <TemplateSourceActiveStatusTag />}
+            {isBroken && <TemplateSourceBrokenOperationTag currentOperation={currentOperation} />}
+          </Flex>
+        </Flex>
+      </span>
+    </Flex>
+  );
 
   return (
     <Card
-      className={cardClassName}
-      onClick={detailHref ? handleCardClick : undefined}
+      className={clsx(styles.card, dimmed && styles.cardDisconnected)}
       classNames={{
+        header: clsx(detailHref && styles.cardHeadClickable),
         title: styles.title,
         extra: styles.extra,
       }}
       size="small"
-      hoverable
       title={
-        <Flex align="center" justify="space-between" gap="small" className={styles.headerRow}>
-          <span className={styles.headerLeading}>
-            <Avatar className={styles.avatar} size="small" shape="square">
-              {name[0]}
-            </Avatar>
-
-            <Text className={styles.name} title={name}>
-              <SearchHighlightText text={name} query={searchQuery} />
-            </Text>
-
-            <Flex align="center" gap="small" className={styles.titleMeta}>
-              <TemplateSourceTypeTag sourceType={sourceType} />
-
-              <Divider type="vertical" />
-
-              <Flex align="center" gap={5}>
-                <TemplateSourceConnectionTag isConnected={isConnected} />
-                {showActiveStatusTag && <TemplateSourceActiveStatusTag />}
-                {isBroken && (
-                  <TemplateSourceBrokenOperationTag currentOperation={currentOperation} />
-                )}
-              </Flex>
-            </Flex>
-          </span>
-        </Flex>
+        detailHref ? (
+          <Link to={detailHref} className={styles.headerLink} title={name}>
+            {titleContent}
+          </Link>
+        ) : (
+          titleContent
+        )
       }
       extra={headerExtra ?? <TemplateSourceConnectionTag isConnected={isConnected} />}
     >

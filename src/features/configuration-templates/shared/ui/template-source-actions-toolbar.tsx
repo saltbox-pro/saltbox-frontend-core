@@ -66,12 +66,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
   });
 
   return (
-    <Flex
-      align="center"
-      gap={5}
-      className={styles.toolbar}
-      onClick={(event) => event.stopPropagation()}
-    >
+    <Flex align="center" gap={5} className={styles.toolbar}>
       {source.current_operation !== null && (
         <SourceOperationSpinner
           operation={source.current_operation}
