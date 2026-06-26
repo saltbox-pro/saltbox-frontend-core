@@ -1,6 +1,5 @@
-import { Card, Flex } from "antd";
-import Statistic from "antd/es/statistic/Statistic";
-import { observer } from "mobx-react";
+import { Card, Flex, Statistic } from "antd";
+import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -43,7 +42,7 @@ export const MinionsDashboardSummary = observer(
     return (
       <Flex className={styles.dashboardSummary}>
         {items.map((item) => (
-          <Card className={styles.dashboardSummaryCard}>
+          <Card key={item.title} className={styles.dashboardSummaryCard}>
             <Statistic
               className={styles.dashboardSummaryCardStatistic}
               title={item.title}

@@ -683,6 +683,10 @@
     "apply-search-before-save": "Please apply search to confirm filters before saving"
   },
   "dashboard": {
+    "minions-total": "Minions in Selection",
+    "minions-top-os": "Primary OS",
+    "minions-top-salt-version": "Primary Salt Version",
+    "minions-top-architecture": "Primary Architecture",
     "table-count": "Count",
     "windowed": "Windowed",
     "fullscreen": "Fullscreen",

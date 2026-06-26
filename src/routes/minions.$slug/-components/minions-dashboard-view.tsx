@@ -99,7 +99,6 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div
-            ref={containerRef}
             className={clsx(
               styles.dashboardContainer,
               dashboardStore.isCardFullScreen && styles.dashboardContainerFullscreen
