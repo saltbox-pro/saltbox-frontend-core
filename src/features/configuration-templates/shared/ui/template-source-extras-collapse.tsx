@@ -41,6 +41,7 @@ export type TemplateSourceExtrasCollapseProps = {
     onDeleteFile: (fileId: string) => Promise<ResourceDeleteResult>;
     onDeleteError?: () => Promise<void>;
     canAddFile?: boolean;
+    canDeleteFile?: boolean;
     isAddFileInProgress?: boolean;
     onAddFileClick?: () => void;
   };
@@ -159,6 +160,7 @@ export function TemplateSourceExtrasCollapse({
               items={files.items}
               constrainHeight={constrainHeight}
               searchQuery={files.searchQuery}
+              canDeleteFile={files.canDeleteFile}
             />
           </Flex>
         ),

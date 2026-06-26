@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 
 import {
   canAddSourceFiles,
+  canDeleteSourceFiles,
   canShowAddSourceFileButton,
 } from "../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../files/ui/add-source-file-modal";
@@ -54,6 +55,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
 
   const view = getTemplateSourceViewState(store.source, store);
   const canAddFile = canAddSourceFiles(store.source, store);
+  const canDeleteFile = canDeleteSourceFiles(store.source, store);
   const showAddFileButton = canShowAddSourceFileButton(store.source);
   const addingFile = isAddFileInProgress({
     ...getSourceActionContext(store, store.source.id),
@@ -115,6 +117,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
           onDeleteFile: (fileId) => store.deleteSourceFile(fileId),
           onDeleteError: () => store.reloadSource(),
           canAddFile,
+          canDeleteFile,
           isAddFileInProgress: addingFile,
           onAddFileClick: showAddFileButton ? () => setAddFileModalOpen(true) : undefined,
         }}
