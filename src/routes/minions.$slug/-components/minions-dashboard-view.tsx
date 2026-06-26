@@ -2,13 +2,14 @@ import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import { ReactNode, useEffect, useState } from "react";
 import { GridLayout, LayoutItem, useContainerWidth, verticalCompactor } from "react-grid-layout";
+import { useTranslation } from "react-i18next";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 import {
+  DASHBOARD_DRAG_HANDLE_CLASS,
   DASHBOARD_GRID_COLS,
   dashboardStore,
   DashboardLayoutItem,
@@ -114,7 +115,7 @@ export const MinionsDashboardView = observer(
               dragConfig={{
                 enabled: !dashboardStore.isCardFullScreen,
                 bounded: false,
-                handle: ".dashboardDragHandle",
+                handle: `.${DASHBOARD_DRAG_HANDLE_CLASS}`,
                 threshold: 3,
               }}
               resizeConfig={{

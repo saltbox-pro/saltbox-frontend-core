@@ -23,6 +23,8 @@ export const DASHBOARD_MAX_CARDS = 10;
 
 export const DASHBOARD_GRID_COLS = 4;
 
+export const DASHBOARD_DRAG_HANDLE_CLASS = "dashboardDragHandle";
+
 export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
   {
     id: "dashboard-card-cpu_model-0",

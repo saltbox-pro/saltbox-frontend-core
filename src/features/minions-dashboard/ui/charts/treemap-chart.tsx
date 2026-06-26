@@ -7,6 +7,10 @@ import { ChartDatum } from "../../model/dashboard-chart-data";
 import { ChartTooltipContent } from "./chart-tooltip-content";
 import styles from "./treemap-chart.module.css";
 
+const TREEMAP_LABEL_PADDING_X = 8;
+const TREEMAP_LABEL_Y_OFFSET = 18;
+const TREEMAP_LABEL_LINE_HEIGHT = 16;
+
 type TreemapContentProps = {
   x?: number;
   y?: number;
@@ -34,7 +38,7 @@ const TreemapContent = (props: TreemapContentProps) => {
     <g
       className={`${styles.treemapNode} ${isNodeClickable ? styles.treemapNodeClickable : ""}`}
       onClick={
-        isClickable
+        isNodeClickable
           ? () => {
               props.onFilterByValue!(item!);
             }
@@ -60,9 +64,13 @@ const TreemapContent = (props: TreemapContentProps) => {
         rx={4}
         ry={4}
       />
-      <text x={(props.x || 0) + 8} y={(props.y || 0) + 18} className={styles.treemapLabel}>
+      <text
+        x={(props.x || 0) + TREEMAP_LABEL_PADDING_X}
+        y={(props.y || 0) + TREEMAP_LABEL_Y_OFFSET}
+        className={styles.treemapLabel}
+      >
         <tspan>{label}</tspan>
-        <tspan x={(props.x || 0) + 8} dy="16">
+        <tspan x={(props.x || 0) + TREEMAP_LABEL_PADDING_X} dy={TREEMAP_LABEL_LINE_HEIGHT}>
           {count}
         </tspan>
       </text>

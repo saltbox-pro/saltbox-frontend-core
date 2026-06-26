@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   Cell,
   Legend,
@@ -62,11 +63,9 @@ export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
               <Cell
                 key={`${entry.name}-${index}`}
                 fill={colors[index]}
-                onClick={() => {
-                  onFilterByValue?.(entry);
-                }}
+                onClick={isClickable ? () => onFilterByValue!(entry) : undefined}
                 tabIndex={-1}
-                className={`${styles.donutPieCell} ${isClickable ? styles.donutPieCellClickable : ""}`}
+                className={clsx(styles.donutPieCell, isClickable && styles.donutPieCellClickable)}
               />
             );
           })}

@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -16,6 +17,8 @@ import { useTranslation } from "react-i18next";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
+import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
+import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -34,7 +37,6 @@ import {
   TreemapChart,
   VerticalBarChart,
 } from "../charts";
-import { applyFieldValueFilter } from "../../helpers/apply-filter";
 
 import { GrainTable } from "./grain-table";
 import { KpiPanel } from "./kpi-panel";
@@ -239,12 +241,15 @@ export const MinionDashboardCard = observer(
     const cardElement = (
       <Card
         size="small"
-        className={`${styles.dashboardTableBlock} ${isFullScreen ? styles.fullscreen : ""}`}
+        className={clsx(styles.dashboardTableBlock, isFullScreen && styles.fullscreen)}
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
           <div
-            className={`${styles.dashboardTableBlockHeader} ${isFullScreen ? "" : "dashboardDragHandle"}`}
+            className={clsx(
+              styles.dashboardTableBlockHeader,
+              !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
+            )}
           >
             <HolderOutlined className={styles.dashboardDragIcon} />
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>

@@ -1,4 +1,5 @@
 import { Button, Flex, Tooltip } from "antd";
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import { ChartDatum } from "../../model/dashboard-chart-data";
@@ -17,17 +18,17 @@ export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
   return (
     <Flex vertical gap={10} className={styles.lollipopList}>
       {data.map((item, index) => {
-        const isClickable = !!onFilterByValue;
+        const isClickable = !!onFilterByValue && !item.isOther;
         return (
           <Tooltip
             key={`${item.name}-${index}`}
-            title={isClickable && !item.isOther ? t("dashboard.click-to-filter") : undefined}
+            title={isClickable ? t("dashboard.click-to-filter") : undefined}
           >
             <Button
               type="text"
               block
-              className={`${styles.lollipopRow} ${isClickable ? styles.lollipopRowClickable : ""}`}
-              onClick={isClickable ? () => onFilterByValue(item) : undefined}
+              className={clsx(styles.lollipopRow, isClickable && styles.lollipopRowClickable)}
+              onClick={isClickable ? () => onFilterByValue!(item) : undefined}
               tabIndex={-1}
             >
               <span className={styles.lollipopName}>{item.name}</span>
