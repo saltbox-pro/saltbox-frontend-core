@@ -144,18 +144,20 @@ export class DashboardStore {
     }
     this.cards[cardIndex] = getUpdatedDashboardCard(this.cards[cardIndex], fieldOption, preset);
     const size = getDefaultCardSize(preset);
-    this.layout = this.layout.map((item) => {
-      if (item.id !== cardId) {
-        return item;
-      }
-      return {
-        ...item,
-        width: size.width,
-        height: size.height,
-        minWidth: size.minWidth,
-        minHeight: size.minHeight,
-      };
-    });
+    this.layout = this.compactCards(
+      this.layout.map((item) => {
+        if (item.id !== cardId) {
+          return item;
+        }
+        return {
+          ...item,
+          width: size.width,
+          height: size.height,
+          minWidth: size.minWidth,
+          minHeight: size.minHeight,
+        };
+      })
+    );
     this.saveToLocalStorage();
   }
 

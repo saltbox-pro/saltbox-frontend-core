@@ -19,6 +19,7 @@ export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
     <Flex vertical gap={10} className={styles.lollipopList}>
       {data.map((item, index) => {
         const isClickable = !!onFilterByValue && !item.isOther;
+        const barPercent = Math.max(8, (item.count / max) * 100);
         return (
           <Tooltip
             key={`${item.name}-${index}`}
@@ -33,14 +34,8 @@ export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
             >
               <span className={styles.lollipopName}>{item.name}</span>
               <span className={styles.lollipopTrack}>
-                <span
-                  className={styles.lollipopTrackBar}
-                  style={{ width: `${Math.max(8, (item.count / max) * 100)}%` }}
-                />
-                <span
-                  className={styles.lollipopTrackDot}
-                  style={{ left: `${Math.max(8, (item.count / max) * 100)}%` }}
-                />
+                <span className={styles.lollipopTrackBar} style={{ width: `${barPercent}%` }} />
+                <span className={styles.lollipopTrackDot} style={{ left: `${barPercent}%` }} />
               </span>
               <span className={styles.lollipopCount}>{item.count}</span>
             </Button>

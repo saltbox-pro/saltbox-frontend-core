@@ -29,7 +29,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
           onFilterByValue
             ? (state) => {
                 const payload = state?.activePayload?.[0]?.payload as ChartDatum | undefined;
-                if (payload) {
+                if (payload && !payload.isOther) {
                   onFilterByValue(payload);
                 }
               }

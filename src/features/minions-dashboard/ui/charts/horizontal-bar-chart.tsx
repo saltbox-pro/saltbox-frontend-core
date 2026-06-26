@@ -43,7 +43,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
           onFilterByValue
             ? (state) => {
                 const payload = state?.activePayload?.[0]?.payload as ChartDatum | undefined;
-                if (payload) {
+                if (payload && !payload.isOther) {
                   onFilterByValue(payload);
                 }
               }
