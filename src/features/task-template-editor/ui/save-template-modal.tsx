@@ -1,8 +1,11 @@
-import { Form, Input, Modal, Select, Typography } from "antd";
+import { Form, Modal, Select, Typography } from "antd";
 import { observer } from "mobx-react-lite";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
+
+import { TemplateFileNameField } from "./template-file-name-field";
 
 interface SaveTemplateModalProps {
   store: TemplateEditorStore;
@@ -11,32 +14,79 @@ interface SaveTemplateModalProps {
   onConfirm: () => void;
 }
 
+type SaveTemplateFormValues = {
+  fileName?: string;
+  targetSourceId?: string;
+};
+
 export const SaveTemplateModal = observer(
   ({ store, open, onCancel, onConfirm }: SaveTemplateModalProps) => {
     const { t } = useTranslation();
+    const [form] = Form.useForm<SaveTemplateFormValues>();
 
     const hasTargetSources = store.targetSources.length > 0;
+
+    useEffect(() => {
+      if (open) {
+        form.setFieldsValue({
+          fileName: store.fileName,
+          targetSourceId: store.targetSourceId ?? undefined,
+        });
+      }
+    }, [open, form, store.fileName, store.targetSourceId]);
+
+    const applyFormValues = (values: SaveTemplateFormValues) => {
+      if (values.fileName !== undefined) {
+        store.setFileName(values.fileName);
+      }
+      if (store.isDuplicate) {
+        store.setTargetSourceId(values.targetSourceId ?? null);
+      }
+    };
+
+    const handleOk = async () => {
+      if (!store.createsNewTemplate) {
+        onConfirm();
+        return;
+      }
+
+      try {
+        const values = await form.validateFields();
+        applyFormValues(values);
+        onConfirm();
+      } catch {}
+    };
 
     return (
       <Modal
         title={t("task-template-editor.save-modal-title")}
         open={open}
         onCancel={onCancel}
-        onOk={onConfirm}
+        onOk={handleOk}
         okText={t("common.save")}
         cancelText={t("common.cancel")}
-        okButtonProps={{ loading: store.isSaving, disabled: !store.canSave }}
+        okButtonProps={{
+          loading: store.isSaving,
+          disabled: store.isSaving || (store.isDuplicate && !hasTargetSources),
+        }}
         cancelButtonProps={{ disabled: store.isSaving }}
         maskClosable={!store.isSaving}
         destroyOnHidden
       >
         {store.isDuplicate ? (
-          <Form layout="vertical">
-            <Form.Item label={t("task-template-editor.duplicate-target-label")} required>
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="targetSourceId"
+              label={t("task-template-editor.duplicate-target-label")}
+              rules={[
+                {
+                  required: true,
+                  message: t("task-template-editor.duplicate-target-placeholder"),
+                },
+              ]}
+            >
               <Select
                 placeholder={t("task-template-editor.duplicate-target-placeholder")}
-                value={store.targetSourceId ?? undefined}
-                onChange={(value) => store.setTargetSourceId(value)}
                 loading={store.isLoadingTargetSources}
                 disabled={store.isSaving || !hasTargetSources}
                 options={store.targetSources.map((source) => ({
@@ -47,17 +97,7 @@ export const SaveTemplateModal = observer(
               />
             </Form.Item>
 
-            <Form.Item label={t("task-template-editor.file-name-label")} required>
-              <Input
-                autoFocus
-                placeholder={t("task-template-editor.file-name-placeholder")}
-                value={store.fileName}
-                onChange={(event) => store.setFileName(event.target.value)}
-                onPressEnter={() => {
-                  if (store.canSave) onConfirm();
-                }}
-              />
-            </Form.Item>
+            <TemplateFileNameField onSubmit={handleOk} />
           </Form>
         ) : (
           <>
@@ -69,18 +109,8 @@ export const SaveTemplateModal = observer(
             </Typography.Paragraph>
 
             {store.createsNewTemplate ? (
-              <Form layout="vertical">
-                <Form.Item label={t("task-template-editor.file-name-label")} required>
-                  <Input
-                    autoFocus
-                    placeholder={t("task-template-editor.file-name-placeholder")}
-                    value={store.fileName}
-                    onChange={(event) => store.setFileName(event.target.value)}
-                    onPressEnter={() => {
-                      if (store.canSave) onConfirm();
-                    }}
-                  />
-                </Form.Item>
+              <Form form={form} layout="vertical">
+                <TemplateFileNameField onSubmit={handleOk} />
               </Form>
             ) : (
               <Typography.Paragraph type="secondary">
