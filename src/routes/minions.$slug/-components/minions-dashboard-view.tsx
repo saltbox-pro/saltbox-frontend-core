@@ -19,9 +19,10 @@ import { MinionFilterStore } from "saltbox-core/store";
 import styles from "./minions-dashboard-view.module.css";
 
 const GRID_MARGIN: readonly [number, number] = [8, 8];
+const GRID_ROW_HEIGHT_RATIO = 0.38;
 
 const getRowHeight = () => {
-  return Math.max(240, Math.round(window.innerHeight * 0.38));
+  return Math.max(240, Math.round(window.innerHeight * GRID_ROW_HEIGHT_RATIO));
 };
 
 const useGridRowHeight = () => {

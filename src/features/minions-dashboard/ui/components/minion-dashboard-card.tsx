@@ -34,6 +34,7 @@ import {
   TreemapChart,
   VerticalBarChart,
 } from "../charts";
+import { applyFieldValueFilter } from "../../helpers/apply-filter";
 
 import { GrainTable } from "./grain-table";
 import { KpiPanel } from "./kpi-panel";
@@ -88,16 +89,8 @@ export const MinionDashboardCard = observer(
     };
 
     const handleApplyFilter = (item: ChartDatum) => {
-      if (item.isOther) {
-        return;
-      }
-      filterStore.addFilter({
-        field: card.fieldSource,
-        operator: "=",
-        valueSource: "value",
-        value: String(item.value ?? ""),
-      });
-      filterStore.handleSearch();
+      if (item.isOther) return;
+      applyFieldValueFilter(filterStore, card.fieldSource, item.value);
     };
 
     const copyDataText = dashboardCardStore.grainValues
@@ -200,7 +193,12 @@ export const MinionDashboardCard = observer(
             />
           );
         case "histogram":
-          return <VerticalBarChart data={toHistogramData(grainValues)} />;
+          return (
+            <VerticalBarChart
+              data={toHistogramData(grainValues)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "boolean-donut":
           return (
             <DonutChart

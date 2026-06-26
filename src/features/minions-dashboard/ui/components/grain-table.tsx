@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
+import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { valueToText } from "../../model/dashboard-chart-data";
 
 import styles from "./grain-table.module.css";
@@ -35,15 +36,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
             {
               icon: <FilterOutlined />,
               title: t("dashboard.apply-value-to-filters"),
-              onClick: (value) => {
-                filterStore.addFilter({
-                  field: fieldSource,
-                  operator: "=",
-                  valueSource: "value",
-                  value: String(value ?? ""),
-                });
-                filterStore.handleSearch();
-              },
+              onClick: (value) => applyFieldValueFilter(filterStore, fieldSource, value),
             },
           ],
           tdClassName: styles.grainValueCol,
