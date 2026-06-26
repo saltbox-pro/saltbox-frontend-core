@@ -3,7 +3,7 @@ import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-clien
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Button, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, type MouseEvent } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
@@ -64,8 +64,7 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
     }
   }, [actions, source.id, source.name, t]);
 
-  const handleClick = (event: MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
+  const handleClick = () => {
     confirmDeleteSource({ name: source.name, onOk: handleDeleteConfirm });
   };
 
