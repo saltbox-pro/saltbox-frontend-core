@@ -1,4 +1,5 @@
 export { MinionDashboardCard } from "./ui/components/minion-dashboard-card";
+export { MinionsDashboardAddBlockModal } from "./ui/components/minions-dashboard-add-block-modal";
 export { dashboardStore } from "./model/dashboard-store";
 export { getDashboardFieldOptions, getPresetOptionsForFieldType } from "./model/dashboard-model";
 export type {
@@ -11,4 +12,4 @@ export {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "./constants/dashboard-preview";
-export { DASHBOARD_GRID_COLS } from "./constants/dashboard-cards";
+export { DASHBOARD_MAX_CARDS, DASHBOARD_GRID_COLS } from "./constants/dashboard-cards";

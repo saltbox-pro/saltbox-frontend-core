@@ -4,6 +4,7 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
+import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
 import {
   combineSchemaAndBody,
   extractSlsBody,
@@ -66,7 +67,6 @@ export class TemplateEditorStore {
     return this.mode === "duplicate";
   }
 
-  /** Источник, в который будет записан шаблон при сохранении. */
   get effectiveTargetSourceId(): string | null {
     return this.isDuplicate ? this.targetSourceId : this.sourceId;
   }
@@ -179,13 +179,6 @@ export class TemplateEditorStore {
     return this.parsed.error;
   }
 
-  get canSave(): boolean {
-    if (this.hasParseError) return false;
-    if (!this.createsNewTemplate) return true;
-    if (this.isDuplicate && !this.targetSourceId) return false;
-    return this.fileName.trim().length > 0;
-  }
-
   setRawSls = (value: string) => {
     this.rawSls = value;
   };
@@ -209,6 +202,9 @@ export class TemplateEditorStore {
         const targetSourceId = this.effectiveTargetSourceId;
         if (!targetSourceId) {
           throw new Error("target source is required to create a template");
+        }
+        if (!isValidTemplateFileName(this.fileName)) {
+          throw new Error("invalid template file name");
         }
         await apiCoreStore.newTaskTemplatesApi?.newTemplateCreate({
           TaskTemplateFromRawCreateSchema: {

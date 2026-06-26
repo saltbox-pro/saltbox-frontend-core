@@ -1,30 +1,34 @@
 import {
-  // DeleteOutlined,
   EditOutlined,
-  SettingOutlined,
   PlusOutlined,
   QuestionCircleOutlined,
   SaveOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
-  PageHeader,
-  Modal,
-  Popover,
-  generateIdsForQuery,
   FilterToggleButton,
+  generateIdsForQuery,
   isGlobalServerError,
+  Modal,
+  PageHeader,
+  Popover,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Tabs, message } from "antd";
+import { Button, Flex, message, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { dashboardStore, getDashboardFieldOptions } from "saltbox-core/features/minions-dashboard";
+import {
+  dashboardStore,
+  getDashboardFieldOptions,
+  MinionsDashboardAddBlockModal,
+  DASHBOARD_MAX_CARDS,
+} from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
   appStore,
@@ -36,9 +40,8 @@ import {
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
-import { MinionsListView } from "./-components/minions-list-view";
-import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
+import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsQueryBuilder } from "./-components/minions-query-builder";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
@@ -54,8 +57,7 @@ const createMinionFilterStore = () => {
   if (saved) {
     localStorage.removeItem("minionsFilter");
     try {
-      const initialFilterWithIds = generateIdsForQuery(JSON.parse(saved));
-      store.currentFilters = initialFilterWithIds;
+      store.currentFilters = generateIdsForQuery(JSON.parse(saved));
       store.handleSearch();
     } catch {
       // ignore invalid filter payload
@@ -344,7 +346,7 @@ const MinionsPage = observer(() => {
                     {!dashboardStore.canAddCard && (
                       <Popover
                         style={{ width: 300 }}
-                        content={t("minions.blocks-limit-tooltip")}
+                        content={t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
                         trigger="hover"
                       >
                         <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
@@ -456,7 +458,10 @@ const MinionsPage = observer(() => {
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
         fieldOptions={dashboardFieldOptions}
-        onClose={() => setIsAddDashboardBlockModalOpen(false)}
+        onClose={() => {
+          setIsAddDashboardBlockModalOpen(false);
+          setEditingDashboardCardId(null);
+        }}
         onSubmit={(fieldOption, preset) => {
           if (editingDashboardCardId) {
             dashboardStore.updateCard(editingDashboardCardId, fieldOption, preset);

@@ -72,12 +72,6 @@ type SchemaOption = {
   options?: SchemaOption[];
 };
 
-const KNOWN_PRESETS = new Set<DashboardPreset>(
-  Object.values(PRESETS)
-    .flat()
-    .map((option) => option.value)
-);
-
 const normalizeFieldName = (field: string): string => {
   return field.replace(/^grains\./, "");
 };
@@ -161,9 +155,8 @@ export const getDashboardFieldOptions = (
 };
 
 const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {
-  return KNOWN_PRESETS.has(preset as DashboardPreset)
-    ? (preset as DashboardPreset)
-    : getDefaultPresetForField(fieldType);
+  const isValid = PRESETS[fieldType].some((option) => option.value === preset);
+  return isValid ? (preset as DashboardPreset) : getDefaultPresetForField(fieldType);
 };
 
 const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
