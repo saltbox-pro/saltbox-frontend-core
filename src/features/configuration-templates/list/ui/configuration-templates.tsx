@@ -122,7 +122,9 @@ export const ConfigurationTemplates = observer(() => {
     ? store.sortedSources.find((source) => source.id === openedTemplate.source_id)
     : undefined;
   const openedTemplateActionsPermissions = openedSource
-    ? getSourceTemplateActionsPermissions(openedSource, store)
+    ? getSourceTemplateActionsPermissions(openedSource, store, {
+        hasConnectedLocalSource: store.hasConnectedLocalSource,
+      })
     : null;
 
   return (

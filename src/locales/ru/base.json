@@ -1108,6 +1108,7 @@
       "add-template": "Создать шаблон",
       "edit-template": "Редактировать шаблон",
       "duplicate-template": "Дублировать шаблон",
+      "duplicate-disabled-no-local-source": "Для дублирования шаблона необходимо подключить локальный источник",
       "preview-drawer-title": "Шаблон",
       "preview-load-error": "Не удалось загрузить содержимое шаблона",
       "preview-empty-content": "Содержимое шаблона отсутствует",
