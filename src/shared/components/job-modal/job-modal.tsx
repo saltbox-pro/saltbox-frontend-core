@@ -3,7 +3,6 @@ import type { ErrorSchema } from "@rjsf/utils";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
-  JobSchemaModel,
 } from "@saltbox/saltbox-core-api-client";
 import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
 import {
@@ -36,15 +35,9 @@ import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import {
-  fetchJobFunctionSchema,
   getArgAndKwargForRequest,
-  getDefaultJsonFormValue,
-  getRepeatJsonFormValue,
-  hasBaselineJobArgs,
   isTimeoutInputKeyAllowed,
   isTimeoutPasteAllowed,
-  parseTtlValue,
-  totalSecondsToTtlParts,
   ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import {
@@ -56,12 +49,8 @@ import {
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
+import { useJobModalInit, type JobModalFormValues } from "./hooks/use-job-modal-init";
 import styles from "./job-modal.module.css";
-
-interface MasterOption {
-  value: string;
-  label: string;
-}
 
 export type JobReturnToPickerSnapshot = {
   salt_master: string;
@@ -85,7 +74,8 @@ interface JobModalProps {
   onJobModalClosed?: () => void;
 }
 
-type JobFormData = Pick<CreateJobRequest, "tgt" | "tgt_type" | "salt_master">;
+type JobFormData = JobModalFormValues;
+
 const JSON_FORM_INPUT_SELECTOR =
   "#job-params-form input, #job-params-form textarea, #job-params-form select";
 const JSON_FORM_ERROR_INPUT_SELECTOR =
@@ -108,15 +98,8 @@ export function JobModal({
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
-  const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
-  const [masterList, setMasterList] = useState<MasterOption[]>([]);
-  const [isMasterListLoading, setIsMasterListLoading] = useState(false);
-  const [isSchemaLoading, setIsSchemaLoading] = useState(false);
   const [isJobCreating, setIsJobCreating] = useState(false);
-  const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
   const [messageApi, contextHolder] = message.useMessage();
-  const [ttlValue, setTtlValue] = useState<number | null>(null);
-  const [ttlUnit, setTtlUnit] = useState<"seconds" | "minutes" | "hours">("seconds");
   const [isAdvancedSettingsEnabled, setIsAdvancedSettingsEnabled] = useState(false);
   const [jsonFormExtraErrors, setJsonFormExtraErrors] = useState<ErrorSchema>();
 
@@ -128,11 +111,43 @@ export function JobModal({
   const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
   const shouldFocusJsonFormAfterAdvancedOpenRef = useRef(false);
 
+  const handleLoadFailed = useCallback(() => {
+    setIsModalOpen(false);
+    onAfterClose?.();
+  }, [onAfterClose]);
+
+  const {
+    isInitialLoading,
+    isFormReady,
+    masterList,
+    saltFunction,
+    jsonFormValue,
+    setJsonFormValue,
+    ttlValue,
+    setTtlValue,
+    ttlUnit,
+    setTtlUnit,
+    initializeModal,
+    resetLoadedData,
+    cancelInit,
+  } = useJobModalInit({
+    fun,
+    arg,
+    kwarg,
+    target,
+    targetType,
+    defaultMaster,
+    initialTtlSeconds,
+    form,
+    messageApi,
+    t,
+    onLoadFailed: handleLoadFailed,
+  });
+
   const saltMaster = Form.useWatch("salt_master", form);
   const tgt = Form.useWatch("tgt", form);
   const tgtType = Form.useWatch("tgt_type", form);
 
-  const isInitialLoading = isMasterListLoading || isSchemaLoading;
   const isLoading = isInitialLoading || isJobCreating;
 
   const functionJsonSchema = saltFunction?.json_schema as JsonSchemaRecord | undefined;
@@ -143,59 +158,12 @@ export function JobModal({
     [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
   );
 
-  const applyTotalSecondsToTtlState = useCallback((totalSeconds: number) => {
-    const parts = totalSecondsToTtlParts(totalSeconds);
-    setTtlValue(parts.value);
-    setTtlUnit(parts.unit);
-  }, []);
-
-  const applyTtlFromInitialOrDefault = useCallback(
-    (totalSeconds: number | null | undefined, defaultTtl: unknown) => {
-      if (totalSeconds != null && Number.isFinite(totalSeconds) && totalSeconds >= 0) {
-        applyTotalSecondsToTtlState(totalSeconds);
-        return;
-      }
-      setTtlValue(parseTtlValue(defaultTtl));
-      setTtlUnit("seconds");
-    },
-    [applyTotalSecondsToTtlState]
-  );
-
-  const showModal = useCallback(() => {
+  const openModal = useCallback(() => {
+    closeReasonRef.current = null;
+    setIsAdvancedSettingsEnabled(false);
     setIsModalOpen(true);
-    setIsMasterListLoading(true);
-    apiCoreStore.mastersApi
-      ?.mastersList({
-        MasterListBody: {
-          query: {
-            status: "accepted",
-          },
-        },
-      })
-      .then((result) => {
-        if (result?.data?.length === 0) {
-          messageApi.warning(t("job-modal.warning-message"));
-          setIsModalOpen(false);
-          onAfterClose?.();
-          return;
-        }
-        setMasterList(
-          result?.data?.reduce<Array<MasterOption>>((list, master) => {
-            list.push({
-              label: master.title,
-              value: master.master_id,
-            });
-            return list;
-          }, []) ?? []
-        );
-      })
-      .catch(() => {
-        messageApi.error(t("job-modal.error-load-salt-masters"));
-        setIsModalOpen(false);
-        onAfterClose?.();
-      })
-      .finally(() => setIsMasterListLoading(false));
-  }, [messageApi, onAfterClose, t]);
+    initializeModal();
+  }, [initializeModal]);
 
   const keydownHandler = useCallback(
     (event: KeyboardEvent) => {
@@ -223,54 +191,24 @@ export function JobModal({
   useEffect(() => {
     if (openOnMount && !hasAutoOpenedRef.current) {
       hasAutoOpenedRef.current = true;
-      showModal();
+      openModal();
     }
-  }, [openOnMount, showModal]);
+  }, [openOnMount, openModal]);
 
   useEffect(() => {
-    if (!isModalOpen) {
-      return;
-    }
-
-    closeReasonRef.current = null;
-
-    form.resetFields();
-    form.setFieldsValue({
-      tgt: target,
-      tgt_type: targetType,
-      salt_master: defaultMaster || masterList[0]?.value,
-    });
-    refJobParamsForm.current?.reset();
-    setSaltFunction(undefined);
-    setJsonFormValue({});
-    setTtlValue(null);
-    setTtlUnit("seconds");
-    setIsAdvancedSettingsEnabled(false);
-
-    applyTtlFromInitialOrDefault(initialTtlSeconds, null);
-  }, [
-    isModalOpen,
-    target,
-    targetType,
-    defaultMaster,
-    initialTtlSeconds,
-    form,
-    masterList,
-    applyTtlFromInitialOrDefault,
-  ]);
+    return () => {
+      cancelInit();
+    };
+  }, [cancelInit]);
 
   useLayoutEffect(() => {
-    if (!isModalOpen) {
+    if (!isModalOpen || !isFormReady) {
       return;
     }
 
     if (shouldFocusJsonFormAfterAdvancedOpenRef.current && isAdvancedSettingsEnabled) {
       shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
       refJobParamsForm.current?.validateForm();
-      return;
-    }
-
-    if (!saltFunction) {
       return;
     }
 
@@ -282,7 +220,7 @@ export function JobModal({
 
     form.focusField("tgt");
   }, [
-    saltFunction,
+    isFormReady,
     isModalOpen,
     isAdvancedSettingsEnabled,
     jobParamsSchemaLayout.displaySchema,
@@ -309,10 +247,10 @@ export function JobModal({
   };
 
   const resetModalState = () => {
+    cancelInit();
     form.resetFields();
     refJobParamsForm.current?.reset();
-    setSaltFunction(undefined);
-    setJsonFormValue({});
+    resetLoadedData();
     clearJsonFormValidation();
     setIsAdvancedSettingsEnabled(false);
     shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
@@ -458,74 +396,6 @@ export function JobModal({
     });
   };
 
-  useEffect(() => {
-    if (!isModalOpen || !fun) {
-      return;
-    }
-
-    const hasBaselineArgs = hasBaselineJobArgs(arg, kwarg);
-
-    setSaltFunction(undefined);
-    setJsonFormValue({});
-    refJobParamsForm.current?.reset();
-
-    let isCancelled = false;
-
-    const applySchemaResult = (result: JobSchemaModel) => {
-      if (isCancelled) {
-        return;
-      }
-      setSaltFunction(result);
-      setJsonFormValue(
-        hasBaselineArgs
-          ? getRepeatJsonFormValue(arg, kwarg)
-          : getDefaultJsonFormValue(result.json_schema)
-      );
-      applyTtlFromInitialOrDefault(initialTtlSeconds, result?.default_ttl);
-    };
-
-    const loadSchema = async () => {
-      setIsSchemaLoading(true);
-      try {
-        const schema = await fetchJobFunctionSchema(fun, (name) =>
-          apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
-        );
-        if (isCancelled) {
-          return;
-        }
-        applySchemaResult(schema);
-      } catch {
-        if (!isCancelled) {
-          messageApi.error(t("job-modal.error-load-function-schema"));
-        }
-      } finally {
-        if (!isCancelled) {
-          setIsSchemaLoading(false);
-        }
-      }
-    };
-
-    loadSchema().catch(() => {
-      if (!isCancelled) {
-        messageApi.error(t("job-modal.error-load-function-schema"));
-        setIsSchemaLoading(false);
-      }
-    });
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [
-    fun,
-    isModalOpen,
-    arg,
-    kwarg,
-    messageApi,
-    initialTtlSeconds,
-    t,
-    applyTtlFromInitialOrDefault,
-  ]);
-
   const handleCreateJobPlugin = (pluginKey: string) => {
     if (!validateJsonForm()) {
       return;
@@ -578,7 +448,7 @@ export function JobModal({
         maskClosable={false}
         style={{ top: 50 }}
         footer={
-          isInitialLoading ? null : (
+          !isFormReady ? null : (
             <>
               <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
                 {t("job-modal.return-to-function-picker")}
@@ -608,7 +478,7 @@ export function JobModal({
           )
         }
       >
-        {isInitialLoading ? (
+        {!isFormReady ? (
           <div className={styles.spinnerContainer}>
             <Spin />
           </div>
@@ -714,7 +584,7 @@ export function JobModal({
 
             {jobParamsSchemaLayout.displaySchema && (
               <JsonForm
-                key={isAdvancedSettingsEnabled ? "job-params-advanced" : "job-params-basic"}
+                key={`${fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
                 ref={refJobParamsForm}
                 schema={jobParamsSchemaLayout.displaySchema}
                 uiSchema={jobParamsSchemaLayout.displayUiSchema}
