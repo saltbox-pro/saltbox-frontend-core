@@ -1,5 +1,6 @@
 .dashboardEmptyState {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -15,7 +16,7 @@
 
 .dashboardTableBlock.fullscreen {
   position: absolute;
-  z-index: 1000;
+  z-index: 100;
   top: 0;
   left: 0;
   width: 100%;
