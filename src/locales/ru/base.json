@@ -370,7 +370,9 @@
       "job-running": "Выполняется",
       "job-returns-load-error": "Не удалось загрузить ответы команд для этого клиента",
       "job-returns-not-found": "Ответы команд не найдены",
-      "job-returns-missing-context": "Не задан идентификатор задачи или клиента"
+      "job-returns-missing-context": "Не задан идентификатор задачи или клиента",
+      "attempt-status-success": "Успешно",
+      "attempt-status-failed": "С ошибкой"
     }
   },
   "policy": {
@@ -652,7 +654,16 @@
     "waiting-client-response": "Ожидание ответа от клиента",
     "no-execution-result": "Результат выполнения отсутствует",
     "load-error": "Не удалось загрузить результат выполнения команды",
-    "not-found": "Результат выполнения команды не найден"
+    "not-found": "Результат выполнения команды не найден",
+    "step": {
+      "technical-output": "Полный вывод",
+      "return-code": "Код возврата: {{code}}",
+      "skip-requisite": "Не выполнено из-за ошибки в зависимом шаге.",
+      "skip-onlyif": "Не выполнено: условие onlyif не выполнено.",
+      "skip-unless": "Не выполнено: условие unless исключило выполнение.",
+      "skip-creates": "Не выполнено: ресурс уже существует (creates).",
+      "skip-generic": "Шаг не выполнялся."
+    }
   },
   "collection": {
     "collections": "Коллекции",

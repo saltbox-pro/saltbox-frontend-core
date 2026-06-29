@@ -370,7 +370,9 @@
       "job-running": "Running",
       "job-returns-load-error": "Failed to load job returns for this minion",
       "job-returns-not-found": "Job returns not found",
-      "job-returns-missing-context": "Task or minion identifier is missing"
+      "job-returns-missing-context": "Task or minion identifier is missing",
+      "attempt-status-success": "Success",
+      "attempt-status-failed": "Failed"
     }
   },
   "policy": {
@@ -652,7 +654,16 @@
     "waiting-client-response": "Waiting for client response",
     "no-execution-result": "Execution result is missing",
     "load-error": "Failed to load job return result",
-    "not-found": "Job return result not found"
+    "not-found": "Job return result not found",
+    "step": {
+      "technical-output": "Technical output",
+      "return-code": "Return code: {{code}}",
+      "skip-requisite": "Not executed due to a failure in a required step.",
+      "skip-onlyif": "Not executed: onlyif condition was not met.",
+      "skip-unless": "Not executed: unless condition excluded execution.",
+      "skip-creates": "Not executed: resource already exists (creates).",
+      "skip-generic": "Step was not executed."
+    }
   },
   "collection": {
     "collections": "Collections",
