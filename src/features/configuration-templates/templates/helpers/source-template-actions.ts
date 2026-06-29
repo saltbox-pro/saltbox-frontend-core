@@ -15,6 +15,7 @@ export type SourceTemplateActionsPermissions = {
   canEdit: boolean;
   showDuplicate: boolean;
   canDuplicate: boolean;
+  duplicateDisabledReason?: "no-connected-local-source" | "source-busy";
   showDelete: boolean;
   canDelete: boolean;
 };
@@ -24,15 +25,32 @@ type SourceForTemplateActions = Pick<
   "source_type" | "id" | "current_operation"
 >;
 
+type SourceTemplateActionsOptions = {
+  hasConnectedLocalSource?: boolean;
+};
+
 export function getSourceTemplateActionsPermissions(
   source: SourceForTemplateActions,
-  actionState?: SourceActionState
+  actionState?: SourceActionState,
+  options?: SourceTemplateActionsOptions
 ): SourceTemplateActionsPermissions {
+  const hasConnectedLocalSource = options?.hasConnectedLocalSource ?? true;
+  const sourceIsFree = canDuplicateSourceTemplate(source, actionState);
+  const canDuplicate = sourceIsFree && hasConnectedLocalSource;
+
+  let duplicateDisabledReason: SourceTemplateActionsPermissions["duplicateDisabledReason"];
+  if (!canDuplicate) {
+    duplicateDisabledReason = !hasConnectedLocalSource
+      ? "no-connected-local-source"
+      : "source-busy";
+  }
+
   return {
     showEdit: isEditableTemplateSource(source),
     canEdit: canEditSourceTemplates(source, actionState),
     showDuplicate: true,
-    canDuplicate: canDuplicateSourceTemplate(source, actionState),
+    canDuplicate,
+    duplicateDisabledReason,
     showDelete: isDeletableTemplateSource(source),
     canDelete: canDeleteSourceTemplates(source, actionState),
   };

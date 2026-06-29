@@ -1108,6 +1108,7 @@
       "add-template": "Create template",
       "edit-template": "Edit template",
       "duplicate-template": "Duplicate template",
+      "duplicate-disabled-no-local-source": "Connect a local source to duplicate a template",
       "preview-drawer-title": "Template",
       "preview-load-error": "Failed to load template content",
       "preview-empty-content": "Template content is empty",

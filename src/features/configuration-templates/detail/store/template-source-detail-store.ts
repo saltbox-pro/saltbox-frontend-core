@@ -4,10 +4,12 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
+import { resolveConnectedLocalSourceAvailabilityRefresh } from "../../shared/helpers/is-connected-local-template-source";
 import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
 } from "../../shared/helpers/normalize-source-list-item";
+import { fetchHasConnectedLocalTemplateSource } from "../../shared/service/fetch-has-connected-local-template-source.service";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
 import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
@@ -20,6 +22,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
   isLoading = false;
   hasError = false;
   notFound = false;
+  hasConnectedLocalSource = true;
 
   actionBySourceId = new Map<string, SourceActionKind>();
 
@@ -41,6 +44,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       this.isLoading = false;
       this.hasError = false;
       this.notFound = false;
+      this.hasConnectedLocalSource = true;
     });
   };
 
@@ -68,7 +72,10 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     });
 
     try {
-      const refreshResult = await this.fetchRefreshResult();
+      const [refreshResult, connectedLocalSourceResult] = await Promise.all([
+        this.fetchRefreshResult(),
+        fetchHasConnectedLocalTemplateSource(),
+      ]);
 
       if (refreshResult.status === "not_found") {
         runInAction(() => {
@@ -86,6 +93,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
       runInAction(() => {
         this.source = refreshResult.source;
+        this.hasConnectedLocalSource = connectedLocalSourceResult ?? true;
       });
 
       this.runtime.scheduleForSource(refreshResult.source);
@@ -104,10 +112,27 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
   reloadSource = async (): Promise<void> => {
     try {
+      const previousSource = this.source;
       const refreshResult = await this.fetchRefreshResult();
       if (refreshResult.status !== "found") return;
 
+      const connectedLocalRefresh = resolveConnectedLocalSourceAvailabilityRefresh(
+        previousSource,
+        refreshResult.source
+      );
+      let connectedLocalSourceResult: boolean | null = null;
+
+      if (connectedLocalRefresh === "available") {
+        connectedLocalSourceResult = true;
+      } else if (connectedLocalRefresh === "fetch") {
+        connectedLocalSourceResult = await fetchHasConnectedLocalTemplateSource();
+      }
+
       runInAction(() => {
+        if (connectedLocalSourceResult !== null) {
+          this.hasConnectedLocalSource = connectedLocalSourceResult ?? true;
+        }
+
         if (!this.source) {
           this.source = normalizeSourceListItem(refreshResult.source);
           return;
