@@ -10,6 +10,7 @@ export function AddTaskIcon({ size = 20, badgeColor = "#fff" }: AddTaskIconProps
       viewBox="26 18 101 107"
       width={size}
       height={size}
+      style={{ margin: "2px 0 0" }}
       role="img"
       aria-label="add-icon"
     >
