@@ -2,7 +2,7 @@ import { SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
-import { Button, Flex, message, Spin } from "antd";
+import { Button, Flex, message, Spin, theme } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,6 +40,7 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
+  const { token } = theme.useToken();
   const location = useLocation();
 
   const [minionsStore] = useState(
@@ -174,7 +175,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         <div className="page-actions-buttons">
           <Button
             type="primary"
-            icon={<AddTaskIcon />}
+            icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
             onClick={() => handleOpenCreateTaskModal("task")}
             loading={mastersStore.isLoading}
           >

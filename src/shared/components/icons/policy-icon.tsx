@@ -12,14 +12,20 @@ export function PolicyIcon({ size = 20 }: PolicyIconProps) {
       role="img"
       aria-label="policy-icon"
     >
-      <g fill="none" stroke="#000" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <rect x="28" y="20" width="82" height="96" rx="8" ry="8" />
         <line x1="43" y1="50" x2="95" y2="50" />
         <line x1="43" y1="70" x2="95" y2="70" />
         <line x1="43" y1="90" x2="95" y2="90" />
-        <rect x="75" y="73" width="50" height="50" rx="15" ry="15" fill="#fff" />
+        <rect x="75" y="73" width="50" height="50" rx="16" ry="16" fill="#fff" strokeOpacity="0" />
         <path
-          d="M100,98 C92,84 80,84 80,98 C80,112 92,112 100,98 C108,112 120,112 120,98 C120,84 108,84 100,98"
+          d="M100,98 C93,82 77,82 77,98 C77,114 93,114 100,98 C107,82 123,82 123,98 C123,114 107,114 100,98"
           strokeWidth="6"
         />
       </g>

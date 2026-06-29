@@ -1,8 +1,9 @@
-type TaskIconProps = {
+type AddTaskIconProps = {
   size?: number;
+  badgeColor?: string;
 };
 
-export function TaskIcon({ size = 20 }: TaskIconProps) {
+export function AddTaskIcon({ size = 20, badgeColor = "#fff" }: AddTaskIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -10,7 +11,7 @@ export function TaskIcon({ size = 20 }: TaskIconProps) {
       width={size}
       height={size}
       role="img"
-      aria-label="task-icon"
+      aria-label="add-icon"
     >
       <g
         fill="none"
@@ -23,6 +24,9 @@ export function TaskIcon({ size = 20 }: TaskIconProps) {
         <line x1="43" y1="50" x2="95" y2="50" />
         <line x1="43" y1="70" x2="95" y2="70" />
         <line x1="43" y1="90" x2="95" y2="90" />
+        <circle cx="101" cy="99" r="22" style={{ fill: badgeColor }} strokeOpacity="0" />
+        <line x1="101" y1="87" x2="101" y2="111" strokeWidth="6.5" />
+        <line x1="89" y1="99" x2="113" y2="99" strokeWidth="6.5" />
       </g>
     </svg>
   );
