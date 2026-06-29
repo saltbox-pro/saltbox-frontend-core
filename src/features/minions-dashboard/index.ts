@@ -1,4 +1,5 @@
 export { MinionDashboardCard } from "./ui/components/minion-dashboard-card";
+export { MinionsDashboardSummary } from "./ui/components/minions-dashboard-summary";
 export { MinionsDashboardAddBlockModal } from "./ui/components/minions-dashboard-add-block-modal";
 export { dashboardStore } from "./model/dashboard-store";
 export { getDashboardFieldOptions, getPresetOptionsForFieldType } from "./model/dashboard-model";

@@ -14,6 +14,7 @@ import {
   dashboardStore,
   DashboardLayoutItem,
   MinionDashboardCard,
+  MinionsDashboardSummary,
 } from "saltbox-core/features/minions-dashboard";
 import { MinionFilterStore } from "saltbox-core/store";
 
@@ -75,8 +76,10 @@ export const MinionsDashboardView = observer(
     const rowHeight = useGridRowHeight();
 
     return (
-      <Flex gap={12} vertical style={{ height: "100%" }}>
+      <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
+
+        <MinionsDashboardSummary slug={props.slug} filterStore={props.filterStore} />
 
         {dashboardStore.cards.length === 0 ? (
           <div className={styles.emptyState}>
@@ -96,7 +99,6 @@ export const MinionsDashboardView = observer(
           </div>
         ) : (
           <div
-            ref={containerRef}
             className={clsx(
               styles.dashboardContainer,
               dashboardStore.isCardFullScreen && styles.dashboardContainerFullscreen

@@ -7,7 +7,7 @@ import {
   HolderOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
+import { Alert, Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
@@ -107,6 +107,7 @@ export const MinionDashboardCard = observer(
         icon: null,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
+        okText: t("dashboard.delete-card"),
         onOk: () => dashboardStore.removeCard(card.id),
       });
     };
@@ -131,6 +132,7 @@ export const MinionDashboardCard = observer(
         onClick: handleDeleteClick,
         key: "remove",
         disabled: isFullScreen,
+        danger: true,
       },
     ];
 
@@ -166,6 +168,16 @@ export const MinionDashboardCard = observer(
       }
 
       const { grainValues } = dashboardCardStore;
+
+      if (!dashboardCardStore.isFilterLoading && grainValues.length === 0) {
+        return (
+          <Empty
+            className={styles.dashboardEmptyState}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("common.no-data")}
+          />
+        );
+      }
 
       switch (card.preset) {
         case "donut":

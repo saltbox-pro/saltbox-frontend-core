@@ -1,4 +1,3 @@
-import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex, Modal, Select, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -78,12 +77,7 @@ export const MinionsDashboardAddBlockModal = ({
       footer={
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>{t("common.cancel")}</Button>
-          <Button
-            type="primary"
-            icon={isEditMode ? <SaveOutlined /> : <PlusOutlined />}
-            disabled={!fieldOption || !selectedPreset}
-            onClick={handleSubmit}
-          >
+          <Button type="primary" disabled={!fieldOption || !selectedPreset} onClick={handleSubmit}>
             {t(isEditMode ? "dashboard.save-block" : "dashboard.create-block")}
           </Button>
         </Flex>
