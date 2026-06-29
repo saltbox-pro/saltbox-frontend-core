@@ -655,6 +655,7 @@
     "no-execution-result": "Execution result is missing",
     "load-error": "Failed to load job return result",
     "not-found": "Job return result not found",
+    "copy-job-data-to-clipboard": "Copy technical output",
     "step": {
       "technical-output": "Technical output",
       "return-code": "Return code: {{code}}",

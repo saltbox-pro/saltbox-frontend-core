@@ -86,6 +86,7 @@ export function MinionTaskResultsJobResult({
                 {t("task.minion.job-title", { run: attemptNo })}: JID {jobResult?.jid}
               </span>
               <CopyToClipboardButton
+                title={t("job-return.copy-job-data-to-clipboard")}
                 text={jobResult?.data == null ? "" : JSON.stringify(jobResult.data, null, 2)}
               />
               <AttemptStatusTag status={resolveAttemptStatus(jobResult, inProcess)} />
