@@ -50,7 +50,12 @@ export function TemplateItemActionsButtons({
       {permissions.showDuplicate && (
         <BaseActionButton
           icon={<CopyOutlined />}
-          title={t("configuration-templates.source.duplicate-template")}
+          title={
+            !permissions.canDuplicate &&
+            permissions.duplicateDisabledReason === "no-connected-local-source"
+              ? t("configuration-templates.source.duplicate-disabled-no-local-source")
+              : t("configuration-templates.source.duplicate-template")
+          }
           disabled={!permissions.canDuplicate}
           onClick={wrapHandler(onDuplicate)}
         />

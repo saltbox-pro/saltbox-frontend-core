@@ -1,7 +1,7 @@
 import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
-import { SourceState, SourceType } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable, runInAction } from "mobx";
 
+import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
@@ -111,16 +111,15 @@ export class TemplateEditorStore {
 
     try {
       const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
-        TemplateSourceListBody: {},
+        TemplateSourceListBody: {
+          query: connectedLocalSourcesQuery,
+        },
       });
 
-      const editable = (response?.data ?? [])
-        .filter(
-          (source) =>
-            source.source_type === SourceType.LocalBundle &&
-            (source.state === SourceState.Plugged || source.state === SourceState.Active)
-        )
-        .map((source) => ({ id: source.id, name: source.name }));
+      const editable = (response?.data ?? []).map((source) => ({
+        id: source.id,
+        name: source.name,
+      }));
 
       runInAction(() => {
         this.targetSources = editable;

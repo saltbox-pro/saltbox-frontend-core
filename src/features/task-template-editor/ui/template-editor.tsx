@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
+import { DuplicateNoConnectedLocalSourceAlert } from "./duplicate-no-connected-local-source-alert";
 import { EditorTabs } from "./editor-tabs";
 import { SaveTemplateModal } from "./save-template-modal";
 import styles from "./template-editor.module.css";
@@ -25,6 +26,9 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
   const [isSaveModalOpen, setSaveModalOpen] = useState(false);
 
   const goBack = () => navigate(backPath);
+
+  const showNoConnectedLocalSourceAlert =
+    store.isDuplicate && !store.isLoadingTargetSources && store.targetSources.length === 0;
 
   const saveTemplate = async () => {
     try {
@@ -45,6 +49,8 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
     <div className={styles.page}>
       {contextHolder}
       <PageHeader title={title} customParentPathGenerator={() => backPath} />
+
+      {showNoConnectedLocalSourceAlert && <DuplicateNoConnectedLocalSourceAlert variant="page" />}
 
       <div className={styles.body}>
         <EditorTabs

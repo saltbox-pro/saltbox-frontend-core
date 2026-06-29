@@ -15,6 +15,7 @@ import { apiCoreStore } from "saltbox-core/store";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
+import { hasConnectedLocalTemplateSource } from "../../shared/helpers/is-connected-local-template-source";
 import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
@@ -38,6 +39,8 @@ type LoadOptions = {
 };
 
 export type ConfigurationTemplatesListStore = SourceActionsPort & {
+  sources: SourceListWithExtrasSchema[];
+  readonly hasConnectedLocalSource: boolean;
   load: (options?: LoadOptions) => Promise<void>;
   refreshWithExternalCheck: () => Promise<boolean>;
   reloadSource: (sourceId: string) => Promise<void>;
@@ -71,6 +74,10 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   get sortedSources() {
     return sortSources(this.sources);
+  }
+
+  get hasConnectedLocalSource() {
+    return hasConnectedLocalTemplateSource(this.sources);
   }
 
   reset = () => {

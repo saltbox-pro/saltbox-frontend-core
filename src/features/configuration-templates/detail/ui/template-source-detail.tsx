@@ -65,7 +65,9 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const sourceId = store.source.id;
   const isLocalSource = isEditableTemplateSource(store.source);
   const canEditTemplates = canEditSourceTemplates(store.source, store);
-  const templateActionsPermissions = getSourceTemplateActionsPermissions(store.source, store);
+  const templateActionsPermissions = getSourceTemplateActionsPermissions(store.source, store, {
+    hasConnectedLocalSource: store.hasConnectedLocalSource,
+  });
 
   return (
     <Space ref={drawer.mainContentRef} direction="vertical" size="large">

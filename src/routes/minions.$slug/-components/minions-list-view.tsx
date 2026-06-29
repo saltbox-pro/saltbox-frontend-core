@@ -14,6 +14,7 @@ import {
   TaskCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
+import { AddTaskIcon } from "saltbox-core/shared/components/icons";
 import {
   appStore,
   CollectionStore,
@@ -22,7 +23,6 @@ import {
   MinionsStore,
 } from "saltbox-core/store";
 
-import { AddTaskIcon, PolicyIcon, TaskIcon } from "saltbox-core/shared/components/icons";
 import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
 import { MinionsQueryBuilder } from "./minions-query-builder";

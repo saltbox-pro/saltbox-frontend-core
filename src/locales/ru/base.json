@@ -370,7 +370,9 @@
       "job-running": "Выполняется",
       "job-returns-load-error": "Не удалось загрузить ответы команд для этого клиента",
       "job-returns-not-found": "Ответы команд не найдены",
-      "job-returns-missing-context": "Не задан идентификатор задачи или клиента"
+      "job-returns-missing-context": "Не задан идентификатор задачи или клиента",
+      "attempt-status-success": "Успешно",
+      "attempt-status-failed": "С ошибкой"
     }
   },
   "policy": {
@@ -652,7 +654,17 @@
     "waiting-client-response": "Ожидание ответа от клиента",
     "no-execution-result": "Результат выполнения отсутствует",
     "load-error": "Не удалось загрузить результат выполнения команды",
-    "not-found": "Результат выполнения команды не найден"
+    "not-found": "Результат выполнения команды не найден",
+    "copy-job-data-to-clipboard": "Скопировать полный вывод",
+    "step": {
+      "technical-output": "Полный вывод",
+      "return-code": "Код возврата: {{code}}",
+      "skip-requisite": "Не выполнено из-за ошибки в зависимом шаге.",
+      "skip-onlyif": "Не выполнено: условие onlyif не выполнено.",
+      "skip-unless": "Не выполнено: условие unless исключило выполнение.",
+      "skip-creates": "Не выполнено: ресурс уже существует (creates).",
+      "skip-generic": "Шаг не выполнялся."
+    }
   },
   "collection": {
     "collections": "Коллекции",
@@ -1097,6 +1109,7 @@
       "add-template": "Создать шаблон",
       "edit-template": "Редактировать шаблон",
       "duplicate-template": "Дублировать шаблон",
+      "duplicate-disabled-no-local-source": "Для дублирования шаблона необходимо подключить локальный источник",
       "preview-drawer-title": "Шаблон",
       "preview-load-error": "Не удалось загрузить содержимое шаблона",
       "preview-empty-content": "Содержимое шаблона отсутствует",

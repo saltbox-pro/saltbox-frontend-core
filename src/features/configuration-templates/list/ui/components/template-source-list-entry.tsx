@@ -60,7 +60,9 @@ export const TemplateSourceListEntry = observer(
 
     const isLocalSource = isEditableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
-    const templateActionsPermissions = getSourceTemplateActionsPermissions(source, store);
+    const templateActionsPermissions = getSourceTemplateActionsPermissions(source, store, {
+      hasConnectedLocalSource: store.hasConnectedLocalSource,
+    });
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),

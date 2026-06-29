@@ -1,0 +1,60 @@
+.steps {
+  width: 100%;
+}
+
+.description {
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.technicalCollapse :global(.ant-collapse-header) {
+  padding: 4px 0 !important;
+  font-size: 12px;
+}
+
+.technicalCollapse :global(.ant-collapse-content-box) {
+  padding: 4px 0 !important;
+  font-size: 12px;
+}
+
+.technicalCollapse :global(.ant-collapse-expand-icon) {
+  padding-inline-end: 4px !important;
+}
+
+.technicalCollapse :global(.ant-collapse-header-text) {
+  margin-top: 3px;
+}
+
+.errorText {
+  margin: 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #cf1322;
+}
+
+.skipText,
+.defaultText {
+  margin: 0;
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.retcode {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.skippedIcon {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.skippedTitle {
+  color: rgba(0, 0, 0, 0.45);
+}
