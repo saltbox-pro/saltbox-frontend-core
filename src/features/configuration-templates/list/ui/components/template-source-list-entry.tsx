@@ -5,7 +5,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import {
+  filterSourceFilesForSearch,
+  filterSourceTemplatesForSearch,
+} from "saltbox-core/features/template-source-search";
+
+import {
   canAddSourceFiles,
+  canDeleteSourceFiles,
   canShowAddSourceFileButton,
 } from "../../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../../files/ui/add-source-file-modal";
@@ -21,18 +27,12 @@ import {
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
-  canDeleteSourceTemplates,
-  canDuplicateSourceTemplate,
   canEditSourceTemplates,
-  isDeletableTemplateSource,
   isEditableTemplateSource,
 } from "../../../templates/helpers/can-manage-source-templates";
+import { getSourceTemplateActionsPermissions } from "../../../templates/helpers/source-template-actions";
 import type { TemplatePreviewListProps } from "../../../templates/hooks/use-template-preview-drawer";
-import {
-  filterSourceFilesForSearch,
-  filterSourceTemplatesForSearch,
-  getSourceSearchForcedActiveKeys,
-} from "../../helpers/source-search";
+import { getSourceSearchForcedActiveKeys } from "../../helpers/source-search";
 import type { ConfigurationTemplatesListStore } from "../../store/configuration-templates-store";
 
 import { TemplateSourceListItem } from "./template-source-list-item";
@@ -51,6 +51,7 @@ export const TemplateSourceListEntry = observer(
     const view = getTemplateSourceViewState(source, store);
     const [addFileModalOpen, setAddFileModalOpen] = useState(false);
     const canAddFile = canAddSourceFiles(source, store);
+    const canDeleteFile = canDeleteSourceFiles(source, store);
     const showAddFileButton = canShowAddSourceFileButton(source);
     const addingFile = isAddFileInProgress({
       ...getSourceActionContext(store, source.id),
@@ -58,10 +59,8 @@ export const TemplateSourceListEntry = observer(
     });
 
     const isLocalSource = isEditableTemplateSource(source);
-    const showDeleteTemplate = isDeletableTemplateSource(source);
     const canEditTemplates = canEditSourceTemplates(source, store);
-    const canDuplicateTemplates = canDuplicateSourceTemplate(source, store);
-    const canDeleteTemplates = canDeleteSourceTemplates(source, store);
+    const templateActionsPermissions = getSourceTemplateActionsPermissions(source, store);
 
     const forcedActiveKeys = useMemo(
       () => getSourceSearchForcedActiveKeys(source, searchQuery, i18n.language),
@@ -115,12 +114,8 @@ export const TemplateSourceListEntry = observer(
                 ? () => navigate(getCreateTemplatePath(source.id))
                 : undefined,
               canCreateTemplate: canEditTemplates,
-              showEditTemplate: isLocalSource,
-              canEditTemplates,
-              canDuplicateTemplates,
-              showDeleteTemplate,
-              canDeleteTemplates,
-              onDeleteTemplate: showDeleteTemplate
+              permissions: templateActionsPermissions,
+              onDeleteTemplate: templateActionsPermissions.showDelete
                 ? (templateId) => store.deleteSourceTemplate(source.id, templateId)
                 : undefined,
               onDeleteTemplateError: () => store.reloadSource(source.id),
@@ -133,6 +128,7 @@ export const TemplateSourceListEntry = observer(
               onDeleteFile: (fileId) => store.deleteSourceFile(source.id, fileId),
               onDeleteError: () => store.reloadSource(source.id),
               canAddFile,
+              canDeleteFile,
               isAddFileInProgress: addingFile,
               onAddFileClick: showAddFileButton ? () => setAddFileModalOpen(true) : undefined,
             },

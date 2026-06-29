@@ -5,10 +5,11 @@ import {
 } from "@saltbox/saltbox-core-api-client";
 import { Divider, Flex } from "antd";
 
+import { TemplateSourceTypeTag } from "saltbox-core/features/template-source-ui";
+
 import { TemplateSourceActiveStatusTag } from "./template-source-active-status-tag";
 import { TemplateSourceBrokenOperationTag } from "./template-source-broken-operation-tag";
 import { TemplateSourceConnectionTag } from "./template-source-connection-tag";
-import { TemplateSourceTypeTag } from "./template-source-type-tag";
 
 export type TemplateSourceTagsProps = {
   sourceType: SourceType;

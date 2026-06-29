@@ -1,23 +1,24 @@
-import { CopyOutlined } from "@ant-design/icons";
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { InfoDrawer } from "@saltbox/saltbox-frontend-common";
-import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router";
 
+import { useConfirmDeleteTemplate } from "saltbox-core/features/template-source-ui";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 
-import { getDuplicateTemplatePath } from "../../shared/helpers/source-presentation";
+import type { SourceTemplateActionsPermissions } from "../helpers/source-template-actions";
 import type { TemplatePreviewStore } from "../store/template-preview-store";
 
+import { TemplateItemActionsGuarded } from "./template-item-actions";
 import { TemplatePreviewDrawerContent } from "./template-preview-drawer-content";
 
 export type TemplatePreviewDrawerProps = {
   open: boolean;
   template: TaskTemplatePublicSchema | null;
   store: TemplatePreviewStore;
-  canDuplicate?: boolean;
+  permissions: SourceTemplateActionsPermissions | null;
+  onDeleteTemplate?: (templateId: string) => Promise<void>;
+  onDeleteError?: () => Promise<void>;
   onClose: () => void;
 };
 
@@ -25,18 +26,13 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
   open,
   template,
   store,
-  canDuplicate = false,
+  permissions,
+  onDeleteTemplate,
+  onDeleteError,
   onClose,
 }: TemplatePreviewDrawerProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const handleDuplicate = () => {
-    if (!template) return;
-
-    navigate(getDuplicateTemplatePath(template.source_id, template.id));
-    onClose();
-  };
+  const { confirmDeleteTemplate, modalContextHolder } = useConfirmDeleteTemplate();
 
   return (
     <InfoDrawer
@@ -52,20 +48,29 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
       transitionKey={open ? "opened" : "closed"}
       width={900}
       onClose={onClose}
+      afterOpenChange={(isOpen) => {
+        if (!isOpen) {
+          store.clearContent();
+        }
+      }}
       extra={
-        <Button
-          size="small"
-          icon={<CopyOutlined />}
-          variant="outlined"
-          color="default"
-          disabled={!canDuplicate}
-          onClick={handleDuplicate}
-        >
-          {t("configuration-templates.source.duplicate-template")}
-        </Button>
+        !store.hasError ? (
+          <>
+            {modalContextHolder}
+            <TemplateItemActionsGuarded
+              template={template}
+              permissions={permissions}
+              confirmDeleteTemplate={confirmDeleteTemplate}
+              onDeleteTemplate={onDeleteTemplate}
+              onDeleteError={onDeleteError}
+              onAfterNavigate={onClose}
+              onDeleteTemplateSuccess={onClose}
+            />
+          </>
+        ) : null
       }
     >
-      <TemplatePreviewDrawerContent store={store} />
+      {open ? <TemplatePreviewDrawerContent store={store} /> : null}
     </InfoDrawer>
   );
 });

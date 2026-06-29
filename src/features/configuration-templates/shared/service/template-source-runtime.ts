@@ -1,7 +1,7 @@
 import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 import { runInAction } from "mobx";
 
-import { canAddSourceFiles } from "../../files/helpers/can-add-source-files";
+import { canAddSourceFiles, canDeleteSourceFiles } from "../../files/helpers/can-add-source-files";
 import { addSourceFileWithPolling } from "../../files/service/add-source-file.service";
 import {
   deleteSourceFileApi,
@@ -97,6 +97,12 @@ export class TemplateSourceRuntime {
   };
 
   deleteSourceFile = async (sourceId: string, fileId: string): Promise<ResourceDeleteResult> => {
+    const source = this.port.getSource(sourceId);
+
+    if (!source || !canDeleteSourceFiles(source, this.port)) {
+      throw new Error("Cannot delete file while source operation is in progress");
+    }
+
     const result = await deleteSourceFileApi(sourceId, fileId);
     await this.port.reloadSource(sourceId);
     return result;

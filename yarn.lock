@@ -2681,6 +2681,13 @@
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.2.2.tgz#a4cc874797b7ddc9cb180ef0d5dc23f596fc2332"
   integrity sha512-9KQPoO6mZCi7jcIStSnlOWn2nEF3mNmyr3rIAsGnAbQKYbRLyqmeSc39EVgtxXVia+LMT8j3knZLAZAh+xLmrw==
 
+"@types/react-grid-layout@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@types/react-grid-layout/-/react-grid-layout-2.1.0.tgz#e6043ff473a7f6704513bf387ab41722bb8f24b2"
+  integrity sha512-pHEjVg9ert6BDFHFQ1IEdLUkd2gasJvyti5lV2kE46N/R07ZiaSZpAXeXJAA1MXy/Qby23fZmiuEgZkITxPXug==
+  dependencies:
+    react-grid-layout "*"
+
 "@types/react@19.2.2":
   version "19.2.2"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-19.2.2.tgz#ba123a75d4c2a51158697160a4ea2ff70aa6bf36"
@@ -5019,6 +5026,11 @@ fast-diff@^1.1.2:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/fast-diff/-/fast-diff-1.3.0.tgz#ece407fa550a64d638536cd727e129c61616e0f0"
   integrity sha512-VxPP4NqbUjj6MaAOafWeUn2cXWLcCtljklUtZf0Ind4XQ+QPtmA0b18zZy0jIQx+ExRVCR/ZQpBmik5lXshNsw==
+
+fast-equals@^4.0.3:
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/fast-equals/-/fast-equals-4.0.3.tgz#72884cc805ec3c6679b99875f6b7654f39f0e8c7"
+  integrity sha512-G3BSX9cfKttjr+2o1O22tYMLq0DPluZnYtq1rXumE1SpL/F/SLIfHx08WYQoWSIpeMYf8sRbJ8++71+v6Pnxfg==
 
 fast-equals@^5.0.1:
   version "5.3.3"
@@ -7787,7 +7799,7 @@ promise@^7.1.1:
   dependencies:
     asap "~2.0.3"
 
-prop-types@^15.6.2, prop-types@^15.8.1:
+prop-types@15.x, prop-types@^15.6.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -8239,6 +8251,26 @@ react-dom@19.2.0:
   dependencies:
     scheduler "^0.27.0"
 
+react-draggable@^4.4.6, react-draggable@^4.5.0:
+  version "4.7.0"
+  resolved "https://registry.yarnpkg.com/react-draggable/-/react-draggable-4.7.0.tgz#29ff90b2feb9ddd320419bfff866035c4dfc7156"
+  integrity sha512-kTpANmKWVnFXiZ76Ag2ZowiFStuBYnJ606PI1TbUsOg29/400/JNIxI9+CuenhiAqFuXWJffz6F4UI3R51kUug==
+  dependencies:
+    clsx "^2.1.1"
+    prop-types "^15.8.1"
+
+react-grid-layout@*, react-grid-layout@^2.2.3:
+  version "2.2.3"
+  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-2.2.3.tgz#6daf24b8c48448af617238520dd233a9375e2f16"
+  integrity sha512-OAEJHBxmfuxQfVtZwRzmsokijGlBgzYIJ7MUlLk/VSa43SaGzu15w5D0P2RDrfX5EvP9POMbL6bFrai/huDzbQ==
+  dependencies:
+    clsx "^2.1.1"
+    fast-equals "^4.0.3"
+    prop-types "^15.8.1"
+    react-draggable "^4.4.6"
+    react-resizable "^3.1.3"
+    resize-observer-polyfill "^1.5.1"
+
 react-i18next@^15.7.4:
   version "15.7.4"
   resolved "https://registry.yarnpkg.com/react-i18next/-/react-i18next-15.7.4.tgz#146e50f220d204b842e22c75d1a3d23c6c589a30"
@@ -8325,6 +8357,14 @@ react-remove-scroll@^2.6.3:
     tslib "^2.1.0"
     use-callback-ref "^1.3.3"
     use-sidecar "^1.1.3"
+
+react-resizable@^3.1.3:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/react-resizable/-/react-resizable-3.2.0.tgz#09a6f77fcc4d59ca810098f58e46f39376cacef5"
+  integrity sha512-3NKQ0SLZV7rs3LQHeXlOzDSRQfFrkX6TVet77/Qk03zqiZyee37b7N8/gwDJAA8UUjRz7PdWCCy49hcso45SMQ==
+  dependencies:
+    prop-types "15.x"
+    react-draggable "^4.5.0"
 
 react-router@^7.6.3:
   version "7.10.1"

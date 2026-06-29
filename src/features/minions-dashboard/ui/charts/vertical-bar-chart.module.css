@@ -1,0 +1,7 @@
+.verticalBar {
+  outline: none;
+}
+
+.verticalBarFilterable {
+  cursor: pointer;
+}

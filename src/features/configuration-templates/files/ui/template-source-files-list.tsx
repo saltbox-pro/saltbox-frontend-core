@@ -7,11 +7,13 @@ import {
   SearchHighlightText,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex, List, Tag, Tooltip, message } from "antd";
-import { useCallback, useRef, useState, type MouseEvent } from "react";
+import clsx from "clsx";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { TemplateSourceSectionEmpty } from "saltbox-core/features/template-source-ui";
+
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
-import { TemplateSourceSectionEmpty } from "../../shared/ui/template-source-section-empty";
 import { useConfirmDeleteFile } from "../hooks/use-confirm-delete-file";
 
 import styles from "./template-source-files-list.module.css";
@@ -22,6 +24,7 @@ export type TemplateSourceFilesListProps = {
   items: SshfsFilePublicSchema[];
   constrainHeight?: boolean;
   searchQuery?: string;
+  canDeleteFile?: boolean;
 };
 
 export function TemplateSourceFilesList({
@@ -30,16 +33,19 @@ export function TemplateSourceFilesList({
   items,
   constrainHeight = true,
   searchQuery,
+  canDeleteFile = true,
 }: TemplateSourceFilesListProps) {
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
   const { confirmDeleteFile, modalContextHolder } = useConfirmDeleteFile();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const deletingIdsRef = useRef<Set<string>>(new Set());
+  const canDeleteFileRef = useRef(canDeleteFile);
+  canDeleteFileRef.current = canDeleteFile;
 
   const handleDelete = useCallback(
     async (file: SshfsFilePublicSchema) => {
-      if (deletingIdsRef.current.has(file.id)) return;
+      if (!canDeleteFileRef.current || deletingIdsRef.current.has(file.id)) return;
 
       const next = new Set(deletingIdsRef.current).add(file.id);
       deletingIdsRef.current = next;
@@ -76,14 +82,15 @@ export function TemplateSourceFilesList({
   );
 
   const handleDeleteClick = useCallback(
-    (event: MouseEvent<HTMLElement>, file: SshfsFilePublicSchema) => {
-      event.stopPropagation();
+    (file: SshfsFilePublicSchema) => {
+      if (!canDeleteFile) return;
+
       confirmDeleteFile({
         path: file.rel_path,
         onOk: () => handleDelete(file),
       });
     },
-    [confirmDeleteFile, handleDelete]
+    [canDeleteFile, confirmDeleteFile, handleDelete]
   );
 
   return (
@@ -91,7 +98,7 @@ export function TemplateSourceFilesList({
       {contextHolder}
       {modalContextHolder}
       <List
-        className={constrainHeight ? `${styles.files} ${styles.filesConstrained}` : styles.files}
+        className={clsx(styles.files, constrainHeight && styles.filesConstrained)}
         size="small"
         dataSource={items}
         locale={{
@@ -115,7 +122,8 @@ export function TemplateSourceFilesList({
                       icon={<DeleteOutlined />}
                       title={t("configuration-templates.source.files-delete")}
                       loading={deletingIds.has(file.id)}
-                      onClick={(event) => handleDeleteClick(event, file)}
+                      disabled={!canDeleteFile}
+                      onClick={() => handleDeleteClick(file)}
                     />
                   </Flex>
                 )}

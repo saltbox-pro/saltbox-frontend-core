@@ -57,6 +57,8 @@ module.exports = (webpackConfigEnv, argv) => {
       new webpack.DefinePlugin({
         DEVELOPMENT: isDev,
         PRODUCTION: isProd,
+        "process.env.NODE_ENV": JSON.stringify(isDev ? "development" : "production"),
+        "process.env.DRAGGABLE_DEBUG": JSON.stringify(""),
       }),
       new MonacoWebpackPlugin({
         filename: "[name].[contenthash].worker.js",

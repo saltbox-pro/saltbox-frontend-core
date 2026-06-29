@@ -1,0 +1,12 @@
+.kpiBody {
+  height: 100%;
+  padding: 12px;
+}
+
+.kpiBody :global(.ant-statistic-title) {
+  color: var(--ant-color-text-secondary, #667085);
+}
+
+.kpiBody :global(.ant-statistic-content) {
+  color: var(--ant-color-text, #101828);
+}

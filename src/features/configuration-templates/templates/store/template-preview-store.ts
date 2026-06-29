@@ -1,8 +1,7 @@
 import { makeAutoObservable, runInAction } from "mobx";
 
+import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
-
-import { isBgTaskPollAborted } from "../../shared/errors/bg-task-poll-aborted.error";
 
 export class TemplatePreviewStore {
   slsContent = "";
@@ -36,6 +35,8 @@ export class TemplatePreviewStore {
       this.isLoading = true;
       this.hasError = false;
       this.isEmpty = false;
+      this.slsContent = "";
+      this.loadedTemplateId = null;
     });
 
     try {
@@ -80,10 +81,13 @@ export class TemplatePreviewStore {
 
   reset = () => {
     this.cancelLoad();
-    this.slsContent = "";
-    this.loadedTemplateId = null;
     this.isLoading = false;
     this.hasError = false;
+  };
+
+  clearContent = () => {
+    this.slsContent = "";
+    this.loadedTemplateId = null;
     this.isEmpty = false;
   };
 }

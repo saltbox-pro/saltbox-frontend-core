@@ -16,18 +16,19 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { canDuplicateSourceTemplate } from "../../templates/helpers/can-manage-source-templates";
+import {
+  getActiveSearchQuery,
+  MIN_SOURCE_SEARCH_LENGTH,
+  sourceMatchesQuery,
+} from "saltbox-core/features/template-source-search";
+
+import { getSourceTemplateActionsPermissions } from "../../templates/helpers/source-template-actions";
 import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
 import { getGitlabSyncErrorMessageKey } from "../helpers/gitlab-sync-error";
-import {
-  getActiveSearchQuery,
-  MIN_SOURCE_SEARCH_LENGTH,
-  sourceMatchesQuery,
-} from "../helpers/source-search";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
 import { SyncGitlabSourcesButton } from "./components/sync-gitlab-sources-button";
@@ -120,9 +121,9 @@ export const ConfigurationTemplates = observer(() => {
   const openedSource = openedTemplate
     ? store.sortedSources.find((source) => source.id === openedTemplate.source_id)
     : undefined;
-  const canDuplicateOpenedTemplate = openedSource
-    ? canDuplicateSourceTemplate(openedSource, store)
-    : false;
+  const openedTemplateActionsPermissions = openedSource
+    ? getSourceTemplateActionsPermissions(openedSource, store)
+    : null;
 
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
@@ -233,7 +234,15 @@ export const ConfigurationTemplates = observer(() => {
         open={drawer.isOpened}
         template={openedTemplate}
         store={previewStore}
-        canDuplicate={canDuplicateOpenedTemplate}
+        permissions={openedTemplateActionsPermissions}
+        onDeleteTemplate={
+          openedSource && openedTemplateActionsPermissions?.showDelete
+            ? (templateId) => store.deleteSourceTemplate(openedSource.id, templateId)
+            : undefined
+        }
+        onDeleteError={() =>
+          openedSource ? store.reloadSource(openedSource.id) : Promise.resolve()
+        }
         onClose={drawer.close}
       />
     </Skeleton>

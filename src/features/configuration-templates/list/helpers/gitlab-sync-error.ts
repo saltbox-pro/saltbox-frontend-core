@@ -1,4 +1,4 @@
-import { BgTaskFailedError } from "../../shared/errors/bg-task-failed.error";
+import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 
 export type GitlabSyncErrorKind = "failed" | "error";
 

@@ -5,12 +5,15 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Tag } from "antd";
-import { type MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { INSTANT_COLLAPSE_MOTION } from "saltbox-core/shared/constants/collapse-motion";
+
 import { TemplateSourceFilesList } from "../../files/ui/template-source-files-list";
+import type { SourceTemplateActionsPermissions } from "../../templates/helpers/source-template-actions";
 import type { TemplatePreviewListProps } from "../../templates/hooks/use-template-preview-drawer";
-import { TemplateSourceTemplatesList } from "../../templates/ui/template-source-templates-list";
+import { TemplateSourceTemplatesListSection } from "../../templates/ui/template-source-templates-list-section";
 import {
   TEMPLATE_SOURCE_FILES_PANEL_KEY,
   TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY,
@@ -25,15 +28,11 @@ export type TemplateSourceExtrasCollapseProps = {
     items: TaskTemplatePublicSchema[];
     totalCount?: number;
     searchQuery?: string;
-    onCreateTemplate?: () => void;
-    canCreateTemplate?: boolean;
-    showEditTemplate?: boolean;
-    canEditTemplates?: boolean;
-    canDuplicateTemplates?: boolean;
-    showDeleteTemplate?: boolean;
-    canDeleteTemplates?: boolean;
+    permissions: SourceTemplateActionsPermissions;
     onDeleteTemplate?: (templateId: string) => Promise<void>;
     onDeleteTemplateError?: () => Promise<void>;
+    onCreateTemplate?: () => void;
+    canCreateTemplate?: boolean;
   } & Partial<TemplatePreviewListProps>;
   files: {
     items: SshfsFilePublicSchema[];
@@ -42,6 +41,7 @@ export type TemplateSourceExtrasCollapseProps = {
     onDeleteFile: (fileId: string) => Promise<ResourceDeleteResult>;
     onDeleteError?: () => Promise<void>;
     canAddFile?: boolean;
+    canDeleteFile?: boolean;
     isAddFileInProgress?: boolean;
     onAddFileClick?: () => void;
   };
@@ -67,21 +67,39 @@ export function TemplateSourceExtrasCollapse({
   forcedActiveKeys,
 }: TemplateSourceExtrasCollapseProps) {
   const { t } = useTranslation();
-  const wasSearchControlledRef = useRef(false);
-  const [activeKey, setActiveKey] = useState<string[]>(defaultActiveKey ?? []);
+  const prevForcedActiveKeysRef = useRef(forcedActiveKeys);
+  const prevSearchQueryRef = useRef(templates.searchQuery);
+  const isUserControlledRef = useRef(false);
+  const [manualActiveKey, setManualActiveKey] = useState<string[]>(defaultActiveKey ?? []);
+
+  const isSearchReset =
+    forcedActiveKeys === undefined && prevForcedActiveKeysRef.current !== undefined;
+
+  const activeKey = useMemo(() => {
+    if (isSearchReset) {
+      return defaultActiveKey ?? [];
+    }
+
+    if (forcedActiveKeys !== undefined && !isUserControlledRef.current) {
+      return forcedActiveKeys;
+    }
+
+    return manualActiveKey;
+  }, [defaultActiveKey, forcedActiveKeys, isSearchReset, manualActiveKey]);
 
   useEffect(() => {
-    if (forcedActiveKeys !== undefined) {
-      wasSearchControlledRef.current = true;
-      setActiveKey(forcedActiveKeys);
-      return;
+    if (prevSearchQueryRef.current !== templates.searchQuery) {
+      isUserControlledRef.current = false;
+      prevSearchQueryRef.current = templates.searchQuery;
     }
 
-    if (wasSearchControlledRef.current) {
-      wasSearchControlledRef.current = false;
-      setActiveKey(defaultActiveKey ?? []);
+    if (isSearchReset) {
+      isUserControlledRef.current = false;
+      setManualActiveKey(defaultActiveKey ?? []);
     }
-  }, [defaultActiveKey, forcedActiveKeys]);
+
+    prevForcedActiveKeysRef.current = forcedActiveKeys;
+  }, [defaultActiveKey, forcedActiveKeys, isSearchReset, templates.searchQuery]);
 
   const items = useMemo<CollapseProps["items"]>(
     () => [
@@ -98,25 +116,19 @@ export function TemplateSourceExtrasCollapse({
             icon={<PlusOutlined />}
             title={t("configuration-templates.source.add-template")}
             disabled={!templates.canCreateTemplate}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              event.stopPropagation();
-              templates.onCreateTemplate?.();
-            }}
+            onClick={() => templates.onCreateTemplate?.()}
           />
         ) : undefined,
         children: (
           <Flex vertical gap="small">
-            <TemplateSourceTemplatesList
+            <TemplateSourceTemplatesListSection
               items={templates.items}
               constrainHeight={constrainHeight}
               searchQuery={templates.searchQuery}
-              showEditTemplate={templates.showEditTemplate}
-              canEditTemplates={templates.canEditTemplates}
-              canDuplicateTemplates={templates.canDuplicateTemplates}
-              showDeleteTemplate={templates.showDeleteTemplate}
-              canDeleteTemplates={templates.canDeleteTemplates}
+              permissions={templates.permissions}
               onDeleteTemplate={templates.onDeleteTemplate}
               onDeleteError={templates.onDeleteTemplateError}
+              onDeleteTemplateSuccess={templates.onDeleteTemplateSuccess}
               onTemplateClick={templates.onTemplateClick}
               activeTemplateId={templates.activeTemplateId}
             />
@@ -137,10 +149,7 @@ export function TemplateSourceExtrasCollapse({
             title={t("configuration-templates.source.add-file")}
             loading={files.isAddFileInProgress}
             disabled={!files.canAddFile || files.isAddFileInProgress}
-            onClick={(event: MouseEvent<HTMLButtonElement>) => {
-              event.stopPropagation();
-              files.onAddFileClick?.();
-            }}
+            onClick={() => files.onAddFileClick?.()}
           />
         ) : undefined,
         children: (
@@ -151,6 +160,7 @@ export function TemplateSourceExtrasCollapse({
               items={files.items}
               constrainHeight={constrainHeight}
               searchQuery={files.searchQuery}
+              canDeleteFile={files.canDeleteFile}
             />
           </Flex>
         ),
@@ -160,7 +170,8 @@ export function TemplateSourceExtrasCollapse({
   );
 
   const handleChange = (keys: string | string[]) => {
-    setActiveKey(Array.isArray(keys) ? keys : [keys]);
+    isUserControlledRef.current = true;
+    setManualActiveKey(Array.isArray(keys) ? keys : keys ? [keys] : []);
   };
 
   return (
@@ -171,6 +182,7 @@ export function TemplateSourceExtrasCollapse({
       activeKey={activeKey}
       onChange={handleChange}
       items={items}
+      {...(isSearchReset ? { openMotion: INSTANT_COLLAPSE_MOTION } : {})}
     />
   );
 }
