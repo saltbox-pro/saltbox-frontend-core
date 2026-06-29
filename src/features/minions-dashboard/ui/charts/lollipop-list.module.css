@@ -5,17 +5,22 @@
 }
 
 .lollipopRow {
-  display: grid;
   width: 100%;
-  grid-template-columns: minmax(90px, 1fr) minmax(120px, 1.5fr) auto;
-  align-items: center;
-  gap: 10px;
   padding: 8px 10px;
   border-radius: 6px;
   background: var(--ant-color-bg-container, #fff);
 }
 
+.lollipopInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
 .lollipopName {
+  flex: 0 0 30%;
+  min-width: 0;
   overflow: hidden;
   color: var(--ant-color-text-secondary, #344054);
   font-size: 12px;
@@ -24,6 +29,8 @@
 }
 
 .lollipopTrack {
+  flex: 1 1 0;
+  min-width: 0;
   position: relative;
   height: 10px;
   border-radius: 999px;
