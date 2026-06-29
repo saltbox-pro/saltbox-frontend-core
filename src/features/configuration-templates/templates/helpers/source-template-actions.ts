@@ -31,10 +31,7 @@ export function getSourceTemplateActionsPermissions(
   return {
     showEdit: isEditableTemplateSource(source),
     canEdit: canEditSourceTemplates(source, actionState),
-    showDuplicate:
-      canDuplicateSourceTemplate(source, actionState) ||
-      isEditableTemplateSource(source) ||
-      isDeletableTemplateSource(source),
+    showDuplicate: true,
     canDuplicate: canDuplicateSourceTemplate(source, actionState),
     showDelete: isDeletableTemplateSource(source),
     canDelete: canDeleteSourceTemplates(source, actionState),

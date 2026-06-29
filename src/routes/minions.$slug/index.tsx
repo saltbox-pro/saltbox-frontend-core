@@ -23,7 +23,12 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { dashboardStore, getDashboardFieldOptions } from "saltbox-core/features/minions-dashboard";
+import {
+  dashboardStore,
+  getDashboardFieldOptions,
+  MinionsDashboardAddBlockModal,
+  DASHBOARD_MAX_CARDS,
+} from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
   appStore,
@@ -35,7 +40,6 @@ import {
 } from "saltbox-core/store";
 
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
-import { MinionsDashboardAddBlockModal } from "./-components/minions-dashboard-add-block-modal";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
 import { MinionsQueryBuilder } from "./-components/minions-query-builder";
@@ -342,7 +346,7 @@ const MinionsPage = observer(() => {
                     {!dashboardStore.canAddCard && (
                       <Popover
                         style={{ width: 300 }}
-                        content={t("minions.blocks-limit-tooltip")}
+                        content={t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
                         trigger="hover"
                       >
                         <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
@@ -454,7 +458,10 @@ const MinionsPage = observer(() => {
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
         fieldOptions={dashboardFieldOptions}
-        onClose={() => setIsAddDashboardBlockModalOpen(false)}
+        onClose={() => {
+          setIsAddDashboardBlockModalOpen(false);
+          setEditingDashboardCardId(null);
+        }}
         onSubmit={(fieldOption, preset) => {
           if (editingDashboardCardId) {
             dashboardStore.updateCard(editingDashboardCardId, fieldOption, preset);

@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import {
   Cell,
   Legend,
@@ -8,7 +9,8 @@ import {
   Tooltip as ChartTooltip,
 } from "recharts";
 
-import { generateChartColors } from "../../constants/chart-color-generator";
+import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
+
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -26,15 +28,19 @@ const renderLegendText: LegendProps["formatter"] = (value, entry) => {
 
 type DonutChartProps = {
   data: ChartDatum[];
+  onFilterByValue?: (item: ChartDatum) => void;
 };
 
-export const DonutChart = ({ data }: DonutChartProps) => {
+export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
   const colors = generateChartColors(data.length);
 
   return (
     <ResponsiveContainer>
       <PieChart>
-        <ChartTooltip content={<ChartTooltipContent />} isAnimationActive={false} />
+        <ChartTooltip
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          isAnimationActive={false}
+        />
         <Legend
           layout="vertical"
           align="right"
@@ -51,9 +57,18 @@ export const DonutChart = ({ data }: DonutChartProps) => {
           paddingAngle={1}
           isAnimationActive={false}
         >
-          {data.map((entry, index) => (
-            <Cell key={`${entry.name}-${index}`} fill={colors[index]} />
-          ))}
+          {data.map((entry, index) => {
+            const isClickable = !!onFilterByValue && !entry.isOther;
+            return (
+              <Cell
+                key={`${entry.name}-${index}`}
+                fill={colors[index]}
+                onClick={isClickable ? () => onFilterByValue!(entry) : undefined}
+                tabIndex={-1}
+                className={clsx(styles.donutPieCell, isClickable && styles.donutPieCellClickable)}
+              />
+            );
+          })}
         </Pie>
       </PieChart>
     </ResponsiveContainer>

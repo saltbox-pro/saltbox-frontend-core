@@ -3,6 +3,7 @@ import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import {
   BOOLEAN_FALSE_VALUES,
   BOOLEAN_TRUE_VALUES,
+  X_AXIS_LABEL_MAX_CHARS,
   Y_AXIS_LABEL_MAX_CHARS,
 } from "../constants/chart-data";
 
@@ -21,6 +22,12 @@ export type BooleanLabels = {
 export const truncateAxisLabel = (value: string): string => {
   return value.length > Y_AXIS_LABEL_MAX_CHARS
     ? `${value.slice(0, Y_AXIS_LABEL_MAX_CHARS - 1)}…`
+    : value;
+};
+
+export const truncateXAxisLabel = (value: string): string => {
+  return value.length > X_AXIS_LABEL_MAX_CHARS
+    ? `${value.slice(0, X_AXIS_LABEL_MAX_CHARS - 1)}…`
     : value;
 };
 
@@ -73,34 +80,64 @@ export const toBooleanData = (
   }));
 };
 
-export const toHistogramData = (values: GrainValue[]): ChartDatum[] => {
-  const numericValues = values
-    .map((item) => ({ value: Number(item.value), count: item.count }))
-    .filter((item) => Number.isFinite(item.value));
+export const toHistogramData = (values: GrainValue[], emptyLabel: string): ChartDatum[] => {
+  let emptyCount = 0;
 
-  if (numericValues.length === 0) {
-    return [];
+  const parsed = values
+    .map((item) => {
+      if (item.value === null || item.value === undefined || item.value === "") {
+        emptyCount += item.count;
+        return null;
+      }
+      const raw = Number(item.value);
+      if (Number.isFinite(raw)) {
+        return { value: raw, count: item.count, isDate: false };
+      }
+      const dateMs = Date.parse(String(item.value));
+      return { value: dateMs, count: item.count, isDate: true };
+    })
+    .filter(
+      (item): item is { value: number; count: number; isDate: boolean } =>
+        item !== null && Number.isFinite(item.value)
+    );
+
+  const emptyBucket: ChartDatum[] =
+    emptyCount > 0 ? [{ name: emptyLabel, count: emptyCount, value: null }] : [];
+
+  if (parsed.length === 0) {
+    return emptyBucket;
   }
 
-  const min = Math.min(...numericValues.map((item) => item.value));
-  const max = Math.max(...numericValues.map((item) => item.value));
+  const isDateBased = parsed.some((item) => item.isDate);
+  const formatBound = isDateBased
+    ? (ts: number) => {
+        const d = new Date(ts);
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${m}/${day}/${d.getFullYear()}`;
+      }
+    : (ts: number) => ts.toFixed(0);
+
+  const min = Math.min(...parsed.map((item) => item.value));
+  const max = Math.max(...parsed.map((item) => item.value));
   if (min === max) {
     return [
+      ...emptyBucket,
       {
-        name: String(min),
-        count: numericValues.reduce((sum, item) => sum + item.count, 0),
+        name: formatBound(min),
+        count: parsed.reduce((sum, item) => sum + item.count, 0),
         value: min,
       },
     ];
   }
 
-  const bucketCount = Math.min(8, numericValues.length);
+  const bucketCount = Math.min(8, parsed.length);
   const step = (max - min) / bucketCount;
 
-  return Array.from({ length: bucketCount }, (_, index) => {
+  const buckets = Array.from({ length: bucketCount }, (_, index) => {
     const start = min + index * step;
     const end = index === bucketCount - 1 ? max : start + step;
-    const count = numericValues
+    const count = parsed
       .filter((item) =>
         index === bucketCount - 1
           ? item.value >= start && item.value <= end
@@ -108,10 +145,13 @@ export const toHistogramData = (values: GrainValue[]): ChartDatum[] => {
       )
       .reduce((sum, item) => sum + item.count, 0);
 
+    const label = `${formatBound(start)}-${formatBound(end)}`;
     return {
-      name: `${start.toFixed(0)}-${end.toFixed(0)}`,
+      name: label,
       count,
-      value: `${start.toFixed(0)}-${end.toFixed(0)}`,
+      value: label,
     };
   });
+
+  return [...emptyBucket, ...buckets];
 };

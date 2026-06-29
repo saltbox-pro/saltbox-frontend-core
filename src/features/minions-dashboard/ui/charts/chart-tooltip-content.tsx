@@ -7,9 +7,14 @@ import styles from "./chart-tooltip-content.module.css";
 type ChartTooltipContentProps = {
   active?: boolean;
   payload?: Array<{ payload?: ChartDatum }>;
+  isFilterable?: boolean;
 };
 
-export const ChartTooltipContent = ({ active, payload }: ChartTooltipContentProps) => {
+export const ChartTooltipContent = ({
+  active,
+  payload,
+  isFilterable,
+}: ChartTooltipContentProps) => {
   const { t } = useTranslation();
   const item = payload?.[0]?.payload;
   if (!active || !item) {
@@ -22,6 +27,9 @@ export const ChartTooltipContent = ({ active, payload }: ChartTooltipContentProp
       <div className={styles.chartTooltipCount}>
         {t("dashboard.table-count")}: {item.count}
       </div>
+      {isFilterable && !item.isOther && (
+        <div className={styles.chartTooltipHint}>{t("dashboard.click-to-filter")}</div>
+      )}
     </div>
   );
 };

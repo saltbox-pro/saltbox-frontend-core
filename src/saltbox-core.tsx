@@ -15,6 +15,7 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
+import { PolicyIcon, TaskIcon } from "saltbox-core/shared/components/icons";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
@@ -165,13 +166,13 @@ export const saltboxModule = {
       {
         key: "tasks",
         label: { en: "Tasks", ru: "Задачи" },
-        icon: "assignment",
+        icon: () => <TaskIcon />,
         path: "/core/tasks",
       },
       {
         key: "policies",
         label: { en: "Policies", ru: "Политики" },
-        icon: "policy",
+        icon: () => <PolicyIcon />,
         path: "/core/policies",
       },
       {

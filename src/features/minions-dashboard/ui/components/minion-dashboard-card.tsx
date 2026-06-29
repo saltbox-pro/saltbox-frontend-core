@@ -4,16 +4,21 @@ import {
   EditOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
+  HolderOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Card, Flex, Modal, Spin, Typography } from "antd";
+import { Alert, Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
+import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
+import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -44,10 +49,11 @@ type MinionDashboardCardProps = {
   onEdit: (cardId: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
+  fullscreenContainer?: HTMLElement | null;
 };
 
 export const MinionDashboardCard = observer(
-  ({ card, onEdit, slug, filterStore }: MinionDashboardCardProps) => {
+  ({ card, onEdit, slug, filterStore, fullscreenContainer }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
@@ -76,12 +82,19 @@ export const MinionDashboardCard = observer(
 
     const toggleFullScreen = () => {
       setIsTogglingFullScreen(true);
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         const nextIsFullScreen = !isFullScreenRef.current;
         setIsFullScreen(nextIsFullScreen);
         dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
         setIsTogglingFullScreen(false);
-      }, 0);
+      });
+    };
+
+    const handleApplyFilter = (item: ChartDatum) => {
+      if (item.isOther) {
+        return;
+      }
+      applyFieldValueFilter(filterStore, card.fieldSource, item.value);
     };
 
     const copyDataText = dashboardCardStore.grainValues
@@ -91,9 +104,10 @@ export const MinionDashboardCard = observer(
     const handleDeleteClick = () => {
       Modal.confirm({
         title: t("dashboard.delete-card-confirm-title"),
-        icon: <></>,
+        icon: null,
         content: t("dashboard.delete-card-confirm-description"),
         okButtonProps: { danger: true },
+        okText: t("dashboard.delete-card"),
         onOk: () => dashboardStore.removeCard(card.id),
       });
     };
@@ -118,6 +132,7 @@ export const MinionDashboardCard = observer(
         onClick: handleDeleteClick,
         key: "remove",
         disabled: isFullScreen,
+        danger: true,
       },
     ];
 
@@ -154,35 +169,70 @@ export const MinionDashboardCard = observer(
 
       const { grainValues } = dashboardCardStore;
 
+      if (!dashboardCardStore.isFilterLoading && grainValues.length === 0) {
+        return (
+          <Empty
+            className={styles.dashboardEmptyState}
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("common.no-data")}
+          />
+        );
+      }
+
       switch (card.preset) {
         case "donut":
-          return <DonutChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)} />;
+          return (
+            <DonutChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "horizontal-bar":
           return (
             <HorizontalBarChart
               data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["horizontal-bar"])}
+              onFilterByValue={handleApplyFilter}
             />
           );
         case "vertical-bar":
           return (
             <VerticalBarChart
               data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["vertical-bar"])}
+              onFilterByValue={handleApplyFilter}
             />
           );
         case "treemap":
-          return <TreemapChart data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)} />;
+          return (
+            <TreemapChart
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "histogram":
-          return <VerticalBarChart data={toHistogramData(grainValues)} />;
+          return <VerticalBarChart data={toHistogramData(grainValues, emptyLabel)} />;
         case "boolean-donut":
-          return <DonutChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />;
+          return (
+            <DonutChart
+              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "boolean-bars":
           return (
-            <HorizontalBarChart data={toBooleanData(grainValues, booleanLabels, emptyLabel)} />
+            <HorizontalBarChart
+              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
+              onFilterByValue={handleApplyFilter}
+            />
           );
         case "kpi":
           return <KpiPanel values={grainValues} />;
         case "lollipop":
-          return <LollipopList data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)} />;
+          return (
+            <LollipopList
+              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)}
+              onFilterByValue={handleApplyFilter}
+            />
+          );
         case "table":
         default:
           return (
@@ -197,16 +247,27 @@ export const MinionDashboardCard = observer(
 
     const showChartActions = card.preset !== "table" && dashboardCardStore.grainValues.length > 0;
 
-    return (
+    const cardElement = (
       <Card
         size="small"
-        className={`${styles.dashboardTableBlock} ${isFullScreen ? styles.fullscreen : ""}`}
+        className={clsx(styles.dashboardTableBlock, isFullScreen && styles.fullscreen)}
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <div className={styles.dashboardTableBlockHeader}>
+          <div
+            className={clsx(
+              styles.dashboardTableBlockHeader,
+              !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
+            )}
+          >
+            <HolderOutlined className={styles.dashboardDragIcon} />
             <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
-              <Typography.Text strong ellipsis title={card.fieldLabel}>
+              <Typography.Text
+                strong
+                ellipsis
+                title={card.fieldLabel}
+                className={styles.dashboardTableBlockTitle}
+              >
                 {card.fieldLabel}
               </Typography.Text>
               <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
@@ -232,5 +293,9 @@ export const MinionDashboardCard = observer(
         </Spin>
       </Card>
     );
+
+    return isFullScreen && fullscreenContainer
+      ? createPortal(cardElement, fullscreenContainer)
+      : cardElement;
   }
 );

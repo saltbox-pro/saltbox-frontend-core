@@ -1,5 +1,9 @@
-.treemapOtherNode {
-  opacity: 0.72;
+.treemapNode {
+  outline: none;
+}
+
+.treemapNodeClickable {
+  cursor: pointer;
 }
 
 .treemapLabel {

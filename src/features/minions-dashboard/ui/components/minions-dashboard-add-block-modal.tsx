@@ -1,4 +1,3 @@
-import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { Button, Empty, Flex, Modal, Select, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,11 +5,13 @@ import { useTranslation } from "react-i18next";
 import {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
-  DashboardCardConfig,
-  DashboardFieldOption,
-  DashboardPreset,
+} from "../../constants/dashboard-preview";
+import {
   getPresetOptionsForFieldType,
-} from "saltbox-core/features/minions-dashboard";
+  type DashboardCardConfig,
+  type DashboardFieldOption,
+  type DashboardPreset,
+} from "../../model/dashboard-model";
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
 
@@ -76,12 +77,7 @@ export const MinionsDashboardAddBlockModal = ({
       footer={
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>{t("common.cancel")}</Button>
-          <Button
-            type="primary"
-            icon={isEditMode ? <SaveOutlined /> : <PlusOutlined />}
-            disabled={!fieldOption || !selectedPreset}
-            onClick={handleSubmit}
-          >
+          <Button type="primary" disabled={!fieldOption || !selectedPreset} onClick={handleSubmit}>
             {t(isEditMode ? "dashboard.save-block" : "dashboard.create-block")}
           </Button>
         </Flex>

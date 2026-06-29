@@ -9,7 +9,6 @@ import {
   NUMERIC_METADATA_TYPES,
 } from "../constants/dashboard-field-types";
 import { PRESETS } from "../constants/dashboard-presets";
-import { DASHBOARD_STORAGE_VERSION } from "../constants/dashboard-storage";
 
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 
@@ -40,9 +39,19 @@ export type DashboardCardConfig = {
   preset: DashboardPreset;
 };
 
+export type DashboardLayoutItem = {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  minWidth?: number;
+  minHeight?: number;
+};
+
 export type DashboardStorageConfig = {
-  version: 2;
   cards: DashboardCardConfig[];
+  layout: DashboardLayoutItem[];
 };
 
 export type DashboardFieldOption = {
@@ -62,12 +71,6 @@ type SchemaOption = {
   values?: unknown[];
   options?: SchemaOption[];
 };
-
-const KNOWN_PRESETS = new Set<DashboardPreset>(
-  Object.values(PRESETS)
-    .flat()
-    .map((option) => option.value)
-);
 
 const normalizeFieldName = (field: string): string => {
   return field.replace(/^grains\./, "");
@@ -152,9 +155,8 @@ export const getDashboardFieldOptions = (
 };
 
 const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {
-  return KNOWN_PRESETS.has(preset as DashboardPreset)
-    ? (preset as DashboardPreset)
-    : getDefaultPresetForField(fieldType);
+  const isValid = PRESETS[fieldType].some((option) => option.value === preset);
+  return isValid ? (preset as DashboardPreset) : getDefaultPresetForField(fieldType);
 };
 
 const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
@@ -198,21 +200,25 @@ export const getUpdatedDashboardCard = (
 };
 
 export const normalizeDashboardStorage = (rawValue: string | null): DashboardStorageConfig => {
+  const defaultConfig: DashboardStorageConfig = {
+    cards: DEFAULT_DASHBOARD_CARDS,
+    layout: [],
+  };
+
   if (!rawValue) {
-    return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
+    return defaultConfig;
   }
 
   try {
     const parsed = JSON.parse(rawValue);
-    if (parsed?.version === DASHBOARD_STORAGE_VERSION && Array.isArray(parsed.cards)) {
+    if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
       return {
-        version: DASHBOARD_STORAGE_VERSION,
         cards: parsed.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard),
+        layout: parsed.layout,
       };
     }
+    return defaultConfig;
   } catch {
-    return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
+    return defaultConfig;
   }
-
-  return { version: DASHBOARD_STORAGE_VERSION, cards: DEFAULT_DASHBOARD_CARDS };
 };

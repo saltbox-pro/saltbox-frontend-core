@@ -17,3 +17,9 @@
   color: var(--ant-color-text-secondary, #475467);
   font-size: 12px;
 }
+
+.chartTooltipHint {
+  margin-top: 4px;
+  color: var(--ant-color-primary, #1677ff);
+  font-size: 11px;
+}

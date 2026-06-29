@@ -1,0 +1,20 @@
+.dashboardSummary {
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboardSummaryCard {
+  width: calc(25% - 10px);
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--ant-color-bg-container, #fff);
+  box-shadow: 0 2px 16px rgb(15 23 42 / 10%);
+}
+
+.dashboardSummaryCardStatistic :global(.ant-statistic-content-value) {
+  font-size: 18px;
+  font-weight: 500;
+}
