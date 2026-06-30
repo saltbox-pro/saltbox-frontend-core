@@ -1,4 +1,5 @@
 import { Flex } from "antd";
+import clsx from "clsx";
 import type { PropsWithChildren } from "react";
 
 import styles from "./job-return-content.module.css";
@@ -14,7 +15,7 @@ export function JobReturnContent({
   children,
 }: JobSubContentProps) {
   return (
-    <Flex className={`${styles.jobReturn} ${styles[`jobReturn_${status}`]}`}>
+    <Flex align="center" className={clsx(styles.jobReturn, styles[`jobReturn_${status}`])}>
       {isPrimitive ? <pre>{children}</pre> : children}
     </Flex>
   );
