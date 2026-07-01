@@ -7,6 +7,7 @@ import "@ant-design/v5-patch-for-react-19";
 import { BrowserRouter } from "react-router";
 import singleSpaReact from "single-spa-react";
 
+import { PolicyIcon, TaskIcon } from "saltbox-core/shared/components/icons";
 import {
   JobReturnOutput,
   type JobReturnOutputProps,
@@ -15,7 +16,6 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { PolicyIcon, TaskIcon } from "saltbox-core/shared/components/icons";
 import { appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
@@ -188,6 +188,12 @@ export const saltboxModule = {
     key: "core",
     label: "Core",
     children: [
+      {
+        key: "collections",
+        label: { en: "Collections", ru: "Коллекции" },
+        icon: "account_tree",
+        path: "/core/collections",
+      },
       {
         key: "masters",
         label: { en: "Masters", ru: "Мастера" },
