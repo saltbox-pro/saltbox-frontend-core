@@ -21,9 +21,10 @@ export class TaskTemplateService {
     }
   }
 
-  async loadTemplateById(templateId: string): Promise<TaskTemplateModel> {
+  async loadTemplateById(sourceId: string, templateId: string): Promise<TaskTemplateModel> {
     try {
-      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateReadWithDefaults({
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateSchemaWithDefaults({
+        source_id: sourceId,
         template_id: templateId,
       });
       if (!response) {

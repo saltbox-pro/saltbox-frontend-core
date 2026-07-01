@@ -34,7 +34,7 @@ export function useTemplatePreviewDrawer() {
         await drawer.open(template);
       }
 
-      const loadFinished = await previewStore.load(template.id);
+      const loadFinished = await previewStore.load(template.source_id, template.id);
       if (!loadFinished) return;
 
       if (!isSwitching) {

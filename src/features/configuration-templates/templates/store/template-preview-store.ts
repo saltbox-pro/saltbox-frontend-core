@@ -23,7 +23,7 @@ export class TemplatePreviewStore {
     this.loadGeneration += 1;
   };
 
-  load = async (templateId: string): Promise<boolean> => {
+  load = async (sourceId: string, templateId: string): Promise<boolean> => {
     this.cancelLoad();
 
     const generation = this.loadGeneration;
@@ -40,8 +40,8 @@ export class TemplatePreviewStore {
     });
 
     try {
-      const template = await apiCoreStore.newTaskTemplatesApi?.newTemplateRead(
-        { template_id: templateId },
+      const template = await apiCoreStore.taskTemplatesApi?.taskTemplateRead(
+        { source_id: sourceId, template_id: templateId },
         { signal: abortController.signal }
       );
 

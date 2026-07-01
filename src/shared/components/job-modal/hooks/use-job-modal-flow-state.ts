@@ -2,8 +2,8 @@ import { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { JobModalTargeting } from "./job-modal-shell";
-import { runWithAcceptedMastersCheck } from "./run-with-accepted-masters-check";
+import type { JobModalTargeting } from "../job-modal-shell";
+import { runWithAcceptedMastersCheck } from "../run-with-accepted-masters-check";
 
 export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
   target: "*",

@@ -1,8 +1,4 @@
-import {
-  SourceOperation,
-  type SourceListWithExtrasSchema,
-  type TemplateSourcePublicSchema,
-} from "@saltbox/saltbox-core-api-client";
+import { SourceOperation, type SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
@@ -10,6 +6,7 @@ import {
   isBgTaskPollAborted,
   rethrowIfAborted,
 } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -20,6 +17,7 @@ import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
 } from "../../shared/helpers/normalize-source-list-item";
+import { waitForBgTask } from "../../shared/helpers/wait-for-bg-task";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
 import type { RefreshSourceResult } from "../../shared/types/refresh-source-result";
@@ -279,38 +277,31 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  addSource = (source: TemplateSourcePublicSchema) => {
-    const normalized = normalizeSourceListItem(source);
-    this.sources = [normalized, ...this.sources.filter((item) => item.id !== normalized.id)];
-  };
-
-  private registerCreatedSource = (
-    created: TemplateSourcePublicSchema
-  ): SourceListWithExtrasSchema => {
-    const normalized = normalizeSourceListItem(created);
-    runInAction(() => this.addSource(normalized));
-    this.runtime.scheduleForSource(normalized);
-
-    return normalized;
+  private runSourceCreateTask = async (
+    create: () => Promise<{ task_id: string }>
+  ): Promise<void> => {
+    const taskId = extractTaskId(await create());
+    await waitForBgTask(taskId);
+    await this.load();
   };
 
   createLocalSource = async (payload: {
     name: string;
     description?: string;
     namespace?: string;
-  }): Promise<SourceListWithExtrasSchema> => {
+  }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
 
-    const created = await api.templateSourceCreateLocal({
-      TemplateSourceCreateLocalSchema: {
-        name: payload.name,
-        description: payload.description,
-        namespace: payload.namespace,
-      },
-    });
-
-    return this.registerCreatedSource(created);
+    await this.runSourceCreateTask(() =>
+      api.templateSourceCreateLocal({
+        TemplateSourceCreateLocalSchema: {
+          name: payload.name,
+          description: payload.description,
+          namespace: payload.namespace,
+        },
+      })
+    );
   };
 
   createGitSource = async (payload: {
@@ -321,23 +312,23 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     repo_user?: string;
     repo_pass?: string;
     branch: string;
-  }): Promise<SourceListWithExtrasSchema> => {
+  }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
 
-    const created = await api.templateSourceCreateFromUrl({
-      TemplateSourceCreateFromURLSchema: {
-        name: payload.name,
-        description: payload.description,
-        namespace: payload.namespace,
-        repo_url: payload.repo_url,
-        repo_user: payload.repo_user ?? null,
-        repo_pass: payload.repo_pass ?? null,
-        branch: payload.branch,
-      },
-    });
-
-    return this.registerCreatedSource(created);
+    await this.runSourceCreateTask(() =>
+      api.templateSourceImportFromGit({
+        TemplateSourceImportFromGitSchema: {
+          name: payload.name,
+          description: payload.description,
+          namespace: payload.namespace,
+          repo_url: payload.repo_url,
+          repo_user: payload.repo_user ?? null,
+          repo_pass: payload.repo_pass ?? null,
+          branch: payload.branch,
+        },
+      })
+    );
   };
 
   createArchiveSource = async (payload: {
@@ -345,18 +336,18 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     description?: string;
     namespace?: string;
     file: File;
-  }): Promise<SourceListWithExtrasSchema> => {
+  }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
 
-    const created = await api.templateSourceCreateFromArchive({
-      name: payload.name,
-      description: payload.description ?? "",
-      namespace: payload.namespace,
-      file: payload.file,
-    });
-
-    return this.registerCreatedSource(created);
+    await this.runSourceCreateTask(() =>
+      api.templateSourceImportFromArchive({
+        name: payload.name,
+        description: payload.description ?? "",
+        namespace: payload.namespace,
+        file: payload.file,
+      })
+    );
   };
 
   private mergeSourcesPreservingActiveTasks = (

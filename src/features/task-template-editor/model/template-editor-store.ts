@@ -2,6 +2,8 @@ import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
+import { waitForBgTask } from "saltbox-core/features/configuration-templates/shared/helpers/wait-for-bg-task";
+import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
@@ -80,7 +82,8 @@ export class TemplateEditorStore {
     });
 
     try {
-      const template = await apiCoreStore.newTaskTemplatesApi?.newTemplateRead({
+      const template = await apiCoreStore.taskTemplatesApi?.taskTemplateRead({
+        source_id: this.sourceId,
         template_id: this.templateId,
       });
 
@@ -205,23 +208,30 @@ export class TemplateEditorStore {
         if (!isValidTemplateFileName(this.fileName)) {
           throw new Error("invalid template file name");
         }
-        await apiCoreStore.newTaskTemplatesApi?.newTemplateCreate({
+        const response = await apiCoreStore.taskTemplatesApi?.taskTemplateCreate({
+          source_id: targetSourceId,
           TaskTemplateFromRawCreateSchema: {
-            source_id: targetSourceId,
             file_name: stripSlsExtension(this.fileName),
             content: this.rawSls,
           },
         });
+        if (response) {
+          await waitForBgTask(extractTaskId(response));
+        }
       } else {
         if (!this.templateId) {
           throw new Error("templateId is required to update a template");
         }
-        await apiCoreStore.newTaskTemplatesApi?.newTemplateUpdate({
+        const response = await apiCoreStore.taskTemplatesApi?.taskTemplateUpdate({
+          source_id: this.sourceId,
           template_id: this.templateId,
           TaskTemplateFromRawUpdateSchema: {
             content: this.rawSls,
           },
         });
+        if (response) {
+          await waitForBgTask(extractTaskId(response));
+        }
       }
     } finally {
       runInAction(() => {

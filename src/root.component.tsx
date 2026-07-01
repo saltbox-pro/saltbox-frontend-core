@@ -9,6 +9,7 @@ import { i18nStore } from "saltbox-core/store";
 
 import { coreResources } from "./i18n-resources";
 import CollectionEditPage from "./routes/collection.$slug";
+import CollectionsPage from "./routes/collections";
 import ConfigurationTemplatesPage from "./routes/configuration-templates";
 import TemplateSourceDetailPage from "./routes/configuration-templates.$sourceId";
 import JobsPage from "./routes/jobs";
@@ -45,6 +46,7 @@ export default observer(function Root() {
             <Route path="/core/masters" element={<MastersPage />} />
             <Route path="/core/masters/:mid" element={<MasterPage />} />
             <Route path="/core/pillars" element={<PillarsPage />} />
+            <Route path="/core/collections" element={<CollectionsPage />} />
             <Route
               path="/core/masters/:master_id/minion/:minion_id"
               element={<MinionRedirectPage />}
