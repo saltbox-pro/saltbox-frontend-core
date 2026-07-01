@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
+import { DuplicateNoConnectedLocalSourceAlert } from "./duplicate-no-connected-local-source-alert";
 import { TemplateFileNameField } from "./template-file-name-field";
 
 interface SaveTemplateModalProps {
@@ -25,6 +26,8 @@ export const SaveTemplateModal = observer(
     const [form] = Form.useForm<SaveTemplateFormValues>();
 
     const hasTargetSources = store.targetSources.length > 0;
+    const showNoConnectedLocalSourceAlert =
+      store.isDuplicate && !store.isLoadingTargetSources && !hasTargetSources;
 
     useEffect(() => {
       if (open) {
@@ -61,6 +64,7 @@ export const SaveTemplateModal = observer(
       <Modal
         title={t("task-template-editor.save-modal-title")}
         open={open}
+        width={600}
         onCancel={onCancel}
         onOk={handleOk}
         okText={t("common.save")}
@@ -75,6 +79,8 @@ export const SaveTemplateModal = observer(
       >
         {store.isDuplicate ? (
           <Form form={form} layout="vertical">
+            {showNoConnectedLocalSourceAlert && <DuplicateNoConnectedLocalSourceAlert />}
+
             <Form.Item
               name="targetSourceId"
               label={t("task-template-editor.duplicate-target-label")}

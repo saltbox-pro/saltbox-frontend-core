@@ -1,0 +1,7 @@
+.alert {
+  margin-bottom: 16px;
+}
+
+.inPage {
+  flex-shrink: 0;
+}
