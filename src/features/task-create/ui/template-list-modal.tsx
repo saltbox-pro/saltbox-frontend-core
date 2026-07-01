@@ -34,6 +34,7 @@ import {
   type TemplateSourceRow,
 } from "../helpers/template-picker-rows";
 import { taskTemplateService } from "../service";
+import type { SelectedTaskTemplate } from "../type/types";
 
 import styles from "./template-list-modal.module.css";
 
@@ -41,7 +42,7 @@ export type TemplateListModalProps = {
   type: TaskType;
   isOpen: boolean;
   onClose: () => void;
-  onSelectTemplate: (templateId: string) => void;
+  onSelectTemplate: (template: SelectedTaskTemplate) => void;
 };
 
 function SourceCollapseLabel({
@@ -224,7 +225,9 @@ export function TemplateListModal(props: TemplateListModalProps) {
             items={sourceRow.templates}
             constrainHeight={false}
             searchQuery={searchQuery}
-            onTemplateClick={(template) => onSelectTemplate(template.id)}
+            onTemplateClick={(template) =>
+              onSelectTemplate({ sourceId: template.source_id, templateId: template.id })
+            }
           />
         ),
       })),

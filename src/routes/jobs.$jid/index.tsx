@@ -65,6 +65,7 @@ const JobPage = observer(() => {
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isTableExportLoading, setIsTableExportLoading] = useState(false);
+  const [isManualRefreshLoading, setIsManualRefreshLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -164,18 +165,19 @@ const JobPage = observer(() => {
     jobStore.loadJobReturns();
   }, []);
 
-  const handleJobReturnsRefresh = useCallback(() => {
-    if (isTableViewMode) {
-      jobStore.loadJobReturnsTable();
-      return;
+  const handleJobReturnsRefresh = useCallback(async () => {
+    setIsManualRefreshLoading(true);
+    try {
+      if (isTableViewMode) {
+        await jobStore.loadJobReturnsTable();
+        return;
+      }
+
+      await jobStore.loadJobReturns();
+    } finally {
+      setIsManualRefreshLoading(false);
     }
-
-    jobStore.loadJobReturns();
   }, [isTableViewMode]);
-
-  const isJobReturnsRefreshLoading = isTableViewMode
-    ? jobStore.isJobReturnTableLoading
-    : jobStore.isJobReturnsLoading;
 
   const handleExportToCsv = useCallback(async () => {
     if (!jid) {
@@ -431,7 +433,7 @@ const JobPage = observer(() => {
                   <Tooltip title={t("common.refresh")}>
                     <Button
                       icon={<ReloadOutlined />}
-                      loading={isJobReturnsRefreshLoading}
+                      loading={isManualRefreshLoading}
                       onClick={handleJobReturnsRefresh}
                     />
                   </Tooltip>

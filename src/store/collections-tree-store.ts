@@ -55,6 +55,7 @@ export class CollectionsTreeStore {
       const parent = findNodeBySlug(this.treeNodes, slugToFind);
       if (parent) {
         parent.children = [...(parent.children ?? []), newNode];
+        this.treeNodes = [...this.treeNodes];
         return;
       }
       if (slugToFind === "root") {
@@ -75,6 +76,7 @@ export class CollectionsTreeStore {
       } else {
         const { parent, index } = node;
         parent.children = parent.children!.filter((_, i) => i !== index);
+        this.treeNodes = [...this.treeNodes];
       }
     });
   };
@@ -88,6 +90,38 @@ export class CollectionsTreeStore {
 
       node.title = payload.title;
       node.slug = payload.slug;
+      this.treeNodes = [...this.treeNodes];
+    });
+  };
+
+  renameCollection = async (slug: string, title: string) => {
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return;
+
+    const current = await api.minionCollectionRead({ slug });
+    const updated = await api.minionCollectionUpdate({
+      slug,
+      CollectionUpdateSchema: {
+        title,
+        query: current.query,
+      },
+    });
+
+    runInAction(() => {
+      this.updateNode(slug, { title: updated.title, slug: updated.slug });
+    });
+
+    return updated;
+  };
+
+  deleteCollection = async (slug: string) => {
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return;
+
+    await api.minionCollectionDelete({ slug });
+
+    runInAction(() => {
+      this.removeNode(slug);
     });
   };
 }

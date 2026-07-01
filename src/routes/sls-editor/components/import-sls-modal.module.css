@@ -2,6 +2,12 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-height: 60vh;
+}
+
+.modalContent :global(.fast-table-wrapper) {
+  min-height: 0;
+  overflow: auto;
 }
 
 .modalContent tbody tr {

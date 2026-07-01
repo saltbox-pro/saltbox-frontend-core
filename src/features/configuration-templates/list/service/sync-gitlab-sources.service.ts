@@ -1,5 +1,6 @@
 import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { rethrowIfAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { isBgTaskFailed, pollBgTaskResult } from "../../shared/service/poll-bg-task-result.service";
@@ -18,8 +19,8 @@ export async function syncGitlabSources(deps: SyncGitlabSourcesDeps): Promise<vo
   let taskId: string;
 
   try {
-    taskId = await api.templateSourceCheckExternalList(
-      deps.signal ? { signal: deps.signal } : undefined
+    taskId = extractTaskId(
+      await api.templateSourceCheckExternalList(deps.signal ? { signal: deps.signal } : undefined)
     );
   } catch (error) {
     rethrowIfAborted(error, deps.signal);

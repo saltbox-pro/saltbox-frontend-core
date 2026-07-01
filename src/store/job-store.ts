@@ -301,10 +301,10 @@ export class JobStore {
   };
 
   @action
-  loadJobReturns = (isSilentLoading: boolean = false) => {
+  loadJobReturns = (isSilentLoading: boolean = false): Promise<void> => {
     if (this.jid && this.job?.status === JobStatus.Starting) {
       this.shouldLoadJobReturnsAfterStarting = true;
-      return;
+      return Promise.resolve();
     }
 
     this.shouldLoadJobReturnsAfterStarting = false;
@@ -312,78 +312,82 @@ export class JobStore {
       this.isJobReturnsLoading = true;
     }
 
-    apiCoreStore.jobsApi
-      ?.jobReturnsList({
-        JobReturnsListBody: {
-          query: {
-            ...this.mongoDBQuery,
-            ...(this.jid ? { jid: this?.jid } : {}),
+    return (
+      apiCoreStore.jobsApi
+        ?.jobReturnsList({
+          JobReturnsListBody: {
+            query: {
+              ...this.mongoDBQuery,
+              ...(this.jid ? { jid: this?.jid } : {}),
+            },
+            limit: this.pagination.pageSize,
+            skip: this.pagination.pageIndex * this.pagination.pageSize,
+            sort: toBackendSorting(this.sorting),
           },
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-        },
-      })
-      .then((jobReturns) => {
-        runInAction(() => {
-          this.jobReturns = jobReturns.data;
-          this.total = jobReturns.total;
-        });
-      })
-      .catch((error) => {
-        console.error("Error loading job returns:", error);
-      })
-      .finally(() => {
-        if (!isSilentLoading) {
+        })
+        .then((jobReturns) => {
           runInAction(() => {
-            this.isJobReturnsLoading = false;
+            this.jobReturns = jobReturns.data;
+            this.total = jobReturns.total;
           });
-        }
-      });
+        })
+        .catch((error) => {
+          console.error("Error loading job returns:", error);
+        })
+        .finally(() => {
+          if (!isSilentLoading) {
+            runInAction(() => {
+              this.isJobReturnsLoading = false;
+            });
+          }
+        }) ?? Promise.resolve()
+    );
   };
 
   @action
-  loadJobReturnsTable = () => {
+  loadJobReturnsTable = (): Promise<void> => {
     if (this.jid && this.job?.status === JobStatus.Starting) {
       this.isJobReturnTableLoading = false;
-      return;
+      return Promise.resolve();
     }
 
     this.isJobReturnTableLoading = true;
     this.jobReturnTableLoadError = false;
 
-    apiCoreStore.jobsApi
-      ?.jobReturnsTable({
-        JobReturnsListBody: {
-          query: {
-            ...this.mongoDBQuery,
-            ...(this.jid ? { jid: this.jid } : {}),
+    return (
+      apiCoreStore.jobsApi
+        ?.jobReturnsTable({
+          JobReturnsListBody: {
+            query: {
+              ...this.mongoDBQuery,
+              ...(this.jid ? { jid: this.jid } : {}),
+            },
+            limit: this.tablePagination.pageSize,
+            skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
           },
-          limit: this.tablePagination.pageSize,
-          skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.jobReturnTableColumns = response.columns;
-          this.jobReturnTableRows = (response.data ?? []).filter(
-            (row): row is Record<string, unknown> => row != null
-          );
-          this.jobReturnTableTotal = response.total;
-          this.jobReturnTableLoadError = false;
-        });
-      })
-      .catch((error) => {
-        console.error("Error loading job returns table:", error);
-        runInAction(() => {
-          this.jobReturnTableLoadError = true;
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isJobReturnTableLoading = false;
-        });
-      });
+        })
+        .then((response) => {
+          runInAction(() => {
+            this.jobReturnTableColumns = response.columns;
+            this.jobReturnTableRows = (response.data ?? []).filter(
+              (row): row is Record<string, unknown> => row != null
+            );
+            this.jobReturnTableTotal = response.total;
+            this.jobReturnTableLoadError = false;
+          });
+        })
+        .catch((error) => {
+          console.error("Error loading job returns table:", error);
+          runInAction(() => {
+            this.jobReturnTableLoadError = true;
+          });
+        })
+        .finally(() => {
+          runInAction(() => {
+            this.isJobReturnTableLoading = false;
+          });
+        }) ?? Promise.resolve()
+    );
   };
 
   @action

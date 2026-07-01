@@ -5,11 +5,11 @@ import { Flex, Typography } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/hooks/use-job-modal-flow-state";
 import {
   JobModalShell,
   type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/use-job-modal-flow-state";
 import { jobStore } from "saltbox-core/store";
 
 import styles from "./minions-popover.module.css";

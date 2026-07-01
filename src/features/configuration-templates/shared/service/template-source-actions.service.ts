@@ -2,6 +2,7 @@ import type { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
 import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { BgTaskPollAbortedError } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import {
@@ -40,7 +41,10 @@ export class TemplateSourceActionsService {
     await this.runSourceAction(
       sourceId,
       "plug",
-      () => this.getTaskTemplateSourcesApi().templateSourcePlug({ source_id: sourceId }),
+      () =>
+        this.getTaskTemplateSourcesApi()
+          .templateSourceActionPlug({ source_id: sourceId })
+          .then(extractTaskId),
       { operation: PLUG_OPTIMISTIC_OPERATION, outcome: "reload" }
     );
   };
@@ -49,7 +53,10 @@ export class TemplateSourceActionsService {
     await this.runSourceAction(
       sourceId,
       "sync",
-      () => this.getTaskTemplateSourcesApi().templateSourceSync({ source_id: sourceId }),
+      () =>
+        this.getTaskTemplateSourcesApi()
+          .templateSourceActionSync({ source_id: sourceId })
+          .then(extractTaskId),
       { operation: SYNC_OPTIMISTIC_OPERATION, outcome: "reload" }
     );
   };
@@ -58,7 +65,10 @@ export class TemplateSourceActionsService {
     await this.runSourceAction(
       sourceId,
       "unplug",
-      () => this.getTaskTemplateSourcesApi().templateSourceUnplug({ source_id: sourceId }),
+      () =>
+        this.getTaskTemplateSourcesApi()
+          .templateSourceActionUnplug({ source_id: sourceId })
+          .then(extractTaskId),
       { operation: UNPLUG_OPTIMISTIC_OPERATION, outcome: "reload" }
     );
   };
@@ -71,9 +81,11 @@ export class TemplateSourceActionsService {
       let taskId: string;
 
       try {
-        taskId = await this.getTaskTemplateSourcesApi().templateSourceDelete({
-          source_id: sourceId,
-        });
+        taskId = extractTaskId(
+          await this.getTaskTemplateSourcesApi().templateSourceDelete({
+            source_id: sourceId,
+          })
+        );
       } catch (error) {
         if (isApiNotFoundError(error)) {
           this.callbacks.removeSource(sourceId);

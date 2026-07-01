@@ -1,5 +1,6 @@
 .jobReturn {
   width: 100%;
+  min-height: 42px;
   font-size: 12px;
 
   padding: 8px;

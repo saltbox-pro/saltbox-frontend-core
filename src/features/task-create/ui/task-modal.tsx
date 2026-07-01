@@ -23,6 +23,7 @@ const { Paragraph, Text } = Typography;
 
 export type TaskModalProps = {
   isOpen: boolean;
+  sourceId: string;
   templateId: string;
   context: TaskCreationContext;
   onClose: () => void;
@@ -34,7 +35,14 @@ const enum TabKey {
   Overview = "Overview",
 }
 
-export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated }: TaskModalProps) {
+export function TaskModal({
+  isOpen,
+  sourceId,
+  templateId,
+  context,
+  onClose,
+  onTaskCreated,
+}: TaskModalProps) {
   const { t, i18n } = useTranslation();
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
@@ -65,13 +73,13 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
   }, [activeTabKey]);
 
   useEffect(() => {
-    if (!isOpen || !templateId) {
+    if (!isOpen || !templateId || !sourceId) {
       return;
     }
 
     const loadTemplate = async () => {
       try {
-        const loadedTemplate = await taskTemplateService.loadTemplateById(templateId);
+        const loadedTemplate = await taskTemplateService.loadTemplateById(sourceId, templateId);
         setTemplate(loadedTemplate);
         const defaultConfig = taskCreationService.getDefaultConfiguration();
         const templateDefaults = (
@@ -108,7 +116,7 @@ export function TaskModal({ isOpen, templateId, context, onClose, onTaskCreated 
     loadTemplate();
     // should trigger only when the props are changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, templateId]);
+  }, [isOpen, sourceId, templateId]);
 
   const handleConfigurationSubmit = (data: TaskConfigurationFormData) => {
     setConfiguration(data);
