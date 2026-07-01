@@ -1,9 +1,9 @@
 import { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { PaginationState, createColumnHelper } from "@tanstack/react-table";
+import { FastTableListed, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
 import { Modal, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -16,66 +16,58 @@ interface ImportSlsModalProps {
   onImport: (slsContent: string) => void;
 }
 
-const TaskTemplatesTable = FastTablePaginated<TaskTemplatePublicSchema>;
+const TaskTemplatesTable = FastTableListed<TaskTemplatePublicSchema>;
 const columnHelper = createColumnHelper<TaskTemplatePublicSchema>();
 
 export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsModalProps) => {
   const { t } = useTranslation();
+  const [modal, modalContextHolder] = Modal.useModal();
   const [templates, setTemplates] = useState<TaskTemplatePublicSchema[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 50,
-  });
 
-  const columns = [
-    columnHelper.accessor("title", {
-      header: t("sls-editor.import-column-title"),
-    }),
-    columnHelper.accessor("name", {
-      header: t("sls-editor.import-column-name"),
-    }),
-  ];
-
-  useEffect(() => {
-    if (open) {
-      setPagination({ pageIndex: 0, pageSize: 50 });
-    }
-  }, [open]);
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("title", {
+        header: t("sls-editor.import-column-title"),
+      }),
+      columnHelper.accessor("name", {
+        header: t("sls-editor.import-column-name"),
+      }),
+    ],
+    [t]
+  );
 
   useEffect(() => {
-    if (open) {
-      loadTemplates();
+    if (!open) {
+      return;
     }
-  }, [pagination, open]);
 
-  const loadTemplates = async () => {
-    setLoading(true);
-    try {
-      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateList({
-        TaskTemplateListBody: {
-          limit: pagination.pageSize,
-          skip: pagination.pageIndex * pagination.pageSize,
-        },
-      });
-      if (response?.data) {
-        setTemplates(response.data);
-        setTotal(response.total || 0);
+    const loadTemplates = async () => {
+      setLoading(true);
+
+      try {
+        const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+          TemplateSourceListBody: {},
+        });
+
+        setTemplates((response?.data ?? []).flatMap((source) => source.templates ?? []));
+      } catch (error) {
+        console.error("Failed to load templates:", error);
+        if (isGlobalServerError(error)) return;
+        message.error(t("sls-editor.import-load-failed"));
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to load templates:", error);
-      if (isGlobalServerError(error)) return;
-      message.error(t("sls-editor.import-load-failed"));
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const handleRowClick = async (template: TaskTemplatePublicSchema) => {
+    loadTemplates();
+  }, [open, t]);
+
+  const handleRowClick = (template: TaskTemplatePublicSchema) => {
     const performImport = async () => {
       try {
-        const fullTemplate = await apiCoreStore.newTaskTemplatesApi?.newTemplateRead({
+        const fullTemplate = await apiCoreStore.taskTemplatesApi?.taskTemplateRead({
+          source_id: template.source_id,
           template_id: template.id,
         });
 
@@ -93,17 +85,13 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
       }
     };
 
-    Modal.confirm({
+    modal.confirm({
       title: t("sls-editor.import-confirm-title"),
       content: t("sls-editor.import-confirm-description"),
       okText: t("sls-editor.import-confirm-ok"),
       cancelText: t("sls-editor.import-confirm-cancel"),
       onOk: performImport,
     });
-  };
-
-  const handleLazyLoad = (newPagination: PaginationState) => {
-    setPagination(newPagination);
   };
 
   return (
@@ -114,16 +102,16 @@ export const ImportSlsModal = observer(({ open, onCancel, onImport }: ImportSlsM
       footer={null}
       width={800}
     >
+      {modalContextHolder}
       <div className={styles.modalContent}>
         <TaskTemplatesTable
           columns={columns}
           getRowId={(row) => row.id}
           data={templates}
-          total={total}
+          total={templates.length}
           isLoading={loading}
-          pagination={pagination}
+          isEmpty={!loading && templates.length === 0}
           onRowClick={handleRowClick}
-          onLazyLoad={handleLazyLoad}
         />
       </div>
     </Modal>

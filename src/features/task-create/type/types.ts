@@ -14,7 +14,10 @@ export type TaskTemplateWithRepository = TaskTemplatePublicSchema & {
   repository?: string;
 };
 
-export type CreateTaskModalStep = "template-selection" | "task-configuration";
+export type SelectedTaskTemplate = {
+  sourceId: string;
+  templateId: string;
+};
 
 export type TaskOverviewData = {
   template: TaskTemplateModel;
