@@ -1,5 +1,11 @@
+.templates :global(.ant-list-items) {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .templates .templateItem:not(:last-child) {
-  margin-bottom: 5px;
+  margin-bottom: 0;
 }
 
 .templates .templateItem {
@@ -23,6 +29,16 @@
   cursor: pointer;
 }
 
+.templates .templateItemDisabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.templates .templateItemDisabled:hover {
+  background-color: #fafafa;
+  border-color: #e0e0e0;
+}
+
 .templates .templateItemActive {
   background-color: #f5f8ff;
 }
@@ -36,6 +52,16 @@
 
 .templates .templateItem :global(.ant-list-item-meta-content .ant-list-item-meta-title) {
   margin-bottom: 4px;
+}
+
+.accessibilityTag {
+  margin: 0;
+  flex-shrink: 0;
+  font-weight: 400;
+}
+
+.templateItemTags > :global(.ant-tag:last-child) {
+  margin-inline-end: 0;
 }
 
 .templatesConstrained :global(.ant-spin-nested-loading),

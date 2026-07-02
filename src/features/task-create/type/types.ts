@@ -14,6 +14,10 @@ export type TaskTemplateWithRepository = TaskTemplatePublicSchema & {
   repository?: string;
 };
 
+export type TaskTemplatePickerItem = TaskTemplateWithRepository & {
+  isAccessible: boolean;
+};
+
 export type SelectedTaskTemplate = {
   sourceId: string;
   templateId: string;

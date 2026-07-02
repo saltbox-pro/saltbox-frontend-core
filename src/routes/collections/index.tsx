@@ -30,16 +30,17 @@ const CollectionsPage = observer(() => {
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     setIsDeleting(true);
-    try {
-      await collectionsTreeStore.deleteCollection(deleteTarget.slug);
+    const ok = await collectionsTreeStore.deleteCollection(deleteTarget.slug);
+    setIsDeleting(false);
+
+    if (ok) {
       messageApi.success(t("collection.collection-deleted-successfully"));
       setDeleteTarget(null);
-    } catch (error) {
-      if (isGlobalServerError(error)) return;
-      messageApi.error(t("collection.error-deleting-collection"));
-    } finally {
-      setIsDeleting(false);
+      return;
     }
+
+    if (isGlobalServerError(collectionsTreeStore.actionErrorRaw)) return;
+    messageApi.error(t("collection.error-deleting-collection"));
   };
 
   const renderActions = (node: CollectionTreeAntdNode) => {
