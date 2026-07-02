@@ -16,3 +16,7 @@
   display: inline-block;
   margin-left: -1px;
 }
+
+.createButton :global(.ant-btn-loading-icon) {
+  width: 20px;
+}

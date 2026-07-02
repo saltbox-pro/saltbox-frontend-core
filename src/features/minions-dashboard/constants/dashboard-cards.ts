@@ -67,4 +67,12 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
     fieldType: "categorical",
     preset: "table",
   },
+  {
+    id: "dashboard-card-pythonversion-5",
+    field: "pythonversion",
+    fieldSource: "grains.pythonversion",
+    fieldLabel: "pythonversion",
+    fieldType: "categorical",
+    preset: "table",
+  },
 ];

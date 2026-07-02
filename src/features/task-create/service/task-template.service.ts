@@ -3,7 +3,7 @@ import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { connectedSourcesQuery } from "../helpers/connected-sources-query";
-import { buildSourceRows } from "../helpers/template-picker-rows";
+import { buildSourceRowsFromSources } from "../helpers/template-picker-rows";
 
 export class TaskTemplateService {
   async loadTemplateSourceRows() {
@@ -14,16 +14,31 @@ export class TaskTemplateService {
         },
       });
 
-      return buildSourceRows(response?.data ?? []);
+      return buildSourceRowsFromSources(response?.data ?? []);
     } catch (error) {
       console.error("Failed to load task templates:", error);
       throw new Error("Failed to load task templates");
     }
   }
 
-  async loadTemplateById(templateId: string): Promise<TaskTemplateModel> {
+  async loadAccessibleTemplateIds(sourceId: string): Promise<Set<string>> {
     try {
-      const response = await apiCoreStore.newTaskTemplatesApi?.newTemplateReadWithDefaults({
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateList({
+        source_id: sourceId,
+        TaskTemplateListBody: {},
+      });
+
+      return new Set((response?.data ?? []).map((template) => template.id));
+    } catch (error) {
+      console.error(`Failed to load accessible templates for source ${sourceId}:`, error);
+      throw new Error("Failed to load accessible templates");
+    }
+  }
+
+  async loadTemplateById(sourceId: string, templateId: string): Promise<TaskTemplateModel> {
+    try {
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateSchemaWithDefaults({
+        source_id: sourceId,
         template_id: templateId,
       });
       if (!response) {

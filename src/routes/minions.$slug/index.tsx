@@ -128,6 +128,29 @@ const MinionsPage = observer(() => {
     [minionFilterStore.filterSchema]
   );
 
+  const editingCard = useMemo(
+    () => dashboardStore.cards.find((c) => c.id === editingDashboardCardId) ?? null,
+    [editingDashboardCardId]
+  );
+
+  const fieldOptionsForModal = useMemo(() => {
+    if (!editingCard) {
+      return dashboardFieldOptions;
+    }
+    if (dashboardFieldOptions.some((o) => o.value === editingCard.field)) {
+      return dashboardFieldOptions;
+    }
+    return [
+      {
+        value: editingCard.field,
+        label: editingCard.fieldLabel,
+        source: editingCard.fieldSource,
+        type: editingCard.fieldType,
+      },
+      ...dashboardFieldOptions,
+    ];
+  }, [dashboardFieldOptions, editingCard]);
+
   const addDashboardCard = () => {
     setEditingDashboardCardId(null);
     setIsAddDashboardBlockModalOpen(true);
@@ -457,7 +480,7 @@ const MinionsPage = observer(() => {
         initialCard={
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
-        fieldOptions={dashboardFieldOptions}
+        fieldOptions={fieldOptionsForModal}
         onClose={() => {
           setIsAddDashboardBlockModalOpen(false);
           setEditingDashboardCardId(null);

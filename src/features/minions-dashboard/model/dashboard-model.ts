@@ -1,5 +1,6 @@
 import { DASHBOARD_MAX_CARDS, DEFAULT_DASHBOARD_CARDS } from "../constants/dashboard-cards";
 import {
+  ALLOWED_GRAIN_FIELDS,
   BOOLEAN_FIELD_NAMES,
   BOOLEAN_METADATA_TYPES,
   COMPLEX_FIELD_NAME_PARTS,
@@ -151,7 +152,16 @@ export const getDashboardFieldOptions = (
 
   schema.forEach(visit);
 
-  return result;
+  const seen = new Set<string>();
+  return result
+    .filter((opt) => {
+      if (seen.has(opt.value)) {
+        return false;
+      }
+      seen.add(opt.value);
+      return true;
+    })
+    .filter((opt) => ALLOWED_GRAIN_FIELDS.has(opt.value));
 };
 
 const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {

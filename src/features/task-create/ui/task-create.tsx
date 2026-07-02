@@ -1,9 +1,9 @@
 import { type FC, useState } from "react";
 
-import type { TaskCreationContext } from "../type/types";
+import type { SelectedTaskTemplate, TaskCreationContext } from "../type/types";
 
 import { TaskModal } from "./task-modal";
-import { TemplateListModal } from "./template-list-modal";
+import { TemplateListModal } from "./template-list-modal/ui/template-list-modal";
 
 export type TaskCreateProps = {
   isOpen: boolean;
@@ -13,22 +13,23 @@ export type TaskCreateProps = {
 };
 
 export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTaskCreated }) => {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | undefined>();
+  const [selectedTemplate, setSelectedTemplate] = useState<SelectedTaskTemplate | undefined>();
 
   return (
     <>
       {isOpen && (
         <TemplateListModal
           type={context.taskType}
-          isOpen={!selectedTemplateId}
+          isOpen={!selectedTemplate}
           onClose={onClose}
-          onSelectTemplate={setSelectedTemplateId}
+          onSelectTemplate={setSelectedTemplate}
         />
       )}
-      {isOpen && selectedTemplateId && (
+      {isOpen && selectedTemplate && (
         <TaskModal
-          isOpen={!!selectedTemplateId}
-          templateId={selectedTemplateId}
+          isOpen={!!selectedTemplate}
+          sourceId={selectedTemplate.sourceId}
+          templateId={selectedTemplate.templateId}
           context={context}
           onClose={onClose}
           onTaskCreated={onTaskCreated}

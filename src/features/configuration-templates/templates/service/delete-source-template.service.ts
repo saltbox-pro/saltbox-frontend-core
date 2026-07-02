@@ -2,6 +2,7 @@ import { SourceOperation } from "@saltbox/saltbox-core-api-client";
 
 import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { BgTaskPollAbortedError } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { DELETE_LOCAL_TEMPLATE_OPTIMISTIC_OPERATION } from "../../shared/constants/source-operations";
@@ -15,13 +16,21 @@ export type DeleteSourceTemplateServiceDeps = {
   onComplete?: () => Promise<void>;
 };
 
-export async function deleteSourceTemplateApi(templateId: string): Promise<string> {
-  const api = apiCoreStore.newTaskTemplatesApi;
+export async function deleteSourceTemplateApi(
+  sourceId: string,
+  templateId: string
+): Promise<string> {
+  const api = apiCoreStore.taskTemplatesApi;
   if (!api) {
     throw new Error("API is not configured");
   }
 
-  return api.newTemplateDelete({ template_id: templateId });
+  const response = await api.taskTemplateDelete({
+    source_id: sourceId,
+    template_id: templateId,
+  });
+
+  return extractTaskId(response);
 }
 
 export async function deleteSourceTemplateWithPolling(
@@ -32,7 +41,7 @@ export async function deleteSourceTemplateWithPolling(
   deps.setActionState(sourceId);
 
   try {
-    const taskId = await deleteSourceTemplateApi(templateId);
+    const taskId = await deleteSourceTemplateApi(sourceId, templateId);
     deps.patchOptimisticTask(sourceId, DELETE_LOCAL_TEMPLATE_OPTIMISTIC_OPERATION, taskId);
 
     const pollResult = await deps.bgTaskPolling.schedule(sourceId, taskId, "reload", true);
