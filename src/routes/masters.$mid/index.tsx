@@ -16,6 +16,7 @@ import { Link, useParams } from "react-router";
 
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
+  ALL_FILTER,
   apiCoreStore,
   DUPLICATES_FILTER,
   SaltKeysStore,
@@ -134,6 +135,9 @@ const MasterPage = observer(() => {
   );
 
   const saltKeysEmptyText = useMemo(() => {
+    if (saltKeysStore.statusFilter === ALL_FILTER) {
+      return t("master.salt-keys-empty-all");
+    }
     if (saltKeysStore.statusFilter === DUPLICATES_FILTER) {
       return t("master.salt-keys-empty-duplicates");
     }
@@ -434,7 +438,9 @@ const MasterPage = observer(() => {
       <MinionDetailsDrawer drawer={drawer} />
 
       <SaltKeysAcceptConflictModal {...conflictModalProps} />
+
       <SaltKeysAcceptPerKeyModal {...perKeyModalProps} />
+
       <SaltKeysDeleteConfirmModal
         open={deleteConfirmOpen}
         title={deleteConfirmTitle}

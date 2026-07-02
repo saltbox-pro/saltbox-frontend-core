@@ -9,7 +9,8 @@ import { action, computed, makeObservable, observable, runInAction } from "mobx"
 import { apiCoreStore } from "saltbox-core/store";
 
 export const DUPLICATES_FILTER = "duplicates" as const;
-export type SaltKeyFilterType = SaltKeyStatusType | typeof DUPLICATES_FILTER;
+export const ALL_FILTER = "all" as const;
+export type SaltKeyFilterType = SaltKeyStatusType | typeof DUPLICATES_FILTER | typeof ALL_FILTER;
 export type SaltKeyWithId = SaltKeyMinionWithStatus & { _index: string };
 
 const DEFAULT_PAGINATION: PaginationState = {
@@ -26,6 +27,8 @@ export class SaltKeysStore {
   @observable masterId: string | null;
   @observable error: string | null;
 
+  private initialFilterApplied = false;
+
   constructor() {
     this.allSaltKeys = [];
     this.statusFilter = SaltKeyStatusType.Unaccepted;
@@ -38,6 +41,9 @@ export class SaltKeysStore {
   }
 
   @computed get filteredKeys(): Array<SaltKeyWithId> {
+    if (this.statusFilter === ALL_FILTER) {
+      return [...this.allSaltKeys];
+    }
     if (this.statusFilter === DUPLICATES_FILTER) {
       const countByKey = new Map<string, number>();
       for (const key of this.allSaltKeys) {
@@ -108,6 +114,14 @@ export class SaltKeysStore {
             ...item,
             _index: String(index),
           }));
+
+          if (!this.initialFilterApplied) {
+            const hasUnaccepted = this.allSaltKeys.some(
+              (k) => k.status === SaltKeyStatusType.Unaccepted
+            );
+            this.statusFilter = hasUnaccepted ? SaltKeyStatusType.Unaccepted : ALL_FILTER;
+            this.initialFilterApplied = true;
+          }
         });
       })
       .catch(() => {

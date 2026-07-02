@@ -4,7 +4,7 @@ import { Button, Flex, Select } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { DUPLICATES_FILTER, type SaltKeyFilterType } from "saltbox-core/store";
+import { ALL_FILTER, DUPLICATES_FILTER, type SaltKeyFilterType } from "saltbox-core/store";
 
 import styles from "./salt-keys-toolbar.module.css";
 
@@ -20,6 +20,7 @@ export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltK
 
   const options = useMemo(
     () => [
+      { value: ALL_FILTER, label: t("master.table-status-all") },
       { value: SaltKeyStatusType.Unaccepted, label: t("master.table-status-unaccepted") },
       { value: SaltKeyStatusType.Accepted, label: t("master.table-status-accepted") },
       { value: SaltKeyStatusType.Rejected, label: t("master.table-status-rejected") },
