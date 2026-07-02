@@ -47,6 +47,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
   const [selection, setSelection] = useState<RowSelectionState>({});
+  const [pendingCreateType, setPendingCreateType] = useState<"task" | "policy" | null>(null);
 
   const searchQueryKey = JSON.stringify(props.filterStore.searchMongoDBQuery);
   const shouldWaitForFilterSchema =
@@ -108,30 +109,33 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   } = useTaskWorkflow();
 
   const handleOpenCreateTaskModal = useCallback(
-    async (typeOfTask: string) => {
-      mastersStore
-        .hasAcceptedMasters()
-        .then((hasMasters) => {
-          if (typeOfTask === "task") {
-            if (!hasMasters) {
-              message.warning(t("task-create.warning-on-create-task"));
-            } else {
-              openTaskCreate();
-            }
+    async (typeOfTask: "task" | "policy") => {
+      setPendingCreateType(typeOfTask);
+
+      try {
+        const hasMasters = await mastersStore.hasAcceptedMasters();
+
+        if (typeOfTask === "task") {
+          if (!hasMasters) {
+            message.warning(t("task-create.warning-on-create-task"));
+          } else {
+            openTaskCreate();
           }
-          if (typeOfTask === "policy") {
-            if (!hasMasters) {
-              message.warning(t("task-create.warning-on-create-policy"));
-            } else {
-              openPolicyCreate();
-            }
-          }
-        })
-        .catch(() => {
-          message.error(t("task-create.error-on-load-salt-masters"));
-        });
+          return;
+        }
+
+        if (!hasMasters) {
+          message.warning(t("task-create.warning-on-create-policy"));
+        } else {
+          openPolicyCreate();
+        }
+      } catch {
+        message.error(t("task-create.error-on-load-salt-masters"));
+      } finally {
+        setPendingCreateType(null);
+      }
     },
-    [openTaskCreate, openPolicyCreate]
+    [openTaskCreate, openPolicyCreate, t]
   );
 
   const reloadMinions = useCallback(() => {
@@ -174,18 +178,20 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
         <div className="page-actions-buttons">
           <Button
+            className={styles.createButton}
             type="primary"
             icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
             onClick={() => handleOpenCreateTaskModal("task")}
-            loading={mastersStore.isLoading}
+            loading={pendingCreateType === "task"}
           >
             {t("task-create.create-button")}
           </Button>
 
           <Button
+            className={styles.createButton}
             icon={<AddTaskIcon />}
             onClick={() => handleOpenCreateTaskModal("policy")}
-            loading={mastersStore.isLoading}
+            loading={pendingCreateType === "policy"}
             disabled={!!selectedMinionsCount}
           >
             {t("policy-create.create-button")}

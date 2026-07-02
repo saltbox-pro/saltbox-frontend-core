@@ -1,22 +1,25 @@
 import type { SourceListWithExtrasSchema, SourceType } from "@saltbox/saltbox-core-api-client";
 
 import {
-  filterSourceTemplatesForSearch,
   getActiveSearchQuery,
   getSourceSearchExpansion,
+  sourceMatchesByMetadata,
   sourceMatchesQuery,
+  templateMatchesQuery,
   type TemplateSourceSearchShape,
 } from "saltbox-core/features/template-source-search";
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 
-import type { TaskTemplateWithRepository } from "../type/types";
+import type { TaskTemplatePickerItem } from "../type/types";
 
 export type TemplateSourceRow = {
   key: string;
   source: string;
   sourceType: SourceType;
   description?: string;
-  templates: TaskTemplateWithRepository[];
+  isAccessibilityLoaded: boolean;
+  isAccessibilityError: boolean;
+  templates: TaskTemplatePickerItem[];
 };
 
 const toSourceShape = (sourceRow: TemplateSourceRow): TemplateSourceSearchShape => ({
@@ -26,17 +29,35 @@ const toSourceShape = (sourceRow: TemplateSourceRow): TemplateSourceSearchShape 
   files: [],
 });
 
-export const buildSourceRows = (sources: SourceListWithExtrasSchema[]): TemplateSourceRow[] => {
+const sortPickerTemplates = (
+  firstTemplate: TaskTemplatePickerItem,
+  secondTemplate: TaskTemplatePickerItem
+) => {
+  if (firstTemplate.isAccessible !== secondTemplate.isAccessible) {
+    return firstTemplate.isAccessible ? -1 : 1;
+  }
+
+  return (firstTemplate.title || firstTemplate.name).localeCompare(
+    secondTemplate.title || secondTemplate.name
+  );
+};
+
+export const buildSourceRowsFromSources = (
+  sources: SourceListWithExtrasSchema[]
+): TemplateSourceRow[] => {
   return sortSources(sources)
     .map((source) => ({
       key: source.id,
       source: source.name,
       sourceType: source.source_type,
       description: source.description ?? undefined,
+      isAccessibilityLoaded: false,
+      isAccessibilityError: false,
       templates: (source.templates ?? [])
         .map((template) => ({
           ...template,
           repository: source.name,
+          isAccessible: true,
         }))
         .sort((firstTemplate, secondTemplate) =>
           (firstTemplate.title || firstTemplate.name).localeCompare(
@@ -46,6 +67,26 @@ export const buildSourceRows = (sources: SourceListWithExtrasSchema[]): Template
     }))
     .filter((sourceRow) => sourceRow.templates.length > 0);
 };
+
+export const applySourceAccessibility = (
+  sourceRow: TemplateSourceRow,
+  accessibleTemplateIds: ReadonlySet<string>
+): TemplateSourceRow => ({
+  ...sourceRow,
+  isAccessibilityLoaded: true,
+  isAccessibilityError: false,
+  templates: sourceRow.templates
+    .map((template) => ({
+      ...template,
+      isAccessible: accessibleTemplateIds.has(template.id),
+    }))
+    .sort(sortPickerTemplates),
+});
+
+export const markSourceAccessibilityError = (sourceRow: TemplateSourceRow): TemplateSourceRow => ({
+  ...sourceRow,
+  isAccessibilityError: true,
+});
 
 export const filterSourceRows = (
   sourceRows: TemplateSourceRow[],
@@ -66,7 +107,12 @@ export const filterSourceRows = (
 
     result.push({
       ...sourceRow,
-      templates: filterSourceTemplatesForSearch(sourceShape, query, language),
+      templates:
+        !query || sourceMatchesByMetadata(sourceShape, query)
+          ? sourceRow.templates
+          : sourceRow.templates.filter((template) =>
+              templateMatchesQuery(template, query, language)
+            ),
     });
 
     return result;

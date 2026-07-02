@@ -3,7 +3,7 @@ import { type FC, useState } from "react";
 import type { SelectedTaskTemplate, TaskCreationContext } from "../type/types";
 
 import { TaskModal } from "./task-modal";
-import { TemplateListModal } from "./template-list-modal";
+import { TemplateListModal } from "./template-list-modal/ui/template-list-modal";
 
 export type TaskCreateProps = {
   isOpen: boolean;
