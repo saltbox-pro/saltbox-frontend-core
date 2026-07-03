@@ -38,7 +38,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
       <BarChart
         data={data}
         layout="vertical"
-        margin={{ left: -20, right: 20, top: 10, bottom: 10 }}
+        margin={{ left: 0, right: 20, top: 10, bottom: 10 }}
         onClick={
           onFilterByValue
             ? (state) => {

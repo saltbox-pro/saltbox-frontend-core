@@ -16,9 +16,9 @@ import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
-import { CHART_DATA_LIMIT_BY_PRESET } from "../../constants/chart-data";
 import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
 import { applyFieldValueFilter } from "../../helpers/apply-filter";
+import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -106,6 +106,7 @@ export const MinionDashboardCard = observer(
 
     const cardLayout = dashboardStore.layout.find((item) => item.id === card.id);
     const isMinimalCardSize = !isFullScreen && cardLayout?.width === 1 && cardLayout?.height === 1;
+    const chartLimitSize = isFullScreen ? FULLSCREEN_CARD_GRID_SIZE : cardLayout;
 
     const handleApplyFilter = (item: ChartDatum) => {
       if (item.isOther) {
@@ -200,7 +201,7 @@ export const MinionDashboardCard = observer(
         case "donut":
           return (
             <DonutChart
-              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)}
+              data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
               onFilterByValue={handleApplyFilter}
               hideLegend={isMinimalCardSize}
             />
@@ -208,26 +209,34 @@ export const MinionDashboardCard = observer(
         case "horizontal-bar":
           return (
             <HorizontalBarChart
-              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["horizontal-bar"])}
+              data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
               onFilterByValue={handleApplyFilter}
             />
           );
         case "vertical-bar":
           return (
             <VerticalBarChart
-              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET["vertical-bar"])}
+              data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
               onFilterByValue={handleApplyFilter}
             />
           );
         case "treemap":
           return (
             <TreemapChart
-              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.treemap)}
+              data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
               onFilterByValue={handleApplyFilter}
             />
           );
         case "histogram":
-          return <VerticalBarChart data={toHistogramData(grainValues, emptyLabel)} />;
+          return (
+            <VerticalBarChart
+              data={toHistogramData(
+                grainValues,
+                emptyLabel,
+                getChartDataLimit(card.preset, chartLimitSize)
+              )}
+            />
+          );
         case "boolean-donut":
           return (
             <DonutChart
@@ -248,7 +257,7 @@ export const MinionDashboardCard = observer(
         case "lollipop":
           return (
             <LollipopList
-              data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.lollipop)}
+              data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
               onFilterByValue={handleApplyFilter}
             />
           );
