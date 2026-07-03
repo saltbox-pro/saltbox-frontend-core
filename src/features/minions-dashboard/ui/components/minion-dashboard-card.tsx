@@ -104,6 +104,9 @@ export const MinionDashboardCard = observer(
       });
     };
 
+    const cardLayout = dashboardStore.layout.find((item) => item.id === card.id);
+    const isMinimalCardSize = !isFullScreen && cardLayout?.width === 1 && cardLayout?.height === 1;
+
     const handleApplyFilter = (item: ChartDatum) => {
       if (item.isOther) {
         return;
@@ -199,6 +202,7 @@ export const MinionDashboardCard = observer(
             <DonutChart
               data={getLimitedChartData(CHART_DATA_LIMIT_BY_PRESET.donut)}
               onFilterByValue={handleApplyFilter}
+              hideLegend={isMinimalCardSize}
             />
           );
         case "horizontal-bar":
@@ -229,6 +233,7 @@ export const MinionDashboardCard = observer(
             <DonutChart
               data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
               onFilterByValue={handleApplyFilter}
+              hideLegend={isMinimalCardSize}
             />
           );
         case "boolean-bars":

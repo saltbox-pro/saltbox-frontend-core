@@ -2,7 +2,7 @@ import { FilterOutlined } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { FastTableListed } from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
@@ -23,6 +23,11 @@ type GrainTableProps = {
 export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps) => {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([{ id: "count", desc: true }]);
+
+  const maxCount = useMemo(
+    () => values.reduce((max, item) => Math.max(max, item.count), 0),
+    [values]
+  );
 
   const columns = useMemo(
     () => [
@@ -45,9 +50,25 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
       columnHelper.accessor("count", {
         header: t("dashboard.table-count"),
         enableColumnFilter: false,
+        meta: {
+          tdClassName: styles.grainCountCol,
+        },
+        cell: (data) => {
+          const count = data.getValue();
+          const ratio = maxCount > 0 ? count / maxCount : 0;
+          return (
+            <>
+              <span
+                className={styles.grainCountBar}
+                style={{ "--grain-count-bar-width": `${ratio * 100}%` } as CSSProperties}
+              />
+              <span className={styles.grainCountValue}>{count}</span>
+            </>
+          );
+        },
       }),
     ],
-    [t, fieldSource, filterStore]
+    [t, fieldSource, filterStore, maxCount]
   );
 
   if (values.length === 0) {

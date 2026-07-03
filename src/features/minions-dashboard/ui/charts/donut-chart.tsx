@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
   Cell,
   Legend,
@@ -16,23 +17,42 @@ import { ChartDatum } from "../../model/dashboard-chart-data";
 import { ChartTooltipContent } from "./chart-tooltip-content";
 import styles from "./donut-chart.module.css";
 
-const renderLegendText: LegendProps["formatter"] = (value, entry) => {
-  const count = (entry.payload as unknown as ChartDatum | undefined)?.count;
-  return (
-    <span className={styles.donutLegendLabel} title={String(value)}>
-      {value}
-      {count !== undefined && ` — ${count}`}
-    </span>
-  );
-};
-
 type DonutChartProps = {
   data: ChartDatum[];
   onFilterByValue?: (item: ChartDatum) => void;
+  hideLegend?: boolean;
 };
 
-export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
+export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProps) => {
+  const { t } = useTranslation();
   const colors = generateChartColors(data.length);
+
+  const isLegendItemClickable = (datum: ChartDatum | undefined) =>
+    !!onFilterByValue && !!datum && !datum.isOther;
+
+  const handleLegendClick: LegendProps["onClick"] = (_entry, index) => {
+    const datum = data[index];
+    if (isLegendItemClickable(datum)) {
+      onFilterByValue!(datum);
+    }
+  };
+
+  const renderLegendText: LegendProps["formatter"] = (value, _entry, index) => {
+    const datum = data[index];
+    const isClickable = isLegendItemClickable(datum);
+    const title = isClickable
+      ? `${value}\n${t("dashboard.apply-value-to-filters")}`
+      : String(value);
+    return (
+      <span
+        className={clsx(styles.donutLegendLabel, isClickable && styles.donutLegendLabelClickable)}
+        title={title}
+      >
+        {value}
+        {datum?.count !== undefined && ` — ${datum.count}`}
+      </span>
+    );
+  };
 
   return (
     <ResponsiveContainer>
@@ -41,13 +61,16 @@ export const DonutChart = ({ data, onFilterByValue }: DonutChartProps) => {
           content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
           isAnimationActive={false}
         />
-        <Legend
-          layout="vertical"
-          align="right"
-          verticalAlign="middle"
-          iconType="circle"
-          formatter={renderLegendText}
-        />
+        {!hideLegend && (
+          <Legend
+            layout="vertical"
+            align="right"
+            verticalAlign="middle"
+            iconType="circle"
+            formatter={renderLegendText}
+            onClick={handleLegendClick}
+          />
+        )}
         <Pie
           data={data}
           innerRadius="58%"

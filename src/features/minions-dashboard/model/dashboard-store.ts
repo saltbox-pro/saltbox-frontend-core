@@ -66,8 +66,6 @@ export class DashboardStore {
         y,
         width: size.width,
         height: size.height,
-        minWidth: size.minWidth,
-        minHeight: size.minHeight,
       });
     }
 
@@ -105,8 +103,6 @@ export class DashboardStore {
         y,
         width: size.width,
         height: size.height,
-        minWidth: size.minWidth,
-        minHeight: size.minHeight,
       },
       ...this.layout,
     ];
@@ -146,8 +142,6 @@ export class DashboardStore {
           ...item,
           width: size.width,
           height: size.height,
-          minWidth: size.minWidth,
-          minHeight: size.minHeight,
         };
       })
     );
