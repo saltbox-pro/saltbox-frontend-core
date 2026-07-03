@@ -311,7 +311,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     repo_url: string;
     repo_user?: string;
     repo_pass?: string;
-    branch: string;
+    branch?: string;
   }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
@@ -323,8 +323,8 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
           description: payload.description,
           namespace: payload.namespace,
           repo_url: payload.repo_url,
-          repo_user: payload.repo_user ?? null,
-          repo_pass: payload.repo_pass ?? null,
+          repo_user: payload.repo_user,
+          repo_pass: payload.repo_pass,
           branch: payload.branch,
         },
       })

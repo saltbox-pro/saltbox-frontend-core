@@ -48,6 +48,7 @@ export const MinionsDashboardSummary = observer(
               title={item.title}
               value={item.value}
               loading={store.isLoading}
+              formatter={(val) => String(val)}
             />
           </Card>
         ))}

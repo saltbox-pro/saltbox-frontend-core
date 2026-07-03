@@ -55,30 +55,23 @@ export class DashboardStore {
   }
 
   private buildDefaultLayout(cards: DashboardCardConfig[]): DashboardLayoutItem[] {
-    let currentX = 0;
-    let currentY = 0;
-    let rowHeight = 0;
+    const layout: DashboardLayoutItem[] = [];
 
-    return cards.map((card) => {
+    for (const card of cards) {
       const size = getDefaultCardSize(card.preset);
-      if (currentX + size.width > DASHBOARD_GRID_COLS) {
-        currentX = 0;
-        currentY += rowHeight;
-        rowHeight = 0;
-      }
-      const item: DashboardLayoutItem = {
+      const { x, y } = this.findFirstAvailablePosition(layout, size.width, size.height);
+      layout.push({
         id: card.id,
-        x: currentX,
-        y: currentY,
+        x,
+        y,
         width: size.width,
         height: size.height,
         minWidth: size.minWidth,
         minHeight: size.minHeight,
-      };
-      currentX += size.width;
-      rowHeight = Math.max(rowHeight, size.height);
-      return item;
-    });
+      });
+    }
+
+    return layout;
   }
 
   loadFromLocalStorage() {

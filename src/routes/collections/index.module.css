@@ -7,3 +7,7 @@
   overflow: hidden;
   height: 100%;
 }
+
+.collectionsTree :global(.ant-tree) {
+  font-size: 14px;
+}

@@ -32,12 +32,14 @@ export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
               onClick={isClickable ? () => onFilterByValue!(item) : undefined}
               tabIndex={-1}
             >
-              <span className={styles.lollipopName}>{item.name}</span>
-              <span className={styles.lollipopTrack}>
-                <span className={styles.lollipopTrackBar} style={{ width: `${barPercent}%` }} />
-                <span className={styles.lollipopTrackDot} style={{ left: `${barPercent}%` }} />
-              </span>
-              <span className={styles.lollipopCount}>{item.count}</span>
+              <div className={styles.lollipopInner}>
+                <span className={styles.lollipopName}>{item.name}</span>
+                <span className={styles.lollipopTrack}>
+                  <span className={styles.lollipopTrackBar} style={{ width: `${barPercent}%` }} />
+                  <span className={styles.lollipopTrackDot} style={{ left: `${barPercent}%` }} />
+                </span>
+                <span className={styles.lollipopCount}>{item.count}</span>
+              </div>
             </Button>
           </Tooltip>
         );

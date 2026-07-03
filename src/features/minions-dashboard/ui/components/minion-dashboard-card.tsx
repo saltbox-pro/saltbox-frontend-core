@@ -59,6 +59,20 @@ export const MinionDashboardCard = observer(
     const [dashboardCardStore] = useState(new DashboardCardStore());
     const isFullScreenRef = useRef(isFullScreen);
     const [isTogglingFullScreen, setIsTogglingFullScreen] = useState(false);
+    const [isLayoutTransitioning, setIsLayoutTransitioning] = useState(false);
+    const layoutTransitionTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const prevPresetRef = useRef(card.preset);
+
+    useEffect(() => {
+      if (prevPresetRef.current === card.preset) {
+        return;
+      }
+      prevPresetRef.current = card.preset;
+      clearTimeout(layoutTransitionTimerRef.current);
+      setIsLayoutTransitioning(true);
+      layoutTransitionTimerRef.current = setTimeout(() => setIsLayoutTransitioning(false), 220);
+      return () => clearTimeout(layoutTransitionTimerRef.current);
+    }, [card.preset]);
 
     const emptyLabel = t("dashboard.empty-name");
     const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
@@ -289,7 +303,9 @@ export const MinionDashboardCard = observer(
               </Dropdown>
             </div>
           </div>
-          <div className={styles.dashboardTableBlockChartBody}>{renderChart()}</div>
+          <div className={styles.dashboardTableBlockChartBody}>
+            {!isLayoutTransitioning && renderChart()}
+          </div>
         </Spin>
       </Card>
     );
