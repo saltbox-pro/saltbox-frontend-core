@@ -51,7 +51,7 @@ import styles from "./index.module.css";
 const { Text } = Typography;
 const { Timer } = Statistic;
 
-type JobViewMode = "standard" | "detailed" | "table";
+type JobViewMode = "standard" | "detailed" | "table" | "state-apply";
 
 type JobWebSocketMessage = JobModel | JobReturnModel;
 
@@ -69,6 +69,8 @@ const JobPage = observer(() => {
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
+  const isStepsViewMode = viewMode === "state-apply";
+  const isStateApplyJob = jobStore.job?.fun === "state.apply";
 
   const [repeatPickerOpen, setRepeatPickerOpen] = useState(false);
   const [repeatConfigureFun, setRepeatConfigureFun] = useState<string | null>(null);
@@ -453,6 +455,9 @@ const JobPage = observer(() => {
                     options={[
                       { label: t("jobs.standard-view"), value: "standard" },
                       { label: t("jobs.detailed-view"), value: "detailed" },
+                      ...(isStateApplyJob
+                        ? [{ label: t("jobs.state-apply-view"), value: "state-apply" }]
+                        : []),
                       {
                         label: t("jobs.table-view"),
                         value: "table",
@@ -480,6 +485,7 @@ const JobPage = observer(() => {
                 jobReturns={effectiveJobReturns}
                 jobStore={jobStore}
                 isFullOutput={isFullOutput}
+                isStepsView={isStepsViewMode}
                 isTableViewMode={isTableViewMode}
                 jobStartTimestamp={jobStore.jobStartTimestamp}
                 pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}

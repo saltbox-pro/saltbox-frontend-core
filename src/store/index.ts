@@ -28,5 +28,5 @@ export { DefaultCollectionStore } from "./default-collection-store";
 export { collectionsTreeStore, CollectionsTreeStore } from "./collections-tree-store";
 export { TasksFilterStore } from "./tasks-filter-store";
 export { PillarsFilterStore } from "./pillars-filter-store";
-export { SaltKeysStore, DUPLICATES_FILTER } from "./salt-keys-store";
+export { SaltKeysStore, DUPLICATES_FILTER, ALL_FILTER } from "./salt-keys-store";
 export type { SaltKeyFilterType, SaltKeyWithId } from "./salt-keys-store";

@@ -5,11 +5,15 @@ import { findNodeAndParent, findNodeBySlug } from "saltbox-core/shared/utils/tre
 import { apiCoreStore } from "saltbox-core/store";
 
 type FetchTreeStatus = "idle" | "in-process" | "error" | "success";
+type ActionStatus = "idle" | "in-process" | "error" | "success";
 
 export class CollectionsTreeStore {
   treeNodes: CollectionTreeNodeSchema[] = [];
   fetchTreeStatus: FetchTreeStatus = "idle";
   error: string | null = null;
+  actionStatus: ActionStatus = "idle";
+  actionError: string | null = null;
+  actionErrorRaw: unknown = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -95,34 +99,71 @@ export class CollectionsTreeStore {
   };
 
   renameCollection = async (slug: string, title: string) => {
-    const api = apiCoreStore.minionCollectionsApi;
-    if (!api) return;
+    this.actionStatus = "in-process";
 
-    const current = await api.minionCollectionRead({ slug });
-    const updated = await api.minionCollectionUpdate({
-      slug,
-      CollectionUpdateSchema: {
-        title,
-        query: current.query,
-      },
-    });
+    try {
+      const current = await apiCoreStore.minionCollectionsApi?.minionCollectionRead({ slug });
+      const updated = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
+        slug,
+        CollectionUpdateSchema: {
+          title,
+          query: current?.query,
+        },
+      });
 
-    runInAction(() => {
+      if (!updated) {
+        runInAction(() => {
+          this.actionStatus = "error";
+          this.actionError = "collection.error-updating-collection";
+          this.actionErrorRaw = null;
+        });
+        return false;
+      }
+
       this.updateNode(slug, { title: updated.title, slug: updated.slug });
-    });
 
-    return updated;
+      runInAction(() => {
+        this.actionStatus = "success";
+        this.actionError = null;
+        this.actionErrorRaw = null;
+      });
+
+      return true;
+    } catch (err) {
+      runInAction(() => {
+        this.actionStatus = "error";
+        this.actionError =
+          err instanceof Error ? err.message : "collection.error-updating-collection";
+        this.actionErrorRaw = err;
+      });
+      return false;
+    }
   };
 
   deleteCollection = async (slug: string) => {
-    const api = apiCoreStore.minionCollectionsApi;
-    if (!api) return;
+    this.actionStatus = "in-process";
 
-    await api.minionCollectionDelete({ slug });
+    try {
+      await apiCoreStore.minionCollectionsApi?.minionCollectionDelete({ slug });
 
-    runInAction(() => {
       this.removeNode(slug);
-    });
+
+      runInAction(() => {
+        this.actionStatus = "success";
+        this.actionError = null;
+        this.actionErrorRaw = null;
+      });
+
+      return true;
+    } catch (err) {
+      runInAction(() => {
+        this.actionStatus = "error";
+        this.actionError =
+          err instanceof Error ? err.message : "collection.error-deleting-collection";
+        this.actionErrorRaw = err;
+      });
+      return false;
+    }
   };
 }
 

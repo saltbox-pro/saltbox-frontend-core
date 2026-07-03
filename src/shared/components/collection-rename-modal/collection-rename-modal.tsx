@@ -1,4 +1,4 @@
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { isGlobalServerError, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Form, Input, message } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,15 +40,17 @@ function CollectionRenameModal({
 
   const handleFinish = async (formValue: CollectionRenameFormType) => {
     setIsRenaming(true);
-    try {
-      await collectionsTreeStore.renameCollection(slug, formValue.title);
+    const ok = await collectionsTreeStore.renameCollection(slug, formValue.title);
+    setIsRenaming(false);
+
+    if (ok) {
       messageApi.success(t("collection.collection-has-been-changed"));
       onClose?.(true);
-    } catch {
-      messageApi.error(t("collection.error-updating-collection"));
-    } finally {
-      setIsRenaming(false);
+      return;
     }
+
+    if (isGlobalServerError(collectionsTreeStore.actionErrorRaw)) return;
+    messageApi.error(t("collection.error-updating-collection"));
   };
 
   return (

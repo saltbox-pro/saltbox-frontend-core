@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { JobReturnOutput } from "saltbox-core/shared/components/job-return";
+import { JobReturnOutput, JobReturnSteps } from "saltbox-core/shared/components/job-return";
 import type { JobStore } from "saltbox-core/store";
 
 import styles from "./job-return-row.module.css";
@@ -13,11 +13,13 @@ interface JobReturnRowProps {
   row: JobReturnModel;
   jobStore: JobStore;
   isFullOutput?: boolean;
+  isStepsView?: boolean;
 }
 
 export const JobReturnRow = observer(function JobReturnRow({
   row,
   isFullOutput,
+  isStepsView,
   jobStore,
 }: JobReturnRowProps) {
   const { t } = useTranslation();
@@ -86,6 +88,8 @@ export const JobReturnRow = observer(function JobReturnRow({
         <Alert message={errorMessage} type="error" showIcon />
       ) : status === "idle" || status === "in-process" ? (
         <Skeleton.Input block active />
+      ) : isStepsView ? (
+        <JobReturnSteps jobReturn={jobReturnToRender} inProcess={status === "refetching"} />
       ) : (
         <JobReturnOutput
           isFullOutput={isFullOutput}
