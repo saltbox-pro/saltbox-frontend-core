@@ -41,6 +41,7 @@ interface DefaultJobReturnTableProps {
   jobReturns: JobReturnModel[];
   jobStore: JobStore;
   isFullOutput?: boolean;
+  isStepsView?: boolean;
   isTableViewMode?: boolean;
   isLoading?: boolean;
   forceExpand?: boolean;
@@ -61,6 +62,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     jobReturns,
     jobStore,
     isFullOutput = false,
+    isStepsView = false,
     isTableViewMode = false,
     isLoading = false,
     forceExpand,
@@ -206,9 +208,14 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
 
     const renderJobResult = useCallback(
       ({ row }: { row: Row<JobReturnModel> }) => (
-        <JobReturnRow jobStore={jobStore} row={row.original} isFullOutput={isFullOutput} />
+        <JobReturnRow
+          jobStore={jobStore}
+          row={row.original}
+          isFullOutput={isFullOutput}
+          isStepsView={isStepsView}
+        />
       ),
-      [isFullOutput, jobStore]
+      [isFullOutput, isStepsView, jobStore]
     );
 
     return (

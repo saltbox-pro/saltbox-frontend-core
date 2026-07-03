@@ -567,6 +567,7 @@
     "reveal-all-returns": "Reveal all",
     "standard-view": "Standard",
     "detailed-view": "Detailed",
+    "state-apply-view": "state.apply",
     "table-view": "Table",
     "table-view-info-total": "Showing {{count}} Job Return.",
     "table-view-info-success-only": "Only successfully completed Job Return are shown in the table",

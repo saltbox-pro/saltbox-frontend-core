@@ -567,6 +567,7 @@
     "reveal-all-returns": "Раскрыть всё",
     "standard-view": "Стандартный",
     "detailed-view": "Подробный",
+    "state-apply-view": "state.apply",
     "table-view": "Табличный",
     "table-view-info-total": "Отображается {{count}} Job Return.",
     "table-view-info-success-only": "В таблице представлены только успешно выполненные Job Return",
