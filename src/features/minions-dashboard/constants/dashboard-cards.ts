@@ -6,7 +6,6 @@ type CardSizeConfig = {
 };
 
 const CARD_SIZE_BY_PRESET: Partial<Record<DashboardPreset, CardSizeConfig>> = {
-  donut: { width: 2, height: 1 },
   "horizontal-bar": { width: 2, height: 1 },
   "vertical-bar": { width: 2, height: 1 },
   histogram: { width: 2, height: 1 },
@@ -31,7 +30,7 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
     fieldSource: "grains.master",
     fieldLabel: "master",
     fieldType: "categorical",
-    preset: "horizontal-bar",
+    preset: "lollipop",
   },
   {
     id: "dashboard-card-virtual-1",
@@ -39,7 +38,7 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
     fieldSource: "grains.virtual",
     fieldLabel: "virtual",
     fieldType: "categorical",
-    preset: "donut",
+    preset: "vertical-bar",
   },
   {
     id: "dashboard-card-kernel-2",
@@ -47,7 +46,7 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
     fieldSource: "grains.kernel",
     fieldLabel: "kernel",
     fieldType: "categorical",
-    preset: "lollipop",
+    preset: "donut",
   },
   {
     id: "dashboard-card-saltversion-3",
@@ -55,29 +54,29 @@ export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
     fieldSource: "grains.saltversion",
     fieldLabel: "saltversion",
     fieldType: "categorical",
-    preset: "table",
+    preset: "horizontal-bar",
   },
   {
-    id: "dashboard-card-zmqversion-4",
-    field: "zmqversion",
-    fieldSource: "grains.zmqversion",
-    fieldLabel: "zmqversion",
-    fieldType: "categorical",
-    preset: "vertical-bar",
-  },
-  {
-    id: "dashboard-card-osfullname-5",
+    id: "dashboard-card-osfullname-4",
     field: "osfullname",
     fieldSource: "grains.osfullname",
     fieldLabel: "osfullname",
     fieldType: "categorical",
-    preset: "table",
+    preset: "treemap",
   },
   {
-    id: "dashboard-card-pythonversion-6",
+    id: "dashboard-card-pythonversion-5",
     field: "pythonversion",
     fieldSource: "grains.pythonversion",
     fieldLabel: "pythonversion",
+    fieldType: "categorical",
+    preset: "table",
+  },
+  {
+    id: "dashboard-card-zmqversion-6",
+    field: "zmqversion",
+    fieldSource: "grains.zmqversion",
+    fieldLabel: "zmqversion",
     fieldType: "categorical",
     preset: "table",
   },
