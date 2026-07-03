@@ -80,6 +80,36 @@ export const toBooleanData = (
   }));
 };
 
+export type KpiStats = {
+  total: number;
+  min: number | null;
+  avg: number | null;
+  max: number | null;
+};
+
+export const toKpiStats = (values: GrainValue[]): KpiStats => {
+  const total = values.reduce((sum, item) => sum + item.count, 0);
+
+  const parsed = values
+    .filter((item) => item.value !== null && item.value !== undefined && item.value !== "")
+    .map((item) => ({ value: Number(item.value), count: item.count }))
+    .filter((item) => Number.isFinite(item.value));
+
+  const numericCount = parsed.reduce((sum, item) => sum + item.count, 0);
+  if (parsed.length === 0 || numericCount === 0) {
+    return { total, min: null, avg: null, max: null };
+  }
+
+  const weightedSum = parsed.reduce((sum, item) => sum + item.value * item.count, 0);
+
+  return {
+    total,
+    min: Math.min(...parsed.map((item) => item.value)),
+    avg: Math.round(weightedSum / numericCount),
+    max: Math.max(...parsed.map((item) => item.value)),
+  };
+};
+
 export const toHistogramData = (values: GrainValue[], emptyLabel: string): ChartDatum[] => {
   let emptyCount = 0;
 

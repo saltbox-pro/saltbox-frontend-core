@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
+import { formatStat } from "../../helpers/format-stat";
 import { DashboardSummaryStore } from "../../model/dashboard-summary-store";
 
 import styles from "./minions-dashboard-summary.module.css";
@@ -48,7 +49,7 @@ export const MinionsDashboardSummary = observer(
               title={item.title}
               value={item.value}
               loading={store.isLoading}
-              formatter={(val) => String(val)}
+              formatter={formatStat}
             />
           </Card>
         ))}

@@ -2,7 +2,8 @@ import { GrainValue } from "@saltbox/saltbox-core-api-client";
 import { Flex, Statistic } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { valueToText } from "../../model/dashboard-chart-data";
+import { formatStat } from "../../helpers/format-stat";
+import { toKpiStats } from "../../model/dashboard-chart-data";
 
 import styles from "./kpi-panel.module.css";
 
@@ -12,18 +13,15 @@ type KpiPanelProps = {
 
 export const KpiPanel = ({ values }: KpiPanelProps) => {
   const { t } = useTranslation();
-  const total = values.reduce((sum, item) => sum + item.count, 0);
-  const top = values[0];
+  const stats = toKpiStats(values);
 
   return (
     <Flex className={styles.kpiBody} vertical gap={18} justify="center">
-      <Statistic title={t("dashboard.kpi-total")} value={total} />
+      <Statistic title={t("dashboard.kpi-total")} value={stats.total} formatter={formatStat} />
       <Flex gap={24} wrap="wrap">
-        <Statistic title={t("dashboard.kpi-unique")} value={values.length} />
-        <Statistic
-          title={t("dashboard.kpi-top")}
-          value={top ? valueToText(top.value, t("dashboard.empty-name")) : "-"}
-        />
+        <Statistic title={t("dashboard.kpi-min")} value={stats.min ?? "-"} formatter={formatStat} />
+        <Statistic title={t("dashboard.kpi-avg")} value={stats.avg ?? "-"} formatter={formatStat} />
+        <Statistic title={t("dashboard.kpi-max")} value={stats.max ?? "-"} formatter={formatStat} />
       </Flex>
     </Flex>
   );

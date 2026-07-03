@@ -57,6 +57,11 @@ export const ALLOWED_GRAIN_FIELDS = new Set([
   "shell",
   "username",
   "groupname",
+  "mem_total",
+  "num_cpus",
+  "swap_total",
+  "created",
+  "updated",
 ]);
 
 export const DATE_FIELD_NAME_PARTS = [
