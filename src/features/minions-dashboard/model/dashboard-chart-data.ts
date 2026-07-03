@@ -148,7 +148,7 @@ export const toHistogramData = (
         const d = new Date(ts);
         const m = String(d.getMonth() + 1).padStart(2, "0");
         const day = String(d.getDate()).padStart(2, "0");
-        return `${m}/${day}/${d.getFullYear()}`;
+        return `${d.getFullYear()}-${m}-${day}`;
       }
     : (ts: number) => ts.toFixed(0);
 
