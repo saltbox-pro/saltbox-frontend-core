@@ -7,6 +7,10 @@
   overflow: hidden;
 }
 
+.dashboardGridLayout {
+  margin-bottom: 20px;
+}
+
 .emptyState {
   display: flex;
   min-height: 320px;

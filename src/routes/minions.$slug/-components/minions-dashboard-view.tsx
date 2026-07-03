@@ -1,4 +1,5 @@
-import { BarChartOutlined, PlusOutlined } from "@ant-design/icons";
+import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { Popover } from "@saltbox/saltbox-frontend-common";
 import { Button, Empty, Flex } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
@@ -11,6 +12,7 @@ import "react-resizable/css/styles.css";
 import {
   DASHBOARD_DRAG_HANDLE_CLASS,
   DASHBOARD_GRID_COLS,
+  DASHBOARD_MAX_CARDS,
   dashboardStore,
   DashboardLayoutItem,
   MinionDashboardCard,
@@ -75,6 +77,36 @@ export const MinionsDashboardView = observer(
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
 
+        {!dashboardStore.isCardFullScreen && (
+          <div className="page-actions-buttons" style={{ margin: 0 }}>
+            <Flex gap={8} align="center">
+              <Button
+                onClick={props.onAddCard}
+                type="default"
+                disabled={!dashboardStore.canAddCard}
+              >
+                <Flex gap={8}>
+                  <PlusOutlined />
+                  {t("minions.add-block-button")}
+                </Flex>
+              </Button>
+              {!dashboardStore.canAddCard && (
+                <Popover
+                  content={
+                    <div style={{ maxWidth: 300 }}>
+                      {t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
+                    </div>
+                  }
+                  trigger="hover"
+                  placement="bottom"
+                >
+                  <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
+                </Popover>
+              )}
+            </Flex>
+          </div>
+        )}
+
         <MinionsDashboardSummary slug={props.slug} filterStore={props.filterStore} />
 
         {dashboardStore.cards.length === 0 ? (
@@ -87,11 +119,7 @@ export const MinionsDashboardView = observer(
                   <span>{t("dashboard.empty-description")}</span>
                 </Flex>
               }
-            >
-              <Button type="primary" icon={<PlusOutlined />} onClick={props.onAddCard}>
-                {t("minions.add-block-button")}
-              </Button>
-            </Empty>
+            />
           </div>
         ) : (
           <div
@@ -103,6 +131,7 @@ export const MinionsDashboardView = observer(
             <GridLayout
               width={width}
               layout={toLayoutItems(dashboardStore.layout)}
+              className={styles.dashboardGridLayout}
               gridConfig={{
                 cols: DASHBOARD_GRID_COLS,
                 rowHeight,

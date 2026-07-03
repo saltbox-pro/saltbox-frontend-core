@@ -1,10 +1,4 @@
-import {
-  EditOutlined,
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SaveOutlined,
-  SettingOutlined,
-} from "@ant-design/icons";
+import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
@@ -13,7 +7,6 @@ import {
   isGlobalServerError,
   Modal,
   PageHeader,
-  Popover,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, Tabs } from "antd";
@@ -27,7 +20,6 @@ import {
   dashboardStore,
   getDashboardFieldOptions,
   MinionsDashboardAddBlockModal,
-  DASHBOARD_MAX_CARDS,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import {
@@ -354,30 +346,6 @@ const MinionsPage = observer(() => {
           right: (
             <>
               <Flex gap={8}>
-                {tabKey === "statistics" && !dashboardStore.isCardFullScreen && (
-                  <Flex gap={8} align="center">
-                    <Button
-                      onClick={addDashboardCard}
-                      type="default"
-                      disabled={!dashboardStore.canAddCard}
-                    >
-                      <Flex gap={8}>
-                        <PlusOutlined />
-                        {t("minions.add-block-button")}
-                      </Flex>
-                    </Button>
-                    {!dashboardStore.canAddCard && (
-                      <Popover
-                        style={{ width: 300 }}
-                        content={t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
-                        trigger="hover"
-                      >
-                        <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
-                      </Popover>
-                    )}
-                  </Flex>
-                )}
-
                 {["list", "statistics"].includes(tabKey) && (
                   <>
                     <CollectionInfoPopover
