@@ -75,6 +75,7 @@ export const MinionDashboardCard = observer(
     }, [card.preset]);
 
     const emptyLabel = t("dashboard.empty-name");
+    const fieldTitle = t(`dashboard.field-${card.field}`, { defaultValue: card.fieldLabel });
     const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
 
     useEffect(() => {
@@ -293,10 +294,10 @@ export const MinionDashboardCard = observer(
               <Typography.Text
                 strong
                 ellipsis
-                title={card.fieldLabel}
+                title={fieldTitle}
                 className={styles.dashboardTableBlockTitle}
               >
-                {card.fieldLabel}
+                {fieldTitle}
               </Typography.Text>
               <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
                 {t(`dashboard.preset-${card.preset}`)}

@@ -92,7 +92,7 @@ export const MinionsDashboardAddBlockModal = ({
             value={selectedField}
             options={fieldOptions.map((option) => ({
               value: option.value,
-              label: `${option.label} (${option.source})`,
+              label: `${t(`dashboard.field-${option.value}`, { defaultValue: option.label })} (${option.source})`,
             }))}
             placeholder={t("dashboard.field-placeholder")}
             optionFilterProp="label"
