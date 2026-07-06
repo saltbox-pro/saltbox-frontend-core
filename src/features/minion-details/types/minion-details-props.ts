@@ -4,6 +4,7 @@ import type { MenuProps } from "antd";
 export interface OnFilterButtonParams {
   name: string;
   value: unknown;
+  keepDrawerOpen?: boolean;
 }
 
 export type OnFilterButtonHandler = (params: OnFilterButtonParams) => void;

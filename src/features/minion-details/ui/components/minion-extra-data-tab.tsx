@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { ExtraDataCategoriesStore } from "saltbox-core/store";
 
+import type { OnFilterButtonHandler } from "../../types/minion-details-props";
+
 import { MinionExtraDataCategoryDrawer } from "./minion-extra-data-category-drawer";
 
 const columnHelper = createColumnHelper<ExtraDataCategoryModel>();
@@ -21,10 +23,12 @@ interface MinionExtraDataTabProps {
   minionName?: string;
   isInDrawer?: boolean;
   isFullView?: boolean;
+  onFilterButton?: OnFilterButtonHandler;
 }
 
 export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   minionId,
+  onFilterButton,
 }: MinionExtraDataTabProps) {
   const { t } = useTranslation();
 
@@ -85,6 +89,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
         minionId={minionId}
         width={960}
         onClose={categoryDrawer.close}
+        onFilterButton={onFilterButton}
       />
     </Flex>
   );

@@ -144,6 +144,7 @@
     "never-synced": "never",
     "efi-yes": "Yes",
     "efi-no": "No",
+    "filter-applied": "Filter applied",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
     "subcollection-info": "This collection is a subcollection of",
     "collection-query": "Collection filter",

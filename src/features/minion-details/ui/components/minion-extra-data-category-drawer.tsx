@@ -14,7 +14,9 @@ import { useTranslation } from "react-i18next";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { type ExtraDataRecord, ExtraDataRecordsStore } from "saltbox-core/store";
 
-import { ExtraDataCell } from "./extra-data-cell";
+import type { OnFilterButtonHandler } from "../../types/minion-details-props";
+
+import { ExtraDataCell, isPrimitive } from "./extra-data-cell";
 import { ExtraDataSearchField } from "./extra-data-search-field";
 import styles from "./minion-extra-data-category-drawer.module.css";
 
@@ -44,10 +46,17 @@ export type MinionExtraDataCategoryDrawerProps = Omit<
 > & {
   category: ExtraDataCategoryModel | null;
   minionId: string;
+  onFilterButton?: OnFilterButtonHandler;
 };
 
 export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDrawerProps>(
-  function MinionExtraDataCategoryDrawer({ category, minionId, open, ...restProps }) {
+  function MinionExtraDataCategoryDrawer({
+    category,
+    minionId,
+    open,
+    onFilterButton,
+    ...restProps
+  }) {
     const { t } = useTranslation();
 
     const extraDataRecordsStore = useMemo(
@@ -94,13 +103,37 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
           columnHelper.accessor((row) => row[field], {
             id: field,
             header: field,
-            cell: ({ getValue }) => <ExtraDataCell value={getValue()} onCopy={() => {}} />,
+            cell: ({ getValue }) => {
+              const value = getValue();
+              const canFilter =
+                !!onFilterButton &&
+                !!category &&
+                (isPrimitive(value) || (Array.isArray(value) && value.every(isPrimitive)));
+
+              return (
+                <ExtraDataCell
+                  value={value}
+                  onCopy={() => {}}
+                  filterTitle={t("minions.extra-data.apply-to-filters")}
+                  onFilter={
+                    canFilter
+                      ? () =>
+                          onFilterButton({
+                            name: `extra.${category.source}.${category.name}.${field}`,
+                            value,
+                            keepDrawerOpen: true,
+                          })
+                      : undefined
+                  }
+                />
+              );
+            },
             meta: {
               minWidth: 160,
             },
           })
         ),
-      [fields]
+      [fields, onFilterButton, category, t]
     );
 
     const handleSearch = (value: string) => {
