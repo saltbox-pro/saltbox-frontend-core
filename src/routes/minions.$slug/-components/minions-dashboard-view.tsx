@@ -48,8 +48,6 @@ const toLayoutItems = (items: DashboardLayoutItem[]): LayoutItem[] =>
     y: item.y,
     w: item.width,
     h: item.height,
-    minW: item.minWidth,
-    minH: item.minHeight,
   }));
 
 const fromLayoutItems = (items: readonly LayoutItem[]): DashboardLayoutItem[] =>
@@ -59,8 +57,6 @@ const fromLayoutItems = (items: readonly LayoutItem[]): DashboardLayoutItem[] =>
     y: item.y,
     width: item.w,
     height: item.h,
-    minWidth: item.minW,
-    minHeight: item.minH,
   }));
 
 export const MinionsDashboardView = observer(

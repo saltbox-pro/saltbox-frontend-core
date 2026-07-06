@@ -125,6 +125,17 @@
   border-bottom: 1px solid var(--ant-color-border-secondary, #f2f4f7);
 }
 
+.dashboardTableBlock :global(.fast-table table > thead > tr > th),
+.dashboardTableBlock :global(.fast-table table > tbody > tr > td) {
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.dashboardTableBlock :global(.fast-table table > thead > tr > th:last-child) {
+  width: 35% !important;
+}
+
 :global(.dashboardDragHandle) {
   cursor: grab;
 }

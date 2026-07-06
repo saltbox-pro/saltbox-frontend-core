@@ -3,19 +3,17 @@ import type { DashboardCardConfig, DashboardPreset } from "../model/dashboard-mo
 type CardSizeConfig = {
   width: number;
   height: number;
-  minWidth: number;
-  minHeight: number;
 };
 
 const CARD_SIZE_BY_PRESET: Partial<Record<DashboardPreset, CardSizeConfig>> = {
-  donut: { width: 2, height: 1, minWidth: 2, minHeight: 1 },
-  "horizontal-bar": { width: 2, height: 1, minWidth: 2, minHeight: 1 },
-  "vertical-bar": { width: 2, height: 1, minWidth: 2, minHeight: 1 },
-  histogram: { width: 2, height: 1, minWidth: 2, minHeight: 1 },
-  treemap: { width: 2, height: 2, minWidth: 2, minHeight: 2 },
+  donut: { width: 2, height: 1 },
+  "horizontal-bar": { width: 2, height: 1 },
+  "vertical-bar": { width: 2, height: 1 },
+  histogram: { width: 2, height: 1 },
+  treemap: { width: 2, height: 2 },
 };
 
-const DEFAULT_CARD_SIZE: CardSizeConfig = { width: 1, height: 1, minWidth: 1, minHeight: 1 };
+const DEFAULT_CARD_SIZE: CardSizeConfig = { width: 1, height: 1 };
 
 export const getDefaultCardSize = (preset: DashboardPreset): CardSizeConfig =>
   CARD_SIZE_BY_PRESET[preset] ?? DEFAULT_CARD_SIZE;

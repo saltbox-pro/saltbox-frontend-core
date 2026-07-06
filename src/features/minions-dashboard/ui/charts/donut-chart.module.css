@@ -6,6 +6,10 @@
   cursor: pointer;
 }
 
+.donutLegendLabelClickable {
+  cursor: pointer;
+}
+
 .donutLegendLabel {
   display: inline-block;
   max-width: 240px;

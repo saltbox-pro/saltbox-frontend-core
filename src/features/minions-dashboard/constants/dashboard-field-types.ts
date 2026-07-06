@@ -7,12 +7,7 @@ export const NUMERIC_FIELD_NAMES = new Set([
   "gid",
 ]);
 
-export const BOOLEAN_FIELD_NAMES = new Set([
-  "virtual",
-  "zfs_support",
-  "efi_secure_boot",
-  "selinux",
-]);
+export const BOOLEAN_FIELD_NAMES = new Set(["zfs_support", "efi_secure_boot", "selinux"]);
 
 export const COMPLEX_FIELD_NAME_PARTS = [
   "interfaces",
@@ -62,6 +57,11 @@ export const ALLOWED_GRAIN_FIELDS = new Set([
   "shell",
   "username",
   "groupname",
+  "mem_total",
+  "num_cpus",
+  "swap_total",
+  "created",
+  "updated",
 ]);
 
 export const DATE_FIELD_NAME_PARTS = [

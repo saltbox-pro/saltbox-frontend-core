@@ -1,3 +1,22 @@
 .grainValueCol {
   padding-right: 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+td.grainCountCol {
+  position: relative;
+}
+
+.grainCountBar {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    var(--ant-color-fill-secondary, #f0f0f0) var(--grain-count-bar-width, 0%),
+    transparent var(--grain-count-bar-width, 0%)
+  );
+}
+
+.grainCountValue {
+  position: relative;
 }
