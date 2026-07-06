@@ -7,6 +7,7 @@ export function mapToAntdNode(node: CollectionTreeNodeSchema): CollectionTreeAnt
     key: node.id,
     title: node.title,
     slug: node.slug,
+    description: node.description,
     children: node.children?.length ? node.children.map(mapToAntdNode) : undefined,
   };
 }

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import CollectionRenameModal from "saltbox-core/shared/components/collection-rename-modal/collection-rename-modal";
+import CollectionEditModal from "saltbox-core/shared/components/collection-edit-modal/collection-edit-modal";
 import { findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { collectionsTreeStore } from "saltbox-core/store";
 import { CollectionsTree } from "saltbox-core/widgets/minions/tree-menu";
@@ -14,7 +14,7 @@ import type { CollectionTreeAntdNode } from "saltbox-core/widgets/minions/tree-m
 
 import styles from "./index.module.css";
 
-type CollectionTarget = { slug: string; title: string };
+type CollectionTarget = { slug: string; title: string; description?: string };
 
 const ROOT_SLUG = "root";
 
@@ -48,17 +48,18 @@ const CollectionsPage = observer(() => {
       return null;
     }
 
-    const title = findNodeBySlug(collectionsTreeStore.treeNodes, node.slug)?.title ?? node.slug;
+    const storeNode = findNodeBySlug(collectionsTreeStore.treeNodes, node.slug);
+    const title = storeNode?.title ?? node.slug;
     return (
       <Flex gap={4} align="center">
         <Button
           type="text"
           size="small"
           icon={<EditOutlined />}
-          title={t("collection.change-name")}
+          title={t("collection.edit-collection")}
           onClick={(e) => {
             e.stopPropagation();
-            setRenameTarget({ slug: node.slug, title });
+            setRenameTarget({ slug: node.slug, title, description: storeNode?.description });
           }}
         />
         <Button
@@ -85,12 +86,14 @@ const CollectionsPage = observer(() => {
           if (node.slug) navigate(`/core/minions/${node.slug}`);
         }}
         renderActions={renderActions}
+        showDescription
         className={styles.collectionsTree}
       />
 
-      <CollectionRenameModal
+      <CollectionEditModal
         slug={renameTarget?.slug ?? ""}
         title={renameTarget?.title ?? ""}
+        description={renameTarget?.description}
         isOpen={!!renameTarget}
         onClose={() => setRenameTarget(null)}
       />
