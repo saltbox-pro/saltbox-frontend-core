@@ -16,11 +16,22 @@ import type { SourcePresentation } from "../types/source-presentation";
 export type { SourcePresentation } from "../types/source-presentation";
 
 function getBrokenSourceRetryActions(source: SourceBrokenRetryActionsSnapshot): SourceActionKind[] {
+  if (source.current_operation === SourceOperation.Discover) {
+    return ["delete"];
+  }
+
   if (source.current_operation === SourceOperation.Sync || source.synced_at) {
     return ["sync", "delete"];
   }
 
-  return ["plug", "delete"];
+  if (
+    source.current_operation === SourceOperation.PrepareTemplates ||
+    source.current_operation === SourceOperation.PrepareFiles
+  ) {
+    return ["plug", "delete"];
+  }
+
+  return ["delete"];
 }
 
 export function getSourcePresentation(source: TemplateSourcePublicSchema): SourcePresentation {

@@ -110,7 +110,11 @@ export const toKpiStats = (values: GrainValue[]): KpiStats => {
   };
 };
 
-export const toHistogramData = (values: GrainValue[], emptyLabel: string): ChartDatum[] => {
+export const toHistogramData = (
+  values: GrainValue[],
+  emptyLabel: string,
+  limit: number
+): ChartDatum[] => {
   let emptyCount = 0;
 
   const parsed = values
@@ -144,7 +148,7 @@ export const toHistogramData = (values: GrainValue[], emptyLabel: string): Chart
         const d = new Date(ts);
         const m = String(d.getMonth() + 1).padStart(2, "0");
         const day = String(d.getDate()).padStart(2, "0");
-        return `${m}/${day}/${d.getFullYear()}`;
+        return `${d.getFullYear()}-${m}-${day}`;
       }
     : (ts: number) => ts.toFixed(0);
 
@@ -161,7 +165,7 @@ export const toHistogramData = (values: GrainValue[], emptyLabel: string): Chart
     ];
   }
 
-  const bucketCount = Math.min(8, parsed.length);
+  const bucketCount = Math.min(limit, parsed.length);
   const step = (max - min) / bucketCount;
 
   const buckets = Array.from({ length: bucketCount }, (_, index) => {
