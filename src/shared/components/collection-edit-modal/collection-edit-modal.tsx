@@ -3,45 +3,52 @@ import { Button, Form, Input, message } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { collectionsTreeStore } from "saltbox-core/store";
 
-type CollectionRenameFormType = {
+type CollectionEditFormType = {
   title: string;
+  description?: string;
 };
 
-function CollectionRenameModal({
+function CollectionEditModal({
   slug,
   title,
+  description,
   isOpen = false,
   onClose,
 }: {
   slug: string;
   title: string;
+  description?: string;
   isOpen?: boolean;
   onClose?: (success: boolean) => void;
 }) {
-  const [isRenaming, setIsRenaming] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [form] = Form.useForm<CollectionRenameFormType>();
+  const [form] = Form.useForm<CollectionEditFormType>();
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
     if (isOpen) {
-      form.setFieldsValue({ title });
+      form.setFieldsValue({ title, description });
     }
-  }, [isOpen, title, form]);
+  }, [isOpen, title, description, form]);
 
   const handleCancel = () => {
-    if (!isRenaming) {
+    if (!isSaving) {
       onClose?.(false);
     }
   };
 
-  const handleFinish = async (formValue: CollectionRenameFormType) => {
-    setIsRenaming(true);
-    const ok = await collectionsTreeStore.renameCollection(slug, formValue.title);
-    setIsRenaming(false);
+  const handleFinish = async (formValue: CollectionEditFormType) => {
+    setIsSaving(true);
+    const ok = await collectionsTreeStore.updateCollection(slug, {
+      title: formValue.title,
+      description: formValue.description?.trim() ?? "",
+    });
+    setIsSaving(false);
 
     if (ok) {
       messageApi.success(t("collection.collection-has-been-changed"));
@@ -57,19 +64,19 @@ function CollectionRenameModal({
     <>
       {contextHolder}
       <Modal
-        title={t("collection.change-name")}
+        title={t("collection.edit-collection")}
         open={isOpen}
         onCancel={handleCancel}
         footer={
           <>
-            <Button type="default" disabled={isRenaming} onClick={handleCancel}>
+            <Button type="default" disabled={isSaving} onClick={handleCancel}>
               {t("common.cancel")}
             </Button>
 
             <Button
-              loading={isRenaming}
+              loading={isSaving}
               type="primary"
-              form="collection-rename-form"
+              form="collection-edit-form"
               key="submit"
               htmlType="submit"
             >
@@ -81,13 +88,13 @@ function CollectionRenameModal({
       >
         <Form
           form={form}
-          name="collection-rename-form"
+          name="collection-edit-form"
           layout="vertical"
           onFinish={handleFinish}
           autoComplete="off"
-          id="collection-rename-form"
+          id="collection-edit-form"
         >
-          <Form.Item<CollectionRenameFormType>
+          <Form.Item<CollectionEditFormType>
             label={t("collection.edit-collection-name")}
             name="title"
             rules={[
@@ -103,10 +110,25 @@ function CollectionRenameModal({
           >
             <Input placeholder={t("collection.enter-collection-name")} />
           </Form.Item>
+
+          <Form.Item<CollectionEditFormType>
+            label={t("collection.description")}
+            name="description"
+            rules={[
+              {
+                max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                message: t("collection.description-max", {
+                  max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                }),
+              },
+            ]}
+          >
+            <Input.TextArea rows={3} placeholder={t("collection.description-placeholder")} />
+          </Form.Item>
         </Form>
       </Modal>
     </>
   );
 }
 
-export default CollectionRenameModal;
+export default CollectionEditModal;

@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
   slug: string;
+  description?: string;
 };
 
 function CollectionCreateModal({
@@ -64,6 +66,7 @@ function CollectionCreateModal({
           query: query,
           title: formValue.title,
           slug: formValue.slug,
+          description: formValue.description?.trim() || undefined,
           parent_slug: parentSlug,
         },
       })
@@ -158,6 +161,20 @@ function CollectionCreateModal({
             ]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item<collectionCreateFormType>
+            label={t("collection.description")}
+            name="description"
+            rules={[
+              {
+                max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                message: t("collection.description-max", {
+                  max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                }),
+              },
+            ]}
+          >
+            <Input.TextArea rows={3} placeholder={t("collection.description-placeholder")} />
           </Form.Item>
         </Form>
       </Modal>

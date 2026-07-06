@@ -134,6 +134,7 @@ export function MinionDetailsTabsView({
             minionName={minion.minion_id}
             isInDrawer={isInDrawer}
             isFullView={isFullView}
+            onFilterButton={onFilterButton}
           />
         ) : null,
       },

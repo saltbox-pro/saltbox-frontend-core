@@ -7,13 +7,16 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
-import { Tag } from "antd";
+import { message, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
+import {
+  buildMinionDetailsPagePath,
+  type OnFilterButtonParams,
+} from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
@@ -139,8 +142,8 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   );
 
   const handleDrawerFilterButtonClick = useCallback(
-    (params: { name: string; value: unknown }) => {
-      const field = `grains.${params.name}`;
+    (params: OnFilterButtonParams) => {
+      const field = params.name;
       const value = params.value;
       const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
         ? ["in", value.map((item) => String(item)).join(",")]
@@ -155,9 +158,13 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       props.filterStore.handleSearch();
       props.onFiltersApplied?.();
       props.onAddFilter();
-      drawer.close();
+      message.success(t("minions.filter-applied"));
+
+      if (!params.keepDrawerOpen) {
+        drawer.close();
+      }
     },
-    [drawer.close, props.filterStore, props.onAddFilter, props.onFiltersApplied]
+    [drawer.close, props.filterStore, props.onAddFilter, props.onFiltersApplied, t]
   );
 
   const handleRowClick = useCallback(

@@ -1,6 +1,6 @@
 import { DownOutlined } from "@ant-design/icons";
 import { SearchInput } from "@saltbox/saltbox-frontend-common";
-import { Alert, Empty, Flex, Spin, Tree } from "antd";
+import { Alert, Empty, Flex, Spin, Tree, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { type Key, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,15 +20,24 @@ import type { CollectionTreeAntdNode } from "../types/node";
 import styles from "./collections-tree.module.css";
 import { MinionsTreeRefreshButton } from "./minions-tree-refresh-button";
 
+const ROOT_SLUG = "root";
+
 interface CollectionsTreeProps {
   onSelectNode: (node: CollectionTreeAntdNode) => void;
   renderActions?: (node: CollectionTreeAntdNode) => ReactNode;
+  showDescription?: boolean;
   compact?: boolean;
   className?: string;
 }
 
 export const CollectionsTree = observer(
-  ({ onSelectNode, renderActions, compact = false, className }: CollectionsTreeProps) => {
+  ({
+    onSelectNode,
+    renderActions,
+    showDescription = false,
+    compact = false,
+    className,
+  }: CollectionsTreeProps) => {
     const { t } = useTranslation();
 
     const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>("");
@@ -135,14 +144,29 @@ export const CollectionsTree = observer(
     }, []);
 
     const titleRender = useMemo(() => {
-      if (!renderActions) return undefined;
+      if (!renderActions && !showDescription) return undefined;
       return (node: CollectionTreeAntdNode) => (
         <Flex className={styles.nodeRow} align="center" gap="small">
           <span className={styles.nodeTitle}>{node.title as ReactNode}</span>
-          <span className={styles.nodeActions}>{renderActions(node)}</span>
+          {showDescription &&
+            node.slug !== ROOT_SLUG &&
+            (node.description ? (
+              <Typography.Text
+                type="secondary"
+                className={styles.nodeDescription}
+                ellipsis={{ tooltip: node.description }}
+              >
+                {node.description}
+              </Typography.Text>
+            ) : (
+              <Typography.Text type="secondary" italic className={styles.nodeDescription}>
+                {t("collection.no-description")}
+              </Typography.Text>
+            ))}
+          {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
         </Flex>
       );
-    }, [renderActions]);
+    }, [renderActions, showDescription, t]);
 
     return (
       <Flex

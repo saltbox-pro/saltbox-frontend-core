@@ -127,7 +127,7 @@ const minionDetailsViewsToDescriptionItems = (
                 title={t("dashboard.apply-value-to-filters")}
                 onClick={() =>
                   onFilterButton({
-                    name: String(minionDetailView.key),
+                    name: `grains.${String(minionDetailView.key)}`,
                     value: grainValue,
                   })
                 }
