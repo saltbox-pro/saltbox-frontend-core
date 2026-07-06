@@ -52,15 +52,27 @@
   font-size: 13px;
 }
 
+.collectionsTree :global(.ant-tree .ant-tree-node-content-wrapper) {
+  min-width: 0;
+}
+
 .nodeRow {
-  display: inline-flex;
-  max-width: 100%;
+  display: flex;
+  width: 100%;
 }
 
 .nodeTitle {
+  flex-shrink: 0;
+  max-width: 45%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.nodeDescription {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .nodeActions {

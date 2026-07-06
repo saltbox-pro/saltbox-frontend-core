@@ -50,48 +50,29 @@ export class CollectionStore {
     this.loadCollection();
   };
 
-  updateCollectionQuery = async (query: object) => {
+  updateCollection = async (payload: { title?: string; description?: string; query?: object }) => {
     if (!this.collectionSlug || !this.collection) return;
+
+    const oldSlug = this.collectionSlug;
 
     this.isLoading = true;
     try {
       const updatedCollection = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-        slug: this.collectionSlug,
+        slug: oldSlug,
         CollectionUpdateSchema: {
-          title: this.collection.title,
-          query: query,
-        },
-      });
-
-      runInAction(() => {
-        this.collection = updatedCollection;
-      });
-    } finally {
-      runInAction(() => {
-        this.isLoading = false;
-      });
-    }
-  };
-
-  updateCollectionTitle = async (title: string) => {
-    if (!this.collectionSlug || !this.collection) return;
-
-    this.isLoading = true;
-    try {
-      const updatedCollection = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-        slug: this.collectionSlug,
-        CollectionUpdateSchema: {
-          query: this.collection.query,
-          title: title,
+          title: payload.title ?? this.collection.title,
+          query: payload.query ?? this.collection.query,
+          description: payload.description ?? this.collection.description ?? "",
         },
       });
 
       runInAction(() => {
         this.collection = updatedCollection;
         if (updatedCollection) {
-          collectionsTreeStore.updateNode(this.collectionSlug!, {
+          collectionsTreeStore.updateNode(oldSlug, {
             title: updatedCollection.title,
             slug: updatedCollection.slug,
+            description: updatedCollection.description,
           });
           this.collectionSlug = updatedCollection.slug;
         }

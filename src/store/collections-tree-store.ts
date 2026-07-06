@@ -49,6 +49,7 @@ export class CollectionsTreeStore {
       id: collection.id,
       title: collection.title,
       slug: collection.slug,
+      description: collection.description,
       parent_id: collection.parent_id ?? undefined,
       children: [],
     };
@@ -85,7 +86,10 @@ export class CollectionsTreeStore {
     });
   };
 
-  updateNode = (oldSlug: string, payload: { title: string; slug: string }) => {
+  updateNode = (
+    oldSlug: string,
+    payload: { title: string; slug: string; description?: string }
+  ) => {
     if (this.treeNodes.length === 0) return;
 
     runInAction(() => {
@@ -94,11 +98,12 @@ export class CollectionsTreeStore {
 
       node.title = payload.title;
       node.slug = payload.slug;
+      node.description = payload.description;
       this.treeNodes = [...this.treeNodes];
     });
   };
 
-  renameCollection = async (slug: string, title: string) => {
+  updateCollection = async (slug: string, payload: { title: string; description?: string }) => {
     this.actionStatus = "in-process";
 
     try {
@@ -106,8 +111,9 @@ export class CollectionsTreeStore {
       const updated = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
         slug,
         CollectionUpdateSchema: {
-          title,
+          title: payload.title,
           query: current?.query,
+          description: payload.description ?? "",
         },
       });
 
@@ -120,7 +126,11 @@ export class CollectionsTreeStore {
         return false;
       }
 
-      this.updateNode(slug, { title: updated.title, slug: updated.slug });
+      this.updateNode(slug, {
+        title: updated.title,
+        slug: updated.slug,
+        description: updated.description,
+      });
 
       runInAction(() => {
         this.actionStatus = "success";
