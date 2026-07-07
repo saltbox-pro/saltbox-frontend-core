@@ -11,6 +11,7 @@ import {
   WebSocketMessage,
   WebSocketService,
   AcceptedMastersActionButton,
+  RefreshButton,
   getApiErrorMessage,
   isGlobalServerError,
   useWithAcceptedMastersCheck,
@@ -443,13 +444,11 @@ const JobPage = observer(() => {
                   </Tag>
                 </Flex>
                 <Flex align="center" gap={8}>
-                  <Tooltip title={t("common.refresh")}>
-                    <Button
-                      icon={<ReloadOutlined />}
-                      loading={isManualRefreshLoading}
-                      onClick={handleJobReturnsRefresh}
-                    />
-                  </Tooltip>
+                  <RefreshButton
+                    title={t("common.refresh")}
+                    loading={isManualRefreshLoading}
+                    onClick={handleJobReturnsRefresh}
+                  />
                   {showExportButton && (
                     <Tooltip title={t("jobs.download-to-csv")}>
                       <Button

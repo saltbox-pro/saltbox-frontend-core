@@ -1,6 +1,6 @@
-import { SyncOutlined } from "@ant-design/icons";
 import { SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
-import { Button, Flex, Select } from "antd";
+import { RefreshButton } from "@saltbox/saltbox-frontend-common";
+import { Flex, Select } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -48,9 +48,9 @@ export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltK
           },
         }}
       />
-      <Button
+      <RefreshButton
         className={styles.saltKeysToolbarRefreshButton}
-        icon={<SyncOutlined spin={isLoading} />}
+        loading={isLoading}
         onClick={onRefresh}
         title={t("master.refresh")}
         disabled={isLoading}

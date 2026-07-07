@@ -1,4 +1,4 @@
-import { FilterOutlined, PlusOutlined, SyncOutlined } from "@ant-design/icons";
+import { FilterOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   type JobsListResponse,
   CreateJobRequestTgtTypeEnum,
@@ -10,9 +10,10 @@ import {
   formatTimeByUserTZ,
   CellAction,
   AcceptedMastersActionButton,
+  RefreshButton,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Tag, message } from "antd";
+import { Tag, message } from "antd";
 import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -348,8 +349,8 @@ const JobsPage = observer(() => {
               jobsStore.handleDateRangeChange(createdSince, preset);
             }}
           />
-          <Button
-            icon={<SyncOutlined spin={jobsStore.isJobsLoading} />}
+          <RefreshButton
+            loading={jobsStore.isJobsLoading}
             onClick={() => jobsStore.refreshJobs()}
             title={t("jobs.refresh")}
             disabled={jobsStore.isJobsLoading}

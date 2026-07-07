@@ -1,11 +1,11 @@
-import { SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
   AcceptedMastersActionButton,
+  RefreshButton,
   SelectedItemsCounter,
 } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
-import { Button, Flex, message, Spin, theme } from "antd";
+import { Flex, message, Spin, theme } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -188,10 +188,9 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             reloadMinions={reloadMinions}
           />
 
-          <Button
-            icon={<SyncOutlined spin={minionsStore.isLoading} />}
+          <RefreshButton
+            loading={minionsStore.isLoading}
             onClick={reloadMinions}
-            type="text"
             title={t("minions.refresh")}
           />
 

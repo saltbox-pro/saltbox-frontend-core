@@ -1,5 +1,4 @@
-import { SyncOutlined } from "@ant-design/icons";
-import { BaseActionButton } from "@saltbox/saltbox-frontend-common";
+import { RefreshButton } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
@@ -11,11 +10,10 @@ export const MinionsTreeRefreshButton = observer(function MinionsTreeRefreshButt
   const { t } = useTranslation();
 
   return (
-    <BaseActionButton
+    <RefreshButton
       className={styles.refreshButton}
       size="small"
       title={t("collection.refresh-tree")}
-      icon={<SyncOutlined />}
       loading={collectionsTreeStore.fetchTreeStatus === "in-process"}
       onClick={() => collectionsTreeStore.loadTree(true)}
     />

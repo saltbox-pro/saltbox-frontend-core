@@ -1,5 +1,5 @@
-import { SettingOutlined, SyncOutlined } from "@ant-design/icons";
-import { SearchInput } from "@saltbox/saltbox-frontend-common";
+import { SettingOutlined } from "@ant-design/icons";
+import { RefreshButton, SearchInput } from "@saltbox/saltbox-frontend-common";
 import {
   type MenuProps,
   Alert,
@@ -139,8 +139,8 @@ export const ConfigurationTemplates = observer(() => {
           />
 
           <Space>
-            <Button
-              icon={<SyncOutlined spin={isRefreshingList} />}
+            <RefreshButton
+              loading={isRefreshingList}
               onClick={handleLoadSources}
               disabled={store.isLoading || store.isCheckingExternal}
               title={t("configuration-templates.actions.refresh")}
