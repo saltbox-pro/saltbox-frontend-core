@@ -53,6 +53,10 @@ export function getSourceWebUrl(source: TemplateSourcePublicSchema): string | un
   return String(source.repo_url);
 }
 
+export function getConfigurationTemplatesListPath(): string {
+  return "/core/configuration-templates";
+}
+
 export function getTemplateSourceDetailPath(sourceId: string): string {
   return `/core/configuration-templates/${encodeURIComponent(sourceId)}`;
 }

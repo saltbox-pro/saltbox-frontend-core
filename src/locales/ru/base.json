@@ -208,6 +208,7 @@
     "search-templates-placeholder": "Поиск по источнику, шаблону",
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
+    "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
     "error-loading-templates": "Ошибка загрузки шаблонов",
     "error-loading-template-accessibility": "Ошибка загрузки доступности шаблонов",
     "template-accessible": "Доступен",
