@@ -18,13 +18,14 @@ import {
   Row,
   SortingState,
 } from "@tanstack/react-table";
-import { Button, Flex, Tag } from "antd";
+import { Flex, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/hooks/use-job-modal-flow-state";
 import {
   JobModalShell,
@@ -33,7 +34,7 @@ import {
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
-import { JobFilterStore, JobStore, mastersStore } from "saltbox-core/store";
+import { JobFilterStore, JobStore } from "saltbox-core/store";
 
 import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
@@ -329,7 +330,6 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     setConfigureFunction,
     targeting,
     setTargeting,
-    openFunctionPicker,
     openConfigureWithFunction,
   } = useJobModalFlowState(minionTargeting);
   const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
@@ -341,8 +341,8 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   const handleOpenCreateJob = useCallback(() => {
     setReplayBaseline(null);
     setTargeting(minionTargeting);
-    openFunctionPicker();
-  }, [minionTargeting, openFunctionPicker, setTargeting]);
+    setPickerOpen(true);
+  }, [minionTargeting, setTargeting, setPickerOpen]);
 
   const handleReplayJob = useCallback(
     (row: JobReturnModel) => {
@@ -438,14 +438,14 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
 
   const jobReturnsTabActions = isFullView ? (
     <Flex justify="flex-end">
-      <Button
+      <AcceptedMastersActionButton
         type="primary"
         icon={<PlusOutlined />}
-        onClick={handleOpenCreateJob}
-        loading={mastersStore.isLoading}
+        warningActionText={t("job-modal.warning-action.create-job")}
+        onAction={handleOpenCreateJob}
       >
         {t("job-modal.create-job")}
-      </Button>
+      </AcceptedMastersActionButton>
     </Flex>
   ) : null;
 

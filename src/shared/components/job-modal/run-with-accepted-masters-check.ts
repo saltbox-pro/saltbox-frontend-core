@@ -1,19 +1,29 @@
-import { message } from "antd";
 import type { TFunction } from "i18next";
 
-import { mastersStore } from "saltbox-core/store";
+import {
+  ACCEPTED_MASTERS_ERROR_MESSAGE_KEY,
+  withAcceptedMastersCheck,
+} from "saltbox-core/shared/components/accepted-masters";
 
-export const runWithAcceptedMastersCheck = (t: TFunction, onSuccess: () => void): void => {
-  mastersStore
-    .hasAcceptedMasters()
-    .then((hasMasters) => {
-      if (!hasMasters) {
-        message.warning(t("job-modal.warning-message"));
-        return;
-      }
-      onSuccess();
-    })
-    .catch(() => {
-      message.error(t("job-modal.error-load-salt-masters"));
-    });
+type RunWithAcceptedMastersCheckParams = {
+  t: TFunction;
+  warningActionText: string;
+  onSuccess: () => void | Promise<void>;
+  errorMessage?: string;
+  onMastersClick?: () => void;
+};
+
+export const runWithAcceptedMastersCheck = ({
+  t,
+  warningActionText,
+  onSuccess,
+  errorMessage,
+  onMastersClick,
+}: RunWithAcceptedMastersCheckParams): void => {
+  withAcceptedMastersCheck({
+    warningActionText,
+    errorMessage: errorMessage ?? t(ACCEPTED_MASTERS_ERROR_MESSAGE_KEY),
+    onSuccess,
+    onMastersClick,
+  });
 };

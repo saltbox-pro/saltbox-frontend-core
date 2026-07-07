@@ -1,11 +1,12 @@
 import { SyncOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, Tag, message } from "antd";
+import { Tag, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 
@@ -38,7 +39,7 @@ export const SyncSourceButton = observer(function SyncSourceButton({
   const syncProgress = isSyncInProgress({ source, ...actionContext });
   const syncRequestLoading = isSyncRequestLoading(actionContext);
 
-  const handleSync = useCallback(async () => {
+  const executeSync = useCallback(async () => {
     try {
       await actions.syncSource(source.id);
       message.success(
@@ -70,14 +71,15 @@ export const SyncSourceButton = observer(function SyncSourceButton({
   }
 
   return (
-    <Button
+    <AcceptedMastersActionButton
       size="small"
       icon={<SyncOutlined />}
       disabled={disabled}
       loading={syncRequestLoading}
-      onClick={handleSync}
+      warningActionText={t("configuration-templates.warning-action.sync-source")}
+      onAction={executeSync}
     >
       {t("common.sync")}
-    </Button>
+    </AcceptedMastersActionButton>
   );
 });

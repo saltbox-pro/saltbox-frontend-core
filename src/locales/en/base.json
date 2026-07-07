@@ -239,12 +239,14 @@
     "error-creating-task": "Error creating task",
     "task-created-successfully": "Task created successfully",
     "error-on-load-salt-masters": "Error on load salt masters",
+    "warning-action": {
+      "task": "create a task",
+      "policy": "create a policy"
+    },
     "warning-apply-to-whole-collection": "{{entityType}} will be applied to all minions in the \"{{collectionName}}\" collection",
     "warning-apply-to-filtered-collection": "{{entityType}} will be applied to filtered minions in the \"{{collectionName}}\" collection",
     "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
-    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
-    "warning-on-create-task": "To create a task, activate a master on the Masters page",
-    "warning-on-create-policy": "To create a policy, activate a master on the Masters page"
+    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems."
   },
   "task": {
     "details": {
@@ -618,7 +620,10 @@
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
-    "warning-message": "To create a job, activate the master on the Masters page",
+    "warning-action": {
+      "create-job": "create a job",
+      "repeat-job": "repeat a job"
+    },
     "hint-example-label": "Example:",
     "advanced-settings": "Advanced settings",
     "timeout-label": "Command response timeout",
@@ -903,6 +908,10 @@
     "disconnect": "Disconnect",
     "sync": "Sync"
   },
+  "accepted-masters": {
+    "warning-template": "To {{action}}, activate a master on the <mastersLink>\"Masters\"</mastersLink> page",
+    "error-load-salt-masters": "Failed to load masters"
+  },
   "task-template-editor": {
     "create-title": "Create task template",
     "edit-title": "Edit task template",
@@ -945,6 +954,10 @@
       "page-title": "Template source"
     },
     "load-error": "Failed to load configuration template sources",
+    "warning-action": {
+      "connect-source": "connect a source",
+      "sync-source": "sync a source"
+    },
     "sync-gitlab-sources-error": "Failed to sync repositories with GitLab",
     "sync-gitlab-sources-failed": "GitLab repository sync failed",
     "sync-gitlab-sources-success": "Repositories have been synced with GitLab",

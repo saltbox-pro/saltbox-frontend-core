@@ -239,12 +239,14 @@
     "error-creating-task": "Ошибка создания задачи",
     "task-created-successfully": "Задача успешно создана",
     "error-on-load-salt-masters": "Ошибка при загрузке мастеров",
+    "warning-action": {
+      "task": "создания задачи",
+      "policy": "создания политики"
+    },
     "warning-apply-to-whole-collection": "{{entityType}} будет применена ко всем клиентам коллекции \"{{collectionName}}\"",
     "warning-apply-to-filtered-collection": "{{entityType}} будет применена к отфильтрованным клиентам коллекции \"{{collectionName}}\"",
     "confirm-apply-to-whole-collection-description": "Вы собираетесь запустить {{entityType}} на всех клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
-    "confirm-apply-to-filtered-collection-description": "Вы собираетесь запустить {{entityType}} на отфильтрованных клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
-    "warning-on-create-task": "Для создания задачи активируйте мастера на странице \"Мастера\"",
-    "warning-on-create-policy": "Для создания политики активируйте мастера на странице \"Мастера\""
+    "confirm-apply-to-filtered-collection-description": "Вы собираетесь запустить {{entityType}} на отфильтрованных клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем."
   },
   "task": {
     "details": {
@@ -618,7 +620,10 @@
     "salt-master-error-required": "Мастер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
     "tgt-error-required": "Цель обязательна",
-    "warning-message": "Для создания команды, активируйте мастера на странице Мастера",
+    "warning-action": {
+      "create-job": "создания команды",
+      "repeat-job": "повторного запуска команды"
+    },
     "hint-example-label": "Пример:",
     "advanced-settings": "Расширенные настройки",
     "timeout-label": "Время ожидания ответа команды",
@@ -903,6 +908,10 @@
     "disconnect": "Отключить",
     "sync": "Синхронизировать"
   },
+  "accepted-masters": {
+    "warning-template": "Для {{action}} активируйте мастера на странице <mastersLink>\"Мастера\"</mastersLink>",
+    "error-load-salt-masters": "Не удалось загрузить список мастеров"
+  },
   "task-template-editor": {
     "create-title": "Создание шаблона задачи",
     "edit-title": "Редактирование шаблона задачи",
@@ -945,6 +954,10 @@
       "load-error": "Не удалось загрузить источник"
     },
     "load-error": "Не удалось загрузить источники шаблонов конфигураций",
+    "warning-action": {
+      "connect-source": "подключения источника",
+      "sync-source": "синхронизации источника"
+    },
     "sync-gitlab-sources-error": "Не удалось синхронизировать репозитории с GitLab",
     "sync-gitlab-sources-failed": "Синхронизация репозиториев с GitLab завершилась с ошибкой",
     "sync-gitlab-sources-success": "Репозитории с GitLab успешно синхронизированы",
