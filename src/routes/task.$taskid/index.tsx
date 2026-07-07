@@ -89,7 +89,7 @@ const TaskPage = observer(() => {
           taskId: taskId ?? "...",
         })}
         customParentPathGenerator={() =>
-          `/core/${taskStore.task.task_type === "policy" ? "policies" : "tasks"}`
+          `/core/${taskStore.task?.task_type === "policy" ? "policies" : "tasks"}`
         }
       />
 
