@@ -208,6 +208,7 @@
     "search-templates-placeholder": "Search by source, template",
     "unknown-repository": "Without source",
     "no-sources-available": "No sources available",
+    "go-to-configuration-templates": "Go to configuration templates",
     "error-loading-templates": "Error loading templates",
     "error-loading-template-accessibility": "Error loading template accessibility",
     "template-accessible": "Available",

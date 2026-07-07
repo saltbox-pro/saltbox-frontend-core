@@ -1,4 +1,4 @@
-import { Alert, Empty } from "antd";
+import { Alert, Button, Empty } from "antd";
 import { useTranslation } from "react-i18next";
 
 import type { TemplateSourceRow } from "../../../helpers/template-picker-rows";
@@ -20,6 +20,7 @@ export type TemplateListModalContentProps = {
   getSourceLabel: (sourceName: string) => string;
   onCollapseChange: (keys: string | string[]) => void;
   onSelectTemplate: (template: SelectedTaskTemplate) => void;
+  onGoToConfigurationTemplates: () => void;
 };
 
 export function TemplateListModalContent({
@@ -35,6 +36,7 @@ export function TemplateListModalContent({
   getSourceLabel,
   onCollapseChange,
   onSelectTemplate,
+  onGoToConfigurationTemplates,
 }: TemplateListModalContentProps) {
   const { t } = useTranslation();
 
@@ -48,14 +50,22 @@ export function TemplateListModalContent({
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={t("task-create.no-sources-available")}
-        />
+        >
+          <Button type="primary" onClick={onGoToConfigurationTemplates}>
+            {t("task-create.go-to-configuration-templates")}
+          </Button>
+        </Empty>
       )}
 
       {hasNoResults && (
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={t("configuration-templates.search.no-results")}
-        />
+        >
+          <Button type="primary" onClick={onGoToConfigurationTemplates}>
+            {t("task-create.go-to-configuration-templates")}
+          </Button>
+        </Empty>
       )}
 
       {shouldShowCollapse && (
