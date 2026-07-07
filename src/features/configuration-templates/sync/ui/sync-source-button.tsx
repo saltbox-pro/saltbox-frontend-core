@@ -1,14 +1,16 @@
 import { SyncOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { AcceptedMastersActionButton, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 import { Tag, message } from "antd";
+import type { MessageInstance } from "antd/es/message/interface";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
-import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { mastersStore } from "saltbox-core/store";
 
 import {
   getSourceActionContext,
@@ -24,6 +26,7 @@ export type SyncSourceButtonProps = {
   actions: SourceActionsPort;
   showSync: boolean;
   disabled?: boolean;
+  messageApi: MessageInstance;
 };
 
 export const SyncSourceButton = observer(function SyncSourceButton({
@@ -31,8 +34,10 @@ export const SyncSourceButton = observer(function SyncSourceButton({
   actions,
   showSync,
   disabled = false,
+  messageApi,
 }: SyncSourceButtonProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const actionContext = getSourceActionContext(actions, source.id);
 
@@ -76,6 +81,9 @@ export const SyncSourceButton = observer(function SyncSourceButton({
       icon={<SyncOutlined />}
       disabled={disabled}
       loading={syncRequestLoading}
+      messageApi={messageApi}
+      navigate={navigate}
+      checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
       warningActionText={t("configuration-templates.warning-action.sync-source")}
       onAction={executeSync}
     >

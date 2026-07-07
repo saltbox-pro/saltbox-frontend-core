@@ -1,10 +1,13 @@
 import { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
+import { useWithAcceptedMastersCheck } from "@saltbox/saltbox-frontend-common";
+import type { MessageInstance } from "antd/es/message/interface";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { mastersStore } from "saltbox-core/store";
+
 import type { JobModalTargeting } from "../job-modal-shell";
-import { runWithAcceptedMastersCheck } from "../run-with-accepted-masters-check";
 
 export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
   target: "*",
@@ -12,19 +15,23 @@ export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
   defaultMaster: "",
 });
 
-export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
+export const useJobModalFlowState = (
+  messageApi: MessageInstance,
+  initialTargeting?: JobModalTargeting
+) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const withAcceptedMastersCheck = useWithAcceptedMastersCheck(messageApi);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [configureFunction, setConfigureFunction] = useState<string | null>(null);
   const [targeting, setTargeting] = useState(initialTargeting ?? createDefaultJobModalTargeting());
 
   const openConfigureWithFunction = useCallback(
     (functionName: string, nextTargeting: JobModalTargeting) => {
-      runWithAcceptedMastersCheck({
-        t,
+      withAcceptedMastersCheck({
         warningActionText: t("job-modal.warning-action.create-job"),
-        onMastersClick: () => navigate("/core/masters"),
+        navigate,
+        checkHasAcceptedMasters: () => mastersStore.hasAcceptedMasters(),
         onSuccess: () => {
           setTargeting(nextTargeting);
           setConfigureFunction(functionName);
@@ -32,7 +39,7 @@ export const useJobModalFlowState = (initialTargeting?: JobModalTargeting) => {
         },
       });
     },
-    [navigate, t]
+    [navigate, t, withAcceptedMastersCheck]
   );
 
   return {

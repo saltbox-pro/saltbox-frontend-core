@@ -1,12 +1,15 @@
 import { SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
+import {
+  AcceptedMastersActionButton,
+  SelectedItemsCounter,
+} from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
-import { Button, Flex, Spin, theme } from "antd";
+import { Button, Flex, message, Spin, theme } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import {
@@ -14,9 +17,14 @@ import {
   TaskCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
-import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { AddTaskIcon } from "saltbox-core/shared/components/icons";
-import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
+import {
+  appStore,
+  CollectionStore,
+  mastersStore,
+  MinionFilterStore,
+  MinionsStore,
+} from "saltbox-core/store";
 
 import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
@@ -35,8 +43,10 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export const MinionsListView = observer((props: MinionListViewProps) => {
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
   const { token } = theme.useToken();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [minionsStore] = useState(
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
@@ -128,6 +138,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
 
   return (
     <>
+      {contextHolder}
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
           <Spin spinning={minionsStore.isLoading}>
@@ -145,6 +156,9 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             className={styles.createButton}
             type="primary"
             icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
+            messageApi={messageApi}
+            navigate={navigate}
+            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
             warningActionText={t("task-create.warning-action.task")}
             onAction={openTaskCreate}
           >
@@ -154,6 +168,9 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           <AcceptedMastersActionButton
             className={styles.createButton}
             icon={<AddTaskIcon />}
+            messageApi={messageApi}
+            navigate={navigate}
+            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
             warningActionText={t("task-create.warning-action.policy")}
             onAction={openPolicyCreate}
             disabled={!!selectedMinionsCount}

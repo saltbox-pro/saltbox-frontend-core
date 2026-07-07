@@ -953,10 +953,6 @@
     "disconnect": "Отключить",
     "sync": "Синхронизировать"
   },
-  "accepted-masters": {
-    "warning-template": "Для {{action}} активируйте мастера на странице <mastersLink>\"Мастера\"</mastersLink>",
-    "error-load-salt-masters": "Не удалось загрузить список мастеров"
-  },
   "task-template-editor": {
     "create-title": "Создание шаблона задачи",
     "edit-title": "Редактирование шаблона задачи",

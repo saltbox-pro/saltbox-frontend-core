@@ -2,6 +2,7 @@ import { CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import { CreateJobRequestTgtTypeEnum, JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
 import { Flex, Typography } from "antd";
+import type { MessageInstance } from "antd/es/message/interface";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +20,7 @@ const { Text } = Typography;
 interface MinionsPopoverProps {
   minions: (JobReturnModel | string)[];
   title: string;
+  messageApi: MessageInstance;
   maxWidth?: string;
   trigger?: React.ReactNode;
 }
@@ -26,6 +28,7 @@ interface MinionsPopoverProps {
 export function MinionsPopover({
   minions,
   title,
+  messageApi,
   maxWidth = "500px",
   trigger,
 }: MinionsPopoverProps) {
@@ -45,7 +48,7 @@ export function MinionsPopover({
     targeting,
     setTargeting,
     openConfigureWithFunction,
-  } = useJobModalFlowState();
+  } = useJobModalFlowState(messageApi);
   const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
 
   const handleReplayClick = useCallback(

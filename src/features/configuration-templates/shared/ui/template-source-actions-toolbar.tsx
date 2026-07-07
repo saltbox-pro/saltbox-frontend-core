@@ -1,5 +1,6 @@
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { Flex } from "antd";
+import type { MessageInstance } from "antd/es/message/interface";
 import { observer } from "mobx-react-lite";
 
 import { ConnectSourceButton } from "../../connect/ui/connect-source-button";
@@ -26,6 +27,7 @@ export type TemplateSourceActionsToolbarProps = {
   canSync: boolean;
   canUnplug: boolean;
   showDelete: boolean;
+  messageApi: MessageInstance;
 };
 
 export const TemplateSourceActionsToolbar = observer(function TemplateSourceActionsToolbar({
@@ -35,6 +37,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
   canSync,
   canUnplug,
   showDelete,
+  messageApi,
 }: TemplateSourceActionsToolbarProps) {
   const actionContext = getSourceActionContext(actions, source.id);
 
@@ -79,6 +82,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
         actions={actions}
         canConnect={canConnect}
         disabled={connectDisabled}
+        messageApi={messageApi}
       />
 
       <SyncSourceButton
@@ -86,6 +90,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
         actions={actions}
         showSync={showSync}
         disabled={syncDisabled}
+        messageApi={messageApi}
       />
 
       <DisconnectSourceButton

@@ -1,4 +1,5 @@
 import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
+import type { MessageInstance } from "antd/es/message/interface";
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,10 +43,11 @@ export interface TemplateSourceListEntryProps {
   store: ConfigurationTemplatesListStore;
   searchQuery?: string;
   templatePreview?: TemplatePreviewListProps;
+  messageApi: MessageInstance;
 }
 
 export const TemplateSourceListEntry = observer(
-  ({ source, store, searchQuery, templatePreview }: TemplateSourceListEntryProps) => {
+  ({ source, store, searchQuery, templatePreview, messageApi }: TemplateSourceListEntryProps) => {
     const { i18n } = useTranslation();
     const navigate = useNavigate();
     const view = getTemplateSourceViewState(source, store);
@@ -104,6 +106,7 @@ export const TemplateSourceListEntry = observer(
               canSync={view.canSync}
               canUnplug={view.canUnplug}
               showDelete={view.showDelete}
+              messageApi={messageApi}
             />
           }
           betweenInfoAndTemplates={<TemplateSourceLastErrorAlert source={source} />}

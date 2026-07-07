@@ -9,6 +9,7 @@ import {
   PageHeader,
   formatTimeByUserTZ,
   CellAction,
+  AcceptedMastersActionButton,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Tag, message } from "antd";
@@ -20,7 +21,6 @@ import type { RuleType } from "react-querybuilder";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import {
   JobModalShell,
@@ -32,7 +32,7 @@ import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
-import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
+import { appStore, JobFilterStore, JobsStore, mastersStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
@@ -83,6 +83,7 @@ const useJobFilters = (t: TFunction) => {
 
 const JobsPage = observer(() => {
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const location = useLocation();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -312,6 +313,7 @@ const JobsPage = observer(() => {
 
   return (
     <>
+      {contextHolder}
       <PageHeader title={t("jobs.title")} />
 
       <JobsQueryBuilder
@@ -328,6 +330,9 @@ const JobsPage = observer(() => {
           <AcceptedMastersActionButton
             type="primary"
             icon={<PlusOutlined />}
+            messageApi={messageApi}
+            navigate={navigate}
+            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
             warningActionText={t("job-modal.warning-action.create-job")}
             onAction={openFunctionPicker}
           >

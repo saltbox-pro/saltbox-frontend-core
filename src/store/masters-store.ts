@@ -1,5 +1,9 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  createMastersStore,
+  publishAcceptedMastersChanged,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
 
@@ -15,8 +19,17 @@ export class MastersStore {
   @observable masters: Array<MasterViewSchema>;
   @observable totalMasters: number;
 
-  private hasAcceptedMastersCache: { value: boolean; ts: number } | null = null;
-  private hasAcceptedMastersInFlight: Promise<boolean> | null = null;
+  private readonly mastersCommonStore = createMastersStore({
+    loadAcceptedMastersCount: async () => {
+      const result = await apiCoreStore.mastersApi?.mastersList({
+        MasterListBody: {
+          query: { status: "accepted" },
+          limit: 1,
+        },
+      });
+      return result?.data?.length ?? 0;
+    },
+  });
 
   constructor() {
     this.isLoading = false;
@@ -30,10 +43,6 @@ export class MastersStore {
     };
     makeObservable(this);
   }
-
-  private invalidateHasAcceptedMastersCache = (): void => {
-    this.hasAcceptedMastersCache = null;
-  };
 
   @action
   reset = (): void => {
@@ -60,7 +69,7 @@ export class MastersStore {
           runInAction(() => {
             this.isLoading = false;
           });
-          this.invalidateHasAcceptedMastersCache();
+          publishAcceptedMastersChanged();
           this.updateMaster(master);
           resolve(master);
         })
@@ -86,7 +95,7 @@ export class MastersStore {
           runInAction(() => {
             this.isLoading = false;
           });
-          this.invalidateHasAcceptedMastersCache();
+          publishAcceptedMastersChanged();
           this.updateMaster(master);
           resolve(master);
         })
@@ -148,42 +157,7 @@ export class MastersStore {
     maxAgeMs?: number;
   }): Promise<boolean> => {
     const force = params?.force ?? false;
-    const maxAgeMs = params?.maxAgeMs ?? 30_000;
-
-    const now = Date.now();
-    if (
-      !force &&
-      this.hasAcceptedMastersCache &&
-      now - this.hasAcceptedMastersCache.ts <= maxAgeMs
-    ) {
-      return this.hasAcceptedMastersCache.value;
-    }
-
-    if (!force && this.hasAcceptedMastersInFlight) {
-      return this.hasAcceptedMastersInFlight;
-    }
-
-    const request = (async () => {
-      const result = await apiCoreStore.mastersApi?.mastersList({
-        MasterListBody: {
-          query: { status: "accepted" },
-          limit: 1,
-        },
-      });
-
-      const value = Boolean(result?.data?.length);
-      this.hasAcceptedMastersCache = { value, ts: Date.now() };
-      return value;
-    })();
-
-    this.hasAcceptedMastersInFlight = request;
-    try {
-      return await request;
-    } finally {
-      if (this.hasAcceptedMastersInFlight === request) {
-        this.hasAcceptedMastersInFlight = null;
-      }
-    }
+    return this.mastersCommonStore.hasAcceptedMasters({ force });
   };
 }
 

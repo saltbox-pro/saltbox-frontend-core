@@ -10,6 +10,7 @@ import {
   FilterToggleButton,
   formatTimeByUserTZ,
   useFiltersToggle,
+  AcceptedMastersActionButton,
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
@@ -18,14 +19,13 @@ import {
   Row,
   SortingState,
 } from "@tanstack/react-table";
-import { Flex, Tag } from "antd";
+import { Flex, message, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/hooks/use-job-modal-flow-state";
 import {
   JobModalShell,
@@ -34,7 +34,7 @@ import {
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
-import { JobFilterStore, JobStore } from "saltbox-core/store";
+import { JobFilterStore, JobStore, mastersStore } from "saltbox-core/store";
 
 import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
@@ -308,6 +308,8 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   isFullView?: boolean;
 }) {
   const { t } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
   const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
   const [filtersExtraContainer, setFiltersExtraContainer] = useState<HTMLElement | null>(null);
 
@@ -331,7 +333,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     targeting,
     setTargeting,
     openConfigureWithFunction,
-  } = useJobModalFlowState(minionTargeting);
+  } = useJobModalFlowState(messageApi, minionTargeting);
   const [replayBaseline, setReplayBaseline] = useState<JobReplayBaseline | null>(null);
 
   useEffect(() => {
@@ -441,6 +443,9 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
       <AcceptedMastersActionButton
         type="primary"
         icon={<PlusOutlined />}
+        messageApi={messageApi}
+        navigate={navigate}
+        checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
         warningActionText={t("job-modal.warning-action.create-job")}
         onAction={handleOpenCreateJob}
       >
@@ -451,6 +456,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
 
   return (
     <>
+      {contextHolder}
       {filtersExtraContainer && createPortal(jobReturnsFilterButton, filtersExtraContainer)}
 
       <MinionJobReturnsTabView

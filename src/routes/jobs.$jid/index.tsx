@@ -10,8 +10,10 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  AcceptedMastersActionButton,
   getApiErrorMessage,
   isGlobalServerError,
+  useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
@@ -33,19 +35,17 @@ import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
-import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import {
   JobModalShell,
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import { runWithAcceptedMastersCheck } from "saltbox-core/shared/components/job-modal/run-with-accepted-masters-check";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
-import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore, mastersStore } from "saltbox-core/store";
 
 import styles from "./index.module.css";
 
@@ -60,6 +60,8 @@ const JobPage = observer(() => {
   const { t } = useTranslation();
   const { jid } = useParams();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+  const withAcceptedMastersCheck = useWithAcceptedMastersCheck(messageApi);
 
   const [webSocketService] = useState(new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
@@ -137,14 +139,14 @@ const JobPage = observer(() => {
         return;
       }
       event.preventDefault();
-      runWithAcceptedMastersCheck({
-        t,
+      withAcceptedMastersCheck({
         warningActionText: t("job-modal.warning-action.repeat-job"),
         onSuccess: openRepeatConfigure,
-        onMastersClick: () => navigate("/core/masters"),
+        navigate,
+        checkHasAcceptedMasters: () => mastersStore.hasAcceptedMasters(),
       });
     },
-    [navigate, openRepeatConfigure, shouldRepeat, t]
+    [navigate, openRepeatConfigure, shouldRepeat, t, withAcceptedMastersCheck]
   );
 
   useDocumentEvent("keydown", repeatKeydownHandler, true);
@@ -268,6 +270,7 @@ const JobPage = observer(() => {
 
   return (
     <>
+      {contextHolder}
       <PageHeader title={t("jobs.job-title", { jobId: jid })} />
 
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
@@ -278,6 +281,9 @@ const JobPage = observer(() => {
               icon={<ReloadOutlined />}
               type="default"
               title={t("jobs.repeat-job")}
+              messageApi={messageApi}
+              navigate={navigate}
+              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
               warningActionText={t("job-modal.warning-action.repeat-job")}
               onAction={openRepeatConfigure}
               disabled={!jobStore.job}

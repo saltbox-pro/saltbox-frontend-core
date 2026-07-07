@@ -953,10 +953,6 @@
     "disconnect": "Disconnect",
     "sync": "Sync"
   },
-  "accepted-masters": {
-    "warning-template": "To {{action}}, activate a master on the <mastersLink>\"Masters\"</mastersLink> page",
-    "error-load-salt-masters": "Failed to load masters"
-  },
   "task-template-editor": {
     "create-title": "Create task template",
     "edit-title": "Edit task template",

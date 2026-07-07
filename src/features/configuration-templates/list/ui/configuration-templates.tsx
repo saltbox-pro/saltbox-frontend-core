@@ -38,6 +38,7 @@ type AddSourceModal = "local" | "git" | "archive" | null;
 
 export const ConfigurationTemplates = observer(() => {
   const { t, i18n } = useTranslation();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [store] = useState(() => new ConfigurationTemplatesStore());
   const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
@@ -129,6 +130,7 @@ export const ConfigurationTemplates = observer(() => {
 
   return (
     <Skeleton loading={store.isLoading && !store.hasLoadedOnce} active>
+      {contextHolder}
       <Space direction="vertical" size="middle">
         <Flex align="stretch" gap="middle">
           <SearchInput
@@ -206,6 +208,7 @@ export const ConfigurationTemplates = observer(() => {
                     store={store}
                     searchQuery={searchQuery}
                     templatePreview={templatesListProps}
+                    messageApi={messageApi}
                   />
                 ))}
               </Flex>

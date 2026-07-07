@@ -4,15 +4,16 @@ import type {
   JobSchemaModel,
   MasterViewSchema,
 } from "@saltbox/saltbox-core-api-client";
+import {
+  useAcceptedMastersErrorMessage,
+  useAcceptedMastersWarningMessage,
+} from "@saltbox/saltbox-frontend-common";
 import type { FormInstance } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
 import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 
-import {
-  ACCEPTED_MASTERS_ERROR_MESSAGE_KEY,
-  showAcceptedMastersWarning,
-} from "saltbox-core/shared/components/accepted-masters";
 import {
   fetchJobFunctionSchema,
   getDefaultJsonFormValue,
@@ -90,6 +91,9 @@ export const useJobModalInit = ({
   t,
   onLoadFailed,
 }: UseJobModalInitParams) => {
+  const acceptedMastersErrorMessage = useAcceptedMastersErrorMessage();
+  const renderWarningMessage = useAcceptedMastersWarningMessage();
+  const navigate = useNavigate();
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
   const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
@@ -161,11 +165,16 @@ export const useJobModalInit = ({
       }
 
       if (error instanceof Error && error.message === NO_ACCEPTED_MASTERS_ERROR) {
-        showAcceptedMastersWarning(t("job-modal.warning-action.create-job"), messageApi);
+        messageApi.warning(
+          renderWarningMessage({
+            action: t("job-modal.warning-action.create-job"),
+            navigate,
+          })
+        );
       } else if (error instanceof Error && error.message === "JOB_SCHEMA_LOAD_FAILED") {
         messageApi.error(t("job-modal.error-load-function-schema"));
       } else {
-        messageApi.error(t(ACCEPTED_MASTERS_ERROR_MESSAGE_KEY));
+        messageApi.error(acceptedMastersErrorMessage);
       }
 
       onLoadFailed();
@@ -176,6 +185,7 @@ export const useJobModalInit = ({
     }
   }, [
     arg,
+    acceptedMastersErrorMessage,
     applyTtlFromInitialOrDefault,
     defaultMaster,
     form,
@@ -183,7 +193,9 @@ export const useJobModalInit = ({
     initialTtlSeconds,
     kwarg,
     messageApi,
+    navigate,
     onLoadFailed,
+    renderWarningMessage,
     resetLoadedData,
     t,
     target,

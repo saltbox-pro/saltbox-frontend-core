@@ -1,4 +1,4 @@
-import { Alert, Card, Flex, Skeleton, Space } from "antd";
+import { Alert, Card, Flex, message, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +38,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
 }: TemplateSourceDetailProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
   const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
 
@@ -71,6 +72,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
 
   return (
     <Space ref={drawer.mainContentRef} direction="vertical" size="large">
+      {contextHolder}
       <Card size="small">
         <Flex vertical gap="middle">
           <Flex align="flex-start" justify="space-between" gap="middle" wrap>
@@ -89,6 +91,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
               canSync={view.canSync}
               canUnplug={view.canUnplug}
               showDelete={view.showDelete}
+              messageApi={messageApi}
             />
           </Flex>
 
