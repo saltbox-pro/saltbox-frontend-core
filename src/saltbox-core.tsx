@@ -196,7 +196,7 @@ export const saltboxModule = {
       },
       {
         key: "masters",
-        label: { en: "Masters", ru: "Мастера" },
+        label: { en: "Controllers", ru: "Контроллеры" },
         icon: "dns",
         path: "/core/masters",
       },
