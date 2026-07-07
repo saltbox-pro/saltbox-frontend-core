@@ -2,7 +2,7 @@ import { SyncOutlined } from "@ant-design/icons";
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { SelectedItemsCounter } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
-import { Button, Flex, message, Spin, theme } from "antd";
+import { Button, Flex, Spin, theme } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,14 +14,9 @@ import {
   TaskCreateModal,
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { AddTaskIcon } from "saltbox-core/shared/components/icons";
-import {
-  appStore,
-  CollectionStore,
-  mastersStore,
-  MinionFilterStore,
-  MinionsStore,
-} from "saltbox-core/store";
+import { appStore, CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
 
 import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
@@ -47,7 +42,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     () => new MinionsStore(props.filterStore.searchMongoDBQuery, undefined)
   );
   const [selection, setSelection] = useState<RowSelectionState>({});
-  const [pendingCreateType, setPendingCreateType] = useState<"task" | "policy" | null>(null);
 
   const searchQueryKey = JSON.stringify(props.filterStore.searchMongoDBQuery);
   const shouldWaitForFilterSchema =
@@ -108,36 +102,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     goToTaskPage,
   } = useTaskWorkflow();
 
-  const handleOpenCreateTaskModal = useCallback(
-    async (typeOfTask: "task" | "policy") => {
-      setPendingCreateType(typeOfTask);
-
-      try {
-        const hasMasters = await mastersStore.hasAcceptedMasters();
-
-        if (typeOfTask === "task") {
-          if (!hasMasters) {
-            message.warning(t("task-create.warning-on-create-task"));
-          } else {
-            openTaskCreate();
-          }
-          return;
-        }
-
-        if (!hasMasters) {
-          message.warning(t("task-create.warning-on-create-policy"));
-        } else {
-          openPolicyCreate();
-        }
-      } catch {
-        message.error(t("task-create.error-on-load-salt-masters"));
-      } finally {
-        setPendingCreateType(null);
-      }
-    },
-    [openTaskCreate, openPolicyCreate, t]
-  );
-
   const reloadMinions = useCallback(() => {
     minionsStore.loadMinions(props.slug);
   }, [minionsStore.loadMinions, props.slug]);
@@ -177,25 +141,25 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
         )}
 
         <div className="page-actions-buttons">
-          <Button
+          <AcceptedMastersActionButton
             className={styles.createButton}
             type="primary"
             icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
-            onClick={() => handleOpenCreateTaskModal("task")}
-            loading={pendingCreateType === "task"}
+            warningActionText={t("task-create.warning-action.task")}
+            onAction={openTaskCreate}
           >
             {t("task-create.create-button")}
-          </Button>
+          </AcceptedMastersActionButton>
 
-          <Button
+          <AcceptedMastersActionButton
             className={styles.createButton}
             icon={<AddTaskIcon />}
-            onClick={() => handleOpenCreateTaskModal("policy")}
-            loading={pendingCreateType === "policy"}
+            warningActionText={t("task-create.warning-action.policy")}
+            onAction={openPolicyCreate}
             disabled={!!selectedMinionsCount}
           >
             {t("policy-create.create-button")}
-          </Button>
+          </AcceptedMastersActionButton>
 
           {pageActionsButtonsPlugin}
 

@@ -20,19 +20,19 @@ import type { RuleType } from "react-querybuilder";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
 import {
   JobModalShell,
   type JobModalTargeting,
 } from "saltbox-core/shared/components/job-modal/job-modal-shell";
-import { runWithAcceptedMastersCheck } from "saltbox-core/shared/components/job-modal/run-with-accepted-masters-check";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
-import { appStore, JobFilterStore, JobsStore, mastersStore } from "saltbox-core/store";
+import { appStore, JobFilterStore, JobsStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
 import { JobsQueryBuilder } from "./-components/jobs-query-builder";
@@ -302,15 +302,13 @@ const JobsPage = observer(() => {
   };
 
   const openFunctionPicker = useCallback(() => {
-    runWithAcceptedMastersCheck(t, () => {
-      setTargeting({
-        target: "*",
-        targetType: CreateJobRequestTgtTypeEnum.Glob,
-        defaultMaster: "",
-      });
-      setPickerOpen(true);
+    setTargeting({
+      target: "*",
+      targetType: CreateJobRequestTgtTypeEnum.Glob,
+      defaultMaster: "",
     });
-  }, [t]);
+    setPickerOpen(true);
+  }, []);
 
   return (
     <>
@@ -327,14 +325,14 @@ const JobsPage = observer(() => {
 
       <div className="page-actions-buttons">
         <div className={styles.leftGroup}>
-          <Button
+          <AcceptedMastersActionButton
             type="primary"
             icon={<PlusOutlined />}
-            onClick={openFunctionPicker}
-            loading={mastersStore.isLoading}
+            warningActionText={t("job-modal.warning-action.create-job")}
+            onAction={openFunctionPicker}
           >
             {t("job-modal.create-job")}
-          </Button>
+          </AcceptedMastersActionButton>
         </div>
         <div className={styles.rightGroup}>
           <JobDatetimeRangeSelector

@@ -10,6 +10,10 @@ import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
 
 import {
+  ACCEPTED_MASTERS_ERROR_MESSAGE_KEY,
+  showAcceptedMastersWarning,
+} from "saltbox-core/shared/components/accepted-masters";
+import {
   fetchJobFunctionSchema,
   getDefaultJsonFormValue,
   getRepeatJsonFormValue,
@@ -157,11 +161,11 @@ export const useJobModalInit = ({
       }
 
       if (error instanceof Error && error.message === NO_ACCEPTED_MASTERS_ERROR) {
-        messageApi.warning(t("job-modal.warning-message"));
+        showAcceptedMastersWarning(t("job-modal.warning-action.create-job"), messageApi);
       } else if (error instanceof Error && error.message === "JOB_SCHEMA_LOAD_FAILED") {
         messageApi.error(t("job-modal.error-load-function-schema"));
       } else {
-        messageApi.error(t("job-modal.error-load-salt-masters"));
+        messageApi.error(t(ACCEPTED_MASTERS_ERROR_MESSAGE_KEY));
       }
 
       onLoadFailed();

@@ -33,6 +33,7 @@ import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import {
   JobModalShell,
   type JobModalTargeting,
@@ -44,7 +45,7 @@ import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-r
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
-import { apiCoreStore, appStore, jobStore, mastersStore } from "saltbox-core/store";
+import { apiCoreStore, appStore, jobStore } from "saltbox-core/store";
 
 import styles from "./index.module.css";
 
@@ -110,22 +111,21 @@ const JobPage = observer(() => {
     if (!job?.fun) {
       return;
     }
-    runWithAcceptedMastersCheck(t, () => {
-      setRepeatBaseline({
-        fun: job.fun,
-        arg: job.arg ?? undefined,
-        kwarg: job.kwarg ?? undefined,
-      });
-      setRepeatTargeting({
-        target: jobStore.jobTargets ?? "*",
-        targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
-        defaultMaster: job.salt_master,
-        ttlSeconds: job.ttl,
-      });
-      setRepeatConfigureFun(job.fun);
-      setRepeatPickerOpen(true);
+
+    setRepeatBaseline({
+      fun: job.fun,
+      arg: job.arg ?? undefined,
+      kwarg: job.kwarg ?? undefined,
     });
-  }, [jobStore.job, jobStore.jobTargets, t]);
+    setRepeatTargeting({
+      target: jobStore.jobTargets ?? "*",
+      targetType: job.tgt_type as CreateJobRequestTgtTypeEnum,
+      defaultMaster: job.salt_master,
+      ttlSeconds: job.ttl,
+    });
+    setRepeatConfigureFun(job.fun);
+    setRepeatPickerOpen(true);
+  }, [jobStore.job, jobStore.jobTargets]);
 
   const handleRepeatConfigureClose = useCallback(() => {
     setRepeatBaseline(null);
@@ -137,9 +137,14 @@ const JobPage = observer(() => {
         return;
       }
       event.preventDefault();
-      openRepeatConfigure();
+      runWithAcceptedMastersCheck({
+        t,
+        warningActionText: t("job-modal.warning-action.repeat-job"),
+        onSuccess: openRepeatConfigure,
+        onMastersClick: () => navigate("/core/masters"),
+      });
     },
-    [openRepeatConfigure, shouldRepeat]
+    [navigate, openRepeatConfigure, shouldRepeat, t]
   );
 
   useDocumentEvent("keydown", repeatKeydownHandler, true);
@@ -268,14 +273,14 @@ const JobPage = observer(() => {
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
           <div className={styles.jobDetailItem}>
-            <Button
+            <AcceptedMastersActionButton
               shape="default"
               icon={<ReloadOutlined />}
               type="default"
               title={t("jobs.repeat-job")}
-              onClick={openRepeatConfigure}
+              warningActionText={t("job-modal.warning-action.repeat-job")}
+              onAction={openRepeatConfigure}
               disabled={!jobStore.job}
-              loading={mastersStore.isLoading}
             />
 
             <JobModalShell

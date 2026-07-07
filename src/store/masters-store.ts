@@ -15,6 +15,9 @@ export class MastersStore {
   @observable masters: Array<MasterViewSchema>;
   @observable totalMasters: number;
 
+  private hasAcceptedMastersCache: { value: boolean; ts: number } | null = null;
+  private hasAcceptedMastersInFlight: Promise<boolean> | null = null;
+
   constructor() {
     this.isLoading = false;
     this.error = null;
@@ -27,6 +30,10 @@ export class MastersStore {
     };
     makeObservable(this);
   }
+
+  private invalidateHasAcceptedMastersCache = (): void => {
+    this.hasAcceptedMastersCache = null;
+  };
 
   @action
   reset = (): void => {
@@ -53,6 +60,7 @@ export class MastersStore {
           runInAction(() => {
             this.isLoading = false;
           });
+          this.invalidateHasAcceptedMastersCache();
           this.updateMaster(master);
           resolve(master);
         })
@@ -78,6 +86,7 @@ export class MastersStore {
           runInAction(() => {
             this.isLoading = false;
           });
+          this.invalidateHasAcceptedMastersCache();
           this.updateMaster(master);
           resolve(master);
         })
@@ -134,16 +143,47 @@ export class MastersStore {
     this.loadMasters();
   };
 
-  @action
-  hasAcceptedMasters = async (): Promise<boolean> => {
-    this.isLoading = true;
-    const result = await apiCoreStore.mastersApi?.mastersList({
-      MasterListBody: {
-        query: { status: "accepted" },
-      },
-    });
-    this.isLoading = false;
-    return Boolean(result?.data?.length);
+  hasAcceptedMasters = async (params?: {
+    force?: boolean;
+    maxAgeMs?: number;
+  }): Promise<boolean> => {
+    const force = params?.force ?? false;
+    const maxAgeMs = params?.maxAgeMs ?? 30_000;
+
+    const now = Date.now();
+    if (
+      !force &&
+      this.hasAcceptedMastersCache &&
+      now - this.hasAcceptedMastersCache.ts <= maxAgeMs
+    ) {
+      return this.hasAcceptedMastersCache.value;
+    }
+
+    if (!force && this.hasAcceptedMastersInFlight) {
+      return this.hasAcceptedMastersInFlight;
+    }
+
+    const request = (async () => {
+      const result = await apiCoreStore.mastersApi?.mastersList({
+        MasterListBody: {
+          query: { status: "accepted" },
+          limit: 1,
+        },
+      });
+
+      const value = Boolean(result?.data?.length);
+      this.hasAcceptedMastersCache = { value, ts: Date.now() };
+      return value;
+    })();
+
+    this.hasAcceptedMastersInFlight = request;
+    try {
+      return await request;
+    } finally {
+      if (this.hasAcceptedMastersInFlight === request) {
+        this.hasAcceptedMastersInFlight = null;
+      }
+    }
   };
 }
 

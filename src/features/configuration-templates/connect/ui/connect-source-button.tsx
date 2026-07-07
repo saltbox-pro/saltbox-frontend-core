@@ -1,11 +1,12 @@
 import { LinkOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, message } from "antd";
+import { message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { AcceptedMastersActionButton } from "saltbox-core/shared/components/accepted-masters";
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 
@@ -37,7 +38,7 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
   const showConnect = canConnect || isActuallyPlugging;
   const isLoading = isActuallyPlugging;
 
-  const handleConnect = useCallback(async () => {
+  const executeConnect = useCallback(async () => {
     try {
       await actions.plugSource(source.id);
       message.success(
@@ -61,15 +62,16 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
   if (!showConnect) return null;
 
   return (
-    <Button
+    <AcceptedMastersActionButton
       type="primary"
       size="small"
       icon={<LinkOutlined />}
       disabled={disabled}
       loading={isLoading}
-      onClick={handleConnect}
+      warningActionText={t("configuration-templates.warning-action.connect-source")}
+      onAction={executeConnect}
     >
       {isLoading ? t("configuration-templates.source.status.connecting") : t("common.connect")}
-    </Button>
+    </AcceptedMastersActionButton>
   );
 });
