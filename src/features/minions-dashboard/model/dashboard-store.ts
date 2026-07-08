@@ -3,6 +3,7 @@ import { makeAutoObservable } from "mobx";
 import {
   DASHBOARD_GRID_COLS,
   DASHBOARD_MAX_CARDS,
+  DEFAULT_DASHBOARD_CARDS,
   getDefaultCardSize,
 } from "../constants/dashboard-cards";
 import { DASHBOARD_STORAGE_KEY } from "../constants/dashboard-storage";
@@ -152,6 +153,13 @@ export class DashboardStore {
     this.cards = this.cards.filter((card) => card.id !== cardId);
     const remaining = this.layout.filter((item) => item.id !== cardId);
     this.layout = this.compactCards(remaining);
+    this.saveToLocalStorage();
+  }
+
+  resetToDefault() {
+    this.cards = DEFAULT_DASHBOARD_CARDS.map((card) => ({ ...card }));
+    this.layout = this.buildDefaultLayout(this.cards);
+    this.fullScreenCardId = null;
     this.saveToLocalStorage();
   }
 

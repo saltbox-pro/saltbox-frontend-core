@@ -743,6 +743,8 @@
     "delete-card": "Delete",
     "delete-card-confirm-title": "Delete statistics block?",
     "delete-card-confirm-description": "This action cannot be undone",
+    "reset-button": "Reset",
+    "reset-confirm-title": "Reset dashboard to default?",
     "empty-title": "No charts added yet",
     "empty-description": "Add at least one statistics block to display charts",
     "preset-donut": "Donut chart",

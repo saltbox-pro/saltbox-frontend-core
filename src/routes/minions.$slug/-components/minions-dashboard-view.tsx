@@ -1,6 +1,11 @@
-import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import {
+  BarChartOutlined,
+  PlusOutlined,
+  QuestionCircleOutlined,
+  SyncOutlined,
+} from "@ant-design/icons";
 import { Popover } from "@saltbox/saltbox-frontend-common";
-import { Button, Empty, Flex } from "antd";
+import { Button, Empty, Flex, Modal } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ReactNode, useEffect, useState } from "react";
@@ -73,13 +78,24 @@ export const MinionsDashboardView = observer(
     const { width, containerRef } = useContainerWidth();
     const rowHeight = useGridRowHeight();
 
+    const handleResetClick = () => {
+      Modal.confirm({
+        title: t("dashboard.reset-confirm-title"),
+        icon: null,
+        content: t("dashboard.delete-card-confirm-description"),
+        okButtonProps: { danger: true },
+        okText: t("dashboard.reset-button"),
+        onOk: () => dashboardStore.resetToDefault(),
+      });
+    };
+
     return (
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
 
         {!dashboardStore.isCardFullScreen && (
           <div className="page-actions-buttons" style={{ margin: 0 }}>
-            <Flex gap={8} align="center">
+            <Flex flex="1" justify="space-between" align="center">
               <Button
                 onClick={props.onAddCard}
                 type="default"
@@ -103,6 +119,12 @@ export const MinionsDashboardView = observer(
                   <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
                 </Popover>
               )}
+              <Button onClick={handleResetClick} type="default">
+                <Flex gap={8}>
+                  <SyncOutlined />
+                  {t("dashboard.reset-button")}
+                </Flex>
+              </Button>
             </Flex>
           </div>
         )}
