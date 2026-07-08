@@ -1,11 +1,6 @@
-import {
-  BarChartOutlined,
-  PlusOutlined,
-  QuestionCircleOutlined,
-  SyncOutlined,
-} from "@ant-design/icons";
+import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { Popover } from "@saltbox/saltbox-frontend-common";
-import { Button, Empty, Flex, Modal } from "antd";
+import { Button, Empty, Flex } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ReactNode, useEffect, useState } from "react";
@@ -20,6 +15,7 @@ import {
   DASHBOARD_MAX_CARDS,
   dashboardStore,
   DashboardLayoutItem,
+  DashboardResetButton,
   MinionDashboardCard,
   MinionsDashboardSummary,
 } from "saltbox-core/features/minions-dashboard";
@@ -78,17 +74,6 @@ export const MinionsDashboardView = observer(
     const { width, containerRef } = useContainerWidth();
     const rowHeight = useGridRowHeight();
 
-    const handleResetClick = () => {
-      Modal.confirm({
-        title: t("dashboard.reset-confirm-title"),
-        icon: null,
-        content: t("dashboard.delete-card-confirm-description"),
-        okButtonProps: { danger: true },
-        okText: t("dashboard.reset-button"),
-        onOk: () => dashboardStore.resetToDefault(),
-      });
-    };
-
     return (
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
@@ -100,11 +85,9 @@ export const MinionsDashboardView = observer(
                 onClick={props.onAddCard}
                 type="default"
                 disabled={!dashboardStore.canAddCard}
+                icon={<PlusOutlined />}
               >
-                <Flex gap={8}>
-                  <PlusOutlined />
-                  {t("minions.add-block-button")}
-                </Flex>
+                {t("minions.add-block-button")}
               </Button>
               {!dashboardStore.canAddCard && (
                 <Popover
@@ -119,12 +102,7 @@ export const MinionsDashboardView = observer(
                   <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
                 </Popover>
               )}
-              <Button onClick={handleResetClick} type="default">
-                <Flex gap={8}>
-                  <SyncOutlined />
-                  {t("dashboard.reset-button")}
-                </Flex>
-              </Button>
+              <DashboardResetButton />
             </Flex>
           </div>
         )}
