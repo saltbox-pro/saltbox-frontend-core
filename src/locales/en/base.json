@@ -1024,10 +1024,10 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "sync-gitlab-sources": "Sync with GitLab",
+      "sync-gitlab-sources": "Refresh sources list",
       "add-local-source": "Add local source",
-      "add-git-source": "Add from Git repository",
-      "add-archive-source": "Add from archive"
+      "add-git-source": "Add Git repository",
+      "add-archive-source": "Add source from archive"
     },
     "source-form": {
       "namespace": "Namespace",

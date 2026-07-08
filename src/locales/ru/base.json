@@ -1024,10 +1024,10 @@
     },
     "actions": {
       "refresh": "Обновить",
-      "sync-gitlab-sources": "Синхронизировать с GitLab",
+      "sync-gitlab-sources": "Обновить список источников",
       "add-local-source": "Добавить локальный источник",
-      "add-git-source": "Добавить из git-репозитория",
-      "add-archive-source": "Добавить из архива"
+      "add-git-source": "Добавить Git-репозиторий",
+      "add-archive-source": "Добавить источник из архива"
     },
     "source-form": {
       "namespace": "Пространство имён",
