@@ -1,0 +1,20 @@
+.body {
+  width: 100%;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filterHeading {
+  font-size: 16px;
+  font-weight: 600;
+}

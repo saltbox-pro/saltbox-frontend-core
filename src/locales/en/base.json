@@ -708,7 +708,15 @@
     "collection-deleted-successfully": "Collection deleted successfully",
     "error-deleting-collection": "Error deleting collection",
     "error-loading-tree": "Failed to load collections tree",
-    "apply-search-before-save": "Please apply search to confirm filters before saving"
+    "apply-search-before-save": "Please apply search to confirm filters before saving",
+    "open-collection-page": "Open collection page",
+    "parent-collection": "Parent collection",
+    "no-filter": "This collection has no filter",
+    "edit-filter": "Edit filter",
+    "invalid-filter-json": "Filter query is not valid JSON",
+    "filter-updated-successfully": "Filter has been updated",
+    "error-updating-filter": "Error updating filter",
+    "error-loading-collection": "Failed to load collection"
   },
   "dashboard": {
     "minions-total": "Minions in Selection",

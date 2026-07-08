@@ -708,7 +708,15 @@
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
     "error-loading-tree": "Не удалось загрузить дерево коллекций",
-    "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением"
+    "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением",
+    "open-collection-page": "Перейти на страницу коллекции",
+    "parent-collection": "Родительская коллекция",
+    "no-filter": "У этой коллекции нет фильтра",
+    "edit-filter": "Редактировать фильтр",
+    "invalid-filter-json": "Запрос фильтра — некорректный JSON",
+    "filter-updated-successfully": "Фильтр обновлён",
+    "error-updating-filter": "Ошибка при обновлении фильтра",
+    "error-loading-collection": "Не удалось загрузить коллекцию"
   },
   "dashboard": {
     "minions-total": "Клиентов в выборке",

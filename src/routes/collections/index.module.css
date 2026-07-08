@@ -3,6 +3,12 @@
   height: 100%;
 }
 
+.treeWrapper {
+  display: flex;
+  overflow: hidden;
+  height: 100%;
+}
+
 .collectionsTree {
   overflow: hidden;
   height: 100%;

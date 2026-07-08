@@ -28,6 +28,7 @@ interface CollectionsTreeProps {
   showDescription?: boolean;
   compact?: boolean;
   className?: string;
+  selectedSlug?: string | null;
 }
 
 export const CollectionsTree = observer(
@@ -37,6 +38,7 @@ export const CollectionsTree = observer(
     showDescription = false,
     compact = false,
     className,
+    selectedSlug,
   }: CollectionsTreeProps) => {
     const { t } = useTranslation();
 
@@ -52,8 +54,11 @@ export const CollectionsTree = observer(
     const pathnameRef = useRef(location.pathname);
 
     const activeSlug = useMemo(
-      () => pathnameRef.current.match(/^\/core\/minions\/([^/]+)/)?.[1] ?? null,
-      []
+      () =>
+        selectedSlug !== undefined
+          ? selectedSlug
+          : (pathnameRef.current.match(/^\/core\/minions\/([^/]+)/)?.[1] ?? null),
+      [selectedSlug]
     );
 
     const treeData = useMemo(
