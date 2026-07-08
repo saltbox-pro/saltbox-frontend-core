@@ -3,17 +3,17 @@ import {
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
+  isGlobalServerError,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Typography } from "antd";
+import { Button, Flex, Form, Input, message, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import CollectionEditModal from "saltbox-core/shared/components/collection-edit-modal/collection-edit-modal";
+import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import { findNodeById } from "saltbox-core/shared/utils/tree-utils";
-import { collectionsTreeStore, type CollectionStore } from "saltbox-core/store";
+import { type CollectionStore } from "saltbox-core/store";
 
 import type { CollectionDetailsDrawerOpenParams } from "../types";
 
@@ -21,6 +21,12 @@ import styles from "./collection-details-drawer.module.css";
 import { CollectionFilterSection } from "./collection-filter-section";
 
 const ROOT_SLUG = "root";
+
+interface CollectionEditFormType {
+  title: string;
+  description?: string;
+  query: string;
+}
 
 interface CollectionDetailsDrawerProps {
   drawer: {
@@ -34,8 +40,11 @@ interface CollectionDetailsDrawerProps {
 export const CollectionDetailsDrawer = observer(
   ({ drawer, collectionStore }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
+    const [messageApi, contextHolder] = message.useMessage();
+    const [form] = Form.useForm<CollectionEditFormType>();
 
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const { isOpened, openedArg } = drawer;
 
@@ -49,17 +58,55 @@ export const CollectionDetailsDrawer = observer(
     const currentSlug = collectionStore.collectionSlug ?? openedArg?.slug;
     const isRoot = currentSlug === ROOT_SLUG;
 
+    useEffect(() => {
+      setIsEditing(false);
+    }, [collectionStore.collectionSlug]);
+
     const descriptionItems = useMemo<InfoDescriptionsProps["items"]>(() => {
       const items: NonNullable<InfoDescriptionsProps["items"]> = [
         {
           key: "title",
           label: t("collection.edit-collection-name"),
-          children: collection?.title,
+          children: isEditing ? (
+            <Form.Item<CollectionEditFormType>
+              name="title"
+              style={{ marginBottom: 0 }}
+              rules={[
+                {
+                  required: true,
+                  message: t("collection-create-modal.form-title-error-required"),
+                },
+                {
+                  max: 50,
+                  message: t("collection-create-modal.form-title-error-max"),
+                },
+              ]}
+            >
+              <Input placeholder={t("collection.enter-collection-name")} />
+            </Form.Item>
+          ) : (
+            collection?.title
+          ),
         },
         {
           key: "description",
           label: t("collection.description"),
-          children: collection?.description ? (
+          children: isEditing ? (
+            <Form.Item<CollectionEditFormType>
+              name="description"
+              style={{ marginBottom: 0 }}
+              rules={[
+                {
+                  max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                  message: t("collection.description-max", {
+                    max: COLLECTION_DESCRIPTION_MAX_LENGTH,
+                  }),
+                },
+              ]}
+            >
+              <Input.TextArea rows={3} placeholder={t("collection.description-placeholder")} />
+            </Form.Item>
+          ) : collection?.description ? (
             collection.description
           ) : (
             <Typography.Text type="secondary" italic>
@@ -82,22 +129,64 @@ export const CollectionDetailsDrawer = observer(
       }
 
       return items;
-    }, [collection, isRoot, t]);
+    }, [collection, isRoot, isEditing, t]);
 
-    const handleEditModalClose = (success: boolean) => {
-      setIsEditModalOpen(false);
-      // После переименования slug мог смениться — находим узел по стабильному id
-      // и перечитываем деталь, чтобы шапка, ссылка и тело обновились.
-      if (success && openedArg) {
-        const node = findNodeById(collectionsTreeStore.treeNodes, openedArg.id);
-        if (node?.slug && node.slug !== collectionStore.collectionSlug) {
-          collectionStore.setCollectionSlug(node.slug);
+    const handleEdit = () => {
+      form.setFieldsValue({
+        title: collection?.title,
+        description: collection?.description,
+        query: JSON.stringify(collection?.query ?? {}, null, 2),
+      });
+      setIsEditing(true);
+    };
+
+    const handleCancel = () => {
+      setIsEditing(false);
+    };
+
+    const handleSave = async () => {
+      let values: CollectionEditFormType;
+      try {
+        values = await form.validateFields();
+      } catch {
+        return;
+      }
+
+      let parsedQuery: object;
+      try {
+        parsedQuery = JSON.parse(values.query);
+      } catch {
+        messageApi.error(t("collection.invalid-filter-json"));
+        return;
+      }
+
+      setIsSaving(true);
+      try {
+        await collectionStore.updateCollection({
+          title: values.title,
+          description: values.description?.trim() ?? "",
+          query: parsedQuery,
+        });
+        messageApi.success(t("collection.collection-has-been-changed"));
+        setIsEditing(false);
+      } catch (error) {
+        if (!isGlobalServerError(error)) {
+          messageApi.error(t("collection.error-updating-collection"));
         }
+      } finally {
+        setIsSaving(false);
       }
     };
 
+    const extra = isRoot ? undefined : (
+      <Button icon={<EditOutlined />} onClick={handleEdit} disabled={isEditing}>
+        {t("common.edit")}
+      </Button>
+    );
+
     return (
       <>
+        {contextHolder}
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
@@ -112,37 +201,37 @@ export const CollectionDetailsDrawer = observer(
           transitionKey={collection?.slug}
           onClose={drawer.close}
         >
-          <Flex vertical gap="large" className={styles.body}>
-            <InfoDescriptions
-              items={descriptionItems}
-              extra={
-                isRoot ? undefined : (
-                  <Button icon={<EditOutlined />} onClick={() => setIsEditModalOpen(true)}>
-                    {t("common.edit")}
+          <Form form={form} component={false}>
+            <Flex vertical gap="large" className={styles.body}>
+              <InfoDescriptions items={descriptionItems} extra={extra} />
+
+              <section className={styles.section}>
+                {isRoot ? (
+                  <Typography.Text type="secondary">
+                    {t("minions.root-collection-info")}
+                  </Typography.Text>
+                ) : (
+                  <CollectionFilterSection
+                    collectionStore={collectionStore}
+                    isEditing={isEditing}
+                    form={form}
+                  />
+                )}
+              </section>
+
+              {isEditing && (
+                <Flex gap="small" justify="end">
+                  <Button onClick={handleCancel} disabled={isSaving}>
+                    {t("common.cancel")}
                   </Button>
-                )
-              }
-            />
-
-            <section className={styles.section}>
-              {isRoot ? (
-                <Typography.Text type="secondary">
-                  {t("minions.root-collection-info")}
-                </Typography.Text>
-              ) : (
-                <CollectionFilterSection collectionStore={collectionStore} />
+                  <Button type="primary" onClick={handleSave} loading={isSaving}>
+                    {t("common.save")}
+                  </Button>
+                </Flex>
               )}
-            </section>
-          </Flex>
+            </Flex>
+          </Form>
         </InfoDrawer>
-
-        <CollectionEditModal
-          slug={currentSlug ?? ""}
-          title={collection?.title ?? ""}
-          description={collection?.description}
-          isOpen={isEditModalOpen}
-          onClose={handleEditModalClose}
-        />
       </>
     );
   }
