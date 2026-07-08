@@ -689,6 +689,7 @@
     "description-placeholder": "Enter collection description",
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
+    "create-subcollection": "Create subcollection",
     "delete-collection": "Delete Collection",
     "delete": "Delete",
     "cancel": "Cancel",
@@ -833,7 +834,8 @@
     "form-title-error-max": "Title must be maximum 50 characters.",
     "form-slug-error-required": "Slug is required",
     "form-slug-error-pattern": "Slug can only contain a-z, 0-9 and - symbols",
-    "form-slug-error-max": "Slug must be maximum 30 characters."
+    "form-slug-error-max": "Slug must be maximum 30 characters.",
+    "form-filter": "Collection filter"
   },
   "minion-gather-modal": {
     "title": "Gathered Minions",
@@ -1024,10 +1026,10 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "sync-gitlab-sources": "Sync with GitLab",
+      "sync-gitlab-sources": "Refresh sources list",
       "add-local-source": "Add local source",
-      "add-git-source": "Add from Git repository",
-      "add-archive-source": "Add from archive"
+      "add-git-source": "Add Git repository",
+      "add-archive-source": "Add source from archive"
     },
     "source-form": {
       "namespace": "Namespace",

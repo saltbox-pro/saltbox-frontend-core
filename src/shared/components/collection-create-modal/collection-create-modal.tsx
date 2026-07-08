@@ -1,4 +1,4 @@
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { JsonEditorField, Modal } from "@saltbox/saltbox-frontend-common";
 import { Button, Form, Input, message } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,18 +12,23 @@ type collectionCreateFormType = {
   title: string;
   slug: string;
   description?: string;
+  query?: string;
 };
 
 function CollectionCreateModal({
   query,
   parentSlug,
   isOpen = false,
+  editableFilter = false,
+  navigateAfterCreate = true,
   onClose,
   onBeforeNavigate,
 }: {
   query: object;
   parentSlug: string;
   isOpen?: boolean;
+  editableFilter?: boolean;
+  navigateAfterCreate?: boolean;
   onClose?: (success: boolean) => void;
   onBeforeNavigate?: () => void;
 }) {
@@ -42,8 +47,11 @@ function CollectionCreateModal({
   useEffect(() => {
     if (isModalOpen) {
       form.resetFields();
+      if (editableFilter) {
+        form.setFieldValue("query", JSON.stringify(query ?? {}, null, 2));
+      }
     }
-  }, [isModalOpen, form]);
+  }, [isModalOpen, form, editableFilter, query]);
 
   const handleModalCancel = () => {
     if (!isCollectionCreating) {
@@ -59,11 +67,21 @@ function CollectionCreateModal({
   };
 
   const handleFormFinish = (formValue: collectionCreateFormType) => {
+    let filterQuery = query;
+    if (editableFilter) {
+      try {
+        filterQuery = JSON.parse(formValue.query || "{}");
+      } catch {
+        messageApi.error(t("collection.invalid-filter-json"));
+        return;
+      }
+    }
+
     setIsCollectionCreating(true);
     apiCoreStore.minionCollectionsApi
       ?.minionCollectionCreate({
         CollectionCreateRequestSchema: {
-          query: query,
+          query: filterQuery,
           title: formValue.title,
           slug: formValue.slug,
           description: formValue.description?.trim() || undefined,
@@ -75,7 +93,7 @@ function CollectionCreateModal({
         collectionsTreeStore.addNode(response);
         setIsModalOpen(false);
         onClose?.(true);
-        if (response.slug) {
+        if (navigateAfterCreate && response.slug) {
           onBeforeNavigate?.();
           navigate(`/core/minions/${response.slug}`, {
             state: {
@@ -176,6 +194,14 @@ function CollectionCreateModal({
           >
             <Input.TextArea rows={3} placeholder={t("collection.description-placeholder")} />
           </Form.Item>
+          {editableFilter && (
+            <Form.Item<collectionCreateFormType>
+              label={t("collection-create-modal.form-filter")}
+              name="query"
+            >
+              <JsonEditorField form={form} fieldName="query" height={300} />
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </>
