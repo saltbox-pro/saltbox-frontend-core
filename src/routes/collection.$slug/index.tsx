@@ -18,7 +18,6 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
-import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import {
   CollectionStore,
   defaultCollectionStore,
@@ -49,8 +48,6 @@ const CollectionEditPage = observer(() => {
   const [minionsStore] = useState(new MinionsStore(undefined, undefined));
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  const [originalDescription, setOriginalDescription] = useState("");
   const [originalQuery, setOriginalQuery] = useState("");
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
@@ -176,22 +173,14 @@ const CollectionEditPage = observer(() => {
       setNewTitle(collectionStore.collection.title);
       setOriginalTitle(collectionStore.collection.title);
     }
-    const description = collectionStore.collection?.description ?? "";
-    setNewDescription(description);
-    setOriginalDescription(description);
     if (collectionStore.collection?.query) {
       setOriginalQuery(JSON.stringify(collectionStore.collection.query));
     }
-  }, [
-    collectionStore.collection?.title,
-    collectionStore.collection?.description,
-    collectionStore.collection?.query,
-  ]);
+  }, [collectionStore.collection?.title, collectionStore.collection?.query]);
 
   const handleSaveButton = async () => {
     try {
       const titleDirty = newTitle !== originalTitle;
-      const descriptionDirty = newDescription !== originalDescription;
       const currentQueryString = JSON.stringify(filterStore.currentFilters);
       const queryDirty = currentQueryString !== originalQuery;
 
@@ -201,12 +190,10 @@ const CollectionEditPage = observer(() => {
 
       await collectionStore.updateCollection({
         title: titleDirty ? newTitle : undefined,
-        description: descriptionDirty ? newDescription : undefined,
         query: queryDirty ? filterStore.searchMongoDBQuery : undefined,
       });
 
       if (titleDirty) setOriginalTitle(newTitle);
-      if (descriptionDirty) setOriginalDescription(newDescription);
       if (queryDirty) setOriginalQuery(currentQueryString);
 
       messageApi.success(t("collection.collection-has-been-changed"));
@@ -217,9 +204,7 @@ const CollectionEditPage = observer(() => {
   };
 
   const isSaveDisabled =
-    (newTitle === originalTitle &&
-      newDescription === originalDescription &&
-      JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+    (newTitle === originalTitle && JSON.stringify(filterStore.currentFilters) === originalQuery) ||
     newTitle.trim() === "";
 
   return (
@@ -233,14 +218,6 @@ const CollectionEditPage = observer(() => {
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           className={styles.editInput}
-        />
-        <Input.TextArea
-          value={newDescription}
-          onChange={(e) => setNewDescription(e.target.value)}
-          maxLength={COLLECTION_DESCRIPTION_MAX_LENGTH}
-          rows={2}
-          placeholder={t("collection.description-placeholder")}
-          className={styles.descriptionInput}
         />
       </Flex>
       <Flex className={styles.collectionFlex} gap={8} vertical>
