@@ -14,6 +14,22 @@ export function findNodeBySlug<T extends TreeNodeWithSlug<T>>(nodes: T[], slug: 
   return null;
 }
 
+export type TreeNodeWithId<T = unknown> = {
+  id?: string;
+  children?: T[];
+};
+
+export function findNodeById<T extends TreeNodeWithId<T>>(nodes: T[], id: string): T | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children?.length) {
+      const found = findNodeById(node.children as T[], id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export function findNodeAndParent<T extends TreeNodeWithSlug<T>>(
   nodes: T[],
   slug: string
