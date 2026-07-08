@@ -689,6 +689,7 @@
     "description-placeholder": "Введите описание коллекции",
     "description-max": "Описание не должно превышать {{max}} символов",
     "no-description": "Описание для данной коллекции отсутствует",
+    "create-subcollection": "Создать подколлекцию",
     "delete-collection": "Удаление коллекции",
     "delete": "Удалить",
     "cancel": "Отмена",
@@ -831,7 +832,8 @@
     "form-slug-error-required": "Слаг обязателен",
     "form-slug-error-pattern": "Слаг может содержать только латинские буквы, цифры и символы -",
     "form-title-error-max": "Название должно быть максимум 50 символов.",
-    "form-slug-error-max": "Слаг должен быть максимум 30 символов."
+    "form-slug-error-max": "Слаг должен быть максимум 30 символов.",
+    "form-filter": "Фильтр коллекции"
   },
   "minion-gather-modal": {
     "title": "Предварительное нацеливание",
