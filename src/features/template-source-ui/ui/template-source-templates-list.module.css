@@ -4,6 +4,10 @@
   gap: 5px;
 }
 
+.templates {
+  --template-item-active-bg: #f5f8ff;
+}
+
 .templates .templateItem:not(:last-child) {
   margin-bottom: 0;
 }
@@ -40,7 +44,25 @@
 }
 
 .templates .templateItemActive {
-  background-color: #f5f8ff;
+  background-color: var(--template-item-active-bg);
+}
+
+.templates .templateItemHighlighted {
+  animation: templateHighlightFlash var(--template-highlight-duration) ease-in-out;
+}
+
+@keyframes templateHighlightFlash {
+  0%,
+  100% {
+    background-color: #fafafa;
+    border-color: #e0e0e0;
+  }
+
+  20%,
+  55% {
+    background-color: var(--template-item-active-bg);
+    border-color: #e0e0e0;
+  }
 }
 
 .templates .templateItem :global(.ant-list-item-meta-content .ant-list-item-meta-title),

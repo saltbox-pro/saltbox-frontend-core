@@ -2,9 +2,10 @@ import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client"
 import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import { Flex, List, Tag } from "antd";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getTemplateHighlightDurationCssValue } from "saltbox-core/shared/constants/template-highlight-duration";
 import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-description";
 
 import { TemplateSourceSectionEmpty } from "./template-source-section-empty";
@@ -24,6 +25,7 @@ export type TemplateSourceTemplatesListProps<
   searchQuery?: string;
   onTemplateClick?: (template: T) => void;
   activeTemplateId?: string | null;
+  highlightedTemplateId?: string | null;
   renderItemActions?: (template: T) => ReactNode;
   getTemplateAccessibility?: (template: T) => TemplateAccessibility | undefined;
 };
@@ -36,14 +38,31 @@ export function TemplateSourceTemplatesList<
   searchQuery,
   onTemplateClick,
   activeTemplateId,
+  highlightedTemplateId,
   renderItemActions,
   getTemplateAccessibility,
 }: TemplateSourceTemplatesListProps<T>) {
   const { t, i18n } = useTranslation();
+  const highlightedItemRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!highlightedTemplateId) {
+      return;
+    }
+
+    highlightedItemRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [highlightedTemplateId, items]);
 
   return (
     <List
       className={clsx(styles.templates, constrainHeight && styles.templatesConstrained)}
+      style={
+        highlightedTemplateId
+          ? ({
+              "--template-highlight-duration": getTemplateHighlightDurationCssValue(),
+            } as CSSProperties)
+          : undefined
+      }
       size="small"
       dataSource={items}
       locale={{
@@ -62,9 +81,11 @@ export function TemplateSourceTemplatesList<
 
         return (
           <List.Item
+            ref={highlightedTemplateId === template.id ? highlightedItemRef : undefined}
             className={clsx(
               styles.templateItem,
               activeTemplateId === template.id && styles.templateItemActive,
+              highlightedTemplateId === template.id && styles.templateItemHighlighted,
               isClickable && styles.templateItemClickable,
               accessibility && !isAccessible && styles.templateItemDisabled
             )}

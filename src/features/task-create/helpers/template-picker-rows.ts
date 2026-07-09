@@ -3,6 +3,7 @@ import type { SourceListWithExtrasSchema, SourceType } from "@saltbox/saltbox-co
 import {
   getActiveSearchQuery,
   getSourceSearchExpansion,
+  sortTemplatesByTitle,
   sourceMatchesByMetadata,
   sourceMatchesQuery,
   templateMatchesQuery,
@@ -11,6 +12,8 @@ import {
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 
 import type { TaskTemplatePickerItem } from "../type/types";
+
+import { sortTemplatesByAccessibilityThenTitle } from "./sort-picker-templates";
 
 export type TemplateSourceRow = {
   key: string;
@@ -29,19 +32,6 @@ const toSourceShape = (sourceRow: TemplateSourceRow): TemplateSourceSearchShape 
   files: [],
 });
 
-const sortPickerTemplates = (
-  firstTemplate: TaskTemplatePickerItem,
-  secondTemplate: TaskTemplatePickerItem
-) => {
-  if (firstTemplate.isAccessible !== secondTemplate.isAccessible) {
-    return firstTemplate.isAccessible ? -1 : 1;
-  }
-
-  return (firstTemplate.title || firstTemplate.name).localeCompare(
-    secondTemplate.title || secondTemplate.name
-  );
-};
-
 export const buildSourceRowsFromSources = (
   sources: SourceListWithExtrasSchema[]
 ): TemplateSourceRow[] => {
@@ -53,17 +43,13 @@ export const buildSourceRowsFromSources = (
       description: source.description ?? undefined,
       isAccessibilityLoaded: false,
       isAccessibilityError: false,
-      templates: (source.templates ?? [])
-        .map((template) => ({
+      templates: sortTemplatesByTitle(
+        (source.templates ?? []).map((template) => ({
           ...template,
           repository: source.name,
           isAccessible: true,
         }))
-        .sort((firstTemplate, secondTemplate) =>
-          (firstTemplate.title || firstTemplate.name).localeCompare(
-            secondTemplate.title || secondTemplate.name
-          )
-        ),
+      ),
     }))
     .filter((sourceRow) => sourceRow.templates.length > 0);
 };
@@ -75,12 +61,12 @@ export const applySourceAccessibility = (
   ...sourceRow,
   isAccessibilityLoaded: true,
   isAccessibilityError: false,
-  templates: sourceRow.templates
-    .map((template) => ({
+  templates: sortTemplatesByAccessibilityThenTitle(
+    sourceRow.templates.map((template) => ({
       ...template,
       isAccessible: accessibleTemplateIds.has(template.id),
     }))
-    .sort(sortPickerTemplates),
+  ),
 });
 
 export const markSourceAccessibilityError = (sourceRow: TemplateSourceRow): TemplateSourceRow => ({

@@ -1,4 +1,9 @@
 export {
+  compareTemplatesByTitle,
+  sortTemplatesByTitle,
+  type TemplateTitleSortable,
+} from "./helpers/sort-templates-by-title";
+export {
   filterSourceFilesForSearch,
   filterSourceTemplatesForSearch,
   getActiveSearchQuery,

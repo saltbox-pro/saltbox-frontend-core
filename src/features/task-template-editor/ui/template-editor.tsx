@@ -6,6 +6,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { getTemplateSourceDetailPath } from "saltbox-core/features/configuration-templates/shared/helpers/source-presentation";
+
+import { getPostSaveTemplateHighlightState } from "../helpers/get-post-save-template-highlight-state";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import { DuplicateNoConnectedLocalSourceAlert } from "./duplicate-no-connected-local-source-alert";
@@ -25,7 +28,12 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
   const [messageApi, contextHolder] = message.useMessage();
   const [isSaveModalOpen, setSaveModalOpen] = useState(false);
 
-  const goBack = () => navigate(backPath);
+  const getPostSavePath = (): string => {
+    if (store.isDuplicate && store.effectiveTargetSourceId) {
+      return getTemplateSourceDetailPath(store.effectiveTargetSourceId);
+    }
+    return backPath;
+  };
 
   const showNoConnectedLocalSourceAlert =
     store.isDuplicate && !store.isLoadingTargetSources && store.targetSources.length === 0;
@@ -35,7 +43,9 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
       await store.save();
       messageApi.success(t("task-template-editor.save-success"));
       setSaveModalOpen(false);
-      goBack();
+      navigate(getPostSavePath(), {
+        state: getPostSaveTemplateHighlightState(store.mode, store.templateId, store.fileName),
+      });
     } catch (error) {
       console.error("Failed to save template:", error);
       if (isGlobalServerError(error)) return;
