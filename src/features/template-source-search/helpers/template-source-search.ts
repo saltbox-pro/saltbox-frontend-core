@@ -6,6 +6,8 @@ import type {
 
 import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-description";
 
+import { sortTemplatesByTitle } from "./sort-templates-by-title";
+
 export const MIN_SOURCE_SEARCH_LENGTH = 3;
 
 export type TemplateSourceSearchShape = Pick<
@@ -60,10 +62,12 @@ export function filterSourceTemplatesForSearch(
   const templates = source.templates ?? [];
 
   if (!query || sourceMatchesByMetadata(source, query)) {
-    return templates;
+    return sortTemplatesByTitle(templates);
   }
 
-  return templates.filter((template) => templateMatchesQuery(template, query, language));
+  return sortTemplatesByTitle(
+    templates.filter((template) => templateMatchesQuery(template, query, language))
+  );
 }
 
 export function filterSourceFilesForSearch(

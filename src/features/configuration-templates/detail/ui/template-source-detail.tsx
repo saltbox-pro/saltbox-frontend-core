@@ -1,8 +1,10 @@
 import { Alert, Card, Flex, message, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+
+import { sortTemplatesByTitle } from "saltbox-core/features/template-source-search";
 
 import {
   canAddSourceFiles,
@@ -10,6 +12,7 @@ import {
   canShowAddSourceFileButton,
 } from "../../files/helpers/can-add-source-files";
 import { AddSourceFileModal } from "../../files/ui/add-source-file-modal";
+import { TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY } from "../../shared/constants/template-source-extras-panel-keys";
 import { getTemplateSourceViewState } from "../../shared/helpers/get-template-source-view-state";
 import {
   getSourceActionContext,
@@ -27,6 +30,7 @@ import {
 import { getSourceTemplateActionsPermissions } from "../../templates/helpers/source-template-actions";
 import { useTemplatePreviewDrawer } from "../../templates/hooks/use-template-preview-drawer";
 import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawer";
+import { useHighlightedTemplateFromNavigation } from "../hooks/use-highlighted-template-from-navigation";
 import type { TemplateSourceDetailStore } from "../store/template-source-detail-store";
 
 type TemplateSourceDetailProps = {
@@ -41,6 +45,14 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   const [messageApi, contextHolder] = message.useMessage();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
   const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
+  const sortedTemplates = useMemo(
+    () => (store.source?.templates ? sortTemplatesByTitle(store.source.templates) : undefined),
+    [store.source?.templates]
+  );
+  const highlightedTemplateId = useHighlightedTemplateFromNavigation(
+    sortedTemplates,
+    Boolean(store.source) && !store.isLoading
+  );
 
   if (store.isLoading) {
     return <Skeleton active />;
@@ -104,8 +116,10 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
       </Card>
 
       <TemplateSourceExtrasCollapse
+        defaultActiveKey={[TEMPLATE_SOURCE_TEMPLATES_PANEL_KEY]}
         templates={{
-          items: store.source.templates ?? [],
+          items: sortedTemplates ?? [],
+          highlightedTemplateId,
           onCreateTemplate: isLocalSource
             ? () => navigate(getCreateTemplatePath(sourceId))
             : undefined,

@@ -33,6 +33,7 @@ export type TemplateSourceExtrasCollapseProps = {
     onDeleteTemplateError?: () => Promise<void>;
     onCreateTemplate?: () => void;
     canCreateTemplate?: boolean;
+    highlightedTemplateId?: string | null;
   } & Partial<TemplatePreviewListProps>;
   files: {
     items: SshfsFilePublicSchema[];
@@ -116,7 +117,10 @@ export function TemplateSourceExtrasCollapse({
             icon={<PlusOutlined />}
             title={t("configuration-templates.source.add-template")}
             disabled={!templates.canCreateTemplate}
-            onClick={() => templates.onCreateTemplate?.()}
+            onClick={(event) => {
+              event.stopPropagation();
+              templates.onCreateTemplate?.();
+            }}
           />
         ) : undefined,
         children: (
@@ -126,6 +130,7 @@ export function TemplateSourceExtrasCollapse({
               constrainHeight={constrainHeight}
               searchQuery={templates.searchQuery}
               permissions={templates.permissions}
+              highlightedTemplateId={templates.highlightedTemplateId}
               onDeleteTemplate={templates.onDeleteTemplate}
               onDeleteError={templates.onDeleteTemplateError}
               onDeleteTemplateSuccess={templates.onDeleteTemplateSuccess}
@@ -149,7 +154,10 @@ export function TemplateSourceExtrasCollapse({
             title={t("configuration-templates.source.add-file")}
             loading={files.isAddFileInProgress}
             disabled={!files.canAddFile || files.isAddFileInProgress}
-            onClick={() => files.onAddFileClick?.()}
+            onClick={(event) => {
+              event.stopPropagation();
+              files.onAddFileClick?.();
+            }}
           />
         ) : undefined,
         children: (
