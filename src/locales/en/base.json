@@ -1017,7 +1017,6 @@
     },
     "search": {
       "placeholder": "Search by source, template, file",
-      "min-length": "Enter at least {{count}} characters to search",
       "no-results": "Nothing found matching your search"
     },
     "filter": {

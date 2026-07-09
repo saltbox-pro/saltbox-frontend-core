@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 
 import {
   getActiveSearchQuery,
-  MIN_SOURCE_SEARCH_LENGTH,
   sourceMatchesQuery,
 } from "saltbox-core/features/template-source-search";
 
@@ -108,14 +107,9 @@ export const ConfigurationTemplates = observer(() => {
 
   const searchQuery = useMemo(() => getActiveSearchQuery(search), [search]);
   const hasSearchQuery = searchQuery !== undefined;
-  const hasPendingSearch = search.trim().length > 0 && !hasSearchQuery;
   const isSourcesListEmpty = store.sortedSources.length === 0;
   const showGitlabSourcesAlert =
-    store.hasLoadedOnce &&
-    !store.hasError &&
-    isSourcesListEmpty &&
-    !hasSearchQuery &&
-    !hasPendingSearch;
+    store.hasLoadedOnce && !store.hasError && isSourcesListEmpty && !hasSearchQuery;
   const isRefreshingList = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
   const isListAreaLoading = isRefreshingList || store.isCheckingExternal;
 
@@ -192,11 +186,7 @@ export const ConfigurationTemplates = observer(() => {
                 description={
                   hasSearchQuery
                     ? t("configuration-templates.search.no-results")
-                    : hasPendingSearch
-                      ? t("configuration-templates.search.min-length", {
-                          count: MIN_SOURCE_SEARCH_LENGTH,
-                        })
-                      : t("configuration-templates.empty")
+                    : t("configuration-templates.empty")
                 }
               />
             ) : (

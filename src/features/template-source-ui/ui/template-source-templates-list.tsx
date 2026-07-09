@@ -110,9 +110,7 @@ export function TemplateSourceTemplatesList<
             <List.Item.Meta
               title={
                 <Flex align="center" gap={8} wrap="wrap">
-                  <Flex>
-                    <SearchHighlightText text={title} query={searchQuery} />
-                  </Flex>
+                  <SearchHighlightText text={title} query={searchQuery} />
 
                   {accessibility && (
                     <Tag
