@@ -712,7 +712,6 @@
     "apply-search-before-save": "Please apply search to confirm filters before saving",
     "open-collection-page": "Open collection page",
     "parent-collection": "Parent collection",
-    "no-filter": "This collection has no filter",
     "edit-filter": "Edit filter",
     "invalid-filter-json": "Filter query is not valid JSON",
     "filter-updated-successfully": "Filter has been updated",

@@ -52,10 +52,6 @@ export const CollectionFilterSection = observer(
           <Form.Item name="query" noStyle>
             <JsonEditorField form={form} fieldName="query" height={300} />
           </Form.Item>
-        ) : isEmptyQuery ? (
-          <Typography.Text type="secondary" italic>
-            {t("collection.no-filter")}
-          </Typography.Text>
         ) : (
           <SaltBoxReadonlyQueryBuilder filterStore={filterStore} />
         )}
