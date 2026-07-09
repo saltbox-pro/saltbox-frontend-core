@@ -725,6 +725,7 @@
     "minions-top-salt-version": "Основная версия Salt",
     "minions-top-architecture": "Основная архитектура",
     "table-count": "Количество",
+    "table-percent": "Доля",
     "windowed": "Оконный",
     "fullscreen": "Полноэкранный",
     "apply-value-to-filters": "Применить значение к фильтрам",

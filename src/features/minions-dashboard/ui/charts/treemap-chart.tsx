@@ -85,6 +85,7 @@ type TreemapChartProps = {
 
 export const TreemapChart = ({ data, onFilterByValue }: TreemapChartProps) => {
   const colors = generateChartColors(data.length);
+  const total = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <ResponsiveContainer>
@@ -98,7 +99,7 @@ export const TreemapChart = ({ data, onFilterByValue }: TreemapChartProps) => {
         isAnimationActive={false}
       >
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
       </RechartsTreemap>

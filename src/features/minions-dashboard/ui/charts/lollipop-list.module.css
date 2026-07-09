@@ -61,6 +61,11 @@
   font-weight: 600;
 }
 
+.lollipopPercent {
+  color: var(--ant-color-text-secondary, #344054);
+  font-size: 12px;
+}
+
 .lollipopRowClickable {
   cursor: pointer;
   transition: background-color 0.15s;

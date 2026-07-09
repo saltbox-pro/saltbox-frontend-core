@@ -2,6 +2,7 @@ import { Button, Flex, Tooltip } from "antd";
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
+import { formatPercent } from "../../helpers/format-percent";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import styles from "./lollipop-list.module.css";
@@ -14,6 +15,7 @@ type LollipopListProps = {
 export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
   const { t } = useTranslation();
   const max = Math.max(...data.map((item) => item.count), 1);
+  const total = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <Flex vertical gap={10} className={styles.lollipopList}>
@@ -39,6 +41,7 @@ export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
                   <span className={styles.lollipopTrackDot} style={{ left: `${barPercent}%` }} />
                 </span>
                 <span className={styles.lollipopCount}>{item.count}</span>
+                <span className={styles.lollipopPercent}>({formatPercent(item.count, total)})</span>
               </div>
             </Button>
           </Tooltip>

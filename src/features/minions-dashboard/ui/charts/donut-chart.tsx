@@ -26,6 +26,7 @@ type DonutChartProps = {
 export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProps) => {
   const { t } = useTranslation();
   const colors = generateChartColors(data.length);
+  const total = data.reduce((sum, item) => sum + item.count, 0);
 
   const isLegendItemClickable = (datum: ChartDatum | undefined) =>
     !!onFilterByValue && !!datum && !datum.isOther;
@@ -58,7 +59,7 @@ export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProp
     <ResponsiveContainer>
       <PieChart>
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
         {!hideLegend && (

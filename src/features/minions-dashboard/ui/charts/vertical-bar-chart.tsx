@@ -21,6 +21,8 @@ type VerticalBarChartProps = {
 };
 
 export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProps) => {
+  const total = data.reduce((sum, item) => sum + item.count, 0);
+
   return (
     <ResponsiveContainer>
       <BarChart
@@ -50,7 +52,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
         />
         <YAxis allowDecimals={false} />
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
         <Bar

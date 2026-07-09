@@ -725,6 +725,7 @@
     "minions-top-salt-version": "Primary Salt Version",
     "minions-top-architecture": "Primary Architecture",
     "table-count": "Count",
+    "table-percent": "Share",
     "windowed": "Windowed",
     "fullscreen": "Fullscreen",
     "apply-value-to-filters": "Apply Value to Filters",

@@ -32,6 +32,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
       Math.max(HORIZONTAL_BAR_YAXIS_WIDTH_MIN, longest * HORIZONTAL_BAR_YAXIS_CHAR_PX)
     );
   }, [data]);
+  const total = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <ResponsiveContainer>
@@ -61,7 +62,7 @@ export const HorizontalBarChart = ({ data, onFilterByValue }: HorizontalBarChart
           tickFormatter={truncateAxisLabel}
         />
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
         <Bar

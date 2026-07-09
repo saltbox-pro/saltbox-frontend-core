@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { applyFieldValueFilter } from "../../helpers/apply-filter";
+import { formatPercent } from "../../helpers/format-percent";
 import { valueToText } from "../../model/dashboard-chart-data";
 
 import styles from "./grain-table.module.css";
@@ -28,6 +29,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
     () => values.reduce((max, item) => Math.max(max, item.count), 0),
     [values]
   );
+  const total = useMemo(() => values.reduce((sum, item) => sum + item.count, 0), [values]);
 
   const columns = useMemo(
     () => [
@@ -63,12 +65,13 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
                 style={{ "--grain-count-bar-width": `${ratio * 100}%` } as CSSProperties}
               />
               <span className={styles.grainCountValue}>{count}</span>
+              <span className={styles.grainCountPercent}>({formatPercent(count, total)})</span>
             </>
           );
         },
       }),
     ],
-    [t, fieldSource, filterStore, maxCount]
+    [t, fieldSource, filterStore, maxCount, total]
   );
 
   if (values.length === 0) {
