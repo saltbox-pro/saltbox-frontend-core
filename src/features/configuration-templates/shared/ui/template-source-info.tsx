@@ -7,10 +7,13 @@ import {
 
 import { TemplateSourceDates } from "./template-source-dates";
 import { TemplateSourceLink } from "./template-source-link";
+import { TemplateSourceMountedPath, TemplateSourceNamespace } from "./template-source-meta";
 
 export type TemplateSourceInfoProps = {
   description?: string | null;
   webUrl?: string;
+  mountedPath?: string;
+  namespace?: string;
   createdAt?: string;
   syncedAt?: string | null;
   showNotSynced?: boolean;
@@ -21,6 +24,8 @@ export type TemplateSourceInfoProps = {
 export function TemplateSourceInfo({
   description,
   webUrl,
+  mountedPath,
+  namespace,
   createdAt,
   syncedAt,
   showNotSynced,
@@ -38,6 +43,18 @@ export function TemplateSourceInfo({
       )}
 
       <Flex vertical gap="small">
+        {!!namespace && (
+          <TemplateSourceDimmed dimmed={dimmed}>
+            <TemplateSourceNamespace namespace={namespace} />
+          </TemplateSourceDimmed>
+        )}
+
+        {!!mountedPath && (
+          <TemplateSourceDimmed dimmed={dimmed}>
+            <TemplateSourceMountedPath path={mountedPath} />
+          </TemplateSourceDimmed>
+        )}
+
         {!!webUrl && (
           <TemplateSourceDimmed dimmed={dimmed}>
             <TemplateSourceLink href={webUrl} />
