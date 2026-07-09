@@ -117,6 +117,7 @@ function CollectionCreateModal({
         title={t("collection-create-modal.dialog-title")}
         open={isModalOpen}
         onCancel={handleModalCancel}
+        zIndex={1001}
         footer={
           <>
             <Button type="default" disabled={isCollectionCreating} onClick={handleModalCancel}>
