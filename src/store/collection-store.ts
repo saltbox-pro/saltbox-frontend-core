@@ -47,6 +47,7 @@ export class CollectionStore {
 
   setCollectionSlug = (collectionSlug: string) => {
     this.collectionSlug = collectionSlug;
+    this.collection = undefined;
     this.loadCollection();
   };
 
