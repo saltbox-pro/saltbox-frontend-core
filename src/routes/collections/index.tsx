@@ -28,8 +28,9 @@ const CollectionsPage = observer(() => {
 
   return (
     <PageLayout title={t("collection.collections")} className={styles.pageLayout}>
-      <div ref={drawer.mainContentRef} className={styles.treeWrapper}>
+      <div className={styles.treeWrapper}>
         <CollectionsTree
+          contentRef={drawer.mainContentRef}
           onSelectNode={(node) => {
             if (node.slug) {
               drawer.toggle({ id: String(node.key), slug: node.slug });

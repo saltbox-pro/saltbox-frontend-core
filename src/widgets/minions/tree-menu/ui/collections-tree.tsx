@@ -3,7 +3,16 @@ import { SearchInput } from "@saltbox/saltbox-frontend-common";
 import { Alert, Empty, Flex, Spin, Tree, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
-import { type Key, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  type Key,
+  type ReactNode,
+  type Ref,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
@@ -29,6 +38,7 @@ interface CollectionsTreeProps {
   compact?: boolean;
   className?: string;
   selectedSlug?: string | null;
+  contentRef?: Ref<HTMLDivElement>;
 }
 
 export const CollectionsTree = observer(
@@ -39,6 +49,7 @@ export const CollectionsTree = observer(
     compact = false,
     className,
     selectedSlug,
+    contentRef,
   }: CollectionsTreeProps) => {
     const { t } = useTranslation();
 
@@ -193,37 +204,39 @@ export const CollectionsTree = observer(
           wrapperClassName={styles.content}
           spinning={collectionsTreeStore.fetchTreeStatus === "in-process"}
         >
-          {collectionsTreeStore.fetchTreeStatus === "error" && collectionsTreeStore.error ? (
-            <Alert
-              description={
-                collectionsTreeStore.error.startsWith("collection.")
-                  ? t(collectionsTreeStore.error)
-                  : collectionsTreeStore.error
-              }
-              type="error"
-            />
-          ) : noResults ? (
-            <Empty
-              className={styles.searchEmptyState}
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={t("collection.search-no-results")}
-            />
-          ) : (
-            <Tree
-              className={styles.tree}
-              showLine
-              switcherIcon={<DownOutlined />}
-              selectable
-              blockNode
-              treeData={highlightedTreeData}
-              titleRender={titleRender}
-              expandedKeys={expandedKeys}
-              selectedKeys={selectedKeys}
-              autoExpandParent={autoExpandParent}
-              onExpand={onExpand}
-              onSelect={onSelect}
-            />
-          )}
+          <div ref={contentRef}>
+            {collectionsTreeStore.fetchTreeStatus === "error" && collectionsTreeStore.error ? (
+              <Alert
+                description={
+                  collectionsTreeStore.error.startsWith("collection.")
+                    ? t(collectionsTreeStore.error)
+                    : collectionsTreeStore.error
+                }
+                type="error"
+              />
+            ) : noResults ? (
+              <Empty
+                className={styles.searchEmptyState}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={t("collection.search-no-results")}
+              />
+            ) : (
+              <Tree
+                className={styles.tree}
+                showLine
+                switcherIcon={<DownOutlined />}
+                selectable
+                blockNode
+                treeData={highlightedTreeData}
+                titleRender={titleRender}
+                expandedKeys={expandedKeys}
+                selectedKeys={selectedKeys}
+                autoExpandParent={autoExpandParent}
+                onExpand={onExpand}
+                onSelect={onSelect}
+              />
+            )}
+          </div>
         </Spin>
       </Flex>
     );
