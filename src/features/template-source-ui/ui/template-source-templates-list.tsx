@@ -91,43 +91,47 @@ export function TemplateSourceTemplatesList<
             )}
             title={accessibility && !isAccessible ? accessibility.disabledTitle : undefined}
             onClick={isClickable ? () => onTemplateClick?.(template) : undefined}
-            extra={
-              <Flex align="center" gap={8} wrap="wrap" justify="flex-end">
-                <Flex wrap="wrap" justify="flex-end" className={styles.templateItemTags}>
-                  <Tag>
+          >
+            <div className={styles.templateItemContent}>
+              <div className={styles.templateItemTitle}>
+                <SearchHighlightText text={title} query={searchQuery} />
+
+                {accessibility && (
+                  <Tag
+                    color={isAccessible ? "success" : "gold"}
+                    className={styles.accessibilityTag}
+                  >
+                    {accessibility.tagLabel}
+                  </Tag>
+                )}
+              </div>
+
+              {resolvedDescription && (
+                <div className={styles.templateItemDescription}>
+                  <SearchHighlightText text={resolvedDescription} query={searchQuery} />
+                </div>
+              )}
+
+              <Flex
+                align="center"
+                gap={8}
+                wrap="wrap"
+                justify="flex-end"
+                className={styles.templateItemFooter}
+              >
+                <Flex wrap="wrap" gap={8} className={styles.templateItemTags}>
+                  <Tag title={name}>
                     <SearchHighlightText text={name} query={searchQuery} />
                   </Tag>
 
-                  <Tag>
+                  <Tag title={fun}>
                     <SearchHighlightText text={fun} query={searchQuery} />
                   </Tag>
                 </Flex>
 
                 {renderItemActions?.(template)}
               </Flex>
-            }
-          >
-            <List.Item.Meta
-              title={
-                <Flex align="center" gap={8} wrap="wrap">
-                  <SearchHighlightText text={title} query={searchQuery} />
-
-                  {accessibility && (
-                    <Tag
-                      color={isAccessible ? "success" : "gold"}
-                      className={styles.accessibilityTag}
-                    >
-                      {accessibility.tagLabel}
-                    </Tag>
-                  )}
-                </Flex>
-              }
-              description={
-                resolvedDescription ? (
-                  <SearchHighlightText text={resolvedDescription} query={searchQuery} />
-                ) : undefined
-              }
-            />
+            </div>
           </List.Item>
         );
       }}

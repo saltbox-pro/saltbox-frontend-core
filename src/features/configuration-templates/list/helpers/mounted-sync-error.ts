@@ -1,4 +1,8 @@
-import { getSyncErrorDetail, resolveSyncErrorKind, type SyncErrorKind } from "./sync-error-detail";
+import {
+  getSyncErrorDetail,
+  resolveSyncErrorKind,
+  type SyncErrorKind,
+} from "../../shared/helpers/sync-error-detail";
 
 export type MountedSyncErrorKind = SyncErrorKind;
 

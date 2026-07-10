@@ -1,11 +1,12 @@
 import { getApiErrorMessage } from "@saltbox/saltbox-frontend-common";
 
-import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 export type SyncErrorKind = "failed" | "error";
 
 export const resolveSyncErrorKind = (reason: unknown): SyncErrorKind => {
-  if (reason instanceof BgTaskFailedError) {
+  if (isBgTaskFailedError(reason)) {
     return "failed";
   }
 
@@ -13,8 +14,9 @@ export const resolveSyncErrorKind = (reason: unknown): SyncErrorKind => {
 };
 
 export async function getSyncErrorDetail(reason: unknown): Promise<string | null> {
-  if (reason instanceof BgTaskFailedError && reason.message !== "BG_TASK_FAILED") {
-    return reason.message;
+  const bgTaskMessage = getBgTaskErrorMessage(reason, "");
+  if (bgTaskMessage) {
+    return bgTaskMessage;
   }
 
   const message = await getApiErrorMessage(reason, "");

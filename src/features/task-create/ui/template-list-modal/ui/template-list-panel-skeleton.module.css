@@ -9,19 +9,12 @@
   border: 1px solid #e0e0e0;
 }
 
-.templateSkeletonContent {
-  flex: 1;
-  min-width: 0;
-}
-
-.templateSkeletonContent :global(.ant-skeleton-title) {
-  margin-block: 0 4px;
-}
-
-.templateSkeletonContent :global(.ant-skeleton-paragraph) {
+.templateSkeletonTitle :global(.ant-skeleton-title),
+.templateSkeletonDescription :global(.ant-skeleton-paragraph) {
   margin-block: 0;
 }
 
-.templateSkeletonTags {
-  flex-shrink: 0;
+.templateSkeletonFooter {
+  width: 100%;
+  margin-top: 4px;
 }

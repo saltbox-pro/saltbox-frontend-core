@@ -10,6 +10,7 @@ import { useNavigate } from "react-router";
 
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 import { mastersStore } from "saltbox-core/store";
 
 import {
@@ -55,7 +56,9 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
 
       if (isBgTaskFailedError(error)) {
-        message.error(t("configuration-templates.source.action.plug-error"));
+        message.error(
+          getBgTaskErrorMessage(error, t("configuration-templates.source.action.plug-error"))
+        );
         return;
       }
 

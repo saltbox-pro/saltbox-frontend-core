@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import {
   getSourceActionContext,
@@ -51,7 +52,9 @@ export const DisconnectSourceButton = observer(function DisconnectSourceButton({
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
 
       if (isBgTaskFailedError(error)) {
-        message.error(t("configuration-templates.source.action.unplug-error"));
+        message.error(
+          getBgTaskErrorMessage(error, t("configuration-templates.source.action.unplug-error"))
+        );
         return;
       }
 

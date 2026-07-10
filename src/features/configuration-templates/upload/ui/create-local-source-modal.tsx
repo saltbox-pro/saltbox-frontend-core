@@ -1,10 +1,11 @@
-import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Alert, Form, Input, message, type FormRule } from "antd";
+import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Form, Input, message, type FormRule } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
+import { getSourceCreateErrorMessage } from "../../shared/helpers/get-source-create-error-message";
 import {
   TEMPLATE_SOURCE_FORM_I18N_PREFIX,
   TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
@@ -14,6 +15,7 @@ import {
 } from "../constants/template-source-form";
 
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
+import { TemplateSourceCreateErrorAlert } from "./template-source-create-error-alert";
 import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
 const FORM_ID = "local-source-form";
@@ -94,7 +96,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
+      setApiError(await getSourceCreateErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -140,7 +142,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
             <Input placeholder={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-placeholder`)} />
           </Form.Item>
 
-          {apiError && <Alert type="error" showIcon message={apiError} />}
+          {apiError && <TemplateSourceCreateErrorAlert message={apiError} />}
         </Form>
       </Modal>
     </>

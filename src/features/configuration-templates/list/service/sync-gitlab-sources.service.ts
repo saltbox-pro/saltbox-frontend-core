@@ -34,6 +34,6 @@ export async function syncGitlabSources(deps: SyncGitlabSourcesDeps): Promise<vo
   if (deps.isCancelled()) return;
 
   if (isBgTaskFailed(result)) {
-    throw new BgTaskFailedError(result.error);
+    throw new BgTaskFailedError(result.error, result.progress_meta);
   }
 }

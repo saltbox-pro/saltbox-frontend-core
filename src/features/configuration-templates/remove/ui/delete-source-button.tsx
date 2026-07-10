@@ -6,7 +6,9 @@ import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import {
   getSourceActionContext,
@@ -37,11 +39,6 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
     try {
       const result = await actions.deleteSource(source.id);
 
-      if (result === "failed") {
-        message.error(t("configuration-templates.source.action.delete-error"));
-        return;
-      }
-
       if (result === "not_found") {
         message.warning(
           t("configuration-templates.source.action.delete-not-found", {
@@ -58,6 +55,13 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
       );
     } catch (error) {
       if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
+
+      if (isBgTaskFailedError(error)) {
+        message.error(
+          getBgTaskErrorMessage(error, t("configuration-templates.source.action.delete-error"))
+        );
+        return;
+      }
 
       console.error(error);
       message.error(t("configuration-templates.source.action.delete-error"));

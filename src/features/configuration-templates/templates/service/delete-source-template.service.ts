@@ -7,6 +7,7 @@ import { apiCoreStore } from "saltbox-core/store";
 
 import { DELETE_LOCAL_TEMPLATE_OPTIMISTIC_OPERATION } from "../../shared/constants/source-operations";
 import type { SourceBgTaskPollingService } from "../../shared/service/source-bg-task-polling.service";
+import { isBgTaskPollFailed } from "../../shared/types/bg-task-poll-result";
 
 export type DeleteSourceTemplateServiceDeps = {
   bgTaskPolling: SourceBgTaskPollingService;
@@ -50,8 +51,8 @@ export async function deleteSourceTemplateWithPolling(
       throw new BgTaskPollAbortedError();
     }
 
-    if (pollResult === "failed") {
-      throw new BgTaskFailedError();
+    if (isBgTaskPollFailed(pollResult)) {
+      throw new BgTaskFailedError(pollResult.error, pollResult.progressMeta);
     }
   } finally {
     deps.clearActionState(sourceId);

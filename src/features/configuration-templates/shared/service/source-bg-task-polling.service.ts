@@ -6,7 +6,7 @@ import {
   shouldTrackSourceBgTask,
   type SourceBgTaskOutcome,
 } from "../helpers/source-bg-task";
-import type { BgTaskPollResult } from "../types/bg-task-poll-result";
+import { createBgTaskPollFailedResult, type BgTaskPollResult } from "../types/bg-task-poll-result";
 
 import { isBgTaskFailed, pollBgTaskResult } from "./poll-bg-task-result.service";
 
@@ -116,7 +116,7 @@ export class SourceBgTaskPollingService {
 
     if (isBgTaskFailed(result)) {
       await this.callbacks.reloadSource(sourceId);
-      return "failed";
+      return createBgTaskPollFailedResult(result.error, result.progress_meta);
     }
 
     if (outcome === "remove") {

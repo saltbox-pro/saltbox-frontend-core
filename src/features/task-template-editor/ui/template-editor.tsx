@@ -8,6 +8,7 @@ import { useNavigate } from "react-router";
 
 import { getTemplateSourceDetailPath } from "saltbox-core/features/configuration-templates/shared/helpers/source-presentation";
 import type { TemplateSourceNavigationState } from "saltbox-core/features/configuration-templates/shared/types/template-source-navigation-state";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
@@ -51,7 +52,7 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
     } catch (error) {
       console.error("Failed to save template:", error);
       if (isGlobalServerError(error)) return;
-      messageApi.error(t("task-template-editor.save-error"));
+      messageApi.error(getBgTaskErrorMessage(error, t("task-template-editor.save-error")));
     }
   };
 

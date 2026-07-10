@@ -1,10 +1,11 @@
-import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Alert, Col, Form, Input, Row, message } from "antd";
+import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Col, Form, Input, Row, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
+import { getSourceCreateErrorMessage } from "../../shared/helpers/get-source-create-error-message";
 import {
   TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
   TEMPLATE_SOURCE_REPO_URL_PATTERN,
@@ -13,6 +14,7 @@ import {
 } from "../constants/template-source-form";
 
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
+import { TemplateSourceCreateErrorAlert } from "./template-source-create-error-alert";
 import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
 const FORM_ID = "git-source-form";
@@ -81,7 +83,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
+      setApiError(await getSourceCreateErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -176,7 +178,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
             <Input placeholder={t(`${I18N_PREFIX}.branch-placeholder`)} />
           </Form.Item>
 
-          {apiError && <Alert type="error" showIcon message={apiError} />}
+          {apiError && <TemplateSourceCreateErrorAlert message={apiError} />}
         </Form>
       </Modal>
     </>

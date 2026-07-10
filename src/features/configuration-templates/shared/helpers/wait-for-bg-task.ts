@@ -15,7 +15,7 @@ export async function waitForBgTaskWithResult(
   const result = await pollBgTaskResult(taskId, signal);
 
   if (isBgTaskFailed(result)) {
-    throw new BgTaskFailedError(result.error);
+    throw new BgTaskFailedError(result.error, result.progress_meta);
   }
 
   return result;

@@ -13,6 +13,7 @@ import {
 } from "../constants/source-operations";
 import { isApiNotFoundError } from "../helpers/is-api-not-found-error";
 import type { SourceBgTaskOutcome } from "../helpers/source-bg-task";
+import { isBgTaskPollFailed } from "../types/bg-task-poll-result";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { SourceActionKind } from "../types/source-action";
 
@@ -97,8 +98,13 @@ export class TemplateSourceActionsService {
       this.callbacks.patchOptimisticTask(sourceId, REMOVE_OPTIMISTIC_OPERATION, taskId);
 
       const pollResult = await this.bgTaskPolling.schedule(sourceId, taskId, "remove", true);
-      if (pollResult !== "ok") {
-        return "failed";
+
+      if (pollResult === "aborted") {
+        throw new BgTaskPollAbortedError();
+      }
+
+      if (isBgTaskPollFailed(pollResult)) {
+        throw new BgTaskFailedError(pollResult.error, pollResult.progressMeta);
       }
 
       if (!this.callbacks.isSourcePresent(sourceId)) {
@@ -135,8 +141,8 @@ export class TemplateSourceActionsService {
         throw new BgTaskPollAbortedError();
       }
 
-      if (pollResult === "failed") {
-        throw new BgTaskFailedError();
+      if (isBgTaskPollFailed(pollResult)) {
+        throw new BgTaskFailedError(pollResult.error, pollResult.progressMeta);
       }
     } finally {
       this.callbacks.clearActionState(sourceId);

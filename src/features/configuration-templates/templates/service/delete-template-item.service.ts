@@ -5,6 +5,7 @@ import type { TFunction } from "i18next";
 
 import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
+import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 export type DeleteTemplateItemParams = {
   template: Pick<TaskTemplatePublicSchema, "id" | "title">;
@@ -38,7 +39,9 @@ export async function deleteTemplateItem({
     }
 
     if (isBgTaskFailedError(error)) {
-      message.error(t("configuration-templates.source.template-delete-error"));
+      message.error(
+        getBgTaskErrorMessage(error, t("configuration-templates.source.template-delete-error"))
+      );
       await onDeleteError?.();
       return "failed";
     }

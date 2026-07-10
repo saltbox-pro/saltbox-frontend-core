@@ -17,6 +17,7 @@ import {
   mergeSourceListItemUpdate,
   normalizeSourceListItem,
 } from "../../shared/helpers/normalize-source-list-item";
+import { getSyncErrorDetail } from "../../shared/helpers/sync-error-detail";
 import { waitForBgTask } from "../../shared/helpers/wait-for-bg-task";
 import { fetchTemplateSource } from "../../shared/service/fetch-template-source.service";
 import { TemplateSourceRuntime } from "../../shared/service/template-source-runtime";
@@ -29,7 +30,6 @@ import {
   resolveMountedSyncErrorKind,
   type MountedSyncErrorKind,
 } from "../helpers/mounted-sync-error";
-import { getSyncErrorDetail } from "../helpers/sync-error-detail";
 import { refreshWithSyncCheck } from "../service/refresh-with-sync-check.service";
 import { syncGitlabSources } from "../service/sync-gitlab-sources.service";
 import { syncMountedSources } from "../service/sync-mounted-sources.service";
