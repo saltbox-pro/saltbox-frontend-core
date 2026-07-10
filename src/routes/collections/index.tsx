@@ -59,7 +59,11 @@ const CollectionsPage = observer(() => {
         />
       </div>
 
-      <CollectionDetailsDrawer drawer={drawer} collectionStore={collectionStore} />
+      <CollectionDetailsDrawer
+        drawer={drawer}
+        collectionStore={collectionStore}
+        onCreateSubcollection={setCreateParentSlug}
+      />
 
       <CollectionCreateModal
         isOpen={createParentSlug !== null}

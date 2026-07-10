@@ -1,4 +1,4 @@
-import { EditOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   InfoDescriptions,
   type InfoDescriptionsProps,
@@ -35,10 +35,11 @@ interface CollectionDetailsDrawerProps {
     close: () => void;
   };
   collectionStore: CollectionStore;
+  onCreateSubcollection?: (parentSlug: string) => void;
 }
 
 export const CollectionDetailsDrawer = observer(
-  ({ drawer, collectionStore }: CollectionDetailsDrawerProps) => {
+  ({ drawer, collectionStore, onCreateSubcollection }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
     const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm<CollectionEditFormType>();
@@ -178,11 +179,26 @@ export const CollectionDetailsDrawer = observer(
       }
     };
 
-    const extra = isRoot ? undefined : (
-      <Button icon={<EditOutlined />} onClick={handleEdit} disabled={isEditing}>
-        {t("common.edit")}
-      </Button>
-    );
+    const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
+    const extra =
+      canCreateSubcollection || !isRoot ? (
+        <Flex gap="small">
+          {onCreateSubcollection && currentSlug && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => onCreateSubcollection(currentSlug)}
+              disabled={isEditing}
+            >
+              {t("collection.create-subcollection")}
+            </Button>
+          )}
+          {!isRoot && (
+            <Button icon={<EditOutlined />} onClick={handleEdit} disabled={isEditing}>
+              {t("common.edit")}
+            </Button>
+          )}
+        </Flex>
+      ) : undefined;
 
     return (
       <>
