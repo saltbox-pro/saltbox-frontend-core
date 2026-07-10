@@ -10,6 +10,7 @@ import {
 } from "recharts";
 
 import { VERTICAL_BAR_XAXIS_HEIGHT } from "../../constants/chart-data";
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum, truncateXAxisLabel } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -21,7 +22,7 @@ type VerticalBarChartProps = {
 };
 
 export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProps) => {
-  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const total = getChartTotal(data);
 
   return (
     <ResponsiveContainer>

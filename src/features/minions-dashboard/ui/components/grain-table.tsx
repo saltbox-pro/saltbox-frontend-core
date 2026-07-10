@@ -9,6 +9,7 @@ import { MinionFilterStore } from "saltbox-core/store";
 
 import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { formatPercent } from "../../helpers/format-percent";
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { valueToText } from "../../model/dashboard-chart-data";
 
 import styles from "./grain-table.module.css";
@@ -29,7 +30,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
     () => values.reduce((max, item) => Math.max(max, item.count), 0),
     [values]
   );
-  const total = useMemo(() => values.reduce((sum, item) => sum + item.count, 0), [values]);
+  const total = useMemo(() => getChartTotal(values), [values]);
 
   const columns = useMemo(
     () => [

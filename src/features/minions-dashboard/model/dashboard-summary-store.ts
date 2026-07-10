@@ -1,5 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
+import { getChartTotal } from "../helpers/get-chart-total";
+
 import { DashboardCardStore } from "./dashboard-card-store";
 
 export class DashboardSummaryStore {
@@ -20,7 +22,7 @@ export class DashboardSummaryStore {
   }
 
   get totalCount(): number {
-    return this.osStore.grainValues.reduce((sum, v) => sum + v.count, 0);
+    return getChartTotal(this.osStore.grainValues);
   }
 
   get topOs(): string | null {

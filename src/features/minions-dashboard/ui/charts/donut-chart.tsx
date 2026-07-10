@@ -12,6 +12,7 @@ import {
 
 import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
 
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -26,7 +27,7 @@ type DonutChartProps = {
 export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProps) => {
   const { t } = useTranslation();
   const colors = generateChartColors(data.length);
-  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const total = getChartTotal(data);
 
   const isLegendItemClickable = (datum: ChartDatum | undefined) =>
     !!onFilterByValue && !!datum && !datum.isOther;

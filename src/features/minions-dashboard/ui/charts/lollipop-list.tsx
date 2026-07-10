@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import { formatPercent } from "../../helpers/format-percent";
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import styles from "./lollipop-list.module.css";
@@ -15,7 +16,7 @@ type LollipopListProps = {
 export const LollipopList = ({ data, onFilterByValue }: LollipopListProps) => {
   const { t } = useTranslation();
   const max = Math.max(...data.map((item) => item.count), 1);
-  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const total = getChartTotal(data);
 
   return (
     <Flex vertical gap={10} className={styles.lollipopList}>
