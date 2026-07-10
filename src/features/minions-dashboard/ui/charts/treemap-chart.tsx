@@ -2,6 +2,7 @@ import { ResponsiveContainer, Tooltip as ChartTooltip, Treemap as RechartsTreema
 
 import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
 
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -85,6 +86,7 @@ type TreemapChartProps = {
 
 export const TreemapChart = ({ data, onFilterByValue }: TreemapChartProps) => {
   const colors = generateChartColors(data.length);
+  const total = getChartTotal(data);
 
   return (
     <ResponsiveContainer>
@@ -98,7 +100,7 @@ export const TreemapChart = ({ data, onFilterByValue }: TreemapChartProps) => {
         isAnimationActive={false}
       >
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
       </RechartsTreemap>

@@ -8,7 +8,12 @@ import {
   isSyncInProgress,
   isUnplugInProgress,
 } from "./source-action-progress";
-import { getSourcePresentation, getSourceWebUrl } from "./source-presentation";
+import {
+  getSourceMountedPath,
+  getSourceNamespaceLabel,
+  getSourcePresentation,
+  getSourceWebUrl,
+} from "./source-presentation";
 
 export function getTemplateSourceViewState(
   source: TemplateSourcePublicSchema,
@@ -37,6 +42,8 @@ export function getTemplateSourceViewState(
     isConnected: (presentation.isConnected || syncInProgress) && !isActuallyPlugging,
     forceDimmed: (presentation.isDimmed && !syncInProgress) || isActuallyPlugging,
     webUrl: getSourceWebUrl(source),
+    mountedPath: getSourceMountedPath(source),
+    namespace: getSourceNamespaceLabel(source),
     showNotSynced:
       (presentation.showNotSynced || (syncInProgress && !presentation.showActiveStatus)) &&
       !isActuallyPlugging,

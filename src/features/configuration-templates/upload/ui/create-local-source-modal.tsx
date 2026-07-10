@@ -1,11 +1,17 @@
 import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Alert, Form, message } from "antd";
+import { Alert, Form, Input, message, type FormRule } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
-import { trimOptional, trimRequired } from "../constants/template-source-form";
+import {
+  TEMPLATE_SOURCE_FORM_I18N_PREFIX,
+  TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
+  TEMPLATE_SOURCE_NAMESPACE_PATTERN,
+  trimOptional,
+  trimRequired,
+} from "../constants/template-source-form";
 
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
 import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
@@ -16,7 +22,7 @@ const I18N_PREFIX = "configuration-templates.local-source-modal";
 type LocalSourceFormValues = {
   name: string;
   description?: string;
-  namespace?: string;
+  namespace: string;
 };
 
 type CreateLocalSourceModalProps = {
@@ -36,6 +42,24 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
   const [form] = Form.useForm<LocalSourceFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  const namespaceRules: FormRule[] = [
+    {
+      required: true,
+      whitespace: true,
+      message: t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-required`),
+    },
+    {
+      max: TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
+      message: t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-max`, {
+        max: TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
+      }),
+    },
+    {
+      pattern: TEMPLATE_SOURCE_NAMESPACE_PATTERN,
+      message: t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-invalid`),
+    },
+  ];
 
   useEffect(() => {
     if (open) {
@@ -59,7 +83,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
       await store.createLocalSource({
         name,
         description: trimOptional(values.description),
-        namespace: trimOptional(values.namespace),
+        namespace: trimRequired(values.namespace),
       });
 
       messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
@@ -104,6 +128,17 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
           autoComplete="off"
         >
           <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} descriptionRows={3} />
+
+          <Form.Item<LocalSourceFormValues>
+            label={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace`)}
+            name="namespace"
+            required
+            validateFirst
+            rules={namespaceRules}
+            tooltip={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-tooltip`)}
+          >
+            <Input placeholder={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-placeholder`)} />
+          </Form.Item>
 
           {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>

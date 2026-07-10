@@ -724,6 +724,7 @@
     "minions-top-salt-version": "Primary Salt Version",
     "minions-top-architecture": "Primary Architecture",
     "table-count": "Count",
+    "table-percent": "Share",
     "windowed": "Windowed",
     "fullscreen": "Fullscreen",
     "apply-value-to-filters": "Apply Value to Filters",
@@ -1008,16 +1009,18 @@
       "connect-source": "connect a source",
       "sync-source": "sync a source"
     },
-    "sync-gitlab-sources-error": "Failed to sync repositories with GitLab",
-    "sync-gitlab-sources-failed": "GitLab repository sync failed",
-    "sync-gitlab-sources-success": "Repositories have been synced with GitLab",
+    "sync-gitlab-sources-error": "Failed to refresh GitLab sources",
+    "sync-gitlab-sources-failed": "GitLab sources refresh failed",
+    "sync-gitlab-sources-success": "GitLab sources have been refreshed",
+    "sync-mounted-sources-error": "Failed to refresh mounted sources",
+    "sync-mounted-sources-failed": "Mounted sources refresh failed",
+    "sync-mounted-sources-success": "Mounted sources have been refreshed",
     "empty": "No templates available",
     "sync-gitlab-sources-not-loaded": {
-      "message": "GitLab repositories are not synced. Sync with GitLab to display template sources"
+      "message": "GitLab sources have not been refreshed. Refresh GitLab sources to display the list"
     },
     "search": {
       "placeholder": "Search by source, template, file",
-      "min-length": "Enter at least {{count}} characters to search",
       "no-results": "Nothing found matching your search"
     },
     "filter": {
@@ -1025,7 +1028,8 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "sync-gitlab-sources": "Refresh sources list",
+      "sync-gitlab-sources": "Refresh GitLab sources",
+      "sync-mounted-sources": "Refresh mounted sources",
       "add-local-source": "Add local source",
       "add-git-source": "Add Git repository",
       "add-archive-source": "Add source from archive"
@@ -1033,8 +1037,9 @@
     "source-form": {
       "namespace": "Namespace",
       "namespace-placeholder": "my_namespace",
-      "namespace-tooltip": "Prefix for template names. Lowercase letters, digits, and underscores only",
-      "namespace-invalid": "Only lowercase letters, digits, and underscores are allowed",
+      "namespace-required": "Namespace is required",
+      "namespace-tooltip": "Internal name for file and template paths. Lowercase Latin letters, digits, and underscores only",
+      "namespace-invalid": "Only lowercase Latin letters, digits, and underscores are allowed",
       "namespace-max": "Maximum {{max}} characters"
     },
     "local-source-modal": {
@@ -1075,21 +1080,10 @@
     },
     "add-file-modal": {
       "title": "Adding file to source \"{{name}}\"",
-      "rel-path": "Destination path",
-      "rel-path-required": "Enter a path",
-      "rel-path-placeholder": "configs/myfile.conf",
-      "rel-path-hint": "Path relative to the sshfs root",
-      "source-mode": "File source",
-      "mode-file": "Upload file",
-      "mode-url": "From URL",
       "file": "File",
       "file-drag-title": "Click or drag a file to this area",
       "file-drag-hint": "You can upload a single file of any type",
       "file-required": "Select a file",
-      "url": "URL",
-      "url-required": "Enter a URL",
-      "url-invalid": "Enter a valid URL",
-      "url-placeholder": "https://example.com/file.tar.gz",
       "unpack-as": "Unpack as",
       "unpack-as-none": "— do not unpack —",
       "unpack-as-hint": "Specify archive format if unpacking is needed",
@@ -1121,8 +1115,10 @@
       "type": {
         "local_bundle": "Local",
         "git_repo": "Git",
-        "archive_bundle": "Archive"
+        "archive_bundle": "Archive",
+        "mounted_repo": "Mounted"
       },
+      "mounted-path": "Mount path",
       "status": {
         "active": "Active",
         "not-synced": "Not synced",

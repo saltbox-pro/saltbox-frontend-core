@@ -7,8 +7,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { getTemplateSourceDetailPath } from "saltbox-core/features/configuration-templates/shared/helpers/source-presentation";
+import type { TemplateSourceNavigationState } from "saltbox-core/features/configuration-templates/shared/types/template-source-navigation-state";
 
-import { getPostSaveTemplateHighlightState } from "../helpers/get-post-save-template-highlight-state";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import { DuplicateNoConnectedLocalSourceAlert } from "./duplicate-no-connected-local-source-alert";
@@ -40,12 +40,14 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
 
   const saveTemplate = async () => {
     try {
-      await store.save();
+      const savedTemplateId = await store.save();
+      const highlightState: TemplateSourceNavigationState | undefined = savedTemplateId
+        ? { highlightedTemplateId: savedTemplateId }
+        : undefined;
+
       messageApi.success(t("task-template-editor.save-success"));
       setSaveModalOpen(false);
-      navigate(getPostSavePath(), {
-        state: getPostSaveTemplateHighlightState(store.mode, store.templateId, store.fileName),
-      });
+      navigate(getPostSavePath(), { state: highlightState });
     } catch (error) {
       console.error("Failed to save template:", error);
       if (isGlobalServerError(error)) return;

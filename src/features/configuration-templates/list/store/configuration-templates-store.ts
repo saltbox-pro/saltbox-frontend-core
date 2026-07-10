@@ -24,12 +24,15 @@ import type { RefreshSourceResult } from "../../shared/types/refresh-source-resu
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
+import { resolveGitlabSyncErrorKind, type GitlabSyncErrorKind } from "../helpers/gitlab-sync-error";
 import {
-  getGitlabSyncErrorDetail,
-  resolveGitlabSyncErrorKind,
-  type GitlabSyncErrorKind,
-} from "../helpers/gitlab-sync-error";
+  resolveMountedSyncErrorKind,
+  type MountedSyncErrorKind,
+} from "../helpers/mounted-sync-error";
+import { getSyncErrorDetail } from "../helpers/sync-error-detail";
+import { refreshWithSyncCheck } from "../service/refresh-with-sync-check.service";
 import { syncGitlabSources } from "../service/sync-gitlab-sources.service";
+import { syncMountedSources } from "../service/sync-mounted-sources.service";
 
 type LoadOptions = {
   signal?: AbortSignal;
@@ -51,16 +54,21 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   sources: SourceListWithExtrasSchema[] = [];
   isLoading = false;
   isCheckingExternal = false;
+  isCheckingMounted = false;
   hasLoadedOnce = false;
   hasError = false;
   gitlabSyncError: GitlabSyncErrorKind | null = null;
   gitlabSyncErrorDetail: string | null = null;
+  mountedSyncError: MountedSyncErrorKind | null = null;
+  mountedSyncErrorDetail: string | null = null;
 
   actionBySourceId = new Map<string, SourceActionKind>();
 
   private readonly runtime: TemplateSourceRuntime;
   private externalCheckAbortController: AbortController | null = null;
   private externalCheckGeneration = 0;
+  private mountedCheckAbortController: AbortController | null = null;
+  private mountedCheckGeneration = 0;
   private loadAbortController: AbortController | null = null;
   private loadGeneration = 0;
 
@@ -80,21 +88,33 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   reset = () => {
     this.cancelExternalCheck();
+    this.cancelMountedCheck();
     this.cancelLoad();
     this.runtime.reset();
     this.sources = [];
     this.isLoading = false;
     this.isCheckingExternal = false;
+    this.isCheckingMounted = false;
     this.hasLoadedOnce = false;
     this.hasError = false;
     this.gitlabSyncError = null;
     this.gitlabSyncErrorDetail = null;
+    this.mountedSyncError = null;
+    this.mountedSyncErrorDetail = null;
   };
 
-  private cancelExternalCheck = () => {
+  private cancelExternalCheck = (): number => {
     this.externalCheckAbortController?.abort();
     this.externalCheckAbortController = null;
     this.externalCheckGeneration += 1;
+    return this.externalCheckGeneration;
+  };
+
+  private cancelMountedCheck = (): number => {
+    this.mountedCheckAbortController?.abort();
+    this.mountedCheckAbortController = null;
+    this.mountedCheckGeneration += 1;
+    return this.mountedCheckGeneration;
   };
 
   private cancelLoad = () => {
@@ -194,59 +214,79 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     }
   };
 
-  refreshWithExternalCheck = async (): Promise<boolean> => {
-    if (this.isCheckingExternal) return false;
+  refreshWithExternalCheck = (): Promise<boolean> =>
+    refreshWithSyncCheck({
+      isAlreadyChecking: () => this.isCheckingExternal,
+      start: () => {
+        runInAction(() => {
+          this.isCheckingExternal = true;
+          this.hasError = false;
+          this.gitlabSyncError = null;
+          this.gitlabSyncErrorDetail = null;
+        });
+      },
+      cancel: () => this.cancelExternalCheck(),
+      setAbortController: (controller) => {
+        this.externalCheckAbortController = controller;
+      },
+      isStale: (generation) => generation !== this.externalCheckGeneration,
+      sync: (deps) => syncGitlabSources(deps),
+      load: (options) => this.load(options),
+      onSyncError: async (reason) => {
+        const gitlabSyncErrorDetail = await getSyncErrorDetail(reason);
 
-    runInAction(() => {
-      this.isCheckingExternal = true;
-      this.hasError = false;
-      this.gitlabSyncError = null;
-      this.gitlabSyncErrorDetail = null;
-    });
+        runInAction(() => {
+          this.gitlabSyncError = resolveGitlabSyncErrorKind(reason);
+          this.gitlabSyncErrorDetail = gitlabSyncErrorDetail;
+        });
+      },
+      finish: (generation) => {
+        if (generation !== this.externalCheckGeneration) return;
 
-    this.cancelExternalCheck();
-
-    const generation = this.externalCheckGeneration;
-    const abortController = new AbortController();
-    this.externalCheckAbortController = abortController;
-
-    try {
-      await syncGitlabSources({
-        signal: abortController.signal,
-        isCancelled: () => generation !== this.externalCheckGeneration,
-      });
-
-      if (generation !== this.externalCheckGeneration) return false;
-
-      await this.load({
-        signal: abortController.signal,
-        isCancelled: () => generation !== this.externalCheckGeneration,
-      });
-
-      if (generation !== this.externalCheckGeneration) return false;
-
-      return true;
-    } catch (reason) {
-      if (isBgTaskPollAborted(reason) || generation !== this.externalCheckGeneration) return false;
-
-      console.error("Failed to check external template sources:", reason);
-      if (isGlobalServerError(reason)) return false;
-
-      runInAction(() => {
-        this.gitlabSyncError = resolveGitlabSyncErrorKind(reason);
-        this.gitlabSyncErrorDetail = getGitlabSyncErrorDetail(reason);
-      });
-
-      return false;
-    } finally {
-      if (generation === this.externalCheckGeneration) {
         runInAction(() => {
           this.isCheckingExternal = false;
         });
         this.externalCheckAbortController = null;
-      }
-    }
-  };
+      },
+      logMessage: "Failed to check external template sources:",
+    });
+
+  refreshWithMountedCheck = (): Promise<boolean> =>
+    refreshWithSyncCheck({
+      isAlreadyChecking: () => this.isCheckingMounted,
+      start: () => {
+        runInAction(() => {
+          this.isCheckingMounted = true;
+          this.hasError = false;
+          this.mountedSyncError = null;
+          this.mountedSyncErrorDetail = null;
+        });
+      },
+      cancel: () => this.cancelMountedCheck(),
+      setAbortController: (controller) => {
+        this.mountedCheckAbortController = controller;
+      },
+      isStale: (generation) => generation !== this.mountedCheckGeneration,
+      sync: (deps) => syncMountedSources(deps),
+      load: (options) => this.load(options),
+      onSyncError: async (reason) => {
+        const mountedSyncErrorDetail = await getSyncErrorDetail(reason);
+
+        runInAction(() => {
+          this.mountedSyncError = resolveMountedSyncErrorKind(reason);
+          this.mountedSyncErrorDetail = mountedSyncErrorDetail;
+        });
+      },
+      finish: (generation) => {
+        if (generation !== this.mountedCheckGeneration) return;
+
+        runInAction(() => {
+          this.isCheckingMounted = false;
+        });
+        this.mountedCheckAbortController = null;
+      },
+      logMessage: "Failed to check mounted template sources:",
+    });
 
   reloadSource = async (sourceId: string): Promise<void> => {
     try {
@@ -288,7 +328,7 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   createLocalSource = async (payload: {
     name: string;
     description?: string;
-    namespace?: string;
+    namespace: string;
   }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
     if (!api) throw new Error("API is not configured");
@@ -307,7 +347,6 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   createGitSource = async (payload: {
     name: string;
     description?: string;
-    namespace?: string;
     repo_url: string;
     repo_user?: string;
     repo_pass?: string;
@@ -321,7 +360,6 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
         TemplateSourceImportFromGitSchema: {
           name: payload.name,
           description: payload.description,
-          namespace: payload.namespace,
           repo_url: payload.repo_url,
           repo_user: payload.repo_user,
           repo_pass: payload.repo_pass,
@@ -334,7 +372,6 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   createArchiveSource = async (payload: {
     name: string;
     description?: string;
-    namespace?: string;
     file: File;
   }): Promise<void> => {
     const api = apiCoreStore.taskTemplateSourcesApi;
@@ -344,7 +381,6 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       api.templateSourceImportFromArchive({
         name: payload.name,
         description: payload.description ?? "",
-        namespace: payload.namespace,
         file: payload.file,
       })
     );

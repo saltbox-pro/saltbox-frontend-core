@@ -10,6 +10,7 @@ import {
 } from "recharts";
 
 import { VERTICAL_BAR_XAXIS_HEIGHT } from "../../constants/chart-data";
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum, truncateXAxisLabel } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -21,6 +22,8 @@ type VerticalBarChartProps = {
 };
 
 export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProps) => {
+  const total = getChartTotal(data);
+
   return (
     <ResponsiveContainer>
       <BarChart
@@ -50,7 +53,7 @@ export const VerticalBarChart = ({ data, onFilterByValue }: VerticalBarChartProp
         />
         <YAxis allowDecimals={false} />
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
         <Bar

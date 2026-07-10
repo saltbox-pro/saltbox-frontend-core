@@ -6,6 +6,7 @@ import {
   X_AXIS_LABEL_MAX_CHARS,
   Y_AXIS_LABEL_MAX_CHARS,
 } from "../constants/chart-data";
+import { getChartTotal } from "../helpers/get-chart-total";
 
 export type ChartDatum = {
   name: string;
@@ -88,14 +89,14 @@ export type KpiStats = {
 };
 
 export const toKpiStats = (values: GrainValue[]): KpiStats => {
-  const total = values.reduce((sum, item) => sum + item.count, 0);
+  const total = getChartTotal(values);
 
   const parsed = values
     .filter((item) => item.value !== null && item.value !== undefined && item.value !== "")
     .map((item) => ({ value: Number(item.value), count: item.count }))
     .filter((item) => Number.isFinite(item.value));
 
-  const numericCount = parsed.reduce((sum, item) => sum + item.count, 0);
+  const numericCount = getChartTotal(parsed);
   if (parsed.length === 0 || numericCount === 0) {
     return { total, min: null, avg: null, max: null };
   }
@@ -159,7 +160,7 @@ export const toHistogramData = (
       ...emptyBucket,
       {
         name: formatBound(min),
-        count: parsed.reduce((sum, item) => sum + item.count, 0),
+        count: getChartTotal(parsed),
         value: min,
       },
     ];
@@ -171,13 +172,13 @@ export const toHistogramData = (
   const buckets = Array.from({ length: bucketCount }, (_, index) => {
     const start = min + index * step;
     const end = index === bucketCount - 1 ? max : start + step;
-    const count = parsed
-      .filter((item) =>
+    const count = getChartTotal(
+      parsed.filter((item) =>
         index === bucketCount - 1
           ? item.value >= start && item.value <= end
           : item.value >= start && item.value < end
       )
-      .reduce((sum, item) => sum + item.count, 0);
+    );
 
     const label = `${formatBound(start)}-${formatBound(end)}`;
     return {

@@ -19,6 +19,7 @@ import { MinionFilterStore } from "saltbox-core/store";
 import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
 import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -167,7 +168,7 @@ export const MinionDashboardCard = observer(
         ...toChartData(grainValues, limit, emptyLabel),
         {
           name: t("dashboard.other-values", { count: hiddenValues.length }),
-          count: hiddenValues.reduce((sum, item) => sum + item.count, 0),
+          count: getChartTotal(hiddenValues),
           value: null,
           isOther: true,
         },

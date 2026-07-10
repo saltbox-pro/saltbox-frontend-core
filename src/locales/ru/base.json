@@ -724,6 +724,7 @@
     "minions-top-salt-version": "Основная версия Salt",
     "minions-top-architecture": "Основная архитектура",
     "table-count": "Количество",
+    "table-percent": "Доля",
     "windowed": "Оконный",
     "fullscreen": "Полноэкранный",
     "apply-value-to-filters": "Применить значение к фильтрам",
@@ -1008,16 +1009,18 @@
       "connect-source": "подключения источника",
       "sync-source": "синхронизации источника"
     },
-    "sync-gitlab-sources-error": "Не удалось синхронизировать репозитории с GitLab",
-    "sync-gitlab-sources-failed": "Синхронизация репозиториев с GitLab завершилась с ошибкой",
-    "sync-gitlab-sources-success": "Репозитории с GitLab успешно синхронизированы",
+    "sync-gitlab-sources-error": "Не удалось обновить источники GitLab",
+    "sync-gitlab-sources-failed": "Обновление источников GitLab завершилось с ошибкой",
+    "sync-gitlab-sources-success": "Источники GitLab обновлены",
+    "sync-mounted-sources-error": "Не удалось обновить смонтированные источники",
+    "sync-mounted-sources-failed": "Обновление смонтированных источников завершилось с ошибкой",
+    "sync-mounted-sources-success": "Смонтированные источники обновлены",
     "empty": "Нет доступных шаблонов",
     "sync-gitlab-sources-not-loaded": {
-      "message": "Репозитории GitLab не синхронизированы. Синхронизируйте с GitLab, чтобы отобразить источники шаблонов"
+      "message": "Источники GitLab не обновлены. Обновите источники GitLab, чтобы отобразить список"
     },
     "search": {
       "placeholder": "Поиск по источнику, шаблону, файлу",
-      "min-length": "Введите минимум {{count}} символа для поиска",
       "no-results": "Ничего не найдено по запросу"
     },
     "filter": {
@@ -1025,7 +1028,8 @@
     },
     "actions": {
       "refresh": "Обновить",
-      "sync-gitlab-sources": "Обновить список источников",
+      "sync-gitlab-sources": "Обновить источники GitLab",
+      "sync-mounted-sources": "Обновить смонтированные источники",
       "add-local-source": "Добавить локальный источник",
       "add-git-source": "Добавить Git-репозиторий",
       "add-archive-source": "Добавить источник из архива"
@@ -1033,7 +1037,8 @@
     "source-form": {
       "namespace": "Пространство имён",
       "namespace-placeholder": "my_namespace",
-      "namespace-tooltip": "Префикс для имён шаблонов. Только строчные латинские буквы, цифры и подчёркивание",
+      "namespace-required": "Укажите пространство имён",
+      "namespace-tooltip": "Внутреннее имя для путей файлов и шаблонов. Только строчные латинские буквы, цифры и подчёркивание",
       "namespace-invalid": "Допустимы только строчные латинские буквы, цифры и подчёркивание",
       "namespace-max": "Не более {{max}} символов"
     },
@@ -1075,23 +1080,12 @@
     },
     "add-file-modal": {
       "title": "Добавление файла в источник \"{{name}}\"",
-      "rel-path": "Путь назначения",
-      "rel-path-required": "Укажите путь",
-      "rel-path-placeholder": "configs/myfile.conf",
-      "rel-path-hint": "Путь относительно корня sshfs",
-      "source-mode": "Источник файла",
-      "mode-file": "Загрузить файл",
-      "mode-url": "По URL",
       "file": "Файл",
       "file-drag-title": "Нажмите или перетащите файл в эту область",
       "file-drag-hint": "Можно загрузить один файл любого типа",
       "file-required": "Выберите файл",
-      "url": "URL",
-      "url-required": "Укажите URL",
-      "url-invalid": "Укажите корректный URL",
-      "url-placeholder": "https://example.com/file.tar.gz",
       "unpack-as": "Распаковать как",
-      "unpack-as-none": "— не распаковывать —",
+      "unpack-as-none": "- не распаковывать -",
       "unpack-as-hint": "Укажите формат архива, если нужно распаковать",
       "add": "Добавить",
       "cancel": "Отмена",
@@ -1122,8 +1116,10 @@
       "type": {
         "local_bundle": "Локальный",
         "git_repo": "Git",
-        "archive_bundle": "Архив"
+        "archive_bundle": "Архив",
+        "mounted_repo": "Смонтированный"
       },
+      "mounted-path": "Путь монтирования",
       "status": {
         "active": "Активен",
         "not-synced": "Не синхронизирован",

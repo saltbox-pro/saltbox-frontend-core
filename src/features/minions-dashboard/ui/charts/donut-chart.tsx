@@ -12,6 +12,7 @@ import {
 
 import { generateChartColors } from "saltbox-core/shared/utils/chart-color-generator";
 
+import { getChartTotal } from "../../helpers/get-chart-total";
 import { ChartDatum } from "../../model/dashboard-chart-data";
 
 import { ChartTooltipContent } from "./chart-tooltip-content";
@@ -26,6 +27,7 @@ type DonutChartProps = {
 export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProps) => {
   const { t } = useTranslation();
   const colors = generateChartColors(data.length);
+  const total = getChartTotal(data);
 
   const isLegendItemClickable = (datum: ChartDatum | undefined) =>
     !!onFilterByValue && !!datum && !datum.isOther;
@@ -58,7 +60,7 @@ export const DonutChart = ({ data, onFilterByValue, hideLegend }: DonutChartProp
     <ResponsiveContainer>
       <PieChart>
         <ChartTooltip
-          content={<ChartTooltipContent isFilterable={!!onFilterByValue} />}
+          content={<ChartTooltipContent isFilterable={!!onFilterByValue} total={total} />}
           isAnimationActive={false}
         />
         {!hideLegend && (

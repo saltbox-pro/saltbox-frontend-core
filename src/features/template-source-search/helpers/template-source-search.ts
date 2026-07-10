@@ -8,8 +8,6 @@ import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-d
 
 import { sortTemplatesByTitle } from "./sort-templates-by-title";
 
-export const MIN_SOURCE_SEARCH_LENGTH = 3;
-
 export type TemplateSourceSearchShape = Pick<
   SourceListWithExtrasSchema,
   "name" | "description" | "templates" | "files"
@@ -20,7 +18,7 @@ export const normalizeSearch = (value: string) => value.trim().toLowerCase();
 export const getActiveSearchQuery = (value: string): string | undefined => {
   const query = normalizeSearch(value);
 
-  if (query.length < MIN_SOURCE_SEARCH_LENGTH) {
+  if (!query) {
     return undefined;
   }
 

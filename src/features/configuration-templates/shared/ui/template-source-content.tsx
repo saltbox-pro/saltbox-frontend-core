@@ -1,7 +1,11 @@
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 import { Space } from "antd";
 
-import { getSourceWebUrl } from "../helpers/source-presentation";
+import {
+  getSourceMountedPath,
+  getSourceNamespaceLabel,
+  getSourceWebUrl,
+} from "../helpers/source-presentation";
 
 import { TemplateSourceInfo } from "./template-source-info";
 import { TemplateSourceLastErrorAlert } from "./template-source-last-error-alert";
@@ -22,6 +26,8 @@ export function TemplateSourceContent({
       <TemplateSourceInfo
         description={source.description}
         webUrl={getSourceWebUrl(source)}
+        mountedPath={getSourceMountedPath(source)}
+        namespace={getSourceNamespaceLabel(source)}
         createdAt={source.created}
         syncedAt={source.synced_at}
         showNotSynced={showNotSynced}

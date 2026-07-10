@@ -20,3 +20,10 @@ td.grainCountCol {
 .grainCountValue {
   position: relative;
 }
+
+.grainCountPercent {
+  position: relative;
+  margin-left: 4px;
+  color: var(--ant-color-text-secondary, #475467);
+  font-size: 12px;
+}
