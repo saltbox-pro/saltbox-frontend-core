@@ -2,10 +2,14 @@ import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
-import { waitForBgTask } from "saltbox-core/features/configuration-templates/shared/helpers/wait-for-bg-task";
+import {
+  waitForBgTask,
+  waitForBgTaskWithResult,
+} from "saltbox-core/features/configuration-templates/shared/helpers/wait-for-bg-task";
 import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
+import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
 import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
 import {
   combineSchemaAndBody,
@@ -194,7 +198,7 @@ export class TemplateEditorStore {
     this.rawSls = combineSchemaAndBody(schema, this.parsed.slsBody);
   };
 
-  save = async (): Promise<void> => {
+  save = async (): Promise<string | undefined> => {
     runInAction(() => {
       this.isSaving = true;
     });
@@ -215,24 +219,30 @@ export class TemplateEditorStore {
             content: this.rawSls,
           },
         });
-        if (response) {
-          await waitForBgTask(extractTaskId(response));
+        if (!response) {
+          return undefined;
         }
-      } else {
-        if (!this.templateId) {
-          throw new Error("templateId is required to update a template");
-        }
-        const response = await apiCoreStore.taskTemplatesApi?.taskTemplateUpdate({
-          source_id: this.sourceId,
-          template_id: this.templateId,
-          TaskTemplateFromRawUpdateSchema: {
-            content: this.rawSls,
-          },
-        });
-        if (response) {
-          await waitForBgTask(extractTaskId(response));
-        }
+
+        const result = await waitForBgTaskWithResult(extractTaskId(response));
+
+        return extractCreatedTemplateId(result.return_value);
       }
+
+      if (!this.templateId) {
+        throw new Error("templateId is required to update a template");
+      }
+      const response = await apiCoreStore.taskTemplatesApi?.taskTemplateUpdate({
+        source_id: this.sourceId,
+        template_id: this.templateId,
+        TaskTemplateFromRawUpdateSchema: {
+          content: this.rawSls,
+        },
+      });
+      if (response) {
+        await waitForBgTask(extractTaskId(response));
+      }
+
+      return this.templateId;
     } finally {
       runInAction(() => {
         this.isSaving = false;

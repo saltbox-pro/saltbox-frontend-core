@@ -71,8 +71,8 @@
   },
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
-    "@saltbox/saltbox-core-api-client": "^0.2.1-89b849ce4d83695039f127d2e4489cac4bdd0987",
-    "@saltbox/saltbox-frontend-common": "^0.2.31",
+    "@saltbox/saltbox-core-api-client": "^0.2.1-2d71e23c582c0b8454fd4b3b2d2087bdf179f2fa",
+    "@saltbox/saltbox-frontend-common": "^0.2.32",
     "antd": "5.26.0",
     "clsx": "^2.1.1",
     "i18next": "^25.2.1",

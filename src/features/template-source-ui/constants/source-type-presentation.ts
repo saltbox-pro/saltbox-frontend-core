@@ -6,4 +6,5 @@ export const SOURCE_TYPE_TAG_COLORS: Partial<Record<SourceType, string>> = {
   [SourceType.LocalBundle]: "blue",
   [SourceType.GitRepo]: "orange",
   [SourceType.ArchiveBundle]: "purple",
+  [SourceType.MountedRepo]: "geekblue",
 };

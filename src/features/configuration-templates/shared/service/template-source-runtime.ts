@@ -2,7 +2,6 @@ import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-clien
 import { runInAction } from "mobx";
 
 import { canAddSourceFiles, canDeleteSourceFiles } from "../../files/helpers/can-add-source-files";
-import { addSourceFileWithPolling } from "../../files/service/add-source-file.service";
 import {
   deleteSourceFileApi,
   uploadSourceFile,
@@ -68,32 +67,25 @@ export class TemplateSourceRuntime {
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);
 
-  addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> => {
+  addSourceFile = async (sourceId: string, payload: AddSourceFilePayload): Promise<void> => {
     const source = this.port.getSource(sourceId);
 
     if (!source || !canAddSourceFiles(source, this.port)) {
       throw new Error("Cannot add file while source operation is in progress");
     }
 
-    return addSourceFileWithPolling(
-      {
-        uploadFile: (id, filePayload) => uploadSourceFile(id, filePayload),
-        bgTaskPolling: this.bgTaskPolling,
-        patchOptimisticTask: (id, operation, taskId) =>
-          runInAction(() => this.port.patchOptimisticTask(id, operation, taskId)),
-        setActionState: (id) =>
-          runInAction(() => {
-            this.port.actionBySourceId.set(id, "add_file");
-          }),
-        clearActionState: (id) =>
-          runInAction(() => {
-            this.port.actionBySourceId.delete(id);
-          }),
-        onComplete: () => this.port.reloadSource(sourceId),
-      },
-      sourceId,
-      payload
-    );
+    runInAction(() => {
+      this.port.actionBySourceId.set(sourceId, "add_file");
+    });
+
+    try {
+      await uploadSourceFile(sourceId, payload);
+    } finally {
+      runInAction(() => {
+        this.port.actionBySourceId.delete(sourceId);
+      });
+      await this.port.reloadSource(sourceId);
+    }
   };
 
   deleteSourceFile = async (sourceId: string, fileId: string): Promise<ResourceDeleteResult> => {

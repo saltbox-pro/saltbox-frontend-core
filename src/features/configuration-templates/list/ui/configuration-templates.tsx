@@ -18,7 +18,6 @@ import { useTranslation } from "react-i18next";
 
 import {
   getActiveSearchQuery,
-  MIN_SOURCE_SEARCH_LENGTH,
   sourceMatchesQuery,
 } from "saltbox-core/features/template-source-search";
 
@@ -29,6 +28,7 @@ import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
 import { getGitlabSyncErrorMessageKey } from "../helpers/gitlab-sync-error";
+import { getMountedSyncErrorMessageKey } from "../helpers/mounted-sync-error";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
 import { SyncGitlabSourcesButton } from "./components/sync-gitlab-sources-button";
@@ -69,6 +69,13 @@ export const ConfigurationTemplates = observer(() => {
     }
   }, [store, t]);
 
+  const handleSyncMountedSources = useCallback(async () => {
+    const succeeded = await store.refreshWithMountedCheck();
+    if (succeeded) {
+      message.success(t("configuration-templates.sync-mounted-sources-success"));
+    }
+  }, [store, t]);
+
   const filteredSources = useMemo(() => {
     const query = getActiveSearchQuery(search);
     const sorted = store.sortedSources;
@@ -83,8 +90,14 @@ export const ConfigurationTemplates = observer(() => {
       {
         key: "sync-gitlab-sources",
         label: t("configuration-templates.actions.sync-gitlab-sources"),
-        disabled: store.isCheckingExternal,
+        disabled: store.isCheckingExternal || store.isCheckingMounted,
         onClick: () => handleSyncGitlabSources(),
+      },
+      {
+        key: "sync-mounted-sources",
+        label: t("configuration-templates.actions.sync-mounted-sources"),
+        disabled: store.isCheckingMounted || store.isCheckingExternal,
+        onClick: () => handleSyncMountedSources(),
       },
       { type: "divider" },
       {
@@ -103,21 +116,23 @@ export const ConfigurationTemplates = observer(() => {
         onClick: () => setAddSourceModal("archive"),
       },
     ],
-    [handleSyncGitlabSources, store.isCheckingExternal, t]
+    [
+      handleSyncGitlabSources,
+      handleSyncMountedSources,
+      store.isCheckingExternal,
+      store.isCheckingMounted,
+      t,
+    ]
   );
 
   const searchQuery = useMemo(() => getActiveSearchQuery(search), [search]);
   const hasSearchQuery = searchQuery !== undefined;
-  const hasPendingSearch = search.trim().length > 0 && !hasSearchQuery;
   const isSourcesListEmpty = store.sortedSources.length === 0;
   const showGitlabSourcesAlert =
-    store.hasLoadedOnce &&
-    !store.hasError &&
-    isSourcesListEmpty &&
-    !hasSearchQuery &&
-    !hasPendingSearch;
-  const isRefreshingList = store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal;
-  const isListAreaLoading = isRefreshingList || store.isCheckingExternal;
+    store.hasLoadedOnce && !store.hasError && isSourcesListEmpty && !hasSearchQuery;
+  const isRefreshingList =
+    store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal && !store.isCheckingMounted;
+  const isListAreaLoading = isRefreshingList || store.isCheckingExternal || store.isCheckingMounted;
 
   const openedSource = openedTemplate
     ? store.sortedSources.find((source) => source.id === openedTemplate.source_id)
@@ -142,7 +157,7 @@ export const ConfigurationTemplates = observer(() => {
             <RefreshButton
               loading={isRefreshingList}
               onClick={handleLoadSources}
-              disabled={store.isLoading || store.isCheckingExternal}
+              disabled={store.isLoading || store.isCheckingExternal || store.isCheckingMounted}
               title={t("configuration-templates.actions.refresh")}
             />
 
@@ -164,6 +179,15 @@ export const ConfigurationTemplates = observer(() => {
           <Alert
             message={t(getGitlabSyncErrorMessageKey(store.gitlabSyncError))}
             description={store.gitlabSyncErrorDetail ?? undefined}
+            type="error"
+            showIcon
+          />
+        )}
+
+        {store.mountedSyncError && (
+          <Alert
+            message={t(getMountedSyncErrorMessageKey(store.mountedSyncError))}
+            description={store.mountedSyncErrorDetail ?? undefined}
             type="error"
             showIcon
           />
@@ -192,11 +216,7 @@ export const ConfigurationTemplates = observer(() => {
                 description={
                   hasSearchQuery
                     ? t("configuration-templates.search.no-results")
-                    : hasPendingSearch
-                      ? t("configuration-templates.search.min-length", {
-                          count: MIN_SOURCE_SEARCH_LENGTH,
-                        })
-                      : t("configuration-templates.empty")
+                    : t("configuration-templates.empty")
                 }
               />
             ) : (

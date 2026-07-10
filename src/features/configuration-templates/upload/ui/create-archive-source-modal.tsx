@@ -30,7 +30,6 @@ const { Dragger } = Upload;
 type ArchiveSourceFormValues = {
   name: string;
   description?: string;
-  namespace?: string;
   file: UploadFile[];
 };
 
@@ -122,7 +121,6 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
       await store.createArchiveSource({
         name,
         description: trimOptional(values.description),
-        namespace: trimOptional(values.namespace),
         file: fileObj,
       });
 
@@ -172,6 +170,7 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
             label={t(`${I18N_PREFIX}.file`)}
             required
             name="file"
+            validateFirst
             valuePropName="fileList"
             getValueFromEvent={(e: { fileList: UploadFile[] } | undefined) => e?.fileList ?? []}
             rules={[

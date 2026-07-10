@@ -1,14 +1,8 @@
-import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
+import { getSyncErrorDetail, resolveSyncErrorKind, type SyncErrorKind } from "./sync-error-detail";
 
-export type GitlabSyncErrorKind = "failed" | "error";
+export type GitlabSyncErrorKind = SyncErrorKind;
 
-export const resolveGitlabSyncErrorKind = (reason: unknown): GitlabSyncErrorKind => {
-  if (reason instanceof BgTaskFailedError) {
-    return "failed";
-  }
-
-  return "error";
-};
+export const resolveGitlabSyncErrorKind = resolveSyncErrorKind;
 
 export const getGitlabSyncErrorMessageKey = (error: GitlabSyncErrorKind): string => {
   switch (error) {
@@ -19,10 +13,4 @@ export const getGitlabSyncErrorMessageKey = (error: GitlabSyncErrorKind): string
   }
 };
 
-export const getGitlabSyncErrorDetail = (reason: unknown): string | null => {
-  if (reason instanceof BgTaskFailedError && reason.message !== "BG_TASK_FAILED") {
-    return reason.message;
-  }
-
-  return null;
-};
+export const getGitlabSyncErrorDetail = getSyncErrorDetail;

@@ -8,7 +8,6 @@ export {
   filterSourceTemplatesForSearch,
   getActiveSearchQuery,
   getSourceSearchExpansion,
-  MIN_SOURCE_SEARCH_LENGTH,
   normalizeSearch,
   sourceMatchesByMetadata,
   sourceMatchesQuery,

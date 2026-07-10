@@ -1,7 +1,7 @@
 import { InboxOutlined } from "@ant-design/icons";
 import type { UnpackAs } from "@saltbox/saltbox-core-api-client";
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Form, Input, Segmented, Select, Upload, type UploadFile, message } from "antd";
+import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { Alert, Form, Select, Upload, type UploadFile, message } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,13 +13,8 @@ const FORM_ID = "add-source-file-form";
 const I18N_PREFIX = "configuration-templates.add-file-modal";
 const { Dragger } = Upload;
 
-type SourceFileMode = "file" | "url";
-
 type AddSourceFileFormValues = {
-  rel_path: string;
-  mode: SourceFileMode;
   file?: UploadFile[];
-  url?: string;
   unpack_as?: UnpackAs;
 };
 
@@ -42,23 +37,14 @@ export function AddSourceFileModal({
   const [form] = Form.useForm<AddSourceFileFormValues>();
   const [messageApi, contextHolder] = message.useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const mode = Form.useWatch("mode", form) ?? "file";
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       form.resetFields();
-      form.setFieldValue("mode", "file");
+      setApiError(null);
     }
   }, [open, form]);
-
-  useEffect(() => {
-    if (mode === "file") {
-      form.setFieldValue("url", undefined);
-    } else {
-      form.setFieldValue("file", undefined);
-    }
-  }, [form, mode]);
 
   const uploadProps = useMemo(
     () => ({
@@ -77,15 +63,10 @@ export function AddSourceFileModal({
 
   const handleFinish = async (values: AddSourceFileFormValues) => {
     setIsSubmitting(true);
+    setApiError(null);
     try {
-      const relPath = values.rel_path.trim();
-      const fileObj = values.mode === "file" ? values.file?.[0]?.originFileObj : undefined;
-      const url = values.mode === "url" ? values.url?.trim() : undefined;
-
       await onAddFile(sourceId, {
-        rel_path: relPath,
-        file: fileObj ?? null,
-        url: url ?? null,
+        file: values.file![0].originFileObj!,
         unpack_as: values.unpack_as ?? null,
       });
 
@@ -94,7 +75,7 @@ export function AddSourceFileModal({
     } catch (reason) {
       if (isGlobalServerError(reason)) return;
       console.error("Failed to add source file:", reason);
-      messageApi.error(t(`${I18N_PREFIX}.error`));
+      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -125,67 +106,32 @@ export function AddSourceFileModal({
           layout="vertical"
           disabled={isSubmitting}
           onFinish={handleFinish}
-          initialValues={{ mode: "file" as SourceFileMode }}
+          onValuesChange={() => setApiError(null)}
         >
           <Form.Item<AddSourceFileFormValues>
-            name="rel_path"
-            label={t(`${I18N_PREFIX}.rel-path`)}
+            label={t(`${I18N_PREFIX}.file`)}
             required
+            name="file"
+            valuePropName="fileList"
+            getValueFromEvent={(e: { fileList: UploadFile[] } | undefined) => e?.fileList ?? []}
             rules={[
-              { required: true, whitespace: true, message: t(`${I18N_PREFIX}.rel-path-required`) },
-            ]}
-            extra={t(`${I18N_PREFIX}.rel-path-hint`)}
-          >
-            <Input placeholder={t(`${I18N_PREFIX}.rel-path-placeholder`)} />
-          </Form.Item>
-
-          <Form.Item name="mode" label={t(`${I18N_PREFIX}.source-mode`)}>
-            <Segmented
-              options={[
-                { label: t(`${I18N_PREFIX}.mode-file`), value: "file" },
-                { label: t(`${I18N_PREFIX}.mode-url`), value: "url" },
-              ]}
-            />
-          </Form.Item>
-
-          {mode === "file" ? (
-            <Form.Item<AddSourceFileFormValues>
-              label={t(`${I18N_PREFIX}.file`)}
-              required
-              name="file"
-              valuePropName="fileList"
-              getValueFromEvent={(e: { fileList: UploadFile[] } | undefined) => e?.fileList ?? []}
-              rules={[
-                {
-                  required: true,
-                  type: "array",
-                  min: 1,
-                  message: t(`${I18N_PREFIX}.file-required`),
+              {
+                validator: async (_, fileList: UploadFile[] | undefined) => {
+                  if (!fileList?.[0]?.originFileObj) {
+                    throw new Error(t(`${I18N_PREFIX}.file-required`));
+                  }
                 },
-              ]}
-            >
-              <Dragger {...uploadProps}>
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">{t(`${I18N_PREFIX}.file-drag-title`)}</p>
-                <p className="ant-upload-hint">{t(`${I18N_PREFIX}.file-drag-hint`)}</p>
-              </Dragger>
-            </Form.Item>
-          ) : (
-            <Form.Item<AddSourceFileFormValues>
-              name="url"
-              label={t(`${I18N_PREFIX}.url`)}
-              required
-              validateFirst
-              rules={[
-                { required: true, whitespace: true, message: t(`${I18N_PREFIX}.url-required`) },
-                { type: "url", message: t(`${I18N_PREFIX}.url-invalid`) },
-              ]}
-            >
-              <Input placeholder={t(`${I18N_PREFIX}.url-placeholder`)} />
-            </Form.Item>
-          )}
+              },
+            ]}
+          >
+            <Dragger {...uploadProps}>
+              <p className="ant-upload-drag-icon">
+                <InboxOutlined />
+              </p>
+              <p className="ant-upload-text">{t(`${I18N_PREFIX}.file-drag-title`)}</p>
+              <p className="ant-upload-hint">{t(`${I18N_PREFIX}.file-drag-hint`)}</p>
+            </Dragger>
+          </Form.Item>
 
           <Form.Item
             name="unpack_as"
@@ -198,6 +144,8 @@ export function AddSourceFileModal({
               options={UNPACK_AS_SELECT_OPTIONS}
             />
           </Form.Item>
+
+          {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>
       </Modal>
     </>

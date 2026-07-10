@@ -21,7 +21,6 @@ const I18N_PREFIX = "configuration-templates.git-source-modal";
 type GitSourceFormValues = {
   name: string;
   description?: string;
-  namespace?: string;
   repo_url: string;
   repo_user?: string;
   repo_pass?: string;
@@ -68,7 +67,6 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
       await store.createGitSource({
         name,
         description: trimOptional(values.description),
-        namespace: trimOptional(values.namespace),
         repo_url: trimRequired(values.repo_url),
         repo_user: trimOptional(values.repo_user),
         repo_pass: trimOptional(values.repo_pass),

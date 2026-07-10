@@ -53,6 +53,22 @@ export function getSourceWebUrl(source: TemplateSourcePublicSchema): string | un
   return String(source.repo_url);
 }
 
+export function getSourceMountedPath(source: TemplateSourcePublicSchema): string | undefined {
+  if (source.source_type !== SourceType.MountedRepo || !source.repo_mounted_path) {
+    return undefined;
+  }
+
+  return source.repo_mounted_path;
+}
+
+export function getSourceNamespaceLabel(source: TemplateSourcePublicSchema): string | undefined {
+  if (!source.namespace) {
+    return undefined;
+  }
+
+  return source.namespace;
+}
+
 export function getConfigurationTemplatesListPath(): string {
   return "/core/configuration-templates";
 }

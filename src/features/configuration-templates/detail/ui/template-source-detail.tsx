@@ -50,7 +50,6 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
     [store.source?.templates]
   );
   const highlightedTemplateId = useHighlightedTemplateFromNavigation(
-    sortedTemplates,
     Boolean(store.source) && !store.isLoading
   );
 
