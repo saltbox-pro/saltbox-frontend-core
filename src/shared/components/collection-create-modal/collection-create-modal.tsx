@@ -93,7 +93,14 @@ function CollectionCreateModal({
           });
         }
       })
-      .catch((e) => {
+      .catch(async (error) => {
+        if (error?.response?.status === 400) {
+          const errorBody = await error?.response?.json();
+          if (errorBody?.detail?.includes("Duplicate key")) {
+            messageApi.error(t("collection-create-modal.error-duplicate-title"));
+            return;
+          }
+        }
         messageApi.error(t("collection-create-modal.error"));
       })
       .finally(() => {

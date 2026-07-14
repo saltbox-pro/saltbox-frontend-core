@@ -830,6 +830,7 @@
     "dialog-title": "Create Collection",
     "success": "Collection created successfully",
     "error": "Error creating collection",
+    "error-duplicate-title": "Unable to create collection because a collection with this name already exists in this branch node.",
     "cancel": "Cancel",
     "create": "Create",
     "form-title": "Title",
