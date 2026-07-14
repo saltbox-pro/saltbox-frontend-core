@@ -5,12 +5,10 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
-import transliterateToSlug from "saltbox-core/shared/utils/transliterateToSlug";
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
-  slug: string;
   description?: string;
   query?: string;
 };
@@ -60,12 +58,6 @@ function CollectionCreateModal({
     }
   };
 
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const title = e.target.value;
-    const slug = transliterateToSlug(title);
-    form.setFieldValue("slug", slug);
-  };
-
   const handleFormFinish = (formValue: collectionCreateFormType) => {
     let filterQuery = query;
     if (editableFilter) {
@@ -83,7 +75,6 @@ function CollectionCreateModal({
         CollectionCreateRequestSchema: {
           query: filterQuery,
           title: formValue.title,
-          slug: formValue.slug,
           description: formValue.description?.trim() || undefined,
           parent_slug: parentSlug,
         },
@@ -156,26 +147,6 @@ function CollectionCreateModal({
               {
                 max: 50,
                 message: t("collection-create-modal.form-title-error-max"),
-              },
-            ]}
-          >
-            <Input onChange={handleTitleChange} />
-          </Form.Item>
-          <Form.Item<collectionCreateFormType>
-            label={t("collection-create-modal.form-slug")}
-            name="slug"
-            rules={[
-              {
-                required: true,
-                message: t("collection-create-modal.form-slug-error-required"),
-              },
-              {
-                max: 30,
-                message: t("collection-create-modal.form-slug-error-max"),
-              },
-              {
-                pattern: new RegExp(/^[-a-z0-9]*$/),
-                message: t("collection-create-modal.form-slug-error-pattern"),
               },
             ]}
           >

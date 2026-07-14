@@ -829,12 +829,8 @@
     "cancel": "Cancel",
     "create": "Create",
     "form-title": "Title",
-    "form-slug": "Slug",
     "form-title-error-required": "Title is required",
     "form-title-error-max": "Title must be maximum 50 characters.",
-    "form-slug-error-required": "Slug is required",
-    "form-slug-error-pattern": "Slug can only contain a-z, 0-9 and - symbols",
-    "form-slug-error-max": "Slug must be maximum 30 characters.",
     "form-filter": "Collection filter"
   },
   "minion-gather-modal": {
