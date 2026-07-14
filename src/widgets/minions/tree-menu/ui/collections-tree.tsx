@@ -1,6 +1,17 @@
-import { DownOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, DownOutlined } from "@ant-design/icons";
 import { SearchInput } from "@saltbox/saltbox-frontend-common";
-import { Alert, Empty, Flex, Spin, Tree, Typography } from "antd";
+import {
+  Alert,
+  Button,
+  Empty,
+  Flex,
+  Spin,
+  Tooltip,
+  Tree,
+  type TreeProps,
+  Typography,
+  message,
+} from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -23,6 +34,8 @@ import { collectExpandedKeys } from "../helpers/collect-expanded-keys";
 import { collectMatchedKeys } from "../helpers/collect-matched-keys";
 import { filterTree } from "../helpers/filter-tree";
 import { findNodePath } from "../helpers/find-node-path";
+import { findParentByKey } from "../helpers/find-parent-by-key";
+import { isNodeInSubtree } from "../helpers/is-node-in-subtree";
 import { mapToAntdNode } from "../helpers/map-to-ant-node";
 import type { CollectionTreeAntdNode } from "../types/node";
 
@@ -39,6 +52,8 @@ interface CollectionsTreeProps {
   className?: string;
   selectedSlug?: string | null;
   contentRef?: Ref<HTMLDivElement>;
+  structureEditable?: boolean;
+  onToggleStructureEdit?: () => void;
 }
 
 export const CollectionsTree = observer(
@@ -50,8 +65,11 @@ export const CollectionsTree = observer(
     className,
     selectedSlug,
     contentRef,
+    structureEditable = false,
+    onToggleStructureEdit,
   }: CollectionsTreeProps) => {
     const { t } = useTranslation();
+    const [messageApi, contextHolder] = message.useMessage();
 
     const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>("");
     const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
@@ -145,15 +163,62 @@ export const CollectionsTree = observer(
 
     const onSelect = useCallback(
       (_: Key[], info: { node: CollectionTreeAntdNode }) => {
+        if (structureEditable) return;
         onSelectNode(info.node);
       },
-      [onSelectNode]
+      [onSelectNode, structureEditable]
     );
 
     const onExpand = useCallback((newExpandedKeys: Key[]) => {
       setExpandedKeys(newExpandedKeys);
       setAutoExpandParent(false);
     }, []);
+
+    const isDndActive = structureEditable && !appliedSearchQuery;
+
+    const allowDrop = useCallback<NonNullable<TreeProps<CollectionTreeAntdNode>["allowDrop"]>>(
+      ({ dragNode, dropNode, dropPosition }) => {
+        if (dropNode.slug === ROOT_SLUG && dropPosition !== 0) return false;
+        if (dropNode.key === dragNode.key) return false;
+        if (isNodeInSubtree(dragNode, dropNode.key)) return false;
+        return true;
+      },
+      []
+    );
+
+    const handleDrop = useCallback<NonNullable<TreeProps<CollectionTreeAntdNode>["onDrop"]>>(
+      (info) => {
+        if (collectionsTreeStore.actionStatus === "in-process") return;
+
+        const dragNode = info.dragNode as CollectionTreeAntdNode;
+        if (dragNode.slug === ROOT_SLUG) return;
+
+        const dropNode = info.node as CollectionTreeAntdNode;
+        const newParent = info.dropToGap ? findParentByKey(treeData, dropNode.key) : dropNode;
+        if (!newParent) return;
+        if (newParent.key === dragNode.key) return;
+        if (isNodeInSubtree(dragNode, newParent.key)) return;
+
+        const currentParent = findParentByKey(treeData, dragNode.key);
+        if (currentParent?.key === newParent.key) return;
+
+        const hasDuplicateTitle = newParent.children?.some(
+          (child) => child.title === dragNode.title
+        );
+        if (hasDuplicateTitle) {
+          messageApi.warning(t("collection.duplicate-title-on-move"));
+          return;
+        }
+
+        setExpandedKeys((prev) => (prev.includes(newParent.key) ? prev : [...prev, newParent.key]));
+        setAutoExpandParent(false);
+
+        collectionsTreeStore.moveCollection(dragNode.slug, newParent.slug).then((ok) => {
+          if (!ok) messageApi.error(t("collection.error-moving-collection"));
+        });
+      },
+      [treeData, messageApi, t]
+    );
 
     const handleSearchChange = useCallback((search: string) => {
       setAppliedSearchQuery(search);
@@ -191,6 +256,7 @@ export const CollectionsTree = observer(
         flex="1"
         gap="middle"
       >
+        {contextHolder}
         <Flex className={styles.header} gap="small" align="center">
           <SearchInput
             disabled={!!collectionsTreeStore.error}
@@ -198,7 +264,22 @@ export const CollectionsTree = observer(
             onSearch={handleSearchChange}
           />
           <MinionsTreeRefreshButton />
+          {onToggleStructureEdit && (
+            <Tooltip title={t("collection.edit-structure")}>
+              <Button
+                className={styles.editStructureButton}
+                type={structureEditable ? "primary" : "default"}
+                size="small"
+                icon={<ApartmentOutlined />}
+                onClick={onToggleStructureEdit}
+              />
+            </Tooltip>
+          )}
         </Flex>
+
+        {structureEditable && (
+          <Typography.Text type="secondary">{t("collection.edit-structure-hint")}</Typography.Text>
+        )}
 
         <Spin
           wrapperClassName={styles.content}
@@ -225,8 +306,19 @@ export const CollectionsTree = observer(
                 className={styles.tree}
                 showLine
                 switcherIcon={<DownOutlined />}
-                selectable
+                selectable={!structureEditable}
                 blockNode
+                draggable={
+                  isDndActive
+                    ? {
+                        icon: false,
+                        nodeDraggable: (node) =>
+                          (node as CollectionTreeAntdNode).slug !== ROOT_SLUG,
+                      }
+                    : false
+                }
+                allowDrop={isDndActive ? allowDrop : undefined}
+                onDrop={isDndActive ? handleDrop : undefined}
                 treeData={highlightedTreeData}
                 titleRender={titleRender}
                 expandedKeys={expandedKeys}
