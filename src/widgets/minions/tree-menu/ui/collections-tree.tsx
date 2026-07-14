@@ -1,4 +1,4 @@
-import { ApartmentOutlined, DownOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, DownOutlined, HolderOutlined } from "@ant-design/icons";
 import { SearchInput } from "@saltbox/saltbox-frontend-common";
 import {
   Alert,
@@ -311,7 +311,7 @@ export const CollectionsTree = observer(
                 draggable={
                   isDndActive
                     ? {
-                        icon: false,
+                        icon: <HolderOutlined />,
                         nodeDraggable: (node) =>
                           (node as CollectionTreeAntdNode).slug !== ROOT_SLUG,
                       }
