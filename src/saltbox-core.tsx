@@ -1,4 +1,8 @@
-import { SaltboxLocaleProvider } from "@saltbox/saltbox-frontend-common";
+import {
+  SaltboxLocaleProvider,
+  createSingleSpaErrorBoundary,
+  withParcelBoundary,
+} from "@saltbox/saltbox-frontend-common";
 import { autorun, runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React, { Suspense } from "react";
@@ -31,21 +35,25 @@ const coreLifecycles = singleSpaReact({
   React,
   ReactDOMClient,
   rootComponent: Root,
+  errorBoundary: createSingleSpaErrorBoundary("Core"),
   domElementGetter: () => document.getElementById("app-container"),
 });
 
-const collectionSelectorRootComponent = observer(({ onClose }) => (
-  <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
-    <Suspense fallback="Loading...">
-      <BrowserRouter>
-        <MinionsTreeMenu onClose={onClose} />
-      </BrowserRouter>
-    </Suspense>
-  </SaltboxLocaleProvider>
-));
+const collectionSelectorRootComponent = withParcelBoundary(
+  observer(({ onClose }: { onClose?: () => void }) => (
+    <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+      <Suspense fallback="Loading...">
+        <BrowserRouter>
+          <MinionsTreeMenu onClose={onClose} />
+        </BrowserRouter>
+      </Suspense>
+    </SaltboxLocaleProvider>
+  )),
+  "collection-selector"
+);
 
-const MinionDetailsDrawerWrapperProvider = observer(
-  (props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
+const MinionDetailsDrawerWrapperProvider = withParcelBoundary(
+  observer((props: { customProps?: MinionDetailsDrawerWrapperProps }) => {
     const { customProps } = props ?? {};
 
     return (
@@ -57,11 +65,12 @@ const MinionDetailsDrawerWrapperProvider = observer(
         </Suspense>
       </SaltboxLocaleProvider>
     );
-  }
+  }),
+  "minion-details-drawer"
 );
 
-const OpenRelatedJobsButtonProvider = observer(
-  (props: { customProps?: OpenRelatedJobsButtonProps }) => {
+const OpenRelatedJobsButtonProvider = withParcelBoundary(
+  observer((props: { customProps?: OpenRelatedJobsButtonProps }) => {
     const { customProps } = props ?? {};
 
     return (
@@ -73,26 +82,31 @@ const OpenRelatedJobsButtonProvider = observer(
         </Suspense>
       </SaltboxLocaleProvider>
     );
-  }
+  }),
+  "open-related-jobs-button",
+  { variant: "button" }
 );
 
-const JobReturnOutputProvider = observer((props: { customProps?: JobReturnOutputProps | null }) => {
-  const { customProps } = props ?? {};
+const JobReturnOutputProvider = withParcelBoundary(
+  observer((props: { customProps?: JobReturnOutputProps | null }) => {
+    const { customProps } = props ?? {};
 
-  if (!customProps?.jobReturn) {
-    return null;
-  }
+    if (!customProps?.jobReturn) {
+      return null;
+    }
 
-  return (
-    <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
-      <Suspense fallback="Loading...">
-        <BrowserRouter>
-          <JobReturnOutput {...customProps} />
-        </BrowserRouter>
-      </Suspense>
-    </SaltboxLocaleProvider>
-  );
-});
+    return (
+      <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
+        <Suspense fallback="Loading...">
+          <BrowserRouter>
+            <JobReturnOutput {...customProps} />
+          </BrowserRouter>
+        </Suspense>
+      </SaltboxLocaleProvider>
+    );
+  }),
+  "job-return-output"
+);
 
 const plugins = {
   "minions.details-drawer": [
