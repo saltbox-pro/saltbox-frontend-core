@@ -85,9 +85,8 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
 
     const handleIdleKeyDown = (event: KeyboardEvent) => {
       const isCtrl = event.ctrlKey && !event.metaKey && !event.altKey;
-      const key = event.key;
 
-      if (isCtrl && key.toLowerCase() === "c") {
+      if (isCtrl && event.code === "KeyC") {
         if (document.getSelection()?.toString()) {
           return;
         }
@@ -100,19 +99,19 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
         return;
       }
 
-      if (isCtrl && key.toLowerCase() === "l") {
+      if (isCtrl && event.code === "KeyL") {
         event.preventDefault();
         terminalSessionStore.handleClearScreen();
         return;
       }
 
-      if (key === "ArrowUp" || key === "ArrowDown") {
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
         event.preventDefault();
-        recallHistory(key === "ArrowUp" ? -1 : 1);
+        recallHistory(event.key === "ArrowUp" ? -1 : 1);
         return;
       }
 
-      if (!event.ctrlKey && !event.metaKey && !event.altKey && key.length === 1) {
+      if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1) {
         historyIndexRef.current = -1;
       }
     };
@@ -133,14 +132,13 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
         return;
       }
 
-      const key = event.key.toLowerCase();
-      if (key === "c") {
+      if (event.code === "KeyC") {
         event.preventDefault();
         terminalSessionStore.handleStopCommand("^C");
-      } else if (key === "z") {
+      } else if (event.code === "KeyZ") {
         event.preventDefault();
         terminalSessionStore.handleStopCommand("^Z");
-      } else if (key === "l") {
+      } else if (event.code === "KeyL") {
         event.preventDefault();
         terminalSessionStore.handleClearScreen();
       }
