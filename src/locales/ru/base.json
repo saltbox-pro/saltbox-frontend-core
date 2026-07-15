@@ -716,6 +716,8 @@
     "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением",
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
+    "parent-collection-required": "Укажите родительскую коллекцию",
+    "select-parent-collection": "Выберите родительскую коллекцию",
     "edit-filter": "Редактировать фильтр",
     "invalid-filter-json": "Запрос фильтра — некорректный JSON",
     "filter-updated-successfully": "Фильтр обновлён",
