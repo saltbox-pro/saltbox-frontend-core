@@ -13,7 +13,7 @@ import { apiCoreStore, appStore } from "saltbox-core/store";
 export const TERMINAL_JOB_TTL = 900;
 const TERMINAL_KILL_JOB_TTL = 60;
 const TERMINAL_INTERRUPT_GRACE_MS = 10000;
-const TERMINAL_MAX_LINES = 2000;
+const TERMINAL_MAX_SCREEN_LINES = 2000;
 
 export type TerminalLineKind = "input" | "output" | "error" | "info";
 
@@ -30,23 +30,23 @@ export type TerminalSessionStatus = "idle" | "creating" | "running" | "interrupt
 export type TerminalInterruptEcho = "^C" | "^Z";
 
 export class TerminalSessionStore {
-  @observable lines: TerminalLine[];
+  @observable screenLines: TerminalLine[];
   @observable status: TerminalSessionStatus;
   @observable jid: string | null;
   @observable commandHistory: string[];
 
   private readonly minionId: string;
   private readonly saltMaster: string;
-  private ws: WebSocketService<JobModel | JobReturnModel> | null = null;
-  private graceTimer: ReturnType<typeof setTimeout> | null = null;
-  private interruptRequested: TerminalInterruptEcho | null = null;
+  private webSocketService: WebSocketService<JobModel | JobReturnModel> | null = null;
+  private interruptGraceTimer: ReturnType<typeof setTimeout> | null = null;
+  private pendingInterruptEcho: TerminalInterruptEcho | null = null;
   private resultHandled = false;
   private nextLineId = 0;
 
   constructor(minionId: string, saltMaster: string) {
     this.minionId = minionId;
     this.saltMaster = saltMaster;
-    this.lines = [];
+    this.screenLines = [];
     this.status = "idle";
     this.jid = null;
     this.commandHistory = [];
@@ -54,7 +54,7 @@ export class TerminalSessionStore {
   }
 
   @action
-  runCommand = (rawCommand: string) => {
+  handleRunCommand = (rawCommand: string) => {
     if (this.status !== "idle") {
       return;
     }
@@ -67,7 +67,7 @@ export class TerminalSessionStore {
     }
 
     if (command === "clear") {
-      this.clear();
+      this.handleClearScreen();
       return;
     }
 
@@ -96,7 +96,7 @@ export class TerminalSessionStore {
       })
       .then((job) => {
         runInAction(() => {
-          this.handleJobCreated(job);
+          this.applyCreatedJob(job);
         });
       })
       .catch((error) => {
@@ -109,12 +109,12 @@ export class TerminalSessionStore {
   };
 
   @action
-  interrupt = (echo: TerminalInterruptEcho) => {
+  handleStopCommand = (echo: TerminalInterruptEcho) => {
     if (this.status === "creating") {
-      if (this.interruptRequested) {
+      if (this.pendingInterruptEcho) {
         return;
       }
-      this.interruptRequested = echo;
+      this.pendingInterruptEcho = echo;
       this.appendLine({ kind: "info", text: echo });
       return;
     }
@@ -124,27 +124,27 @@ export class TerminalSessionStore {
     }
 
     this.status = "interrupting";
-    this.interruptRequested = echo;
+    this.pendingInterruptEcho = echo;
     this.appendLine({ kind: "info", text: echo });
-    this.sendKillJob();
+    this.createKillJob();
   };
 
   @action
-  clear = () => {
-    this.lines = [];
+  handleClearScreen = () => {
+    this.screenLines = [];
   };
 
   @action
-  echoIdlePrompt = (typedText: string) => {
+  handleIdleInterrupt = (typedText: string) => {
     this.appendLine({ kind: "input", text: `${typedText}^C` });
   };
 
   sendAccessToken = (accessToken: string) => {
-    this.ws?.sendAccessToken(accessToken);
+    this.webSocketService?.sendAccessToken(accessToken);
   };
 
   @action
-  private handleJobCreated = (job: JobModel | null | undefined) => {
+  private applyCreatedJob = (job: JobModel | null | undefined) => {
     if (!job?.jid || job.status === JobStatus.LaunchError) {
       this.appendLine({ kind: "error", localeKey: "terminal.launch-error" });
       this.finishRun();
@@ -158,19 +158,19 @@ export class TerminalSessionStore {
     }
 
     this.jid = job.jid;
-    this.status = this.interruptRequested ? "interrupting" : "running";
-    this.connect(job.jid);
+    this.status = this.pendingInterruptEcho ? "interrupting" : "running";
+    this.connectJobSocket(job.jid);
 
-    if (this.interruptRequested) {
-      this.sendKillJob();
+    if (this.pendingInterruptEcho) {
+      this.createKillJob();
     }
   };
 
-  private sendKillJob = () => {
+  private createKillJob = () => {
     if (!this.jid || !apiCoreStore.jobsApi) {
       this.appendLine({ kind: "error", localeKey: "terminal.interrupt-error" });
       this.status = "running";
-      this.interruptRequested = null;
+      this.pendingInterruptEcho = null;
       return;
     }
 
@@ -190,7 +190,7 @@ export class TerminalSessionStore {
           if (this.status !== "interrupting") {
             return;
           }
-          this.graceTimer = setTimeout(() => {
+          this.interruptGraceTimer = setTimeout(() => {
             runInAction(() => {
               this.finishRun();
             });
@@ -205,26 +205,26 @@ export class TerminalSessionStore {
           }
           this.appendLine({ kind: "error", localeKey: "terminal.interrupt-error" });
           this.status = "running";
-          this.interruptRequested = null;
+          this.pendingInterruptEcho = null;
         });
       });
   };
 
-  private connect = (jid: string) => {
-    const ws = new WebSocketService<JobModel | JobReturnModel>();
-    this.ws = ws;
-    ws.connect(
+  private connectJobSocket = (jid: string) => {
+    const webSocketService = new WebSocketService<JobModel | JobReturnModel>();
+    this.webSocketService = webSocketService;
+    webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
       appStore.authStore?.user?.access_token,
       {
         onMessage: (messages: Array<WebSocketMessage<JobModel | JobReturnModel>>) => {
           messages
             .filter((message) => message.message_tag === "job-return")
-            .forEach((message) => this.handleJobReturn(message.payload as JobReturnModel));
+            .forEach((message) => this.applyJobReturn(message.payload as JobReturnModel));
 
           messages
             .filter((message) => message.message_tag === "job")
-            .forEach((message) => this.handleJobUpdate(message.payload as JobModel));
+            .forEach((message) => this.applyJobUpdate(message.payload as JobModel));
         },
         onOpen: () => {
           this.loadJobReturns(jid);
@@ -244,7 +244,7 @@ export class TerminalSessionStore {
       })
       .then((response) => {
         runInAction(() => {
-          response.data.forEach((jobReturn) => this.handleJobReturn(jobReturn));
+          response.data.forEach((jobReturn) => this.applyJobReturn(jobReturn));
           onLoaded?.();
         });
       })
@@ -257,7 +257,7 @@ export class TerminalSessionStore {
   };
 
   @action
-  private handleJobReturn = (jobReturn: JobReturnModel) => {
+  private applyJobReturn = (jobReturn: JobReturnModel) => {
     if (jobReturn.jid !== this.jid || jobReturn.minion_id !== this.minionId) {
       return;
     }
@@ -282,10 +282,10 @@ export class TerminalSessionStore {
       return;
     }
 
-    this.printJobReturn(jobReturn);
+    this.loadAndPrintJobReturnData(jobReturn);
   };
 
-  private printJobReturn = (jobReturn: JobReturnModel) => {
+  private loadAndPrintJobReturnData = (jobReturn: JobReturnModel) => {
     if (!apiCoreStore.jobsApi) {
       this.printJobReturnData(jobReturn, jobReturn.data);
       this.finishRun();
@@ -314,7 +314,7 @@ export class TerminalSessionStore {
   };
 
   @action
-  private handleJobUpdate = (job: JobModel) => {
+  private applyJobUpdate = (job: JobModel) => {
     if (job.jid !== this.jid) {
       return;
     }
@@ -381,23 +381,23 @@ export class TerminalSessionStore {
       this.appendLine({ kind: "info", localeKey: "terminal.interrupted" });
     }
 
-    if (this.graceTimer) {
-      clearTimeout(this.graceTimer);
-      this.graceTimer = null;
+    if (this.interruptGraceTimer) {
+      clearTimeout(this.interruptGraceTimer);
+      this.interruptGraceTimer = null;
     }
 
     this.status = "idle";
     this.jid = null;
-    this.interruptRequested = null;
-    this.ws?.disconnect();
-    this.ws = null;
+    this.pendingInterruptEcho = null;
+    this.webSocketService?.disconnect();
+    this.webSocketService = null;
   };
 
   @action
   private appendLine = (line: Omit<TerminalLine, "id">) => {
-    this.lines.push({ ...line, id: this.nextLineId++ });
-    if (this.lines.length > TERMINAL_MAX_LINES) {
-      this.lines.splice(0, this.lines.length - TERMINAL_MAX_LINES);
+    this.screenLines.push({ ...line, id: this.nextLineId++ });
+    if (this.screenLines.length > TERMINAL_MAX_SCREEN_LINES) {
+      this.screenLines.splice(0, this.screenLines.length - TERMINAL_MAX_SCREEN_LINES);
     }
   };
 }

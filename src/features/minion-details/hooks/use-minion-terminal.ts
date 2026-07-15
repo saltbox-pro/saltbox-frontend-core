@@ -5,81 +5,81 @@ import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 
 export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boolean) {
-  const store = useMemo(
+  const terminalSessionStore = useMemo(
     () => getTerminalSessionStore(minion.id, minion.minion_id, minion.master ?? ""),
     [minion.id, minion.master, minion.minion_id]
   );
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
+  const terminalWrapperRef = useRef<HTMLDivElement>(null);
   const [startingInputValue, setStartingInputValue] = useState("");
-  const historyPointerRef = useRef(-1);
-  const padToggleRef = useRef(false);
+  const historyIndexRef = useRef(-1);
+  const forceInputValueUpdateToggleRef = useRef(false);
 
-  const isBusy = store.status !== "idle";
+  const isCommandRunning = terminalSessionStore.status !== "idle";
 
-  const handleInput = useCallback(
-    (input: string) => {
-      historyPointerRef.current = -1;
-      store.runCommand(input);
+  const handleCommandSubmit = useCallback(
+    (command: string) => {
+      historyIndexRef.current = -1;
+      terminalSessionStore.handleRunCommand(command);
     },
-    [store]
+    [terminalSessionStore]
   );
 
-  const setInputValue = useCallback((value: string) => {
-    padToggleRef.current = !padToggleRef.current;
-    setStartingInputValue(value + (padToggleRef.current ? " " : ""));
+  const setTerminalInputValue = useCallback((value: string) => {
+    forceInputValueUpdateToggleRef.current = !forceInputValueUpdateToggleRef.current;
+    setStartingInputValue(value + (forceInputValueUpdateToggleRef.current ? " " : ""));
   }, []);
 
   const recallHistory = useCallback(
     (direction: -1 | 1) => {
-      const history = store.commandHistory;
+      const history = terminalSessionStore.commandHistory;
       if (!history.length) {
         return;
       }
 
-      let pointer = historyPointerRef.current;
-      if (pointer === -1) {
+      let index = historyIndexRef.current;
+      if (index === -1) {
         if (direction === 1) {
           return;
         }
-        pointer = history.length - 1;
+        index = history.length - 1;
       } else {
-        pointer += direction;
+        index += direction;
       }
 
-      if (pointer > history.length - 1) {
-        historyPointerRef.current = -1;
-        setInputValue("");
+      if (index > history.length - 1) {
+        historyIndexRef.current = -1;
+        setTerminalInputValue("");
         return;
       }
 
-      historyPointerRef.current = Math.max(pointer, 0);
-      setInputValue(history[historyPointerRef.current]);
+      historyIndexRef.current = Math.max(index, 0);
+      setTerminalInputValue(history[historyIndexRef.current]);
     },
-    [setInputValue, store]
+    [setTerminalInputValue, terminalSessionStore]
   );
 
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) {
+    const terminalWrapper = terminalWrapperRef.current;
+    if (!terminalWrapper) {
       return;
     }
 
-    const handleClickCapture = (event: MouseEvent) => {
+    const keepTextSelectionOnClick = (event: MouseEvent) => {
       if (document.getSelection()?.toString()) {
         event.stopPropagation();
       }
     };
 
-    wrapper.addEventListener("click", handleClickCapture, true);
+    terminalWrapper.addEventListener("click", keepTextSelectionOnClick, true);
     return () => {
-      wrapper.removeEventListener("click", handleClickCapture, true);
+      terminalWrapper.removeEventListener("click", keepTextSelectionOnClick, true);
     };
   }, []);
 
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper || isBusy) {
+    const terminalWrapper = terminalWrapperRef.current;
+    if (!terminalWrapper || isCommandRunning) {
       return;
     }
 
@@ -92,16 +92,17 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
           return;
         }
         event.preventDefault();
-        const hiddenInput = wrapper.querySelector<HTMLInputElement>(".terminal-hidden-input");
-        store.echoIdlePrompt(hiddenInput?.value ?? "");
-        historyPointerRef.current = -1;
-        setInputValue("");
+        const hiddenInput =
+          terminalWrapper.querySelector<HTMLInputElement>(".terminal-hidden-input");
+        terminalSessionStore.handleIdleInterrupt(hiddenInput?.value ?? "");
+        historyIndexRef.current = -1;
+        setTerminalInputValue("");
         return;
       }
 
       if (isCtrl && key.toLowerCase() === "l") {
         event.preventDefault();
-        store.clear();
+        terminalSessionStore.handleClearScreen();
         return;
       }
 
@@ -112,18 +113,18 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
       }
 
       if (!event.ctrlKey && !event.metaKey && !event.altKey && key.length === 1) {
-        historyPointerRef.current = -1;
+        historyIndexRef.current = -1;
       }
     };
 
-    wrapper.addEventListener("keydown", handleIdleKeyDown);
+    terminalWrapper.addEventListener("keydown", handleIdleKeyDown);
     return () => {
-      wrapper.removeEventListener("keydown", handleIdleKeyDown);
+      terminalWrapper.removeEventListener("keydown", handleIdleKeyDown);
     };
-  }, [isBusy, recallHistory, setInputValue, store]);
+  }, [isCommandRunning, recallHistory, setTerminalInputValue, terminalSessionStore]);
 
   const handleRunningKeyDown = useMemo(() => {
-    if (!isBusy || !isTabActive) {
+    if (!isCommandRunning || !isTabActive) {
       return undefined;
     }
 
@@ -135,41 +136,41 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
       const key = event.key.toLowerCase();
       if (key === "c") {
         event.preventDefault();
-        store.interrupt("^C");
+        terminalSessionStore.handleStopCommand("^C");
       } else if (key === "z") {
         event.preventDefault();
-        store.interrupt("^Z");
+        terminalSessionStore.handleStopCommand("^Z");
       } else if (key === "l") {
         event.preventDefault();
-        store.clear();
+        terminalSessionStore.handleClearScreen();
       }
     };
-  }, [isBusy, isTabActive, store]);
+  }, [isCommandRunning, isTabActive, terminalSessionStore]);
 
   useDocumentEvent("keydown", handleRunningKeyDown);
 
   useEffect(() => {
     const accessToken = appStore.authStore?.user?.access_token;
     if (accessToken) {
-      store.sendAccessToken(accessToken);
+      terminalSessionStore.sendAccessToken(accessToken);
     }
-  }, [appStore.authStore?.user, store]);
+  }, [appStore.authStore?.user, terminalSessionStore]);
 
   useEffect(() => {
-    const scrollEl = wrapperRef.current?.querySelector(".react-terminal");
-    if (scrollEl) {
-      scrollEl.scrollTop = scrollEl.scrollHeight;
+    const scrollContainer = terminalWrapperRef.current?.querySelector(".react-terminal");
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [store.lines.length, store.status]);
+  }, [terminalSessionStore.screenLines.length, terminalSessionStore.status]);
 
   useEffect(() => {
-    if (!isTabActive || isBusy || document.getSelection()?.toString()) {
+    if (!isTabActive || isCommandRunning || document.getSelection()?.toString()) {
       return;
     }
-    wrapperRef.current
+    terminalWrapperRef.current
       ?.querySelector<HTMLInputElement>(".terminal-hidden-input")
       ?.focus({ preventScroll: true });
-  }, [isBusy, isTabActive]);
+  }, [isCommandRunning, isTabActive]);
 
-  return { store, wrapperRef, startingInputValue, handleInput };
+  return { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit };
 }

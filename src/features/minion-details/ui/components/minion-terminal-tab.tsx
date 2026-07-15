@@ -21,43 +21,45 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
   isTabActive,
 }: MinionTerminalTabProps) {
   const { t } = useTranslation();
-  const { store, wrapperRef, startingInputValue, handleInput } = useMinionTerminal(
-    minion,
-    isTabActive
-  );
+  const { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit } =
+    useMinionTerminal(minion, isTabActive);
 
-  const isBusy = store.status !== "idle";
+  const isCommandRunning = terminalSessionStore.status !== "idle";
 
-  const lineClassNames: Partial<Record<TerminalLineKind, string>> = {
+  const lineKindClassNames: Partial<Record<TerminalLineKind, string>> = {
     error: styles.errorLine,
     info: styles.infoLine,
   };
 
   return (
-    <div ref={wrapperRef} className={styles.terminalTab}>
+    <div ref={terminalWrapperRef} className={styles.terminalTab}>
       <Terminal
         colorMode={ColorMode.Dark}
         height="100%"
         prompt="$"
-        onInput={isBusy ? null : handleInput}
+        onInput={isCommandRunning ? null : handleCommandSubmit}
         startingInputValue={startingInputValue}
         TopButtonsPanel={HiddenTopButtonsPanel}
       >
-        {store.lines.map((line) =>
+        {terminalSessionStore.screenLines.map((line) =>
           line.kind === "input" ? (
             <TerminalInput key={line.id}>{line.text}</TerminalInput>
           ) : (
             <TerminalOutput key={line.id}>
-              <span className={lineClassNames[line.kind]}>
+              <span className={lineKindClassNames[line.kind]}>
                 {line.localeKey ? t(line.localeKey, line.localeParams) : (line.text ?? "")}
               </span>
             </TerminalOutput>
           )
         )}
-        {isBusy && (
+        {isCommandRunning && (
           <TerminalOutput key="terminal-busy">
             <span className={styles.executingLine}>
-              {t(store.status === "interrupting" ? "terminal.interrupting" : "terminal.executing")}
+              {t(
+                terminalSessionStore.status === "interrupting"
+                  ? "terminal.interrupting"
+                  : "terminal.executing"
+              )}
             </span>
           </TerminalOutput>
         )}
