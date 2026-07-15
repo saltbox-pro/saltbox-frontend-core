@@ -20,39 +20,54 @@ const CollectionsPage = observer(() => {
   const { t } = useTranslation();
   const [collectionStore] = useState(() => new CollectionStore());
   const [createParentSlug, setCreateParentSlug] = useState<string | null>(null);
+  const [isStructureEditMode, setIsStructureEditMode] = useState(false);
 
   const drawer = useInfoDrawer<CollectionDetailsDrawerOpenParams, string, HTMLDivElement>({
     getId: (params) => params.id,
     drawerId: DRAWER_IDS.collectionDetails,
   });
 
+  const toggleStructureEditMode = () => {
+    setIsStructureEditMode((prev) => {
+      const next = !prev;
+      if (next && drawer.isOpened) drawer.close();
+      return next;
+    });
+  };
+
   return (
     <PageLayout title={t("collection.collections")} className={styles.pageLayout}>
       <div className={styles.treeWrapper}>
         <CollectionsTree
           contentRef={drawer.mainContentRef}
+          structureEditable={isStructureEditMode}
+          onToggleStructureEdit={toggleStructureEditMode}
           onSelectNode={(node) => {
             if (node.slug) {
               drawer.toggle({ id: String(node.key), slug: node.slug });
             }
           }}
-          renderActions={(node) => (
-            <Tooltip title={t("collection.create-subcollection")}>
-              <Button
-                type="text"
-                size="small"
-                icon={<PlusOutlined />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCreateParentSlug(node.slug);
-                }}
-              />
-            </Tooltip>
-          )}
+          renderActions={
+            isStructureEditMode
+              ? undefined
+              : (node) => (
+                  <Tooltip title={t("collection.create-subcollection")}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<PlusOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCreateParentSlug(node.slug);
+                      }}
+                    />
+                  </Tooltip>
+                )
+          }
           showDescription
           className={styles.collectionsTree}
           selectedSlug={
-            drawer.isOpened
+            !isStructureEditMode && drawer.isOpened
               ? (collectionStore.collectionSlug ?? drawer.openedArg?.slug ?? null)
               : null
           }

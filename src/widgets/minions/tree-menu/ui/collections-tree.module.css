@@ -41,6 +41,18 @@
   color: #1677ff;
 }
 
+.editStructureButton {
+  --size: 32px;
+
+  width: var(--size);
+  min-width: var(--size);
+  height: var(--size);
+
+  font-size: 12px;
+
+  border-radius: 6px;
+}
+
 .searchEmptyState {
   text-align: center;
   padding: 32px 16px;
