@@ -55,6 +55,7 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
+    "terminal": "Terminal",
     "extra-data": {
       "tab": "Extra data",
       "category-column": "Category",
@@ -631,6 +632,19 @@
     "timeout-unit-hours": "Hour",
     "error-load-function-schema": "Failed to load function schema",
     "error-job-create": "Failed to create job"
+  },
+  "terminal": {
+    "executing": "Executing",
+    "interrupting": "Interrupting",
+    "interrupted": "Command interrupted",
+    "timeout": "Command timed out",
+    "launch-error": "Failed to launch command",
+    "create-error": "Failed to create job",
+    "interrupt-error": "Failed to interrupt command",
+    "minion-offline": "Minion is not responding",
+    "no-return": "No result received from minion",
+    "result-load-error": "Failed to load command result",
+    "exit-code": "exit code {{code}}"
   },
   "job-function-select": {
     "title": "Choose function",

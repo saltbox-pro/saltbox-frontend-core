@@ -1,0 +1,418 @@
+import {
+  CreateJobRequestTgtTypeEnum,
+  JobModel,
+  JobReturnModel,
+  JobReturnStatus,
+  JobStatus,
+} from "@saltbox/saltbox-core-api-client";
+import { WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import { action, makeObservable, observable, runInAction } from "mobx";
+
+import { apiCoreStore, appStore } from "saltbox-core/store";
+
+export const TERMINAL_JOB_TTL = 900;
+const TERMINAL_KILL_JOB_TTL = 60;
+const TERMINAL_INTERRUPT_GRACE_MS = 10000;
+const TERMINAL_MAX_LINES = 2000;
+
+export type TerminalLineKind = "input" | "output" | "error" | "info";
+
+export interface TerminalLine {
+  id: number;
+  kind: TerminalLineKind;
+  text?: string;
+  localeKey?: string;
+  localeParams?: Record<string, unknown>;
+}
+
+export type TerminalSessionStatus = "idle" | "creating" | "running" | "interrupting";
+
+export type TerminalInterruptEcho = "^C" | "^Z";
+
+export class TerminalSessionStore {
+  @observable lines: TerminalLine[];
+  @observable status: TerminalSessionStatus;
+  @observable jid: string | null;
+  @observable commandHistory: string[];
+
+  private readonly minionId: string;
+  private readonly saltMaster: string;
+  private ws: WebSocketService<JobModel | JobReturnModel> | null = null;
+  private graceTimer: ReturnType<typeof setTimeout> | null = null;
+  private interruptRequested: TerminalInterruptEcho | null = null;
+  private resultHandled = false;
+  private nextLineId = 0;
+
+  constructor(minionId: string, saltMaster: string) {
+    this.minionId = minionId;
+    this.saltMaster = saltMaster;
+    this.lines = [];
+    this.status = "idle";
+    this.jid = null;
+    this.commandHistory = [];
+    makeObservable(this);
+  }
+
+  @action
+  runCommand = (rawCommand: string) => {
+    if (this.status !== "idle") {
+      return;
+    }
+
+    const command = rawCommand.trim();
+    this.appendLine({ kind: "input", text: rawCommand });
+
+    if (!command) {
+      return;
+    }
+
+    if (command === "clear") {
+      this.clear();
+      return;
+    }
+
+    if (this.commandHistory[this.commandHistory.length - 1] !== command) {
+      this.commandHistory.push(command);
+    }
+
+    if (!apiCoreStore.jobsApi) {
+      this.appendLine({ kind: "error", localeKey: "terminal.create-error" });
+      return;
+    }
+
+    this.status = "creating";
+    this.resultHandled = false;
+
+    apiCoreStore.jobsApi
+      .jobCreate({
+        CreateJobRequest: {
+          tgt: this.minionId,
+          tgt_type: CreateJobRequestTgtTypeEnum.Glob,
+          fun: "cmd.run",
+          salt_master: this.saltMaster,
+          arg: [command],
+          ttl: TERMINAL_JOB_TTL,
+        },
+      })
+      .then((job) => {
+        runInAction(() => {
+          this.handleJobCreated(job);
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating terminal job:", error);
+        runInAction(() => {
+          this.appendLine({ kind: "error", localeKey: "terminal.create-error" });
+          this.finishRun();
+        });
+      });
+  };
+
+  @action
+  interrupt = (echo: TerminalInterruptEcho) => {
+    if (this.status === "creating") {
+      if (this.interruptRequested) {
+        return;
+      }
+      this.interruptRequested = echo;
+      this.appendLine({ kind: "info", text: echo });
+      return;
+    }
+
+    if (this.status !== "running") {
+      return;
+    }
+
+    this.status = "interrupting";
+    this.interruptRequested = echo;
+    this.appendLine({ kind: "info", text: echo });
+    this.sendKillJob();
+  };
+
+  @action
+  clear = () => {
+    this.lines = [];
+  };
+
+  @action
+  echoIdlePrompt = (typedText: string) => {
+    this.appendLine({ kind: "input", text: `${typedText}^C` });
+  };
+
+  sendAccessToken = (accessToken: string) => {
+    this.ws?.sendAccessToken(accessToken);
+  };
+
+  @action
+  private handleJobCreated = (job: JobModel | null | undefined) => {
+    if (!job?.jid || job.status === JobStatus.LaunchError) {
+      this.appendLine({ kind: "error", localeKey: "terminal.launch-error" });
+      this.finishRun();
+      return;
+    }
+
+    if (job.missing?.includes(this.minionId)) {
+      this.appendLine({ kind: "error", localeKey: "terminal.minion-offline" });
+      this.finishRun();
+      return;
+    }
+
+    this.jid = job.jid;
+    this.status = this.interruptRequested ? "interrupting" : "running";
+    this.connect(job.jid);
+
+    if (this.interruptRequested) {
+      this.sendKillJob();
+    }
+  };
+
+  private sendKillJob = () => {
+    if (!this.jid || !apiCoreStore.jobsApi) {
+      this.appendLine({ kind: "error", localeKey: "terminal.interrupt-error" });
+      this.status = "running";
+      this.interruptRequested = null;
+      return;
+    }
+
+    apiCoreStore.jobsApi
+      .jobCreate({
+        CreateJobRequest: {
+          tgt: this.minionId,
+          tgt_type: CreateJobRequestTgtTypeEnum.Glob,
+          fun: "saltutil.kill_job",
+          salt_master: this.saltMaster,
+          arg: [this.jid],
+          ttl: TERMINAL_KILL_JOB_TTL,
+        },
+      })
+      .then(() => {
+        runInAction(() => {
+          if (this.status !== "interrupting") {
+            return;
+          }
+          this.graceTimer = setTimeout(() => {
+            runInAction(() => {
+              this.finishRun();
+            });
+          }, TERMINAL_INTERRUPT_GRACE_MS);
+        });
+      })
+      .catch((error) => {
+        console.error("Error creating terminal kill job:", error);
+        runInAction(() => {
+          if (this.status !== "interrupting") {
+            return;
+          }
+          this.appendLine({ kind: "error", localeKey: "terminal.interrupt-error" });
+          this.status = "running";
+          this.interruptRequested = null;
+        });
+      });
+  };
+
+  private connect = (jid: string) => {
+    const ws = new WebSocketService<JobModel | JobReturnModel>();
+    this.ws = ws;
+    ws.connect(
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
+      appStore.authStore?.user?.access_token,
+      {
+        onMessage: (messages: Array<WebSocketMessage<JobModel | JobReturnModel>>) => {
+          messages
+            .filter((message) => message.message_tag === "job-return")
+            .forEach((message) => this.handleJobReturn(message.payload as JobReturnModel));
+
+          messages
+            .filter((message) => message.message_tag === "job")
+            .forEach((message) => this.handleJobUpdate(message.payload as JobModel));
+        },
+        onOpen: () => {
+          this.loadJobReturns(jid);
+        },
+      }
+    );
+  };
+
+  private loadJobReturns = (jid: string, onLoaded?: () => void) => {
+    apiCoreStore.jobsApi
+      ?.jobReturnsList({
+        JobReturnsListBody: {
+          query: { jid, minion_id: this.minionId },
+          limit: 10,
+          skip: 0,
+        },
+      })
+      .then((response) => {
+        runInAction(() => {
+          response.data.forEach((jobReturn) => this.handleJobReturn(jobReturn));
+          onLoaded?.();
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading terminal job returns:", error);
+        runInAction(() => {
+          onLoaded?.();
+        });
+      });
+  };
+
+  @action
+  private handleJobReturn = (jobReturn: JobReturnModel) => {
+    if (jobReturn.jid !== this.jid || jobReturn.minion_id !== this.minionId) {
+      return;
+    }
+
+    if (this.resultHandled || jobReturn.status === JobReturnStatus.Waiting) {
+      return;
+    }
+
+    this.resultHandled = true;
+
+    if (jobReturn.status === JobReturnStatus.Timeout) {
+      this.appendLine({ kind: "error", localeKey: "terminal.timeout" });
+      this.finishRun();
+      return;
+    }
+
+    if (jobReturn.status === JobReturnStatus.Ignored) {
+      if (this.status !== "interrupting") {
+        this.appendLine({ kind: "error", localeKey: "terminal.no-return" });
+      }
+      this.finishRun();
+      return;
+    }
+
+    this.printJobReturn(jobReturn);
+  };
+
+  private printJobReturn = (jobReturn: JobReturnModel) => {
+    if (!apiCoreStore.jobsApi) {
+      this.printJobReturnData(jobReturn, jobReturn.data);
+      this.finishRun();
+      return;
+    }
+
+    apiCoreStore.jobsApi
+      .jobReturnData({ job_return_mongo_id: jobReturn.id })
+      .then((data) => {
+        runInAction(() => {
+          this.printJobReturnData(jobReturn, data);
+          this.finishRun();
+        });
+      })
+      .catch((error) => {
+        console.error("Error loading terminal job return data:", error);
+        runInAction(() => {
+          if (jobReturn.data != null) {
+            this.printJobReturnData(jobReturn, jobReturn.data);
+          } else {
+            this.appendLine({ kind: "error", localeKey: "terminal.result-load-error" });
+          }
+          this.finishRun();
+        });
+      });
+  };
+
+  @action
+  private handleJobUpdate = (job: JobModel) => {
+    if (job.jid !== this.jid) {
+      return;
+    }
+
+    if (job.status === JobStatus.LaunchError) {
+      if (!this.resultHandled) {
+        this.appendLine({ kind: "error", localeKey: "terminal.launch-error" });
+        this.resultHandled = true;
+      }
+      this.finishRun();
+      return;
+    }
+
+    if (job.status !== JobStatus.Finished) {
+      return;
+    }
+
+    if (this.resultHandled) {
+      return;
+    }
+
+    this.loadJobReturns(job.jid, () => {
+      if (this.resultHandled) {
+        return;
+      }
+      if (this.status !== "interrupting") {
+        this.appendLine({
+          kind: "error",
+          localeKey: job.missing?.includes(this.minionId)
+            ? "terminal.minion-offline"
+            : "terminal.no-return",
+        });
+      }
+      this.resultHandled = true;
+      this.finishRun();
+    });
+  };
+
+  @action
+  private printJobReturnData = (jobReturn: JobReturnModel, data: unknown) => {
+    const kind: TerminalLineKind = jobReturn.retcode === 0 ? "output" : "error";
+    const text =
+      typeof data === "string" ? data : data == null ? "" : JSON.stringify(data, null, 2);
+    const textLines = text ? text.split("\n") : [];
+
+    textLines.forEach((textLine) => this.appendLine({ kind, text: textLine }));
+
+    if (!textLines.length && jobReturn.retcode != null && jobReturn.retcode !== 0) {
+      this.appendLine({
+        kind: "error",
+        localeKey: "terminal.exit-code",
+        localeParams: { code: jobReturn.retcode },
+      });
+    }
+  };
+
+  @action
+  private finishRun = () => {
+    if (this.status === "idle") {
+      return;
+    }
+
+    if (this.status === "interrupting") {
+      this.appendLine({ kind: "info", localeKey: "terminal.interrupted" });
+    }
+
+    if (this.graceTimer) {
+      clearTimeout(this.graceTimer);
+      this.graceTimer = null;
+    }
+
+    this.status = "idle";
+    this.jid = null;
+    this.interruptRequested = null;
+    this.ws?.disconnect();
+    this.ws = null;
+  };
+
+  @action
+  private appendLine = (line: Omit<TerminalLine, "id">) => {
+    this.lines.push({ ...line, id: this.nextLineId++ });
+    if (this.lines.length > TERMINAL_MAX_LINES) {
+      this.lines.splice(0, this.lines.length - TERMINAL_MAX_LINES);
+    }
+  };
+}
+
+const terminalSessions = new Map<string, TerminalSessionStore>();
+
+export function getTerminalSessionStore(
+  minionMongoId: string,
+  minionId: string,
+  saltMaster: string
+): TerminalSessionStore {
+  let store = terminalSessions.get(minionMongoId);
+  if (!store) {
+    store = new TerminalSessionStore(minionId, saltMaster);
+    terminalSessions.set(minionMongoId, store);
+  }
+  return store;
+}

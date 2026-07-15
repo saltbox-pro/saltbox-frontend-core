@@ -55,6 +55,7 @@
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
     "grains": "Данные grains",
+    "terminal": "Терминал",
     "extra-data": {
       "tab": "Расширенные данные",
       "category-column": "Категория",
@@ -631,6 +632,19 @@
     "timeout-unit-hours": "Час",
     "error-load-function-schema": "Не удалось загрузить схему функции",
     "error-job-create": "Не удалось создать команду"
+  },
+  "terminal": {
+    "executing": "Выполняется",
+    "interrupting": "Прерывание",
+    "interrupted": "Команда прервана",
+    "timeout": "Превышено время ожидания команды",
+    "launch-error": "Не удалось запустить команду",
+    "create-error": "Не удалось создать команду",
+    "interrupt-error": "Не удалось прервать команду",
+    "minion-offline": "Клиент не отвечает",
+    "no-return": "Ответ от клиента не получен",
+    "result-load-error": "Не удалось загрузить результат команды",
+    "exit-code": "код завершения {{code}}"
   },
   "job-function-select": {
     "title": "Выберите функцию",

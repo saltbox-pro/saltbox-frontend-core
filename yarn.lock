@@ -8391,6 +8391,11 @@ react-style-singleton@^2.2.2, react-style-singleton@^2.2.3:
     get-nonce "^1.0.0"
     tslib "^2.0.0"
 
+react-terminal-ui@^1.4.0:
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/react-terminal-ui/-/react-terminal-ui-1.4.0.tgz#96d6de739f4e1d452c4c8ff7b032a9a54d8e7ed1"
+  integrity sha512-3eMdxCDiW3eBwsp0QBz6i8va0XTO8d91nBgnL5p9f3kAwIrHBu23oH+RbXGp4as/p05srMBFiDMRzRubT1VEsQ==
+
 react-textarea-autosize@^8.3.2:
   version "8.5.9"
   resolved "https://registry.yarnpkg.com/react-textarea-autosize/-/react-textarea-autosize-8.5.9.tgz#ab8627b09aa04d8a2f45d5b5cd94c84d1d4a8893"

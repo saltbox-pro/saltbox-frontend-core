@@ -4,6 +4,7 @@ export const MINION_DETAILS_TAB_KEYS = [
   "grains",
   "pillars",
   "extra-data",
+  "terminal",
 ] as const;
 
 export type MinionDetailsTabKey = (typeof MINION_DETAILS_TAB_KEYS)[number];
@@ -15,6 +16,7 @@ export const MINION_DETAILS_DRAWER_TAB_KEYS = [
   "grains",
   "pillars",
   "extra-data",
+  "terminal",
 ] as const satisfies readonly MinionDetailsTabKey[];
 
 export function getMinionDetailsTabKeys(isInDrawer: boolean): readonly MinionDetailsTabKey[] {

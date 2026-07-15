@@ -1,0 +1,54 @@
+.terminalTab {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.terminalTab :global(.react-terminal-wrapper) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px;
+}
+
+.terminalTab :global(.react-terminal-line) {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.errorLine {
+  color: #ff7875;
+}
+
+.infoLine {
+  color: #bfbfbf;
+}
+
+.executingLine {
+  color: #bfbfbf;
+}
+
+.executingLine::after {
+  content: "";
+  animation: terminal-dots 1.2s steps(1, end) infinite;
+}
+
+@keyframes terminal-dots {
+  0% {
+    content: "";
+  }
+
+  25% {
+    content: ".";
+  }
+
+  50% {
+    content: "..";
+  }
+
+  75% {
+    content: "...";
+  }
+}
