@@ -11,6 +11,7 @@
   flex-direction: column;
   min-height: 0;
   padding: 16px;
+  margin-bottom: 20px;
 }
 
 .terminalTab :global(.react-terminal-line) {

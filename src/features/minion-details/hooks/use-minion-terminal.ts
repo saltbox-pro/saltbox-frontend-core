@@ -61,6 +61,24 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
+    if (!wrapper) {
+      return;
+    }
+
+    const handleClickCapture = (event: MouseEvent) => {
+      if (document.getSelection()?.toString()) {
+        event.stopPropagation();
+      }
+    };
+
+    wrapper.addEventListener("click", handleClickCapture, true);
+    return () => {
+      wrapper.removeEventListener("click", handleClickCapture, true);
+    };
+  }, []);
+
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
     if (!wrapper || isBusy) {
       return;
     }
@@ -145,7 +163,7 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
   }, [store.lines.length, store.status]);
 
   useEffect(() => {
-    if (!isTabActive || isBusy) {
+    if (!isTabActive || isBusy || document.getSelection()?.toString()) {
       return;
     }
     wrapperRef.current
