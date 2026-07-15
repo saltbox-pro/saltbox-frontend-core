@@ -10,9 +10,7 @@ import { action, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore, appStore } from "saltbox-core/store";
 
-export const TERMINAL_JOB_TTL = 900;
-const TERMINAL_KILL_JOB_TTL = 60;
-const TERMINAL_INTERRUPT_GRACE_MS = 10000;
+const TERMINAL_INTERRUPT_GRACE_MS = 1000;
 const TERMINAL_MAX_SCREEN_LINES = 2000;
 
 export type TerminalLineKind = "input" | "output" | "error" | "info";
@@ -91,7 +89,6 @@ export class TerminalSessionStore {
           fun: "cmd.run",
           salt_master: this.saltMaster,
           arg: [command],
-          ttl: TERMINAL_JOB_TTL,
         },
       })
       .then((job) => {
@@ -182,7 +179,6 @@ export class TerminalSessionStore {
           fun: "saltutil.kill_job",
           salt_master: this.saltMaster,
           arg: [this.jid],
-          ttl: TERMINAL_KILL_JOB_TTL,
         },
       })
       .then(() => {

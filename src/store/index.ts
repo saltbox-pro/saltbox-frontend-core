@@ -30,11 +30,7 @@ export { TasksFilterStore } from "./tasks-filter-store";
 export { PillarsFilterStore } from "./pillars-filter-store";
 export { SaltKeysStore, DUPLICATES_FILTER, ALL_FILTER } from "./salt-keys-store";
 export type { SaltKeyFilterType, SaltKeyWithId } from "./salt-keys-store";
-export {
-  TerminalSessionStore,
-  getTerminalSessionStore,
-  TERMINAL_JOB_TTL,
-} from "./terminal-session-store";
+export { TerminalSessionStore, getTerminalSessionStore } from "./terminal-session-store";
 export type {
   TerminalLine,
   TerminalLineKind,

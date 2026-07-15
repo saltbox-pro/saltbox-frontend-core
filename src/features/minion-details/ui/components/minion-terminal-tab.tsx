@@ -36,7 +36,7 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
       <Terminal
         colorMode={ColorMode.Dark}
         height="100%"
-        prompt="$"
+        prompt="#"
         onInput={isCommandRunning ? null : handleCommandSubmit}
         startingInputValue={startingInputValue}
         TopButtonsPanel={HiddenTopButtonsPanel}

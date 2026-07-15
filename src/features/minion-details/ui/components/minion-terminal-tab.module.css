@@ -12,11 +12,32 @@
   min-height: 0;
   padding: 16px;
   margin-bottom: 20px;
+  cursor: text;
+  color-scheme: dark;
+}
+
+.terminalTab :global(.react-terminal) {
+  --scrollbar-offset: 12px;
+
+  padding-right: var(--scrollbar-offset);
+  margin-right: calc(var(--scrollbar-offset) * -1);
 }
 
 .terminalTab :global(.react-terminal-line) {
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.terminalTab :global(.terminal-hidden-input) {
+  position: absolute;
+  left: auto;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  opacity: 0;
 }
 
 .errorLine {
