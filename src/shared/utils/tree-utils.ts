@@ -14,6 +14,22 @@ export function findNodeBySlug<T extends TreeNodeWithSlug<T>>(nodes: T[], slug: 
   return null;
 }
 
+export function excludeSubtreeBySlug<T extends TreeNodeWithSlug<T>>(
+  nodes: T[],
+  excludeSlug: string
+): T[] {
+  const result: T[] = [];
+  for (const node of nodes) {
+    if (node.slug === excludeSlug) continue;
+    result.push(
+      node.children?.length
+        ? { ...node, children: excludeSubtreeBySlug(node.children as T[], excludeSlug) }
+        : node
+    );
+  }
+  return result;
+}
+
 export type TreeNodeWithId<T = unknown> = {
   id?: string;
   children?: T[];

@@ -1,7 +1,11 @@
-import { SaltboxLocaleProvider } from "@saltbox/saltbox-frontend-common";
+import {
+  SaltboxLocaleProvider,
+  createModuleErrorBoundaryKit,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react";
 import { Suspense } from "react";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { ErrorBoundary } from "react-error-boundary";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router";
 
 import "react-querybuilder/dist/query-builder.css";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
@@ -32,52 +36,58 @@ import AggregatedTasksPage from "./routes/tasks";
 
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
+const MODULE_NAME = "Core";
+const MAIN_PATH = "/core/minions";
+
+const { createRoutes } = createModuleErrorBoundaryKit({
+  ErrorBoundary,
+  moduleName: MODULE_NAME,
+  homePath: MAIN_PATH,
+  routing: { useNavigate, useLocation },
+});
+
+const coreRoutes = createRoutes(Route, [
+  { path: MAIN_PATH, element: <DefaultMinionsPage /> },
+  { path: `${MAIN_PATH}/:slug/edit`, element: <CollectionEditPage /> },
+  { path: `${MAIN_PATH}/:slug/tasks/:taskid`, element: <TaskPage /> },
+  { path: `${MAIN_PATH}/:slug/:mid`, element: <MinionPage /> },
+  { path: `${MAIN_PATH}/:slug`, element: <MinionsPage /> },
+  { path: "/core/masters", element: <MastersPage /> },
+  { path: "/core/masters/:mid", element: <MasterPage /> },
+  { path: "/core/pillars", element: <PillarsPage /> },
+  { path: "/core/collections", element: <CollectionsPage /> },
+  { path: "/core/masters/:master_id/minion/:minion_id", element: <MinionRedirectPage /> },
+  { path: "/core/jobs", element: <JobsPage /> },
+  { path: "/core/jobs/:jid", element: <JobPage /> },
+  { path: "/core/jobs-templates", element: <JobsTemplatesPage /> },
+  { path: "/core/sls-editor", element: <SlsEditorPage /> },
+  { path: "/core/tasks", element: <AggregatedTasksPage /> },
+  { path: "/core/policies", element: <AggregatedPoliciesPage /> },
+  { path: "/core/task/:taskid", element: <TaskPage /> },
+  { path: "/core/configuration-templates", element: <ConfigurationTemplatesPage /> },
+  { path: "/core/configuration-templates/:sourceId", element: <TemplateSourceDetailPage /> },
+  {
+    path: "/core/configuration-templates/:sourceId/templates/new",
+    element: <CreateTemplatePage />,
+  },
+  {
+    path: "/core/configuration-templates/:sourceId/templates/:templateId/edit",
+    element: <EditTemplatePage />,
+  },
+  {
+    path: "/core/configuration-templates/:sourceId/templates/:templateId/duplicate",
+    element: <DuplicateTemplatePage />,
+  },
+  { path: "/not-found", element: <NotFound /> },
+  { path: "*", element: <NotFound /> },
+]);
+
 export default observer(function Root() {
   return (
     <SaltboxLocaleProvider locale={i18nStore.currentLanguage} resources={coreResources}>
       <Suspense fallback="Loading...">
         <BrowserRouter basename="/">
-          <Routes>
-            <Route path="/core/minions" element={<DefaultMinionsPage />} />
-            <Route path="/core/minions/:slug/edit" element={<CollectionEditPage />} />
-            <Route path="/core/minions/:slug/tasks/:taskid" element={<TaskPage />} />
-            <Route path="/core/minions/:slug/:mid" element={<MinionPage />} />
-            <Route path="/core/minions/:slug" element={<MinionsPage />} />
-            <Route path="/core/masters" element={<MastersPage />} />
-            <Route path="/core/masters/:mid" element={<MasterPage />} />
-            <Route path="/core/pillars" element={<PillarsPage />} />
-            <Route path="/core/collections" element={<CollectionsPage />} />
-            <Route
-              path="/core/masters/:master_id/minion/:minion_id"
-              element={<MinionRedirectPage />}
-            />
-            <Route path="/core/jobs" element={<JobsPage />} />
-            <Route path="/core/jobs/:jid" element={<JobPage />} />
-            <Route path="/core/jobs-templates" element={<JobsTemplatesPage />} />
-            <Route path="/core/sls-editor" element={<SlsEditorPage />} />
-            <Route path="/core/tasks" element={<AggregatedTasksPage />} />
-            <Route path="/core/policies" element={<AggregatedPoliciesPage />} />
-            <Route path="/core/task/:taskid" element={<TaskPage />} />
-            <Route path="/core/configuration-templates" element={<ConfigurationTemplatesPage />} />
-            <Route
-              path="/core/configuration-templates/:sourceId"
-              element={<TemplateSourceDetailPage />}
-            />
-            <Route
-              path="/core/configuration-templates/:sourceId/templates/new"
-              element={<CreateTemplatePage />}
-            />
-            <Route
-              path="/core/configuration-templates/:sourceId/templates/:templateId/edit"
-              element={<EditTemplatePage />}
-            />
-            <Route
-              path="/core/configuration-templates/:sourceId/templates/:templateId/duplicate"
-              element={<DuplicateTemplatePage />}
-            />
-            <Route path="/not-found" element={<NotFound />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Routes>{coreRoutes}</Routes>
         </BrowserRouter>
       </Suspense>
     </SaltboxLocaleProvider>

@@ -5,7 +5,7 @@ import {
   InfoDrawer,
   isGlobalServerError,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Form, Input, message, Typography } from "antd";
+import { Button, Flex, Form, Input, message, TreeSelect, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,8 @@ import { Link } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import { type CollectionStore } from "saltbox-core/store";
+import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
+import { type CollectionStore, collectionsTreeStore } from "saltbox-core/store";
 
 import type { CollectionDetailsDrawerOpenParams } from "../types";
 
@@ -26,6 +27,7 @@ interface CollectionEditFormType {
   title: string;
   description?: string;
   query: string;
+  parent_slug: string;
 }
 
 interface CollectionDetailsDrawerProps {
@@ -62,6 +64,11 @@ export const CollectionDetailsDrawer = observer(
     useEffect(() => {
       setIsEditing(false);
     }, [collectionStore.collectionSlug]);
+
+    const parentTreeData = useMemo(
+      () => (currentSlug ? excludeSubtreeBySlug(collectionsTreeStore.treeNodes, currentSlug) : []),
+      [collectionsTreeStore.treeNodes, currentSlug]
+    );
 
     const descriptionItems = useMemo<InfoDescriptionsProps["items"]>(() => {
       const items: NonNullable<InfoDescriptionsProps["items"]> = [
@@ -117,26 +124,49 @@ export const CollectionDetailsDrawer = observer(
         },
       ];
 
-      if (!isRoot && collection?.parent_slug) {
+      if (!isRoot && (isEditing || collection?.parent_slug)) {
         items.push({
           key: "parent",
           label: t("collection.parent-collection"),
-          children: (
-            <Link to={`/core/minions/${collection.parent_slug}`}>
-              {collection.parent_title ?? collection.parent_slug}
+          children: isEditing ? (
+            <Form.Item<CollectionEditFormType>
+              name="parent_slug"
+              style={{ marginBottom: 0 }}
+              rules={[
+                {
+                  required: true,
+                  message: t("collection.parent-collection-required"),
+                },
+              ]}
+            >
+              <TreeSelect
+                showSearch
+                treeNodeFilterProp="title"
+                treeDefaultExpandAll
+                fieldNames={{ label: "title", value: "slug" }}
+                treeData={parentTreeData}
+                placeholder={t("collection.select-parent-collection")}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+          ) : (
+            <Link to={`/core/minions/${collection!.parent_slug}`}>
+              {collection!.parent_title ?? collection!.parent_slug}
             </Link>
           ),
         });
       }
 
       return items;
-    }, [collection, isRoot, isEditing, t]);
+    }, [collection, isRoot, isEditing, parentTreeData, t]);
 
     const handleEdit = () => {
+      collectionsTreeStore.loadTree();
       form.setFieldsValue({
         title: collection?.title,
         description: collection?.description,
         query: JSON.stringify(collection?.query ?? {}, null, 2),
+        parent_slug: collection?.parent_slug ?? ROOT_SLUG,
       });
       setIsEditing(true);
     };
@@ -161,12 +191,27 @@ export const CollectionDetailsDrawer = observer(
         return;
       }
 
+      const currentParentSlug = collection?.parent_slug ?? ROOT_SLUG;
+      const parentChanged = values.parent_slug !== currentParentSlug;
+
+      if (parentChanged) {
+        const newParent = findNodeBySlug(collectionsTreeStore.treeNodes, values.parent_slug);
+        const hasDuplicateTitle = newParent?.children?.some(
+          (child) => child.title === values.title && child.slug !== currentSlug
+        );
+        if (hasDuplicateTitle) {
+          messageApi.warning(t("collection.duplicate-title-on-move"));
+          return;
+        }
+      }
+
       setIsSaving(true);
       try {
         await collectionStore.updateCollection({
           title: values.title,
           description: values.description?.trim() ?? "",
           query: parsedQuery,
+          ...(parentChanged && { parent_slug: values.parent_slug }),
         });
         messageApi.success(t("collection.collection-has-been-changed"));
         setIsEditing(false);

@@ -86,6 +86,36 @@ export class CollectionsTreeStore {
     });
   };
 
+  moveNode = (slug: string, newParentSlug: string) => {
+    if (this.treeNodes.length === 0) return;
+
+    runInAction(() => {
+      const found = findNodeAndParent(this.treeNodes, slug);
+      if (!found) return;
+
+      let node: CollectionTreeNodeSchema;
+      if ("rootIndex" in found) {
+        node = this.treeNodes[found.rootIndex];
+        this.treeNodes = this.treeNodes.filter((_, i) => i !== found.rootIndex);
+      } else {
+        node = found.parent.children![found.index];
+        found.parent.children = found.parent.children!.filter((_, i) => i !== found.index);
+      }
+
+      const slugToFind = !newParentSlug || newParentSlug === "root" ? "root" : newParentSlug;
+      const newParent = findNodeBySlug(this.treeNodes, slugToFind);
+      if (newParent) {
+        node.parent_id = newParent.id;
+        newParent.children = [...(newParent.children ?? []), node];
+      } else if (slugToFind === "root") {
+        node.parent_id = undefined;
+        this.treeNodes = [...this.treeNodes, node];
+      }
+
+      this.treeNodes = [...this.treeNodes];
+    });
+  };
+
   updateNode = (
     oldSlug: string,
     payload: { title: string; slug: string; description?: string }
@@ -146,6 +176,47 @@ export class CollectionsTreeStore {
           err instanceof Error ? err.message : "collection.error-updating-collection";
         this.actionErrorRaw = err;
       });
+      return false;
+    }
+  };
+
+  moveCollection = async (slug: string, newParentSlug: string) => {
+    this.actionStatus = "in-process";
+
+    this.moveNode(slug, newParentSlug);
+
+    try {
+      const current = await apiCoreStore.minionCollectionsApi?.minionCollectionRead({ slug });
+
+      if (!current) {
+        throw new Error("collection.error-moving-collection");
+      }
+
+      await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
+        slug,
+        CollectionUpdateSchema: {
+          title: current.title,
+          query: current.query,
+          description: current.description ?? "",
+          parent_slug: newParentSlug,
+        },
+      });
+
+      runInAction(() => {
+        this.actionStatus = "success";
+        this.actionError = null;
+        this.actionErrorRaw = null;
+      });
+
+      return true;
+    } catch (err) {
+      runInAction(() => {
+        this.actionStatus = "error";
+        this.actionError =
+          err instanceof Error ? err.message : "collection.error-moving-collection";
+        this.actionErrorRaw = err;
+      });
+      this.loadTree(true);
       return false;
     }
   };
