@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 
+const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
+
 export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boolean) {
   const terminalSessionStore = useMemo(
     () => getTerminalSessionStore(minion.id, minion.minion_id, minion.master ?? ""),
@@ -12,10 +14,19 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
 
   const terminalWrapperRef = useRef<HTMLDivElement>(null);
   const [startingInputValue, setStartingInputValue] = useState("");
+  const [isLightTheme, setIsLightTheme] = useState(
+    () => localStorage.getItem(TERMINAL_COLOR_MODE_STORAGE_KEY) === "light"
+  );
   const historyIndexRef = useRef(-1);
   const forceInputValueUpdateToggleRef = useRef(false);
 
   const isCommandRunning = terminalSessionStore.status !== "idle";
+
+  const toggleTheme = useCallback(() => {
+    const nextIsLightTheme = !isLightTheme;
+    localStorage.setItem(TERMINAL_COLOR_MODE_STORAGE_KEY, nextIsLightTheme ? "light" : "dark");
+    setIsLightTheme(nextIsLightTheme);
+  }, [isLightTheme]);
 
   const handleCommandSubmit = useCallback(
     (command: string) => {
@@ -170,5 +181,12 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
       ?.focus({ preventScroll: true });
   }, [isCommandRunning, isTabActive]);
 
-  return { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit };
+  return {
+    terminalSessionStore,
+    terminalWrapperRef,
+    startingInputValue,
+    handleCommandSubmit,
+    isLightTheme,
+    toggleTheme,
+  };
 }

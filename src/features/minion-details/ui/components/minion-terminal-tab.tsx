@@ -1,4 +1,6 @@
+import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import Terminal, { ColorMode, TerminalInput, TerminalOutput } from "react-terminal-ui";
@@ -21,8 +23,14 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
   isTabActive,
 }: MinionTerminalTabProps) {
   const { t } = useTranslation();
-  const { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit } =
-    useMinionTerminal(minion, isTabActive);
+  const {
+    terminalSessionStore,
+    terminalWrapperRef,
+    startingInputValue,
+    handleCommandSubmit,
+    isLightTheme,
+    toggleTheme,
+  } = useMinionTerminal(minion, isTabActive);
 
   const isCommandRunning = terminalSessionStore.status !== "idle";
 
@@ -32,9 +40,22 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
   };
 
   return (
-    <div ref={terminalWrapperRef} className={styles.terminalTab}>
+    <div
+      ref={terminalWrapperRef}
+      className={`${styles.terminalTab} ${isLightTheme ? styles.terminalTabLight : ""}`}
+    >
+      <div className={styles.terminalTopBar}>
+        <Button
+          type="text"
+          size="small"
+          className={styles.themeToggleButton}
+          icon={isLightTheme ? <MoonOutlined /> : <SunOutlined />}
+          title={t("terminal.toggle-theme")}
+          onClick={toggleTheme}
+        />
+      </div>
       <Terminal
-        colorMode={ColorMode.Dark}
+        colorMode={isLightTheme ? ColorMode.Light : ColorMode.Dark}
         height="100%"
         prompt="#"
         onInput={isCommandRunning ? null : handleCommandSubmit}

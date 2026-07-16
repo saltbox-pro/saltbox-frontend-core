@@ -644,7 +644,8 @@
     "minion-offline": "Minion is not responding",
     "no-return": "No result received from minion",
     "result-load-error": "Failed to load command result",
-    "exit-code": "exit code {{code}}"
+    "exit-code": "exit code {{code}}",
+    "toggle-theme": "Toggle terminal theme"
   },
   "job-function-select": {
     "title": "Choose function",

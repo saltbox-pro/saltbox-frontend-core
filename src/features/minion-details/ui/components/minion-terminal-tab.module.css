@@ -5,6 +5,28 @@
   min-height: 0;
 }
 
+.terminalTopBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 4px 8px;
+  background: #1d222a;
+  border-radius: 4px 4px 0 0;
+}
+
+.terminalTab .themeToggleButton {
+  width: 32px;
+  height: 32px;
+  padding: 12px;
+  color: #bfbfbf;
+  font-size: 20px;
+}
+
+.terminalTab .terminalTopBar .themeToggleButton:not(:disabled):hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 12%);
+}
+
 .terminalTab :global(.react-terminal-wrapper) {
   display: flex;
   flex: 1;
@@ -14,6 +36,7 @@
   margin-bottom: 20px;
   cursor: text;
   color-scheme: dark;
+  border-radius: 0 0 4px 4px;
 }
 
 .terminalTab :global(.react-terminal) {
@@ -55,6 +78,32 @@
 .executingLine::after {
   content: "";
   animation: terminal-dots 1.2s steps(1, end) infinite;
+}
+
+.terminalTabLight :global(.react-terminal-wrapper) {
+  color-scheme: light;
+}
+
+.terminalTabLight .terminalTopBar {
+  background: #cfcfcf;
+}
+
+.terminalTabLight .themeToggleButton {
+  color: #595959;
+}
+
+.terminalTabLight .terminalTopBar .themeToggleButton:not(:disabled):hover {
+  color: #1a1e24;
+  background: rgb(0 0 0 / 8%);
+}
+
+.terminalTabLight .errorLine {
+  color: #cf1322;
+}
+
+.terminalTabLight .infoLine,
+.terminalTabLight .executingLine {
+  color: #595959;
 }
 
 @keyframes terminal-dots {
