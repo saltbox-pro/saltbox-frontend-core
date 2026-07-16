@@ -2226,15 +2226,15 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-core-api-client@^0.2.1-2982f20fd4be8a4584d81c4104713d10a3059d9b":
-  version "0.2.1-2982f20fd4be8a4584d81c4104713d10a3059d9b"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.2.1-2982f20fd4be8a4584d81c4104713d10a3059d9b.tgz#62f00cd32b67c5a589a60891c0c974f151d9da0b"
-  integrity sha1-YvAM0ytnxaWJpgiRwMl08VHZ2gs=
+"@saltbox/saltbox-core-api-client@^0.3.0-f5f2680fcaed012a0952e5d464a0bf9fc8209d7c":
+  version "0.3.0-f5f2680fcaed012a0952e5d464a0bf9fc8209d7c"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-f5f2680fcaed012a0952e5d464a0bf9fc8209d7c.tgz#0dc4f809a91bc565e3a741b534daa701d0fd52b2"
+  integrity sha1-DcT4CakbxWXjp0G1NNqnAdD9UrI=
 
-"@saltbox/saltbox-frontend-common@^0.2.32":
-  version "0.2.32"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.2.32.tgz#f28653e604a719aacdb2f4102163819aa214ae20"
-  integrity sha1-8oZT5gSnGarNsvQQIWOBmqIUriA=
+"@saltbox/saltbox-frontend-common@^0.3.0":
+  version "0.3.0"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.3.0.tgz#07fdb41c3e0c3c0066e19f60914eff026b284c56"
+  integrity sha1-B/20HD4MPABm4Z9gkU7/AmsoTFY=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -8258,6 +8258,11 @@ react-draggable@^4.4.6, react-draggable@^4.5.0:
   dependencies:
     clsx "^2.1.1"
     prop-types "^15.8.1"
+
+react-error-boundary@^6.1.2:
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-6.1.2.tgz#d213780329ceb3678cec7813a76a00e2a7584f48"
+  integrity sha512-3DpCr5HVdZ0caUjYE/kIHBEJN0mNP3ZCgf16c48uJ5TbWjorKVp+YG8W3XqlJ7vJAVNw6wNIImyPXmFydwmyng==
 
 react-grid-layout@*, react-grid-layout@^2.2.3:
   version "2.2.3"
