@@ -107,6 +107,7 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
 
       if (event.key === "ArrowUp" || event.key === "ArrowDown") {
         event.preventDefault();
+        event.stopPropagation();
         recallHistory(event.key === "ArrowUp" ? -1 : 1);
         return;
       }
