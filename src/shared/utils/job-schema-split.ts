@@ -256,6 +256,43 @@ export const getJobParamsSchemaLayout = (
   };
 };
 
+const POSITIONAL_ARGS_PROPERTY_NAMES = ["args", "arg"];
+
+const omitRootProperties = (
+  schema: JsonSchemaRecord | null,
+  propertyNames: string[]
+): JsonSchemaRecord | null => {
+  if (!schema || !isJsonSchemaRecord(schema.properties)) {
+    return schema;
+  }
+
+  const properties = Object.fromEntries(
+    Object.entries(schema.properties).filter(([name]) => !propertyNames.includes(name))
+  );
+  const required = getRequiredPropertyNames(schema).filter((name) => !propertyNames.includes(name));
+
+  return buildObjectSubsetSchema(schema, properties, required);
+};
+
+export const getOptionalJobParamsSchemaLayout = (
+  jsonSchema: JsonSchemaRecord | null | undefined,
+  uiSchema: UiSchemaRecord | null | undefined
+): JobParamsSchemaLayout => {
+  if (!hasJsonSchemaProperties(jsonSchema)) {
+    return {
+      displaySchema: null,
+      displayUiSchema: undefined,
+    };
+  }
+
+  const split = splitJobFunctionSchema(jsonSchema, uiSchema);
+
+  return {
+    displaySchema: omitRootProperties(split.optionalSchema, POSITIONAL_ARGS_PROPERTY_NAMES),
+    displayUiSchema: split.optionalUiSchema,
+  };
+};
+
 const allowExtraFormDataInSubsetSchema = (schema: JsonSchemaRecord): JsonSchemaRecord => {
   const properties = schema.properties;
   if (!isJsonSchemaRecord(properties)) {

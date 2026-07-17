@@ -3,28 +3,37 @@
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  gap: 8px;
 }
 
 .terminalTopBar {
   display: flex;
+  gap: 4px;
   align-items: center;
   justify-content: flex-end;
   padding: 4px 8px;
-  background: #1d222a;
-  border-radius: 4px 4px 0 0;
+  border-radius: 4px;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
 }
 
-.terminalTab .themeToggleButton {
+.terminalTab .topBarButton {
   width: 32px;
   height: 32px;
   padding: 12px;
-  color: #bfbfbf;
   font-size: 20px;
 }
 
-.terminalTab .terminalTopBar .themeToggleButton:not(:disabled):hover {
-  color: #ffffff;
-  background: rgb(255 255 255 / 12%);
+.terminalTab .terminalTopBar .settingsBadgeDot {
+  background: var(--ant-color-warning, #faad14);
+}
+
+.terminalBody {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-bottom: 20px;
 }
 
 .terminalTab :global(.react-terminal-wrapper) {
@@ -33,10 +42,9 @@
   flex-direction: column;
   min-height: 0;
   padding: 16px;
-  margin-bottom: 20px;
+  border-radius: 4px;
   cursor: text;
   color-scheme: dark;
-  border-radius: 0 0 4px 4px;
 }
 
 .terminalTab :global(.react-terminal) {
@@ -83,19 +91,6 @@
 
 .terminalTabLight :global(.react-terminal-wrapper) {
   color-scheme: light;
-}
-
-.terminalTabLight .terminalTopBar {
-  background: #cfcfcf;
-}
-
-.terminalTabLight .themeToggleButton {
-  color: #595959;
-}
-
-.terminalTabLight .terminalTopBar .themeToggleButton:not(:disabled):hover {
-  color: #1a1e24;
-  background: rgb(0 0 0 / 8%);
 }
 
 .terminalTabLight .errorLine {

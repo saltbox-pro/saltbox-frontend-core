@@ -645,7 +645,14 @@
     "no-return": "No result received from minion",
     "result-load-error": "Failed to load command result",
     "exit-code": "exit code {{code}}",
-    "toggle-theme": "Toggle terminal theme"
+    "toggle-theme": "Toggle terminal theme",
+    "settings-tooltip": "cmd.run settings",
+    "settings-params-set-tooltip": "Advanced cmd.run parameters are set and apply to every terminal command",
+    "settings-title": "Advanced cmd.run settings",
+    "settings-save": "Save",
+    "settings-cancel": "Cancel",
+    "settings-reset": "Reset",
+    "settings-retry": "Retry"
   },
   "job-function-select": {
     "title": "Choose function",
