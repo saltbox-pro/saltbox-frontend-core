@@ -42,15 +42,15 @@
 }
 
 .errorLine {
-  color: #ff7875;
+  color: var(--ant-color-error, #ff7875);
 }
 
 .infoLine {
-  color: #bfbfbf;
+  color: var(--ant-color-text-tertiary, #bfbfbf);
 }
 
 .executingLine {
-  color: #bfbfbf;
+  color: var(--ant-color-text-tertiary, #bfbfbf);
 }
 
 .executingLine::after {

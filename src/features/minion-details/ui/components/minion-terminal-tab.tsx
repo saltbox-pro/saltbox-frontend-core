@@ -16,20 +16,23 @@ interface MinionTerminalTabProps {
 
 const HiddenTopButtonsPanel = () => null;
 
+const lineKindClassNames: Partial<Record<TerminalLineKind, string>> = {
+  error: styles.errorLine,
+  info: styles.infoLine,
+};
+
 export const MinionTerminalTab = observer(function MinionTerminalTab({
   minion,
   isTabActive,
 }: MinionTerminalTabProps) {
   const { t } = useTranslation();
-  const { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit } =
-    useMinionTerminal(minion, isTabActive);
-
-  const isCommandRunning = terminalSessionStore.status !== "idle";
-
-  const lineKindClassNames: Partial<Record<TerminalLineKind, string>> = {
-    error: styles.errorLine,
-    info: styles.infoLine,
-  };
+  const {
+    terminalSessionStore,
+    terminalWrapperRef,
+    startingInputValue,
+    handleCommandSubmit,
+    isCommandRunning,
+  } = useMinionTerminal(minion, isTabActive);
 
   return (
     <div ref={terminalWrapperRef} className={styles.terminalTab}>

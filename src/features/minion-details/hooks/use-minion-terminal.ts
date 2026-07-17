@@ -171,5 +171,11 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
       ?.focus({ preventScroll: true });
   }, [isCommandRunning, isTabActive]);
 
-  return { terminalSessionStore, terminalWrapperRef, startingInputValue, handleCommandSubmit };
+  return {
+    terminalSessionStore,
+    terminalWrapperRef,
+    startingInputValue,
+    handleCommandSubmit,
+    isCommandRunning,
+  };
 }
