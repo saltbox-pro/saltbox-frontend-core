@@ -1211,27 +1211,5 @@
     "load-failed": "Failed to load data",
     "access-denied": "Access denied",
     "form-validation": "Form validation error"
-  },
-  "sls-editor": {
-    "page-title": "SLS Editor",
-    "tab-raw-sls": "Raw SLS",
-    "menu-import-from-template": "Import from Template",
-    "download-tooltip": "Download SLS",
-    "download-success": "SLS file downloaded successfully",
-    "download-failed": "Failed to download SLS file",
-    "download-no-content": "No content to download",
-    "copy-success": "SLS content copied to clipboard",
-    "copy-failed": "Failed to copy to clipboard",
-    "import-modal-title": "Import SLS from Template",
-    "import-column-title": "Title",
-    "import-column-name": "Name",
-    "import-load-failed": "Failed to load templates",
-    "import-confirm-title": "Unsaved Changes",
-    "import-confirm-description": "You have unsaved changes. Importing a template will replace the current content. Do you want to continue?",
-    "import-confirm-ok": "Yes, Import",
-    "import-confirm-cancel": "Cancel",
-    "import-success": "Template imported successfully",
-    "import-empty-sls": "Template has no SLS content",
-    "import-failed": "Failed to import template"
   }
 }

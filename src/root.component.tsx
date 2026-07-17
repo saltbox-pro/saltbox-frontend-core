@@ -27,7 +27,6 @@ import MinionPage from "./routes/minions.$slug.$mid";
 import NotFound from "./routes/not-found";
 import PillarsPage from "./routes/pillars";
 import AggregatedPoliciesPage from "./routes/policies";
-import SlsEditorPage from "./routes/sls-editor";
 import CreateTemplatePage from "./routes/task-template-editor.create";
 import DuplicateTemplatePage from "./routes/task-template-editor.duplicate";
 import EditTemplatePage from "./routes/task-template-editor.edit";
@@ -60,7 +59,6 @@ const coreRoutes = createRoutes(Route, [
   { path: "/core/jobs", element: <JobsPage /> },
   { path: "/core/jobs/:jid", element: <JobPage /> },
   { path: "/core/jobs-templates", element: <JobsTemplatesPage /> },
-  { path: "/core/sls-editor", element: <SlsEditorPage /> },
   { path: "/core/tasks", element: <AggregatedTasksPage /> },
   { path: "/core/policies", element: <AggregatedPoliciesPage /> },
   { path: "/core/task/:taskid", element: <TaskPage /> },
