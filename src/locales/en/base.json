@@ -1027,15 +1027,15 @@
       "connect-source": "connect a source",
       "sync-source": "sync a source"
     },
-    "sync-gitlab-sources-error": "Failed to refresh GitLab sources",
-    "sync-gitlab-sources-failed": "GitLab sources refresh failed",
-    "sync-gitlab-sources-success": "GitLab sources have been refreshed",
-    "sync-mounted-sources-error": "Failed to refresh mounted sources",
-    "sync-mounted-sources-failed": "Mounted sources refresh failed",
-    "sync-mounted-sources-success": "Mounted sources have been refreshed",
+    "sync-gitlab-sources-error": "Failed to get network sources",
+    "sync-gitlab-sources-failed": "Getting network sources failed",
+    "sync-gitlab-sources-success": "Network sources have been retrieved",
+    "sync-mounted-sources-error": "Failed to get local sources",
+    "sync-mounted-sources-failed": "Getting local sources failed",
+    "sync-mounted-sources-success": "Local sources have been retrieved",
     "empty": "No templates available",
     "sync-gitlab-sources-not-loaded": {
-      "message": "GitLab sources have not been refreshed. Refresh GitLab sources to display the list"
+      "message": "Network sources have not been retrieved. Get network sources to display the list"
     },
     "search": {
       "placeholder": "Search by source, template, file",
@@ -1046,10 +1046,10 @@
     },
     "actions": {
       "refresh": "Refresh",
-      "sync-gitlab-sources": "Refresh GitLab sources",
-      "sync-mounted-sources": "Refresh mounted sources",
+      "sync-gitlab-sources": "Get network sources",
+      "sync-mounted-sources": "Get local sources",
       "add-local-source": "Add local source",
-      "add-git-source": "Add Git repository",
+      "add-git-source": "Add network source",
       "add-archive-source": "Add source from archive"
     },
     "source-form": {
@@ -1073,7 +1073,7 @@
       "create-error": "Failed to create source"
     },
     "git-source-modal": {
-      "title": "Add Git repository source",
+      "title": "Add network source",
       "name": "Name",
       "name-required": "Name is required",
       "name-max": "Maximum {{max}} characters",
