@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { getActiveSearchQuery } from "saltbox-core/features/template-source-search";
 
@@ -9,21 +9,10 @@ import { useTemplateCollapseKeys } from "./use-template-collapse-keys";
 type UseTemplateListSearchParams = {
   sourceRows: TemplateSourceRow[];
   language: string;
-  isOpen: boolean;
 };
 
-export function useTemplateListSearch({
-  sourceRows,
-  language,
-  isOpen,
-}: UseTemplateListSearchParams) {
+export function useTemplateListSearch({ sourceRows, language }: UseTemplateListSearchParams) {
   const [appliedSearchQuery, setAppliedSearchQuery] = useState("");
-
-  useEffect(() => {
-    if (!isOpen) {
-      setAppliedSearchQuery("");
-    }
-  }, [isOpen]);
 
   const filteredRows = useMemo(
     () => filterSourceRows(sourceRows, appliedSearchQuery, language),
@@ -39,10 +28,10 @@ export function useTemplateListSearch({
     hasSearchQuery,
     appliedSearchQuery,
     language,
-    isOpen,
   });
 
   return {
+    appliedSearchQuery,
     setAppliedSearchQuery,
     filteredRows,
     searchQuery,

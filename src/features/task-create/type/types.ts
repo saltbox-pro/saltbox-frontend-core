@@ -39,6 +39,11 @@ export type TaskConfigurationFormData = {
   data: TaskData;
 };
 
+export type TaskTemplateDraft = {
+  configuration: TaskConfigurationFormData;
+  showAdvanced: boolean;
+};
+
 export type TaskCreationContext = {
   taskType?: TaskType;
   collection?: CollectionModel;
