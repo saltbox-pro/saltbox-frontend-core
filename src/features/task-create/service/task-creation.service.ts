@@ -42,7 +42,10 @@ export class TaskCreationService {
     }
   }
 
-  getDefaultConfiguration(): Partial<TaskConfigurationFormData> {
+  getDefaultConfiguration(): Pick<
+    TaskConfigurationFormData,
+    "batch_size" | "max_retries" | "retry_delay" | "max_jobs_count_at_same_time"
+  > {
     return {
       batch_size: 0,
       max_retries: 3,

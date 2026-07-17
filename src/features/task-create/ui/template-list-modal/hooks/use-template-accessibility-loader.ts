@@ -84,10 +84,6 @@ export function useTemplateAccessibilityLoader({
 
   useEffect(() => {
     if (!isOpen || activeKeys.length === 0) {
-      if (!isOpen) {
-        loadingSourceIdsRef.current.clear();
-      }
-
       return;
     }
 

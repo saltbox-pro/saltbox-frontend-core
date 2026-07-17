@@ -232,6 +232,7 @@
     "max-parallel-jobs-tooltip": "Maximal number of parallel jobs",
     "max-jobs-count-at-same-time-error-required": "Max jobs count at same time is required",
     "next-to-overview": "Next to overview",
+    "return-to-template-picker": "Return to template selection",
     "template-not-loaded": "Template not loaded",
     "back-to-config": "Back to config",
     "invalid-configuration": "Invalid configuration",

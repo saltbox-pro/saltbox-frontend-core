@@ -232,6 +232,7 @@
     "max-parallel-jobs-tooltip": "Максимальное количество одновременных задач",
     "max-parallel-jobs-error-required": "Максимальное количество одновременно выполняемых команд обязательно",
     "next-to-overview": "Далее к обзору",
+    "return-to-template-picker": "Вернуться к выбору шаблона",
     "template-not-loaded": "Шаблон не загружен",
     "back-to-config": "Назад к настройкам",
     "invalid-configuration": "Некорректная конфигурация",
