@@ -51,10 +51,11 @@ class PreviewErrorBoundary extends Component<PreviewErrorBoundaryProps, { hasErr
 }
 
 export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const jsonSchema = store.schema?.json_schema;
   const uiSchema = store.schema?.ui_schema;
+  const language = i18n.language;
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
@@ -70,12 +71,12 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       return false;
     }
     try {
-      validator.ajv.compile(toRjsfSchema(jsonSchema));
+      validator.ajv.compile(toRjsfSchema(jsonSchema, language));
       return true;
     } catch {
       return false;
     }
-  }, [jsonSchema]);
+  }, [jsonSchema, language]);
 
   useEffect(() => {
     if (!jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0) {
@@ -83,7 +84,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       return;
     }
 
-    const rjsfSchema = toRjsfSchema(jsonSchema);
+    const rjsfSchema = toRjsfSchema(jsonSchema, language);
     const next = getDefaultFormState(
       validator,
       rjsfSchema,
@@ -93,7 +94,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
     );
     setFormData(next ?? {});
-  }, [resetKey, jsonSchema]);
+  }, [resetKey, jsonSchema, language]);
 
   if (store.hasParseError) {
     return (
@@ -133,7 +134,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
         >
           <JsonForm
             key={resetKey}
-            schema={toRjsfSchema(jsonSchema!)}
+            schema={toRjsfSchema(jsonSchema!, language)}
             uiSchema={toRjsfUiSchema(uiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}

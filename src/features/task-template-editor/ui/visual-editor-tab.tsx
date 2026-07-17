@@ -16,6 +16,9 @@ import { extractPillarFormSchema, wrapPillarFormSchema } from "../lib/pillar-sch
 
 import styles from "./visual-editor-tab.module.css";
 
+const DESCRIPTION_LANGUAGES_RU = ["ru", "en"];
+const DESCRIPTION_LANGUAGES_EN = ["en", "ru"];
+
 interface VisualEditorTabProps {
   schema: FormSchema;
   onChange: (schema: FormSchema) => void;
@@ -25,7 +28,10 @@ export function VisualEditorTab({ schema, onChange }: VisualEditorTabProps) {
   const { i18n } = useTranslation();
   const pillarFormSchema = useMemo(() => extractPillarFormSchema(schema), [schema]);
 
-  const translation = useMemo(() => (i18n.language.startsWith("ru") ? ru : en), [i18n.language]);
+  const isRussian = i18n.language?.startsWith("ru") ?? false;
+  const translation = useMemo(() => (isRussian ? ru : en), [isRussian]);
+  // The interface language goes first so its tab is the one selected on open
+  const descriptionLanguages = isRussian ? DESCRIPTION_LANGUAGES_RU : DESCRIPTION_LANGUAGES_EN;
 
   const handleChange = useCallback(
     (edited: JSONSchema | FormSchema) => {
@@ -37,7 +43,11 @@ export function VisualEditorTab({ schema, onChange }: VisualEditorTabProps) {
   return (
     <div className={styles.container}>
       <TranslationContext.Provider value={translation}>
-        <SchemaVisualEditor schema={pillarFormSchema} onChange={handleChange} />
+        <SchemaVisualEditor
+          schema={pillarFormSchema}
+          onChange={handleChange}
+          descriptionLanguages={descriptionLanguages}
+        />
       </TranslationContext.Provider>
     </div>
   );
