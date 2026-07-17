@@ -1028,15 +1028,15 @@
       "connect-source": "подключения источника",
       "sync-source": "синхронизации источника"
     },
-    "sync-gitlab-sources-error": "Не удалось обновить источники GitLab",
-    "sync-gitlab-sources-failed": "Обновление источников GitLab завершилось с ошибкой",
-    "sync-gitlab-sources-success": "Источники GitLab обновлены",
-    "sync-mounted-sources-error": "Не удалось обновить смонтированные источники",
-    "sync-mounted-sources-failed": "Обновление смонтированных источников завершилось с ошибкой",
-    "sync-mounted-sources-success": "Смонтированные источники обновлены",
+    "sync-gitlab-sources-error": "Не удалось получить сетевые источники",
+    "sync-gitlab-sources-failed": "Получение сетевых источников завершилось с ошибкой",
+    "sync-gitlab-sources-success": "Сетевые источники получены",
+    "sync-mounted-sources-error": "Не удалось получить локальные источники",
+    "sync-mounted-sources-failed": "Получение локальных источников завершилось с ошибкой",
+    "sync-mounted-sources-success": "Локальные источники получены",
     "empty": "Нет доступных шаблонов",
     "sync-gitlab-sources-not-loaded": {
-      "message": "Источники GitLab не обновлены. Обновите источники GitLab, чтобы отобразить список"
+      "message": "Сетевые источники не получены. Получите сетевые источники, чтобы отобразить список"
     },
     "search": {
       "placeholder": "Поиск по источнику, шаблону, файлу",
@@ -1047,10 +1047,10 @@
     },
     "actions": {
       "refresh": "Обновить",
-      "sync-gitlab-sources": "Обновить источники GitLab",
-      "sync-mounted-sources": "Обновить смонтированные источники",
+      "sync-gitlab-sources": "Получить сетевые источники",
+      "sync-mounted-sources": "Получить локальные источники",
       "add-local-source": "Добавить локальный источник",
-      "add-git-source": "Добавить Git-репозиторий",
+      "add-git-source": "Добавить сетевой источник",
       "add-archive-source": "Добавить источник из архива"
     },
     "source-form": {
@@ -1074,7 +1074,7 @@
       "create-error": "Не удалось создать источник"
     },
     "git-source-modal": {
-      "title": "Добавление источника из git-репозитория",
+      "title": "Добавление сетевого источника",
       "name": "Название",
       "name-required": "Укажите название",
       "name-max": "Не более {{max}} символов",
