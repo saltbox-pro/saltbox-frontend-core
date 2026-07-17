@@ -1,6 +1,5 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
-import { deepOmitUndefined } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
   Col,
@@ -20,8 +19,9 @@ import { useTranslation } from "react-i18next";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
+import { buildTaskConfigurationFormData } from "../helpers/build-task-configuration-form-data";
 import { taskCreationService } from "../service";
-import { TaskConfigurationFormData } from "../type/types";
+import type { TaskConfigurationFormData, TaskTemplateDraft } from "../type/types";
 
 import styles from "./task-configuration-tab.module.css";
 import { TaskCreateFooter } from "./task-create-footer";
@@ -30,9 +30,10 @@ import { TaskDataForm, type TaskDataFormHandle, type TaskDataFormProps } from ".
 export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
   initialData?: Partial<TaskConfigurationFormData>;
+  initialShowAdvanced?: boolean;
   topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;
-  onCancel: () => void;
+  onReturnToTemplatePicker: (draft: TaskTemplateDraft) => void;
 };
 
 const memoize = createObjectMemoizer({ deep: true });
@@ -40,16 +41,17 @@ const memoize = createObjectMemoizer({ deep: true });
 export function TaskConfigurationTab({
   template,
   initialData,
+  initialShowAdvanced = false,
   topContent,
   onSubmit,
-  onCancel,
+  onReturnToTemplatePicker,
 }: TaskConfigurationTabProps) {
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
-  const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced);
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
@@ -67,9 +69,36 @@ export function TaskConfigurationTab({
       retry_delay: initialData.retry_delay ?? defaultConfig.retry_delay,
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
-      save_pillars_as_default: true,
+      save_pillars_as_default: initialData.save_pillars_as_default ?? true,
     });
   }, [settingsForm, initialData, template]);
+
+  const buildConfigurationFromSettings = (
+    settings: Partial<Omit<TaskConfigurationFormData, "data" | "task_template_id">>,
+    data?: TaskConfigurationFormData["data"]
+  ): TaskConfigurationFormData | undefined => {
+    if (!template) {
+      return undefined;
+    }
+
+    return buildTaskConfigurationFormData({
+      templateId: template.id,
+      settings,
+      data,
+      defaults: taskCreationService.getDefaultConfiguration(),
+    });
+  };
+
+  const handleReturnToTemplatePicker = () => {
+    const configuration = buildConfigurationFromSettings(
+      settingsForm.getFieldsValue(true),
+      taskDataFormRef.current?.getData() ?? initialData?.data ?? {}
+    );
+    if (!configuration) {
+      return;
+    }
+    onReturnToTemplatePicker({ configuration, showAdvanced });
+  };
 
   const showValidationError = () => {
     messageApi.error(t("errors.form-validation"));
@@ -93,19 +122,10 @@ export function TaskConfigurationTab({
   };
 
   const handleSubmit = (formValue: TaskConfigurationFormData) => {
-    const defaultConfig = taskCreationService.getDefaultConfiguration();
-
-    const configData: TaskConfigurationFormData = {
-      task_template_id: template.id,
-      batch_size: formValue.batch_size ?? defaultConfig.batch_size,
-      max_retries: formValue.max_retries ?? defaultConfig.max_retries,
-      retry_delay: formValue.retry_delay ?? defaultConfig.retry_delay,
-      max_jobs_count_at_same_time:
-        formValue.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
-      data: deepOmitUndefined(formValue.data ?? {}),
-      save_pillars_as_default: formValue.save_pillars_as_default,
-    };
-
+    const configData = buildConfigurationFromSettings(formValue, formValue.data);
+    if (!configData) {
+      return;
+    }
     onSubmit(configData);
   };
 
@@ -251,7 +271,9 @@ export function TaskConfigurationTab({
         </Flex>
 
         <TaskCreateFooter>
-          <Button onClick={onCancel}>{t("common.cancel")}</Button>
+          <Button onClick={handleReturnToTemplatePicker}>
+            {t("task-create.return-to-template-picker")}
+          </Button>
           <Button type="primary" form="task-settings-form" key="submit" htmlType="submit">
             {t("task-create.next-to-overview")}
           </Button>

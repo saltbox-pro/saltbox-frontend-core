@@ -233,6 +233,7 @@
     "max-parallel-jobs-tooltip": "Максимальное количество одновременных задач",
     "max-parallel-jobs-error-required": "Максимальное количество одновременно выполняемых команд обязательно",
     "next-to-overview": "Далее к обзору",
+    "return-to-template-picker": "Вернуться к выбору шаблона",
     "template-not-loaded": "Шаблон не загружен",
     "back-to-config": "Назад к настройкам",
     "invalid-configuration": "Некорректная конфигурация",
@@ -1227,27 +1228,5 @@
     "load-failed": "Не удалось загрузить данные",
     "access-denied": "Доступ запрещен",
     "form-validation": "Ошибка валидации формы"
-  },
-  "sls-editor": {
-    "page-title": "SLS-редактор",
-    "tab-raw-sls": "Полный SLS",
-    "menu-import-from-template": "Импорт из шаблона",
-    "download-tooltip": "Скачать SLS",
-    "download-success": "Файл SLS успешно скачан",
-    "download-failed": "Не удалось скачать файл SLS",
-    "download-no-content": "Нет содержимого для скачивания",
-    "copy-success": "Содержимое SLS скопировано в буфер обмена",
-    "copy-failed": "Не удалось скопировать в буфер обмена",
-    "import-modal-title": "Импорт SLS из шаблона",
-    "import-column-title": "Название",
-    "import-column-name": "Имя",
-    "import-load-failed": "Не удалось загрузить шаблоны",
-    "import-confirm-title": "Несохранённые изменения",
-    "import-confirm-description": "У вас есть несохранённые изменения. Импорт шаблона заменит текущее содержимое. Продолжить?",
-    "import-confirm-ok": "Да, импортировать",
-    "import-confirm-cancel": "Отмена",
-    "import-success": "Шаблон успешно импортирован",
-    "import-empty-sls": "В шаблоне отсутствует содержимое SLS",
-    "import-failed": "Не удалось импортировать шаблон"
   }
 }

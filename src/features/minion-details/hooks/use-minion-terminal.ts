@@ -189,5 +189,6 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
     handleCommandSubmit,
     isLightTheme,
     toggleTheme,
+    isCommandRunning,
   };
 }
