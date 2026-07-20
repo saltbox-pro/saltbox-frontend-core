@@ -11,7 +11,6 @@ type UseTemplateCollapseKeysParams = {
   hasSearchQuery: boolean;
   appliedSearchQuery: string;
   language: string;
-  isOpen: boolean;
 };
 
 export function useTemplateCollapseKeys({
@@ -20,19 +19,10 @@ export function useTemplateCollapseKeys({
   hasSearchQuery,
   appliedSearchQuery,
   language,
-  isOpen,
 }: UseTemplateCollapseKeysParams) {
   const [manualActiveKeys, setManualActiveKeys] = useState<string[] | null>(null);
   const isUserControlledRef = useRef(false);
   const prevHasSearchQueryRef = useRef(false);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setManualActiveKeys(null);
-      isUserControlledRef.current = false;
-      prevHasSearchQueryRef.current = false;
-    }
-  }, [isOpen]);
 
   const isSearchReset = !hasSearchQuery && prevHasSearchQueryRef.current;
 

@@ -13,6 +13,7 @@ import type {
   TaskConfigurationFormData,
   TaskCreationContext,
   TaskOverviewData,
+  TaskTemplateDraft,
 } from "../type/types";
 
 import { TaskConfigurationTab } from "./task-configuration-tab";
@@ -22,11 +23,13 @@ import { TaskTargetScopeWarning } from "./task-target-scope-warning";
 const { Paragraph, Text } = Typography;
 
 export type TaskModalProps = {
-  isOpen: boolean;
   sourceId: string;
   templateId: string;
   context: TaskCreationContext;
-  onClose: () => void;
+  initialDraft?: TaskTemplateDraft;
+  onReturnedToPicker: () => void;
+  onFlowDismissed: () => void;
+  onReturnToTemplatePicker: (draft: TaskTemplateDraft) => void;
   onTaskCreated: (taskId: string) => void;
 };
 
@@ -36,25 +39,31 @@ const enum TabKey {
 }
 
 export function TaskModal({
-  isOpen,
   sourceId,
   templateId,
   context,
-  onClose,
+  initialDraft,
+  onReturnedToPicker,
+  onFlowDismissed,
+  onReturnToTemplatePicker,
   onTaskCreated,
 }: TaskModalProps) {
   const { t, i18n } = useTranslation();
   const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
 
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [template, setTemplate] = useState<TaskTemplateModel | undefined>();
   const [activeTabKey, setActiveTabKey] = useState<string>(TabKey.Configuration);
-  const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>({
-    ...taskCreationService.getDefaultConfiguration(),
-  });
+  const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>(
+    initialDraft?.configuration ?? {
+      ...taskCreationService.getDefaultConfiguration(),
+    }
+  );
 
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
 
   const collectionName = context.collection?.title ?? context.slug;
 
@@ -73,7 +82,7 @@ export function TaskModal({
   }, [activeTabKey]);
 
   useEffect(() => {
-    if (!isOpen || !templateId || !sourceId) {
+    if (!templateId || !sourceId) {
       return;
     }
 
@@ -81,6 +90,12 @@ export function TaskModal({
       try {
         const loadedTemplate = await taskTemplateService.loadTemplateById(sourceId, templateId);
         setTemplate(loadedTemplate);
+
+        if (initialDraft?.configuration) {
+          setConfiguration(initialDraft.configuration);
+          return;
+        }
+
         const defaultConfig = taskCreationService.getDefaultConfiguration();
         const templateDefaults = (
           loadedTemplate as unknown as { defaults?: Record<string, unknown> }
@@ -109,14 +124,37 @@ export function TaskModal({
         if (!isGlobalServerError(error)) {
           messageApi.error(t("task-create.error-loading-template"));
         }
-        onClose();
+        closeReasonRef.current = "dismiss";
+        setIsModalOpen(false);
       }
     };
 
     loadTemplate();
     // should trigger only when the props are changed
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, sourceId, templateId]);
+  }, [sourceId, templateId]);
+
+  const closeModal = (reason?: "return-to-picker" | "dismiss") => {
+    if (isCreating) {
+      return;
+    }
+    if (reason) {
+      closeReasonRef.current = reason;
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleModalDismiss = () => {
+    closeModal("dismiss");
+  };
+
+  const handleReturnToTemplatePicker = (draft: TaskTemplateDraft) => {
+    if (isCreating) {
+      return;
+    }
+    onReturnToTemplatePicker(draft);
+    closeModal("return-to-picker");
+  };
 
   const handleConfigurationSubmit = (data: TaskConfigurationFormData) => {
     setConfiguration(data);
@@ -249,9 +287,10 @@ export function TaskModal({
         <TaskConfigurationTab
           template={template}
           initialData={configuration}
+          initialShowAdvanced={initialDraft?.showAdvanced}
           topContent={configurationTopContent}
           onSubmit={handleConfigurationSubmit}
-          onCancel={onClose}
+          onReturnToTemplatePicker={handleReturnToTemplatePicker}
         />
       ),
     },
@@ -284,8 +323,17 @@ export function TaskModal({
             ? "policy-create.configure-policy-title"
             : "task-create.configure-task-title"
         )}
-        open={isOpen}
-        onCancel={onClose}
+        open={isModalOpen}
+        onCancel={handleModalDismiss}
+        afterClose={() => {
+          const reason = closeReasonRef.current;
+          closeReasonRef.current = null;
+          if (reason === "return-to-picker") {
+            onReturnedToPicker();
+            return;
+          }
+          onFlowDismissed();
+        }}
         width="min(80vw, 800px)"
         footer={null}
         maskClosable={false}

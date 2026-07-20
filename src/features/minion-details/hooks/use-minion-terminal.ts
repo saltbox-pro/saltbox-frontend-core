@@ -205,5 +205,6 @@ export function useMinionTerminal(
     handleCommandSubmit,
     isLightTheme,
     toggleTheme,
+    isCommandRunning,
   };
 }

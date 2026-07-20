@@ -1,6 +1,8 @@
-import { type FC, useState } from "react";
+import { type FC } from "react";
 
-import type { SelectedTaskTemplate, TaskCreationContext } from "../type/types";
+import { getTemplateCacheKey } from "../helpers/get-template-cache-key";
+import { useTaskCreateFlow } from "../hooks/use-task-create-flow";
+import type { TaskCreationContext } from "../type/types";
 
 import { TaskModal } from "./task-modal";
 import { TemplateListModal } from "./template-list-modal/ui/template-list-modal";
@@ -13,25 +15,43 @@ export type TaskCreateProps = {
 };
 
 export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTaskCreated }) => {
-  const [selectedTemplate, setSelectedTemplate] = useState<SelectedTaskTemplate | undefined>();
+  const {
+    isPickerMounted,
+    isPickerModalOpen,
+    isTaskModalMounted,
+    selectedTemplate,
+    modalSession,
+    initialDraft,
+    handleSelectTemplate,
+    handleReturnToTemplatePicker,
+    handleReturnedToPicker,
+    handleFlowDismissed,
+    handlePickerCloseRequest,
+    handlePickerAfterClose,
+  } = useTaskCreateFlow({ isOpen, onClose });
 
   return (
     <>
-      {isOpen && (
+      {isPickerMounted && (
         <TemplateListModal
           type={context.taskType}
-          isOpen={!selectedTemplate}
-          onClose={onClose}
-          onSelectTemplate={setSelectedTemplate}
+          isOpen={isOpen && isPickerModalOpen}
+          onClose={handlePickerCloseRequest}
+          onAfterClose={handlePickerAfterClose}
+          onLeaveFlow={handleFlowDismissed}
+          onSelectTemplate={handleSelectTemplate}
         />
       )}
-      {isOpen && selectedTemplate && (
+      {isOpen && isTaskModalMounted && selectedTemplate && (
         <TaskModal
-          isOpen={!!selectedTemplate}
+          key={`${getTemplateCacheKey(selectedTemplate)}-${modalSession}`}
           sourceId={selectedTemplate.sourceId}
           templateId={selectedTemplate.templateId}
           context={context}
-          onClose={onClose}
+          initialDraft={initialDraft}
+          onReturnedToPicker={handleReturnedToPicker}
+          onFlowDismissed={handleFlowDismissed}
+          onReturnToTemplatePicker={handleReturnToTemplatePicker}
           onTaskCreated={onTaskCreated}
         />
       )}

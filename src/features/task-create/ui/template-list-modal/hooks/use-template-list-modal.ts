@@ -14,6 +14,7 @@ export type UseTemplateListModalParams = {
 };
 
 export type UseTemplateListModalResult = {
+  appliedSearchQuery: string;
   setAppliedSearchQuery: (query: string) => void;
   isLoading: boolean;
   isError: boolean;
@@ -35,11 +36,11 @@ export function useTemplateListModal({
   const { t, i18n } = useTranslation();
 
   const { sourceRows, setSourceRows, isLoading, isError } = useTemplateSourceRows({
-    isOpen,
     messageApi,
   });
 
   const {
+    appliedSearchQuery,
     setAppliedSearchQuery,
     filteredRows,
     searchQuery,
@@ -50,7 +51,6 @@ export function useTemplateListModal({
   } = useTemplateListSearch({
     sourceRows,
     language: i18n.language,
-    isOpen,
   });
 
   useTemplateAccessibilityLoader({
@@ -71,6 +71,7 @@ export function useTemplateListModal({
   );
 
   return {
+    appliedSearchQuery,
     setAppliedSearchQuery,
     isLoading,
     isError,

@@ -16,6 +16,8 @@ export type TemplateListModalProps = {
   type: TaskType;
   isOpen: boolean;
   onClose: () => void;
+  onAfterClose?: () => void;
+  onLeaveFlow: () => void;
   onSelectTemplate: (template: SelectedTaskTemplate) => void;
 };
 
@@ -23,6 +25,8 @@ export function TemplateListModal({
   type,
   isOpen,
   onClose,
+  onAfterClose,
+  onLeaveFlow,
   onSelectTemplate,
 }: TemplateListModalProps) {
   const { t } = useTranslation();
@@ -31,6 +35,7 @@ export function TemplateListModal({
   const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
     useFocusOnOpenChange<InputRef>();
   const {
+    appliedSearchQuery,
     setAppliedSearchQuery,
     isLoading,
     isError,
@@ -48,9 +53,9 @@ export function TemplateListModal({
   const isEmptyState = hasNoData || hasNoResults;
 
   const handleGoToConfigurationTemplates = useCallback(() => {
-    onClose();
+    onLeaveFlow();
     navigate(getConfigurationTemplatesListPath());
-  }, [navigate, onClose]);
+  }, [navigate, onLeaveFlow]);
 
   return (
     <>
@@ -64,6 +69,7 @@ export function TemplateListModal({
         open={isOpen}
         onCancel={onClose}
         afterOpenChange={handlePickerAfterOpenChange}
+        afterClose={onAfterClose}
         footer={
           isEmptyState ? null : (
             <Button type="default" onClick={handleGoToConfigurationTemplates}>
@@ -80,6 +86,7 @@ export function TemplateListModal({
           <SearchInput
             ref={searchInputRef}
             placeholder={t("task-create.search-templates-placeholder")}
+            defaultValue={appliedSearchQuery}
             onSearch={setAppliedSearchQuery}
           />
 
