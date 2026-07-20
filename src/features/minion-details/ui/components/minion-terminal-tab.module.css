@@ -21,6 +21,7 @@
   height: 32px;
   padding: 12px;
   font-size: 20px;
+  border: none;
 }
 
 .terminalTab .terminalTopBar .settingsBadgeDot {

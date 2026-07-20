@@ -61,7 +61,6 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
             classNames={{ indicator: styles.settingsBadgeDot }}
           >
             <Button
-              type="text"
               size="small"
               className={styles.topBarButton}
               icon={<SettingOutlined />}
@@ -70,7 +69,6 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
           </Badge>
         </Tooltip>
         <Button
-          type="text"
           size="small"
           className={styles.topBarButton}
           icon={isLightTheme ? <MoonOutlined /> : <SunOutlined />}
