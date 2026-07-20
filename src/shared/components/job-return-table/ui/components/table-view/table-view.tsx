@@ -49,6 +49,7 @@ export const TableView: FC<BackendTableViewProps> = ({
       )}
 
       <JobReturnDataTable
+        tableId="core-job-returns-table-view"
         columns={tableColumns}
         data={rows}
         total={total}

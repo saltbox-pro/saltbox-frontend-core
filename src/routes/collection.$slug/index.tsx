@@ -70,8 +70,6 @@ const CollectionEditPage = observer(() => {
         color: "accent",
         width: 300,
         minWidth: 300,
-        maxWidth: 300,
-        ellipsis: true,
       },
     }),
     minionsColumnHelper.accessor("grains.fqdn", {
@@ -112,6 +110,7 @@ const CollectionEditPage = observer(() => {
     minionsColumnHelper.accessor("created", {
       header: t("minions.table-created"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
+      meta: { width: "15%", minWidth: 170 },
     }),
     minionsColumnHelper.accessor("last_activity", {
       header: t("minions.table-last-activity"),
@@ -254,6 +253,7 @@ const CollectionEditPage = observer(() => {
           </Flex>
         </div>
         <MinionsTable
+          tableId="core-collection-minions"
           columns={minionsColumns}
           getRowId={(row) => row.id}
           data={toJS(minionsStore.minions)}

@@ -108,6 +108,7 @@ export const MinionPillarsTab = observer(function MinionPillarsTab({
 
       <PillarsTable
         store={pillarsStore}
+        tableId={isInDrawer ? "core-minion-pillars-drawer" : "core-minion-pillars"}
         hideTargetColumns
         hideSecretColumn={isInDrawer}
         hideDateColumns={isInDrawer}

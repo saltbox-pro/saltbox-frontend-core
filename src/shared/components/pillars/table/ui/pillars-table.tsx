@@ -6,7 +6,7 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Alert, Flex, Typography } from "antd";
+import { Alert, Flex } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
@@ -26,6 +26,7 @@ const Table = FastTablePaginated<PillarWithTgtInfoSchema>;
 
 export interface PillarsTableProps {
   store: PillarsStore;
+  tableId: string;
   hideTargetColumns?: boolean;
   hideSecretColumn?: boolean;
   hideDateColumns?: boolean;
@@ -33,6 +34,7 @@ export interface PillarsTableProps {
 
 export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
   store,
+  tableId,
   hideTargetColumns,
   hideSecretColumn,
   hideDateColumns,
@@ -63,7 +65,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
               meta: {
                 showCopy: true,
                 copyValue: (row) => row.tgt_info?.display_name,
-                width: "25%",
+                width: "19%",
                 minWidth: 240,
               },
             }),
@@ -79,7 +81,9 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
             columnHelper.accessor("is_secret", {
               header: t("pillar.details.secret"),
               cell: (data) => <BooleanDisplay value={data.getValue()} />,
-              meta: { width: "10%", minWidth: 135 },
+              meta: {
+                width: "10%",
+              },
             }),
           ],
     [hideSecretColumn, t]
@@ -89,16 +93,11 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
     () => [
       columnHelper.accessor("name", {
         header: t("pillar.details.name"),
-        cell: ({ getValue }) => {
-          const name = getValue();
-
-          return (
-            <Typography.Text ellipsis title={name}>
-              {name}
-            </Typography.Text>
-          );
+        meta: {
+          showCopy: true,
+          width: "20%",
+          minWidth: 240,
         },
-        meta: { showCopy: true, width: "28%", minWidth: 240, maxWidth: 240 },
       }),
       columnHelper.accessor("value", {
         header: t("pillar.details.value"),
@@ -112,7 +111,10 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
 
           return <JsonPreview value={value} title={t("pillar.details.value")} />;
         },
-        meta: { width: "25%", minWidth: 250, maxWidth: 250 },
+        meta: {
+          width: "20%",
+          minWidth: 250,
+        },
       }),
       ...targetDisplayColumn,
       ...secretColumn,
@@ -122,12 +124,18 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
             columnHelper.accessor("created", {
               header: t("pillar.details.created"),
               cell: (data) => formatTimeByUserTZ(data.getValue()),
-              meta: { width: "20%", minWidth: 200 },
+              meta: {
+                width: "15%",
+                minWidth: 170,
+              },
             }),
             columnHelper.accessor("modified", {
               header: t("pillar.details.modified"),
               cell: (data) => formatTimeByUserTZ(data.getValue()),
-              meta: { width: "20%", minWidth: 200 },
+              meta: {
+                width: "15%",
+                minWidth: 170,
+              },
             }),
           ]),
     ],
@@ -139,6 +147,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
       {!!store.error && <Alert description={t(store.error)} type="error" showIcon />}
 
       <Table
+        tableId={tableId}
         columns={columns}
         data={toJS(store.pillars)}
         total={store.totalPillars}

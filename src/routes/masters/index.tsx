@@ -55,12 +55,12 @@ function MastersPage() {
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
-      meta: { minWidth: 200 },
+      meta: { width: "15%", minWidth: 170 },
     }),
     columnHelper.accessor("modified", {
       header: t("masters.table-modified"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
-      meta: { minWidth: 200 },
+      meta: { width: "15%", minWidth: 170 },
     }),
     columnHelper.accessor("actions", {
       header: t("masters.table-actions"),
@@ -163,6 +163,7 @@ function MastersPage() {
       <PageHeader title={t("masters.title")} />
 
       <MastersTable
+        tableId="core-masters"
         columns={columns}
         data={toJS(mastersStore.masters)}
         isLoading={mastersStore.isLoading}

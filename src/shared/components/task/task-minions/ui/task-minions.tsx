@@ -77,8 +77,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           color: "accent",
           width: 400,
           minWidth: 300,
-          maxWidth: 400,
-          ellipsis: true,
         },
       }),
       columnHelper.accessor("master", {
@@ -99,7 +97,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           data.getValue()
             ? formatTimeByUserTZ(data.getValue())
             : t("task.minions.table-not-started"),
-        meta: { width: "18%" },
+        meta: { width: "15%", minWidth: 170 },
       }),
       columnHelper.accessor("finished_dt", {
         header: t("task.minions.table-finished"),
@@ -107,7 +105,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           data.getValue()
             ? formatTimeByUserTZ(data.getValue())
             : t("task.minions.table-not-started"),
-        meta: { width: "18%" },
+        meta: { width: "15%", minWidth: 170 },
       }),
     ],
     [collectionSlug, handleRestartFailedMinionClick, taskStore.handleRestartFailedMinion, t]
@@ -116,6 +114,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
   return (
     <>
       <TaskMinionsTable
+        tableId="core-task-minions"
         columns={columns}
         getRowId={(row) => row.id}
         data={taskStore.minions}

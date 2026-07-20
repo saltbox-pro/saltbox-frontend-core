@@ -16,7 +16,6 @@ export const buildTableViewColumns = (columnNames: string[]): ColumnDef<TableRow
       enableSorting: false,
       cell: (info) => <TableViewCell value={info.getValue()} columnName={columnName} />,
       meta: {
-        ellipsis: true,
         maxWidth: 400,
         width: cols > 5 ? (columnName === "minion_id" ? 220 : 150) : `${100 / cols}%`,
       },

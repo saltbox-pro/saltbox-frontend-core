@@ -163,16 +163,14 @@ const JobsPage = observer(() => {
         meta: {
           showCopy: true,
           color: "accent",
-          width: "12%",
+          width: "13%",
           minWidth: 220,
-          maxWidth: 220,
-          ellipsis: true,
         },
       }),
       columnHelper.accessor("salt_master", {
         header: t("jobs.table-master"),
         meta: {
-          width: "10%",
+          width: "11%",
           actions: [createFilterAction("salt_master")],
         },
       }),
@@ -187,10 +185,8 @@ const JobsPage = observer(() => {
         header: t("jobs.table-targets"),
         meta: {
           showCopy: true,
-          width: "13%",
+          width: "15%",
           minWidth: 230,
-          maxWidth: 230,
-          ellipsis: true,
           actions: [createFilterAction("tgt")],
         },
       }),
@@ -205,7 +201,7 @@ const JobsPage = observer(() => {
           return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
         },
         meta: {
-          width: "11%",
+          width: "10%",
           actions: [createFilterAction("source.type")],
         },
       }),
@@ -213,7 +209,7 @@ const JobsPage = observer(() => {
         id: "user.name",
         header: t("jobs.table-user"),
         meta: {
-          width: "11%",
+          width: "10%",
           actions: [createFilterAction("user.name")],
         },
       }),
@@ -240,13 +236,14 @@ const JobsPage = observer(() => {
         },
         meta: {
           width: "11%",
+          minWidth: 180,
           actions: [createFilterAction("status")],
         },
       }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
-        meta: { width: "11%" },
+        meta: { width: "11%", minWidth: 170 },
       }),
     ],
     [t, createFilterAction]
@@ -359,6 +356,7 @@ const JobsPage = observer(() => {
       </div>
 
       <JobsTable
+        tableId="core-jobs"
         columns={columns}
         getRowId={(row) => row.id}
         data={jobsStore.jobs}

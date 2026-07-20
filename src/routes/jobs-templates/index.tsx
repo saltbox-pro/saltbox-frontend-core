@@ -25,12 +25,12 @@ const JobsTemplatePage = observer(() => {
     columnHelper.accessor("created", {
       header: t("jobs-templates.table-created"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
-      meta: { width: "30%" },
+      meta: { width: "15%", minWidth: 170 },
     }),
     columnHelper.accessor("modified", {
       header: t("jobs-templates.table-modified"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),
-      meta: { width: "30%" },
+      meta: { width: "15%", minWidth: 170 },
     }),
   ];
   const [jobTemplateStore] = useState(() => new JobTemplateStore());
@@ -42,6 +42,7 @@ const JobsTemplatePage = observer(() => {
     <>
       <PageHeader title={t("jobs-templates.title")} />
       <JobsTemplateTable
+        tableId="core-job-templates"
         columns={columns}
         getRowId={(row) => row.id}
         data={jobTemplateStore.jobsTemplate}
