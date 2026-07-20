@@ -158,6 +158,13 @@ export function JobModal({
     [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
   );
 
+  useEffect(() => {
+    if (!saltFunction) {
+      return;
+    }
+    setIsAdvancedSettingsEnabled(saltFunction.name === "default");
+  }, [saltFunction]);
+
   const openModal = useCallback(() => {
     closeReasonRef.current = null;
     setIsAdvancedSettingsEnabled(false);
