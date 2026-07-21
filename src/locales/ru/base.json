@@ -1010,6 +1010,7 @@
     "tab-visual-editor": "Визуальный редактор формы",
     "tab-full-editor": "Полный редактор шаблона",
     "visual-editor-unavailable": "Визуальный редактор недоступен для этой схемы",
+    "visual-editor-description-in-json-schema": "Описание записано внутрь json_schema — перенесите его в корень блока схемы, рядом с json_schema",
     "visual-editor-use-full": "Отредактируйте схему через полный редактор шаблона",
     "schema-parse-error": "Не удалось разобрать схему шаблона",
     "form-preview-title": "Предпросмотр формы",

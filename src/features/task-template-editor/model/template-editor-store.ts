@@ -1,4 +1,3 @@
-import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
@@ -18,6 +17,7 @@ import {
   getEmptySlsBody,
   parseSchemaFromSls,
   stripSlsExtension,
+  type TemplateFormSchema,
 } from "../lib/sls-parser";
 
 export type TemplateEditorMode = "create" | "edit" | "duplicate";
@@ -30,7 +30,7 @@ export interface TemplateEditorParams {
 }
 
 interface ParsedSls {
-  schema: FormSchema | null;
+  schema: TemplateFormSchema | null;
   slsBody: string;
   error: string | null;
 }
@@ -173,7 +173,7 @@ export class TemplateEditorStore {
     }
   }
 
-  get schema(): FormSchema | null {
+  get schema(): TemplateFormSchema | null {
     return this.parsed.schema;
   }
 
@@ -193,7 +193,7 @@ export class TemplateEditorStore {
     this.fileName = value;
   };
 
-  setSchema = (schema: FormSchema) => {
+  setSchema = (schema: TemplateFormSchema) => {
     if (this.hasParseError) return;
     this.rawSls = combineSchemaAndBody(schema, this.parsed.slsBody);
   };

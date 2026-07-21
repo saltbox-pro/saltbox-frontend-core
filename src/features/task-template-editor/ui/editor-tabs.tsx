@@ -4,7 +4,7 @@ import { observer } from "mobx-react-lite";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getPillarCompatibility } from "../lib/pillar-schema";
+import { getPillarCompatibility, hasUnsupportedSchemaDescription } from "../lib/pillar-schema";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./editor-tabs.module.css";
@@ -26,7 +26,15 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
 
   const compatibility = useMemo(() => (schema ? getPillarCompatibility(schema) : null), [schema]);
 
-  const canRenderVisual = !store.hasParseError && !!compatibility?.compatible;
+  // Templates saved by an older build keep the description inside `json_schema`;
+  // editing them visually would only move it further away from the block root
+  const hasLegacyDescription = useMemo(
+    () => (schema ? hasUnsupportedSchemaDescription(schema) : false),
+    [schema]
+  );
+
+  const canRenderVisual =
+    !store.hasParseError && !!compatibility?.compatible && !hasLegacyDescription;
 
   const visualTabLabel = canRenderVisual ? (
     t("task-template-editor.tab-visual-editor")
@@ -56,6 +64,9 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
         message={t("task-template-editor.visual-editor-unavailable")}
         description={
           <>
+            {hasLegacyDescription && (
+              <div>{t("task-template-editor.visual-editor-description-in-json-schema")}</div>
+            )}
             <div>{t("task-template-editor.visual-editor-use-full")}</div>
             {compatibility?.unsupportedFeatures.length ? (
               <ul className={styles.unsupportedList}>

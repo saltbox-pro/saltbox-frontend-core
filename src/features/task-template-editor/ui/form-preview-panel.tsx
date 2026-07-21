@@ -53,38 +53,40 @@ class PreviewErrorBoundary extends Component<PreviewErrorBoundaryProps, { hasErr
 export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const { t, i18n } = useTranslation();
 
-  const jsonSchema = store.schema?.json_schema;
-  const uiSchema = store.schema?.ui_schema;
+  const schema = store.schema;
+  const jsonSchema = schema?.json_schema;
+  const uiSchema = schema?.ui_schema;
   const language = i18n.language;
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
 
-  const resetKey = useMemo(() => JSON.stringify({ jsonSchema, uiSchema }), [jsonSchema, uiSchema]);
+  // The root description lives outside `json_schema`, so key off the whole block
+  const resetKey = useMemo(() => JSON.stringify(schema ?? {}), [schema]);
 
   const isEmpty = useMemo(() => {
     return !jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0;
   }, [jsonSchema]);
 
   const isSchemaValid = useMemo(() => {
-    if (!jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0) {
+    if (!schema || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       return false;
     }
     try {
-      validator.ajv.compile(toRjsfSchema(jsonSchema, language));
+      validator.ajv.compile(toRjsfSchema(schema, language));
       return true;
     } catch {
       return false;
     }
-  }, [jsonSchema, language]);
+  }, [schema, jsonSchema, isEmpty, language]);
 
   useEffect(() => {
-    if (!jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0) {
+    if (!schema || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       setFormData({});
       return;
     }
 
-    const rjsfSchema = toRjsfSchema(jsonSchema, language);
+    const rjsfSchema = toRjsfSchema(schema, language);
     const next = getDefaultFormState(
       validator,
       rjsfSchema,
@@ -94,7 +96,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
     );
     setFormData(next ?? {});
-  }, [resetKey, jsonSchema, language]);
+  }, [resetKey, schema, jsonSchema, isEmpty, language]);
 
   if (store.hasParseError) {
     return (
@@ -134,7 +136,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
         >
           <JsonForm
             key={resetKey}
-            schema={toRjsfSchema(jsonSchema!, language)}
+            schema={toRjsfSchema(schema!, language)}
             uiSchema={toRjsfUiSchema(uiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}

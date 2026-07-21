@@ -1010,6 +1010,7 @@
     "tab-visual-editor": "Visual form editor",
     "tab-full-editor": "Full template editor",
     "visual-editor-unavailable": "Visual editor is unavailable for this schema",
+    "visual-editor-description-in-json-schema": "The description is stored inside json_schema — move it to the root of the schema block, next to json_schema",
     "visual-editor-use-full": "Edit the schema via the full template editor",
     "schema-parse-error": "Failed to parse template schema",
     "form-preview-title": "Form preview",

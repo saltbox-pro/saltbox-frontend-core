@@ -6,7 +6,12 @@ import {
   type VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
 
-export function extractPillarSchema(jsonSchema: JSONSchema): JSONSchema {
+import type { TemplateFormSchema } from "./sls-parser";
+
+export function extractPillarSchema(
+  jsonSchema: JSONSchema,
+  rootDescription: TemplateFormSchema["description"]
+): JSONSchema {
   if (typeof jsonSchema === "boolean") {
     return { type: "object", properties: {} };
   }
@@ -17,7 +22,7 @@ export function extractPillarSchema(jsonSchema: JSONSchema): JSONSchema {
       type: "object",
       properties: {},
       title: jsonSchema.title,
-      description: jsonSchema.description,
+      description: rootDescription,
     };
   }
 
@@ -27,14 +32,14 @@ export function extractPillarSchema(jsonSchema: JSONSchema): JSONSchema {
       type: "object",
       properties: {},
       title: jsonSchema.title,
-      description: jsonSchema.description,
+      description: rootDescription,
     };
   }
 
   return {
     ...pillar,
     title: pillar.title || jsonSchema.title,
-    description: pillar.description || jsonSchema.description,
+    description: rootDescription,
   };
 }
 
@@ -44,18 +49,28 @@ export function extractPillarUiSchema(uiSchema: UISchema): UISchema {
   return ((kwargs as Record<string, unknown>).pillar || {}) as UISchema;
 }
 
-export function extractPillarFormSchema(schema: FormSchema): FormSchema {
+/**
+ * The visual editor keeps the root description inside `json_schema`, while the
+ * template stores it in the schema block root — bridge the two here.
+ */
+export function extractPillarFormSchema(schema: TemplateFormSchema): FormSchema {
   return {
-    json_schema: extractPillarSchema(schema.json_schema),
+    json_schema: extractPillarSchema(schema.json_schema, schema.description),
     ui_schema: extractPillarUiSchema(schema.ui_schema),
   };
 }
 
 export function wrapPillarFormSchema(
-  jsonSchema: JSONSchema,
-  uiSchema: UISchema,
+  schema: TemplateFormSchema,
   editedSchemaOrFormSchema: JSONSchema | FormSchema
-): FormSchema {
+): TemplateFormSchema {
+  const {
+    json_schema: jsonSchema,
+    ui_schema: uiSchema,
+    description: _description,
+    ...rest
+  } = schema;
+
   let editedSchema: JSONSchema;
   let editedUiSchema: UISchema = {};
 
@@ -81,16 +96,20 @@ export function wrapPillarFormSchema(
   const pillarSchema =
     typeof editedSchema === "object" && editedSchema !== null
       ? (() => {
-          const { title: _title, description: _description, ...rest } = editedSchema;
-          return rest;
+          const { title: _title, description: _pillarDescription, ...pillarRest } = editedSchema;
+          return pillarRest;
         })()
       : editedSchema;
 
+  const { description: _staleDescription, ...baseJsonSchema } =
+    typeof jsonSchema === "boolean" || jsonSchema == null ? { description: undefined } : jsonSchema;
+
+  // `description` intentionally stays out of `json_schema`: it belongs to the
+  // schema block root, and RJSF cannot render a localized ({ ru, en }) value
   const wrappedJsonSchema: JSONSchema = {
-    ...(typeof jsonSchema === "boolean" ? {} : jsonSchema),
+    ...baseJsonSchema,
     type: "object",
     title: rootTitle || "",
-    description: rootDescription,
     additionalProperties: false,
     required: ["kwargs"],
     properties: {
@@ -114,11 +133,33 @@ export function wrapPillarFormSchema(
   };
 
   return {
+    ...(isEmptyDescription(rootDescription) ? {} : { description: rootDescription }),
     json_schema: wrappedJsonSchema,
     ui_schema: wrappedUiSchema,
+    ...rest,
   };
 }
 
-export function getPillarCompatibility(schema: FormSchema): VisualEditorCompatibilityResult {
+function isEmptyDescription(description: TemplateFormSchema["description"]): boolean {
+  if (description == null) return true;
+  if (typeof description === "string") return description.trim() === "";
+  return !Object.values(description).some((text) => text?.trim());
+}
+
+/**
+ * A localized description left inside `json_schema` by an older build: RJSF
+ * would try to render the object and crash, so the visual editor is disabled
+ * until the template is fixed through the full editor.
+ */
+export function hasUnsupportedSchemaDescription(schema: TemplateFormSchema): boolean {
+  const jsonSchema = schema.json_schema;
+  if (typeof jsonSchema === "boolean" || jsonSchema == null) return false;
+
+  return jsonSchema.description != null && typeof jsonSchema.description !== "string";
+}
+
+export function getPillarCompatibility(
+  schema: TemplateFormSchema
+): VisualEditorCompatibilityResult {
   return canRenderInVisualEditor(extractPillarFormSchema(schema));
 }
