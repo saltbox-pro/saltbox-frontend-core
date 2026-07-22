@@ -104,7 +104,6 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             ],
             color: "accent",
             minWidth: 300,
-            ellipsis: true,
           },
         }),
         columnHelper.accessor("status", {
@@ -175,7 +174,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             }
             return formatTimeByUserTZ(stamp);
           },
-          meta: { width: "18%" },
+          meta: { width: "15%", minWidth: 170 },
         }),
         columnHelper.display({
           header: t("task.job-returns-table.table-execution-duration"),
@@ -234,6 +233,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           />
         ) : (
           <JobReturnsTable
+            tableId="core-job-returns-standard"
+            enableColumnResize={false}
             columns={columns}
             getRowId={(row) => row.id}
             data={jobReturns}

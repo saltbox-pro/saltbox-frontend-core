@@ -53,6 +53,10 @@ interface JobReturnsConfig {
   onReplayJob: (row: JobReturnModel) => void;
 }
 
+interface MinionJobReturnsTableProps extends JobReturnsConfig {
+  tableId: string;
+}
+
 interface MinionJobReturnsTabViewProps {
   jobReturnsConfig: JobReturnsConfig;
   isFullView?: boolean;
@@ -174,7 +178,8 @@ const MinionJobReturnsTable = ({
   total,
   pagination,
   onReplayJob,
-}: JobReturnsConfig) => {
+  tableId,
+}: MinionJobReturnsTableProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -205,10 +210,8 @@ const MinionJobReturnsTable = ({
             },
           ],
           color: "accent",
-          width: "18%",
+          width: "10%",
           minWidth: 300,
-          maxWidth: 350,
-          ellipsis: true,
         },
       }),
       jobReturnsColumnHelper.accessor("retcode", {
@@ -220,11 +223,11 @@ const MinionJobReturnsTable = ({
               : t("task.job-returns-table.table-no")}
           </Tag>
         ),
-        meta: { width: 110 },
+        meta: { width: "10%" },
       }),
       jobReturnsColumnHelper.accessor("fun", {
         header: t("task.job-returns-table.table-fun"),
-        meta: { width: "15%" },
+        meta: { width: "15%", minWidth: 150 },
       }),
       jobReturnsColumnHelper.accessor("fun_args", {
         header: t("jobs.arguments"),
@@ -235,7 +238,7 @@ const MinionJobReturnsTable = ({
             emptyLabel={t("jobs.no-arguments")}
           />
         ),
-        meta: { width: "20%" },
+        meta: { width: "20%", minWidth: 200 },
       }),
       jobReturnsColumnHelper.accessor("fun_kwarg", {
         header: t("jobs.key-value-arguments"),
@@ -246,11 +249,12 @@ const MinionJobReturnsTable = ({
             emptyLabel={t("jobs.no-key-value-arguments")}
           />
         ),
-        meta: { width: "20%" },
+        meta: { width: "20%", minWidth: 200 },
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-execution-time"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
+        meta: { width: "15%", minWidth: 170 },
       }),
     ],
     [onReplayJob, t]
@@ -266,6 +270,8 @@ const MinionJobReturnsTable = ({
   return (
     <div className={styles.jobReturnsTableWrapper}>
       <JobReturnsTable
+        tableId={tableId}
+        enableColumnResize={false}
         columns={columns}
         data={jobReturns}
         total={total}
@@ -295,7 +301,10 @@ function MinionJobReturnsTabView({
       {isFullView && !!jobReturnsTabActions && (
         <div className="page-actions-buttons">{jobReturnsTabActions}</div>
       )}
-      <MinionJobReturnsTable {...jobReturnsConfig} />
+      <MinionJobReturnsTable
+        {...jobReturnsConfig}
+        tableId={isFullView ? "core-minion-job-returns" : "core-minion-job-returns-drawer"}
+      />
     </Flex>
   );
 }

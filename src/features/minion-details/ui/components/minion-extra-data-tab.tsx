@@ -28,6 +28,7 @@ interface MinionExtraDataTabProps {
 
 export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   minionId,
+  isInDrawer = false,
   onFilterButton,
 }: MinionExtraDataTabProps) {
   const { t } = useTranslation();
@@ -69,6 +70,12 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   return (
     <Flex vertical gap="small" flex={1}>
       <ExtraDataCategoriesTable
+        tableId={
+          isInDrawer
+            ? "core-minion-extra-data-categories-drawer"
+            : "core-minion-extra-data-categories"
+        }
+        enableColumnResize={false}
         columns={columns}
         data={toJS(store.categories)}
         total={store.total}

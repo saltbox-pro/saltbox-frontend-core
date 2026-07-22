@@ -49,6 +49,7 @@ export function useTerminalCmdSettings() {
   const jsonFormRef = useRef<JsonFormRef>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const loadRequestIdRef = useRef(0);
+  const hasInitializedRef = useRef(false);
 
   const schemaLayout = useMemo(
     () =>
@@ -107,7 +108,10 @@ export function useTerminalCmdSettings() {
   }, []);
 
   const openSettings = useCallback(() => {
-    initializeFields();
+    if (!hasInitializedRef.current) {
+      initializeFields();
+      hasInitializedRef.current = true;
+    }
     setIsOpen(true);
     if (!saltFunction && !isSchemaLoading) {
       loadSchema();
@@ -117,6 +121,11 @@ export function useTerminalCmdSettings() {
   const closeSettings = useCallback(() => {
     setIsOpen(false);
   }, []);
+
+  const cancelSettings = useCallback(() => {
+    initializeFields();
+    setIsOpen(false);
+  }, [initializeFields]);
 
   const toggleSettings = useCallback(() => {
     if (isOpen) {
@@ -220,6 +229,7 @@ export function useTerminalCmdSettings() {
     overlayRef,
     toggleSettings,
     closeSettings,
+    cancelSettings,
     saveSettings,
     resetFields,
     retrySchemaLoad,

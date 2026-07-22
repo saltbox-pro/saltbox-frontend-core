@@ -63,7 +63,7 @@ function PillarsPage() {
         />
       </div>
 
-      <PillarsTable store={pillarsStore} />
+      <PillarsTable store={pillarsStore} tableId="core-pillars" />
     </>
   );
 }

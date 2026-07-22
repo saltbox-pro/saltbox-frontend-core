@@ -21,28 +21,6 @@
   margin-bottom: 8px;
 }
 
-.jobReturnsWrapper :global(.fast-table-wrapper) {
-  overflow-x: hidden;
-}
-
-.jobReturnsWrapper :global(.fast-table table > thead > tr > th:first-child) {
-  white-space: nowrap;
-}
-
-.jobReturnsWrapper :global(.fast-table table > thead > tr > th:nth-child(2)),
-.jobReturnsWrapper :global(.fast-table table > tbody > tr > td:nth-child(2)) {
-  width: 260px;
-  min-width: 260px;
-  max-width: 260px;
-}
-
-.jobReturnsWrapper :global(.fast-table table > thead > tr > th:nth-child(3)),
-.jobReturnsWrapper :global(.fast-table table > tbody > tr > td:nth-child(3)) {
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
-}
-
 .stringDataContainer {
   margin-left: 16px;
   padding: 8px;

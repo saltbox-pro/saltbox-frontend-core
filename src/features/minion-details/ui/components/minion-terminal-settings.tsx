@@ -28,7 +28,7 @@ export function MinionTerminalSettings({ settings }: MinionTerminalSettingsProps
     setJsonFormValue,
     jsonFormRef,
     overlayRef,
-    closeSettings,
+    cancelSettings,
     saveSettings,
     resetFields,
     retrySchemaLoad,
@@ -112,7 +112,7 @@ export function MinionTerminalSettings({ settings }: MinionTerminalSettingsProps
           {t("terminal.settings-reset")}
         </Button>
         <Flex gap={8}>
-          <Button onClick={closeSettings}>{t("terminal.settings-cancel")}</Button>
+          <Button onClick={cancelSettings}>{t("terminal.settings-cancel")}</Button>
           <Button type="primary" onClick={saveSettings} disabled={isSchemaLoading}>
             {t("terminal.settings-save")}
           </Button>
