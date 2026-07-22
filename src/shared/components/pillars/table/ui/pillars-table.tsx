@@ -148,6 +148,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
 
       <Table
         tableId={tableId}
+        enableColumnResize={false}
         columns={columns}
         data={toJS(store.pillars)}
         total={store.totalPillars}

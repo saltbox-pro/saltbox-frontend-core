@@ -181,6 +181,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
     <>
       <MinionsTable
         tableId="core-minions"
+        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={props.minionsStore.minions}

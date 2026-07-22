@@ -234,6 +234,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         ) : (
           <JobReturnsTable
             tableId="core-job-returns-standard"
+            enableColumnResize={false}
             columns={columns}
             getRowId={(row) => row.id}
             data={jobReturns}

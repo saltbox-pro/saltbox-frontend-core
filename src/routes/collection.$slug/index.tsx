@@ -254,6 +254,7 @@ const CollectionEditPage = observer(() => {
         </div>
         <MinionsTable
           tableId="core-collection-minions"
+          enableColumnResize={false}
           columns={minionsColumns}
           getRowId={(row) => row.id}
           data={toJS(minionsStore.minions)}

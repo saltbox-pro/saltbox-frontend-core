@@ -273,6 +273,7 @@ export default observer(function TasksPage() {
       />
       <TasksTable
         tableId="core-tasks"
+        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={tasksStore.tasks}

@@ -271,6 +271,7 @@ const MinionJobReturnsTable = ({
     <div className={styles.jobReturnsTableWrapper}>
       <JobReturnsTable
         tableId={tableId}
+        enableColumnResize={false}
         columns={columns}
         data={jobReturns}
         total={total}
