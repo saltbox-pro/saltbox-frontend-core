@@ -7,6 +7,13 @@ import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 import { loadTerminalCmdRunSettings } from "../model/terminal-cmd-settings";
 
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
+const CURSOR_SCROLL_MARGIN = 4;
+
+interface CursorOverlayRect {
+  top: number;
+  left: number;
+  height: number;
+}
 
 export function useMinionTerminal(
   minion: MinionDetailSchema,
@@ -19,7 +26,9 @@ export function useMinionTerminal(
   );
 
   const terminalWrapperRef = useRef<HTMLDivElement>(null);
+  const terminalBodyRef = useRef<HTMLDivElement>(null);
   const [startingInputValue, setStartingInputValue] = useState("");
+  const [cursorOverlayRect, setCursorOverlayRect] = useState<CursorOverlayRect | null>(null);
   const [isLightTheme, setIsLightTheme] = useState(
     () => localStorage.getItem(TERMINAL_COLOR_MODE_STORAGE_KEY) === "light"
   );
@@ -46,22 +55,72 @@ export function useMinionTerminal(
     [terminalSessionStore]
   );
 
-  const scrollActiveCursorIntoView = useCallback(() => {
+  const updateCursorOverlay = useCallback(() => {
     requestAnimationFrame(() => {
-      terminalWrapperRef.current
-        ?.querySelector<HTMLElement>(".cursor")
-        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const wrapper = terminalWrapperRef.current;
+      const terminalBody = terminalBodyRef.current;
+      const scrollContainer = wrapper?.querySelector<HTMLElement>(".react-terminal");
+      const activeLine = wrapper?.querySelector<HTMLElement>(".react-terminal-active-input");
+      const hiddenInput = wrapper?.querySelector<HTMLInputElement>(".terminal-hidden-input");
+
+      if (!terminalBody || !scrollContainer || !activeLine || !hiddenInput) {
+        setCursorOverlayRect(null);
+        return;
+      }
+
+      const textNode = activeLine.firstChild;
+      const textLength =
+        textNode?.nodeType === Node.TEXT_NODE ? (textNode.textContent?.length ?? 0) : 0;
+
+      const measureCaretPoint = (): { top: number; left: number; height: number } => {
+        if (textNode?.nodeType !== Node.TEXT_NODE || textLength === 0) {
+          const nativeCursor = activeLine.querySelector<HTMLElement>(".cursor");
+          const rect = nativeCursor?.getBoundingClientRect() ?? activeLine.getBoundingClientRect();
+          return { top: rect.top, left: rect.left, height: rect.height };
+        }
+
+        const caretIndex = Math.min(hiddenInput.selectionStart ?? textLength, textLength);
+        const range = document.createRange();
+
+        if (caretIndex < textLength) {
+          range.setStart(textNode, caretIndex);
+          range.setEnd(textNode, caretIndex + 1);
+          const rect = range.getClientRects()[0] ?? range.getBoundingClientRect();
+          return { top: rect.top, left: rect.left, height: rect.height };
+        }
+
+        range.setStart(textNode, caretIndex - 1);
+        range.setEnd(textNode, caretIndex);
+        const rects = range.getClientRects();
+        const rect = rects[rects.length - 1] ?? range.getBoundingClientRect();
+        return { top: rect.top, left: rect.right, height: rect.height };
+      };
+
+      let caretPoint = measureCaretPoint();
+
+      const containerRect = scrollContainer.getBoundingClientRect();
+      if (caretPoint.top < containerRect.top) {
+        scrollContainer.scrollTop -= containerRect.top - caretPoint.top + CURSOR_SCROLL_MARGIN;
+        caretPoint = measureCaretPoint();
+      } else if (caretPoint.top + caretPoint.height > containerRect.bottom) {
+        scrollContainer.scrollTop +=
+          caretPoint.top + caretPoint.height - containerRect.bottom + CURSOR_SCROLL_MARGIN;
+        caretPoint = measureCaretPoint();
+      }
+
+      const bodyRect = terminalBody.getBoundingClientRect();
+      setCursorOverlayRect({
+        top: caretPoint.top - bodyRect.top,
+        left: caretPoint.left - bodyRect.left,
+        height: caretPoint.height || 16,
+      });
     });
   }, []);
 
-  const setTerminalInputValue = useCallback(
-    (value: string) => {
-      forceInputValueUpdateToggleRef.current = !forceInputValueUpdateToggleRef.current;
-      setStartingInputValue(value + (forceInputValueUpdateToggleRef.current ? " " : ""));
-      scrollActiveCursorIntoView();
-    },
-    [scrollActiveCursorIntoView]
-  );
+  const setTerminalInputValue = useCallback((value: string) => {
+    forceInputValueUpdateToggleRef.current = !forceInputValueUpdateToggleRef.current;
+    setStartingInputValue(value + (forceInputValueUpdateToggleRef.current ? " " : ""));
+  }, []);
 
   const recallHistory = useCallback(
     (direction: -1 | 1) => {
@@ -151,7 +210,7 @@ export function useMinionTerminal(
         event.key === "Home" ||
         event.key === "End"
       ) {
-        scrollActiveCursorIntoView();
+        updateCursorOverlay();
       }
 
       if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1) {
@@ -167,26 +226,38 @@ export function useMinionTerminal(
     isCommandRunning,
     isSettingsOpen,
     recallHistory,
-    scrollActiveCursorIntoView,
+    updateCursorOverlay,
     setTerminalInputValue,
     terminalSessionStore,
   ]);
 
   useEffect(() => {
     const terminalWrapper = terminalWrapperRef.current;
-    if (!terminalWrapper || isCommandRunning || isSettingsOpen) {
+    if (!terminalWrapper) {
       return;
     }
 
-    const handleHiddenInputChange = () => {
-      scrollActiveCursorIntoView();
-    };
+    if (isCommandRunning || isSettingsOpen) {
+      setCursorOverlayRect(null);
+      return;
+    }
 
-    terminalWrapper.addEventListener("input", handleHiddenInputChange);
+    const scrollContainer = terminalWrapper.querySelector<HTMLElement>(".react-terminal");
+    if (!scrollContainer) {
+      return;
+    }
+
+    updateCursorOverlay();
+
+    const observer = new MutationObserver(() => {
+      updateCursorOverlay();
+    });
+    observer.observe(scrollContainer, { childList: true, characterData: true, subtree: true });
+
     return () => {
-      terminalWrapper.removeEventListener("input", handleHiddenInputChange);
+      observer.disconnect();
     };
-  }, [isCommandRunning, isSettingsOpen, scrollActiveCursorIntoView]);
+  }, [isCommandRunning, isSettingsOpen, updateCursorOverlay]);
 
   const handleRunningKeyDown = useMemo(() => {
     if (!isCommandRunning || !isTabActive || isSettingsOpen) {
@@ -239,10 +310,12 @@ export function useMinionTerminal(
   return {
     terminalSessionStore,
     terminalWrapperRef,
+    terminalBodyRef,
     startingInputValue,
     handleCommandSubmit,
     isLightTheme,
     toggleTheme,
     isCommandRunning,
+    cursorOverlayRect,
   };
 }

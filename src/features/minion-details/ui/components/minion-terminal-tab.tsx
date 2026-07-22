@@ -37,11 +37,13 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
   const {
     terminalSessionStore,
     terminalWrapperRef,
+    terminalBodyRef,
     startingInputValue,
     handleCommandSubmit,
     isLightTheme,
     toggleTheme,
     isCommandRunning,
+    cursorOverlayRect,
   } = useMinionTerminal(minion, isTabActive, cmdSettings.isOpen);
 
   return (
@@ -82,7 +84,7 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
           />
         </Flex>
       </div>
-      <div className={styles.terminalBody}>
+      <div ref={terminalBodyRef} className={styles.terminalBody}>
         <Terminal
           colorMode={isLightTheme ? ColorMode.Light : ColorMode.Dark}
           height="100%"
@@ -117,6 +119,16 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
           )}
         </Terminal>
         {cmdSettings.isOpen && <MinionTerminalSettings settings={cmdSettings} />}
+        {cursorOverlayRect && (
+          <span
+            className={styles.customCursor}
+            style={{
+              top: cursorOverlayRect.top,
+              left: cursorOverlayRect.left,
+              height: cursorOverlayRect.height,
+            }}
+          />
+        )}
       </div>
     </div>
   );

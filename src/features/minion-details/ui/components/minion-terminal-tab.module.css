@@ -51,7 +51,6 @@
 .terminalTab :global(.react-terminal) {
   --scrollbar-offset: 12px;
 
-  overflow-x: auto;
   padding-right: var(--scrollbar-offset);
   margin-right: calc(var(--scrollbar-offset) * -1);
 }
@@ -61,9 +60,20 @@
   word-break: break-all;
 }
 
-.terminalTab :global(.react-terminal-line.react-terminal-active-input) {
-  white-space: pre;
-  word-break: normal;
+.terminalTab :global(.react-terminal-active-input .cursor) {
+  visibility: hidden;
+}
+
+.customCursor {
+  position: absolute;
+  width: 0.7em;
+  background: var(--ant-color-text, #fff);
+  animation: terminal-cursor-blink 0.8s alternate ease-out infinite;
+  pointer-events: none;
+}
+
+.terminalTabLight .customCursor {
+  background: #262626;
 }
 
 .terminalTab :global(.terminal-hidden-input) {
@@ -124,5 +134,14 @@
 
   75% {
     content: "...";
+  }
+}
+
+@keyframes terminal-cursor-blink {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }
