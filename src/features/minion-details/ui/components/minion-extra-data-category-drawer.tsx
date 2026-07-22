@@ -161,8 +161,10 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
           </div>
         </div>
 
-        {extraDataRecordsStore && (
+        {extraDataRecordsStore && category && (
           <ExtraDataRecordsTable
+            tableId="core-minion-extra-data-records"
+            enableColumnResize={false}
             columns={columns}
             data={toJS(extraDataRecordsStore.records)}
             total={extraDataRecordsStore.totalRecords}

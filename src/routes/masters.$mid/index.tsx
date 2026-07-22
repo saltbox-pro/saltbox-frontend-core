@@ -373,6 +373,8 @@ const MasterPage = observer(() => {
               </div>
 
               <FastTablePaginated
+                tableId="core-master-salt-keys"
+                enableColumnResize={false}
                 columns={saltKeysColumns}
                 data={saltKeysStore.pagedKeys}
                 total={saltKeysStore.totalFiltred}

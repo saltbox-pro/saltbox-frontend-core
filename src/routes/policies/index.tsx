@@ -49,8 +49,6 @@ export default observer(function PoliciesPage() {
           color: "accent",
           width: "10%",
           minWidth: 200,
-          maxWidth: 200,
-          ellipsis: true,
         },
       }),
       columnHelper.accessor("task_template.title", {
@@ -191,7 +189,7 @@ export default observer(function PoliciesPage() {
       columnHelper.accessor("created", {
         header: t("minions.tasks-table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
-        meta: { width: "10%" },
+        meta: { width: "15%", minWidth: 170 },
       }),
     ],
     [t, navigate]
@@ -255,6 +253,8 @@ export default observer(function PoliciesPage() {
         onResetButtonClick={handleResetButtonClick}
       />
       <PoliciesTable
+        tableId="core-policies"
+        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={tasksStore.tasks}
