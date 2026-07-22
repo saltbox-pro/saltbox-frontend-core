@@ -46,10 +46,22 @@ export function useMinionTerminal(
     [terminalSessionStore]
   );
 
-  const setTerminalInputValue = useCallback((value: string) => {
-    forceInputValueUpdateToggleRef.current = !forceInputValueUpdateToggleRef.current;
-    setStartingInputValue(value + (forceInputValueUpdateToggleRef.current ? " " : ""));
+  const scrollActiveCursorIntoView = useCallback(() => {
+    requestAnimationFrame(() => {
+      terminalWrapperRef.current
+        ?.querySelector<HTMLElement>(".cursor")
+        ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
   }, []);
+
+  const setTerminalInputValue = useCallback(
+    (value: string) => {
+      forceInputValueUpdateToggleRef.current = !forceInputValueUpdateToggleRef.current;
+      setStartingInputValue(value + (forceInputValueUpdateToggleRef.current ? " " : ""));
+      scrollActiveCursorIntoView();
+    },
+    [scrollActiveCursorIntoView]
+  );
 
   const recallHistory = useCallback(
     (direction: -1 | 1) => {
@@ -133,6 +145,15 @@ export function useMinionTerminal(
         return;
       }
 
+      if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight" ||
+        event.key === "Home" ||
+        event.key === "End"
+      ) {
+        scrollActiveCursorIntoView();
+      }
+
       if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1) {
         historyIndexRef.current = -1;
       }
@@ -146,9 +167,26 @@ export function useMinionTerminal(
     isCommandRunning,
     isSettingsOpen,
     recallHistory,
+    scrollActiveCursorIntoView,
     setTerminalInputValue,
     terminalSessionStore,
   ]);
+
+  useEffect(() => {
+    const terminalWrapper = terminalWrapperRef.current;
+    if (!terminalWrapper || isCommandRunning || isSettingsOpen) {
+      return;
+    }
+
+    const handleHiddenInputChange = () => {
+      scrollActiveCursorIntoView();
+    };
+
+    terminalWrapper.addEventListener("input", handleHiddenInputChange);
+    return () => {
+      terminalWrapper.removeEventListener("input", handleHiddenInputChange);
+    };
+  }, [isCommandRunning, isSettingsOpen, scrollActiveCursorIntoView]);
 
   const handleRunningKeyDown = useMemo(() => {
     if (!isCommandRunning || !isTabActive || isSettingsOpen) {

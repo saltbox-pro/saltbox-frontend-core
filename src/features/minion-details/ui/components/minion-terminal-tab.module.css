@@ -51,6 +51,7 @@
 .terminalTab :global(.react-terminal) {
   --scrollbar-offset: 12px;
 
+  overflow-x: auto;
   padding-right: var(--scrollbar-offset);
   margin-right: calc(var(--scrollbar-offset) * -1);
 }
@@ -58,6 +59,11 @@
 .terminalTab :global(.react-terminal-line) {
   white-space: pre-wrap;
   word-break: break-all;
+}
+
+.terminalTab :global(.react-terminal-line.react-terminal-active-input) {
+  white-space: pre;
+  word-break: normal;
 }
 
 .terminalTab :global(.terminal-hidden-input) {
