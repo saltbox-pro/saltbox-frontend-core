@@ -27,6 +27,11 @@ export type TerminalSessionStatus = "idle" | "creating" | "running" | "interrupt
 
 export type TerminalInterruptEcho = "^C" | "^Z";
 
+export interface TerminalRunOptions {
+  kwarg?: Record<string, unknown>;
+  ttl?: number;
+}
+
 export class TerminalSessionStore {
   @observable screenLines: TerminalLine[];
   @observable status: TerminalSessionStatus;
@@ -52,7 +57,7 @@ export class TerminalSessionStore {
   }
 
   @action
-  handleRunCommand = (rawCommand: string) => {
+  handleRunCommand = (rawCommand: string, runOptions?: TerminalRunOptions) => {
     if (this.status !== "idle") {
       return;
     }
@@ -88,7 +93,10 @@ export class TerminalSessionStore {
           tgt_type: CreateJobRequestTgtTypeEnum.Glob,
           fun: "cmd.run",
           salt_master: this.saltMaster,
-          arg: [command],
+          ...(runOptions?.kwarg
+            ? { kwarg: { cmd: command, ...runOptions.kwarg } }
+            : { arg: [command] }),
+          ...(runOptions?.ttl != null ? { ttl: runOptions.ttl } : {}),
         },
       })
       .then((job) => {

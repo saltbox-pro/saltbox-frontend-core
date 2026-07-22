@@ -5,7 +5,6 @@ import {
   ru,
   type FormSchema,
   type JSONSchema,
-  type UISchema,
 } from "@saltbox/react-jsonschema-form-generator";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import "@saltbox/react-jsonschema-form-generator/styles.css";
 
 import { extractPillarFormSchema, wrapPillarFormSchema } from "../lib/pillar-schema";
+import type { TemplateFormSchema } from "../lib/sls-parser";
 
 import styles from "./visual-editor-tab.module.css";
 
@@ -20,8 +20,8 @@ const DESCRIPTION_LANGUAGES_RU = ["ru", "en"];
 const DESCRIPTION_LANGUAGES_EN = ["en", "ru"];
 
 interface VisualEditorTabProps {
-  schema: FormSchema;
-  onChange: (schema: FormSchema) => void;
+  schema: TemplateFormSchema;
+  onChange: (schema: TemplateFormSchema) => void;
 }
 
 export function VisualEditorTab({ schema, onChange }: VisualEditorTabProps) {
@@ -35,9 +35,9 @@ export function VisualEditorTab({ schema, onChange }: VisualEditorTabProps) {
 
   const handleChange = useCallback(
     (edited: JSONSchema | FormSchema) => {
-      onChange(wrapPillarFormSchema(schema.json_schema, schema.ui_schema as UISchema, edited));
+      onChange(wrapPillarFormSchema(schema, edited));
     },
-    [onChange, schema.json_schema, schema.ui_schema]
+    [onChange, schema]
   );
 
   return (

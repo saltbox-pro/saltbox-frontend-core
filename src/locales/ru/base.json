@@ -646,7 +646,14 @@
     "no-return": "Ответ от клиента не получен",
     "result-load-error": "Не удалось загрузить результат команды",
     "exit-code": "код завершения {{code}}",
-    "toggle-theme": "Сменить тему терминала"
+    "toggle-theme": "Сменить тему терминала",
+    "settings-tooltip": "Настройки cmd.run",
+    "settings-params-set-tooltip": "Заданы расширенные параметры cmd.run — они применяются ко всем командам терминала",
+    "settings-title": "Расширенные настройки cmd.run",
+    "settings-save": "Сохранить",
+    "settings-cancel": "Отмена",
+    "settings-reset": "Сбросить",
+    "settings-retry": "Повторить"
   },
   "job-function-select": {
     "title": "Выберите функцию",
@@ -1003,6 +1010,7 @@
     "tab-visual-editor": "Визуальный редактор формы",
     "tab-full-editor": "Полный редактор шаблона",
     "visual-editor-unavailable": "Визуальный редактор недоступен для этой схемы",
+    "visual-editor-description-in-json-schema": "Описание записано внутрь json_schema — перенесите его в корень блока схемы, рядом с json_schema",
     "visual-editor-use-full": "Отредактируйте схему через полный редактор шаблона",
     "schema-parse-error": "Не удалось разобрать схему шаблона",
     "form-preview-title": "Предпросмотр формы",

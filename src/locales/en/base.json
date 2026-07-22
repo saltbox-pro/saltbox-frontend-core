@@ -646,7 +646,14 @@
     "no-return": "No result received from minion",
     "result-load-error": "Failed to load command result",
     "exit-code": "exit code {{code}}",
-    "toggle-theme": "Toggle terminal theme"
+    "toggle-theme": "Toggle terminal theme",
+    "settings-tooltip": "cmd.run settings",
+    "settings-params-set-tooltip": "Advanced cmd.run parameters are set and apply to every terminal command",
+    "settings-title": "Advanced cmd.run settings",
+    "settings-save": "Save",
+    "settings-cancel": "Cancel",
+    "settings-reset": "Reset",
+    "settings-retry": "Retry"
   },
   "job-function-select": {
     "title": "Choose function",
@@ -1003,6 +1010,7 @@
     "tab-visual-editor": "Visual form editor",
     "tab-full-editor": "Full template editor",
     "visual-editor-unavailable": "Visual editor is unavailable for this schema",
+    "visual-editor-description-in-json-schema": "The description is stored inside json_schema — move it to the root of the schema block, next to json_schema",
     "visual-editor-use-full": "Edit the schema via the full template editor",
     "schema-parse-error": "Failed to parse template schema",
     "form-preview-title": "Form preview",

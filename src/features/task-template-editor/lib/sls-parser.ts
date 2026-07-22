@@ -1,4 +1,13 @@
-import type { FormSchema } from "@saltbox/react-jsonschema-form-generator";
+import type { DescriptionValue, FormSchema } from "@saltbox/react-jsonschema-form-generator";
+
+/**
+ * The schema block of an SLS template. The template description lives in the
+ * block root — next to `json_schema`, never inside it: that is where the
+ * backend reads it from to fill `TaskTemplateModel.description`.
+ */
+export interface TemplateFormSchema extends FormSchema {
+  description?: DescriptionValue;
+}
 
 const SCHEMA_BLOCK_REGEX = /{#start_schema\s*([\s\S]*?)\s*end_schema#}/;
 const SCHEMA_BLOCK_WITH_TAIL_REGEX = /{#start_schema\s*[\s\S]*?\s*end_schema#}\s*/;
@@ -32,7 +41,7 @@ function describeJsonError(error: unknown, sls: string, contentStart: number): s
   return `${message} (line ${line}, column ${column})`;
 }
 
-export function parseSchemaFromSls(sls: string): FormSchema {
+export function parseSchemaFromSls(sls: string): TemplateFormSchema {
   const match = sls.match(SCHEMA_BLOCK_REGEX);
 
   if (!match) {
@@ -40,7 +49,7 @@ export function parseSchemaFromSls(sls: string): FormSchema {
   }
 
   try {
-    return JSON.parse(match[1]) as FormSchema;
+    return JSON.parse(match[1]) as TemplateFormSchema;
   } catch (error) {
     const contentStart = (match.index ?? 0) + match[0].indexOf(match[1]);
     throw new Error(describeJsonError(error, sls, contentStart));
@@ -51,14 +60,23 @@ export function extractSlsBody(sls: string): string {
   return sls.replace(SCHEMA_BLOCK_WITH_TAIL_REGEX, "").trim();
 }
 
-export function combineSchemaAndBody(schema: FormSchema, body: string): string {
-  const schemaJson = JSON.stringify(schema, null, 2);
+export function combineSchemaAndBody(schema: TemplateFormSchema, body: string): string {
+  // Keep `description` first, the way hand-written templates are laid out,
+  // so re-saving a template does not reshuffle its schema block
+  const { description, json_schema, ui_schema, ...rest } = schema;
+  const orderedSchema = {
+    ...(description === undefined ? {} : { description }),
+    json_schema,
+    ui_schema,
+    ...rest,
+  };
+  const schemaJson = JSON.stringify(orderedSchema, null, 2);
   const schemaBlock = `{#start_schema\n${schemaJson}\nend_schema#}`;
 
   return `${schemaBlock}\n\n${body}`;
 }
 
-export function getEmptySchema(): FormSchema {
+export function getEmptySchema(): TemplateFormSchema {
   return {
     json_schema: {
       type: "object",

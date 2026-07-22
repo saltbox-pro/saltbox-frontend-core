@@ -4,9 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 
+import { loadTerminalCmdRunSettings } from "../model/terminal-cmd-settings";
+
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
 
-export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boolean) {
+export function useMinionTerminal(
+  minion: MinionDetailSchema,
+  isTabActive: boolean,
+  isSettingsOpen: boolean
+) {
   const terminalSessionStore = useMemo(
     () => getTerminalSessionStore(minion.id, minion.minion_id, minion.master ?? ""),
     [minion.id, minion.master, minion.minion_id]
@@ -31,7 +37,11 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
   const handleCommandSubmit = useCallback(
     (command: string) => {
       historyIndexRef.current = -1;
-      terminalSessionStore.handleRunCommand(command);
+      const settings = loadTerminalCmdRunSettings();
+      terminalSessionStore.handleRunCommand(
+        command,
+        settings ? { kwarg: settings.kwargs, ttl: settings.ttlSeconds } : undefined
+      );
     },
     [terminalSessionStore]
   );
@@ -90,7 +100,7 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
 
   useEffect(() => {
     const terminalWrapper = terminalWrapperRef.current;
-    if (!terminalWrapper || isCommandRunning) {
+    if (!terminalWrapper || isCommandRunning || isSettingsOpen) {
       return;
     }
 
@@ -132,10 +142,16 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
     return () => {
       terminalWrapper.removeEventListener("keydown", handleIdleKeyDown);
     };
-  }, [isCommandRunning, recallHistory, setTerminalInputValue, terminalSessionStore]);
+  }, [
+    isCommandRunning,
+    isSettingsOpen,
+    recallHistory,
+    setTerminalInputValue,
+    terminalSessionStore,
+  ]);
 
   const handleRunningKeyDown = useMemo(() => {
-    if (!isCommandRunning || !isTabActive) {
+    if (!isCommandRunning || !isTabActive || isSettingsOpen) {
       return undefined;
     }
 
@@ -155,7 +171,7 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
         terminalSessionStore.handleClearScreen();
       }
     };
-  }, [isCommandRunning, isTabActive, terminalSessionStore]);
+  }, [isCommandRunning, isSettingsOpen, isTabActive, terminalSessionStore]);
 
   useDocumentEvent("keydown", handleRunningKeyDown);
 
@@ -174,13 +190,13 @@ export function useMinionTerminal(minion: MinionDetailSchema, isTabActive: boole
   }, [terminalSessionStore.screenLines.length, terminalSessionStore.status]);
 
   useEffect(() => {
-    if (!isTabActive || isCommandRunning || document.getSelection()?.toString()) {
+    if (!isTabActive || isCommandRunning || isSettingsOpen || document.getSelection()?.toString()) {
       return;
     }
     terminalWrapperRef.current
       ?.querySelector<HTMLInputElement>(".terminal-hidden-input")
       ?.focus({ preventScroll: true });
-  }, [isCommandRunning, isTabActive]);
+  }, [isCommandRunning, isSettingsOpen, isTabActive]);
 
   return {
     terminalSessionStore,
