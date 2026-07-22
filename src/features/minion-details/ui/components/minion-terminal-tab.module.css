@@ -10,7 +10,7 @@
   display: flex;
   gap: 4px;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid var(--ant-color-border-secondary, #f0f0f0);

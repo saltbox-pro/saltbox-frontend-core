@@ -653,7 +653,14 @@
     "settings-save": "Save",
     "settings-cancel": "Cancel",
     "settings-reset": "Reset",
-    "settings-retry": "Retry"
+    "settings-retry": "Retry",
+    "help-intro": "The terminal runs individual commands via cmd.run and is not an interactive console",
+    "help-unsupported-title": "Not supported:",
+    "help-unsupported-interactive": "interactive applications (vim, nano, top, htop, less, man, etc.)",
+    "help-unsupported-user-input": "commands that wait for user input during execution",
+    "help-unsupported-shell-state": "shell state persistence between commands (e.g. changing the working directory with cd, exporting environment variables, aliases, etc.)",
+    "help-independent-commands": "Each command runs independently of the previous one",
+    "help-recommendation": "Use absolute file paths or set the working directory via the cwd parameter in the command's advanced settings"
   },
   "job-function-select": {
     "title": "Choose function",

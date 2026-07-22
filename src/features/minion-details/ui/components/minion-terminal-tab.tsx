@@ -1,6 +1,6 @@
 import { MoonOutlined, SettingOutlined, SunOutlined } from "@ant-design/icons";
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { Badge, Button, Tooltip } from "antd";
+import { Badge, Button, Flex, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 import Terminal, { ColorMode, TerminalInput, TerminalOutput } from "react-terminal-ui";
@@ -10,6 +10,7 @@ import type { TerminalLineKind } from "saltbox-core/store";
 import { useMinionTerminal } from "../../hooks/use-minion-terminal";
 import { useTerminalCmdSettings } from "../../hooks/use-terminal-cmd-settings";
 
+import { MinionTerminalHelpPopover } from "./minion-terminal-help-popover";
 import { MinionTerminalSettings } from "./minion-terminal-settings";
 import styles from "./minion-terminal-tab.module.css";
 
@@ -47,33 +48,37 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
       className={`${styles.terminalTab} ${isLightTheme ? styles.terminalTabLight : ""}`}
     >
       <div className={styles.terminalTopBar}>
-        <Tooltip
-          title={t(
-            cmdSettings.hasSavedParams
-              ? "terminal.settings-params-set-tooltip"
-              : "terminal.settings-tooltip"
-          )}
-        >
-          <Badge
-            dot={cmdSettings.hasSavedParams}
-            offset={[-4, 4]}
-            classNames={{ indicator: styles.settingsBadgeDot }}
+        <MinionTerminalHelpPopover />
+        <Flex gap={4} align="center">
+          <Tooltip
+            title={t(
+              cmdSettings.hasSavedParams
+                ? "terminal.settings-params-set-tooltip"
+                : "terminal.settings-tooltip"
+            )}
           >
-            <Button
-              size="small"
-              className={styles.topBarButton}
-              icon={<SettingOutlined />}
-              onClick={cmdSettings.toggleSettings}
-            />
-          </Badge>
-        </Tooltip>
-        <Button
-          size="small"
-          className={styles.topBarButton}
-          icon={isLightTheme ? <MoonOutlined /> : <SunOutlined />}
-          title={t("terminal.toggle-theme")}
-          onClick={toggleTheme}
-        />
+            <Badge
+              dot={cmdSettings.hasSavedParams}
+              offset={[-4, 4]}
+              classNames={{ indicator: styles.settingsBadgeDot }}
+            >
+              <Button
+                size="small"
+                className={styles.topBarButton}
+                icon={<SettingOutlined />}
+                onClick={cmdSettings.toggleSettings}
+              />
+            </Badge>
+          </Tooltip>
+          <Button
+            size="small"
+            className={styles.topBarButton}
+            icon={isLightTheme ? <MoonOutlined /> : <SunOutlined />}
+            title={t("terminal.toggle-theme")}
+            onClick={toggleTheme}
+            disabled={cmdSettings.isOpen}
+          />
+        </Flex>
       </div>
       <div className={styles.terminalBody}>
         <Terminal
