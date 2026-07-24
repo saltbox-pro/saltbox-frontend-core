@@ -1,4 +1,5 @@
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { createResourceLoadError, type ResourceLoadError } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
@@ -8,20 +9,20 @@ export class CollectionStore {
   collection: CollectionDetailSchema | undefined;
   collectionSlug: string | undefined;
   isCollectionLoading: boolean;
-  error: string | null;
+  loadError: ResourceLoadError | null;
 
   constructor() {
     makeAutoObservable(this);
     this.isLoading = false;
     this.isCollectionLoading = false;
-    this.error = null;
+    this.loadError = null;
     this.loadCollection();
   }
 
   loadCollection = () => {
     if (this.collectionSlug) {
       this.isLoading = true;
-      this.error = null;
+      this.loadError = null;
       apiCoreStore.minionCollectionsApi
         ?.minionCollectionRead({
           slug: this.collectionSlug,
@@ -34,7 +35,7 @@ export class CollectionStore {
         .catch((error) => {
           console.error("Error loading collection:", error);
           runInAction(() => {
-            this.error = "Failed to load collection";
+            this.loadError = createResourceLoadError(error);
           });
         })
         .finally(() => {

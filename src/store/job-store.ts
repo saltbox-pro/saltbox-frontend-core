@@ -1,5 +1,10 @@
 import { JobModel, JobReturnModel, JobStatus } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  createNotFoundError,
+  createResourceLoadError,
+  ResourceLoadError,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
@@ -39,7 +44,7 @@ export class JobStore {
   @observable isJobReturnTableLoading: boolean;
   @observable jobReturnTableLoadError: boolean;
   @observable tablePagination: PaginationState;
-  @observable error: string | null;
+  @observable loadError: ResourceLoadError | null;
   @observable mongoDBQuery: object | undefined;
 
   private inFlightJobReturnDataLoads: Map<string, Promise<void>> = new Map();
@@ -71,7 +76,7 @@ export class JobStore {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.error = null;
+    this.loadError = null;
     makeObservable(this);
   }
 
@@ -104,7 +109,7 @@ export class JobStore {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.error = null;
+    this.loadError = null;
   };
 
   @action
@@ -268,13 +273,13 @@ export class JobStore {
       return;
     }
     this.isJobLoading = true;
-    this.error = null;
+    this.loadError = null;
     apiCoreStore.jobsApi
       ?.jobRetrieve({ jid: this.jid })
       .then((job) => {
         if (!job) {
           runInAction(() => {
-            this.error = "Job not found";
+            this.loadError = createNotFoundError();
           });
         } else {
           runInAction(() => {
@@ -290,7 +295,7 @@ export class JobStore {
       .catch((error) => {
         console.error("Error loading job:", error);
         runInAction(() => {
-          this.error = "Failed to load job";
+          this.loadError = createResourceLoadError(error);
         });
       })
       .finally(() => {

@@ -1,5 +1,10 @@
 import { SourceOperation, type SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import {
+  createNotFoundError,
+  createResourceLoadError,
+  isGlobalServerError,
+  type ResourceLoadError,
+} from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
@@ -22,6 +27,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
   isLoading = false;
   hasError = false;
   notFound = false;
+  loadError: ResourceLoadError | null = null;
   hasConnectedLocalSource = true;
 
   actionBySourceId = new Map<string, SourceActionKind>();
@@ -44,6 +50,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       this.isLoading = false;
       this.hasError = false;
       this.notFound = false;
+      this.loadError = null;
       this.hasConnectedLocalSource = true;
     });
   };
@@ -69,6 +76,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       this.isLoading = true;
       this.hasError = false;
       this.notFound = false;
+      this.loadError = null;
     });
 
     try {
@@ -80,6 +88,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       if (refreshResult.status === "not_found") {
         runInAction(() => {
           this.notFound = true;
+          this.loadError = createNotFoundError();
         });
         return;
       }
@@ -87,6 +96,7 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       if (refreshResult.status === "failed") {
         runInAction(() => {
           this.hasError = true;
+          this.loadError = createResourceLoadError(refreshResult.error);
         });
         return;
       }
@@ -100,8 +110,8 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
     } catch (reason) {
       console.error("Failed to load template source:", reason);
       runInAction(() => {
-        if (isGlobalServerError(reason)) return;
         this.hasError = true;
+        this.loadError = createResourceLoadError(reason);
       });
     } finally {
       runInAction(() => {
@@ -152,9 +162,9 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
       return source ? { status: "found", source } : { status: "not_found" };
     } catch (reason) {
       if (isApiNotFoundError(reason)) return { status: "not_found" };
-      if (isGlobalServerError(reason)) return { status: "failed" };
+      if (isGlobalServerError(reason)) return { status: "failed", error: reason };
       console.error("Failed to fetch template source:", reason);
-      return { status: "failed" };
+      return { status: "failed", error: reason };
     }
   };
 

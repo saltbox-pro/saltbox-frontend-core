@@ -1,5 +1,6 @@
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { makeAutoObservable } from "mobx";
+import { createResourceLoadError, type ResourceLoadError } from "@saltbox/saltbox-frontend-common";
+import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -8,7 +9,7 @@ export class MinionStore {
   slug: string;
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
-  error: string | null;
+  loadError: ResourceLoadError | null;
 
   constructor(slug: string, minionId: string, options?: { initialMinion?: MinionDetailSchema }) {
     makeAutoObservable(this);
@@ -17,7 +18,7 @@ export class MinionStore {
     this.mid = minionId;
     this.isMinionLoading = false;
     this.minion = null;
-    this.error = null;
+    this.loadError = null;
 
     if (options?.initialMinion) {
       this.minion = options.initialMinion;
@@ -32,21 +33,27 @@ export class MinionStore {
       return;
     }
     this.isMinionLoading = true;
-    this.error = null;
+    this.loadError = null;
     apiCoreStore.minionsApi
       ?.minionGet({
         collection_slug: this.slug,
         mid: this.mid,
       })
       .then((minion) => {
-        this.minion = minion;
+        runInAction(() => {
+          this.minion = minion;
+        });
       })
       .catch((error) => {
         console.error("Error loading minion:", error);
-        this.error = "Failed to load minion";
+        runInAction(() => {
+          this.loadError = createResourceLoadError(error);
+        });
       })
       .finally(() => {
-        this.isMinionLoading = false;
+        runInAction(() => {
+          this.isMinionLoading = false;
+        });
       });
   };
 }

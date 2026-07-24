@@ -41,9 +41,12 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
       titleName={template?.title}
       titleLabel={t("configuration-templates.source.preview-drawer-title")}
       loading={open && store.isLoading}
-      errorMessage={
-        store.hasError ? t("configuration-templates.source.preview-load-error") : undefined
-      }
+      loadError={store.loadError}
+      onRetry={() => {
+        if (template?.id && template.source_id) {
+          store.load(template.source_id, template.id).catch(() => undefined);
+        }
+      }}
       hasData={!store.hasError}
       transitionKey={open ? "opened" : "closed"}
       width={900}

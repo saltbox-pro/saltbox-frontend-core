@@ -15,6 +15,7 @@ import {
   getApiErrorMessage,
   isGlobalServerError,
   useWithAcceptedMastersCheck,
+  HttpErrorPage,
 } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
@@ -217,12 +218,6 @@ const JobPage = observer(() => {
   }, [jid, t]);
 
   useEffect(() => {
-    if (jobStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [jobStore.error]);
-
-  useEffect(() => {
     if (!jid) {
       return;
     }
@@ -268,6 +263,20 @@ const JobPage = observer(() => {
       webSocketService.sendAccessToken(appStore.authStore.user.access_token);
     }
   }, [appStore.authStore?.user]);
+
+  if (jobStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={jobStore.loadError}
+        homePath="/core/jobs"
+        onRetry={() => {
+          if (jid) {
+            jobStore.reload(jid);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <>

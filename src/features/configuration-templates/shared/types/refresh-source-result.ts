@@ -3,4 +3,4 @@ import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-clien
 export type RefreshSourceResult =
   | { status: "found"; source: SourceListWithExtrasSchema }
   | { status: "not_found" }
-  | { status: "failed" };
+  | { status: "failed"; error?: unknown };

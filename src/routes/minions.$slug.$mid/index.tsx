@@ -1,8 +1,8 @@
 import { DeleteOutlined } from "@ant-design/icons";
-import { PageHeader } from "@saltbox/saltbox-frontend-common";
+import { HttpErrorPage, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { Flex, message, type MenuProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
@@ -17,12 +17,6 @@ const MinionPage = observer(() => {
   const [messageApi, messageContextHolder] = message.useMessage();
 
   const minionStore = useMemo(() => new MinionStore(slug ?? "", minionId ?? ""), [slug, minionId]);
-
-  useEffect(() => {
-    if (minionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [minionStore.error]);
 
   const removeMinion = useRemoveMinionConfirm({
     collectionSlug: slug ?? "",
@@ -48,6 +42,16 @@ const MinionPage = observer(() => {
       disabled: !minionStore.minion,
     },
   ];
+
+  if (minionStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={minionStore.loadError}
+        homePath={`/core/minions/${slug ?? "root"}`}
+        onRetry={() => minionStore.loadMinion()}
+      />
+    );
+  }
 
   return (
     <>

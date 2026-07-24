@@ -3,12 +3,17 @@ import {
   type TaskMinionListResponse,
   type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import {
+  HttpErrorPage,
+  PageHeader,
+  WebSocketMessage,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useParams } from "react-router";
+import { useParams } from "react-router";
 
 import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
@@ -45,7 +50,6 @@ const useWebSocket = (
 const TaskPage = observer(() => {
   const { t } = useTranslation();
   const { taskid: taskId } = useParams();
-  const navigate = useNavigate();
 
   const [taskStore] = useState(new TaskStore());
 
@@ -54,12 +58,6 @@ const TaskPage = observer(() => {
       taskStore.reload(taskId);
     }
   }, [taskId]);
-
-  useEffect(() => {
-    if (taskStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [taskStore.error]);
 
   useWebSocket(taskId, (messages) => {
     if (messages?.length > 0) {
@@ -80,6 +78,20 @@ const TaskPage = observer(() => {
       );
     }
   });
+
+  if (taskStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={taskStore.loadError}
+        homePath="/core/tasks"
+        onRetry={() => {
+          if (taskId) {
+            taskStore.reload(taskId);
+          }
+        }}
+      />
+    );
+  }
 
   return (
     <>

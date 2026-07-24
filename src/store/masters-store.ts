@@ -1,7 +1,9 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   createMastersStore,
+  createResourceLoadError,
   publishAcceptedMastersChanged,
+  type ResourceLoadError,
   toBackendSorting,
 } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
@@ -13,7 +15,7 @@ const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class MastersStore {
   @observable isLoading: boolean;
-  @observable error: string | null;
+  @observable loadError: ResourceLoadError | null;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
   @observable masters: Array<MasterViewSchema>;
@@ -33,7 +35,7 @@ export class MastersStore {
 
   constructor() {
     this.isLoading = false;
-    this.error = null;
+    this.loadError = null;
     this.masters = [];
     this.totalMasters = 0;
     this.sorting = [...DEFAULT_SORTING];
@@ -47,7 +49,7 @@ export class MastersStore {
   @action
   reset = (): void => {
     this.isLoading = false;
-    this.error = null;
+    this.loadError = null;
     this.masters = [];
     this.totalMasters = 0;
     this.sorting = [...DEFAULT_SORTING];
@@ -112,7 +114,7 @@ export class MastersStore {
   @action
   loadMasters = () => {
     this.isLoading = true;
-    this.error = null;
+    this.loadError = null;
 
     apiCoreStore.mastersApi
       ?.mastersList({
@@ -129,10 +131,10 @@ export class MastersStore {
           this.totalMasters = response.total;
         });
       })
-      .catch((_) => {
+      .catch((error) => {
         runInAction(() => {
           this.isLoading = false;
-          this.error = "Failed to load masters";
+          this.loadError = createResourceLoadError(error);
         });
       });
   };

@@ -5,7 +5,12 @@ import {
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  createNotFoundError,
+  createResourceLoadError,
+  type ResourceLoadError,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
@@ -31,7 +36,7 @@ export class TaskStore {
   @observable isMinionsLoading: boolean;
   @observable minionCategoryFilter: TaskMinionStatus | null;
   @observable loadingCounter: number;
-  @observable error: string | null;
+  @observable loadError: ResourceLoadError | null;
   taskJobReturnsStore: TaskJobReturnsStore;
 
   constructor() {
@@ -47,7 +52,7 @@ export class TaskStore {
     this.isMinionsLoading = false;
     this.minionCategoryFilter = null;
     this.loadingCounter = 0;
-    this.error = null;
+    this.loadError = null;
     this.taskJobReturnsStore = new TaskJobReturnsStore(() => this.task?.id ?? null);
     makeObservable(this);
   }
@@ -109,14 +114,16 @@ export class TaskStore {
   @action
   loadTask = (taskId: string) => {
     this.startLoading();
-    this.error = null;
+    this.loadError = null;
     apiCoreStore.tasksApi
       ?.taskRetrieve({
         tid: taskId,
       })
       .then((task) => {
         if (!task) {
-          this.error = "Task not found";
+          runInAction(() => {
+            this.loadError = createNotFoundError();
+          });
           return;
         }
         runInAction(() => {
@@ -129,7 +136,7 @@ export class TaskStore {
       .catch((error) => {
         console.error("Error loading task:", error);
         runInAction(() => {
-          this.error = "Failed to load task";
+          this.loadError = createResourceLoadError(error);
         });
       })
       .finally(() => {
@@ -162,9 +169,6 @@ export class TaskStore {
       })
       .catch((error) => {
         console.error("Error loading task minions:", error);
-        runInAction(() => {
-          this.error = "Failed to load task minions";
-        });
       })
       .finally(() => {
         runInAction(() => {

@@ -3,6 +3,7 @@ import {
   PageHeader,
   FastTablePaginated,
   formatTimeByUserTZ,
+  HttpErrorPage,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Tag, message } from "antd";
@@ -112,12 +113,6 @@ function MastersPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (mastersStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [mastersStore.error]);
-
   const handleAccept = (id: string) => {
     mastersStore
       .acceptMaster(id)
@@ -155,6 +150,16 @@ function MastersPage() {
         messageApi.error(t("masters.error-on-change-master-status"));
       });
   };
+
+  if (mastersStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={mastersStore.loadError}
+        homePath="/core/minions"
+        onRetry={() => mastersStore.loadMasters()}
+      />
+    );
+  }
 
   return (
     <>

@@ -1,4 +1,9 @@
 import type { TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
+import {
+  createNotFoundError,
+  createResourceLoadError,
+  type ResourceLoadError,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,6 +13,7 @@ import { TaskStore } from "saltbox-core/store";
 import { type MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
 import { useMinionTaskJobReturns } from "../hooks/use-minion-task-job-returns";
+import type { TaskJobReturnsErrorKey } from "../model/task-job-returns-store";
 
 import { MinionTaskResults } from "./components/minion-task-results";
 
@@ -21,6 +27,33 @@ interface MinionTaskResultsDrawerProps {
   onClose: () => void;
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
 }
+
+const mapTaskJobReturnsError = (
+  errorKey: TaskJobReturnsErrorKey,
+  t: (key: string) => string
+): ResourceLoadError | null => {
+  switch (errorKey) {
+    case "missing-context":
+      return createResourceLoadError(null, {
+        fallbackStatus: 400,
+        fallbackMessage: t("task.minion.job-returns-missing-context"),
+      });
+    case "not-found":
+      return createNotFoundError(t("task.minion.job-returns-not-found"));
+    case "access-denied":
+      return createResourceLoadError(null, {
+        fallbackStatus: 403,
+        fallbackMessage: t("errors.access-denied"),
+      });
+    case "load-failed":
+      return createResourceLoadError(null, {
+        fallbackStatus: 500,
+        fallbackMessage: t("task.minion.job-returns-load-error"),
+      });
+    default:
+      return null;
+  }
+};
 
 export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
   function MinionTaskResultsDrawer({
@@ -46,20 +79,10 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
 
     const { minion_id: minionId = openedId, minion_inner_id: minionInnerId } = displayMinion ?? {};
 
-    const errorMessage = useMemo(() => {
-      switch (taskStore.taskJobReturnsError) {
-        case "missing-context":
-          return t("task.minion.job-returns-missing-context");
-        case "not-found":
-          return t("task.minion.job-returns-not-found");
-        case "access-denied":
-          return t("errors.access-denied");
-        case "load-failed":
-          return t("task.minion.job-returns-load-error");
-        default:
-          return null;
-      }
-    }, [taskStore.taskJobReturnsError, t]);
+    const loadError = useMemo(
+      () => mapTaskJobReturnsError(taskStore.taskJobReturnsError, t),
+      [taskStore.taskJobReturnsError, t]
+    );
 
     const transitionKey =
       isOpened && taskMinionMongoId
@@ -77,7 +100,12 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
         onClose={onClose}
         loading={isLoading && !hasData}
         hasData={hasData}
-        errorMessage={errorMessage}
+        loadError={loadError}
+        onRetry={() => {
+          if (taskId && taskMinionMongoId) {
+            taskStore.loadTaskJobReturns(taskId, taskMinionMongoId).catch(() => undefined);
+          }
+        }}
         transitionKey={transitionKey}
       >
         <MinionTaskResults

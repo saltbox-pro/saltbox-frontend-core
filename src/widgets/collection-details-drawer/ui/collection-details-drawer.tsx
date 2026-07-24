@@ -258,8 +258,11 @@ export const CollectionDetailsDrawer = observer(
           linkComponent={Link}
           loading={collectionStore.isLoading}
           hasData={!!collection && !isSaving}
-          errorMessage={collectionStore.error ? t("collection.error-loading-collection") : null}
-          transitionKey={collection?.slug}
+          loadError={collectionStore.loadError}
+          onRetry={() => {
+            collectionStore.loadCollection();
+          }}
+          transitionKey={collection?.slug ?? undefined}
           onClose={drawer.close}
         >
           <Form form={form} component={false}>

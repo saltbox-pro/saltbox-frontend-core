@@ -1,4 +1,9 @@
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import {
+  createNotFoundError,
+  createResourceLoadError,
+  type ResourceLoadError,
+} from "@saltbox/saltbox-frontend-common";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,16 +14,27 @@ import type { MinionDetailsDrawerOpenParams } from "../types";
 export type UseMinionDetailsDrawerResult = {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
-  error: string | null;
+  loadError: ResourceLoadError | null;
   hasData: boolean;
   slug: string | null;
   resolvedDisplayId: string;
   resolvedInnerId: string;
+  reload: () => void;
 };
 
 export type UseMinionDetailsDrawerArgs = {
   isOpened: boolean;
   openedArg: MinionDetailsDrawerOpenParams | null;
+};
+
+const isAbortError = (err: unknown): boolean => {
+  if (!err || typeof err !== "object") return false;
+  const error = err as { name?: string; cause?: { name?: string; code?: number } };
+  return (
+    error.name === "AbortError" ||
+    error.cause?.name === "AbortError" ||
+    error.cause?.code === DOMException.ABORT_ERR
+  );
 };
 
 export function useMinionDetailsDrawer({
@@ -29,7 +45,8 @@ export function useMinionDetailsDrawer({
 
   const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
   const [isMinionLoading, setIsMinionLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<ResourceLoadError | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -54,7 +71,11 @@ export function useMinionDetailsDrawer({
     };
   }, [minion?.id, openedArg]);
 
-  const hasData = Boolean(minion?.id) && !error;
+  const hasData = Boolean(minion?.id) && !loadError;
+
+  const reload = () => {
+    setReloadToken((token) => token + 1);
+  };
 
   useEffect(() => {
     if (!isOpened) {
@@ -62,7 +83,7 @@ export function useMinionDetailsDrawer({
       abortControllerRef.current = null;
       setMinion(null);
       setIsMinionLoading(false);
-      setError(null);
+      setLoadError(null);
       return;
     }
 
@@ -73,7 +94,7 @@ export function useMinionDetailsDrawer({
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
 
-    setError(null);
+    setLoadError(null);
     setMinion(null);
     setIsMinionLoading(true);
 
@@ -106,31 +127,17 @@ export function useMinionDetailsDrawer({
         if (loadedMinion?.id) {
           setMinion(loadedMinion);
         } else {
-          setError(t("minions.minion-not-found"));
+          setLoadError(createNotFoundError(t("minions.minion-not-found")));
         }
       } catch (err) {
-        const isAbortError =
-          err?.name === "AbortError" ||
-          err?.cause?.name === "AbortError" ||
-          err?.cause?.code === DOMException.ABORT_ERR;
-
-        if (isAbortError) {
+        if (isAbortError(err)) {
           return;
         }
 
         console.error("Error fetching minion:", err);
 
-        let errorMessage: string | null = null;
-        const status = err?.response?.status;
-
-        if (status === 404) {
-          errorMessage = t("minions.minion-not-found");
-        } else if (status === 403) {
-          errorMessage = t("errors.access-denied");
-        }
-
         if (abortControllerRef.current !== abortController) return;
-        setError(errorMessage);
+        setLoadError(createResourceLoadError(err));
       } finally {
         if (abortControllerRef.current === abortController) {
           setIsMinionLoading(false);
@@ -141,15 +148,16 @@ export function useMinionDetailsDrawer({
     return () => {
       abortController.abort();
     };
-  }, [isOpened, openedArg, t]);
+  }, [isOpened, openedArg, reloadToken, t]);
 
   return {
     minion,
     isMinionLoading,
-    error,
+    loadError,
     hasData,
     slug,
     resolvedDisplayId,
     resolvedInnerId,
+    reload,
   };
 }

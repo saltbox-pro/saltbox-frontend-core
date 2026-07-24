@@ -1,4 +1,4 @@
-import { PageLayout } from "@saltbox/saltbox-frontend-common";
+import { createNotFoundError, HttpErrorPage, PageLayout } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
@@ -23,23 +23,28 @@ const TemplateSourceDetailPage = observer(function TemplateSourceDetailPage() {
   }, [navigate, sourceId]);
 
   useEffect(() => {
-    if (!sourceId) {
-      navigate("/core/not-found");
+    if (!sourceId || !store) {
       return;
     }
-
-    if (!store) return;
 
     store.load();
 
     return () => store.reset();
-  }, [navigate, sourceId, store]);
+  }, [sourceId, store]);
 
-  useEffect(() => {
-    if (store?.notFound) {
-      navigate("/core/not-found");
-    }
-  }, [navigate, store?.notFound]);
+  if (!sourceId) {
+    return <HttpErrorPage error={createNotFoundError()} homePath="/core/configuration-templates" />;
+  }
+
+  if (store?.loadError) {
+    return (
+      <HttpErrorPage
+        error={store.loadError}
+        homePath="/core/configuration-templates"
+        onRetry={() => store.load()}
+      />
+    );
+  }
 
   return (
     <PageLayout title={store?.source?.name ?? ""}>

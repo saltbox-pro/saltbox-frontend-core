@@ -19,8 +19,16 @@ interface MinionDetailsDrawerProps {
 }
 
 export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDetailsDrawerProps) {
-  const { minion, isMinionLoading, error, hasData, slug, resolvedDisplayId, resolvedInnerId } =
-    useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
+  const {
+    minion,
+    isMinionLoading,
+    loadError,
+    hasData,
+    slug,
+    resolvedDisplayId,
+    resolvedInnerId,
+    reload,
+  } = useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
 
   const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
 
@@ -33,7 +41,8 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       open={drawer.isOpened}
       loading={!!isMinionLoading}
       hasData={hasData}
-      errorMessage={error}
+      loadError={loadError}
+      onRetry={reload}
       mask={mask}
       transitionKey={minion?.minion_id}
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}

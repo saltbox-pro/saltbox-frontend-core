@@ -4,6 +4,7 @@ import {
   Dropdown,
   FilterToggleButton,
   generateIdsForQuery,
+  HttpErrorPage,
   isGlobalServerError,
   Modal,
   PageHeader,
@@ -212,12 +213,6 @@ const MinionsPage = observer(() => {
   }, [location, navigate]);
 
   useEffect(() => {
-    if (collectionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [collectionStore.error, navigate]);
-
-  useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {
       openMinionsFilters();
     }
@@ -333,6 +328,16 @@ const MinionsPage = observer(() => {
     i18nStore.currentLanguage,
     tabKey,
   ]);
+
+  if (collectionStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={collectionStore.loadError}
+        homePath="/core/minions"
+        onRetry={() => collectionStore.loadCollection()}
+      />
+    );
+  }
 
   return (
     <>

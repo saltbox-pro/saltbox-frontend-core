@@ -1,3 +1,4 @@
+import { createResourceLoadError, type ResourceLoadError } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
@@ -7,7 +8,7 @@ export class TemplatePreviewStore {
   slsContent = "";
   loadedTemplateId: string | null = null;
   isLoading = false;
-  hasError = false;
+  loadError: ResourceLoadError | null = null;
   isEmpty = false;
 
   private loadAbortController: AbortController | null = null;
@@ -15,6 +16,10 @@ export class TemplatePreviewStore {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get hasError() {
+    return this.loadError != null;
   }
 
   private cancelLoad = () => {
@@ -33,7 +38,7 @@ export class TemplatePreviewStore {
 
     runInAction(() => {
       this.isLoading = true;
-      this.hasError = false;
+      this.loadError = null;
       this.isEmpty = false;
       this.slsContent = "";
       this.loadedTemplateId = null;
@@ -67,7 +72,7 @@ export class TemplatePreviewStore {
 
       console.error("Failed to load template preview:", error);
       runInAction(() => {
-        this.hasError = true;
+        this.loadError = createResourceLoadError(error);
         this.isLoading = false;
       });
 
@@ -82,7 +87,7 @@ export class TemplatePreviewStore {
   reset = () => {
     this.cancelLoad();
     this.isLoading = false;
-    this.hasError = false;
+    this.loadError = null;
   };
 
   clearContent = () => {

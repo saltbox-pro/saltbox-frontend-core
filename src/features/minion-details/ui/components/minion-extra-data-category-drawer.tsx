@@ -42,7 +42,7 @@ function collectFieldsFromRecords(records: Array<ExtraDataRecord>): string[] {
 
 export type MinionExtraDataCategoryDrawerProps = Omit<
   InfoDrawerProps,
-  "drawerId" | "titleName" | "titleLabel" | "children" | "hasData" | "errorMessage"
+  "drawerId" | "titleName" | "titleLabel" | "children" | "hasData" | "loadError"
 > & {
   category: ExtraDataCategoryModel | null;
   minionId: string;

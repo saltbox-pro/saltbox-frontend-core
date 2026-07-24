@@ -2,6 +2,7 @@ import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  HttpErrorPage,
   PageHeader,
   Popover,
   formatTimeByUserTZ,
@@ -126,12 +127,6 @@ const CollectionEditPage = observer(() => {
     }),
   ];
 
-  useEffect(() => {
-    if (collectionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [collectionStore.error]);
-
   const minionsCollectionSlug = collectionStore.collection?.parent_slug || slug || "";
   const serverQueryKey = JSON.stringify(collectionStore.collection?.query ?? null);
 
@@ -205,6 +200,16 @@ const CollectionEditPage = observer(() => {
   const isSaveDisabled =
     (newTitle === originalTitle && JSON.stringify(filterStore.currentFilters) === originalQuery) ||
     newTitle.trim() === "";
+
+  if (collectionStore.loadError) {
+    return (
+      <HttpErrorPage
+        error={collectionStore.loadError}
+        homePath="/core/minions"
+        onRetry={() => collectionStore.loadCollection()}
+      />
+    );
+  }
 
   return (
     <>
