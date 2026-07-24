@@ -33,14 +33,14 @@ const TemplateSourceDetailPage = observer(function TemplateSourceDetailPage() {
   }, [sourceId, store]);
 
   if (!sourceId) {
-    return <HttpErrorPage error={createNotFoundError()} homePath="/core/configuration-templates" />;
+    return <HttpErrorPage error={createNotFoundError()} homePath="/core/minions" />;
   }
 
   if (store?.loadError) {
     return (
       <HttpErrorPage
         error={store.loadError}
-        homePath="/core/configuration-templates"
+        homePath="/core/minions"
         onRetry={() => store.load()}
       />
     );

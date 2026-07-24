@@ -268,7 +268,7 @@ const JobPage = observer(() => {
     return (
       <HttpErrorPage
         error={jobStore.loadError}
-        homePath="/core/jobs"
+        homePath="/core/minions"
         onRetry={() => {
           if (jid) {
             jobStore.reload(jid);

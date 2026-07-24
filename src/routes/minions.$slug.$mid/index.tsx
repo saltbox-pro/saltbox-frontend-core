@@ -47,7 +47,7 @@ const MinionPage = observer(() => {
     return (
       <HttpErrorPage
         error={minionStore.loadError}
-        homePath={`/core/minions/${slug ?? "root"}`}
+        homePath="/core/minions"
         onRetry={() => minionStore.loadMinion()}
       />
     );

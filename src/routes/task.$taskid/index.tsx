@@ -83,7 +83,7 @@ const TaskPage = observer(() => {
     return (
       <HttpErrorPage
         error={taskStore.loadError}
-        homePath="/core/tasks"
+        homePath="/core/minions"
         onRetry={() => {
           if (taskId) {
             taskStore.reload(taskId);
