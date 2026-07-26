@@ -34,6 +34,50 @@ interface GetArgAndKwargForRequestParams {
   kwarg?: Record<string, unknown>;
 }
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const normalizeArgList = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) {
+    return value;
+  }
+  if (value != null) {
+    return [value];
+  }
+  return [];
+};
+
+const toRequestArg = (value: unknown): unknown[] | undefined => {
+  const normalized = normalizeArgList(value);
+  return normalized.length > 0 ? normalized : undefined;
+};
+
+const toRequestKwarg = (value: unknown): Record<string, unknown> | undefined => {
+  if (!isPlainObject(value)) {
+    return undefined;
+  }
+  const cleaned = cleanNullsFromKwargs(value);
+  return Object.keys(cleaned).length > 0 ? cleaned : undefined;
+};
+
+const hasNonEmptyFormArgs = (jsonFormValue?: Record<string, unknown>): boolean =>
+  toRequestArg(jsonFormValue?.args) != null || toRequestArg(jsonFormValue?.arg) != null;
+
+const hasNonEmptyFormKwargs = (jsonFormValue?: Record<string, unknown>): boolean =>
+  toRequestKwarg(jsonFormValue?.kwargs) != null || toRequestKwarg(jsonFormValue?.kwarg) != null;
+
+const getSchemaRootProperties = (jsonSchema: unknown): Record<string, unknown> => {
+  if (!isPlainObject(jsonSchema) || !isPlainObject(jsonSchema.properties)) {
+    return {};
+  }
+  return jsonSchema.properties;
+};
+
+const resolveSchemaPropertyKey = (
+  properties: Record<string, unknown>,
+  preferredKeys: string[]
+): string | undefined => preferredKeys.find((key) => key in properties);
+
 export const getArgAndKwargForRequest = ({
   jsonFormValue,
   arg,
@@ -43,31 +87,23 @@ export const getArgAndKwargForRequest = ({
   kwarg: Record<string, unknown> | undefined;
 } => {
   const useBaselineFromProps =
-    !jsonFormValue?.args && !jsonFormValue?.arg && !jsonFormValue?.kwargs && !jsonFormValue?.kwarg;
+    !hasNonEmptyFormArgs(jsonFormValue) && !hasNonEmptyFormKwargs(jsonFormValue);
 
   return {
     arg:
-      (jsonFormValue?.args as unknown[] | undefined) ??
-      (jsonFormValue?.arg as unknown[] | undefined) ??
-      (useBaselineFromProps ? arg : undefined),
+      toRequestArg(jsonFormValue?.args) ??
+      toRequestArg(jsonFormValue?.arg) ??
+      (useBaselineFromProps ? toRequestArg(arg) : undefined),
     kwarg:
-      (jsonFormValue?.kwargs as Record<string, unknown> | undefined) ??
-      (jsonFormValue?.kwarg as Record<string, unknown> | undefined) ??
-      (useBaselineFromProps ? cleanNullsFromKwargs(kwarg) : undefined),
+      toRequestKwarg(jsonFormValue?.kwargs) ??
+      toRequestKwarg(jsonFormValue?.kwarg) ??
+      (useBaselineFromProps ? toRequestKwarg(kwarg) : undefined),
   };
 };
 
 export const isValidManualSaltFunctionName = (value: string): boolean => {
   return MANUAL_SALT_FUNCTION_PATTERN.test(value);
 };
-
-export const getRepeatJsonFormValue = (
-  arg: unknown[] | undefined,
-  kwarg: Record<string, unknown> | undefined
-): Record<string, unknown> => ({
-  args: Array.isArray(arg) ? arg : arg != null ? [arg] : [],
-  kwargs: cleanNullsFromKwargs(kwarg),
-});
 
 export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unknown> => {
   if (
@@ -95,6 +131,52 @@ export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unk
   } catch {
     return {};
   }
+};
+
+export const getRepeatJsonFormValue = (
+  arg: unknown[] | undefined,
+  kwarg: Record<string, unknown> | undefined,
+  jsonSchema?: unknown
+): Record<string, unknown> => {
+  const properties = getSchemaRootProperties(jsonSchema);
+  const cleanedKwargs = cleanNullsFromKwargs(kwarg);
+  const normalizedArgs = normalizeArgList(arg);
+  const hasArgsValue = normalizedArgs.length > 0;
+  const hasKwargsValue = Object.keys(cleanedKwargs).length > 0;
+
+  if (Object.keys(properties).length === 0) {
+    const fallback: Record<string, unknown> = {};
+    if (hasArgsValue) {
+      fallback.args = normalizedArgs;
+    }
+    if (hasKwargsValue) {
+      fallback.kwargs = cleanedKwargs;
+    }
+    return fallback;
+  }
+
+  const result: Record<string, unknown> = { ...getDefaultJsonFormValue(jsonSchema) };
+  const argsKey = resolveSchemaPropertyKey(properties, ["args", "arg"]);
+  const kwargsKey = resolveSchemaPropertyKey(properties, ["kwargs", "kwarg"]);
+
+  if (!argsKey) {
+    delete result.args;
+    delete result.arg;
+  } else if (hasArgsValue) {
+    result[argsKey] = normalizedArgs;
+  }
+
+  if (!kwargsKey) {
+    delete result.kwargs;
+    delete result.kwarg;
+  } else if (hasKwargsValue) {
+    const existingKwargs = isPlainObject(result[kwargsKey])
+      ? (result[kwargsKey] as Record<string, unknown>)
+      : {};
+    result[kwargsKey] = { ...existingKwargs, ...cleanedKwargs };
+  }
+
+  return result;
 };
 
 export const hasBaselineJobArgs = (

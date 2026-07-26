@@ -148,7 +148,7 @@ export const useJobModalInit = ({
       setSaltFunction(schema);
       setJsonFormValue(
         hasBaselineArgs
-          ? getRepeatJsonFormValue(arg, kwarg)
+          ? getRepeatJsonFormValue(arg, kwarg, schema.json_schema)
           : getDefaultJsonFormValue(schema.json_schema)
       );
       applyTtlFromInitialOrDefault(initialTtlSeconds, schema.default_ttl);
