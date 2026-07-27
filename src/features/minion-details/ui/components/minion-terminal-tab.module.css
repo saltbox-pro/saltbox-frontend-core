@@ -4,6 +4,7 @@
   flex-direction: column;
   min-height: 0;
   gap: 8px;
+  overflow: hidden;
 }
 
 .terminalTopBar {
@@ -60,16 +61,32 @@
   word-break: break-all;
 }
 
+.terminalTab :global(.react-terminal-active-input .cursor) {
+  visibility: hidden;
+}
+
+.customCursor {
+  position: absolute;
+  width: 0.7em;
+  background: var(--ant-color-text, #fff);
+  animation: terminal-cursor-blink 0.8s alternate ease-out infinite;
+  pointer-events: none;
+}
+
+.terminalTabLight .customCursor {
+  background: #262626;
+}
+
 .terminalTab :global(.terminal-hidden-input) {
   font: inherit;
   position: absolute;
-  left: auto;
+  top: 0;
+  left: 0;
   width: 1px;
   height: 1px;
   margin: 0;
   padding: 0;
   border: 0;
-  clip-path: inset(50%);
   opacity: 0;
 }
 
@@ -118,5 +135,14 @@
 
   75% {
     content: "...";
+  }
+}
+
+@keyframes terminal-cursor-blink {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }

@@ -7,6 +7,13 @@ import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 import { loadTerminalCmdRunSettings } from "../model/terminal-cmd-settings";
 
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
+const CURSOR_SCROLL_MARGIN = 4;
+
+interface CursorOverlayRect {
+  top: number;
+  left: number;
+  height: number;
+}
 
 export function useMinionTerminal(
   minion: MinionDetailSchema,
@@ -19,7 +26,9 @@ export function useMinionTerminal(
   );
 
   const terminalWrapperRef = useRef<HTMLDivElement>(null);
+  const terminalBodyRef = useRef<HTMLDivElement>(null);
   const [startingInputValue, setStartingInputValue] = useState("");
+  const [cursorOverlayRect, setCursorOverlayRect] = useState<CursorOverlayRect | null>(null);
   const [isLightTheme, setIsLightTheme] = useState(
     () => localStorage.getItem(TERMINAL_COLOR_MODE_STORAGE_KEY) === "light"
   );
@@ -44,6 +53,119 @@ export function useMinionTerminal(
       );
     },
     [terminalSessionStore]
+  );
+
+  const updateCursorOverlay = useCallback(
+    (options?: { pinToBottom?: boolean; adjustScroll?: boolean }) => {
+      const pinToBottom = options?.pinToBottom ?? false;
+      const adjustScroll = options?.adjustScroll ?? true;
+      requestAnimationFrame(() => {
+        const wrapper = terminalWrapperRef.current;
+        const terminalBody = terminalBodyRef.current;
+        const scrollContainer = wrapper?.querySelector<HTMLElement>(".react-terminal");
+        const activeLine = wrapper?.querySelector<HTMLElement>(".react-terminal-active-input");
+        const hiddenInput = wrapper?.querySelector<HTMLInputElement>(".terminal-hidden-input");
+        const reactTerminalWrapper = wrapper?.querySelector<HTMLElement>(".react-terminal-wrapper");
+
+        if (
+          !terminalBody ||
+          !scrollContainer ||
+          !activeLine ||
+          !hiddenInput ||
+          !reactTerminalWrapper
+        ) {
+          setCursorOverlayRect(null);
+          return;
+        }
+
+        const textNode = activeLine.firstChild;
+        const textLength =
+          textNode?.nodeType === Node.TEXT_NODE ? (textNode.textContent?.length ?? 0) : 0;
+
+        const measureCaretPoint = (): { top: number; left: number; height: number } => {
+          if (textNode?.nodeType !== Node.TEXT_NODE || textLength === 0) {
+            const nativeCursor = activeLine.querySelector<HTMLElement>(".cursor");
+            const rect =
+              nativeCursor?.getBoundingClientRect() ?? activeLine.getBoundingClientRect();
+            return { top: rect.top, left: rect.left, height: rect.height };
+          }
+
+          const caretIndex = Math.min(hiddenInput.selectionStart ?? textLength, textLength);
+          const range = document.createRange();
+
+          if (caretIndex < textLength) {
+            range.setStart(textNode, caretIndex);
+            range.setEnd(textNode, caretIndex + 1);
+            const rect = range.getClientRects()[0] ?? range.getBoundingClientRect();
+            return { top: rect.top, left: rect.left, height: rect.height };
+          }
+
+          range.setStart(textNode, caretIndex - 1);
+          range.setEnd(textNode, caretIndex);
+          const rects = range.getClientRects();
+          const rect = rects[rects.length - 1] ?? range.getBoundingClientRect();
+          return { top: rect.top, left: rect.right, height: rect.height };
+        };
+
+        const measureTextStartLeft = (): number => {
+          if (textNode?.nodeType === Node.TEXT_NODE && textLength > 0) {
+            const range = document.createRange();
+            range.setStart(textNode, 0);
+            range.setEnd(textNode, 1);
+            const rect = range.getClientRects()[0] ?? range.getBoundingClientRect();
+            return rect.left;
+          }
+          const nativeCursor = activeLine.querySelector<HTMLElement>(".cursor");
+          return (nativeCursor?.getBoundingClientRect() ?? activeLine.getBoundingClientRect()).left;
+        };
+
+        let caretPoint = measureCaretPoint();
+
+        if (pinToBottom) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+          caretPoint = measureCaretPoint();
+        } else if (adjustScroll) {
+          const containerRect = scrollContainer.getBoundingClientRect();
+          if (caretPoint.top < containerRect.top) {
+            scrollContainer.scrollTop -= containerRect.top - caretPoint.top + CURSOR_SCROLL_MARGIN;
+            caretPoint = measureCaretPoint();
+          } else if (caretPoint.top + caretPoint.height > containerRect.bottom) {
+            scrollContainer.scrollTop +=
+              caretPoint.top + caretPoint.height - containerRect.bottom + CURSOR_SCROLL_MARGIN;
+            caretPoint = measureCaretPoint();
+          }
+        }
+
+        const wrapperRect = reactTerminalWrapper.getBoundingClientRect();
+        const lineRect = activeLine.getBoundingClientRect();
+        const rowRect = scrollContainer.getBoundingClientRect();
+        const textStartLeft = measureTextStartLeft();
+
+        const visibleTop = Math.max(lineRect.top, rowRect.top);
+        const visibleBottom = Math.min(lineRect.bottom, rowRect.bottom);
+        const visibleHeight = visibleBottom - visibleTop;
+
+        if (visibleHeight <= 0) {
+          hiddenInput.style.top = `${rowRect.top - wrapperRect.top}px`;
+          hiddenInput.style.left = `${textStartLeft - wrapperRect.left}px`;
+          hiddenInput.style.width = "1px";
+          hiddenInput.style.height = "1px";
+        } else {
+          hiddenInput.style.top = `${visibleTop - wrapperRect.top}px`;
+          hiddenInput.style.left = `${textStartLeft - wrapperRect.left}px`;
+          hiddenInput.style.width = `${Math.max(rowRect.right - textStartLeft, 1)}px`;
+          hiddenInput.style.height = `${visibleHeight}px`;
+        }
+
+        const bodyRect = terminalBody.getBoundingClientRect();
+        setCursorOverlayRect({
+          top: caretPoint.top - bodyRect.top,
+          left: caretPoint.left - bodyRect.left,
+          height: caretPoint.height || 16,
+        });
+      });
+    },
+    []
   );
 
   const setTerminalInputValue = useCallback((value: string) => {
@@ -86,25 +208,41 @@ export function useMinionTerminal(
       return;
     }
 
-    const keepTextSelectionOnClick = (event: MouseEvent) => {
-      if (document.getSelection()?.toString()) {
-        event.stopPropagation();
-      }
+    const suppressLibraryAutoFocus = (event: MouseEvent) => {
+      event.stopPropagation();
     };
 
-    terminalWrapper.addEventListener("click", keepTextSelectionOnClick, true);
+    terminalWrapper.addEventListener("click", suppressLibraryAutoFocus, true);
     return () => {
-      terminalWrapper.removeEventListener("click", keepTextSelectionOnClick, true);
+      terminalWrapper.removeEventListener("click", suppressLibraryAutoFocus, true);
     };
   }, []);
 
   useEffect(() => {
-    const terminalWrapper = terminalWrapperRef.current;
-    if (!terminalWrapper || isCommandRunning || isSettingsOpen) {
+    const terminalBody = terminalBodyRef.current;
+    if (!terminalBody || isCommandRunning || isSettingsOpen || !isTabActive) {
       return;
     }
 
-    const handleIdleKeyDown = (event: KeyboardEvent) => {
+    const handleMouseUp = () => updateCursorOverlay({ adjustScroll: false });
+
+    terminalBody.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      terminalBody.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isCommandRunning, isSettingsOpen, isTabActive, updateCursorOverlay]);
+
+  const handleIdleKeyDown = useMemo(() => {
+    if (!isTabActive || isCommandRunning || isSettingsOpen) {
+      return undefined;
+    }
+
+    return (event: KeyboardEvent) => {
+      const terminalWrapper = terminalWrapperRef.current;
+      if (!terminalWrapper) {
+        return;
+      }
+
       const isCtrl = event.ctrlKey && !event.metaKey && !event.altKey;
 
       if (isCtrl && event.code === "KeyC") {
@@ -128,27 +266,82 @@ export function useMinionTerminal(
 
       if (event.key === "ArrowUp" || event.key === "ArrowDown") {
         event.preventDefault();
-        event.stopPropagation();
         recallHistory(event.key === "ArrowUp" ? -1 : 1);
         return;
+      }
+
+      if (
+        event.key === "ArrowLeft" ||
+        event.key === "ArrowRight" ||
+        event.key === "Home" ||
+        event.key === "End"
+      ) {
+        updateCursorOverlay();
+      }
+
+      const isPlainTypingKey =
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        (event.key.length === 1 || event.key === "Backspace");
+
+      if (isPlainTypingKey) {
+        const hiddenInput =
+          terminalWrapper.querySelector<HTMLInputElement>(".terminal-hidden-input");
+        if (hiddenInput && document.activeElement !== hiddenInput) {
+          hiddenInput.focus({ preventScroll: true });
+        }
       }
 
       if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.length === 1) {
         historyIndexRef.current = -1;
       }
     };
-
-    terminalWrapper.addEventListener("keydown", handleIdleKeyDown);
-    return () => {
-      terminalWrapper.removeEventListener("keydown", handleIdleKeyDown);
-    };
   }, [
+    isTabActive,
     isCommandRunning,
     isSettingsOpen,
     recallHistory,
+    updateCursorOverlay,
     setTerminalInputValue,
     terminalSessionStore,
   ]);
+
+  useDocumentEvent("keydown", handleIdleKeyDown);
+
+  useEffect(() => {
+    const terminalWrapper = terminalWrapperRef.current;
+    if (!terminalWrapper) {
+      return;
+    }
+
+    if (isCommandRunning || isSettingsOpen) {
+      setCursorOverlayRect(null);
+      return;
+    }
+
+    const scrollContainer = terminalWrapper.querySelector<HTMLElement>(".react-terminal");
+    const hiddenInput = terminalWrapper.querySelector<HTMLInputElement>(".terminal-hidden-input");
+    if (!scrollContainer || !hiddenInput) {
+      return;
+    }
+
+    updateCursorOverlay();
+
+    const handleContentChange = () => updateCursorOverlay({ pinToBottom: true });
+    const handleScroll = () => updateCursorOverlay({ adjustScroll: false });
+
+    const observer = new MutationObserver(handleContentChange);
+    observer.observe(scrollContainer, { childList: true, characterData: true, subtree: true });
+    hiddenInput.addEventListener("input", handleContentChange);
+    scrollContainer.addEventListener("scroll", handleScroll);
+
+    return () => {
+      observer.disconnect();
+      hiddenInput.removeEventListener("input", handleContentChange);
+      scrollContainer.removeEventListener("scroll", handleScroll);
+    };
+  }, [isCommandRunning, isSettingsOpen, updateCursorOverlay]);
 
   const handleRunningKeyDown = useMemo(() => {
     if (!isCommandRunning || !isTabActive || isSettingsOpen) {
@@ -201,10 +394,12 @@ export function useMinionTerminal(
   return {
     terminalSessionStore,
     terminalWrapperRef,
+    terminalBodyRef,
     startingInputValue,
     handleCommandSubmit,
     isLightTheme,
     toggleTheme,
     isCommandRunning,
+    cursorOverlayRect,
   };
 }
