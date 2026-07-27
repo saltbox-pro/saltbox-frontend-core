@@ -204,7 +204,7 @@
   },
   "task-create": {
     "select-template-title": "Выберите шаблон задачи",
-    "configure-task-title": "Настройка задачи",
+    "configure-task-title": "Настройки задачи",
     "create-button": "Создать задачу",
     "search-templates-placeholder": "Поиск по источнику, шаблону",
     "unknown-repository": "Без источника",
