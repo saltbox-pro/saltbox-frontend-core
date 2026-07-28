@@ -22,6 +22,7 @@ export function BaseMinionDrawer({
   slug,
   activeTab,
   children,
+  width = 820,
   ...restProps
 }: BaseMinionDrawerProps) {
   const { t } = useTranslation();
@@ -34,6 +35,7 @@ export function BaseMinionDrawer({
       linkTo={innerId && slug ? buildMinionDetailsPagePath(slug, innerId, activeTab) : undefined}
       linkTitle={t("minions.open-minion-details-page")}
       linkComponent={Link}
+      width={width}
       {...restProps}
     >
       {children}
