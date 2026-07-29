@@ -8,7 +8,12 @@ import { Button } from "antd";
 import { type FC, useCallback, useMemo } from "react";
 import type { OptionList } from "react-querybuilder";
 
-import { TaskCreate, PluginRenderData, TaskCreatePlugin } from "saltbox-core/features/task-create";
+import {
+  TaskCreate,
+  PluginRenderData,
+  PluginRenderHandlers,
+  TaskCreatePlugin,
+} from "saltbox-core/features/task-create";
 import { appStore, i18nStore } from "saltbox-core/store";
 
 export type TaskCreateModalProps = {
@@ -33,7 +38,7 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
   onTaskCreated,
 }) => {
   const renderPluginButtons = useCallback(
-    (data: PluginRenderData) => {
+    (data: PluginRenderData, { onHandoff }: PluginRenderHandlers) => {
       const handleCreateTaskPlugin = (pluginKey: string) => {
         publish("minions.taskmodal.create", {
           action: "create",
@@ -42,7 +47,7 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
           templateDescription: data.templateDescription,
           collectionName: data.collectionName,
         });
-        onClose();
+        onHandoff();
       };
 
       const plugins = appStore.pluginsStore?.plugins?.["minions.taskmodal.create"] ?? [];
@@ -53,7 +58,7 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
         </Button>
       ));
     },
-    [onClose]
+    []
   );
 
   const context = useMemo(

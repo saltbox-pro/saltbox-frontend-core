@@ -1,5 +1,10 @@
 import { type TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import {
+  Modal,
+  isGlobalServerError,
+  subscribe,
+  unsubscribe,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +43,8 @@ const enum TabKey {
   Overview = "Overview",
 }
 
+type TaskModalCloseReason = "return-to-picker" | "dismiss" | "scheduler-handoff";
+
 export function TaskModal({
   sourceId,
   templateId,
@@ -63,7 +70,7 @@ export function TaskModal({
   );
 
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
+  const closeReasonRef = useRef<TaskModalCloseReason | null>(null);
 
   const collectionName = context.collection?.title ?? context.slug;
 
@@ -134,7 +141,7 @@ export function TaskModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sourceId, templateId]);
 
-  const closeModal = (reason?: "return-to-picker" | "dismiss") => {
+  const closeModal = (reason?: TaskModalCloseReason) => {
     if (isCreating) {
       return;
     }
@@ -147,6 +154,28 @@ export function TaskModal({
   const handleModalDismiss = () => {
     closeModal("dismiss");
   };
+
+  useEffect(() => {
+    const handleSchedulerReturn = () => {
+      setIsModalOpen(true);
+    };
+
+    const handleSchedulerCancel = () => {
+      if (isCreating) {
+        return;
+      }
+      setIsModalOpen(false);
+      onFlowDismissed();
+    };
+
+    subscribe("minions.taskmodal.return", handleSchedulerReturn);
+    subscribe("minions.taskmodal.cancel", handleSchedulerCancel);
+
+    return () => {
+      unsubscribe("minions.taskmodal.return", handleSchedulerReturn);
+      unsubscribe("minions.taskmodal.cancel", handleSchedulerCancel);
+    };
+  }, [isCreating, onFlowDismissed]);
 
   const handleReturnToTemplatePicker = (draft: TaskTemplateDraft) => {
     if (isCreating) {
@@ -260,9 +289,12 @@ export function TaskModal({
     [configuration, context, template, i18n.language, collectionName]
   );
 
-  const pluginButtons = useMemo(() => {
-    return context.renderPluginButtons?.(pluginData) ?? [];
-  }, [context, pluginData]);
+  const handleSchedulerHandoff = () => {
+    closeModal("scheduler-handoff");
+  };
+
+  const pluginButtons =
+    context.renderPluginButtons?.(pluginData, { onHandoff: handleSchedulerHandoff }) ?? [];
 
   const configurationTopContent = useMemo(() => {
     const targetMode = getTaskTargetMode(context);
@@ -330,6 +362,9 @@ export function TaskModal({
           closeReasonRef.current = null;
           if (reason === "return-to-picker") {
             onReturnedToPicker();
+            return;
+          }
+          if (reason === "scheduler-handoff") {
             return;
           }
           onFlowDismissed();
