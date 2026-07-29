@@ -51,7 +51,11 @@ export type TaskCreationContext = {
   query?: object;
   queryFilterSchema?: OptionList;
   slug: string;
-  renderPluginButtons?: (data: PluginRenderData) => ReactNode;
+  renderPluginButtons?: (data: PluginRenderData, handlers: PluginRenderHandlers) => ReactNode;
+};
+
+export type PluginRenderHandlers = {
+  onHandoff: () => void;
 };
 
 export type TaskCreatePlugin = {

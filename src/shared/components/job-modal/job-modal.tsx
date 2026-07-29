@@ -4,7 +4,14 @@ import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
 } from "@saltbox/saltbox-core-api-client";
-import { publish, Modal, JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
+import {
+  publish,
+  subscribe,
+  unsubscribe,
+  Modal,
+  JsonForm,
+  type JsonFormRef,
+} from "@saltbox/saltbox-frontend-common";
 import {
   Alert,
   Button,
@@ -76,6 +83,8 @@ interface JobModalProps {
 
 type JobFormData = JobModalFormValues;
 
+type JobModalCloseReason = "return-to-picker" | "dismiss" | "scheduler-handoff";
+
 const JSON_FORM_INPUT_SELECTOR =
   "#job-params-form input, #job-params-form textarea, #job-params-form select";
 const JSON_FORM_ERROR_INPUT_SELECTOR =
@@ -108,7 +117,7 @@ export function JobModal({
   const hasAutoOpenedRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
-  const closeReasonRef = useRef<"return-to-picker" | "dismiss" | null>(null);
+  const closeReasonRef = useRef<JobModalCloseReason | null>(null);
   const shouldFocusJsonFormAfterAdvancedOpenRef = useRef(false);
 
   const handleLoadFailed = useCallback(() => {
@@ -236,9 +245,9 @@ export function JobModal({
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
 
-  const clearJsonFormValidation = () => {
+  const clearJsonFormValidation = useCallback(() => {
     setJsonFormExtraErrors(undefined);
-  };
+  }, []);
 
   const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isTimeoutInputKeyAllowed(event)) {
@@ -253,7 +262,7 @@ export function JobModal({
     }
   };
 
-  const resetModalState = () => {
+  const resetModalState = useCallback(() => {
     cancelInit();
     form.resetFields();
     refJobParamsForm.current?.reset();
@@ -263,16 +272,41 @@ export function JobModal({
     shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
-  };
+  }, [cancelInit, form, resetLoadedData, clearJsonFormValidation]);
 
-  const closeModal = (reason?: "return-to-picker" | "dismiss") => {
+  useEffect(() => {
+    const handleSchedulerReturn = () => {
+      setIsModalOpen(true);
+    };
+
+    const handleSchedulerCancel = () => {
+      if (isJobCreating) {
+        return;
+      }
+      resetModalState();
+      setIsModalOpen(false);
+      onAfterClose?.();
+    };
+
+    subscribe("jobs.jobmodal.return", handleSchedulerReturn);
+    subscribe("jobs.jobmodal.cancel", handleSchedulerCancel);
+
+    return () => {
+      unsubscribe("jobs.jobmodal.return", handleSchedulerReturn);
+      unsubscribe("jobs.jobmodal.cancel", handleSchedulerCancel);
+    };
+  }, [onAfterClose, resetModalState, isJobCreating]);
+
+  const closeModal = (reason?: JobModalCloseReason) => {
     if (isJobCreating) {
       return;
     }
     if (reason) {
       closeReasonRef.current = reason;
     }
-    resetModalState();
+    if (reason !== "scheduler-handoff") {
+      resetModalState();
+    }
     setIsModalOpen(false);
   };
 
@@ -411,7 +445,7 @@ export function JobModal({
       pluginKey: pluginKey,
       jobCreateRequest: getJobCreateRequest(),
     });
-    closeModal();
+    closeModal("scheduler-handoff");
   };
 
   const getJobCreateRequest = (): CreateJobRequest => {
@@ -446,6 +480,9 @@ export function JobModal({
           closeReasonRef.current = null;
           if (reason === "return-to-picker") {
             onJobModalClosed?.();
+            return;
+          }
+          if (reason === "scheduler-handoff") {
             return;
           }
           onAfterClose?.();
