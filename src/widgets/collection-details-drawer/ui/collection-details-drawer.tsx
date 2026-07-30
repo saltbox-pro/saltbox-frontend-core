@@ -193,9 +193,11 @@ export const CollectionDetailsDrawer = observer(
 
       const currentParentSlug = collection?.parent_slug ?? ROOT_SLUG;
       const parentChanged = values.parent_slug !== currentParentSlug;
+      const newParent = parentChanged
+        ? findNodeBySlug(collectionsTreeStore.treeNodes, values.parent_slug)
+        : null;
 
       if (parentChanged) {
-        const newParent = findNodeBySlug(collectionsTreeStore.treeNodes, values.parent_slug);
         const hasDuplicateTitle = newParent?.children?.some(
           (child) => child.title === values.title && child.slug !== currentSlug
         );
@@ -211,8 +213,21 @@ export const CollectionDetailsDrawer = observer(
           title: values.title,
           description: values.description?.trim() ?? "",
           query: parsedQuery,
-          ...(parentChanged && { parent_slug: values.parent_slug }),
         });
+
+        if (newParent && collection) {
+          const moved = await collectionsTreeStore.moveCollection(
+            collection.id,
+            newParent.id,
+            newParent.children?.[0]?.id ?? null
+          );
+          if (!moved) {
+            messageApi.error(t("collection.error-moving-collection"));
+            return;
+          }
+          collectionStore.loadCollection();
+        }
+
         messageApi.success(t("collection.collection-has-been-changed"));
         setIsEditing(false);
       } catch (error) {

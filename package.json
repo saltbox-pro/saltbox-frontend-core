@@ -72,7 +72,7 @@
   "dependencies": {
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@saltbox/react-jsonschema-form-generator": "^0.1.6",
-    "@saltbox/saltbox-core-api-client": "^0.3.0-f5f2680fcaed012a0952e5d464a0bf9fc8209d7c",
+    "@saltbox/saltbox-core-api-client": "^0.3.0-24594a2add4999d8f92e6b47de1e8863c34c54fa",
     "@saltbox/saltbox-frontend-common": "^0.3.13",
     "antd": "5.26.0",
     "clsx": "^2.1.1",

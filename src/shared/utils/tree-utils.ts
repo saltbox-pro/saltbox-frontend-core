@@ -46,6 +46,33 @@ export function findNodeById<T extends TreeNodeWithId<T>>(nodes: T[], id: string
   return null;
 }
 
+export function detachNodeById<T extends TreeNodeWithId<T>>(
+  nodes: T[],
+  id: string
+): { node: T; nodes: T[] } | null {
+  const rootIndex = nodes.findIndex((n) => n.id === id);
+  if (rootIndex >= 0) {
+    return { node: nodes[rootIndex], nodes: nodes.filter((_, i) => i !== rootIndex) };
+  }
+
+  for (const node of nodes) {
+    const children = node.children as T[] | undefined;
+    if (!children?.length) continue;
+
+    const index = children.findIndex((c) => c.id === id);
+    if (index >= 0) {
+      const detached = children[index];
+      node.children = children.filter((_, i) => i !== index);
+      return { node: detached, nodes };
+    }
+
+    const found = detachNodeById(children, id);
+    if (found) return { node: found.node, nodes };
+  }
+
+  return null;
+}
+
 export function findNodeAndParent<T extends TreeNodeWithSlug<T>>(
   nodes: T[],
   slug: string

@@ -1,7 +1,12 @@
 import type { CollectionModel, CollectionTreeNodeSchema } from "@saltbox/saltbox-core-api-client";
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, runInAction, toJS } from "mobx";
 
-import { findNodeAndParent, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
+import {
+  detachNodeById,
+  findNodeAndParent,
+  findNodeById,
+  findNodeBySlug,
+} from "saltbox-core/shared/utils/tree-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
 type FetchTreeStatus = "idle" | "in-process" | "error" | "success";
@@ -59,12 +64,12 @@ export class CollectionsTreeStore {
       const slugToFind = !parentSlug || parentSlug === "root" ? "root" : parentSlug;
       const parent = findNodeBySlug(this.treeNodes, slugToFind);
       if (parent) {
-        parent.children = [...(parent.children ?? []), newNode];
+        parent.children = [newNode, ...(parent.children ?? [])];
         this.treeNodes = [...this.treeNodes];
         return;
       }
       if (slugToFind === "root") {
-        this.treeNodes = [...this.treeNodes, newNode];
+        this.treeNodes = [newNode, ...this.treeNodes];
       }
     });
   };
@@ -86,31 +91,37 @@ export class CollectionsTreeStore {
     });
   };
 
-  moveNode = (slug: string, newParentSlug: string) => {
+  moveNode = (targetId: string, parentId: string, insertBeforeId?: string | null) => {
     if (this.treeNodes.length === 0) return;
 
     runInAction(() => {
-      const found = findNodeAndParent(this.treeNodes, slug);
-      if (!found) return;
+      const target = findNodeById(this.treeNodes, targetId);
+      if (!target) return;
 
-      let node: CollectionTreeNodeSchema;
-      if ("rootIndex" in found) {
-        node = this.treeNodes[found.rootIndex];
-        this.treeNodes = this.treeNodes.filter((_, i) => i !== found.rootIndex);
+      if (findNodeById([target], parentId)) return;
+
+      const newParent = findNodeById(this.treeNodes, parentId);
+      if (!newParent) return;
+
+      const detached = detachNodeById(this.treeNodes, targetId);
+      if (!detached) return;
+
+      this.treeNodes = detached.nodes;
+
+      const node = detached.node;
+      node.parent_id = newParent.id;
+
+      const children = [...(newParent.children ?? [])];
+      const insertIndex = insertBeforeId
+        ? children.findIndex((child) => child.id === insertBeforeId)
+        : -1;
+
+      if (insertIndex >= 0) {
+        children.splice(insertIndex, 0, node);
       } else {
-        node = found.parent.children![found.index];
-        found.parent.children = found.parent.children!.filter((_, i) => i !== found.index);
+        children.push(node);
       }
-
-      const slugToFind = !newParentSlug || newParentSlug === "root" ? "root" : newParentSlug;
-      const newParent = findNodeBySlug(this.treeNodes, slugToFind);
-      if (newParent) {
-        node.parent_id = newParent.id;
-        newParent.children = [...(newParent.children ?? []), node];
-      } else if (slugToFind === "root") {
-        node.parent_id = undefined;
-        this.treeNodes = [...this.treeNodes, node];
-      }
+      newParent.children = children;
 
       this.treeNodes = [...this.treeNodes];
     });
@@ -180,25 +191,22 @@ export class CollectionsTreeStore {
     }
   };
 
-  moveCollection = async (slug: string, newParentSlug: string) => {
-    this.actionStatus = "in-process";
+  moveCollection = async (
+    targetId: string,
+    parentId: string,
+    insertBeforeId: string | null = null
+  ) => {
+    const snapshot = toJS(this.treeNodes);
 
-    this.moveNode(slug, newParentSlug);
+    this.actionStatus = "in-process";
+    this.moveNode(targetId, parentId, insertBeforeId);
 
     try {
-      const current = await apiCoreStore.minionCollectionsApi?.minionCollectionRead({ slug });
-
-      if (!current) {
-        throw new Error("collection.error-moving-collection");
-      }
-
-      await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-        slug,
-        CollectionUpdateSchema: {
-          title: current.title,
-          query: current.query,
-          description: current.description ?? "",
-          parent_slug: newParentSlug,
+      await apiCoreStore.minionCollectionsApi?.minionCollectionMove({
+        CollectionMoveRequestSchema: {
+          target_id: targetId,
+          parent_id: parentId,
+          insert_before_id: insertBeforeId,
         },
       });
 
@@ -211,12 +219,12 @@ export class CollectionsTreeStore {
       return true;
     } catch (err) {
       runInAction(() => {
+        this.treeNodes = snapshot;
         this.actionStatus = "error";
         this.actionError =
           err instanceof Error ? err.message : "collection.error-moving-collection";
         this.actionErrorRaw = err;
       });
-      this.loadTree(true);
       return false;
     }
   };

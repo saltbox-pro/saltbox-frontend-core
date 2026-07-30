@@ -721,7 +721,7 @@
     "no-description": "This collection has no description",
     "create-subcollection": "Create subcollection",
     "edit-structure": "Edit structure",
-    "edit-structure-hint": "Drag collections to change their parent",
+    "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
     "duplicate-title-on-move": "Cannot move: the target collection already contains a collection with the same title",
     "delete-collection": "Delete Collection",

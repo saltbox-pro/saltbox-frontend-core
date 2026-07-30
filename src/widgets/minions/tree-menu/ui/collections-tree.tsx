@@ -194,28 +194,53 @@ export const CollectionsTree = observer(
         if (dragNode.slug === ROOT_SLUG) return;
 
         const dropNode = info.node as CollectionTreeAntdNode;
-        const newParent = info.dropToGap ? findParentByKey(treeData, dropNode.key) : dropNode;
-        if (!newParent) return;
-        if (newParent.key === dragNode.key) return;
-        if (isNodeInSubtree(dragNode, newParent.key)) return;
 
-        const currentParent = findParentByKey(treeData, dragNode.key);
-        if (currentParent?.key === newParent.key) return;
+        const dropPos = info.node.pos.split("-");
+        const relativePosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
-        const hasDuplicateTitle = newParent.children?.some(
-          (child) => child.title === dragNode.title
+        let newParent: CollectionTreeAntdNode | null;
+        let insertBeforeKey: Key | null;
+
+        if (!info.dropToGap) {
+          newParent = dropNode;
+          insertBeforeKey = dropNode.children?.[0]?.key ?? null;
+        } else if (relativePosition === 1 && info.node.expanded && dropNode.children?.length) {
+          newParent = dropNode;
+          insertBeforeKey = dropNode.children[0].key;
+        } else {
+          newParent = findParentByKey(treeData, dropNode.key);
+          if (!newParent) return;
+          const siblings = newParent.children ?? [];
+          const dropIndex = siblings.findIndex((sibling) => sibling.key === dropNode.key);
+          const insertIndex = relativePosition === -1 ? dropIndex : dropIndex + 1;
+          insertBeforeKey = siblings[insertIndex]?.key ?? null;
+        }
+
+        const parent = newParent;
+        if (parent.key === dragNode.key) return;
+        if (isNodeInSubtree(dragNode, parent.key)) return;
+        if (insertBeforeKey === dragNode.key) return;
+
+        const hasDuplicateTitle = parent.children?.some(
+          (child) => child.key !== dragNode.key && child.title === dragNode.title
         );
         if (hasDuplicateTitle) {
           messageApi.warning(t("collection.duplicate-title-on-move"));
           return;
         }
 
-        setExpandedKeys((prev) => (prev.includes(newParent.key) ? prev : [...prev, newParent.key]));
+        setExpandedKeys((prev) => (prev.includes(parent.key) ? prev : [...prev, parent.key]));
         setAutoExpandParent(false);
 
-        collectionsTreeStore.moveCollection(dragNode.slug, newParent.slug).then((ok) => {
-          if (!ok) messageApi.error(t("collection.error-moving-collection"));
-        });
+        collectionsTreeStore
+          .moveCollection(
+            String(dragNode.key),
+            String(parent.key),
+            insertBeforeKey != null ? String(insertBeforeKey) : null
+          )
+          .then((ok) => {
+            if (!ok) messageApi.error(t("collection.error-moving-collection"));
+          });
       },
       [treeData, messageApi, t]
     );

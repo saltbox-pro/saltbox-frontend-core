@@ -51,12 +51,7 @@ export class CollectionStore {
     this.loadCollection();
   };
 
-  updateCollection = async (payload: {
-    title?: string;
-    description?: string;
-    query?: object;
-    parent_slug?: string;
-  }) => {
+  updateCollection = async (payload: { title?: string; description?: string; query?: object }) => {
     if (!this.collectionSlug || !this.collection) return;
 
     const oldSlug = this.collectionSlug;
@@ -69,16 +64,12 @@ export class CollectionStore {
           title: payload.title ?? this.collection.title,
           query: payload.query ?? this.collection.query,
           description: payload.description ?? this.collection.description ?? "",
-          ...(payload.parent_slug !== undefined && { parent_slug: payload.parent_slug }),
         },
       });
 
       runInAction(() => {
         this.collection = updatedCollection;
         if (updatedCollection) {
-          if (payload.parent_slug !== undefined) {
-            collectionsTreeStore.moveNode(oldSlug, payload.parent_slug);
-          }
           collectionsTreeStore.updateNode(oldSlug, {
             title: updatedCollection.title,
             slug: updatedCollection.slug,
