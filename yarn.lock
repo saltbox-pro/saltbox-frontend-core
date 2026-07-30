@@ -2201,10 +2201,10 @@
   resolved "https://registry.yarnpkg.com/@rtsao/scc/-/scc-1.1.0.tgz#927dd2fae9bc3361403ac2c7a00c32ddce9ad7e8"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
 
-"@saltbox/react-jsonschema-form-generator@^0.1.6":
-  version "0.1.6"
-  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.6.tgz#f4c6f9df84ead1b9443277ca4e8919d176f124b8"
-  integrity sha1-9Mb534Tq0blEMnfKTokZ0XbxJLg=
+"@saltbox/react-jsonschema-form-generator@^0.1.7":
+  version "0.1.7"
+  resolved "https://dev.saltbox.pro/api/v4/projects/90/packages/npm/@saltbox/react-jsonschema-form-generator/-/@saltbox/react-jsonschema-form-generator-0.1.7.tgz#9d3452aa449ce1ba1959cc97e911526807d64a5a"
+  integrity sha1-nTRSqkSc4boZWcyX6RFSaAfWSlo=
   dependencies:
     "@monaco-editor/react" "^4.7.0"
     "@radix-ui/react-checkbox" "^1.3.3"
