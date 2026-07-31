@@ -13,7 +13,7 @@ import { apiCoreStore, appStore } from "saltbox-core/store";
 const TERMINAL_INTERRUPT_GRACE_MS = 1000;
 const TERMINAL_MAX_SCREEN_LINES = 2000;
 
-export type TerminalLineKind = "input" | "output" | "error" | "info";
+export type TerminalLineKind = "input" | "output" | "error" | "info" | "greeting";
 
 export interface TerminalLine {
   id: number;
@@ -45,6 +45,8 @@ export class TerminalSessionStore {
   private pendingInterruptEcho: TerminalInterruptEcho | null = null;
   private resultHandled = false;
   private nextLineId = 0;
+  private isGreetingPrinted = false;
+  private lastSettingsInfoLine: string | null = null;
 
   constructor(minionId: string, saltMaster: string) {
     this.minionId = minionId;
@@ -142,6 +144,27 @@ export class TerminalSessionStore {
   @action
   handleIdleInterrupt = (typedText: string) => {
     this.appendLine({ kind: "input", text: `${typedText}^C` });
+  };
+
+  @action
+  printGreeting = (lines: string[]) => {
+    if (this.isGreetingPrinted || !lines.length || this.screenLines.length) {
+      return;
+    }
+
+    this.isGreetingPrinted = true;
+    lines.forEach((text) => this.appendLine({ kind: "greeting", text }));
+    this.appendLine({ kind: "greeting", text: " " });
+  };
+
+  @action
+  printSettingsInfo = (text: string) => {
+    if (!text || text === this.lastSettingsInfoLine) {
+      return;
+    }
+
+    this.lastSettingsInfoLine = text;
+    this.appendLine({ kind: "info", text });
   };
 
   sendAccessToken = (accessToken: string) => {

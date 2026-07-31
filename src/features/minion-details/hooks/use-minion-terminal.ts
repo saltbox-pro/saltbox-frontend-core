@@ -4,7 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { appStore, getTerminalSessionStore } from "saltbox-core/store";
 
-import { loadTerminalCmdRunSettings } from "../model/terminal-cmd-settings";
+import {
+  loadTerminalCmdRunSettings,
+  type TerminalCmdRunSettings,
+} from "../model/terminal-cmd-settings";
+import { buildTerminalGreeting, formatCmdRunParamsChangeLine } from "../model/terminal-greeting";
 
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
 const CURSOR_SCROLL_MARGIN = 4;
@@ -18,7 +22,8 @@ interface CursorOverlayRect {
 export function useMinionTerminal(
   minion: MinionDetailSchema,
   isTabActive: boolean,
-  isSettingsOpen: boolean
+  isSettingsOpen: boolean,
+  savedCmdSettings: TerminalCmdRunSettings | null
 ) {
   const terminalSessionStore = useMemo(
     () => getTerminalSessionStore(minion.id, minion.minion_id, minion.master ?? ""),
@@ -34,6 +39,7 @@ export function useMinionTerminal(
   );
   const historyIndexRef = useRef(-1);
   const forceInputValueUpdateToggleRef = useRef(false);
+  const savedCmdSettingsLineRef = useRef<string | null>(null);
 
   const isCommandRunning = terminalSessionStore.status !== "idle";
 
@@ -374,6 +380,25 @@ export function useMinionTerminal(
       terminalSessionStore.sendAccessToken(accessToken);
     }
   }, [appStore.authStore?.user, terminalSessionStore]);
+
+  useEffect(() => {
+    terminalSessionStore.printGreeting(buildTerminalGreeting(minion.grains, savedCmdSettings));
+  }, [minion.grains, savedCmdSettings, terminalSessionStore]);
+
+  useEffect(() => {
+    const settingsLine = formatCmdRunParamsChangeLine(savedCmdSettings);
+
+    if (savedCmdSettingsLineRef.current === settingsLine) {
+      return;
+    }
+
+    const isInitialSettings = savedCmdSettingsLineRef.current === null;
+    savedCmdSettingsLineRef.current = settingsLine;
+
+    if (!isInitialSettings) {
+      terminalSessionStore.printSettingsInfo(settingsLine);
+    }
+  }, [savedCmdSettings, terminalSessionStore]);
 
   useEffect(() => {
     const scrollContainer = terminalWrapperRef.current?.querySelector(".react-terminal");

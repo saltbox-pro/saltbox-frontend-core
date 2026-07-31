@@ -36,6 +36,9 @@ export type TerminalCmdSettingsController = ReturnType<typeof useTerminalCmdSett
 
 export function useTerminalCmdSettings() {
   const [isOpen, setIsOpen] = useState(false);
+  const [savedSettings, setSavedSettings] = useState<TerminalCmdRunSettings | null>(() =>
+    loadTerminalCmdRunSettings()
+  );
   const [hasSavedParams, setHasSavedParams] = useState(() =>
     hasTerminalCmdRunParams(loadTerminalCmdRunSettings())
   );
@@ -161,8 +164,11 @@ export function useTerminalCmdSettings() {
       ...(ttlSeconds != null ? { ttlSeconds } : {}),
     };
 
+    const hasParams = hasTerminalCmdRunParams(settings);
+
     saveTerminalCmdRunSettings(settings);
-    setHasSavedParams(hasTerminalCmdRunParams(settings));
+    setSavedSettings(hasParams ? settings : null);
+    setHasSavedParams(hasParams);
     setIsOpen(false);
   }, [defaultKwargs, jsonFormValue, schemaLayout.displaySchema, ttlUnit, ttlValue]);
 
@@ -212,6 +218,7 @@ export function useTerminalCmdSettings() {
 
   return {
     isOpen,
+    savedSettings,
     hasSavedParams,
     isSchemaLoading,
     hasSchemaLoadError,
