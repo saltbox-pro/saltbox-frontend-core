@@ -26,6 +26,7 @@ const TERMINAL_PROMPT = "#";
 const lineKindClassNames: Partial<Record<TerminalLineKind, string>> = {
   error: styles.errorLine,
   info: styles.infoLine,
+  greeting: styles.greetingLine,
 };
 
 export const MinionTerminalTab = observer(function MinionTerminalTab({

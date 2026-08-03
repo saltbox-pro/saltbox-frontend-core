@@ -90,6 +90,11 @@
   opacity: 0;
 }
 
+.greetingLine {
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
 .errorLine {
   color: var(--ant-color-error, #ff7875);
 }
