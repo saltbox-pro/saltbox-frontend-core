@@ -19,9 +19,14 @@ export class CollectionsTreeStore {
   actionStatus: ActionStatus = "idle";
   actionError: string | null = null;
   actionErrorRaw: unknown = null;
+  moveStatus: ActionStatus = "idle";
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get isMoving() {
+    return this.moveStatus === "in-process";
   }
 
   loadTree = (force = false) => {
@@ -196,13 +201,16 @@ export class CollectionsTreeStore {
     parentId: string,
     insertBeforeId: string | null = null
   ) => {
+    if (this.moveStatus === "in-process") return false;
+
     const snapshot = toJS(this.treeNodes);
 
+    this.moveStatus = "in-process";
     this.actionStatus = "in-process";
     this.moveNode(targetId, parentId, insertBeforeId);
 
     try {
-      await apiCoreStore.minionCollectionsApi?.minionCollectionMove({
+      const nodes = await apiCoreStore.minionCollectionsApi?.minionCollectionMove({
         CollectionMoveRequestSchema: {
           target_id: targetId,
           parent_id: parentId,
@@ -210,7 +218,20 @@ export class CollectionsTreeStore {
         },
       });
 
+      if (!nodes) {
+        runInAction(() => {
+          this.treeNodes = snapshot;
+          this.moveStatus = "error";
+          this.actionStatus = "error";
+          this.actionError = "collection.error-moving-collection";
+          this.actionErrorRaw = null;
+        });
+        return false;
+      }
+
       runInAction(() => {
+        this.treeNodes = nodes;
+        this.moveStatus = "success";
         this.actionStatus = "success";
         this.actionError = null;
         this.actionErrorRaw = null;
@@ -220,6 +241,7 @@ export class CollectionsTreeStore {
     } catch (err) {
       runInAction(() => {
         this.treeNodes = snapshot;
+        this.moveStatus = "error";
         this.actionStatus = "error";
         this.actionError =
           err instanceof Error ? err.message : "collection.error-moving-collection";

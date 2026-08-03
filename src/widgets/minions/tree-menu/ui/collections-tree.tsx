@@ -188,7 +188,7 @@ export const CollectionsTree = observer(
 
     const handleDrop = useCallback<NonNullable<TreeProps<CollectionTreeAntdNode>["onDrop"]>>(
       (info) => {
-        if (collectionsTreeStore.actionStatus === "in-process") return;
+        if (collectionsTreeStore.isMoving) return;
 
         const dragNode = info.dragNode as CollectionTreeAntdNode;
         if (dragNode.slug === ROOT_SLUG) return;
@@ -308,7 +308,9 @@ export const CollectionsTree = observer(
 
         <Spin
           wrapperClassName={styles.content}
-          spinning={collectionsTreeStore.fetchTreeStatus === "in-process"}
+          spinning={
+            collectionsTreeStore.fetchTreeStatus === "in-process" || collectionsTreeStore.isMoving
+          }
         >
           <div ref={contentRef}>
             {collectionsTreeStore.fetchTreeStatus === "error" && collectionsTreeStore.error ? (
