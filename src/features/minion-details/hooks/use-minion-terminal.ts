@@ -215,6 +215,10 @@ export function useMinionTerminal(
     }
 
     const suppressLibraryAutoFocus = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement | null)?.closest(".react-terminal-wrapper")) {
+        return;
+      }
+
       event.stopPropagation();
     };
 
