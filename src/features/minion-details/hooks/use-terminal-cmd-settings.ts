@@ -73,6 +73,11 @@ export function useTerminalCmdSettings() {
     [schemaLayout.displaySchema]
   );
 
+  const defaultSettings = useMemo<TerminalCmdRunSettings>(
+    () => ({ kwargs: defaultKwargs, ttlSeconds: Number(ttlPlaceholder) }),
+    [defaultKwargs, ttlPlaceholder]
+  );
+
   const loadSchema = useCallback(async () => {
     const requestId = ++loadRequestIdRef.current;
     setIsSchemaLoading(true);
@@ -219,6 +224,7 @@ export function useTerminalCmdSettings() {
   return {
     isOpen,
     savedSettings,
+    defaultSettings,
     hasSavedParams,
     isSchemaLoading,
     hasSchemaLoadError,

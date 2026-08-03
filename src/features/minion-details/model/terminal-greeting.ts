@@ -3,8 +3,9 @@ import type { GrainsSchema } from "@saltbox/saltbox-core-api-client";
 import type { TerminalCmdRunSettings } from "./terminal-cmd-settings";
 
 const DEFAULT_VALUE = "default";
-const CMD_RUN_PARAMS_PREFIX = "cmd.run: ";
-const PRIORITY_KWARG_KEYS = ["shell", "cwd", "runas", "env"];
+const SHELL_KWARG_KEY = "shell";
+const TIMEOUT_PARAM_KEY = "timeout";
+const PRIORITY_KWARG_KEYS = [SHELL_KWARG_KEY, "cwd", "runas", "env"];
 const MAX_PARAM_VALUE_LENGTH = 80;
 
 function formatOsName(grains: GrainsSchema): string {
@@ -28,9 +29,7 @@ function formatParamValue(value: unknown): string {
   return text.length > MAX_PARAM_VALUE_LENGTH ? `${text.slice(0, MAX_PARAM_VALUE_LENGTH)}…` : text;
 }
 
-function sortKwargEntries(kwargs: Record<string, unknown>): Array<[string, unknown]> {
-  const entries = Object.entries(kwargs);
-
+function sortParamEntries(entries: Array<[string, unknown]>): Array<[string, unknown]> {
   return [
     ...PRIORITY_KWARG_KEYS.flatMap((priorityKey) =>
       entries.filter(([name]) => name === priorityKey)
@@ -39,8 +38,94 @@ function sortKwargEntries(kwargs: Record<string, unknown>): Array<[string, unkno
   ];
 }
 
-export function formatMinionOsLine(grains: GrainsSchema): string {
+function getCmdRunParamEntries(settings: TerminalCmdRunSettings | null): Array<[string, unknown]> {
+  return sortParamEntries(
+    Object.entries(settings?.kwargs ?? {}).filter(([, value]) => value != null && value !== "")
+  );
+}
+
+function formatParamLine([name, value]: [string, unknown]): string {
+  return `${name}=${formatParamValue(value)}`;
+}
+
+function formatTimeoutLine(ttlSeconds: number): string {
+  return `${TIMEOUT_PARAM_KEY}=${ttlSeconds}s`;
+}
+
+function resolveDefaultParamValue(
+  name: string,
+  defaults: TerminalCmdRunSettings | null,
+  grains: GrainsSchema
+): string {
+  if (name === SHELL_KWARG_KEY) {
+    return (grains.shell ?? "").trim() || DEFAULT_VALUE;
+  }
+
+  const defaultValue = defaults?.kwargs?.[name];
+
+  return defaultValue != null && defaultValue !== ""
+    ? formatParamValue(defaultValue)
+    : DEFAULT_VALUE;
+}
+
+export function formatCmdRunParamLines(settings: TerminalCmdRunSettings | null): string[] {
+  const lines = getCmdRunParamEntries(settings).map(formatParamLine);
+
+  if (settings?.ttlSeconds != null) {
+    lines.push(formatTimeoutLine(settings.ttlSeconds));
+  }
+
+  return lines;
+}
+
+export function buildCmdRunSettingsChangeLines(
+  previousSettings: TerminalCmdRunSettings | null,
+  settings: TerminalCmdRunSettings | null,
+  defaults: TerminalCmdRunSettings | null,
+  grains: GrainsSchema
+): string[] {
+  const previousEntries = getCmdRunParamEntries(previousSettings);
+  const currentEntries = getCmdRunParamEntries(settings);
+  const previousValues = new Map(
+    previousEntries.map(([name, value]) => [name, formatParamValue(value)])
+  );
+  const currentNames = currentEntries.map(([name]) => name);
+
+  const changedEntries = currentEntries.filter(
+    ([name, value]) => previousValues.get(name) !== formatParamValue(value)
+  );
+  const resetEntries = previousEntries
+    .filter(([name]) => !currentNames.includes(name))
+    .map(([name]): [string, unknown] => [name, resolveDefaultParamValue(name, defaults, grains)]);
+
+  const lines = sortParamEntries([...changedEntries, ...resetEntries]).map(formatParamLine);
+
+  if (settings?.ttlSeconds !== previousSettings?.ttlSeconds) {
+    if (settings?.ttlSeconds != null) {
+      lines.push(formatTimeoutLine(settings.ttlSeconds));
+    } else if (defaults?.ttlSeconds != null) {
+      lines.push(formatTimeoutLine(defaults.ttlSeconds));
+    } else {
+      lines.push(`${TIMEOUT_PARAM_KEY}=${DEFAULT_VALUE}`);
+    }
+  }
+
+  return lines;
+}
+
+export function formatMinionOsLine(
+  grains: GrainsSchema,
+  settings: TerminalCmdRunSettings | null
+): string {
   const osName = formatOsName(grains);
+  const hasShellOverride = getCmdRunParamEntries(settings).some(
+    ([name]) => name === SHELL_KWARG_KEY
+  );
+
+  if (hasShellOverride) {
+    return osName;
+  }
+
   const shell = (grains.shell ?? "").trim();
 
   if (!osName && !shell) {
@@ -52,27 +137,11 @@ export function formatMinionOsLine(grains: GrainsSchema): string {
   return osName ? `${osName}, ${shellPart}` : shellPart;
 }
 
-export function formatCmdRunParamsLine(settings: TerminalCmdRunSettings | null): string {
-  const params = sortKwargEntries(settings?.kwargs ?? {})
-    .filter(([, value]) => value != null && value !== "")
-    .map(([name, value]) => `${name}=${formatParamValue(value)}`);
-
-  if (settings?.ttlSeconds != null) {
-    params.push(`timeout=${settings.ttlSeconds}s`);
-  }
-
-  return params.length ? `${CMD_RUN_PARAMS_PREFIX}${params.join(", ")}` : "";
-}
-
-export function formatCmdRunParamsChangeLine(settings: TerminalCmdRunSettings | null): string {
-  return formatCmdRunParamsLine(settings) || `${CMD_RUN_PARAMS_PREFIX}${DEFAULT_VALUE}`;
-}
-
 export function buildTerminalGreeting(
   grains: GrainsSchema,
   settings: TerminalCmdRunSettings | null
 ): string[] {
-  return [formatMinionOsLine(grains), formatCmdRunParamsLine(settings)].filter(
+  return [formatMinionOsLine(grains, settings), ...formatCmdRunParamLines(settings)].filter(
     (line) => line.length > 0
   );
 }

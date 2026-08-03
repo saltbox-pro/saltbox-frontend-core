@@ -45,7 +45,13 @@ export const MinionTerminalTab = observer(function MinionTerminalTab({
     toggleTheme,
     isCommandRunning,
     cursorOverlayRect,
-  } = useMinionTerminal(minion, isTabActive, cmdSettings.isOpen, cmdSettings.savedSettings);
+  } = useMinionTerminal(
+    minion,
+    isTabActive,
+    cmdSettings.isOpen,
+    cmdSettings.savedSettings,
+    cmdSettings.defaultSettings
+  );
 
   return (
     <div

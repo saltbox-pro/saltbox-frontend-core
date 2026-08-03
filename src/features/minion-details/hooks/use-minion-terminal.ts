@@ -8,7 +8,11 @@ import {
   loadTerminalCmdRunSettings,
   type TerminalCmdRunSettings,
 } from "../model/terminal-cmd-settings";
-import { buildTerminalGreeting, formatCmdRunParamsChangeLine } from "../model/terminal-greeting";
+import {
+  buildCmdRunSettingsChangeLines,
+  buildTerminalGreeting,
+  formatCmdRunParamLines,
+} from "../model/terminal-greeting";
 
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
 const CURSOR_SCROLL_MARGIN = 4;
@@ -23,7 +27,8 @@ export function useMinionTerminal(
   minion: MinionDetailSchema,
   isTabActive: boolean,
   isSettingsOpen: boolean,
-  savedCmdSettings: TerminalCmdRunSettings | null
+  savedCmdSettings: TerminalCmdRunSettings | null,
+  defaultCmdSettings: TerminalCmdRunSettings
 ) {
   const terminalSessionStore = useMemo(
     () => getTerminalSessionStore(minion.id, minion.minion_id, minion.master ?? ""),
@@ -39,7 +44,8 @@ export function useMinionTerminal(
   );
   const historyIndexRef = useRef(-1);
   const forceInputValueUpdateToggleRef = useRef(false);
-  const savedCmdSettingsLineRef = useRef<string | null>(null);
+  const savedCmdSettingsKeyRef = useRef<string | null>(null);
+  const previousCmdSettingsRef = useRef<TerminalCmdRunSettings | null>(null);
 
   const isCommandRunning = terminalSessionStore.status !== "idle";
 
@@ -390,19 +396,28 @@ export function useMinionTerminal(
   }, [minion.grains, savedCmdSettings, terminalSessionStore]);
 
   useEffect(() => {
-    const settingsLine = formatCmdRunParamsChangeLine(savedCmdSettings);
+    const settingsKey = formatCmdRunParamLines(savedCmdSettings).join("\n");
+    const previousCmdSettings = previousCmdSettingsRef.current;
+    previousCmdSettingsRef.current = savedCmdSettings;
 
-    if (savedCmdSettingsLineRef.current === settingsLine) {
+    if (savedCmdSettingsKeyRef.current === settingsKey) {
       return;
     }
 
-    const isInitialSettings = savedCmdSettingsLineRef.current === null;
-    savedCmdSettingsLineRef.current = settingsLine;
+    const isInitialSettings = savedCmdSettingsKeyRef.current === null;
+    savedCmdSettingsKeyRef.current = settingsKey;
 
     if (!isInitialSettings) {
-      terminalSessionStore.printSettingsInfo(settingsLine);
+      terminalSessionStore.printSettingsInfo(
+        buildCmdRunSettingsChangeLines(
+          previousCmdSettings,
+          savedCmdSettings,
+          defaultCmdSettings,
+          minion.grains
+        )
+      );
     }
-  }, [savedCmdSettings, terminalSessionStore]);
+  }, [defaultCmdSettings, minion.grains, savedCmdSettings, terminalSessionStore]);
 
   useEffect(() => {
     const scrollContainer = terminalWrapperRef.current?.querySelector(".react-terminal");

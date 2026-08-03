@@ -46,7 +46,7 @@ export class TerminalSessionStore {
   private resultHandled = false;
   private nextLineId = 0;
   private isGreetingPrinted = false;
-  private lastSettingsInfoLine: string | null = null;
+  private lastSettingsInfoKey: string | null = null;
 
   constructor(minionId: string, saltMaster: string) {
     this.minionId = minionId;
@@ -158,13 +158,15 @@ export class TerminalSessionStore {
   };
 
   @action
-  printSettingsInfo = (text: string) => {
-    if (!text || text === this.lastSettingsInfoLine) {
+  printSettingsInfo = (lines: string[]) => {
+    const settingsKey = lines.join("\n");
+
+    if (!settingsKey || settingsKey === this.lastSettingsInfoKey) {
       return;
     }
 
-    this.lastSettingsInfoLine = text;
-    this.appendLine({ kind: "info", text });
+    this.lastSettingsInfoKey = settingsKey;
+    lines.forEach((text) => this.appendLine({ kind: "info", text }));
   };
 
   sendAccessToken = (accessToken: string) => {
