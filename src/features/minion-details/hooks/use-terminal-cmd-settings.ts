@@ -39,9 +39,6 @@ export function useTerminalCmdSettings() {
   const [savedSettings, setSavedSettings] = useState<TerminalCmdRunSettings | null>(() =>
     loadTerminalCmdRunSettings()
   );
-  const [hasSavedParams, setHasSavedParams] = useState(() =>
-    hasTerminalCmdRunParams(loadTerminalCmdRunSettings())
-  );
   const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
   const [isSchemaLoading, setIsSchemaLoading] = useState(false);
   const [hasSchemaLoadError, setHasSchemaLoadError] = useState(false);
@@ -53,6 +50,8 @@ export function useTerminalCmdSettings() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const loadRequestIdRef = useRef(0);
   const hasInitializedRef = useRef(false);
+
+  const hasSavedParams = savedSettings != null;
 
   const schemaLayout = useMemo(
     () =>
@@ -169,11 +168,8 @@ export function useTerminalCmdSettings() {
       ...(ttlSeconds != null ? { ttlSeconds } : {}),
     };
 
-    const hasParams = hasTerminalCmdRunParams(settings);
-
     saveTerminalCmdRunSettings(settings);
-    setSavedSettings(hasParams ? settings : null);
-    setHasSavedParams(hasParams);
+    setSavedSettings(hasTerminalCmdRunParams(settings) ? settings : null);
     setIsOpen(false);
   }, [defaultKwargs, jsonFormValue, schemaLayout.displaySchema, ttlUnit, ttlValue]);
 
