@@ -10,6 +10,7 @@ import {
   buildTerminalGreeting,
   formatCmdRunParamLines,
 } from "../model/terminal-greeting";
+import { buildEffectiveCmdRunSettings } from "../model/terminal-run-options";
 
 const TERMINAL_COLOR_MODE_STORAGE_KEY = "terminalColorMode";
 const CURSOR_SCROLL_MARGIN = 4;
@@ -67,6 +68,11 @@ export function useMinionTerminal(
     [minion.id, minion.master, minion.minion_id]
   );
 
+  const effectiveCmdSettings = useMemo(
+    () => buildEffectiveCmdRunSettings(minion.grains, savedCmdSettings),
+    [minion.grains, savedCmdSettings]
+  );
+
   const terminalWrapperRef = useRef<HTMLDivElement>(null);
   const terminalBodyRef = useRef<HTMLDivElement>(null);
   const [startingInputValue, setStartingInputValue] = useState("");
@@ -96,12 +102,12 @@ export function useMinionTerminal(
       historyIndexRef.current = -1;
       terminalSessionStore.handleRunCommand(
         command,
-        savedCmdSettings
-          ? { kwarg: savedCmdSettings.kwargs, ttl: savedCmdSettings.ttlSeconds }
+        effectiveCmdSettings
+          ? { kwarg: effectiveCmdSettings.kwargs, ttl: effectiveCmdSettings.ttlSeconds }
           : undefined
       );
     },
-    [savedCmdSettings, terminalSessionStore]
+    [effectiveCmdSettings, terminalSessionStore]
   );
 
   const cancelCursorUpdate = useCallback(() => {
@@ -463,18 +469,18 @@ export function useMinionTerminal(
   }, [appStore.authStore?.user, terminalSessionStore]);
 
   useEffect(() => {
-    terminalSessionStore.printGreeting(buildTerminalGreeting(minion.grains, savedCmdSettings));
-  }, [minion.grains, savedCmdSettings, terminalSessionStore]);
+    terminalSessionStore.printGreeting(buildTerminalGreeting(minion.grains, effectiveCmdSettings));
+  }, [minion.grains, effectiveCmdSettings, terminalSessionStore]);
 
   useEffect(() => {
-    const settingsKey = formatCmdRunParamLines(savedCmdSettings).join("\n");
+    const settingsKey = formatCmdRunParamLines(effectiveCmdSettings).join("\n");
     const announcedCmdSettings = announcedCmdSettingsRef.current;
 
     if (announcedCmdSettings?.key === settingsKey) {
       return;
     }
 
-    announcedCmdSettingsRef.current = { key: settingsKey, settings: savedCmdSettings };
+    announcedCmdSettingsRef.current = { key: settingsKey, settings: effectiveCmdSettings };
 
     if (!announcedCmdSettings) {
       return;
@@ -483,12 +489,12 @@ export function useMinionTerminal(
     terminalSessionStore.printSettingsInfo(
       buildCmdRunSettingsChangeLines(
         announcedCmdSettings.settings,
-        savedCmdSettings,
+        effectiveCmdSettings,
         defaultCmdSettings,
         minion.grains
       )
     );
-  }, [defaultCmdSettings, minion.grains, savedCmdSettings, terminalSessionStore]);
+  }, [defaultCmdSettings, minion.grains, effectiveCmdSettings, terminalSessionStore]);
 
   useEffect(() => {
     const scrollContainer = terminalWrapperRef.current?.querySelector(TERMINAL_SCROLL_SELECTOR);
