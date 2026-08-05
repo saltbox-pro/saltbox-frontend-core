@@ -8,17 +8,21 @@ export type TemplateAccessibilitySortable = Pick<TaskTemplatePublicSchema, "titl
 
 export function compareTemplatesByAccessibilityThenTitle(
   first: TemplateAccessibilitySortable,
-  second: TemplateAccessibilitySortable
+  second: TemplateAccessibilitySortable,
+  language: string
 ): number {
   if (first.isAccessible !== second.isAccessible) {
     return first.isAccessible ? -1 : 1;
   }
 
-  return compareTemplatesByTitle(first, second);
+  return compareTemplatesByTitle(first, second, language);
 }
 
 export function sortTemplatesByAccessibilityThenTitle<T extends TemplateAccessibilitySortable>(
-  templates: T[]
+  templates: T[],
+  language: string
 ): T[] {
-  return [...templates].sort(compareTemplatesByAccessibilityThenTitle);
+  return [...templates].sort((first, second) =>
+    compareTemplatesByAccessibilityThenTitle(first, second, language)
+  );
 }

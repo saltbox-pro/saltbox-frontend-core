@@ -1,6 +1,6 @@
 import { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, i18nStore } from "saltbox-core/store";
 
 import { connectedSourcesQuery } from "../helpers/connected-sources-query";
 import { buildSourceRowsFromSources } from "../helpers/template-picker-rows";
@@ -14,7 +14,7 @@ export class TaskTemplateService {
         },
       });
 
-      return buildSourceRowsFromSources(response?.data ?? []);
+      return buildSourceRowsFromSources(response?.data ?? [], i18nStore.currentLanguage);
     } catch (error) {
       console.error("Failed to load task templates:", error);
       throw new Error("Failed to load task templates");

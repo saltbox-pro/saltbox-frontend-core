@@ -1,5 +1,7 @@
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef } from "react";
 
+import { i18nStore } from "saltbox-core/store";
+
 import {
   applySourceAccessibility,
   markSourceAccessibilityError,
@@ -59,7 +61,11 @@ export function useTemplateAccessibilityLoader({
             setSourceRows((currentRows) =>
               currentRows.map((sourceRow) =>
                 sourceRow.key === sourceId
-                  ? applySourceAccessibility(sourceRow, accessibleTemplateIds)
+                  ? applySourceAccessibility(
+                      sourceRow,
+                      accessibleTemplateIds,
+                      i18nStore.currentLanguage
+                    )
                   : sourceRow
               )
             );

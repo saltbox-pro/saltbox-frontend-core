@@ -4,7 +4,10 @@ import type {
   TaskTemplatePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
 
-import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-description";
+import {
+  getTemplateDescriptionText,
+  getTemplateTitleText,
+} from "saltbox-core/shared/utils/template-localized-text";
 
 import { sortTemplatesByTitle } from "./sort-templates-by-title";
 
@@ -37,7 +40,7 @@ export function templateMatchesQuery(
   language: string
 ): boolean {
   return (
-    textIncludesQuery(template.title, query) ||
+    textIncludesQuery(getTemplateTitleText(template.title, language), query) ||
     textIncludesQuery(template.fun, query) ||
     textIncludesQuery(template.name, query) ||
     textIncludesQuery(getTemplateDescriptionText(template.description, language), query)
@@ -60,11 +63,12 @@ export function filterSourceTemplatesForSearch(
   const templates = source.templates ?? [];
 
   if (!query || sourceMatchesByMetadata(source, query)) {
-    return sortTemplatesByTitle(templates);
+    return sortTemplatesByTitle(templates, language);
   }
 
   return sortTemplatesByTitle(
-    templates.filter((template) => templateMatchesQuery(template, query, language))
+    templates.filter((template) => templateMatchesQuery(template, query, language)),
+    language
   );
 }
 

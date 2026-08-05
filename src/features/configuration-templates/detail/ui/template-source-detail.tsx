@@ -40,14 +40,17 @@ type TemplateSourceDetailProps = {
 export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   store,
 }: TemplateSourceDetailProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
   const { drawer, previewStore, openedTemplate, templatesListProps } = useTemplatePreviewDrawer();
   const sortedTemplates = useMemo(
-    () => (store.source?.templates ? sortTemplatesByTitle(store.source.templates) : undefined),
-    [store.source?.templates]
+    () =>
+      store.source?.templates
+        ? sortTemplatesByTitle(store.source.templates, i18n.language)
+        : undefined,
+    [i18n.language, store.source?.templates]
   );
   const highlightedTemplateId = useHighlightedTemplateFromNavigation(
     Boolean(store.source) && !store.isLoading

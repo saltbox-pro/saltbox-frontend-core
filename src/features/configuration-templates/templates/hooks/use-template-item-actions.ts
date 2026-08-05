@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import type { ConfirmDeleteTemplate } from "saltbox-core/features/template-source-ui";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 
 import type { SourceTemplateActionsPermissions } from "../helpers/source-template-actions";
 import {
@@ -45,10 +46,11 @@ export function useTemplateItemActions({
   handleDeleteClick: () => void;
 } {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isDeletingInternal, setIsDeletingInternal] = useState(false);
   const isDeletingRef = useRef(false);
   const isDeleting = isDeletingControlled ?? isDeletingInternal;
+  const templateTitle = getTemplateTitleText(template.title, i18n.language) || template.name;
 
   const handleEdit = useCallback(() => {
     navigateToEditTemplate(template, permissions, navigate, onAfterNavigate);
@@ -70,6 +72,7 @@ export function useTemplateItemActions({
     try {
       await deleteTemplateItem({
         template,
+        templateTitle,
         onDelete: onDeleteTemplate,
         onDeleteError,
         onSuccess: onDeleteTemplateSuccess,
@@ -92,16 +95,17 @@ export function useTemplateItemActions({
     onDeletingStart,
     t,
     template,
+    templateTitle,
   ]);
 
   const handleDeleteClick = useCallback(() => {
     if (!onDeleteTemplate || isDeleteBlocked) return;
 
     confirmDeleteTemplate({
-      title: template.title,
+      title: templateTitle,
       onOk: handleDelete,
     });
-  }, [confirmDeleteTemplate, handleDelete, isDeleteBlocked, onDeleteTemplate, template]);
+  }, [confirmDeleteTemplate, handleDelete, isDeleteBlocked, onDeleteTemplate, templateTitle]);
 
   return {
     isDeleting,

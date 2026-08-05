@@ -9,7 +9,10 @@ import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-description";
+import {
+  getTemplateDescriptionText,
+  getTemplateTitleText,
+} from "saltbox-core/shared/utils/template-localized-text";
 
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskTemplateService, taskCreationService } from "../service";
@@ -281,8 +284,9 @@ export function TaskModal({
         template
       ),
       templateDescription:
-        (getTemplateDescriptionText(template?.description ?? null, i18n.language) ||
-          template?.title) ??
+        getTemplateDescriptionText(template?.description ?? null, i18n.language) ||
+        getTemplateTitleText(template?.title, i18n.language) ||
+        template?.name ||
         "",
       collectionName,
     }),

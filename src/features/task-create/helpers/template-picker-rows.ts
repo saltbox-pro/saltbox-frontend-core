@@ -33,7 +33,8 @@ const toSourceShape = (sourceRow: TemplateSourceRow): TemplateSourceSearchShape 
 });
 
 export const buildSourceRowsFromSources = (
-  sources: SourceListWithExtrasSchema[]
+  sources: SourceListWithExtrasSchema[],
+  language: string
 ): TemplateSourceRow[] => {
   return sortSources(sources)
     .map((source) => ({
@@ -48,7 +49,8 @@ export const buildSourceRowsFromSources = (
           ...template,
           repository: source.name,
           isAccessible: true,
-        }))
+        })),
+        language
       ),
     }))
     .filter((sourceRow) => sourceRow.templates.length > 0);
@@ -56,7 +58,8 @@ export const buildSourceRowsFromSources = (
 
 export const applySourceAccessibility = (
   sourceRow: TemplateSourceRow,
-  accessibleTemplateIds: ReadonlySet<string>
+  accessibleTemplateIds: ReadonlySet<string>,
+  language: string
 ): TemplateSourceRow => ({
   ...sourceRow,
   isAccessibilityLoaded: true,
@@ -65,7 +68,8 @@ export const applySourceAccessibility = (
     sourceRow.templates.map((template) => ({
       ...template,
       isAccessible: accessibleTemplateIds.has(template.id),
-    }))
+    })),
+    language
   ),
 });
 

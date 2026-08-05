@@ -8,7 +8,8 @@ import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-abo
 import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 export type DeleteTemplateItemParams = {
-  template: Pick<TaskTemplatePublicSchema, "id" | "title">;
+  template: Pick<TaskTemplatePublicSchema, "id">;
+  templateTitle: string;
   onDelete: (templateId: string) => Promise<void>;
   onDeleteError?: () => Promise<void>;
   onSuccess?: () => void;
@@ -19,6 +20,7 @@ export type DeleteTemplateItemResult = "success" | "cancelled" | "failed";
 
 export async function deleteTemplateItem({
   template,
+  templateTitle,
   onDelete,
   onDeleteError,
   onSuccess,
@@ -28,7 +30,7 @@ export async function deleteTemplateItem({
     await onDelete(template.id);
     message.success(
       t("configuration-templates.source.template-delete-success", {
-        title: template.title,
+        title: templateTitle,
       })
     );
     onSuccess?.();

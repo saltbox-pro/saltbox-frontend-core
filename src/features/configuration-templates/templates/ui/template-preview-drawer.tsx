@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { useConfirmDeleteTemplate } from "saltbox-core/features/template-source-ui";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 
 import type { SourceTemplateActionsPermissions } from "../helpers/source-template-actions";
 import type { TemplatePreviewStore } from "../store/template-preview-store";
@@ -31,14 +32,14 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
   onDeleteError,
   onClose,
 }: TemplatePreviewDrawerProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { confirmDeleteTemplate, modalContextHolder } = useConfirmDeleteTemplate();
 
   return (
     <InfoDrawer
       open={open}
       drawerId={DRAWER_IDS.templatePreview}
-      titleName={template?.title}
+      titleName={getTemplateTitleText(template?.title, i18n.language) || template?.name}
       titleLabel={t("configuration-templates.source.preview-drawer-title")}
       loading={open && store.isLoading}
       errorMessage={

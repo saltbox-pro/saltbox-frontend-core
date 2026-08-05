@@ -4,6 +4,7 @@ import { Button, Flex } from "antd";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
 import type { TaskOverviewData } from "../type/types";
@@ -27,7 +28,7 @@ export function TaskOverviewTab({
   onBack,
   onConfirm,
 }: TaskOverviewTabProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { template, configuration, context } = overviewData;
 
   const templateInfoExtraItems = useMemo(() => {
@@ -46,7 +47,7 @@ export function TaskOverviewTab({
   const detailsData = useMemo<TaskDetailsData>(
     () => ({
       template: {
-        title: template.title,
+        title: getTemplateTitleText(template.title, i18n.language) || template.name,
         saltFunction: template.fun,
       },
       parameters: maskPasswordFields(
@@ -69,7 +70,7 @@ export function TaskOverviewTab({
         userQueryFilterSchema: context.queryFilterSchema,
       },
     }),
-    [template, configuration, context]
+    [template, configuration, context, i18n.language]
   );
 
   return (
