@@ -9,7 +9,8 @@ import { observer } from "mobx-react-lite";
 import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { toRjsfSchema, toRjsfUiSchema } from "../lib/to-rjsf-schema";
+import { toRjsfSchema, toRjsfUiSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
+
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import { FormDataPreviewModal } from "./form-data-preview-modal";

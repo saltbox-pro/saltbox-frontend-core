@@ -1,23 +1,25 @@
 import type { FormContextType, RJSFSchema, UiSchema } from "@rjsf/utils";
 import { resolveLocalizedText, type UISchema } from "@saltbox/react-jsonschema-form-generator";
 
-import type { TemplateFormSchema } from "./sls-parser";
+import type { LocalizedTextValue } from "./template-localized-text";
 
-/**
- * The template description lives in the schema block root and may be stored per
- * language ({ ru, en }), which RJSF cannot render — resolve it to the active
- * language and hand it over as the schema description. A localized description
- * left inside `json_schema` by an older build is dropped for the same reason.
- */
-export function toRjsfSchema(schema: TemplateFormSchema, language: string): RJSFSchema {
-  const jsonSchema = schema.json_schema;
+export type TemplateSchemaSource = {
+  description?: LocalizedTextValue;
+  json_schema?: unknown;
+};
+
+export function toRjsfSchema(schema: TemplateSchemaSource, language: string): RJSFSchema {
+  const jsonSchema = schema.json_schema as Record<string, unknown> | boolean | null | undefined;
 
   if (typeof jsonSchema === "boolean" || jsonSchema == null) {
     return jsonSchema as RJSFSchema;
   }
 
   const { description: rawDescription, ...rest } = jsonSchema;
-  const description = resolveLocalizedText(schema.description ?? rawDescription, language);
+  const description = resolveLocalizedText(
+    (schema.description ?? rawDescription) as Parameters<typeof resolveLocalizedText>[0],
+    language
+  );
 
   return (description ? { ...rest, description } : rest) as RJSFSchema;
 }

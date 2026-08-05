@@ -14,10 +14,12 @@ import {
   Tooltip,
   Checkbox,
 } from "antd";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
+import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
+import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import { buildTaskConfigurationFormData } from "../helpers/build-task-configuration-form-data";
 import { taskCreationService } from "../service";
@@ -46,7 +48,7 @@ export function TaskConfigurationTab({
   onSubmit,
   onReturnToTemplatePicker,
 }: TaskConfigurationTabProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
 
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
@@ -54,6 +56,16 @@ export function TaskConfigurationTab({
   const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced);
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
+
+  const formJsonSchema = useMemo(
+    () => (template ? toRjsfSchema(template, i18n.language) : undefined),
+    [template, i18n.language]
+  );
+
+  const formUiSchema = useMemo(
+    () => localizeUiSchema(template?.ui_schema, template?.i18n, i18n.language),
+    [template?.ui_schema, template?.i18n, i18n.language]
+  );
 
   useEffect(() => {
     if (!initialData || !template) {
@@ -262,8 +274,8 @@ export function TaskConfigurationTab({
 
           <TaskDataForm
             ref={taskDataFormRef}
-            jsonSchema={template?.json_schema}
-            uiSchema={template?.ui_schema}
+            jsonSchema={formJsonSchema}
+            uiSchema={formUiSchema}
             initialData={initialData?.data}
             onSubmit={handleTaskDataFinish}
             onError={showValidationError}
