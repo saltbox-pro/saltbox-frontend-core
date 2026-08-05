@@ -179,7 +179,7 @@ export const CollectionsTree = observer(
     const allowDrop = useCallback<NonNullable<TreeProps<CollectionTreeAntdNode>["allowDrop"]>>(
       ({ dragNode, dropNode, dropPosition }) => {
         if (dropNode.slug === ROOT_SLUG && dropPosition !== 0) return false;
-        if (dropNode.key === dragNode.key) return false;
+        if (dropNode.key === dragNode.key) return dropPosition !== 0;
         if (isNodeInSubtree(dragNode, dropNode.key)) return false;
         return true;
       },
@@ -201,17 +201,15 @@ export const CollectionsTree = observer(
         let newParent: CollectionTreeAntdNode | null;
         let insertBeforeKey: Key | null;
 
-        if (!info.dropToGap) {
+        if (relativePosition === 0) {
           newParent = dropNode;
           insertBeforeKey = dropNode.children?.[0]?.key ?? null;
-        } else if (relativePosition === 1 && info.node.expanded && dropNode.children?.length) {
-          newParent = dropNode;
-          insertBeforeKey = dropNode.children[0].key;
         } else {
           newParent = findParentByKey(treeData, dropNode.key);
           if (!newParent) return;
           const siblings = newParent.children ?? [];
           const dropIndex = siblings.findIndex((sibling) => sibling.key === dropNode.key);
+          if (dropIndex === -1) return;
           const insertIndex = relativePosition === -1 ? dropIndex : dropIndex + 1;
           insertBeforeKey = siblings[insertIndex]?.key ?? null;
         }
