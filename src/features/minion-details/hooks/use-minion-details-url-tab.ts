@@ -23,9 +23,16 @@ export function useMinionDetailsUrlTab() {
 
   const onTabChange = useCallback(
     (key: MinionDetailsTabKey) => {
-      setSearchParams((prev) => {
-        const newParams = new URLSearchParams(prev);
+      // Toolkit FM parcel has its own BrowserRouter; read window so path/file
+      // written by the parcel are not dropped when switching tabs.
+      setSearchParams(() => {
+        const newParams = new URLSearchParams(window.location.search);
         newParams.set("tab", key);
+        if (key !== "file-manager") {
+          newParams.delete("path");
+          newParams.delete("file");
+          newParams.delete("source");
+        }
         return newParams;
       });
     },
