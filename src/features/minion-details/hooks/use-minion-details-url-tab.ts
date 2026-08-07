@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from "react";
+import { clearFileBrowserLocationQueryFromWindow } from "@saltbox/saltbox-frontend-common";
+import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
 import { appStore } from "saltbox-core/store";
@@ -20,6 +21,12 @@ export function useMinionDetailsUrlTab() {
     () => parseMinionDetailsTabKey(searchParams.get("tab"), false, getDetailPluginKeys()),
     [searchParams]
   );
+
+  useEffect(() => {
+    return () => {
+      clearFileBrowserLocationQueryFromWindow();
+    };
+  }, []);
 
   const onTabChange = useCallback(
     (key: MinionDetailsTabKey) => {
