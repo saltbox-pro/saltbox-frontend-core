@@ -513,6 +513,19 @@ export class JobStore {
   }
 
   @computed
+  get jobTargetsText(): string {
+    if (Array.isArray(this.job?.tgt)) {
+      return this.job.tgt.filter(Boolean).join(",");
+    }
+    return typeof this.job?.tgt === "string" ? this.job.tgt : "";
+  }
+
+  @computed
+  get isLaunchError() {
+    return this.job?.status === JobStatus.LaunchError;
+  }
+
+  @computed
   get jobReturnStatusCounts(): {
     total: number;
     waiting: number;

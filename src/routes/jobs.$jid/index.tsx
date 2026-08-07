@@ -35,6 +35,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { JobLaunchError } from "saltbox-core/routes/jobs.$jid/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
 import {
   JobModalShell,
@@ -102,8 +103,10 @@ const JobPage = observer(() => {
   };
   const isCommandInitializing = jobStore.job != null && jobStore.job.status === JobStatus.Starting;
   const showJobBodyLoader = isWebSocketConnecting || jobStore.isJobLoading || isCommandInitializing;
+  const isLaunchError = jobStore.isLaunchError;
   const showJobReturnsToolbar =
-    jobStore.totalMinions > 0 || jobStore.total > 0 || effectiveJobReturns.length > 0;
+    !isLaunchError &&
+    (jobStore.totalMinions > 0 || jobStore.total > 0 || effectiveJobReturns.length > 0);
 
   const shouldRepeat = useCallback((event: KeyboardEvent) => {
     return event.altKey && event.code === "KeyR";
@@ -383,7 +386,9 @@ const JobPage = observer(() => {
               <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
               <span className={styles.jobDetailValue}>
                 <span title={t("jobs.job-execution-duration-actual-tooltip")}>
-                  {!jobStore.isJobComplete ? (
+                  {isLaunchError ? (
+                    "—"
+                  ) : !jobStore.isJobComplete ? (
                     <Timer
                       type="countup"
                       value={jobStore.jobStartTimestamp.getTime()}
@@ -398,7 +403,7 @@ const JobPage = observer(() => {
                 <span>/</span>
                 <span title={t("jobs.job-execution-duration-max-tooltip")}>
                   {jobStore.job?.ttl == null
-                    ? "—"
+                    ? "-"
                     : jobStore.job.ttl === 0
                       ? t("jobs.ttl-unlimited")
                       : formatJobDuration(jobStore.job.ttl)}
@@ -491,25 +496,32 @@ const JobPage = observer(() => {
             )}
 
             <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
-              <DefaultJobReturnTable
-                jobReturns={effectiveJobReturns}
-                jobStore={jobStore}
-                isFullOutput={isFullOutput}
-                isStepsView={isStepsViewMode}
-                isTableViewMode={isTableViewMode}
-                jobStartTimestamp={jobStore.jobStartTimestamp}
-                pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
-                sorting={jobStore.sorting}
-                total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
-                onLazyLoad={jobStore.handleLazyLoad}
-                isLoading={jobStore.isJobReturnsLoading}
-                forceExpand={jobStore.isSingleJobReturn}
-                tableColumns={jobStore.jobReturnTableColumns}
-                tableRows={jobStore.jobReturnTableRows}
-                isTableLoading={jobStore.isJobReturnTableLoading}
-                tableLoadError={jobStore.jobReturnTableLoadError}
-                onTableLazyLoad={jobStore.handleTableLazyLoad}
-              />
+              {isLaunchError ? (
+                <JobLaunchError
+                  launchErrorType={jobStore.job?.launch_error_type}
+                  target={jobStore.jobTargetsText}
+                />
+              ) : (
+                <DefaultJobReturnTable
+                  jobReturns={effectiveJobReturns}
+                  jobStore={jobStore}
+                  isFullOutput={isFullOutput}
+                  isStepsView={isStepsViewMode}
+                  isTableViewMode={isTableViewMode}
+                  jobStartTimestamp={jobStore.jobStartTimestamp}
+                  pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
+                  sorting={jobStore.sorting}
+                  total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
+                  onLazyLoad={jobStore.handleLazyLoad}
+                  isLoading={jobStore.isJobReturnsLoading}
+                  forceExpand={jobStore.isSingleJobReturn}
+                  tableColumns={jobStore.jobReturnTableColumns}
+                  tableRows={jobStore.jobReturnTableRows}
+                  isTableLoading={jobStore.isJobReturnTableLoading}
+                  tableLoadError={jobStore.jobReturnTableLoadError}
+                  onTableLazyLoad={jobStore.handleTableLazyLoad}
+                />
+              )}
             </Flex>
 
             {jobModalCreatePlugin}

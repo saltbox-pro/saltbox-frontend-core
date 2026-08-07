@@ -1,0 +1,16 @@
+.jobErrorAlert {
+  margin-bottom: auto;
+}
+
+.jobErrorAlertDescription {
+  margin-bottom: 0 !important;
+}
+
+.jobErrorTooltipRoot {
+  max-width: 640px;
+}
+
+.jobErrorTooltipBody {
+  max-height: 240px;
+  overflow: auto;
+}
