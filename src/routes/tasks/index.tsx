@@ -16,6 +16,7 @@ import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 
 import { TasksQueryBuilder } from "../minions.$slug/-components/tasks-query-builder";
@@ -24,7 +25,7 @@ const TasksTable = FastTablePaginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
 
 export default observer(function TasksPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [tasksStore] = useState(() => new TasksStore(TaskType.Classic));
@@ -55,6 +56,9 @@ export default observer(function TasksPage() {
       columnHelper.accessor("task_template.title", {
         id: "task_template.title",
         header: t("minions.table-task-template-title"),
+        cell: (data) =>
+          getTemplateTitleText(data.getValue(), i18n.language) ||
+          data.row.original?.task_template?.name,
         meta: {
           width: "10%",
           minWidth: 200,
@@ -211,7 +215,7 @@ export default observer(function TasksPage() {
         meta: { width: "15%", minWidth: 170 },
       }),
     ],
-    [t, navigate]
+    [t, i18n.language, navigate]
   );
 
   useEffect(() => {

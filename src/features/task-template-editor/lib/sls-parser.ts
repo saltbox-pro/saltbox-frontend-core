@@ -1,5 +1,7 @@
 import type { DescriptionValue, FormSchema } from "@saltbox/react-jsonschema-form-generator";
 
+import type { TemplateI18nDictionary } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+
 /**
  * The schema block of an SLS template. The template description lives in the
  * block root — next to `json_schema`, never inside it: that is where the
@@ -7,6 +9,7 @@ import type { DescriptionValue, FormSchema } from "@saltbox/react-jsonschema-for
  */
 export interface TemplateFormSchema extends FormSchema {
   description?: DescriptionValue;
+  i18n?: TemplateI18nDictionary;
 }
 
 const SCHEMA_BLOCK_REGEX = /{#start_schema\s*([\s\S]*?)\s*end_schema#}/;

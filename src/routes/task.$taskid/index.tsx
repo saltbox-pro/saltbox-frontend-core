@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { TaskMinionStatusFilter } from "saltbox-core/widgets/task/task-minions-status-filter";
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
@@ -43,7 +44,7 @@ const useWebSocket = (
 };
 
 const TaskPage = observer(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { taskid: taskId } = useParams();
   const navigate = useNavigate();
 
@@ -85,7 +86,10 @@ const TaskPage = observer(() => {
     <>
       <PageHeader
         title={t("task.page-title", {
-          templateName: taskStore.task?.task_template?.title ?? "...",
+          templateName:
+            getTemplateTitleText(taskStore.task?.task_template?.title, i18n.language) ||
+            taskStore.task?.task_template?.name ||
+            "...",
           taskId: taskId ?? "...",
         })}
         customParentPathGenerator={() =>

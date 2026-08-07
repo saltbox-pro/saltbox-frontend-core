@@ -15,6 +15,7 @@ import { useNavigate } from "react-router";
 
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
@@ -31,7 +32,7 @@ type MinionsTaskViewProps = {
 };
 
 export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const [tasksStore] = useState(new TasksStore(props.taskType));
@@ -62,6 +63,9 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
       columnHelper.accessor("task_template.title", {
         id: "task_template.title",
         header: t("minions.table-task-template-title"),
+        cell: (data) =>
+          getTemplateTitleText(data.getValue(), i18n.language) ||
+          data.row.original?.task_template?.name,
         meta: {
           width: "10%",
           minWidth: 170,
@@ -194,7 +198,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         meta: { width: "15%", minWidth: 170 },
       }),
     ],
-    [t, props.taskType]
+    [t, i18n.language, props.taskType]
   );
 
   useEffect(() => {

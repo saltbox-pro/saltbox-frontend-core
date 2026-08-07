@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import type { TaskStore } from "saltbox-core/store";
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
@@ -18,7 +19,7 @@ type TaskDetailsModalProps = {
 export const TaskDetailsModal = observer(function TaskDetailsModal({
   taskStore,
 }: TaskDetailsModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { task } = taskStore;
@@ -43,7 +44,10 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
 
     return {
       template: {
-        title: task?.task_template?.title ?? "",
+        title:
+          getTemplateTitleText(task?.task_template?.title, i18n.language) ||
+          task?.task_template?.name ||
+          "",
         saltFunction: task.fun,
       },
       parameters,
@@ -61,7 +65,7 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
       },
       pillars: task?.pillars,
     };
-  }, [task, taskStore.minions]);
+  }, [task, taskStore.minions, i18n.language]);
 
   const isPolicy = task?.task_type === TaskType.Policy;
 

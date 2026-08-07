@@ -10,6 +10,7 @@ import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { toRjsfSchema, toRjsfUiSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
+import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
@@ -61,6 +62,11 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
+
+  const localizedUiSchema = useMemo(
+    () => localizeUiSchema(uiSchema, schema?.i18n, language),
+    [uiSchema, schema?.i18n, language]
+  );
 
   // The root description lives outside `json_schema`, so key off the whole block
   const resetKey = useMemo(() => JSON.stringify(schema ?? {}), [schema]);
@@ -138,7 +144,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
           <JsonForm
             key={resetKey}
             schema={toRjsfSchema(schema!, language)}
-            uiSchema={toRjsfUiSchema(uiSchema!)}
+            uiSchema={toRjsfUiSchema(localizedUiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}
             onSubmit={() => message.success(t("task-template-editor.form-valid"))}
