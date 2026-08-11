@@ -343,7 +343,7 @@
       "table-return-code": "Return Code",
       "table-timestamp": "Timestamp",
       "table-execution-time": "Execution Time",
-      "table-execution-duration": "Execution Duration",
+      "table-execution-duration": "Duration",
       "table-yes": "Yes",
       "table-no": "No",
       "table-fun": "Function",

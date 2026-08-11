@@ -8,7 +8,7 @@ import { apiCoreStore } from "saltbox-core/store";
 
 import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
 
-const DEFAULT_SORTING: SortingState = [{ id: "created", desc: false }];
+const DEFAULT_SORTING: SortingState = [{ id: "stamp", desc: true }];
 const PAGE_SIZE = 50;
 
 type FetchStatus = "idle" | "in-process" | "refetching" | "error" | "success";
