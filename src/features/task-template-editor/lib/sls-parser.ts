@@ -63,6 +63,16 @@ export function extractSlsBody(sls: string): string {
   return sls.replace(SCHEMA_BLOCK_WITH_TAIL_REGEX, "").trim();
 }
 
+export type TemplateMeta = Record<string, unknown>;
+
+export function isTemplateMeta(meta: unknown): meta is TemplateMeta {
+  return typeof meta === "object" && meta !== null && "json_schema" in meta;
+}
+
+export function metaToSchema(meta: TemplateMeta): TemplateFormSchema {
+  return meta as unknown as TemplateFormSchema;
+}
+
 export function combineSchemaAndBody(schema: TemplateFormSchema, body: string): string {
   // Keep `description` first, the way hand-written templates are laid out,
   // so re-saving a template does not reshuffle its schema block

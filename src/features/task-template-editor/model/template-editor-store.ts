@@ -15,6 +15,8 @@ import {
   extractSlsBody,
   getEmptySchema,
   getEmptySlsBody,
+  isTemplateMeta,
+  metaToSchema,
   parseSchemaFromSls,
   stripSlsExtension,
   type TemplateFormSchema,
@@ -92,7 +94,12 @@ export class TemplateEditorStore {
       });
 
       runInAction(() => {
-        if (template?.sls_content != null) {
+        if (isTemplateMeta(template?.meta)) {
+          this.rawSls = combineSchemaAndBody(
+            metaToSchema(template.meta),
+            template.sls_content ?? ""
+          );
+        } else if (template?.sls_content != null) {
           this.rawSls = template.sls_content;
         }
         if (this.mode === "edit") {
@@ -204,6 +211,11 @@ export class TemplateEditorStore {
     });
 
     try {
+      const { schema, slsBody } = this.parsed;
+      if (!schema) {
+        throw new Error("cannot save a template with an unparsable schema block");
+      }
+
       if (this.createsNewTemplate) {
         const targetSourceId = this.effectiveTargetSourceId;
         if (!targetSourceId) {
@@ -216,7 +228,8 @@ export class TemplateEditorStore {
           source_id: targetSourceId,
           TaskTemplateFromRawCreateSchema: {
             file_name: stripSlsExtension(this.fileName),
-            content: this.rawSls,
+            sls_raw: slsBody,
+            meta: schema,
           },
         });
         if (!response) {
@@ -235,7 +248,8 @@ export class TemplateEditorStore {
         source_id: this.sourceId,
         template_id: this.templateId,
         TaskTemplateFromRawUpdateSchema: {
-          content: this.rawSls,
+          sls_raw: slsBody,
+          meta: schema,
         },
       });
       if (response) {
