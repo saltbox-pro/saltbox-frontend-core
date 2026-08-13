@@ -1,3 +1,9 @@
+import type {
+  FormSchema,
+  JSONSchema,
+  UISchema,
+  VisualEditorCompatibilityResult,
+} from "@saltbox/react-jsonschema-form-generator";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
@@ -9,18 +15,18 @@ import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
-import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
+import { isValidTemplateFileName, stripSlsExtension } from "../helpers/validate-template-file-name";
+import { hasLegacySchemaBlock, migrateLegacyTemplate } from "../lib/legacy-template";
+import { getParamsCompatibility } from "../lib/params-compatibility";
+import { extractParamsFormSchema, wrapParamsFormSchema } from "../lib/params-subtree";
 import {
-  combineSchemaAndBody,
-  extractSlsBody,
-  getEmptySchema,
-  getEmptySlsBody,
-  isTemplateMeta,
-  metaToSchema,
-  parseSchemaFromSls,
-  stripSlsExtension,
-  type TemplateFormSchema,
-} from "../lib/sls-parser";
+  DEFAULT_TEMPLATE_FUN,
+  getEmptyMeta,
+  isSlsFunction,
+  parseMeta,
+  stringifyMeta,
+  type TemplateMeta,
+} from "../lib/template-meta";
 
 export type TemplateEditorMode = "create" | "edit" | "duplicate";
 
@@ -28,12 +34,10 @@ export interface TemplateEditorParams {
   mode: TemplateEditorMode;
   sourceId: string;
   templateId?: string;
-  initialSls?: string;
 }
 
-interface ParsedSls {
-  schema: TemplateFormSchema | null;
-  slsBody: string;
+interface ParsedMeta {
+  meta: TemplateMeta | null;
   error: string | null;
 }
 
@@ -47,8 +51,12 @@ export class TemplateEditorStore {
   readonly sourceId: string;
   readonly templateId?: string;
 
-  rawSls: string;
   fileName = "";
+  slsRaw = "";
+  metaText: string;
+  /** Был ли у шаблона .sls при загрузке: сохранение без `sls_raw` его удаляет. */
+  hadSlsContent = false;
+
   isSaving = false;
   sourceName: string | null = null;
   isLoadingTemplate = false;
@@ -62,7 +70,7 @@ export class TemplateEditorStore {
     this.mode = params.mode;
     this.sourceId = params.sourceId;
     this.templateId = params.templateId;
-    this.rawSls = params.initialSls ?? combineSchemaAndBody(getEmptySchema(), getEmptySlsBody());
+    this.metaText = stringifyMeta(getEmptyMeta(DEFAULT_TEMPLATE_FUN));
 
     makeAutoObservable(this);
   }
@@ -79,6 +87,121 @@ export class TemplateEditorStore {
     return this.isDuplicate ? this.targetSourceId : this.sourceId;
   }
 
+  get parsedMeta(): ParsedMeta {
+    try {
+      return { meta: parseMeta(this.metaText), error: null };
+    } catch (error) {
+      return { meta: null, error: (error as Error).message };
+    }
+  }
+
+  get meta(): TemplateMeta | null {
+    return this.parsedMeta.meta;
+  }
+
+  get metaError(): string | null {
+    return this.parsedMeta.error;
+  }
+
+  get hasMetaError(): boolean {
+    return this.parsedMeta.error !== null;
+  }
+
+  /** Функция шаблона. В `meta` пишем её явно, даже когда это `state.apply`. */
+  get fun(): string {
+    return this.meta?.fun?.trim() || DEFAULT_TEMPLATE_FUN;
+  }
+
+  get isSlsFunction(): boolean {
+    return isSlsFunction(this.fun);
+  }
+
+  get paramsFormSchema(): FormSchema | null {
+    return this.meta ? extractParamsFormSchema(this.meta, this.fun) : null;
+  }
+
+  get paramsCompatibility(): VisualEditorCompatibilityResult | null {
+    return this.meta ? getParamsCompatibility(this.meta, this.fun) : null;
+  }
+
+  /** Сохранение сотрёт существующий .sls: функция его больше не использует. */
+  get willDeleteSls(): boolean {
+    return this.hadSlsContent && !this.isSlsFunction;
+  }
+
+  /** В SLS остался блок схемы старого формата — его нужно перенести в `meta`. */
+  get isLegacyTemplate(): boolean {
+    return hasLegacySchemaBlock(this.slsRaw);
+  }
+
+  /** Переносит блок схемы из SLS в `meta`. Бросает, если блок — не валидный JSON. */
+  migrateFromLegacyFormat = () => {
+    const { meta, slsRaw } = migrateLegacyTemplate(this.meta ?? {}, this.slsRaw);
+
+    this.metaText = stringifyMeta(meta);
+    this.slsRaw = slsRaw;
+  };
+
+  setFileName = (value: string) => {
+    this.fileName = value;
+  };
+
+  setSlsRaw = (value: string) => {
+    this.slsRaw = value;
+  };
+
+  setMetaText = (value: string) => {
+    this.metaText = value;
+  };
+
+  setTargetSourceId = (value: string | null) => {
+    this.targetSourceId = value;
+  };
+
+  private updateMeta = (update: (meta: TemplateMeta) => TemplateMeta) => {
+    const meta = this.meta;
+    // Текст схемы сломан — правки из формы применять некуда
+    if (!meta) return;
+
+    this.metaText = stringifyMeta(update(meta));
+  };
+
+  setFun = (fun: string) => {
+    this.updateMeta((meta) => ({ ...meta, fun }));
+  };
+
+  /**
+   * Меняет функцию вместе со схемой: подставляет схему из каталога, а когда её
+   * нет — пустой каркас под параметры этой функции.
+   */
+  applyFunction = (
+    fun: string,
+    catalogSchema?: { json_schema?: JSONSchema; ui_schema?: UISchema } | null
+  ) => {
+    this.updateMeta((meta) => {
+      if (!catalogSchema?.json_schema) {
+        const empty = getEmptyMeta(fun);
+        return {
+          ...meta,
+          fun,
+          json_schema: empty.json_schema,
+          ui_schema: empty.ui_schema,
+        };
+      }
+
+      return {
+        ...meta,
+        fun,
+        json_schema: catalogSchema.json_schema,
+        ui_schema: catalogSchema.ui_schema ?? {},
+      };
+    });
+  };
+
+  setParamsFormSchema = (edited: FormSchema | JSONSchema) => {
+    this.updateMeta((meta) => wrapParamsFormSchema(meta, this.fun, edited));
+  };
+
   loadTemplate = async () => {
     if (!this.templateId) return;
 
@@ -94,14 +217,13 @@ export class TemplateEditorStore {
       });
 
       runInAction(() => {
-        if (isTemplateMeta(template?.meta)) {
-          this.rawSls = combineSchemaAndBody(
-            metaToSchema(template.meta),
-            template.sls_content ?? ""
-          );
-        } else if (template?.sls_content != null) {
-          this.rawSls = template.sls_content;
-        }
+        const meta = (template?.meta ?? {}) as TemplateMeta;
+        const fun = meta.fun?.trim() || template?.fun?.trim() || DEFAULT_TEMPLATE_FUN;
+
+        this.metaText = stringifyMeta({ ...meta, fun });
+        this.slsRaw = template?.sls_content ?? "";
+        this.hadSlsContent = Boolean(template?.sls_content?.trim());
+
         if (this.mode === "edit") {
           this.fileName = template?.name ?? "";
         }
@@ -147,10 +269,6 @@ export class TemplateEditorStore {
     }
   };
 
-  setTargetSourceId = (value: string | null) => {
-    this.targetSourceId = value;
-  };
-
   loadSource = async () => {
     try {
       const source = await apiCoreStore.taskTemplateSourcesApi?.templateSourceGet({
@@ -164,58 +282,22 @@ export class TemplateEditorStore {
     }
   };
 
-  get parsed(): ParsedSls {
-    try {
-      return {
-        schema: parseSchemaFromSls(this.rawSls),
-        slsBody: extractSlsBody(this.rawSls),
-        error: null,
-      };
-    } catch (error) {
-      return {
-        schema: null,
-        slsBody: this.rawSls,
-        error: (error as Error).message,
-      };
-    }
-  }
-
-  get schema(): TemplateFormSchema | null {
-    return this.parsed.schema;
-  }
-
-  get hasParseError(): boolean {
-    return this.parsed.error !== null;
-  }
-
-  get parseError(): string | null {
-    return this.parsed.error;
-  }
-
-  setRawSls = (value: string) => {
-    this.rawSls = value;
-  };
-
-  setFileName = (value: string) => {
-    this.fileName = value;
-  };
-
-  setSchema = (schema: TemplateFormSchema) => {
-    if (this.hasParseError) return;
-    this.rawSls = combineSchemaAndBody(schema, this.parsed.slsBody);
-  };
-
   save = async (): Promise<string | undefined> => {
+    const meta = this.meta;
+    if (!meta) {
+      throw new Error("cannot save a template with unparsable meta");
+    }
+
+    // `sls_raw` отправляем всегда, пока функция его использует: без него
+    // бекенд удаляет существующий .sls-файл шаблона
+    const slsRaw = this.isSlsFunction ? this.slsRaw : null;
+    const payloadMeta = { ...meta, fun: this.fun } as Record<string, unknown>;
+
     runInAction(() => {
       this.isSaving = true;
     });
 
     try {
-      const { schema, slsBody } = this.parsed;
-      if (!schema) {
-        throw new Error("cannot save a template with an unparsable schema block");
-      }
-
       if (this.createsNewTemplate) {
         const targetSourceId = this.effectiveTargetSourceId;
         if (!targetSourceId) {
@@ -224,12 +306,13 @@ export class TemplateEditorStore {
         if (!isValidTemplateFileName(this.fileName)) {
           throw new Error("invalid template file name");
         }
+
         const response = await apiCoreStore.taskTemplatesApi?.taskTemplateCreate({
           source_id: targetSourceId,
           TaskTemplateFromRawCreateSchema: {
             file_name: stripSlsExtension(this.fileName),
-            sls_raw: slsBody,
-            meta: schema,
+            sls_raw: slsRaw,
+            meta: payloadMeta,
           },
         });
         if (!response) {
@@ -244,12 +327,13 @@ export class TemplateEditorStore {
       if (!this.templateId) {
         throw new Error("templateId is required to update a template");
       }
+
       const response = await apiCoreStore.taskTemplatesApi?.taskTemplateUpdate({
         source_id: this.sourceId,
         template_id: this.templateId,
         TaskTemplateFromRawUpdateSchema: {
-          sls_raw: slsBody,
-          meta: schema,
+          sls_raw: slsRaw,
+          meta: payloadMeta,
         },
       });
       if (response) {

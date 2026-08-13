@@ -7,6 +7,9 @@ interface FullTemplateEditorProps {
   onChange?: (value: string) => void;
   readOnly?: boolean;
   onMount?: () => void;
+  language?: string;
+  /** Путь модели: по нему monaco сопоставляет JSON-схему для подсказок. */
+  path?: string;
 }
 
 export function FullTemplateEditor({
@@ -14,12 +17,15 @@ export function FullTemplateEditor({
   onChange,
   readOnly = false,
   onMount,
+  language = "yaml",
+  path,
 }: FullTemplateEditorProps) {
   return (
     <div className={styles.container}>
       <Editor
         height="100%"
-        language="yaml"
+        language={language}
+        path={path}
         value={value}
         onChange={readOnly ? undefined : (next) => onChange?.(next ?? "")}
         onMount={() => onMount?.()}

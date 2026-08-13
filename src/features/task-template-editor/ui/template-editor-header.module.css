@@ -1,0 +1,30 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 0 12px;
+}
+
+.fileName {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 260px;
+}
+
+.label {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.fileNameValue {
+  line-height: 32px;
+}
+
+.error {
+  font-size: 12px;
+}
+
+.header > *:last-child {
+  margin-inline-start: auto;
+}

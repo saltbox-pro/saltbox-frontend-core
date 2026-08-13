@@ -1,40 +1,28 @@
 import { WarningOutlined } from "@ant-design/icons";
 import { Alert, Splitter, Tabs, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getPillarCompatibility, hasUnsupportedSchemaDescription } from "../lib/pillar-schema";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./editor-tabs.module.css";
 import { FormPreviewPanel } from "./form-preview-panel";
 import { FullTemplateEditor } from "./full-template-editor";
+import { MetaEditorTab } from "./meta-editor-tab";
 import { VisualEditorTab } from "./visual-editor-tab";
 
 interface EditorTabsProps {
   store: TemplateEditorStore;
-  tabBarExtra?: ReactNode;
 }
 
-export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => {
+export const EditorTabs = observer(({ store }: EditorTabsProps) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("visual");
   const [splitSizes, setSplitSizes] = useState<(number | string)[]>(["65%", "35%"]);
 
-  const schema = store.schema;
-
-  const compatibility = useMemo(() => (schema ? getPillarCompatibility(schema) : null), [schema]);
-
-  // Templates saved by an older build keep the description inside `json_schema`;
-  // editing them visually would only move it further away from the block root
-  const hasLegacyDescription = useMemo(
-    () => (schema ? hasUnsupportedSchemaDescription(schema) : false),
-    [schema]
-  );
-
-  const canRenderVisual =
-    !store.hasParseError && !!compatibility?.compatible && !hasLegacyDescription;
+  const compatibility = store.paramsCompatibility;
+  const canRenderVisual = !store.hasMetaError && !!compatibility?.compatible;
 
   const visualTabLabel = canRenderVisual ? (
     t("task-template-editor.tab-visual-editor")
@@ -47,13 +35,13 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
     </Tooltip>
   );
 
-  const visualContent = store.hasParseError ? (
+  const visualContent = store.hasMetaError ? (
     <div className={styles.alertWrapper}>
       <Alert
         type="error"
         showIcon
         message={t("task-template-editor.schema-parse-error")}
-        description={store.parseError ?? undefined}
+        description={store.metaError ?? undefined}
       />
     </div>
   ) : !canRenderVisual ? (
@@ -64,9 +52,6 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
         message={t("task-template-editor.visual-editor-unavailable")}
         description={
           <>
-            {hasLegacyDescription && (
-              <div>{t("task-template-editor.visual-editor-description-in-json-schema")}</div>
-            )}
             <div>{t("task-template-editor.visual-editor-use-full")}</div>
             {compatibility?.unsupportedFeatures.length ? (
               <ul className={styles.unsupportedList}>
@@ -82,7 +67,7 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
       />
     </div>
   ) : (
-    schema && <VisualEditorTab schema={schema} onChange={store.setSchema} />
+    <VisualEditorTab store={store} />
   );
 
   const renderTabBody = (editor: ReactNode) => (
@@ -98,6 +83,15 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
     </div>
   );
 
+  const slsTabLabel = store.isSlsFunction ? (
+    t("task-template-editor.tab-sls-editor")
+  ) : (
+    // Таб не прячем, чтобы уже написанный SLS не исчезал при смене функции
+    <Tooltip title={t("task-template-editor.sls-editor-unavailable")} placement="bottom">
+      <span className={styles.disabledLabel}>{t("task-template-editor.tab-sls-editor")}</span>
+    </Tooltip>
+  );
+
   const items = [
     {
       key: "visual",
@@ -105,21 +99,21 @@ export const EditorTabs = observer(({ store, tabBarExtra }: EditorTabsProps) => 
       children: renderTabBody(visualContent),
     },
     {
-      key: "full",
-      label: t("task-template-editor.tab-full-editor"),
+      key: "meta",
+      label: t("task-template-editor.tab-meta-editor"),
+      children: renderTabBody(<MetaEditorTab store={store} />),
+    },
+    {
+      key: "sls",
+      label: slsTabLabel,
+      disabled: !store.isSlsFunction,
       children: renderTabBody(
-        <FullTemplateEditor value={store.rawSls} onChange={store.setRawSls} />
+        <FullTemplateEditor value={store.slsRaw} onChange={store.setSlsRaw} />
       ),
     },
   ];
 
   return (
-    <Tabs
-      className={styles.tabs}
-      activeKey={activeTab}
-      onChange={setActiveTab}
-      items={items}
-      tabBarExtraContent={tabBarExtra ? { right: tabBarExtra } : undefined}
-    />
+    <Tabs className={styles.tabs} activeKey={activeTab} onChange={setActiveTab} items={items} />
   );
 });

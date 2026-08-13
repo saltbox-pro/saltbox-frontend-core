@@ -55,6 +55,33 @@ function localizeValue(
   return value;
 }
 
+/** Ключи переводов, на которые ссылается ui-схема: `{{ключ}}` в любой строке. */
+export function collectUiSchemaPlaceholders(uiSchema: unknown): Set<string> {
+  const keys = new Set<string>();
+
+  const walk = (value: unknown): void => {
+    if (typeof value === "string") {
+      for (const match of value.matchAll(PLACEHOLDER_REGEX)) {
+        keys.add(match[1]);
+      }
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(walk);
+      return;
+    }
+
+    if (isPlainObject(value)) {
+      Object.values(value).forEach(walk);
+    }
+  };
+
+  walk(uiSchema);
+
+  return keys;
+}
+
 export function localizeUiSchema<T>(
   uiSchema: T,
   i18n: TemplateI18nDictionary | undefined,

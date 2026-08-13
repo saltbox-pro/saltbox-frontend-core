@@ -1,6 +1,5 @@
-import { SaveOutlined } from "@ant-design/icons";
 import { PageHeader, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, message } from "antd";
+import { message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,7 +13,9 @@ import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import { DuplicateNoConnectedLocalSourceAlert } from "./duplicate-no-connected-local-source-alert";
 import { EditorTabs } from "./editor-tabs";
+import { LegacyTemplateAlert } from "./legacy-template-alert";
 import { SaveTemplateModal } from "./save-template-modal";
+import { TemplateEditorHeader } from "./template-editor-header";
 import styles from "./template-editor.module.css";
 
 interface TemplateEditorProps {
@@ -65,20 +66,12 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
 
       {showNoConnectedLocalSourceAlert && <DuplicateNoConnectedLocalSourceAlert variant="page" />}
 
+      <TemplateEditorHeader store={store} onSave={handleSaveClick} />
+
+      <LegacyTemplateAlert store={store} />
+
       <div className={styles.body}>
-        <EditorTabs
-          store={store}
-          tabBarExtra={
-            <Button
-              type="primary"
-              icon={<SaveOutlined />}
-              disabled={store.hasParseError}
-              onClick={handleSaveClick}
-            >
-              {t("common.save")}
-            </Button>
-          }
-        />
+        <EditorTabs store={store} />
       </div>
 
       <SaveTemplateModal

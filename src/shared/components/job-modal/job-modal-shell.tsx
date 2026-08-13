@@ -1,8 +1,9 @@
 import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { SaltFunctionSelect } from "saltbox-core/shared/components/salt-function-select";
+
 import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
-import { JobModalFunctionSelect } from "./job-modal-function-select";
 
 export type JobModalTargeting = {
   target: string;
@@ -107,7 +108,7 @@ export const JobModalShell = ({
 
   return (
     <>
-      <JobModalFunctionSelect
+      <SaltFunctionSelect
         open={pickerOpen && !configureFunction}
         pickerSessionOpen={pickerOpen}
         onCancel={() => onPickerOpenChange(false)}

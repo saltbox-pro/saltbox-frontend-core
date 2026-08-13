@@ -3,52 +3,35 @@ import {
   TranslationContext,
   en,
   ru,
-  type FormSchema,
-  type JSONSchema,
 } from "@saltbox/react-jsonschema-form-generator";
-import { useCallback, useMemo } from "react";
+import { observer } from "mobx-react-lite";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import "@saltbox/react-jsonschema-form-generator/styles.css";
 
-import { extractPillarFormSchema, wrapPillarFormSchema } from "../lib/pillar-schema";
-import type { TemplateFormSchema } from "../lib/sls-parser";
+import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./visual-editor-tab.module.css";
 
-const DESCRIPTION_LANGUAGES_RU = ["ru", "en"];
-const DESCRIPTION_LANGUAGES_EN = ["en", "ru"];
-
 interface VisualEditorTabProps {
-  schema: TemplateFormSchema;
-  onChange: (schema: TemplateFormSchema) => void;
+  store: TemplateEditorStore;
 }
 
-export function VisualEditorTab({ schema, onChange }: VisualEditorTabProps) {
+export const VisualEditorTab = observer(({ store }: VisualEditorTabProps) => {
   const { i18n } = useTranslation();
-  const pillarFormSchema = useMemo(() => extractPillarFormSchema(schema), [schema]);
 
   const isRussian = i18n.language?.startsWith("ru") ?? false;
   const translation = useMemo(() => (isRussian ? ru : en), [isRussian]);
-  // The interface language goes first so its tab is the one selected on open
-  const descriptionLanguages = isRussian ? DESCRIPTION_LANGUAGES_RU : DESCRIPTION_LANGUAGES_EN;
 
-  const handleChange = useCallback(
-    (edited: JSONSchema | FormSchema) => {
-      onChange(wrapPillarFormSchema(schema, edited));
-    },
-    [onChange, schema]
-  );
+  const formSchema = store.paramsFormSchema;
+  if (!formSchema) return null;
 
   return (
     <div className={styles.container}>
       <TranslationContext.Provider value={translation}>
-        <SchemaVisualEditor
-          schema={pillarFormSchema}
-          onChange={handleChange}
-          descriptionLanguages={descriptionLanguages}
-        />
+        <SchemaVisualEditor schema={formSchema} onChange={store.setParamsFormSchema} />
       </TranslationContext.Provider>
     </div>
   );
-}
+});

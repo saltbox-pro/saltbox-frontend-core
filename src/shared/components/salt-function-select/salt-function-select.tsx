@@ -8,9 +8,9 @@ import { useTranslation } from "react-i18next";
 import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-import styles from "./job-modal-function-select.module.css";
+import styles from "./salt-function-select.module.css";
 
-interface JobModalFunctionSelectProps {
+interface SaltFunctionSelectProps {
   open: boolean;
   pickerSessionOpen: boolean;
   onCancel: () => void;
@@ -175,12 +175,12 @@ const buildFunctionTooltipData = (
   };
 };
 
-export const JobModalFunctionSelect = ({
+export const SaltFunctionSelect = ({
   open,
   pickerSessionOpen,
   onCancel,
   onSelect,
-}: JobModalFunctionSelectProps) => {
+}: SaltFunctionSelectProps) => {
   const { t } = useTranslation();
   const [moduleRows, setModuleRows] = useState<ModuleRow[]>([]);
   const [isLoading, setIsLoading] = useState(false);

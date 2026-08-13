@@ -2,7 +2,9 @@ import {
   TEMPLATE_FILE_NAME_SEGMENT_PATTERN,
   TEMPLATE_FILE_NAME_SEGMENT_START_PATTERN,
 } from "../constants/template-file-name";
-import { stripSlsExtension } from "../lib/sls-parser";
+
+export const stripSlsExtension = (fileName: string): string =>
+  fileName.trim().replace(/\.sls$/i, "");
 
 export const getTemplateFileNameErrorKey = (rawFileName: string): string | null => {
   const normalized = stripSlsExtension(rawFileName);
