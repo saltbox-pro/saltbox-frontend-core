@@ -8,6 +8,81 @@ export type TemplateSchemaSource = {
   json_schema?: unknown;
 };
 
+const TYPE_HINT_KEYWORDS = [
+  "type",
+  "properties",
+  "patternProperties",
+  "additionalProperties",
+  "items",
+  "enum",
+  "const",
+  "oneOf",
+  "anyOf",
+  "allOf",
+  "$ref",
+] as const;
+
+const MAX_SCHEMA_DEPTH = 5;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export function ensureRenderableSchema(schema: RJSFSchema): RJSFSchema {
+  if (!isRecord(schema)) {
+    return schema;
+  }
+
+  if (TYPE_HINT_KEYWORDS.some((keyword) => keyword in schema)) {
+    return schema;
+  }
+
+  return { ...schema, type: "object" };
+}
+
+export function isFieldlessSchema(schema: unknown, depth = 0): boolean {
+  if (schema == null || typeof schema === "boolean") {
+    return true;
+  }
+
+  if (!isRecord(schema)) {
+    return false;
+  }
+
+  if (depth > MAX_SCHEMA_DEPTH) {
+    return false;
+  }
+
+  if (
+    schema.enum != null ||
+    "const" in schema ||
+    schema.$ref != null ||
+    schema.oneOf != null ||
+    schema.anyOf != null ||
+    schema.allOf != null ||
+    schema.items != null ||
+    schema.patternProperties != null
+  ) {
+    return false;
+  }
+
+  if ("additionalProperties" in schema && schema.additionalProperties !== false) {
+    return false;
+  }
+
+  if (schema.type != null && schema.type !== "object") {
+    return false;
+  }
+
+  if (!isRecord(schema.properties)) {
+    return true;
+  }
+
+  return Object.values(schema.properties).every((property) =>
+    isFieldlessSchema(property, depth + 1)
+  );
+}
+
 export function toRjsfSchema(schema: TemplateSchemaSource, language: string): RJSFSchema {
   const jsonSchema = schema.json_schema as Record<string, unknown> | boolean | null | undefined;
 
@@ -21,7 +96,7 @@ export function toRjsfSchema(schema: TemplateSchemaSource, language: string): RJ
     language
   );
 
-  return (description ? { ...rest, description } : rest) as RJSFSchema;
+  return ensureRenderableSchema((description ? { ...rest, description } : rest) as RJSFSchema);
 }
 
 export function toRjsfUiSchema(

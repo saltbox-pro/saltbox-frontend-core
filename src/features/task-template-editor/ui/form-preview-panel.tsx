@@ -9,7 +9,11 @@ import { observer } from "mobx-react-lite";
 import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import { toRjsfSchema, toRjsfUiSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
+import {
+  isFieldlessSchema,
+  toRjsfSchema,
+  toRjsfUiSchema,
+} from "saltbox-core/shared/utils/template-rjsf-schema";
 import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
@@ -71,9 +75,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   // The root description lives outside `json_schema`, so key off the whole block
   const resetKey = useMemo(() => JSON.stringify(schema ?? {}), [schema]);
 
-  const isEmpty = useMemo(() => {
-    return !jsonSchema || typeof jsonSchema === "boolean" || Object.keys(jsonSchema).length === 0;
-  }, [jsonSchema]);
+  const isEmpty = useMemo(() => isFieldlessSchema(jsonSchema), [jsonSchema]);
 
   const isSchemaValid = useMemo(() => {
     if (!schema || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
