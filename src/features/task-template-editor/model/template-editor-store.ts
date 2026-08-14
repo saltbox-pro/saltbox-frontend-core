@@ -20,6 +20,12 @@ import { hasLegacySchemaBlock, migrateLegacyTemplate } from "../lib/legacy-templ
 import { getParamsCompatibility } from "../lib/params-compatibility";
 import { extractParamsFormSchema, wrapParamsFormSchema } from "../lib/params-subtree";
 import {
+  applyTranslations,
+  collectTemplateLocales,
+  collectTranslationRows,
+  type TranslationRow,
+} from "../lib/template-i18n";
+import {
   DEFAULT_TEMPLATE_FUN,
   getEmptyMeta,
   isSlsFunction,
@@ -200,6 +206,18 @@ export class TemplateEditorStore {
 
   setParamsFormSchema = (edited: FormSchema | JSONSchema) => {
     this.updateMeta((meta) => wrapParamsFormSchema(meta, this.fun, edited));
+  };
+
+  get translationLocales(): string[] {
+    return collectTemplateLocales(this.meta);
+  }
+
+  get translationRows(): TranslationRow[] {
+    return collectTranslationRows(this.meta);
+  }
+
+  setTranslations = (key: string, values: Record<string, string>) => {
+    this.updateMeta((meta) => applyTranslations(meta, key, values));
   };
 
   loadTemplate = async () => {

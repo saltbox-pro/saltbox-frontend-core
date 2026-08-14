@@ -1,0 +1,108 @@
+import {
+  applyTranslations,
+  collectTemplateLocales,
+  collectTranslationKeys,
+  collectTranslationRows,
+  isValidLocaleCode,
+} from "./template-i18n";
+import type { TemplateMeta } from "./template-meta";
+
+const meta: TemplateMeta = {
+  fun: "state.apply",
+  json_schema: {
+    type: "object",
+    properties: {
+      kwargs: {
+        type: "object",
+        properties: {
+          pillar: {
+            type: "object",
+            properties: {
+              host: { type: "string", description: "{{host_description}}" },
+            },
+          },
+        },
+      },
+    },
+  },
+  ui_schema: {
+    kwargs: {
+      pillar: {
+        host: { "ui:title": "{{host_title}}", "ui:description": "{{host_description}}" },
+      },
+    },
+  },
+  i18n: {
+    ru: { host_title: "Хост", host_description: "Адрес хоста", legacy_key: "Старый текст" },
+    en: { host_title: "Host" },
+  },
+};
+
+describe("переводы шаблона", () => {
+  it("собирает ключи из ui_schema и json_schema без дублей", () => {
+    expect([...collectTranslationKeys(meta)].sort()).toEqual(["host_description", "host_title"]);
+  });
+
+  it("показывает ru и en всегда, дальше локали шаблона по алфавиту", () => {
+    expect(collectTemplateLocales({})).toEqual(["ru", "en"]);
+    expect(collectTemplateLocales({ i18n: { fr: {}, de: {}, en: {} } })).toEqual([
+      "ru",
+      "en",
+      "de",
+      "fr",
+    ]);
+  });
+
+  it("строит строки с переводами и помечает осиротевшие ключи", () => {
+    const rows = collectTranslationRows(meta);
+
+    expect(rows.map((row) => row.key)).toEqual(["host_description", "host_title", "legacy_key"]);
+    expect(rows.find((row) => row.key === "legacy_key")?.isOrphan).toBe(true);
+    expect(rows.find((row) => row.key === "host_title")).toEqual({
+      key: "host_title",
+      isOrphan: false,
+      values: { ru: "Хост", en: "Host" },
+    });
+  });
+
+  it("не падает на схеме без переводов", () => {
+    expect(collectTranslationRows(null)).toEqual([]);
+    expect(collectTranslationRows({ ui_schema: { "ui:title": "Обычный текст" } })).toEqual([]);
+  });
+
+  it("записывает и подчищает переводы", () => {
+    const updated = applyTranslations(meta, "host_title", { ru: "  Сервер  ", en: "" });
+
+    expect(updated.i18n?.ru?.host_title).toBe("Сервер");
+    expect(updated.i18n?.en).toBeUndefined();
+    // Локаль исчезает целиком, когда после правки в ней не осталось ключей
+    expect(Object.keys(updated.i18n ?? {})).toEqual(["ru"]);
+  });
+
+  it("не трогает локали, которых не было в форме", () => {
+    const updated = applyTranslations(meta, "host_title", { ru: "Сервер" });
+
+    expect(updated.i18n?.en?.host_title).toBe("Host");
+  });
+
+  it("убирает пустой i18n из схемы", () => {
+    const single: TemplateMeta = { fun: "test.ping", i18n: { ru: { title: "Заголовок" } } };
+
+    expect("i18n" in applyTranslations(single, "title", { ru: "" })).toBe(false);
+  });
+
+  it("добавляет новую локаль", () => {
+    const updated = applyTranslations(meta, "host_title", { de: "Server" });
+
+    expect(updated.i18n?.de).toEqual({ host_title: "Server" });
+  });
+
+  it("проверяет код локали", () => {
+    expect(isValidLocaleCode("de")).toBe(true);
+    expect(isValidLocaleCode("zh-Hans")).toBe(true);
+    expect(isValidLocaleCode("ru-RU")).toBe(true);
+    expect(isValidLocaleCode("russian")).toBe(false);
+    expect(isValidLocaleCode("DE")).toBe(false);
+    expect(isValidLocaleCode("")).toBe(false);
+  });
+});

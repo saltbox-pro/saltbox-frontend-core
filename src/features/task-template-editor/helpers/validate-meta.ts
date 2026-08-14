@@ -3,7 +3,7 @@ import type { JSONSchema } from "@saltbox/react-jsonschema-form-generator";
 
 import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
 import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
-import { collectUiSchemaPlaceholders } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import { collectTextPlaceholders } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import type { TemplateMeta, TemplateMetaDefaults } from "../lib/template-meta";
 
@@ -54,7 +54,7 @@ function checkFun(meta: TemplateMeta, issues: MetaValidationIssue[]): void {
 
 /** Плейсхолдеры ui-схемы должны быть во всех объявленных локалях. */
 function checkTranslations(meta: TemplateMeta, issues: MetaValidationIssue[]): void {
-  const placeholders = collectUiSchemaPlaceholders(meta.ui_schema);
+  const placeholders = collectTextPlaceholders(meta.ui_schema);
   if (placeholders.size === 0) return;
 
   const i18n = meta.i18n ?? {};

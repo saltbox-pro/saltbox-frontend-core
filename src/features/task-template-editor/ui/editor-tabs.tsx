@@ -10,6 +10,7 @@ import styles from "./editor-tabs.module.css";
 import { FormPreviewPanel } from "./form-preview-panel";
 import { FullTemplateEditor } from "./full-template-editor";
 import { MetaEditorTab } from "./meta-editor-tab";
+import { TranslationsTab } from "./translations-tab";
 import { VisualEditorTab } from "./visual-editor-tab";
 
 interface EditorTabsProps {
@@ -97,6 +98,11 @@ export const EditorTabs = observer(({ store }: EditorTabsProps) => {
       key: "visual",
       label: visualTabLabel,
       children: renderTabBody(visualContent),
+    },
+    {
+      key: "translations",
+      label: t("task-template-editor.tab-translations"),
+      children: renderTabBody(<TranslationsTab store={store} />),
     },
     {
       key: "meta",

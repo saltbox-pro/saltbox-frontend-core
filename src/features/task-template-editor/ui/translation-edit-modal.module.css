@@ -1,0 +1,17 @@
+.locale {
+  white-space: nowrap;
+}
+
+.addLocale {
+  margin-top: 16px;
+}
+
+.addLocaleField {
+  width: 220px;
+}
+
+.localeError {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}

@@ -55,8 +55,8 @@ function localizeValue(
   return value;
 }
 
-/** Ключи переводов, на которые ссылается ui-схема: `{{ключ}}` в любой строке. */
-export function collectUiSchemaPlaceholders(uiSchema: unknown): Set<string> {
+/** Ключи переводов, на которые ссылается структура: `{{ключ}}` в любой строке. */
+export function collectTextPlaceholders(source: unknown): Set<string> {
   const keys = new Set<string>();
 
   const walk = (value: unknown): void => {
@@ -77,7 +77,7 @@ export function collectUiSchemaPlaceholders(uiSchema: unknown): Set<string> {
     }
   };
 
-  walk(uiSchema);
+  walk(source);
 
   return keys;
 }
