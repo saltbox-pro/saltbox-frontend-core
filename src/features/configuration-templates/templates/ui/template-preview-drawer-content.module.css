@@ -1,3 +1,17 @@
+.tabs {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 400px;
+  height: 100%;
+}
+
+.tabs :global(.ant-tabs-content),
+.tabs :global(.ant-tabs-content-holder),
+.tabs :global(.ant-tabs-tabpane) {
+  height: 100%;
+}
+
 .editor {
   display: flex;
   flex: 1;

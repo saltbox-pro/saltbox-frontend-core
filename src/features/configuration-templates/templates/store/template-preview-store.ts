@@ -3,18 +3,38 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
 
+import { formatTemplatePreviewMeta } from "../helpers/format-template-preview-meta";
+
+export type TemplatePreviewTabKey = "meta" | "sls";
+
 export class TemplatePreviewStore {
   slsContent = "";
+  metaText = "";
   loadedTemplateId: string | null = null;
   isLoading = false;
   hasError = false;
-  isEmpty = false;
 
   private loadAbortController: AbortController | null = null;
   private loadGeneration = 0;
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  get hasSlsContent(): boolean {
+    return this.slsContent.trim() !== "";
+  }
+
+  get hasMetaContent(): boolean {
+    return this.metaText.trim() !== "";
+  }
+
+  get isEmpty(): boolean {
+    return !this.hasSlsContent && !this.hasMetaContent;
+  }
+
+  get defaultTab(): TemplatePreviewTabKey {
+    return this.hasMetaContent ? "meta" : "sls";
   }
 
   private cancelLoad = () => {
@@ -34,8 +54,8 @@ export class TemplatePreviewStore {
     runInAction(() => {
       this.isLoading = true;
       this.hasError = false;
-      this.isEmpty = false;
       this.slsContent = "";
+      this.metaText = "";
       this.loadedTemplateId = null;
     });
 
@@ -48,13 +68,8 @@ export class TemplatePreviewStore {
       if (isCancelled()) return false;
 
       runInAction(() => {
-        const content = template?.sls_content;
-        if (content == null || content === "") {
-          this.isEmpty = true;
-          this.slsContent = "";
-        } else {
-          this.slsContent = content;
-        }
+        this.slsContent = template?.sls_content ?? "";
+        this.metaText = formatTemplatePreviewMeta(template?.meta);
         this.loadedTemplateId = templateId;
         this.isLoading = false;
       });
@@ -87,7 +102,7 @@ export class TemplatePreviewStore {
 
   clearContent = () => {
     this.slsContent = "";
+    this.metaText = "";
     this.loadedTemplateId = null;
-    this.isEmpty = false;
   };
 }
