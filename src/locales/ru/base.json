@@ -198,15 +198,12 @@
     "popover-user-info-title": "Информация о пользователе"
   },
   "policy-create": {
-    "select-template-title": "Выберите шаблон политики",
     "configure-policy-title": "Настройка политики",
     "create-button": "Создать политику"
   },
   "task-create": {
-    "select-template-title": "Выберите шаблон задачи",
     "configure-task-title": "Настройки задачи",
     "create-button": "Создать задачу",
-    "search-templates-placeholder": "Поиск по источнику, шаблону",
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
     "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
@@ -248,6 +245,13 @@
     "warning-apply-to-filtered-collection": "{{entityType}} будет применена к отфильтрованным клиентам коллекции \"{{collectionName}}\"",
     "confirm-apply-to-whole-collection-description": "Вы собираетесь запустить {{entityType}} на всех клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
     "confirm-apply-to-filtered-collection-description": "Вы собираетесь запустить {{entityType}} на отфильтрованных клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем."
+  },
+  "template-picker": {
+    "title": "Выберите шаблон",
+    "search-placeholder": "Поиск по источнику, шаблону",
+    "search-placeholder-command": "Поиск по источнику, шаблону или ввод module.function (например file.append)",
+    "sls-section-title": "Шаблоны SLS",
+    "function-section-title": "Шаблоны функций"
   },
   "task": {
     "details": {
@@ -620,7 +624,6 @@
     "target-type": "Тип цели",
     "target": "Цель",
     "function": "Функция",
-    "return-to-function-picker": "Вернуться к выбору функции",
     "salt-master-error-required": "Контроллер обязателен",
     "tgt-type-error-required": "Тип цели обязателен",
     "tgt-error-required": "Цель обязательна",
@@ -666,14 +669,10 @@
     "help-recommendation": "Рекомендуется использовать абсолютные пути к файлам или задавать рабочую директорию через параметр cwd в расширенных настройках команды"
   },
   "job-function-select": {
-    "title": "Выберите функцию",
-    "search-placeholder": "Поиск или ввод module.function (например file.append)",
     "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
     "create-with-function": "Создать команду с функцией \"{{name}}\"",
     "table-module": "Модуль",
     "table-functions": "Функции",
-    "empty": "Нет доступных функций",
-    "nothing-found": "Ничего не найдено по запросу",
     "error": "Не удалось загрузить данные",
     "tooltip-description": "Описание",
     "tooltip-arguments": "Аргументы",
@@ -1006,10 +1005,8 @@
     "file-name-label": "Имя файла",
     "file-name-placeholder": "Введите имя файла",
     "file-name-required": "Введите имя файла",
-    "file-name-invalid-segment-start": "Каждая часть имени должна начинаться с буквы, цифры или _",
-    "file-name-invalid-spaces": "Имя не должно содержать пробелы",
-    "file-name-invalid-empty-segment": "Имя не должно начинаться или заканчиваться точкой, нельзя ставить две точки подряд",
-    "file-name-invalid-characters": "Допустимы только буквы, цифры, _, - и точка между частями имени",
+    "file-name-invalid-characters": "Допустимы только латинские буквы, цифры, _ и -",
+    "file-name-invalid-leading-hyphen": "Имя не должно начинаться с -",
     "save-modal-title": "Сохранение шаблона",
     "save-modal-target": "Шаблон будет сохранён в источник:",
     "save-modal-target-fallback": "выбранный источник",
@@ -1265,6 +1262,10 @@
       "preview-drawer-title": "Шаблон",
       "preview-load-error": "Не удалось загрузить содержимое шаблона",
       "preview-empty-content": "Содержимое шаблона отсутствует",
+      "preview-tab-meta": "Метаданные",
+      "preview-tab-sls": "SLS",
+      "preview-empty-meta": "Метаданные отсутствуют",
+      "preview-empty-sls": "SLS-файл отсутствует",
       "delete-template": "Удалить шаблон",
       "template-delete-confirm-title": "Удаление шаблона",
       "template-delete-confirm-content": "Удалить шаблон \"{{title}}\"?",

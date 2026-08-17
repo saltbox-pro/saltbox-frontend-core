@@ -15,7 +15,7 @@ import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
-import { isValidTemplateFileName, stripSlsExtension } from "../helpers/validate-template-file-name";
+import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
 import { hasLegacySchemaBlock, migrateLegacyTemplate } from "../lib/legacy-template";
 import { getParamsCompatibility } from "../lib/params-compatibility";
 import { extractParamsFormSchema, wrapParamsFormSchema } from "../lib/params-subtree";
@@ -328,7 +328,7 @@ export class TemplateEditorStore {
         const response = await apiCoreStore.taskTemplatesApi?.taskTemplateCreate({
           source_id: targetSourceId,
           TaskTemplateFromRawCreateSchema: {
-            file_name: stripSlsExtension(this.fileName),
+            file_name: this.fileName.trim(),
             sls_raw: slsRaw,
             meta: payloadMeta,
           },

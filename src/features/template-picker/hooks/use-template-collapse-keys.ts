@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getSourceRowSearchExpansion,
   type TemplateSourceRow,
-} from "../../../helpers/template-picker-rows";
+} from "../helpers/template-picker-rows";
 
 type UseTemplateCollapseKeysParams = {
   filteredRows: TemplateSourceRow[];

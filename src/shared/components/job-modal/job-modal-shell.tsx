@@ -1,7 +1,11 @@
 import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { SaltFunctionSelect } from "saltbox-core/shared/components/salt-function-select";
+import {
+  TemplatePickerModal,
+  SLS_TEMPLATE_FUN,
+  type PickedTemplate,
+} from "saltbox-core/features/template-picker";
 
 import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
 
@@ -19,6 +23,12 @@ export type JobReplayBaseline = {
 };
 
 export type { JobReturnToPickerSnapshot };
+
+type PickedTemplateBaseline = {
+  templateId: string;
+  fun: string;
+  arg?: unknown[];
+};
 
 type JobModalShellProps = {
   pickerOpen: boolean;
@@ -44,11 +54,13 @@ export const JobModalShell = ({
   const jsonFormByFunRef = useRef<Record<string, unknown>>({});
   const [, setFormCacheRevision] = useState(0);
   const [jobModalFun, setJobModalFun] = useState<string | null>(null);
+  const [pickedTemplate, setPickedTemplate] = useState<PickedTemplateBaseline | null>(null);
 
   useEffect(() => {
     if (!pickerOpen) {
       jsonFormByFunRef.current = {};
       setFormCacheRevision(0);
+      setPickedTemplate(null);
     }
   }, [pickerOpen]);
 
@@ -71,11 +83,39 @@ export const JobModalShell = ({
         kwarg: (data?.kwargs ?? data?.kwarg) as Record<string, unknown> | undefined,
       };
     }
+    if (pickedTemplate && funForArgs === pickedTemplate.fun) {
+      return { arg: pickedTemplate.arg, kwarg: undefined };
+    }
     if (repeatBaseline && funForArgs === repeatBaseline.fun) {
       return { arg: repeatBaseline.arg, kwarg: repeatBaseline.kwarg };
     }
     return { arg: undefined, kwarg: undefined };
   })();
+
+  const handleSelectTemplate = useCallback(
+    (template: PickedTemplate) => {
+      const baseline: PickedTemplateBaseline = template.isFunctionTemplate
+        ? { templateId: template.templateId, fun: template.fun }
+        : { templateId: template.templateId, fun: SLS_TEMPLATE_FUN, arg: [template.name] };
+
+      if (pickedTemplate?.templateId !== baseline.templateId) {
+        delete jsonFormByFunRef.current[baseline.fun];
+        setFormCacheRevision((value) => value + 1);
+      }
+
+      setPickedTemplate(baseline);
+      onConfigureFunctionChange(baseline.fun);
+    },
+    [onConfigureFunctionChange, pickedTemplate]
+  );
+
+  const handleSelectCustomFunction = useCallback(
+    (functionName: string) => {
+      setPickedTemplate(null);
+      onConfigureFunctionChange(functionName);
+    },
+    [onConfigureFunctionChange]
+  );
 
   const handleReturnToFunctionPicker = useCallback(
     (payload: JobReturnToPickerSnapshot) => {
@@ -101,6 +141,7 @@ export const JobModalShell = ({
 
   const handleJobModalAfterClose = useCallback(() => {
     setJobModalFun(null);
+    setPickedTemplate(null);
     onConfigureFunctionChange(null);
     onPickerOpenChange(false);
     onAfterConfigureClose?.();
@@ -108,16 +149,21 @@ export const JobModalShell = ({
 
   return (
     <>
-      <SaltFunctionSelect
-        open={pickerOpen && !configureFunction}
-        pickerSessionOpen={pickerOpen}
-        onCancel={() => onPickerOpenChange(false)}
-        onSelect={onConfigureFunctionChange}
-      />
+      {pickerOpen && (
+        <TemplatePickerModal
+          mode="command"
+          isOpen={pickerOpen && !configureFunction}
+          destroyOnHidden={false}
+          onClose={() => onPickerOpenChange(false)}
+          onLeaveFlow={() => onPickerOpenChange(false)}
+          onSelectTemplate={handleSelectTemplate}
+          onSelectCustomFunction={handleSelectCustomFunction}
+        />
+      )}
 
       {jobModalFun && (
         <JobModal
-          key={jobModalFun}
+          key={`${jobModalFun}-${pickedTemplate?.templateId ?? ""}`}
           target={targeting.target}
           targetType={targeting.targetType}
           defaultMaster={targeting.defaultMaster}

@@ -1,15 +1,26 @@
 .header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 16px;
   padding: 0 0 12px;
+}
+
+.mainFields {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: 16px;
+  min-width: 0;
 }
 
 .fileName {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 260px;
+  flex: 1;
+  min-width: 280px;
+  max-width: 560px;
 }
 
 .label {
@@ -21,10 +32,16 @@
   line-height: 32px;
 }
 
-.error {
-  font-size: 12px;
+.fileNameInput {
+  width: 100%;
 }
 
-.header > *:last-child {
-  margin-inline-start: auto;
+.error {
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.save {
+  flex-shrink: 0;
 }

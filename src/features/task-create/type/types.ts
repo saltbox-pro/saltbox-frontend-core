@@ -4,19 +4,10 @@ import {
   TaskData,
   TaskTargetMinion,
   TaskTemplateModel,
-  TaskTemplatePublicSchema,
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
 import { ReactNode } from "react";
 import type { OptionList } from "react-querybuilder";
-
-export type TaskTemplateWithRepository = TaskTemplatePublicSchema & {
-  repository?: string;
-};
-
-export type TaskTemplatePickerItem = TaskTemplateWithRepository & {
-  isAccessible: boolean;
-};
 
 export type SelectedTaskTemplate = {
   sourceId: string;

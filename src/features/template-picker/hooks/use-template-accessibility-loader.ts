@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useRef } from "react";
 
 import { i18nStore } from "saltbox-core/store";
 
@@ -6,19 +6,17 @@ import {
   applySourceAccessibility,
   markSourceAccessibilityError,
   type TemplateSourceRow,
-} from "../../../helpers/template-picker-rows";
-import { taskTemplateService } from "../../../service";
+} from "../helpers/template-picker-rows";
+import { templatePickerService } from "../service";
 
 type UseTemplateAccessibilityLoaderParams = {
   isOpen: boolean;
-  activeKeys: string[];
   sourceRows: TemplateSourceRow[];
   setSourceRows: Dispatch<SetStateAction<TemplateSourceRow[]>>;
 };
 
 export function useTemplateAccessibilityLoader({
   isOpen,
-  activeKeys,
   sourceRows,
   setSourceRows,
 }: UseTemplateAccessibilityLoaderParams) {
@@ -28,6 +26,11 @@ export function useTemplateAccessibilityLoader({
 
   sourceRowsRef.current = sourceRows;
   isOpenRef.current = isOpen;
+
+  const sourceIdsKey = useMemo(
+    () => sourceRows.map((sourceRow) => sourceRow.key).join(","),
+    [sourceRows]
+  );
 
   const loadAccessibilityForSources = useCallback(
     async (sourceIds: string[], isCancelled: () => boolean) => {
@@ -52,7 +55,7 @@ export function useTemplateAccessibilityLoader({
         sourceIdsToLoad.map(async (sourceId) => {
           try {
             const accessibleTemplateIds =
-              await taskTemplateService.loadAccessibleTemplateIds(sourceId);
+              await templatePickerService.loadAccessibleTemplateIds(sourceId);
 
             if (isCancelled()) {
               return;
@@ -89,17 +92,17 @@ export function useTemplateAccessibilityLoader({
   );
 
   useEffect(() => {
-    if (!isOpen || activeKeys.length === 0) {
+    if (!isOpen || !sourceIdsKey) {
       return;
     }
 
     let isCancelled = false;
     const shouldSkipUpdate = () => isCancelled || !isOpenRef.current;
 
-    loadAccessibilityForSources(activeKeys, shouldSkipUpdate);
+    loadAccessibilityForSources(sourceIdsKey.split(","), shouldSkipUpdate);
 
     return () => {
       isCancelled = true;
     };
-  }, [activeKeys, isOpen, loadAccessibilityForSources]);
+  }, [isOpen, loadAccessibilityForSources, sourceIdsKey]);
 }

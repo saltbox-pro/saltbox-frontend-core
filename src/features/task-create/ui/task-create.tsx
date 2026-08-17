@@ -1,11 +1,12 @@
-import { type FC } from "react";
+import { type FC, useCallback } from "react";
+
+import { TemplatePickerModal, type PickedTemplate } from "saltbox-core/features/template-picker";
 
 import { getTemplateCacheKey } from "../helpers/get-template-cache-key";
 import { useTaskCreateFlow } from "../hooks/use-task-create-flow";
 import type { TaskCreationContext } from "../type/types";
 
 import { TaskModal } from "./task-modal";
-import { TemplateListModal } from "./template-list-modal/ui/template-list-modal";
 
 export type TaskCreateProps = {
   isOpen: boolean;
@@ -30,16 +31,23 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
     handlePickerAfterClose,
   } = useTaskCreateFlow({ isOpen, onClose });
 
+  const handleTemplatePicked = useCallback(
+    (template: PickedTemplate) => {
+      handleSelectTemplate({ sourceId: template.sourceId, templateId: template.templateId });
+    },
+    [handleSelectTemplate]
+  );
+
   return (
     <>
       {isPickerMounted && (
-        <TemplateListModal
-          type={context.taskType}
+        <TemplatePickerModal
+          mode="task"
           isOpen={isOpen && isPickerModalOpen}
           onClose={handlePickerCloseRequest}
           onAfterClose={handlePickerAfterClose}
           onLeaveFlow={handleFlowDismissed}
-          onSelectTemplate={handleSelectTemplate}
+          onSelectTemplate={handleTemplatePicked}
         />
       )}
       {isOpen && isTaskModalMounted && selectedTemplate && (

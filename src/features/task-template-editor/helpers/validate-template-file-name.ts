@@ -1,32 +1,17 @@
-import {
-  TEMPLATE_FILE_NAME_SEGMENT_PATTERN,
-  TEMPLATE_FILE_NAME_SEGMENT_START_PATTERN,
-} from "../constants/template-file-name";
-
-export const stripSlsExtension = (fileName: string): string =>
-  fileName.trim().replace(/\.sls$/i, "");
+import { TEMPLATE_FILE_NAME_PATTERN } from "../constants/template-file-name";
 
 export const getTemplateFileNameErrorKey = (rawFileName: string): string | null => {
-  const normalized = stripSlsExtension(rawFileName);
-  if (normalized.length === 0) {
+  const trimmed = rawFileName.trim();
+  if (trimmed.length === 0) {
     return "task-template-editor.file-name-required";
   }
 
-  for (const name of normalized.split(",")) {
-    for (const segment of name.split(".")) {
-      if (segment.length === 0) {
-        return "task-template-editor.file-name-invalid-empty-segment";
-      }
-      if (/\s/.test(segment)) {
-        return "task-template-editor.file-name-invalid-spaces";
-      }
-      if (!TEMPLATE_FILE_NAME_SEGMENT_START_PATTERN.test(segment)) {
-        return "task-template-editor.file-name-invalid-segment-start";
-      }
-      if (!TEMPLATE_FILE_NAME_SEGMENT_PATTERN.test(segment)) {
-        return "task-template-editor.file-name-invalid-characters";
-      }
-    }
+  if (trimmed.startsWith("-")) {
+    return "task-template-editor.file-name-invalid-leading-hyphen";
+  }
+
+  if (!TEMPLATE_FILE_NAME_PATTERN.test(trimmed)) {
+    return "task-template-editor.file-name-invalid-characters";
   }
 
   return null;

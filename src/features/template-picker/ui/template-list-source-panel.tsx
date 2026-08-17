@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next";
 
 import { TemplateSourceTemplatesList } from "saltbox-core/features/template-source-ui";
 
-import type { TemplateSourceRow } from "../../../helpers/template-picker-rows";
-import type { SelectedTaskTemplate, TaskTemplatePickerItem } from "../../../type/types";
+import { toPickedTemplate } from "../helpers/template-kind";
+import type { TemplateSourceRow } from "../helpers/template-picker-rows";
+import type { PickedTemplate, TaskTemplatePickerItem } from "../type/types";
 
 import { useTemplateListCollapseActiveKeys } from "./template-list-collapse-active-keys-context";
 import { TemplateListPanelSkeleton } from "./template-list-panel-skeleton";
@@ -13,7 +14,7 @@ import { TemplateListPanelSkeleton } from "./template-list-panel-skeleton";
 export type TemplateListSourcePanelProps = {
   sourceRow: TemplateSourceRow;
   searchQuery?: string;
-  onSelectTemplate: (template: SelectedTaskTemplate) => void;
+  onSelectTemplate: (template: PickedTemplate) => void;
 };
 
 export function TemplateListSourcePanel({
@@ -46,10 +47,7 @@ export function TemplateListSourcePanel({
         return;
       }
 
-      onSelectTemplate({
-        sourceId: template.source_id,
-        templateId: template.id,
-      });
+      onSelectTemplate(toPickedTemplate(template));
     },
     [onSelectTemplate, sourceRow.isAccessibilityLoaded]
   );

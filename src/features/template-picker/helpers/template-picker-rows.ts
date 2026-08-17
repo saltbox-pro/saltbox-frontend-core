@@ -14,6 +14,7 @@ import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 import type { TaskTemplatePickerItem } from "../type/types";
 
 import { sortTemplatesByAccessibilityThenTitle } from "./sort-picker-templates";
+import { isFunctionTemplate } from "./template-kind";
 
 export type TemplateSourceRow = {
   key: string;
@@ -55,6 +56,14 @@ export const buildSourceRowsFromSources = (
     }))
     .filter((sourceRow) => sourceRow.templates.length > 0);
 };
+
+export const toSlsSourceRows = (sourceRows: TemplateSourceRow[]): TemplateSourceRow[] =>
+  sourceRows
+    .map((sourceRow) => ({
+      ...sourceRow,
+      templates: sourceRow.templates.filter((template) => !isFunctionTemplate(template)),
+    }))
+    .filter((sourceRow) => sourceRow.templates.length > 0);
 
 export const applySourceAccessibility = (
   sourceRow: TemplateSourceRow,
