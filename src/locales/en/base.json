@@ -198,15 +198,12 @@
     "popover-user-info-title": "User Profile Info"
   },
   "policy-create": {
-    "select-template-title": "Select policy template",
     "configure-policy-title": "Policy Configuration",
     "create-button": "Create Policy"
   },
   "task-create": {
-    "select-template-title": "Select task template",
     "configure-task-title": "Task Configuration",
     "create-button": "Create Task",
-    "search-templates-placeholder": "Search by source, template",
     "unknown-repository": "Without source",
     "no-sources-available": "No sources available",
     "go-to-configuration-templates": "Go to configuration templates",
@@ -248,6 +245,13 @@
     "warning-apply-to-filtered-collection": "{{entityType}} will be applied to filtered minions in the \"{{collectionName}}\" collection",
     "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
     "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems."
+  },
+  "template-picker": {
+    "title": "Select template",
+    "search-placeholder": "Search by source, template",
+    "search-placeholder-command": "Search by source, template or type module.function (e.g. file.append)",
+    "sls-section-title": "SLS templates",
+    "function-section-title": "Function templates"
   },
   "task": {
     "details": {
@@ -620,7 +624,6 @@
     "target-type": "Target Type",
     "target": "Target",
     "function": "Function",
-    "return-to-function-picker": "Return to function selection",
     "salt-master-error-required": "Salt master is required",
     "tgt-type-error-required": "Target type is required",
     "tgt-error-required": "Target is required",
@@ -666,14 +669,10 @@
     "help-recommendation": "Use absolute file paths or set the working directory via the cwd parameter in the command's advanced settings"
   },
   "job-function-select": {
-    "title": "Choose function",
-    "search-placeholder": "Search or type module.function (e.g. file.append)",
     "invalid-function-format": "Use the module.function format (example: file.append)",
     "create-with-function": "Create job with function \"{{name}}\"",
     "table-module": "Module",
     "table-functions": "Functions",
-    "empty": "No available functions",
-    "nothing-found": "Nothing found for query",
     "error": "Failed to load data",
     "tooltip-description": "Description",
     "tooltip-arguments": "Arguments",

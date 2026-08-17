@@ -495,7 +495,7 @@ export function JobModal({
           !isFormReady ? null : (
             <>
               <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
-                {t("job-modal.return-to-function-picker")}
+                {t("task-create.return-to-template-picker")}
               </Button>
 
               {jobsJobModalCreatePlugins?.map((plugin) => (

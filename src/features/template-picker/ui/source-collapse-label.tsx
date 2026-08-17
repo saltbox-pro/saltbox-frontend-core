@@ -6,9 +6,9 @@ import {
   TemplateSourceTypeTag,
 } from "saltbox-core/features/template-source-ui";
 
-import type { TemplateSourceRow } from "../../../helpers/template-picker-rows";
+import type { TemplateSourceRow } from "../helpers/template-picker-rows";
 
-import styles from "./template-list-modal.module.css";
+import styles from "./template-picker-modal.module.css";
 
 export type SourceCollapseLabelProps = {
   sourceRow: TemplateSourceRow;

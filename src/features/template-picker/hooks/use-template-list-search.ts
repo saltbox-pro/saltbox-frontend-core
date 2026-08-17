@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 
 import { getActiveSearchQuery } from "saltbox-core/features/template-source-search";
 
-import { filterSourceRows, type TemplateSourceRow } from "../../../helpers/template-picker-rows";
+import { filterSourceRows, type TemplateSourceRow } from "../helpers/template-picker-rows";
 
 import { useTemplateCollapseKeys } from "./use-template-collapse-keys";
 

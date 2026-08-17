@@ -3,8 +3,8 @@ import type { MessageInstance } from "antd/es/message/interface";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { TemplateSourceRow } from "../../../helpers/template-picker-rows";
-import { taskTemplateService } from "../../../service";
+import type { TemplateSourceRow } from "../helpers/template-picker-rows";
+import { templatePickerService } from "../service";
 
 type UseTemplateSourceRowsParams = {
   messageApi: MessageInstance;
@@ -24,7 +24,7 @@ export function useTemplateSourceRows({ messageApi }: UseTemplateSourceRowsParam
       setIsLoading(true);
 
       try {
-        const loadedSourceRows = await taskTemplateService.loadTemplateSourceRows();
+        const loadedSourceRows = await templatePickerService.loadTemplateSourceRows();
         if (!isCancelled) {
           setSourceRows(loadedSourceRows);
         }
