@@ -59,43 +59,43 @@ class PreviewErrorBoundary extends Component<PreviewErrorBoundaryProps, { hasErr
 export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const { t, i18n } = useTranslation();
 
-  const schema = store.schema;
-  const jsonSchema = schema?.json_schema;
-  const uiSchema = schema?.ui_schema;
+  const meta = store.meta;
+  const jsonSchema = meta?.json_schema;
+  const uiSchema = meta?.ui_schema;
   const language = i18n.language;
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
 
   const localizedUiSchema = useMemo(
-    () => localizeUiSchema(uiSchema, schema?.i18n, language),
-    [uiSchema, schema?.i18n, language]
+    () => localizeUiSchema(uiSchema, meta?.i18n, language),
+    [uiSchema, meta?.i18n, language]
   );
 
-  // The root description lives outside `json_schema`, so key off the whole block
-  const resetKey = useMemo(() => JSON.stringify(schema ?? {}), [schema]);
+  // Описание живёт вне `json_schema`, поэтому ключом берём весь объект схемы
+  const resetKey = useMemo(() => JSON.stringify(meta ?? {}), [meta]);
 
   const isEmpty = useMemo(() => isFieldlessSchema(jsonSchema), [jsonSchema]);
 
   const isSchemaValid = useMemo(() => {
-    if (!schema || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
+    if (!meta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       return false;
     }
     try {
-      validator.ajv.compile(toRjsfSchema(schema, language));
+      validator.ajv.compile(toRjsfSchema(meta, language));
       return true;
     } catch {
       return false;
     }
-  }, [schema, jsonSchema, isEmpty, language]);
+  }, [meta, jsonSchema, isEmpty, language]);
 
   useEffect(() => {
-    if (!schema || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
+    if (!meta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       setFormData({});
       return;
     }
 
-    const rjsfSchema = toRjsfSchema(schema, language);
+    const rjsfSchema = toRjsfSchema(meta, language);
     const next = getDefaultFormState(
       validator,
       rjsfSchema,
@@ -105,16 +105,16 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
     );
     setFormData(next ?? {});
-  }, [resetKey, schema, jsonSchema, isEmpty, language]);
+  }, [resetKey, meta, jsonSchema, isEmpty, language]);
 
-  if (store.hasParseError) {
+  if (store.hasMetaError) {
     return (
       <div className={styles.stateWrapper}>
         <Alert
           type="error"
           showIcon
           message={t("task-template-editor.schema-parse-error")}
-          description={store.parseError ?? undefined}
+          description={store.metaError ?? undefined}
         />
       </div>
     );
@@ -145,7 +145,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
         >
           <JsonForm
             key={resetKey}
-            schema={toRjsfSchema(schema!, language)}
+            schema={toRjsfSchema(meta!, language)}
             uiSchema={toRjsfUiSchema(localizedUiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}

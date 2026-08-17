@@ -1,0 +1,20 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* Высота строки как у Input рядом — иначе подписи полей разъезжаются */
+.control {
+  min-height: 32px;
+}
+
+.functionTag {
+  margin-inline-end: 0;
+  font-family: var(--saltbox-font-mono, monospace);
+}
