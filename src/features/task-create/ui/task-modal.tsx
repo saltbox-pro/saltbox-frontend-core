@@ -9,13 +9,14 @@ import { Flex, Tabs, message, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import {
   getTemplateDescriptionText,
   getTemplateTitleText,
 } from "saltbox-core/shared/utils/template-localized-text";
 
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
-import { taskTemplateService, taskCreationService } from "../service";
+import { taskCreationService } from "../service";
 import type {
   PluginRenderData,
   TaskConfigurationFormData,

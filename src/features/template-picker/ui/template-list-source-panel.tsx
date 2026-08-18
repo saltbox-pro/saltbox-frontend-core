@@ -73,7 +73,7 @@ export function TemplateListSourcePanel({
       constrainHeight={false}
       searchQuery={searchQuery}
       renderTitleExtra={(template) =>
-        isFunctionTemplate(template) ? <FunctionTemplateBadge fun={template.fun} /> : null
+        isFunctionTemplate(template) ? <FunctionTemplateBadge template={template} /> : null
       }
       getTemplateAccessibility={
         sourceRow.isAccessibilityLoaded ? getTemplateAccessibility : undefined

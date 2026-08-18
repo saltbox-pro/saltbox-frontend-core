@@ -1,3 +1,8 @@
+import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+
+import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-localized-text";
+import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+
 import { getFunctionDisplayName } from "./template-kind";
 
 export type FunctionArgument = {
@@ -41,9 +46,13 @@ export type FunctionUiSchema = {
 
 export const buildFunctionTooltipData = (
   functionName: string,
-  schema: FunctionSchema,
-  uiSchema: FunctionUiSchema = {}
+  template: TaskTemplateModel,
+  language: string
 ): FunctionTooltipData => {
+  const schema = (template.json_schema ?? {}) as FunctionSchema;
+  const uiSchema = (localizeUiSchema(template.ui_schema, template.i18n, language) ??
+    {}) as FunctionUiSchema;
+
   const kwargsSchema = schema.properties?.kwargs;
   const schemaProperties = kwargsSchema?.properties ?? {};
   const requiredProperties = kwargsSchema?.required ?? [];
@@ -67,7 +76,11 @@ export const buildFunctionTooltipData = (
 
   return {
     name: getFunctionDisplayName(functionName),
-    description: schema.description ?? schema.title ?? uiSchema["ui:description"],
+    description:
+      getTemplateDescriptionText(template.description ?? null, language) ||
+      schema.description ||
+      schema.title ||
+      uiSchema["ui:description"],
     arguments: argumentsList,
     example: schema.example,
   };

@@ -25,9 +25,10 @@ export type JobReplayBaseline = {
 export type { JobReturnToPickerSnapshot };
 
 type PickedTemplateBaseline = {
+  sourceId: string;
   templateId: string;
   fun: string;
-  arg?: unknown[];
+  templateArgs?: unknown[];
 };
 
 type JobModalShellProps = {
@@ -51,14 +52,14 @@ export const JobModalShell = ({
   repeatBaseline,
   onAfterConfigureClose,
 }: JobModalShellProps) => {
-  const jsonFormByFunRef = useRef<Record<string, unknown>>({});
+  const jsonFormByKeyRef = useRef<Record<string, unknown>>({});
   const [, setFormCacheRevision] = useState(0);
   const [jobModalFun, setJobModalFun] = useState<string | null>(null);
   const [pickedTemplate, setPickedTemplate] = useState<PickedTemplateBaseline | null>(null);
 
   useEffect(() => {
     if (!pickerOpen) {
-      jsonFormByFunRef.current = {};
+      jsonFormByKeyRef.current = {};
       setFormCacheRevision(0);
       setPickedTemplate(null);
     }
@@ -72,19 +73,23 @@ export const JobModalShell = ({
 
   const funForArgs = configureFunction ?? jobModalFun;
 
+  const formCacheKey = pickedTemplate?.templateId ?? funForArgs;
+  const cachedFormData =
+    formCacheKey && Object.prototype.hasOwnProperty.call(jsonFormByKeyRef.current, formCacheKey)
+      ? (jsonFormByKeyRef.current[formCacheKey] as Record<string, unknown>)
+      : undefined;
+
   const resolvedArgKwarg = (() => {
-    if (!funForArgs) {
+    if (!funForArgs || pickedTemplate) {
       return { arg: undefined, kwarg: undefined };
     }
-    if (Object.prototype.hasOwnProperty.call(jsonFormByFunRef.current, funForArgs)) {
-      const data = jsonFormByFunRef.current[funForArgs] as Record<string, unknown>;
+    if (cachedFormData) {
       return {
-        arg: (data?.args ?? data?.arg) as unknown[] | undefined,
-        kwarg: (data?.kwargs ?? data?.kwarg) as Record<string, unknown> | undefined,
+        arg: (cachedFormData.args ?? cachedFormData.arg) as unknown[] | undefined,
+        kwarg: (cachedFormData.kwargs ?? cachedFormData.kwarg) as
+          | Record<string, unknown>
+          | undefined,
       };
-    }
-    if (pickedTemplate && funForArgs === pickedTemplate.fun) {
-      return { arg: pickedTemplate.arg, kwarg: undefined };
     }
     if (repeatBaseline && funForArgs === repeatBaseline.fun) {
       return { arg: repeatBaseline.arg, kwarg: repeatBaseline.kwarg };
@@ -95,18 +100,18 @@ export const JobModalShell = ({
   const handleSelectTemplate = useCallback(
     (template: PickedTemplate) => {
       const baseline: PickedTemplateBaseline = template.isFunctionTemplate
-        ? { templateId: template.templateId, fun: template.fun }
-        : { templateId: template.templateId, fun: SLS_TEMPLATE_FUN, arg: [template.name] };
-
-      if (pickedTemplate?.templateId !== baseline.templateId) {
-        delete jsonFormByFunRef.current[baseline.fun];
-        setFormCacheRevision((value) => value + 1);
-      }
+        ? { sourceId: template.sourceId, templateId: template.templateId, fun: template.fun }
+        : {
+            sourceId: template.sourceId,
+            templateId: template.templateId,
+            fun: SLS_TEMPLATE_FUN,
+            templateArgs: [template.name],
+          };
 
       setPickedTemplate(baseline);
       onConfigureFunctionChange(baseline.fun);
     },
-    [onConfigureFunctionChange, pickedTemplate]
+    [onConfigureFunctionChange]
   );
 
   const handleSelectCustomFunction = useCallback(
@@ -119,8 +124,9 @@ export const JobModalShell = ({
 
   const handleReturnToFunctionPicker = useCallback(
     (payload: JobReturnToPickerSnapshot) => {
-      if (configureFunction) {
-        jsonFormByFunRef.current[configureFunction] = payload.jsonFormData;
+      const cacheKey = pickedTemplate?.templateId ?? configureFunction;
+      if (cacheKey) {
+        jsonFormByKeyRef.current[cacheKey] = payload.jsonFormData;
         setFormCacheRevision((value) => value + 1);
       }
       onTargetingChange({
@@ -132,7 +138,13 @@ export const JobModalShell = ({
       onConfigureFunctionChange(null);
       onPickerOpenChange(true);
     },
-    [configureFunction, onConfigureFunctionChange, onPickerOpenChange, onTargetingChange]
+    [
+      configureFunction,
+      onConfigureFunctionChange,
+      onPickerOpenChange,
+      onTargetingChange,
+      pickedTemplate,
+    ]
   );
 
   const handleJobModalClosed = useCallback(() => {
@@ -169,6 +181,10 @@ export const JobModalShell = ({
           defaultMaster={targeting.defaultMaster}
           initialTtlSeconds={targeting.ttlSeconds}
           fun={jobModalFun}
+          sourceId={pickedTemplate?.sourceId}
+          templateId={pickedTemplate?.templateId}
+          templateArgs={pickedTemplate?.templateArgs}
+          initialJsonFormValue={pickedTemplate ? cachedFormData : undefined}
           arg={resolvedArgKwarg.arg}
           kwarg={resolvedArgKwarg.kwarg}
           openOnMount
