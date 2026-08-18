@@ -35,13 +35,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
-import { JobLaunchError } from "saltbox-core/routes/jobs.$jid/-components/job-launch-error";
-import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
 import {
   JobModalShell,
   type JobModalTargeting,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+} from "saltbox-core/features/job-modal";
+import { JobLaunchError } from "saltbox-core/routes/jobs.$jid/-components/job-launch-error";
+import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";

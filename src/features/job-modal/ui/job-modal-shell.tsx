@@ -1,4 +1,3 @@
-import type { CreateJobRequestTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
@@ -7,22 +6,13 @@ import {
   type PickedTemplate,
 } from "saltbox-core/features/template-picker";
 
-import { JobModal, type JobReturnToPickerSnapshot } from "./job-modal";
+import type {
+  JobModalTargeting,
+  JobReplayBaseline,
+  JobReturnToPickerSnapshot,
+} from "../type/types";
 
-export type JobModalTargeting = {
-  target: string;
-  targetType: CreateJobRequestTgtTypeEnum;
-  defaultMaster: string;
-  ttlSeconds?: number;
-};
-
-export type JobReplayBaseline = {
-  fun: string;
-  arg?: unknown[];
-  kwarg?: Record<string, unknown>;
-};
-
-export type { JobReturnToPickerSnapshot };
+import { JobModal } from "./job-modal";
 
 type PickedTemplateBaseline = {
   sourceId: string;

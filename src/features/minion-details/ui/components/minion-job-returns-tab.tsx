@@ -26,11 +26,11 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/hooks/use-job-modal-flow-state";
 import {
   JobModalShell,
+  useJobModalFlowState,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+} from "saltbox-core/features/job-modal";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";

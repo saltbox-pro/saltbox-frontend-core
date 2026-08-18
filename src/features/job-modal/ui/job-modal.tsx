@@ -57,17 +57,11 @@ import {
 import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
-import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
-import { useJobModalInit, type JobModalFormValues } from "./hooks/use-job-modal-init";
-import styles from "./job-modal.module.css";
+import { useJobModalInit, type JobModalFormValues } from "../hooks/use-job-modal-init";
+import type { JobReturnToPickerSnapshot } from "../type/types";
 
-export type JobReturnToPickerSnapshot = {
-  salt_master: string;
-  tgt: string;
-  tgt_type: CreateJobRequestTgtTypeEnum;
-  jsonFormData: unknown;
-  ttlSeconds?: number;
-};
+import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
+import styles from "./job-modal.module.css";
 
 interface JobModalProps {
   target?: string;
