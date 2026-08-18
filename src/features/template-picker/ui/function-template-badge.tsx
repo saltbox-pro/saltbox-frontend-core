@@ -3,19 +3,25 @@ import { Tag, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
 
 import { getFunctionDisplayName } from "../helpers/template-kind";
-import { useFunctionSchemaTooltip } from "../hooks/use-function-schema-tooltip";
+import { useTemplateSchemaTooltip } from "../hooks/use-template-schema-tooltip";
+import type { TaskTemplatePickerItem } from "../type/types";
 
 import { FunctionTemplateTooltip } from "./function-template-tooltip";
 import tooltipStyles from "./function-template-tooltip.module.css";
 import styles from "./template-picker-modal.module.css";
 
 export type FunctionTemplateBadgeProps = {
-  fun: string;
+  template: TaskTemplatePickerItem;
 };
 
-export function FunctionTemplateBadge({ fun }: FunctionTemplateBadgeProps) {
+export function FunctionTemplateBadge({ template }: FunctionTemplateBadgeProps) {
   const { t } = useTranslation();
-  const { data, isLoading, load } = useFunctionSchemaTooltip(fun);
+  const { fun } = template;
+  const { data, isLoading, load } = useTemplateSchemaTooltip({
+    sourceId: template.source_id,
+    templateId: template.id,
+    fun,
+  });
 
   return (
     <span className={styles.commandBadge}>

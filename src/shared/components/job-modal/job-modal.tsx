@@ -39,6 +39,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
+import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import {
@@ -53,6 +54,7 @@ import {
   validateJobJsonFormData,
   type JsonSchemaRecord,
 } from "saltbox-core/shared/utils/job-schema-split";
+import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
@@ -71,6 +73,10 @@ interface JobModalProps {
   target?: string;
   targetType?: CreateJobRequestTgtTypeEnum;
   fun: string;
+  sourceId?: string;
+  templateId?: string;
+  templateArgs?: unknown[];
+  initialJsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
   defaultMaster?: string;
@@ -94,6 +100,10 @@ export function JobModal({
   target,
   targetType,
   fun,
+  sourceId,
+  templateId,
+  templateArgs,
+  initialJsonFormValue,
   arg,
   kwarg,
   defaultMaster,
@@ -103,7 +113,7 @@ export function JobModal({
   onReturnToFunctionPicker,
   onJobModalClosed,
 }: JobModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
@@ -129,7 +139,7 @@ export function JobModal({
     isInitialLoading,
     isFormReady,
     masterList,
-    saltFunction,
+    paramsSource,
     jsonFormValue,
     setJsonFormValue,
     ttlValue,
@@ -141,6 +151,9 @@ export function JobModal({
     cancelInit,
   } = useJobModalInit({
     fun,
+    sourceId,
+    templateId,
+    initialJsonFormValue,
     arg,
     kwarg,
     target,
@@ -159,20 +172,46 @@ export function JobModal({
 
   const isLoading = isInitialLoading || isJobCreating;
 
-  const functionJsonSchema = saltFunction?.json_schema as JsonSchemaRecord | undefined;
-  const functionUiSchema = saltFunction?.ui_schema as JsonSchemaRecord | undefined;
+  const isTemplateMode = paramsSource?.kind === "template";
 
-  const jobParamsSchemaLayout = useMemo(
+  const functionJsonSchema =
+    paramsSource?.kind === "function"
+      ? (paramsSource.schema.json_schema as JsonSchemaRecord | undefined)
+      : undefined;
+  const functionUiSchema =
+    paramsSource?.kind === "function"
+      ? (paramsSource.schema.ui_schema as JsonSchemaRecord | undefined)
+      : undefined;
+
+  const templateParamsSchema = useMemo(
+    () =>
+      getTemplateParamsSchema(
+        paramsSource?.kind === "template" ? paramsSource.template : undefined,
+        i18n.language
+      ),
+    [paramsSource, i18n.language]
+  );
+
+  const functionParamsSchemaLayout = useMemo(
     () => getJobParamsSchemaLayout(functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled),
     [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
   );
 
+  const jobParamsSchemaLayout = isTemplateMode
+    ? {
+        displaySchema: templateParamsSchema.isFieldless
+          ? null
+          : (templateParamsSchema.jsonSchema as JsonSchemaRecord | null),
+        displayUiSchema: templateParamsSchema.uiSchema as JsonSchemaRecord | undefined,
+      }
+    : functionParamsSchemaLayout;
+
   useEffect(() => {
-    if (!saltFunction) {
+    if (paramsSource?.kind !== "function") {
       return;
     }
-    setIsAdvancedSettingsEnabled(saltFunction.name === "default");
-  }, [saltFunction]);
+    setIsAdvancedSettingsEnabled(paramsSource.schema.name === "default");
+  }, [paramsSource]);
 
   const openModal = useCallback(() => {
     closeReasonRef.current = null;
@@ -334,7 +373,24 @@ export function JobModal({
     firstInvalidField?.focus({ preventScroll: true });
   };
 
+  const getRequestArgAndKwarg = () => {
+    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
+      jsonFormValue,
+      arg,
+      kwarg,
+    });
+
+    return {
+      arg: templateArgs?.length ? [...templateArgs, ...(requestArg ?? [])] : requestArg,
+      kwarg: requestKwarg,
+    };
+  };
+
   const validateJsonForm = (): boolean => {
+    if (isTemplateMode) {
+      return refJobParamsForm.current?.validateForm() ?? true;
+    }
+
     const formStateData = refJobParamsForm.current?.state?.formData;
     const formData =
       formStateData && typeof formStateData === "object" && !Array.isArray(formStateData)
@@ -383,11 +439,7 @@ export function JobModal({
     handleFormFinishInProgressRef.current = true;
     setIsJobCreating(true);
 
-    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      jsonFormValue,
-      arg,
-      kwarg,
-    });
+    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg();
 
     let requestTgt = formValue.tgt;
     if (formValue.tgt_type === "list") {
@@ -449,11 +501,7 @@ export function JobModal({
   };
 
   const getJobCreateRequest = (): CreateJobRequest => {
-    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
-      jsonFormValue,
-      arg,
-      kwarg,
-    });
+    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg();
     return {
       tgt: form.getFieldValue("tgt"),
       fun,
@@ -626,9 +674,16 @@ export function JobModal({
               )}
             </Form>
 
+            {isTemplateMode && templateParamsSchema.isFieldless && (
+              <TemplateParamsPlaceholder
+                jsonSchema={templateParamsSchema.jsonSchema}
+                uiSchema={templateParamsSchema.uiSchema}
+              />
+            )}
+
             {jobParamsSchemaLayout.displaySchema && (
               <JsonForm
-                key={`${fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
+                key={`${templateId ?? fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
                 ref={refJobParamsForm}
                 schema={jobParamsSchemaLayout.displaySchema}
                 uiSchema={jobParamsSchemaLayout.displayUiSchema}

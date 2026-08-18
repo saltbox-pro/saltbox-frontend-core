@@ -1,11 +1,10 @@
+import type { RJSFSchema } from "@rjsf/utils";
 import type { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex } from "antd";
+import { Button } from "antd";
 import { type Ref, useImperativeHandle, useRef, useState } from "react";
 
-import { isFieldlessSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
-
-import styles from "./task-data-form.module.css";
+import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 
 export interface TaskDataFormHandle {
   validate: () => boolean;
@@ -13,8 +12,9 @@ export interface TaskDataFormHandle {
 }
 
 export interface TaskDataFormProps {
-  jsonSchema: TaskTemplateModel["json_schema"] | undefined;
+  jsonSchema: RJSFSchema | undefined;
   uiSchema: TaskTemplateModel["ui_schema"] | undefined;
+  isFieldless: boolean;
   initialData?: TaskData;
   onSubmit: (data: TaskData) => void;
   onError: () => void;
@@ -24,6 +24,7 @@ export interface TaskDataFormProps {
 export function TaskDataForm({
   jsonSchema,
   uiSchema,
+  isFieldless,
   initialData,
   onSubmit,
   onError,
@@ -45,20 +46,8 @@ export function TaskDataForm({
     return null;
   }
 
-  if (isFieldlessSchema(jsonSchema)) {
-    const asText = (value: unknown) => (typeof value === "string" ? value : undefined);
-
-    const title = asText(uiSchema?.["ui:title"] ?? jsonSchema.title);
-    const description = asText(uiSchema?.["ui:description"] ?? jsonSchema.description);
-
-    return (
-      <Flex vertical gap="small">
-        {title ? <div className={styles.fieldlessSchemaLabel}>{title}</div> : null}
-        {description ? (
-          <div className={styles.fieldlessSchemaDescription}>{description}</div>
-        ) : null}
-      </Flex>
-    );
+  if (isFieldless) {
+    return <TemplateParamsPlaceholder jsonSchema={jsonSchema} uiSchema={uiSchema} />;
   }
 
   return (

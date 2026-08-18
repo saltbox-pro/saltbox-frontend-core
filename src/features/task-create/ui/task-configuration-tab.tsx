@@ -18,8 +18,7 @@ import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
-import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
-import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 
 import { buildTaskConfigurationFormData } from "../helpers/build-task-configuration-form-data";
 import { taskCreationService } from "../service";
@@ -57,14 +56,9 @@ export function TaskConfigurationTab({
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
-  const formJsonSchema = useMemo(
-    () => (template ? toRjsfSchema(template, i18n.language) : undefined),
+  const paramsSchema = useMemo(
+    () => getTemplateParamsSchema(template, i18n.language),
     [template, i18n.language]
-  );
-
-  const formUiSchema = useMemo(
-    () => localizeUiSchema(template?.ui_schema, template?.i18n, i18n.language),
-    [template?.ui_schema, template?.i18n, i18n.language]
   );
 
   useEffect(() => {
@@ -274,8 +268,9 @@ export function TaskConfigurationTab({
 
           <TaskDataForm
             ref={taskDataFormRef}
-            jsonSchema={formJsonSchema}
-            uiSchema={formUiSchema}
+            jsonSchema={paramsSchema.jsonSchema}
+            uiSchema={paramsSchema.uiSchema}
+            isFieldless={paramsSchema.isFieldless}
             initialData={initialData?.data}
             onSubmit={handleTaskDataFinish}
             onError={showValidationError}

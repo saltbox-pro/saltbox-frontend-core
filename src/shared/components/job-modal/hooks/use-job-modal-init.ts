@@ -3,6 +3,7 @@ import type {
   CreateJobRequestTgtTypeEnum,
   JobSchemaModel,
   MasterViewSchema,
+  TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
 import {
   useAcceptedMastersErrorMessage,
@@ -14,6 +15,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import {
   fetchJobFunctionSchema,
   getDefaultJsonFormValue,
@@ -32,8 +34,15 @@ export type MasterOption = {
 
 export type JobModalFormValues = Pick<CreateJobRequest, "tgt" | "tgt_type" | "salt_master">;
 
+export type JobParamsSource =
+  | { kind: "template"; template: TaskTemplateModel }
+  | { kind: "function"; schema: JobSchemaModel };
+
 type UseJobModalInitParams = {
   fun: string;
+  sourceId?: string;
+  templateId?: string;
+  initialJsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
   target?: string;
@@ -48,6 +57,7 @@ type UseJobModalInitParams = {
 
 const NO_ACCEPTED_MASTERS_ERROR = "NO_ACCEPTED_MASTERS";
 const MASTERS_LOAD_FAILED_ERROR = "MASTERS_LOAD_FAILED";
+const TEMPLATE_LOAD_FAILED_ERROR = "TEMPLATE_LOAD_FAILED";
 
 const mapMastersToOptions = (masters: MasterViewSchema[]): MasterOption[] =>
   masters.map((master) => ({
@@ -78,8 +88,47 @@ const loadAcceptedMasters = async (): Promise<MasterOption[]> => {
   }
 };
 
+const loadParamsSource = async (
+  fun: string,
+  sourceId?: string,
+  templateId?: string
+): Promise<JobParamsSource> => {
+  if (sourceId && templateId) {
+    try {
+      const template = await taskTemplateService.loadTemplateById(sourceId, templateId);
+      return { kind: "template", template };
+    } catch {
+      throw new Error(TEMPLATE_LOAD_FAILED_ERROR);
+    }
+  }
+
+  const schema = await fetchJobFunctionSchema(fun, (name) =>
+    apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
+  );
+
+  return { kind: "function", schema };
+};
+
+const getInitialJsonFormValue = (
+  source: JobParamsSource,
+  initialJsonFormValue: Record<string, unknown> | undefined,
+  arg: unknown[] | undefined,
+  kwarg: Record<string, unknown> | undefined
+): Record<string, unknown> => {
+  if (source.kind === "template") {
+    return initialJsonFormValue ?? getDefaultJsonFormValue(source.template.json_schema);
+  }
+
+  return hasBaselineJobArgs(arg, kwarg)
+    ? getRepeatJsonFormValue(arg, kwarg, source.schema.json_schema)
+    : getDefaultJsonFormValue(source.schema.json_schema);
+};
+
 export const useJobModalInit = ({
   fun,
+  sourceId,
+  templateId,
+  initialJsonFormValue,
   arg,
   kwarg,
   target,
@@ -96,7 +145,7 @@ export const useJobModalInit = ({
   const navigate = useNavigate();
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
-  const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
+  const [paramsSource, setParamsSource] = useState<JobParamsSource>();
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
@@ -119,7 +168,7 @@ export const useJobModalInit = ({
 
   const resetLoadedData = useCallback(() => {
     setMasterList([]);
-    setSaltFunction(undefined);
+    setParamsSource(undefined);
     setJsonFormValue({});
     setTtlValue(null);
     setTtlUnit("seconds");
@@ -131,27 +180,22 @@ export const useJobModalInit = ({
     resetLoadedData();
 
     try {
-      const [masters, schema] = await Promise.all([
+      const [masters, source] = await Promise.all([
         loadAcceptedMasters(),
-        fetchJobFunctionSchema(fun, (name) =>
-          apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
-        ),
+        loadParamsSource(fun, sourceId, templateId),
       ]);
 
       if (requestId !== loadRequestIdRef.current) {
         return;
       }
 
-      const hasBaselineArgs = hasBaselineJobArgs(arg, kwarg);
-
       setMasterList(masters);
-      setSaltFunction(schema);
-      setJsonFormValue(
-        hasBaselineArgs
-          ? getRepeatJsonFormValue(arg, kwarg, schema.json_schema)
-          : getDefaultJsonFormValue(schema.json_schema)
+      setParamsSource(source);
+      setJsonFormValue(getInitialJsonFormValue(source, initialJsonFormValue, arg, kwarg));
+      applyTtlFromInitialOrDefault(
+        initialTtlSeconds,
+        source.kind === "template" ? source.template.defaults?.ttl : source.schema.default_ttl
       );
-      applyTtlFromInitialOrDefault(initialTtlSeconds, schema.default_ttl);
 
       form.resetFields();
       form.setFieldsValue({
@@ -171,6 +215,8 @@ export const useJobModalInit = ({
             navigate,
           })
         );
+      } else if (error instanceof Error && error.message === TEMPLATE_LOAD_FAILED_ERROR) {
+        messageApi.error(t("task-create.error-loading-template"));
       } else if (error instanceof Error && error.message === "JOB_SCHEMA_LOAD_FAILED") {
         messageApi.error(t("job-modal.error-load-function-schema"));
       } else {
@@ -190,6 +236,7 @@ export const useJobModalInit = ({
     defaultMaster,
     form,
     fun,
+    initialJsonFormValue,
     initialTtlSeconds,
     kwarg,
     messageApi,
@@ -197,9 +244,11 @@ export const useJobModalInit = ({
     onLoadFailed,
     renderWarningMessage,
     resetLoadedData,
+    sourceId,
     t,
     target,
     targetType,
+    templateId,
   ]);
 
   const cancelInit = useCallback(() => {
@@ -208,9 +257,9 @@ export const useJobModalInit = ({
 
   return {
     isInitialLoading,
-    isFormReady: !isInitialLoading && saltFunction != null,
+    isFormReady: !isInitialLoading && paramsSource != null,
     masterList,
-    saltFunction,
+    paramsSource,
     jsonFormValue,
     setJsonFormValue,
     ttlValue,
