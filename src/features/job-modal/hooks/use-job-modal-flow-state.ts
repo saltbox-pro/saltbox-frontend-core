@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 
 import { mastersStore } from "saltbox-core/store";
 
-import type { JobModalTargeting } from "../job-modal-shell";
+import type { JobModalTargeting } from "../type/types";
 
 export const createDefaultJobModalTargeting = (): JobModalTargeting => ({
   target: "*",

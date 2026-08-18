@@ -6,11 +6,11 @@ import type { MessageInstance } from "antd/es/message/interface";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useJobModalFlowState } from "saltbox-core/shared/components/job-modal/hooks/use-job-modal-flow-state";
 import {
   JobModalShell,
+  useJobModalFlowState,
   type JobReplayBaseline,
-} from "saltbox-core/shared/components/job-modal/job-modal-shell";
+} from "saltbox-core/features/job-modal";
 import { jobStore } from "saltbox-core/store";
 
 import styles from "./minions-popover.module.css";
