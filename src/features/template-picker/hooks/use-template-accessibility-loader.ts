@@ -1,4 +1,4 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useMemo, useRef } from "react";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef } from "react";
 
 import { i18nStore } from "saltbox-core/store";
 
@@ -11,12 +11,14 @@ import { templatePickerService } from "../service";
 
 type UseTemplateAccessibilityLoaderParams = {
   isOpen: boolean;
+  activeKeys: string[];
   sourceRows: TemplateSourceRow[];
   setSourceRows: Dispatch<SetStateAction<TemplateSourceRow[]>>;
 };
 
 export function useTemplateAccessibilityLoader({
   isOpen,
+  activeKeys,
   sourceRows,
   setSourceRows,
 }: UseTemplateAccessibilityLoaderParams) {
@@ -26,11 +28,6 @@ export function useTemplateAccessibilityLoader({
 
   sourceRowsRef.current = sourceRows;
   isOpenRef.current = isOpen;
-
-  const sourceIdsKey = useMemo(
-    () => sourceRows.map((sourceRow) => sourceRow.key).join(","),
-    [sourceRows]
-  );
 
   const loadAccessibilityForSources = useCallback(
     async (sourceIds: string[], isCancelled: () => boolean) => {
@@ -92,17 +89,17 @@ export function useTemplateAccessibilityLoader({
   );
 
   useEffect(() => {
-    if (!isOpen || !sourceIdsKey) {
+    if (!isOpen || activeKeys.length === 0) {
       return;
     }
 
     let isCancelled = false;
     const shouldSkipUpdate = () => isCancelled || !isOpenRef.current;
 
-    loadAccessibilityForSources(sourceIdsKey.split(","), shouldSkipUpdate);
+    loadAccessibilityForSources(activeKeys, shouldSkipUpdate);
 
     return () => {
       isCancelled = true;
     };
-  }, [isOpen, loadAccessibilityForSources, sourceIdsKey]);
+  }, [activeKeys, isOpen, loadAccessibilityForSources]);
 }

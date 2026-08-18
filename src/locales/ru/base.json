@@ -250,8 +250,8 @@
     "title": "Выберите шаблон",
     "search-placeholder": "Поиск по источнику, шаблону",
     "search-placeholder-command": "Поиск по источнику, шаблону или ввод module.function (например file.append)",
-    "sls-section-title": "Шаблоны SLS",
-    "function-section-title": "Шаблоны функций"
+    "command-tag": "Команда",
+    "function-schema-hint": "Описание функции"
   },
   "task": {
     "details": {
@@ -669,6 +669,10 @@
     "help-recommendation": "Рекомендуется использовать абсолютные пути к файлам или задавать рабочую директорию через параметр cwd в расширенных настройках команды"
   },
   "job-function-select": {
+    "title": "Выберите функцию",
+    "search-placeholder": "Поиск или ввод module.function (например file.append)",
+    "empty": "Нет доступных функций",
+    "nothing-found": "Ничего не найдено по запросу",
     "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
     "create-with-function": "Создать команду с функцией \"{{name}}\"",
     "table-module": "Модуль",

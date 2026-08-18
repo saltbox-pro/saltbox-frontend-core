@@ -6,7 +6,7 @@ export type TemplateAccessibilitySortable = Pick<TaskTemplatePublicSchema, "titl
   isAccessible: boolean;
 };
 
-export function compareTemplatesByAccessibilityThenTitle(
+function compareTemplatesByAccessibilityThenTitle(
   first: TemplateAccessibilitySortable,
   second: TemplateAccessibilitySortable,
   language: string

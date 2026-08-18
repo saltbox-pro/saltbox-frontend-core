@@ -1,11 +1,9 @@
-import { Alert, Button, Empty, Flex, Typography } from "antd";
+import { Alert, Button, Empty } from "antd";
 import { useTranslation } from "react-i18next";
 
-import type { FunctionModuleRow } from "../helpers/function-template-rows";
 import type { TemplateSourceRow } from "../helpers/template-picker-rows";
 import type { PickedTemplate } from "../type/types";
 
-import { FunctionTemplatesSection } from "./function-templates-section";
 import { TemplateListSourcesCollapse } from "./template-list-sources-collapse";
 import styles from "./template-picker-modal.module.css";
 
@@ -16,10 +14,7 @@ export type TemplatePickerContentProps = {
   hasNoResults: boolean;
   isSearchReset: boolean;
   activeKeys: string[];
-  slsRows: TemplateSourceRow[];
-  functionModuleRows: FunctionModuleRow[];
-  isFunctionAccessibilityLoading: boolean;
-  hasFunctionAccessibilityError: boolean;
+  filteredRows: TemplateSourceRow[];
   searchQuery?: string;
   getSourceLabel: (sourceName: string) => string;
   onCollapseChange: (keys: string | string[]) => void;
@@ -34,10 +29,7 @@ export function TemplatePickerContent({
   hasNoResults,
   isSearchReset,
   activeKeys,
-  slsRows,
-  functionModuleRows,
-  isFunctionAccessibilityLoading,
-  hasFunctionAccessibilityError,
+  filteredRows,
   searchQuery,
   getSourceLabel,
   onCollapseChange,
@@ -46,10 +38,7 @@ export function TemplatePickerContent({
 }: TemplatePickerContentProps) {
   const { t } = useTranslation();
 
-  const isReady = !isLoading && !isError;
-  const shouldShowSlsSection = isReady && slsRows.length > 0;
-  const shouldShowFunctionSection =
-    isReady && (functionModuleRows.length > 0 || isFunctionAccessibilityLoading);
+  const shouldShowCollapse = !isLoading && !isError && filteredRows.length > 0;
 
   return (
     <div className={styles.modalContent}>
@@ -79,40 +68,17 @@ export function TemplatePickerContent({
         </Empty>
       )}
 
-      <Flex vertical gap="middle">
-        {shouldShowSlsSection && (
-          <section>
-            <Typography.Title level={5} className={styles.sectionTitle}>
-              {t("template-picker.sls-section-title")}
-            </Typography.Title>
-
-            <TemplateListSourcesCollapse
-              filteredRows={slsRows}
-              activeKeys={activeKeys}
-              searchQuery={searchQuery}
-              isSearchReset={isSearchReset}
-              getSourceLabel={getSourceLabel}
-              onCollapseChange={onCollapseChange}
-              onSelectTemplate={onSelectTemplate}
-            />
-          </section>
-        )}
-
-        {shouldShowFunctionSection && (
-          <section>
-            <Typography.Title level={5} className={styles.sectionTitle}>
-              {t("template-picker.function-section-title")}
-            </Typography.Title>
-
-            <FunctionTemplatesSection
-              moduleRows={functionModuleRows}
-              isAccessibilityLoading={isFunctionAccessibilityLoading}
-              hasAccessibilityError={hasFunctionAccessibilityError}
-              onSelectTemplate={onSelectTemplate}
-            />
-          </section>
-        )}
-      </Flex>
+      {shouldShowCollapse && (
+        <TemplateListSourcesCollapse
+          filteredRows={filteredRows}
+          activeKeys={activeKeys}
+          searchQuery={searchQuery}
+          isSearchReset={isSearchReset}
+          getSourceLabel={getSourceLabel}
+          onCollapseChange={onCollapseChange}
+          onSelectTemplate={onSelectTemplate}
+        />
+      )}
     </div>
   );
 }
