@@ -24,13 +24,22 @@ export function useTemplateAccessibilityLoader({
 }: UseTemplateAccessibilityLoaderParams) {
   const loadingSourceIdsRef = useRef(new Set<string>());
   const sourceRowsRef = useRef(sourceRows);
-  const isOpenRef = useRef(isOpen);
+  const activeKeysRef = useRef(activeKeys);
+  const isMountedRef = useRef(true);
 
   sourceRowsRef.current = sourceRows;
-  isOpenRef.current = isOpen;
+  activeKeysRef.current = activeKeys;
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const loadAccessibilityForSources = useCallback(
-    async (sourceIds: string[], isCancelled: () => boolean) => {
+    async (sourceIds: string[]) => {
       const sourceIdsToLoad = sourceIds.filter((sourceId) => {
         const sourceRow = sourceRowsRef.current.find((row) => row.key === sourceId);
 
@@ -54,7 +63,7 @@ export function useTemplateAccessibilityLoader({
             const accessibleTemplateIds =
               await templatePickerService.loadAccessibleTemplateIds(sourceId);
 
-            if (isCancelled()) {
+            if (!isMountedRef.current) {
               return;
             }
 
@@ -70,7 +79,7 @@ export function useTemplateAccessibilityLoader({
               )
             );
           } catch {
-            if (isCancelled()) {
+            if (!isMountedRef.current) {
               return;
             }
 
@@ -88,18 +97,15 @@ export function useTemplateAccessibilityLoader({
     [setSourceRows]
   );
 
+  const activeKeysSignature = activeKeys.join("|");
+
   useEffect(() => {
-    if (!isOpen || activeKeys.length === 0) {
+    const sourceIds = activeKeysRef.current;
+
+    if (!isOpen || sourceIds.length === 0) {
       return;
     }
 
-    let isCancelled = false;
-    const shouldSkipUpdate = () => isCancelled || !isOpenRef.current;
-
-    loadAccessibilityForSources(activeKeys, shouldSkipUpdate);
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [activeKeys, isOpen, loadAccessibilityForSources]);
+    loadAccessibilityForSources(sourceIds);
+  }, [activeKeysSignature, isOpen, loadAccessibilityForSources]);
 }
