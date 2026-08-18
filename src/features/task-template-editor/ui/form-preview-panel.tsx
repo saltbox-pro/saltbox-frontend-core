@@ -1,6 +1,8 @@
+import { GlobalOutlined } from "@ant-design/icons";
 import { getDefaultFormState } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
 import {
+  Dropdown,
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
 } from "@saltbox/saltbox-frontend-common";
@@ -16,6 +18,7 @@ import {
 } from "saltbox-core/shared/utils/template-rjsf-schema";
 import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
+import { pickPreviewLanguage } from "../lib/template-i18n";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import { FormDataPreviewModal } from "./form-data-preview-modal";
@@ -62,7 +65,8 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const meta = store.meta;
   const jsonSchema = meta?.json_schema;
   const uiSchema = meta?.ui_schema;
-  const language = i18n.language;
+  const locales = store.translationLocales;
+  const language = pickPreviewLanguage(locales, store.previewLanguage, i18n.language);
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
@@ -134,9 +138,32 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
   return (
     <div className={styles.container}>
-      <Typography.Title level={5} className={styles.title}>
-        {t("task-template-editor.form-preview-title")}
-      </Typography.Title>
+      <Flex align="center" justify="space-between" gap="small" className={styles.header}>
+        <Typography.Title level={5} className={styles.title}>
+          {t("task-template-editor.form-preview-title")}
+        </Typography.Title>
+
+        <Dropdown
+          trigger={["click"]}
+          menu={{
+            items: locales.map((locale) => ({
+              key: locale,
+              label: locale.toUpperCase(),
+            })),
+            selectedKeys: [language],
+            onClick: ({ key }) => store.setPreviewLanguage(key),
+          }}
+        >
+          <Button
+            type="text"
+            size="small"
+            icon={<GlobalOutlined />}
+            aria-label={t("task-template-editor.form-preview-language")}
+          >
+            {language.toUpperCase()}
+          </Button>
+        </Dropdown>
+      </Flex>
 
       <div className={styles.formWrapper}>
         <PreviewErrorBoundary

@@ -3,6 +3,7 @@ import {
   collectTemplateLocales,
   collectTranslationKeys,
   collectTranslationRows,
+  pickPreviewLanguage,
   isValidLocaleCode,
 } from "./template-i18n";
 import type { TemplateMeta } from "./template-meta";
@@ -104,5 +105,27 @@ describe("переводы шаблона", () => {
     expect(isValidLocaleCode("russian")).toBe(false);
     expect(isValidLocaleCode("DE")).toBe(false);
     expect(isValidLocaleCode("")).toBe(false);
+  });
+
+  describe("pickPreviewLanguage", () => {
+    it("возвращает выбранный язык если он есть в списке", () => {
+      expect(pickPreviewLanguage(["ru", "en", "de"], "de", "en-US")).toBe("de");
+    });
+
+    it("если выбранный язык отсутствует, использует нормализованный fallback", () => {
+      expect(pickPreviewLanguage(["ru", "en", "de"], "es", "en-US")).toBe("en");
+    });
+
+    it("fallback нормализуется до базового кода", () => {
+      expect(pickPreviewLanguage(["ru", "en"], null, "en-US")).toBe("en");
+    });
+
+    it("если в списке нет нормализованного fallback, берёт первый локаль", () => {
+      expect(pickPreviewLanguage(["ru", "en"], "es", "fr-FR")).toBe("ru");
+    });
+
+    it("если список пуст, возвращает нормализованный fallback", () => {
+      expect(pickPreviewLanguage([], null, "en-US")).toBe("en");
+    });
   });
 });

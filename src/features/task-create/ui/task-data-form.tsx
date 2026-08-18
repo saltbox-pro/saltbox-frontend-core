@@ -2,7 +2,6 @@ import type { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-clie
 import { JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
 import { type Ref, useImperativeHandle, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import { isFieldlessSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
 
@@ -30,7 +29,6 @@ export function TaskDataForm({
   onError,
   ref,
 }: TaskDataFormProps) {
-  const { t } = useTranslation();
   const [jsonData, setJsonData] = useState<TaskData>(initialData ?? {});
   const jsonFormRef = useRef<JsonFormRef<TaskData>>(null);
 

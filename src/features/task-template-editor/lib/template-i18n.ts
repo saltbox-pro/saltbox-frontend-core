@@ -45,6 +45,23 @@ export function collectTemplateLocales(meta: TemplateMeta | null | undefined): s
   return [...BASE_TEMPLATE_LOCALES, ...extra];
 }
 
+export function pickPreviewLanguage(
+  locales: string[],
+  selected: string | null,
+  fallback: string
+): string {
+  if (selected && locales.includes(selected)) {
+    return selected;
+  }
+
+  const normalized = fallback.split("-")[0] ?? fallback;
+  if (locales.includes(normalized)) {
+    return normalized;
+  }
+
+  return locales[0] ?? normalized;
+}
+
 export function collectTranslationRows(meta: TemplateMeta | null | undefined): TranslationRow[] {
   const i18n = readI18n(meta);
   const locales = collectTemplateLocales(meta);

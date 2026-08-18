@@ -1,12 +1,18 @@
-import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Flex, Input, Modal, Table, Tooltip, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
-import { useEffect, useMemo, useState } from "react";
+import { FastTableListed, Modal } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Button, Flex, Input, Typography } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { BASE_TEMPLATE_LOCALES, isValidLocaleCode } from "../lib/template-i18n";
+import { isValidLocaleCode } from "../lib/template-i18n";
 
+import { TranslationDeleteCell } from "./translation-delete-cell";
+import {
+  TranslationDraftContext,
+  type TranslationDraftContextValue,
+} from "./translation-draft-context";
 import styles from "./translation-edit-modal.module.css";
+import { TranslationTextCell } from "./translation-text-cell";
 
 interface TranslationEditModalProps {
   open: boolean;
@@ -21,6 +27,8 @@ interface LocaleRow {
   locale: string;
 }
 
+const columnHelper = createColumnHelper<LocaleRow>();
+
 export const TranslationEditModal = ({
   open,
   translationKey,
@@ -30,6 +38,7 @@ export const TranslationEditModal = ({
   onCancel,
 }: TranslationEditModalProps) => {
   const { t } = useTranslation();
+  const [modalApi, modalContextHolder] = Modal.useModal();
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [rowLocales, setRowLocales] = useState<string[]>([]);
   const [newLocale, setNewLocale] = useState("");
@@ -64,55 +73,73 @@ export const TranslationEditModal = ({
     setLocaleError(null);
   };
 
-  const handleRemoveLocale = (locale: string) => {
+  const handleRemoveLocale = useCallback((locale: string) => {
     setRowLocales((prev) => prev.filter((item) => item !== locale));
     setDraft((prev) => ({ ...prev, [locale]: "" }));
-  };
+  }, []);
 
-  const columns = useMemo<ColumnsType<LocaleRow>>(
-    () => [
-      {
-        title: t("task-template-editor.translations-column-locale"),
-        dataIndex: "locale",
-        key: "locale",
-        width: 110,
-        render: (_, row) => <code className={styles.locale}>{row.locale}</code>,
-      },
-      {
-        title: t("task-template-editor.translations-column-text"),
-        dataIndex: "value",
-        key: "value",
-        render: (_, row) => (
-          <Input.TextArea
-            value={draft[row.locale] ?? ""}
-            autoSize={{ minRows: 1, maxRows: 6 }}
-            placeholder={t("task-template-editor.translations-text-placeholder")}
-            onChange={(event) =>
-              setDraft((prev) => ({ ...prev, [row.locale]: event.target.value }))
-            }
-          />
-        ),
-      },
-      {
-        key: "actions",
-        width: 48,
-        render: (_, row) =>
-          BASE_TEMPLATE_LOCALES.includes(row.locale) ? null : (
-            <Tooltip title={t("task-template-editor.translations-remove-locale")}>
-              <Button
-                type="text"
-                size="small"
-                icon={<DeleteOutlined />}
-                onClick={() => handleRemoveLocale(row.locale)}
-              />
-            </Tooltip>
-          ),
-      },
-    ],
-    [draft, t]
+  const confirmRemoveLocale = useCallback(
+    (locale: string) => {
+      modalApi.confirm({
+        title: t("task-template-editor.translations-remove-locale-confirm-title"),
+        icon: null,
+        content: t("task-template-editor.translations-remove-locale-confirm-content", { locale }),
+        okText: t("common.delete"),
+        cancelText: t("common.cancel"),
+        okButtonProps: { danger: true },
+        onOk: () => handleRemoveLocale(locale),
+      });
+    },
+    [handleRemoveLocale, modalApi, t]
   );
 
-  const dataSource = useMemo(() => rowLocales.map((locale) => ({ locale })), [rowLocales]);
+  const handleDraftChange = useCallback((locale: string, value: string) => {
+    setDraft((prev) => ({ ...prev, [locale]: value }));
+  }, []);
+
+  const draftContext = useMemo(
+    () => ({ values: draft, onChange: handleDraftChange }),
+    [draft, handleDraftChange]
+  ) satisfies TranslationDraftContextValue;
+
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("locale", {
+        header: t("task-template-editor.translations-column-locale"),
+        enableSorting: false,
+        cell: (info) => <code className={styles.locale}>{info.getValue()}</code>,
+        meta: {
+          ellipsis: false,
+          width: "15%",
+        },
+      }),
+      columnHelper.display({
+        id: "value",
+        header: t("task-template-editor.translations-column-text"),
+        enableSorting: false,
+        cell: (info) => <TranslationTextCell locale={info.row.original.locale} />,
+        meta: {
+          ellipsis: false,
+        },
+      }),
+      columnHelper.display({
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: (info) => (
+          <TranslationDeleteCell locale={info.row.original.locale} onDelete={confirmRemoveLocale} />
+        ),
+        meta: {
+          ellipsis: false,
+          width: 32,
+          minWidth: 32,
+        },
+      }),
+    ],
+    [confirmRemoveLocale, t]
+  );
+
+  const data = useMemo(() => rowLocales.map((locale) => ({ locale })), [rowLocales]);
 
   return (
     <Modal
@@ -130,13 +157,18 @@ export const TranslationEditModal = ({
       cancelText={t("common.cancel")}
       destroyOnHidden
     >
-      <Table<LocaleRow>
-        rowKey="locale"
-        size="small"
-        columns={columns}
-        dataSource={dataSource}
-        pagination={false}
-      />
+      {modalContextHolder}
+      <TranslationDraftContext.Provider value={draftContext}>
+        <FastTableListed<LocaleRow>
+          tableId="core-task-template-editor-translation-edit"
+          columns={columns}
+          data={data}
+          getRowId={(row) => row.locale}
+          isEmpty={data.length === 0}
+          hideFooter
+          enableColumnResize={false}
+        />
+      </TranslationDraftContext.Provider>
 
       <Flex gap="small" align="flex-start" className={styles.addLocale}>
         <div className={styles.addLocaleField}>

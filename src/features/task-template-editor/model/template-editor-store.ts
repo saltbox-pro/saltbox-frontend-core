@@ -71,6 +71,7 @@ export class TemplateEditorStore {
   targetSourceId: string | null = null;
   targetSources: DuplicateTargetSource[] = [];
   isLoadingTargetSources = false;
+  previewLanguage: string | null = null;
 
   constructor(params: TemplateEditorParams) {
     this.mode = params.mode;
@@ -218,6 +219,13 @@ export class TemplateEditorStore {
 
   setTranslations = (key: string, values: Record<string, string>) => {
     this.updateMeta((meta) => applyTranslations(meta, key, values));
+    if (this.previewLanguage && !this.translationLocales.includes(this.previewLanguage)) {
+      this.previewLanguage = null;
+    }
+  };
+
+  setPreviewLanguage = (language: string) => {
+    this.previewLanguage = language;
   };
 
   loadTemplate = async () => {

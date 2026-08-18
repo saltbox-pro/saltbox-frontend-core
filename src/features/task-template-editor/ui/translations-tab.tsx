@@ -1,5 +1,6 @@
-import { Alert, Empty, Table, Tag, Tooltip, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { createColumnHelper } from "@tanstack/react-table";
+import { Alert, Tag, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -14,6 +15,8 @@ interface TranslationsTabProps {
   store: TemplateEditorStore;
 }
 
+const columnHelper = createColumnHelper<TranslationRow>();
+
 export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
   const { t } = useTranslation();
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -21,25 +24,25 @@ export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
   const rows = store.translationRows;
   const locales = store.translationLocales;
 
-  const columns = useMemo<ColumnsType<TranslationRow>>(
+  const columns = useMemo(
     () => [
-      {
-        title: t("task-template-editor.translations-column-key"),
-        dataIndex: "key",
-        key: "key",
-        width: 240,
-        fixed: "left",
-        render: (_, row) => (
-          <span className={styles.keyCell}>
-            <code>{row.key}</code>
-            {row.isOrphan && (
-              <Tooltip title={t("task-template-editor.translations-orphan-hint")}>
-                <Tag color="warning">{t("task-template-editor.translations-orphan")}</Tag>
-              </Tooltip>
-            )}
-          </span>
-        ),
-      },
+      columnHelper.accessor("key", {
+        header: t("task-template-editor.translations-column-key"),
+        enableSorting: false,
+        cell: (info) => {
+          const row = info.row.original;
+          return (
+            <span className={styles.keyCell}>
+              <code>{row.key}</code>
+              {row.isOrphan && (
+                <Tooltip title={t("task-template-editor.translations-orphan-hint")}>
+                  <Tag color="warning">{t("task-template-editor.translations-orphan")}</Tag>
+                </Tooltip>
+              )}
+            </span>
+          );
+        },
+      }),
     ],
     [t]
   );
@@ -65,23 +68,18 @@ export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
         {t("task-template-editor.translations-title")}
       </Typography.Title>
 
-      {rows.length === 0 ? (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={t("task-template-editor.translations-empty")}
-        />
-      ) : (
-        <Table<TranslationRow>
-          rowKey="key"
-          size="small"
-          columns={columns}
-          dataSource={rows}
-          pagination={false}
-          scroll={{ x: "max-content" }}
-          rowClassName={styles.row}
-          onRow={(row) => ({ onClick: () => setEditingKey(row.key) })}
-        />
-      )}
+      <FastTableListed<TranslationRow>
+        tableId="core-task-template-editor-translations"
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.key}
+        isEmpty={rows.length === 0}
+        hideFooter
+        enableColumnResize={false}
+        activeRowId={editingKey}
+        onRowClick={(row) => setEditingKey(row.key)}
+        locale={{ empty: t("task-template-editor.translations-empty") }}
+      />
 
       <TranslationEditModal
         open={editingRow !== undefined}

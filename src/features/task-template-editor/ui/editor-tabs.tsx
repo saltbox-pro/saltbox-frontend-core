@@ -17,6 +17,8 @@ interface EditorTabsProps {
   store: TemplateEditorStore;
 }
 
+const FORM_PREVIEW_MIN_WIDTH = 360;
+
 export const EditorTabs = observer(({ store }: EditorTabsProps) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("visual");
@@ -77,7 +79,7 @@ export const EditorTabs = observer(({ store }: EditorTabsProps) => {
         <Splitter.Panel size={splitSizes[0]} min="25%">
           <div className={styles.editorPane}>{editor}</div>
         </Splitter.Panel>
-        <Splitter.Panel size={splitSizes[1]} collapsible min={0}>
+        <Splitter.Panel size={splitSizes[1]} collapsible min={FORM_PREVIEW_MIN_WIDTH}>
           <FormPreviewPanel store={store} />
         </Splitter.Panel>
       </Splitter>
