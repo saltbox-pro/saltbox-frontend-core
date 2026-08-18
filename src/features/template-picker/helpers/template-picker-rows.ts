@@ -57,13 +57,19 @@ export const buildSourceRowsFromSources = (
     .filter((sourceRow) => sourceRow.templates.length > 0);
 };
 
-export const toSlsSourceRows = (sourceRows: TemplateSourceRow[]): TemplateSourceRow[] =>
-  sourceRows
-    .map((sourceRow) => ({
-      ...sourceRow,
-      templates: sourceRow.templates.filter((template) => !isFunctionTemplate(template)),
-    }))
-    .filter((sourceRow) => sourceRow.templates.length > 0);
+export const collectFunctionNamesLower = (sourceRows: TemplateSourceRow[]): Set<string> => {
+  const names = new Set<string>();
+
+  sourceRows.forEach((sourceRow) => {
+    sourceRow.templates.forEach((template) => {
+      if (isFunctionTemplate(template)) {
+        names.add(template.fun.toLowerCase());
+      }
+    });
+  });
+
+  return names;
+};
 
 export const applySourceAccessibility = (
   sourceRow: TemplateSourceRow,

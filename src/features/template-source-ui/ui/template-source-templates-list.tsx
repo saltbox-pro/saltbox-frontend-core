@@ -30,6 +30,7 @@ export type TemplateSourceTemplatesListProps<
   activeTemplateId?: string | null;
   highlightedTemplateId?: string | null;
   renderItemActions?: (template: T) => ReactNode;
+  renderTitleExtra?: (template: T) => ReactNode;
   getTemplateAccessibility?: (template: T) => TemplateAccessibility | undefined;
 };
 
@@ -43,6 +44,7 @@ export function TemplateSourceTemplatesList<
   activeTemplateId,
   highlightedTemplateId,
   renderItemActions,
+  renderTitleExtra,
   getTemplateAccessibility,
 }: TemplateSourceTemplatesListProps<T>) {
   const { t, i18n } = useTranslation();
@@ -99,6 +101,8 @@ export function TemplateSourceTemplatesList<
             <div className={styles.templateItemContent}>
               <div className={styles.templateItemTitle}>
                 <SearchHighlightText text={resolvedTitle} query={searchQuery} />
+
+                {renderTitleExtra?.(template)}
 
                 {accessibility && (
                   <Tag

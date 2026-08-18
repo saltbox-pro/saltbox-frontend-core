@@ -250,8 +250,8 @@
     "title": "Select template",
     "search-placeholder": "Search by source, template",
     "search-placeholder-command": "Search by source, template or type module.function (e.g. file.append)",
-    "sls-section-title": "SLS templates",
-    "function-section-title": "Function templates"
+    "command-tag": "Command",
+    "function-schema-hint": "Function reference"
   },
   "task": {
     "details": {
@@ -669,6 +669,10 @@
     "help-recommendation": "Use absolute file paths or set the working directory via the cwd parameter in the command's advanced settings"
   },
   "job-function-select": {
+    "title": "Choose function",
+    "search-placeholder": "Search or type module.function (e.g. file.append)",
+    "empty": "No available functions",
+    "nothing-found": "Nothing found for query",
     "invalid-function-format": "Use the module.function format (example: file.append)",
     "create-with-function": "Create job with function \"{{name}}\"",
     "table-module": "Module",

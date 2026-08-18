@@ -8,9 +8,27 @@
   margin-right: calc(var(--scrollbar-offset) * -1);
 }
 
-.sectionTitle {
-  margin-top: 0;
-  margin-bottom: 8px;
+.commandBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.commandTag {
+  margin: 0;
+  white-space: nowrap;
+  font-weight: 400;
+}
+
+.commandInfoIcon {
+  color: rgba(0, 0, 0, 0.45);
+  cursor: help;
+}
+
+.commandInfoIcon:hover {
+  color: var(--ant-color-primary, #1677ff);
 }
 
 .customFunctionAction {

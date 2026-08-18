@@ -49,10 +49,7 @@ export function TemplatePickerModal({
     isSearchReset,
     activeKeys,
     handleCollapseChange,
-    slsRows,
-    functionModuleRows,
-    isFunctionAccessibilityLoading,
-    hasFunctionAccessibilityError,
+    filteredRows,
     functionNamesLower,
     searchQuery,
     getSourceLabel,
@@ -137,10 +134,7 @@ export function TemplatePickerModal({
             hasNoResults={hasNoResults && !showCreateWithCustomFunction && !showInvalidFormatHint}
             isSearchReset={isSearchReset}
             activeKeys={activeKeys}
-            slsRows={slsRows}
-            functionModuleRows={functionModuleRows}
-            isFunctionAccessibilityLoading={isFunctionAccessibilityLoading}
-            hasFunctionAccessibilityError={hasFunctionAccessibilityError}
+            filteredRows={filteredRows}
             searchQuery={searchQuery}
             getSourceLabel={getSourceLabel}
             onCollapseChange={handleCollapseChange}

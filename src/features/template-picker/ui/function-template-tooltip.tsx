@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { FunctionTooltipData } from "../helpers/function-tooltip";
 
-import styles from "./function-templates-section.module.css";
+import styles from "./function-template-tooltip.module.css";
 
 export type FunctionTemplateTooltipProps = {
   displayName: string;
