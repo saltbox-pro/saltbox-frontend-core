@@ -30,7 +30,7 @@ export type TemplateSourceTemplatesListProps<
   activeTemplateId?: string | null;
   highlightedTemplateId?: string | null;
   renderItemActions?: (template: T) => ReactNode;
-  renderTitleExtra?: (template: T) => ReactNode;
+  renderTags?: (template: T) => ReactNode;
   getTemplateAccessibility?: (template: T) => TemplateAccessibility | undefined;
 };
 
@@ -44,7 +44,7 @@ export function TemplateSourceTemplatesList<
   activeTemplateId,
   highlightedTemplateId,
   renderItemActions,
-  renderTitleExtra,
+  renderTags,
   getTemplateAccessibility,
 }: TemplateSourceTemplatesListProps<T>) {
   const { t, i18n } = useTranslation();
@@ -102,8 +102,6 @@ export function TemplateSourceTemplatesList<
               <div className={styles.templateItemTitle}>
                 <SearchHighlightText text={resolvedTitle} query={searchQuery} />
 
-                {renderTitleExtra?.(template)}
-
                 {accessibility && (
                   <Tag
                     color={isAccessible ? "success" : "gold"}
@@ -127,14 +125,20 @@ export function TemplateSourceTemplatesList<
                 justify="flex-end"
                 className={styles.templateItemFooter}
               >
-                <Flex wrap="wrap" gap={8} className={styles.templateItemTags}>
-                  <Tag title={name}>
-                    <SearchHighlightText text={name} query={searchQuery} />
-                  </Tag>
+                <Flex align="center" wrap="wrap" gap={8} className={styles.templateItemTags}>
+                  {renderTags ? (
+                    renderTags(template)
+                  ) : (
+                    <>
+                      <Tag title={name}>
+                        <SearchHighlightText text={name} query={searchQuery} />
+                      </Tag>
 
-                  <Tag title={fun}>
-                    <SearchHighlightText text={fun} query={searchQuery} />
-                  </Tag>
+                      <Tag title={fun}>
+                        <SearchHighlightText text={fun} query={searchQuery} />
+                      </Tag>
+                    </>
+                  )}
                 </Flex>
 
                 {renderItemActions?.(template)}

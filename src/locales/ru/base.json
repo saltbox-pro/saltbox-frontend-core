@@ -250,7 +250,6 @@
     "title": "Выберите шаблон",
     "search-placeholder": "Поиск по источнику, шаблону",
     "search-placeholder-command": "Поиск по источнику, шаблону или ввод module.function (например file.append)",
-    "command-tag": "Команда",
     "function-schema-hint": "Описание функции"
   },
   "task": {

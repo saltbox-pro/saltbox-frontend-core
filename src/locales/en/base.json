@@ -250,7 +250,6 @@
     "title": "Select template",
     "search-placeholder": "Search by source, template",
     "search-placeholder-command": "Search by source, template or type module.function (e.g. file.append)",
-    "command-tag": "Command",
     "function-schema-hint": "Function reference"
   },
   "task": {

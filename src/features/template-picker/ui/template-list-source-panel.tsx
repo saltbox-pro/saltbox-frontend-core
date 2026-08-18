@@ -4,11 +4,11 @@ import { useTranslation } from "react-i18next";
 
 import { TemplateSourceTemplatesList } from "saltbox-core/features/template-source-ui";
 
-import { isFunctionTemplate, toPickedTemplate } from "../helpers/template-kind";
+import { toPickedTemplate } from "../helpers/template-kind";
 import type { TemplateSourceRow } from "../helpers/template-picker-rows";
 import type { PickedTemplate, TaskTemplatePickerItem } from "../type/types";
 
-import { FunctionTemplateBadge } from "./function-template-badge";
+import { TemplateItemTags } from "./template-item-tags";
 import { useTemplateListCollapseActiveKeys } from "./template-list-collapse-active-keys-context";
 import { TemplateListPanelSkeleton } from "./template-list-panel-skeleton";
 
@@ -72,9 +72,7 @@ export function TemplateListSourcePanel({
       items={sourceRow.templates}
       constrainHeight={false}
       searchQuery={searchQuery}
-      renderTitleExtra={(template) =>
-        isFunctionTemplate(template) ? <FunctionTemplateBadge template={template} /> : null
-      }
+      renderTags={(template) => <TemplateItemTags template={template} searchQuery={searchQuery} />}
       getTemplateAccessibility={
         sourceRow.isAccessibilityLoaded ? getTemplateAccessibility : undefined
       }
