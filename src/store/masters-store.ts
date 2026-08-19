@@ -1,15 +1,25 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   createMastersStore,
+  isGlobalServerError,
   publishAcceptedMastersChanged,
   toBackendSorting,
 } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, makeObservable, observable, runInAction } from "mobx";
 
+import {
+  mapMasterPingResults,
+  type MasterAvailabilityById,
+} from "saltbox-core/features/masters/helpers/map-master-ping-result";
+
 import { apiCoreStore } from "./api-core-store";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
+
+type PingMastersParams = {
+  manual?: boolean;
+};
 
 export class MastersStore {
   @observable isLoading: boolean;
@@ -18,6 +28,10 @@ export class MastersStore {
   @observable sorting: SortingState;
   @observable masters: Array<MasterViewSchema>;
   @observable totalMasters: number;
+  @observable availabilityByMasterId: MasterAvailabilityById;
+  @observable isPinging: boolean;
+  @observable isManualPinging: boolean;
+  @observable pingFailed: boolean;
 
   private readonly mastersCommonStore = createMastersStore({
     loadAcceptedMastersCount: async () => {
@@ -36,6 +50,10 @@ export class MastersStore {
     this.error = null;
     this.masters = [];
     this.totalMasters = 0;
+    this.availabilityByMasterId = {};
+    this.isPinging = false;
+    this.isManualPinging = false;
+    this.pingFailed = false;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
@@ -50,11 +68,63 @@ export class MastersStore {
     this.error = null;
     this.masters = [];
     this.totalMasters = 0;
+    this.availabilityByMasterId = {};
+    this.isPinging = false;
+    this.isManualPinging = false;
+    this.pingFailed = false;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
     };
+  };
+
+  @action
+  clearPingFailed = (): void => {
+    this.pingFailed = false;
+  };
+
+  @action
+  clearMasterAvailability = (masterId: string): void => {
+    const { [masterId]: _removedAvailability, ...nextAvailability } = this.availabilityByMasterId;
+    this.availabilityByMasterId = nextAvailability;
+  };
+
+  @action
+  pingMasters = async (params?: PingMastersParams): Promise<void> => {
+    if (this.isPinging) {
+      return;
+    }
+
+    const manual = params?.manual ?? false;
+
+    this.isPinging = true;
+    this.isManualPinging = manual;
+    this.pingFailed = false;
+
+    try {
+      const response = await apiCoreStore.systemApi?.pingMasterSystemPingMastersPost();
+      if (!response) {
+        throw new Error("Failed to ping masters");
+      }
+
+      runInAction(() => {
+        this.availabilityByMasterId = mapMasterPingResults(response);
+      });
+    } catch (error) {
+      if (isGlobalServerError(error)) {
+        return;
+      }
+
+      runInAction(() => {
+        this.pingFailed = true;
+      });
+    } finally {
+      runInAction(() => {
+        this.isPinging = false;
+        this.isManualPinging = false;
+      });
+    }
   };
 
   @action
@@ -68,6 +138,7 @@ export class MastersStore {
         .then((master) => {
           runInAction(() => {
             this.isLoading = false;
+            this.clearMasterAvailability(master.master_id);
           });
           publishAcceptedMastersChanged();
           this.updateMaster(master);
@@ -94,6 +165,7 @@ export class MastersStore {
         .then((master) => {
           runInAction(() => {
             this.isLoading = false;
+            this.clearMasterAvailability(master.master_id);
           });
           publishAcceptedMastersChanged();
           this.updateMaster(master);

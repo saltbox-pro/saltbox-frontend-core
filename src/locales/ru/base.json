@@ -395,6 +395,7 @@
     "title": "Контроллеры",
     "table-master-id": "ID контроллера",
     "table-status": "Статус",
+    "table-availability": "Доступность",
     "table-new": "Новый",
     "table-rejected": "Отклонен",
     "table-accepted": "Принят",
@@ -406,6 +407,10 @@
     "table-reject": "Отклонить",
     "table-accept-title": "Принять контроллер",
     "table-reject-title": "Отклонить контроллер",
+    "availability-available": "Доступен",
+    "availability-unavailable": "Недоступен",
+    "check-availability": "Проверить доступность",
+    "error-on-ping-masters": "Не удалось проверить доступность контроллеров",
     "success-on-change-master-status": "Статус контроллера \"{{name}}\" изменён на \"{{status}}\"",
     "error-on-change-master-status": "Ошибка при изменении статуса контроллера"
   },

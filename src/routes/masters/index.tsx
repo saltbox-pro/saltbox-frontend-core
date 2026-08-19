@@ -1,3 +1,4 @@
+import { ApiOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   PageHeader,
@@ -12,6 +13,7 @@ import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { MasterAvailabilityCell } from "saltbox-core/features/masters";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -26,6 +28,18 @@ function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const {
+    availabilityByMasterId,
+    error,
+    isLoading,
+    isManualPinging,
+    isPinging,
+    masters,
+    pagination,
+    pingFailed,
+    sorting,
+  } = mastersStore;
+
   const columns = [
     columnHelper.accessor("master_id", {
       header: t("masters.table-master-id"),
@@ -50,6 +64,18 @@ function MastersPage() {
             return <Tag>{`${t("masters.table-unknown-status")}: ${data.getValue()}`}</Tag>;
         }
       },
+      meta: { minWidth: 150 },
+    }),
+    columnHelper.display({
+      id: "availability",
+      header: t("masters.table-availability"),
+      cell: ({ row }) => (
+        <MasterAvailabilityCell
+          isAccepted={row.original.status === "accepted"}
+          isPinging={isPinging}
+          availability={availabilityByMasterId[row.original.master_id]}
+        />
+      ),
       meta: { minWidth: 150 },
     }),
     columnHelper.accessor("created", {
@@ -78,7 +104,7 @@ function MastersPage() {
                   e.stopPropagation();
                   handleAccept(id);
                 }}
-                disabled={mastersStore.isLoading}
+                disabled={isLoading}
                 title={t("masters.table-accept-title")}
               >
                 {t("masters.table-accept")}
@@ -92,7 +118,7 @@ function MastersPage() {
                   e.stopPropagation();
                   handleReject(id);
                 }}
-                disabled={mastersStore.isLoading}
+                disabled={isLoading}
                 title={t("masters.table-reject-title")}
               >
                 {t("masters.table-reject")}
@@ -107,16 +133,27 @@ function MastersPage() {
 
   useEffect(() => {
     mastersStore.loadMasters();
+    mastersStore.pingMasters();
+
     return () => {
       mastersStore.reset();
     };
   }, []);
 
   useEffect(() => {
-    if (mastersStore.error) {
+    if (error) {
       navigate("/core/not-found");
     }
-  }, [mastersStore.error]);
+  }, [error, navigate]);
+
+  useEffect(() => {
+    if (!pingFailed) {
+      return;
+    }
+
+    messageApi.error(t("masters.error-on-ping-masters"));
+    mastersStore.clearPingFailed();
+  }, [pingFailed, messageApi, t]);
 
   const handleAccept = (id: string) => {
     mastersStore
@@ -162,14 +199,25 @@ function MastersPage() {
 
       <PageHeader title={t("masters.title")} />
 
+      <div className="page-actions-buttons">
+        <Button
+          icon={<ApiOutlined />}
+          disabled={isPinging && !isManualPinging}
+          loading={isManualPinging}
+          onClick={() => mastersStore.pingMasters({ manual: true })}
+        >
+          {t("masters.check-availability")}
+        </Button>
+      </div>
+
       <MastersTable
         tableId="core-masters"
         enableColumnResize={false}
         columns={columns}
-        data={toJS(mastersStore.masters)}
-        isLoading={mastersStore.isLoading}
-        pagination={mastersStore.pagination}
-        sorting={mastersStore.sorting}
+        data={toJS(masters)}
+        isLoading={isLoading}
+        pagination={pagination}
+        sorting={sorting}
         onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
         onRowClick={(master) => {
           if (master.status === "accepted") {

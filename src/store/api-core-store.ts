@@ -11,6 +11,7 @@ import {
   TaskTemplatesFilesApi,
   TaskTemplatesSourcesApi,
   TaskTemplatesTemplatesApi,
+  SystemApi,
   TasksApi,
   UtilsApi,
 } from "@saltbox/saltbox-core-api-client";
@@ -93,6 +94,10 @@ class ApiCoreStore {
 
   @computed get utilsApi() {
     return this.apiConfig && new UtilsApi(this.apiConfig);
+  }
+
+  @computed get systemApi() {
+    return this.apiConfig && new SystemApi(this.apiConfig);
   }
 }
 
