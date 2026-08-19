@@ -14,34 +14,6 @@
   min-width: 0;
 }
 
-.fileName {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-  min-width: 280px;
-  max-width: 560px;
-}
-
-.label {
-  font-size: 12px;
-  line-height: 1;
-}
-
-.fileNameValue {
-  line-height: 32px;
-}
-
-.fileNameInput {
-  width: 100%;
-}
-
-.error {
-  font-size: 12px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
 .save {
   flex-shrink: 0;
 }

@@ -1,7 +1,7 @@
 import validator from "@rjsf/validator-ajv8";
 import type { JSONSchema } from "@saltbox/react-jsonschema-form-generator";
 
-import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/job-modal-utils";
+import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/salt-function-name";
 import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
 import { collectTextPlaceholders } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
@@ -45,10 +45,8 @@ function checkSchemaCompiles(meta: TemplateMeta, issues: MetaValidationIssue[]):
 
 function checkFun(meta: TemplateMeta, issues: MetaValidationIssue[]): void {
   const fun = meta.fun?.trim();
-  if (!fun) return;
-
-  if (!isValidManualSaltFunctionName(fun)) {
-    issues.push({ severity: "warning", key: "meta-issue-fun-format", params: { fun } });
+  if (!fun || !isValidManualSaltFunctionName(fun)) {
+    issues.push({ severity: "error", key: "meta-issue-fun-format" });
   }
 }
 
