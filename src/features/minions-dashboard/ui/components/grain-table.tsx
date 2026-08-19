@@ -82,7 +82,6 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
   return (
     <FastTableListed
       tableId="core-dashboard-grain"
-      enableColumnResize={false}
       columns={columns}
       data={values}
       isEmpty={!values.length}

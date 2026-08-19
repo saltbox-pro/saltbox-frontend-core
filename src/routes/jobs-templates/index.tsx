@@ -43,7 +43,6 @@ const JobsTemplatePage = observer(() => {
       <PageHeader title={t("jobs-templates.title")} />
       <JobsTemplateTable
         tableId="core-job-templates"
-        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={jobTemplateStore.jobsTemplate}

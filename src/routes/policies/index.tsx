@@ -258,7 +258,6 @@ export default observer(function PoliciesPage() {
       />
       <PoliciesTable
         tableId="core-policies"
-        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={tasksStore.tasks}

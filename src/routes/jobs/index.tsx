@@ -354,7 +354,6 @@ const JobsPage = observer(() => {
 
       <JobsTable
         tableId="core-jobs"
-        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={jobsStore.jobs}
