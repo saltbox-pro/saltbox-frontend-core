@@ -70,6 +70,7 @@ export class TemplateEditorStore {
   isSaving = false;
   isFunctionSchemaApplying = false;
   pendingFunctionChange: string | null = null;
+  isFunctionDraftInvalid = false;
   sourceName: string | null = null;
   isLoadingTemplate = false;
   hasLoadError = false;
@@ -181,6 +182,10 @@ export class TemplateEditorStore {
 
   setPendingFunctionChange = (value: string | null) => {
     this.pendingFunctionChange = value;
+  };
+
+  setFunctionDraftInvalid = (value: boolean) => {
+    this.isFunctionDraftInvalid = value;
   };
 
   private updateMeta = (update: (meta: TemplateMeta) => TemplateMeta) => {

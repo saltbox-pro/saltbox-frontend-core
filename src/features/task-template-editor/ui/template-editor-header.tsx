@@ -39,6 +39,7 @@ export const TemplateEditorHeader = observer(({ store, onSave }: TemplateEditorH
               store.isLegacyTemplate ||
               store.isFunctionSchemaApplying ||
               store.pendingFunctionChange !== null ||
+              store.isFunctionDraftInvalid ||
               isFileNameInvalid ||
               !store.isFunValid
             }

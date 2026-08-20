@@ -11,7 +11,6 @@ import {
 } from "saltbox-core/shared/utils/salt-function-name";
 import { apiCoreStore } from "saltbox-core/store";
 
-import { hasParams } from "../lib/params-subtree";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./template-function-field.module.css";
@@ -50,6 +49,11 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
   const normalizedDraftFun = normalizeManualSaltFunctionName(draftFun);
   const showError =
     !isValidManualSaltFunctionName(normalizedDraftFun) && (isTouched || draftFun.length > 0);
+  const isDraftInvalid = !isValidManualSaltFunctionName(normalizedDraftFun);
+
+  useEffect(() => {
+    store.setFunctionDraftInvalid(isDraftInvalid);
+  }, [isDraftInvalid, store]);
 
   useEffect(() => {
     if (isFocused || pendingFun !== null || store.isFunctionSchemaApplying) return;
@@ -62,6 +66,7 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
   useEffect(() => {
     return () => {
       store.setPendingFunctionChange(null);
+      store.setFunctionDraftInvalid(false);
     };
   }, [store]);
 
@@ -76,7 +81,7 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
     }
   };
 
-  const commitFunctionChange = async () => {
+  const commitFunctionChange = () => {
     if (store.isFunctionSchemaApplying || pendingFun !== null) return;
     setTouched(true);
 
@@ -94,15 +99,9 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
       return;
     }
 
-    const meta = store.meta;
-    if (!meta) {
+    if (!store.meta) {
       messageApi.warning(t("task-template-editor.function-change-blocked"));
       setDraftFun(lastAppliedFun);
-      return;
-    }
-
-    if (!hasParams(meta, lastAppliedFun)) {
-      await applyWithCatalogSchema(nextFun);
       return;
     }
 
@@ -158,10 +157,18 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
           }}
           onBlur={() => {
             setFocused(false);
-            commitFunctionChange().catch(() => undefined);
+
+            const nextFun = normalizeManualSaltFunctionName(draftFun);
+            if (!isValidManualSaltFunctionName(nextFun)) {
+              setDraftFun(lastAppliedFun);
+              setTouched(false);
+              return;
+            }
+
+            commitFunctionChange();
           }}
           onPressEnter={() => {
-            commitFunctionChange().catch(() => undefined);
+            commitFunctionChange();
           }}
         />
       </Form.Item>
