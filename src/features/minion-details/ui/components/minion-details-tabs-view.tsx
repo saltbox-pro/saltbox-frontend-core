@@ -7,6 +7,7 @@ import Parcel from "single-spa-react/parcel";
 
 import { appStore, i18nStore } from "saltbox-core/store";
 
+import { useMinionDetailActionsBusy } from "../../hooks/use-minion-detail-actions-busy";
 import {
   getMinionDetailsTabKeys,
   type MinionDetailsTabKey,
@@ -66,6 +67,14 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   const { t } = useTranslation();
   const pluginTabs = getDetailTabPlugins();
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
+
+  const actionContext = useMemo(() => {
+    if (!minion?.minion_id || !minion.master) {
+      return null;
+    }
+    return { minionId: minion.minion_id, saltMaster: minion.master };
+  }, [minion?.minion_id, minion?.master]);
+  const isGrainsRefreshing = useMinionDetailActionsBusy(actionContext);
 
   const availableTabKeys = useMemo(() => getMinionDetailsTabKeys(isInDrawer), [isInDrawer]);
 
@@ -134,32 +143,36 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       "job-returns": {
         key: "job-returns",
         label: t("minions.job-returns"),
-        children: minion?.id ? (
-          <MinionJobReturnsTab minion={minion} isFullView={isFullView} />
-        ) : null,
+        children: !!minion?.id && <MinionJobReturnsTab minion={minion} isFullView={isFullView} />,
       },
       grains: {
         key: "grains",
         label: t("minions.grains"),
         className: styles.minionTabWithBottomOffset,
-        children: <MinionGrainsTab minion={minion} isMinionLoading={isMinionLoading} />,
+        children: (
+          <MinionGrainsTab
+            minion={minion}
+            isMinionLoading={isMinionLoading}
+            isRefreshing={isGrainsRefreshing}
+          />
+        ),
       },
       pillars: {
         key: "pillars",
         label: "Pillars",
-        children: minion?.id ? (
+        children: !!minion?.id && (
           <MinionPillarsTab
             targetId={minion.id}
             targetName={minion.minion_id}
             isInDrawer={isInDrawer}
             isFullView={isFullView}
           />
-        ) : null,
+        ),
       },
       "extra-data": {
         key: "extra-data",
         label: t("minions.extra-data.tab"),
-        children: minion?.id ? (
+        children: !!minion?.id && (
           <MinionExtraDataTab
             minionId={minion.id}
             minionName={minion.minion_id}
@@ -167,14 +180,14 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
             isFullView={isFullView}
             onFilterButton={onFilterButton}
           />
-        ) : null,
+        ),
       },
       terminal: {
         key: "terminal",
         label: t("minions.terminal"),
-        children: minion?.id ? (
+        children: !!minion?.id && (
           <MinionTerminalTab minion={minion} isTabActive={tabKey === "terminal"} />
-        ) : null,
+        ),
       },
     };
 
@@ -191,20 +204,19 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         key: pluginTab.key,
         label,
         style: pluginTab.tabStyle,
-        children:
-          tabKey === pluginTab.key ? (
-            <Parcel
-              config={pluginTab.parcel}
-              wrapWith={pluginTab.wrapWith}
-              wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
-              customProps={{
-                slug: toolkitSlug,
-                minion,
-                isInDrawer,
-                isFullView,
-              }}
-            />
-          ) : null,
+        children: tabKey === pluginTab.key && (
+          <Parcel
+            config={pluginTab.parcel}
+            wrapWith={pluginTab.wrapWith}
+            wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
+            customProps={{
+              slug: toolkitSlug,
+              minion,
+              isInDrawer,
+              isFullView,
+            }}
+          />
+        ),
       };
     });
 
@@ -212,6 +224,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   }, [
     availableTabKeys,
     isFullView,
+    isGrainsRefreshing,
     isInDrawer,
     isMinionLoading,
     minion,

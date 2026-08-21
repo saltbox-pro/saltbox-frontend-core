@@ -2,6 +2,8 @@ import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useOnMinionDataRefreshed } from "saltbox-core/features/minion-details/hooks/use-on-minion-data-refreshed";
+import { isAbortError } from "saltbox-core/shared/helpers/is-abort-error";
 import { apiCoreStore } from "saltbox-core/store";
 
 import type { MinionDetailsDrawerOpenParams } from "../types";
@@ -32,6 +34,8 @@ export function useMinionDetailsDrawer({
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+  const refreshAbortControllerRef = useRef<AbortController | null>(null);
+  const loadGenerationRef = useRef(0);
 
   const { resolvedDisplayId, resolvedInnerId, slug } = useMemo(() => {
     const params = openedArg;
@@ -60,6 +64,9 @@ export function useMinionDetailsDrawer({
     if (!isOpened) {
       abortControllerRef.current?.abort();
       abortControllerRef.current = null;
+      refreshAbortControllerRef.current?.abort();
+      refreshAbortControllerRef.current = null;
+      loadGenerationRef.current += 1;
       setMinion(null);
       setIsMinionLoading(false);
       setError(null);
@@ -69,9 +76,12 @@ export function useMinionDetailsDrawer({
     const params = openedArg;
     if (!params) return;
 
+    refreshAbortControllerRef.current?.abort();
+    refreshAbortControllerRef.current = null;
     abortControllerRef.current?.abort();
     const abortController = new AbortController();
     abortControllerRef.current = abortController;
+    const generation = ++loadGenerationRef.current;
 
     setError(null);
     setMinion(null);
@@ -88,7 +98,7 @@ export function useMinionDetailsDrawer({
             { signal: abortController.signal }
           );
 
-          if (abortControllerRef.current !== abortController) return;
+          if (generation !== loadGenerationRef.current) return;
           setMinion(loadedMinion ?? null);
           return;
         }
@@ -101,7 +111,7 @@ export function useMinionDetailsDrawer({
           { signal: abortController.signal }
         );
 
-        if (abortControllerRef.current !== abortController) return;
+        if (generation !== loadGenerationRef.current) return;
 
         if (loadedMinion?.id) {
           setMinion(loadedMinion);
@@ -109,19 +119,14 @@ export function useMinionDetailsDrawer({
           setError(t("minions.minion-not-found"));
         }
       } catch (err) {
-        const isAbortError =
-          err?.name === "AbortError" ||
-          err?.cause?.name === "AbortError" ||
-          err?.cause?.code === DOMException.ABORT_ERR;
-
-        if (isAbortError) {
+        if (isAbortError(err)) {
           return;
         }
 
         console.error("Error fetching minion:", err);
 
         let errorMessage: string | null = null;
-        const status = err?.response?.status;
+        const status = (err as { response?: { status?: number } })?.response?.status;
 
         if (status === 404) {
           errorMessage = t("minions.minion-not-found");
@@ -129,10 +134,10 @@ export function useMinionDetailsDrawer({
           errorMessage = t("errors.access-denied");
         }
 
-        if (abortControllerRef.current !== abortController) return;
+        if (generation !== loadGenerationRef.current) return;
         setError(errorMessage);
       } finally {
-        if (abortControllerRef.current === abortController) {
+        if (generation === loadGenerationRef.current) {
           setIsMinionLoading(false);
         }
       }
@@ -142,6 +147,61 @@ export function useMinionDetailsDrawer({
       abortController.abort();
     };
   }, [isOpened, openedArg, t]);
+
+  // Refresh grains запускается только с full page; здесь только soft-sync данных drawer.
+  useOnMinionDataRefreshed(isOpened ? openedArg?.minionId : null, () => {
+    if (!openedArg) {
+      return;
+    }
+
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
+    refreshAbortControllerRef.current?.abort();
+    const abortController = new AbortController();
+    refreshAbortControllerRef.current = abortController;
+    const generation = ++loadGenerationRef.current;
+
+    (async () => {
+      try {
+        const loadedMinion =
+          "slug" in openedArg
+            ? await apiCoreStore.minionsApi?.minionGet(
+                {
+                  collection_slug: openedArg.slug,
+                  mid: openedArg.innerId,
+                },
+                { signal: abortController.signal }
+              )
+            : await apiCoreStore.minionsApi?.minionGetByMasterAndId(
+                {
+                  master_id: openedArg.masterId,
+                  minion_id: openedArg.minionId,
+                },
+                { signal: abortController.signal }
+              );
+
+        if (generation !== loadGenerationRef.current || !loadedMinion) {
+          return;
+        }
+        setMinion(loadedMinion);
+        setError(null);
+      } catch (error) {
+        if (!isAbortError(error)) {
+          console.error("Error refreshing minion grains:", error);
+        }
+      } finally {
+        if (generation === loadGenerationRef.current) {
+          setIsMinionLoading(false);
+        }
+      }
+    })();
+  });
+
+  useEffect(() => {
+    return () => {
+      refreshAbortControllerRef.current?.abort();
+    };
+  }, [isOpened, openedArg]);
 
   return {
     minion,

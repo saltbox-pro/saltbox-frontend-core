@@ -8,9 +8,14 @@ import ReactJson from "react-json-view";
 interface MinionGrainsTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
+  isRefreshing?: boolean;
 }
 
-export function MinionGrainsTab({ minion, isMinionLoading }: MinionGrainsTabProps) {
+export function MinionGrainsTab({
+  minion,
+  isMinionLoading,
+  isRefreshing = false,
+}: MinionGrainsTabProps) {
   const { t } = useTranslation();
 
   const combinedGrains = minion
@@ -37,18 +42,20 @@ export function MinionGrainsTab({ minion, isMinionLoading }: MinionGrainsTabProp
   }
 
   return (
-    <div>
-      <Flex justify="flex-end" style={{ marginBottom: 8 }}>
-        <CopyToClipboardButton text={JSON.stringify(combinedGrains, null, 2)} />
-      </Flex>
-      <ReactJson
-        displayDataTypes={false}
-        enableClipboard={false}
-        name={false}
-        displayObjectSize={false}
-        src={combinedGrains}
-        collapsed={1}
-      />
-    </div>
+    <Spin spinning={isRefreshing}>
+      <div>
+        <Flex justify="flex-end" style={{ marginBottom: 8 }}>
+          <CopyToClipboardButton text={JSON.stringify(combinedGrains, null, 2)} />
+        </Flex>
+        <ReactJson
+          displayDataTypes={false}
+          enableClipboard={false}
+          name={false}
+          displayObjectSize={false}
+          src={combinedGrains}
+          collapsed={1}
+        />
+      </div>
+    </Spin>
   );
 }

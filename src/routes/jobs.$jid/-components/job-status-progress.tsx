@@ -1,8 +1,7 @@
 import { type JobMinionsCountAggregation } from "@saltbox/saltbox-core-api-client";
+import { StatusSegmentsProgress } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
-
-import { StatusSegmentsProgress } from "saltbox-core/shared/components/status-segments-progress";
 
 interface JobStatusProgressProps {
   counts: JobMinionsCountAggregation | undefined;
