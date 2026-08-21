@@ -7,7 +7,6 @@ import Parcel from "single-spa-react/parcel";
 
 import { appStore, i18nStore } from "saltbox-core/store";
 
-import { useMinionDetailActionsBusy } from "../../hooks/use-minion-detail-actions-busy";
 import {
   getMinionDetailsTabKeys,
   type MinionDetailsTabKey,
@@ -59,6 +58,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   onTabChange,
   minion,
   isMinionLoading,
+  isMinionRefreshing = false,
   isFullView,
   fullViewActionsMenuItems,
   onFullViewActionsMenuClick,
@@ -67,14 +67,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   const { t } = useTranslation();
   const pluginTabs = getDetailTabPlugins();
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
-
-  const actionContext = useMemo(() => {
-    if (!minion?.minion_id || !minion.master) {
-      return null;
-    }
-    return { minionId: minion.minion_id, saltMaster: minion.master };
-  }, [minion?.minion_id, minion?.master]);
-  const isGrainsRefreshing = useMinionDetailActionsBusy(actionContext);
 
   const availableTabKeys = useMemo(() => getMinionDetailsTabKeys(isInDrawer), [isInDrawer]);
 
@@ -153,7 +145,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
           <MinionGrainsTab
             minion={minion}
             isMinionLoading={isMinionLoading}
-            isRefreshing={isGrainsRefreshing}
+            isRefreshing={isMinionRefreshing}
           />
         ),
       },
@@ -224,7 +216,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   }, [
     availableTabKeys,
     isFullView,
-    isGrainsRefreshing,
+    isMinionRefreshing,
     isInDrawer,
     isMinionLoading,
     minion,

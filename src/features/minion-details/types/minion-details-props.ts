@@ -29,9 +29,9 @@ export type MinionDetailActionPlugin = {
 export interface MinionDetailsCommonProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
+  isMinionRefreshing?: boolean;
   onFilterButton?: OnFilterButtonHandler;
   isFullView?: boolean;
-  /** Меню действий full page (в т.ч. `minion.detail.actions`). В drawer не передаётся. */
   fullViewActionsMenuItems?: MenuProps["items"];
   onFullViewActionsMenuClick?: MenuProps["onClick"];
 }

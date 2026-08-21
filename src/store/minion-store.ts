@@ -9,6 +9,7 @@ export class MinionStore {
   slug: string;
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
+  isMinionRefreshing: boolean;
   error: string | null;
   private loadGeneration = 0;
   private loadAbortController: AbortController | null = null;
@@ -20,6 +21,7 @@ export class MinionStore {
     this.slug = slug;
     this.mid = minionId;
     this.isMinionLoading = false;
+    this.isMinionRefreshing = false;
     this.minion = null;
     this.error = null;
 
@@ -38,6 +40,7 @@ export class MinionStore {
 
     this.refreshAbortController?.abort();
     this.refreshAbortController = null;
+    this.isMinionRefreshing = false;
     this.loadAbortController?.abort();
     const abortController = new AbortController();
     this.loadAbortController = abortController;
@@ -89,12 +92,18 @@ export class MinionStore {
       return;
     }
 
+    const minionsApi = apiCoreStore.minionsApi;
+    if (!minionsApi) {
+      return;
+    }
+
     this.refreshAbortController?.abort();
     const abortController = new AbortController();
     this.refreshAbortController = abortController;
+    this.isMinionRefreshing = true;
 
-    apiCoreStore.minionsApi
-      ?.minionGet(
+    minionsApi
+      .minionGet(
         {
           collection_slug: this.slug,
           mid: this.mid,
@@ -115,6 +124,14 @@ export class MinionStore {
           return;
         }
         console.error("Error refreshing minion:", error);
+      })
+      .finally(() => {
+        if (this.refreshAbortController !== abortController) {
+          return;
+        }
+        runInAction(() => {
+          this.isMinionRefreshing = false;
+        });
       });
   };
 }

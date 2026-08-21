@@ -82,6 +82,7 @@ const MinionPage = observer(() => {
         isFullView
         minion={minionStore.minion}
         isMinionLoading={minionStore.isMinionLoading}
+        isMinionRefreshing={minionStore.isMinionRefreshing}
         fullViewActionsMenuItems={minionsActionsMenuItems}
       />
 

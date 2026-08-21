@@ -11,6 +11,7 @@ import type { MinionDetailsDrawerOpenParams } from "../types";
 export type UseMinionDetailsDrawerResult = {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
+  isMinionRefreshing: boolean;
   error: string | null;
   hasData: boolean;
   slug: string | null;
@@ -31,6 +32,7 @@ export function useMinionDetailsDrawer({
 
   const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
   const [isMinionLoading, setIsMinionLoading] = useState(false);
+  const [isMinionRefreshing, setIsMinionRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -69,6 +71,7 @@ export function useMinionDetailsDrawer({
       loadGenerationRef.current += 1;
       setMinion(null);
       setIsMinionLoading(false);
+      setIsMinionRefreshing(false);
       setError(null);
       return;
     }
@@ -86,6 +89,7 @@ export function useMinionDetailsDrawer({
     setError(null);
     setMinion(null);
     setIsMinionLoading(true);
+    setIsMinionRefreshing(false);
 
     (async () => {
       try {
@@ -154,25 +158,32 @@ export function useMinionDetailsDrawer({
       return;
     }
 
+    const minionsApi = apiCoreStore.minionsApi;
+    if (!minionsApi) {
+      return;
+    }
+
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
     refreshAbortControllerRef.current?.abort();
     const abortController = new AbortController();
     refreshAbortControllerRef.current = abortController;
     const generation = ++loadGenerationRef.current;
+    setIsMinionLoading(false);
+    setIsMinionRefreshing(true);
 
     (async () => {
       try {
         const loadedMinion =
           "slug" in openedArg
-            ? await apiCoreStore.minionsApi?.minionGet(
+            ? await minionsApi.minionGet(
                 {
                   collection_slug: openedArg.slug,
                   mid: openedArg.innerId,
                 },
                 { signal: abortController.signal }
               )
-            : await apiCoreStore.minionsApi?.minionGetByMasterAndId(
+            : await minionsApi.minionGetByMasterAndId(
                 {
                   master_id: openedArg.masterId,
                   minion_id: openedArg.minionId,
@@ -191,7 +202,7 @@ export function useMinionDetailsDrawer({
         }
       } finally {
         if (generation === loadGenerationRef.current) {
-          setIsMinionLoading(false);
+          setIsMinionRefreshing(false);
         }
       }
     })();
@@ -206,6 +217,7 @@ export function useMinionDetailsDrawer({
   return {
     minion,
     isMinionLoading,
+    isMinionRefreshing,
     error,
     hasData,
     slug,
