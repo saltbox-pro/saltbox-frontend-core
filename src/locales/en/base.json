@@ -37,16 +37,12 @@
     "table-collection": "Collection",
     "table-user": "User",
     "table-status": "Status",
-    "table-total-clients": "Total clients",
+    "table-total-clients": "Clients",
     "table-failed-clients": "Failed",
     "table-progress": "Progress",
     "table-source-type": "Source Type",
     "table-soruce-type-rest": "User",
     "table-soruce-type-scheduler": "Scheduler",
-    "tasks-table-status-failed": "Failed",
-    "tasks-table-status-in-work": "In Work",
-    "tasks-table-status-pending": "Pending",
-    "tasks-table-status-success": "Success",
     "tasks-table-total-minions": "Total Minions",
     "tasks-table-status-header": "Minions Statistics",
     "minion": "Minion",
@@ -316,6 +312,12 @@
       "table-master": "Master",
       "table-status": "Status",
       "table-in-work": "In Work",
+      "table-busy": "Busy",
+      "table-blocked": "Blocked",
+      "table-unreachable": "Unreachable",
+      "table-busy-title": "The client is busy with another task or policy",
+      "table-blocked-title": "Waiting for previous policies to finish",
+      "table-unreachable-title": "Dependency condition was not met, the policy will not be started",
       "table-failed": "Failed",
       "table-success": "Success",
       "table-pending": "Pending",
@@ -366,11 +368,7 @@
       }
     },
     "minions-nav": {
-      "list-all": "All",
-      "list-pending": "Pending",
-      "list-in-work": "In Work",
-      "list-failed": "Failed",
-      "list-success": "Success"
+      "list-all": "All"
     },
     "minion": {
       "title": "Minion: {{minionId}}",

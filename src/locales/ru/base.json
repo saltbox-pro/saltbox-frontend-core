@@ -37,16 +37,12 @@
     "table-collection": "Коллекция",
     "table-user": "Пользователь",
     "table-status": "Статус",
-    "table-total-clients": "Всего клиентов",
+    "table-total-clients": "Клиенты",
     "table-failed-clients": "С ошибкой",
     "table-progress": "Прогресс",
     "table-source-type": "Тип источника",
     "table-soruce-type-rest": "Пользователь",
     "table-soruce-type-scheduler": "Планировщик",
-    "tasks-table-status-failed": "С ошибками",
-    "tasks-table-status-in-work": "В работе",
-    "tasks-table-status-pending": "Не ответили",
-    "tasks-table-status-success": "Успешно",
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
     "minion": "Клиент",
@@ -316,6 +312,12 @@
       "table-master": "Контроллер",
       "table-status": "Статус",
       "table-in-work": "В процессе",
+      "table-busy": "Занят",
+      "table-blocked": "Заблокирован",
+      "table-unreachable": "Недоступен",
+      "table-busy-title": "Клиент занят другой задачей или политикой",
+      "table-blocked-title": "Ожидает завершения предыдущих политик",
+      "table-unreachable-title": "Условие зависимости не выполнено, политика не будет запущена",
       "table-failed": "С ошибкой",
       "table-success": "Успешно",
       "table-pending": "Ожидает",
@@ -366,11 +368,7 @@
       }
     },
     "minions-nav": {
-      "list-all": "Все",
-      "list-pending": "Ожидает",
-      "list-in-work": "В процессе",
-      "list-failed": "С ошибкой",
-      "list-success": "Успешно"
+      "list-all": "Все"
     },
     "minion": {
       "title": "Клиент: {{minionId}}",

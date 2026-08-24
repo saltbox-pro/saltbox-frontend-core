@@ -100,10 +100,14 @@ const TaskPage = observer(() => {
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <TaskRunDetails taskStore={taskStore} />
 
-        <TaskStatusProgress counts={taskStore.task?.minions_count} />
+        <TaskStatusProgress
+          counts={taskStore.task?.minions_count}
+          taskType={taskStore.task?.task_type}
+        />
 
         <TaskMinionStatusFilter
           counts={taskStore.task?.minions_count}
+          taskType={taskStore.task?.task_type}
           selectedCategory={taskStore.minionCategoryFilter}
           onSelectCategory={taskStore.setMinionCategoryFilter}
         />
