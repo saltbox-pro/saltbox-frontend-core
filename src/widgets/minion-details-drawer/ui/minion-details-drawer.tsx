@@ -1,4 +1,7 @@
+import { observer } from "mobx-react-lite";
+
 import {
+  MinionDetailActionsMenu,
   MinionDetailsInDrawer,
   type OnFilterButtonHandler,
   useMinionDetailsDrawerTab,
@@ -18,7 +21,11 @@ interface MinionDetailsDrawerProps {
   onFilterButton?: OnFilterButtonHandler;
 }
 
-export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDetailsDrawerProps) {
+export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
+  drawer,
+  onFilterButton,
+  mask,
+}: MinionDetailsDrawerProps) {
   const {
     minion,
     isMinionLoading,
@@ -45,6 +52,15 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       mask={mask}
       transitionKey={minion?.minion_id}
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
+      linkPlacement="title"
+      extra={
+        <MinionDetailActionsMenu
+          minion={minion}
+          collectionSlug={slug}
+          minionMongoId={resolvedInnerId}
+          onDeleted={drawer.close}
+        />
+      }
       onClose={drawer.close}
     >
       <MinionDetailsInDrawer
@@ -57,4 +73,4 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       />
     </BaseMinionDrawer>
   );
-}
+});

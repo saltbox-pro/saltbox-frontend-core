@@ -152,7 +152,7 @@ export function useMinionDetailsDrawer({
     };
   }, [isOpened, openedArg, t]);
 
-  // Refresh grains запускается только с full page; здесь только soft-sync данных drawer.
+  // Refresh grains и другие действия toolkit доступны из drawer; здесь soft-sync данных.
   useOnMinionDataRefreshed(isOpened ? openedArg?.minionId : null, () => {
     if (!openedArg) {
       return;

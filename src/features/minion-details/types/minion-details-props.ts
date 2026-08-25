@@ -1,5 +1,5 @@
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import type { MenuProps } from "antd";
+import type { ReactNode } from "react";
 
 import type { PluginActionIconName } from "saltbox-core/shared/components/plugin-action-icon";
 
@@ -16,7 +16,7 @@ export type MinionDetailActionContext = {
   saltMaster: string;
 };
 
-/** Плагины слота `minion.detail.actions` — только full page, в drawer меню действий нет. */
+/** Плагины слота `minion.detail.actions` — full page и drawer. */
 export type MinionDetailActionPlugin = {
   key: string;
   label: { en?: string; ru?: string } | string;
@@ -32,6 +32,5 @@ export interface MinionDetailsCommonProps {
   isMinionRefreshing?: boolean;
   onFilterButton?: OnFilterButtonHandler;
   isFullView?: boolean;
-  fullViewActionsMenuItems?: MenuProps["items"];
-  onFullViewActionsMenuClick?: MenuProps["onClick"];
+  actionsMenu?: ReactNode;
 }

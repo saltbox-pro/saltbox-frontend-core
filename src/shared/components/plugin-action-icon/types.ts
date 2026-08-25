@@ -1,1 +1,1 @@
-export type PluginActionIconName = "sync";
+export type PluginActionIconName = "sync" | "reboot" | "poweroff";

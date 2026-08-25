@@ -13,6 +13,11 @@ export {
   type MinionDetailsInDrawerProps,
 } from "./ui/minion-details-in-drawer";
 
+export {
+  MinionDetailActionsMenu,
+  type MinionDetailActionsMenuProps,
+} from "./ui/components/minion-detail-actions-menu";
+
 export type {
   MinionDetailActionContext,
   MinionDetailActionPlugin,

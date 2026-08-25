@@ -1,5 +1,4 @@
-import { SettingOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Flex, Tabs, type TabsProps } from "antd";
+import { Flex, Tabs, type TabsProps } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -60,8 +59,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   isMinionLoading,
   isMinionRefreshing = false,
   isFullView,
-  fullViewActionsMenuItems,
-  onFullViewActionsMenuClick,
+  actionsMenu,
   onFilterButton,
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
@@ -94,21 +92,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
                   />
                 </>
               )}
-              {fullViewActionsMenuItems && (
-                <Dropdown
-                  menu={{
-                    items: fullViewActionsMenuItems,
-                    onClick: onFullViewActionsMenuClick,
-                  }}
-                  trigger={["click"]}
-                >
-                  <Button>
-                    <Flex gap={8} align="center">
-                      <SettingOutlined />
-                    </Flex>
-                  </Button>
-                </Dropdown>
-              )}
+              {actionsMenu}
             </Flex>
           </div>
         ),
