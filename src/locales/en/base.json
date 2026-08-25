@@ -78,7 +78,9 @@
         "sounds": "Sounds",
         "usbdevices": "USB Devices",
         "videos": "Video Adapters",
-        "virtualmachines": "Virtual Machines"
+        "virtualmachines": "Virtual Machines",
+        "monitors": "Monitors",
+        "printers": "Printers"
       }
     },
     "minion-id": "Minion ID",

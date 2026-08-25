@@ -78,7 +78,9 @@
         "sounds": "Звуковые устройства",
         "usbdevices": "USB-устройства",
         "videos": "Видеокарты",
-        "virtualmachines": "Виртуальные машины"
+        "virtualmachines": "Виртуальные машины",
+        "monitors": "Мониторы",
+        "printers": "Принтеры"
       }
     },
     "minion-id": "ID клиента",
