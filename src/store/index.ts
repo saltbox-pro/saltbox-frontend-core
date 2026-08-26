@@ -18,7 +18,6 @@ export { PillarsStore } from "./pillars-store";
 export { ExtraDataCategoriesStore, EXTRA_DATA_SOURCE } from "./extra-data-categories-store";
 export { ExtraDataRecordsStore } from "./extra-data-records-store";
 export type { ExtraDataRecord, ExtraDataRecordsStoreOptions } from "./extra-data-records-store";
-export { JobTemplateStore } from "./jobs-templates-store";
 export { JobFilterStore } from "./job-filter-store";
 export { JobStore } from "./job-store";
 export { JobsStore } from "./jobs-store";

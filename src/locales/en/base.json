@@ -178,7 +178,6 @@
     "masters": "Masters",
     "settings": "Settings",
     "jobs": "Jobs",
-    "jobs-templates": "Job Templates",
     "pillars": "Pillars",
     "logout": "Logout",
     "popover-support-help-center": "Support & Help Center",
@@ -695,12 +694,6 @@
       "service": "Service management",
       "file": "File operations"
     }
-  },
-  "jobs-templates": {
-    "title": "Job Templates",
-    "table-name": "Name",
-    "table-created": "Created",
-    "table-modified": "Modified"
   },
   "job-return": {
     "waiting-client-response": "Waiting for client response",

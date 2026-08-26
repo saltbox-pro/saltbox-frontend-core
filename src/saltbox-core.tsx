@@ -215,12 +215,6 @@ export const saltboxModule = {
         path: "/core/masters",
       },
       {
-        key: "jobs-templates",
-        label: { en: "Jobs Templates", ru: "Шаблоны команд" },
-        icon: "build",
-        path: "/core/jobs-templates",
-      },
-      {
         key: "configuration-templates",
         label: { en: "Configuration Templates", ru: "Шаблоны конфигураций" },
         icon: "assignment_globe",

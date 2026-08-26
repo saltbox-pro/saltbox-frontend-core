@@ -178,7 +178,6 @@
     "masters": "Контроллеры",
     "settings": "Настройки",
     "jobs": "Команды",
-    "jobs-templates": "Шаблоны команд",
     "pillars": "Данные Pillars",
     "logout": "Выйти",
     "popover-support-help-center": "Поддержка и помощь",
@@ -695,12 +694,6 @@
       "service": "Управление сервисами",
       "file": "Работа с файлами"
     }
-  },
-  "jobs-templates": {
-    "title": "Шаблоны команд",
-    "table-name": "Имя",
-    "table-created": "Создан",
-    "table-modified": "Изменен"
   },
   "job-return": {
     "waiting-client-response": "Ожидание ответа от клиента",
