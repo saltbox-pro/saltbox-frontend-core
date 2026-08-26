@@ -8,6 +8,7 @@
   border: 1px solid #d9d9d9;
   border-radius: 4px;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .jobReturn pre {
@@ -26,6 +27,18 @@
 .jobReturn_failed {
   background-color: #fff1f0;
   border-color: #ffa39e;
+}
+
+.jobReturn :global(.react-json-view) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.jobReturn :global(.string-value),
+.jobReturn :global(.variable-value) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .jobReturn :global(.node-ellipsis) {
