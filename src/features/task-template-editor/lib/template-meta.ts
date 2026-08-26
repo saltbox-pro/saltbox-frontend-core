@@ -41,7 +41,7 @@ export const DEFAULT_TEMPLATE_FUN = "state.apply";
 export const SLS_ENABLED_FUNCTIONS: readonly string[] = ["state.apply"];
 
 export const isSlsFunction = (fun: string | undefined | null): boolean =>
-  SLS_ENABLED_FUNCTIONS.includes((fun ?? "").trim());
+  SLS_ENABLED_FUNCTIONS.includes((fun ?? "").trim().toLowerCase());
 
 /** Порядок ключей при сериализации: правка формы не должна тасовать текст. */
 const META_KEY_ORDER: readonly string[] = [

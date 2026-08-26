@@ -1,4 +1,5 @@
 export {
   StatusSegmentsProgress,
   type StatusSegmentsProgressProps,
-} from "./ui/status-segments-progress";
+  type StatusSegmentInput,
+} from "@saltbox/saltbox-frontend-common";

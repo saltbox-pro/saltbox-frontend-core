@@ -12,6 +12,10 @@ import {
   waitForBgTaskWithResult,
 } from "saltbox-core/features/configuration-templates/shared/helpers/wait-for-bg-task";
 import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
+import {
+  isValidManualSaltFunctionName,
+  normalizeManualSaltFunctionName,
+} from "saltbox-core/shared/utils/salt-function-name";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
@@ -64,6 +68,9 @@ export class TemplateEditorStore {
   hadSlsContent = false;
 
   isSaving = false;
+  isFunctionSchemaApplying = false;
+  pendingFunctionChange: string | null = null;
+  isFunctionDraftInvalid = false;
   sourceName: string | null = null;
   isLoadingTemplate = false;
   hasLoadError = false;
@@ -114,9 +121,13 @@ export class TemplateEditorStore {
     return this.parsedMeta.error !== null;
   }
 
-  /** Функция шаблона. В `meta` пишем её явно, даже когда это `state.apply`. */
+  /** Функция шаблона из `meta`. */
   get fun(): string {
-    return this.meta?.fun?.trim() || DEFAULT_TEMPLATE_FUN;
+    return this.meta?.fun ?? "";
+  }
+
+  get isFunValid(): boolean {
+    return isValidManualSaltFunctionName(normalizeManualSaltFunctionName(this.fun));
   }
 
   get isSlsFunction(): boolean {
@@ -165,6 +176,18 @@ export class TemplateEditorStore {
     this.targetSourceId = value;
   };
 
+  setFunctionSchemaApplying = (value: boolean) => {
+    this.isFunctionSchemaApplying = value;
+  };
+
+  setPendingFunctionChange = (value: string | null) => {
+    this.pendingFunctionChange = value;
+  };
+
+  setFunctionDraftInvalid = (value: boolean) => {
+    this.isFunctionDraftInvalid = value;
+  };
+
   private updateMeta = (update: (meta: TemplateMeta) => TemplateMeta) => {
     const meta = this.meta;
     // Текст схемы сломан — правки из формы применять некуда
@@ -174,7 +197,8 @@ export class TemplateEditorStore {
   };
 
   setFun = (fun: string) => {
-    this.updateMeta((meta) => ({ ...meta, fun }));
+    const normalizedFun = normalizeManualSaltFunctionName(fun);
+    this.updateMeta((meta) => ({ ...meta, fun: normalizedFun }));
   };
 
   /**
@@ -185,12 +209,14 @@ export class TemplateEditorStore {
     fun: string,
     catalogSchema?: { json_schema?: JSONSchema; ui_schema?: UISchema } | null
   ) => {
+    const normalizedFun = normalizeManualSaltFunctionName(fun);
+
     this.updateMeta((meta) => {
       if (!catalogSchema?.json_schema) {
-        const empty = getEmptyMeta(fun);
+        const empty = getEmptyMeta(normalizedFun);
         return {
           ...meta,
-          fun,
+          fun: normalizedFun,
           json_schema: empty.json_schema,
           ui_schema: empty.ui_schema,
         };
@@ -198,7 +224,7 @@ export class TemplateEditorStore {
 
       return {
         ...meta,
-        fun,
+        fun: normalizedFun,
         json_schema: catalogSchema.json_schema,
         ui_schema: catalogSchema.ui_schema ?? {},
       };
@@ -244,7 +270,10 @@ export class TemplateEditorStore {
 
       runInAction(() => {
         const meta = (template?.meta ?? {}) as TemplateMeta;
-        const fun = meta.fun?.trim() || template?.fun?.trim() || DEFAULT_TEMPLATE_FUN;
+        const fun =
+          normalizeManualSaltFunctionName(meta.fun ?? "") ||
+          normalizeManualSaltFunctionName(template?.fun ?? "") ||
+          DEFAULT_TEMPLATE_FUN;
 
         this.metaText = stringifyMeta({ ...meta, fun });
         this.slsRaw = template?.sls_content ?? "";
@@ -314,10 +343,15 @@ export class TemplateEditorStore {
       throw new Error("cannot save a template with unparsable meta");
     }
 
+    const normalizedFun = normalizeManualSaltFunctionName(this.fun);
+    if (!isValidManualSaltFunctionName(normalizedFun)) {
+      throw new Error("invalid template function");
+    }
+
     // `sls_raw` отправляем всегда, пока функция его использует: без него
     // бекенд удаляет существующий .sls-файл шаблона
-    const slsRaw = this.isSlsFunction ? this.slsRaw : null;
-    const payloadMeta = { ...meta, fun: this.fun } as Record<string, unknown>;
+    const slsRaw = isSlsFunction(normalizedFun) ? this.slsRaw : null;
+    const payloadMeta = { ...meta, fun: normalizedFun } as Record<string, unknown>;
 
     runInAction(() => {
       this.isSaving = true;

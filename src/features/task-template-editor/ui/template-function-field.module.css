@@ -1,20 +1,13 @@
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  min-width: 280px;
+  max-width: 340px;
+  flex: 0 1 340px;
 }
 
-.label {
-  font-size: 12px;
-  line-height: 1;
+.item {
+  margin-bottom: 0;
 }
 
-/* Высота строки как у Input рядом — иначе подписи полей разъезжаются */
-.control {
-  min-height: 32px;
-}
-
-.functionTag {
-  margin-inline-end: 0;
-  font-family: var(--saltbox-font-mono, monospace);
+.input {
+  width: 100%;
 }

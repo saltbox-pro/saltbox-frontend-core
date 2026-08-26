@@ -1,4 +1,7 @@
+import { observer } from "mobx-react-lite";
+
 import {
+  MinionDetailActionsMenu,
   MinionDetailsInDrawer,
   type OnFilterButtonHandler,
   useMinionDetailsDrawerTab,
@@ -18,9 +21,21 @@ interface MinionDetailsDrawerProps {
   onFilterButton?: OnFilterButtonHandler;
 }
 
-export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDetailsDrawerProps) {
-  const { minion, isMinionLoading, error, hasData, slug, resolvedDisplayId, resolvedInnerId } =
-    useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
+export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
+  drawer,
+  onFilterButton,
+  mask,
+}: MinionDetailsDrawerProps) {
+  const {
+    minion,
+    isMinionLoading,
+    isMinionRefreshing,
+    error,
+    hasData,
+    slug,
+    resolvedDisplayId,
+    resolvedInnerId,
+  } = useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
 
   const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
 
@@ -37,6 +52,15 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
       mask={mask}
       transitionKey={minion?.minion_id}
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
+      linkPlacement="title"
+      extra={
+        <MinionDetailActionsMenu
+          minion={minion}
+          collectionSlug={slug}
+          minionMongoId={resolvedInnerId}
+          onDeleted={drawer.close}
+        />
+      }
       onClose={drawer.close}
     >
       <MinionDetailsInDrawer
@@ -44,8 +68,9 @@ export function MinionDetailsDrawer({ drawer, onFilterButton, mask }: MinionDeta
         onActiveTabChange={onTabChange}
         minion={minion}
         isMinionLoading={false}
+        isMinionRefreshing={isMinionRefreshing}
         onFilterButton={onFilterButton}
       />
     </BaseMinionDrawer>
   );
-}
+});

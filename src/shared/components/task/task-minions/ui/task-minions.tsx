@@ -85,7 +85,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
       columnHelper.accessor("status", {
         header: t("task.minions.table-status"),
         cell: (data) => <MinionTaskStatus status={data.getValue()} />,
-        meta: { width: 125 },
+        meta: { width: 150 },
       }),
       columnHelper.accessor("count_runs", {
         header: t("task.minions.table-count-runs"),

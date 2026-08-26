@@ -1,71 +1,96 @@
-import { TaskMinionStatus, TaskModel } from "@saltbox/saltbox-core-api-client";
+import { TaskMinionStatus, TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import { Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+
+import {
+  getTaskMinionStatusColor,
+  getTaskMinionStatusLabelKey,
+  includesPolicyClientStatuses,
+  readTaskMinionsCount,
+} from "saltbox-core/shared/components/minion-task-status/helpers/task-minion-status-meta";
 
 import styles from "./task-minion-status-filter.module.css";
 import { TaskMinionsStatusFiltersButton } from "./task-minions-status-filters-button";
 
 type TaskMinionsStatsProps = {
   counts: TaskModel["minions_count"] | undefined;
+  taskType?: TaskType | null;
   selectedCategory: TaskMinionStatus | null;
   onSelectCategory: (category: TaskMinionStatus | null) => void;
 };
 
 export function TaskMinionStatusFilter({
   counts,
+  taskType,
   selectedCategory,
   onSelectCategory,
 }: TaskMinionsStatsProps) {
   const { t } = useTranslation();
-
-  const {
-    total = 0,
-    pending = 0,
-    busy = 0,
-    in_work: inWork = busy,
-    failed = 0,
-    success = 0,
-  } = counts ?? {};
+  const showPolicyStatuses = includesPolicyClientStatuses(taskType);
+  const { total, pending, busy, blocked, unreachable, inWork, failed, success } =
+    readTaskMinionsCount(counts);
 
   const statCards = useMemo(
     () => [
       {
-        category: null,
+        category: null as TaskMinionStatus | null,
         title: t("task.minions-nav.list-all"),
         value: total,
         color: "#262626",
       },
       {
         category: TaskMinionStatus.Success,
-        title: t("task.minions-nav.list-success"),
+        title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Success)),
         value: success,
-        color: "#52C41A",
+        color: getTaskMinionStatusColor(TaskMinionStatus.Success),
       },
       {
         category: TaskMinionStatus.Failed,
-        title: t("task.minions-nav.list-failed"),
+        title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Failed)),
         value: failed,
-        color: "#FF4D4F",
+        color: getTaskMinionStatusColor(TaskMinionStatus.Failed),
       },
       {
         category: TaskMinionStatus.InWork,
-        title: t("task.minions-nav.list-in-work"),
+        title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.InWork)),
         value: inWork,
-        color: "#1677FF",
+        color: getTaskMinionStatusColor(TaskMinionStatus.InWork),
       },
       {
+        category: TaskMinionStatus.Busy,
+        title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Busy)),
+        value: busy,
+        color: getTaskMinionStatusColor(TaskMinionStatus.Busy),
+      },
+      ...(showPolicyStatuses
+        ? [
+            {
+              category: TaskMinionStatus.Blocked,
+              title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Blocked)),
+              value: blocked,
+              color: getTaskMinionStatusColor(TaskMinionStatus.Blocked),
+            },
+            {
+              category: TaskMinionStatus.Unreachable,
+              title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Unreachable)),
+              value: unreachable,
+              color: getTaskMinionStatusColor(TaskMinionStatus.Unreachable),
+            },
+          ]
+        : []),
+      {
         category: TaskMinionStatus.Pending,
-        title: t("task.minions-nav.list-pending"),
+        title: t(getTaskMinionStatusLabelKey(TaskMinionStatus.Pending)),
         value: pending,
-        color: "#858585",
+        color: getTaskMinionStatusColor(TaskMinionStatus.Pending),
       },
     ],
-    [total, failed, inWork, pending, success, t]
+    [blocked, busy, failed, inWork, pending, showPolicyStatuses, success, total, unreachable, t]
   );
 
   return (
-    <Flex gap={5} justify="space-between" className={styles.taskStatusFilter}>
+    <Flex className={styles.taskStatusFilter} wrap="wrap" gap={5}>
       {statCards.map((card) => (
         <TaskMinionsStatusFiltersButton
           {...card}

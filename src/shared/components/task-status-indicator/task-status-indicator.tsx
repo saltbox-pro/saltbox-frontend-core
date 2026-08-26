@@ -3,7 +3,7 @@ import {
   ClockCircleOutlined,
   QuestionCircleOutlined,
   StopOutlined,
-  SyncOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import { TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { Flex, Skeleton, Spin } from "antd";
@@ -19,7 +19,7 @@ interface StatusConfig {
   translationKey: string;
 }
 
-const spinningIcon = <Spin indicator={<SyncOutlined spin />} size="small" />;
+const spinningIcon = <Spin indicator={<LoadingOutlined spin />} size="small" />;
 
 export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
   const { t } = useTranslation();
@@ -66,7 +66,7 @@ export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
   }
 
   return (
-    <Flex component="span" align="center" gap={4}>
+    <Flex component="span" align="center" gap={6}>
       {config.icon} {t(config.translationKey)}
     </Flex>
   );

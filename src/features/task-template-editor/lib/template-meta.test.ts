@@ -36,6 +36,7 @@ describe("template meta", () => {
   it("знает функции, которым нужен sls", () => {
     expect(isSlsFunction("state.apply")).toBe(true);
     expect(isSlsFunction(" state.apply ")).toBe(true);
+    expect(isSlsFunction("State.Apply")).toBe(true);
     expect(isSlsFunction("pkg.install")).toBe(false);
     expect(isSlsFunction(undefined)).toBe(false);
   });

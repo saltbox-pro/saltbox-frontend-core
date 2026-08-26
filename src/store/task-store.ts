@@ -363,13 +363,35 @@ export class TaskStore {
 
   @action
   updateTasks = (tasks: TaskModel[]) => {
-    if (!tasks || tasks.length === 0) {
+    if (!tasks?.length) {
       return;
     }
-    const sortedTasks = tasks.sort(
-      (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
-    );
-    this.task = sortedTasks.at(0) ?? null;
+
+    const taskId = this.task?.id;
+    const relevant = taskId ? tasks.filter((task) => task.id === taskId) : tasks;
+    if (!relevant.length) {
+      return;
+    }
+
+    // Newest modified wins; equal modified → later in the WS batch.
+    let bestIndex = 0;
+    for (let index = 1; index < relevant.length; index++) {
+      const bestModified = new Date(relevant[bestIndex].modified).getTime();
+      const taskModified = new Date(relevant[index].modified).getTime();
+      if (taskModified >= bestModified) {
+        bestIndex = index;
+      }
+    }
+    const nextTask = relevant[bestIndex];
+
+    const currentModified = this.task ? new Date(this.task.modified).getTime() : Number.NaN;
+    const nextModified = new Date(nextTask.modified).getTime();
+
+    if (this.task && !Number.isNaN(currentModified) && nextModified < currentModified) {
+      return;
+    }
+
+    this.task = nextTask;
   };
 
   @action

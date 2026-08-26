@@ -11,7 +11,12 @@ export type TtlParts = {
   unit: TtlUnit;
 };
 
-export const MANUAL_SALT_FUNCTION_PATTERN = /^[_0-9a-z]+\.[_0-9a-z]+$/i;
+export {
+  areSameManualSaltFunctionName,
+  isValidManualSaltFunctionName,
+  MANUAL_SALT_FUNCTION_PATTERN,
+  normalizeManualSaltFunctionName,
+} from "./salt-function-name";
 
 export const cleanNullsFromKwargs = (kwargs?: Record<string, unknown>): Record<string, unknown> => {
   if (!kwargs) {
@@ -99,10 +104,6 @@ export const getArgAndKwargForRequest = ({
       toRequestKwarg(jsonFormValue?.kwarg) ??
       (useBaselineFromProps ? toRequestKwarg(kwarg) : undefined),
   };
-};
-
-export const isValidManualSaltFunctionName = (value: string): boolean => {
-  return MANUAL_SALT_FUNCTION_PATTERN.test(value);
 };
 
 export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unknown> => {

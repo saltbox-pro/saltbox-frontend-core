@@ -1,13 +1,16 @@
 import type { JSONSchema, UISchema } from "@saltbox/react-jsonschema-form-generator";
-import { Button, Modal, Space, Tag, Typography, message } from "antd";
+import { Button, Form, Input, Modal, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SaltFunctionSelect } from "saltbox-core/shared/components/salt-function-select";
+import {
+  areSameManualSaltFunctionName,
+  isValidManualSaltFunctionName,
+  normalizeManualSaltFunctionName,
+} from "saltbox-core/shared/utils/salt-function-name";
 import { apiCoreStore } from "saltbox-core/store";
 
-import { hasParams } from "../lib/params-subtree";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./template-function-field.module.css";
@@ -36,94 +39,171 @@ const loadCatalogSchema = async (fun: string): Promise<CatalogSchema> => {
 export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldProps) => {
   const { t } = useTranslation();
   const [messageApi, contextHolder] = message.useMessage();
-  const [isPickerOpen, setPickerOpen] = useState(false);
-  const [pendingFun, setPendingFun] = useState<string | null>(null);
-  const [isApplying, setApplying] = useState(false);
+
+  const [draftFun, setDraftFun] = useState(store.fun);
+  const [isTouched, setTouched] = useState(false);
+  const [isFocused, setFocused] = useState(false);
+  const [lastAppliedFun, setLastAppliedFun] = useState(normalizeManualSaltFunctionName(store.fun));
+  const pendingFun = store.pendingFunctionChange;
+
+  const normalizedDraftFun = normalizeManualSaltFunctionName(draftFun);
+  const showError =
+    !isValidManualSaltFunctionName(normalizedDraftFun) && (isTouched || draftFun.length > 0);
+  const isDraftInvalid = !isValidManualSaltFunctionName(normalizedDraftFun);
+
+  useEffect(() => {
+    store.setFunctionDraftInvalid(isDraftInvalid);
+  }, [isDraftInvalid, store]);
+
+  useEffect(() => {
+    if (isFocused || pendingFun !== null || store.isFunctionSchemaApplying) return;
+
+    const normalizedStoreFun = normalizeManualSaltFunctionName(store.fun);
+    setDraftFun(store.fun);
+    setLastAppliedFun(normalizedStoreFun);
+  }, [isFocused, pendingFun, store.fun, store.isFunctionSchemaApplying]);
+
+  useEffect(() => {
+    return () => {
+      store.setPendingFunctionChange(null);
+      store.setFunctionDraftInvalid(false);
+    };
+  }, [store]);
 
   const applyWithCatalogSchema = async (fun: string) => {
-    setApplying(true);
+    store.setFunctionSchemaApplying(true);
     try {
       store.applyFunction(fun, await loadCatalogSchema(fun));
+      setLastAppliedFun(fun);
+      setDraftFun(fun);
     } finally {
-      setApplying(false);
+      store.setFunctionSchemaApplying(false);
     }
   };
 
-  const handleSelect = async (fun: string) => {
-    setPickerOpen(false);
+  const commitFunctionChange = () => {
+    if (store.isFunctionSchemaApplying || pendingFun !== null) return;
+    setTouched(true);
 
-    if (fun === store.fun) return;
+    const nextFun = normalizeManualSaltFunctionName(draftFun);
+    setDraftFun(nextFun);
 
-    const meta = store.meta;
-    if (!meta) {
+    const isValid = isValidManualSaltFunctionName(nextFun);
+    if (!isValid) return;
+
+    if (areSameManualSaltFunctionName(nextFun, lastAppliedFun)) {
+      if (nextFun !== lastAppliedFun) {
+        store.setFun(nextFun);
+        setLastAppliedFun(nextFun);
+      }
+      return;
+    }
+
+    if (!store.meta) {
       messageApi.warning(t("task-template-editor.function-change-blocked"));
+      setDraftFun(lastAppliedFun);
       return;
     }
 
-    // Схема ещё пуста — терять нечего, меняем молча
-    if (!hasParams(meta, store.fun)) {
-      await applyWithCatalogSchema(fun);
-      return;
-    }
-
-    setPendingFun(fun);
+    store.setPendingFunctionChange(nextFun);
   };
 
   const handleReplaceSchema = async () => {
     if (!pendingFun) return;
 
-    await applyWithCatalogSchema(pendingFun);
-    setPendingFun(null);
+    try {
+      await applyWithCatalogSchema(pendingFun);
+    } finally {
+      store.setPendingFunctionChange(null);
+    }
   };
 
   const handleKeepSchema = () => {
-    if (!pendingFun) return;
+    if (!pendingFun || store.isFunctionSchemaApplying) return;
 
     store.setFun(pendingFun);
-    setPendingFun(null);
+    setLastAppliedFun(pendingFun);
+    setDraftFun(pendingFun);
+    store.setPendingFunctionChange(null);
+  };
+
+  const handleCancelPending = () => {
+    if (store.isFunctionSchemaApplying) return;
+    setDraftFun(lastAppliedFun);
+    store.setPendingFunctionChange(null);
   };
 
   return (
     <div className={styles.field}>
       {contextHolder}
 
-      <Typography.Text type="secondary" className={styles.label}>
-        {t("task-template-editor.function-label")}
-      </Typography.Text>
+      <Form.Item
+        className={styles.item}
+        layout="vertical"
+        colon={false}
+        label={t("task-template-editor.function-label")}
+        validateStatus={showError ? "error" : undefined}
+        help={showError ? t("task-template-editor.function-format-error") : undefined}
+      >
+        <Input
+          className={styles.input}
+          value={draftFun}
+          placeholder={t("task-template-editor.function-placeholder")}
+          disabled={store.isFunctionSchemaApplying || store.hasMetaError || pendingFun !== null}
+          onFocus={() => setFocused(true)}
+          onChange={(event) => {
+            setTouched(true);
+            setDraftFun(event.target.value);
+          }}
+          onBlur={() => {
+            setFocused(false);
 
-      <Space size="small" align="center" className={styles.control}>
-        <Tag className={styles.functionTag}>{store.fun}</Tag>
-        <Button size="small" loading={isApplying} onClick={() => setPickerOpen(true)}>
-          {t("task-template-editor.function-select")}
-        </Button>
-      </Space>
+            const nextFun = normalizeManualSaltFunctionName(draftFun);
+            if (!isValidManualSaltFunctionName(nextFun)) {
+              setDraftFun(lastAppliedFun);
+              setTouched(false);
+              return;
+            }
 
-      <SaltFunctionSelect
-        open={isPickerOpen}
-        pickerSessionOpen={isPickerOpen}
-        onCancel={() => setPickerOpen(false)}
-        onSelect={handleSelect}
-      />
+            commitFunctionChange();
+          }}
+          onPressEnter={() => {
+            commitFunctionChange();
+          }}
+        />
+      </Form.Item>
 
       <Modal
         title={t("task-template-editor.function-change-title")}
         open={pendingFun !== null}
-        onCancel={() => setPendingFun(null)}
+        onCancel={handleCancelPending}
+        closable={!store.isFunctionSchemaApplying}
+        keyboard={!store.isFunctionSchemaApplying}
+        maskClosable={!store.isFunctionSchemaApplying}
         footer={[
-          <Button key="cancel" onClick={() => setPendingFun(null)}>
+          <Button
+            key="cancel"
+            disabled={store.isFunctionSchemaApplying}
+            onClick={handleCancelPending}
+          >
             {t("common.cancel")}
           </Button>,
-          <Button key="keep" onClick={handleKeepSchema}>
+          <Button key="keep" disabled={store.isFunctionSchemaApplying} onClick={handleKeepSchema}>
             {t("task-template-editor.function-change-keep-schema")}
           </Button>,
-          <Button key="replace" type="primary" loading={isApplying} onClick={handleReplaceSchema}>
+          <Button
+            key="replace"
+            type="primary"
+            loading={store.isFunctionSchemaApplying}
+            onClick={handleReplaceSchema}
+          >
             {t("task-template-editor.function-change-replace-schema")}
           </Button>,
         ]}
       >
         <Typography.Paragraph>
           {t("task-template-editor.function-change-description", {
-            from: store.fun,
+            from: lastAppliedFun,
             to: pendingFun ?? "",
           })}
         </Typography.Paragraph>
