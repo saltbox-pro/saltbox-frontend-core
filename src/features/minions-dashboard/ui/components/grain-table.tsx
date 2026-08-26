@@ -87,6 +87,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
       isEmpty={!values.length}
       sorting={sorting}
       onSortingChange={setSorting}
+      enableColumnSettings={false}
       hideFooter
     />
   );
