@@ -19,4 +19,6 @@ export type JobReplayBaseline = {
   fun: string;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
+  sourceId?: string;
+  templateId?: string;
 };

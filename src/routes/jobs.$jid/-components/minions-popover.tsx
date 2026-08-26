@@ -62,6 +62,8 @@ export function MinionsPopover({
         fun: job.fun,
         arg: job.arg ?? undefined,
         kwarg: job.kwarg ?? undefined,
+        sourceId: job.template_source_id ?? undefined,
+        templateId: job.template_id ?? undefined,
       });
       openConfigureWithFunction(job.fun, {
         target: minionNamesCommaSeparated,

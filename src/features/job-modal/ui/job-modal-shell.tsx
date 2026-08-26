@@ -18,7 +18,7 @@ type PickedTemplateBaseline = {
   sourceId: string;
   templateId: string;
   fun: string;
-  templateArgs?: unknown[];
+  fromRepeat?: boolean;
 };
 
 type JobModalShellProps = {
@@ -43,6 +43,7 @@ export const JobModalShell = ({
   onAfterConfigureClose,
 }: JobModalShellProps) => {
   const jsonFormByKeyRef = useRef<Record<string, unknown>>({});
+  const appliedRepeatTemplateRef = useRef<string | null>(null);
   const [, setFormCacheRevision] = useState(0);
   const [jobModalFun, setJobModalFun] = useState<string | null>(null);
   const [pickedTemplate, setPickedTemplate] = useState<PickedTemplateBaseline | null>(null);
@@ -50,6 +51,7 @@ export const JobModalShell = ({
   useEffect(() => {
     if (!pickerOpen) {
       jsonFormByKeyRef.current = {};
+      appliedRepeatTemplateRef.current = null;
       setFormCacheRevision(0);
       setPickedTemplate(null);
     }
@@ -61,6 +63,22 @@ export const JobModalShell = ({
     }
   }, [configureFunction]);
 
+  useEffect(() => {
+    const { sourceId, templateId, fun } = repeatBaseline ?? {};
+    if (
+      !configureFunction ||
+      !sourceId ||
+      !templateId ||
+      fun !== configureFunction ||
+      appliedRepeatTemplateRef.current === templateId
+    ) {
+      return;
+    }
+
+    appliedRepeatTemplateRef.current = templateId;
+    setPickedTemplate({ sourceId, templateId, fun, fromRepeat: true });
+  }, [configureFunction, repeatBaseline]);
+
   const funForArgs = configureFunction ?? jobModalFun;
 
   const formCacheKey = pickedTemplate?.templateId ?? funForArgs;
@@ -70,7 +88,7 @@ export const JobModalShell = ({
       : undefined;
 
   const resolvedArgKwarg = (() => {
-    if (!funForArgs || pickedTemplate) {
+    if (!funForArgs || (pickedTemplate && !pickedTemplate.fromRepeat)) {
       return { arg: undefined, kwarg: undefined };
     }
     if (cachedFormData) {
@@ -89,14 +107,11 @@ export const JobModalShell = ({
 
   const handleSelectTemplate = useCallback(
     (template: PickedTemplate) => {
-      const baseline: PickedTemplateBaseline = template.isFunctionTemplate
-        ? { sourceId: template.sourceId, templateId: template.templateId, fun: template.fun }
-        : {
-            sourceId: template.sourceId,
-            templateId: template.templateId,
-            fun: SLS_TEMPLATE_FUN,
-            templateArgs: [template.name],
-          };
+      const baseline: PickedTemplateBaseline = {
+        sourceId: template.sourceId,
+        templateId: template.templateId,
+        fun: template.isFunctionTemplate ? template.fun : SLS_TEMPLATE_FUN,
+      };
 
       setPickedTemplate(baseline);
       onConfigureFunctionChange(baseline.fun);
@@ -173,7 +188,7 @@ export const JobModalShell = ({
           fun={jobModalFun}
           sourceId={pickedTemplate?.sourceId}
           templateId={pickedTemplate?.templateId}
-          templateArgs={pickedTemplate?.templateArgs}
+          allowBuiltinSchemaFallback={pickedTemplate?.fromRepeat}
           initialJsonFormValue={pickedTemplate ? cachedFormData : undefined}
           arg={resolvedArgKwarg.arg}
           kwarg={resolvedArgKwarg.kwarg}

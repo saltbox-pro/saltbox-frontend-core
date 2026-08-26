@@ -17,7 +17,6 @@ import CollectionsPage from "./routes/collections";
 import ConfigurationTemplatesPage from "./routes/configuration-templates";
 import TemplateSourceDetailPage from "./routes/configuration-templates.$sourceId";
 import JobsPage from "./routes/jobs";
-import JobsTemplatesPage from "./routes/jobs-templates";
 import JobPage from "./routes/jobs.$jid";
 import MastersPage from "./routes/masters";
 import MinionRedirectPage from "./routes/masters.$master_id.minion.$minion_id";
@@ -58,7 +57,6 @@ const coreRoutes = createRoutes(Route, [
   { path: "/core/masters/:master_id/minion/:minion_id", element: <MinionRedirectPage /> },
   { path: "/core/jobs", element: <JobsPage /> },
   { path: "/core/jobs/:jid", element: <JobPage /> },
-  { path: "/core/jobs-templates", element: <JobsTemplatesPage /> },
   { path: "/core/tasks", element: <AggregatedTasksPage /> },
   { path: "/core/policies", element: <AggregatedPoliciesPage /> },
   { path: "/core/task/:taskid", element: <TaskPage /> },
