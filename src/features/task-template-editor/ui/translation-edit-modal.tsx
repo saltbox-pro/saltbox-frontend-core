@@ -166,6 +166,7 @@ export const TranslationEditModal = ({
           getRowId={(row) => row.locale}
           isEmpty={data.length === 0}
           hideFooter
+          enableColumnSettings={false}
         />
       </TranslationDraftContext.Provider>
 
