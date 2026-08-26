@@ -5,6 +5,10 @@ import { useMemo } from "react";
 import type { RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
+import {
+  buildMinionsActionPluginItems,
+  useMinionsActionsTick,
+} from "saltbox-core/features/minions/actions";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
 
 type SelectedMinion = TaskTargetMinion & { mid: string };
@@ -12,6 +16,7 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 export type MinionsActionsDropdownProps = {
   slug: string;
   searchFilters: RuleGroupType;
+  query: Record<string, unknown>;
   selectedMinions: SelectedMinion[];
   clearSelection: () => void;
   reloadMinions: () => void;
@@ -21,10 +26,12 @@ export function MinionsActionsDropdown({
   slug,
   selectedMinions,
   searchFilters,
+  query,
   clearSelection,
   reloadMinions,
 }: MinionsActionsDropdownProps) {
   const [messageApi, messageContextHolder] = message.useMessage();
+  useMinionsActionsTick();
 
   const exportAction = useCsvDownloadDropdownItem({
     slug,
@@ -43,14 +50,28 @@ export function MinionsActionsDropdown({
     },
   });
 
+  const pluginActionContext = useMemo(
+    () => ({
+      collectionSlug: slug,
+      query,
+      selectedMinions: selectedMinions.map(({ minion_id, salt_master }) => ({
+        minion_id,
+        salt_master,
+      })),
+    }),
+    [slug, query, selectedMinions]
+  );
+
+  const pluginItems = buildMinionsActionPluginItems(pluginActionContext);
+
   const items = useMemo<ActionDropdownItem[]>(() => {
-    const base = [exportAction.item];
+    const base: ActionDropdownItem[] = [...pluginItems, exportAction.item];
 
     if (selectedMinions.length <= 0) return base;
 
     const deleteItem = removeAction.item;
     return deleteItem ? [...base, deleteItem] : base;
-  }, [exportAction.item, removeAction.item, selectedMinions.length]);
+  }, [pluginItems, exportAction.item, removeAction.item, selectedMinions.length]);
 
   return (
     <>
