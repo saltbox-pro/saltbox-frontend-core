@@ -640,7 +640,6 @@
     "timeout-unit-seconds": "Sec",
     "timeout-unit-minutes": "Min",
     "timeout-unit-hours": "Hour",
-    "error-load-function-schema": "Failed to load function schema",
     "error-job-create": "Failed to create job"
   },
   "terminal": {
@@ -662,7 +661,6 @@
     "settings-save": "Save",
     "settings-cancel": "Cancel",
     "settings-reset": "Reset",
-    "settings-retry": "Retry",
     "help-intro": "The terminal runs individual commands via cmd.run and is not an interactive console",
     "help-unsupported-title": "Not supported:",
     "help-unsupported-interactive": "interactive applications (vim, nano, top, htop, less, man, etc.)",
@@ -672,28 +670,12 @@
     "help-recommendation": "Use absolute file paths or set the working directory via the cwd parameter in the command's advanced settings"
   },
   "job-function-select": {
-    "title": "Choose function",
-    "search-placeholder": "Search or type module.function (e.g. file.append)",
-    "empty": "No available functions",
-    "nothing-found": "Nothing found for query",
     "invalid-function-format": "Use the module.function format (example: file.append)",
     "create-with-function": "Create job with function \"{{name}}\"",
-    "table-module": "Module",
-    "table-functions": "Functions",
     "error": "Failed to load data",
     "tooltip-description": "Description",
     "tooltip-arguments": "Arguments",
-    "tooltip-example": "Command example",
-    "module-descriptions": {
-      "default": "{{module}} module",
-      "test": "Testing and diagnostics",
-      "cmd": "Command execution",
-      "grains": "System information (Grains)",
-      "pillar": "Pillar data",
-      "pkg": "Package management",
-      "service": "Service management",
-      "file": "File operations"
-    }
+    "tooltip-example": "Command example"
   },
   "job-return": {
     "waiting-client-response": "Waiting for client response",

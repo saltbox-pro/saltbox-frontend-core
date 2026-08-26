@@ -1,6 +1,5 @@
 import { getDefaultFormState } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
-import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
 import { JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS } from "@saltbox/saltbox-frontend-common";
 import type { KeyboardEvent } from "react";
 
@@ -254,22 +253,4 @@ export const isTimeoutInputKeyAllowed = (event: KeyboardEvent<HTMLInputElement>)
 
 export const isTimeoutPasteAllowed = (pasted: string): boolean => {
   return /^\d+$/.test(pasted);
-};
-
-export const fetchJobFunctionSchema = async (
-  functionName: string,
-  getSchema: (name: string) => Promise<JobSchemaModel | null | undefined>
-): Promise<JobSchemaModel> => {
-  const primary = await getSchema(functionName);
-  if (primary) {
-    return primary;
-  }
-  if (functionName === "default") {
-    throw new Error("JOB_SCHEMA_LOAD_FAILED");
-  }
-  const fallback = await getSchema("default");
-  if (fallback) {
-    return fallback;
-  }
-  throw new Error("JOB_SCHEMA_LOAD_FAILED");
 };

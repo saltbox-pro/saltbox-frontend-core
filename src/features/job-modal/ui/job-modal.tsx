@@ -42,6 +42,7 @@ import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
+import { resolveBuiltinJobSchema } from "saltbox-core/shared/job-schemas";
 import {
   getArgAndKwargForRequest,
   isTimeoutInputKeyAllowed,
@@ -69,7 +70,7 @@ interface JobModalProps {
   fun: string;
   sourceId?: string;
   templateId?: string;
-  templateArgs?: unknown[];
+  allowBuiltinSchemaFallback?: boolean;
   initialJsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
@@ -96,7 +97,7 @@ export function JobModal({
   fun,
   sourceId,
   templateId,
-  templateArgs,
+  allowBuiltinSchemaFallback,
   initialJsonFormValue,
   arg,
   kwarg,
@@ -147,6 +148,7 @@ export function JobModal({
     fun,
     sourceId,
     templateId,
+    allowBuiltinSchemaFallback,
     initialJsonFormValue,
     arg,
     kwarg,
@@ -168,14 +170,16 @@ export function JobModal({
 
   const isTemplateMode = paramsSource?.kind === "template";
 
-  const functionJsonSchema =
-    paramsSource?.kind === "function"
-      ? (paramsSource.schema.json_schema as JsonSchemaRecord | undefined)
-      : undefined;
-  const functionUiSchema =
-    paramsSource?.kind === "function"
-      ? (paramsSource.schema.ui_schema as JsonSchemaRecord | undefined)
-      : undefined;
+  const functionParamsSchema = useMemo(
+    () =>
+      paramsSource?.kind === "function"
+        ? resolveBuiltinJobSchema(paramsSource.schema, i18n.language)
+        : undefined,
+    [paramsSource, i18n.language]
+  );
+
+  const functionJsonSchema = functionParamsSchema?.json_schema as JsonSchemaRecord | undefined;
+  const functionUiSchema = functionParamsSchema?.ui_schema as JsonSchemaRecord | undefined;
 
   const templateParamsSchema = useMemo(
     () =>
@@ -367,18 +371,12 @@ export function JobModal({
     firstInvalidField?.focus({ preventScroll: true });
   };
 
-  const getRequestArgAndKwarg = () => {
-    const { arg: requestArg, kwarg: requestKwarg } = getArgAndKwargForRequest({
+  const getRequestArgAndKwarg = () =>
+    getArgAndKwargForRequest({
       jsonFormValue,
       arg,
       kwarg,
     });
-
-    return {
-      arg: templateArgs?.length ? [...templateArgs, ...(requestArg ?? [])] : requestArg,
-      kwarg: requestKwarg,
-    };
-  };
 
   const validateJsonForm = (): boolean => {
     if (isTemplateMode) {
@@ -445,6 +443,7 @@ export function JobModal({
         CreateJobRequest: {
           tgt: requestTgt,
           fun,
+          template_id: isTemplateMode ? templateId : undefined,
           tgt_type: formValue.tgt_type,
           salt_master: formValue.salt_master,
           arg: requestArg,
@@ -499,6 +498,7 @@ export function JobModal({
     return {
       tgt: form.getFieldValue("tgt"),
       fun,
+      template_id: isTemplateMode ? templateId : undefined,
       tgt_type: form.getFieldValue("tgt_type"),
       salt_master: form.getFieldValue("salt_master"),
       arg: requestArg,

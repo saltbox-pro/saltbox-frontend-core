@@ -1,7 +1,6 @@
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
-  JobSchemaModel,
   MasterViewSchema,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
@@ -15,9 +14,9 @@ import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/job-schemas";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import {
-  fetchJobFunctionSchema,
   getDefaultJsonFormValue,
   getRepeatJsonFormValue,
   hasBaselineJobArgs,
@@ -36,12 +35,13 @@ export type JobModalFormValues = Pick<CreateJobRequest, "tgt" | "tgt_type" | "sa
 
 export type JobParamsSource =
   | { kind: "template"; template: TaskTemplateModel }
-  | { kind: "function"; schema: JobSchemaModel };
+  | { kind: "function"; schema: BuiltinJobSchemaMeta };
 
 type UseJobModalInitParams = {
   fun: string;
   sourceId?: string;
   templateId?: string;
+  allowBuiltinSchemaFallback?: boolean;
   initialJsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
@@ -91,22 +91,21 @@ const loadAcceptedMasters = async (): Promise<MasterOption[]> => {
 const loadParamsSource = async (
   fun: string,
   sourceId?: string,
-  templateId?: string
+  templateId?: string,
+  allowBuiltinSchemaFallback?: boolean
 ): Promise<JobParamsSource> => {
   if (sourceId && templateId) {
     try {
       const template = await taskTemplateService.loadTemplateById(sourceId, templateId);
       return { kind: "template", template };
     } catch {
-      throw new Error(TEMPLATE_LOAD_FAILED_ERROR);
+      if (!allowBuiltinSchemaFallback) {
+        throw new Error(TEMPLATE_LOAD_FAILED_ERROR);
+      }
     }
   }
 
-  const schema = await fetchJobFunctionSchema(fun, (name) =>
-    apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
-  );
-
-  return { kind: "function", schema };
+  return { kind: "function", schema: getBuiltinJobSchema(fun) };
 };
 
 const getInitialJsonFormValue = (
@@ -115,19 +114,23 @@ const getInitialJsonFormValue = (
   arg: unknown[] | undefined,
   kwarg: Record<string, unknown> | undefined
 ): Record<string, unknown> => {
-  if (source.kind === "template") {
-    return initialJsonFormValue ?? getDefaultJsonFormValue(source.template.json_schema);
+  const jsonSchema =
+    source.kind === "template" ? source.template.json_schema : source.schema.json_schema;
+
+  if (initialJsonFormValue) {
+    return initialJsonFormValue;
   }
 
   return hasBaselineJobArgs(arg, kwarg)
-    ? getRepeatJsonFormValue(arg, kwarg, source.schema.json_schema)
-    : getDefaultJsonFormValue(source.schema.json_schema);
+    ? getRepeatJsonFormValue(arg, kwarg, jsonSchema)
+    : getDefaultJsonFormValue(jsonSchema);
 };
 
 export const useJobModalInit = ({
   fun,
   sourceId,
   templateId,
+  allowBuiltinSchemaFallback,
   initialJsonFormValue,
   arg,
   kwarg,
@@ -182,7 +185,7 @@ export const useJobModalInit = ({
     try {
       const [masters, source] = await Promise.all([
         loadAcceptedMasters(),
-        loadParamsSource(fun, sourceId, templateId),
+        loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
       ]);
 
       if (requestId !== loadRequestIdRef.current) {
@@ -194,7 +197,7 @@ export const useJobModalInit = ({
       setJsonFormValue(getInitialJsonFormValue(source, initialJsonFormValue, arg, kwarg));
       applyTtlFromInitialOrDefault(
         initialTtlSeconds,
-        source.kind === "template" ? source.template.defaults?.ttl : source.schema.default_ttl
+        source.kind === "template" ? source.template.defaults?.ttl : source.schema.defaults?.ttl
       );
 
       form.resetFields();
@@ -217,8 +220,6 @@ export const useJobModalInit = ({
         );
       } else if (error instanceof Error && error.message === TEMPLATE_LOAD_FAILED_ERROR) {
         messageApi.error(t("task-create.error-loading-template"));
-      } else if (error instanceof Error && error.message === "JOB_SCHEMA_LOAD_FAILED") {
-        messageApi.error(t("job-modal.error-load-function-schema"));
       } else {
         messageApi.error(acceptedMastersErrorMessage);
       }
@@ -230,6 +231,7 @@ export const useJobModalInit = ({
       }
     }
   }, [
+    allowBuiltinSchemaFallback,
     arg,
     acceptedMastersErrorMessage,
     applyTtlFromInitialOrDefault,

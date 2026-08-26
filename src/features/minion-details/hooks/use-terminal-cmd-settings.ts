@@ -1,11 +1,11 @@
-import type { JobSchemaModel } from "@saltbox/saltbox-core-api-client";
 import type { JsonFormRef } from "@saltbox/saltbox-frontend-common";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
+import { CMD_RUN_JOB_SCHEMA, resolveBuiltinJobSchema } from "saltbox-core/shared/job-schemas";
 import {
   cleanNullsFromKwargs,
-  fetchJobFunctionSchema,
   getDefaultJsonFormValue,
   isTimeoutInputKeyAllowed,
   isTimeoutPasteAllowed,
@@ -20,7 +20,6 @@ import {
   type JsonSchemaRecord,
   type UiSchemaRecord,
 } from "saltbox-core/shared/utils/job-schema-split";
-import { apiCoreStore } from "saltbox-core/store";
 
 import {
   hasTerminalCmdRunParams,
@@ -30,40 +29,35 @@ import {
   type TerminalCmdRunSettings,
 } from "../model/terminal-cmd-settings";
 
-const TERMINAL_CMD_FUNCTION = "cmd.run";
-
 export type TerminalCmdSettingsController = ReturnType<typeof useTerminalCmdSettings>;
 
 export function useTerminalCmdSettings() {
+  const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [savedSettings, setSavedSettings] = useState<TerminalCmdRunSettings | null>(() =>
     loadTerminalCmdRunSettings()
   );
-  const [saltFunction, setSaltFunction] = useState<JobSchemaModel>();
-  const [isSchemaLoading, setIsSchemaLoading] = useState(false);
-  const [hasSchemaLoadError, setHasSchemaLoadError] = useState(false);
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
 
   const jsonFormRef = useRef<JsonFormRef>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
-  const loadRequestIdRef = useRef(0);
   const hasInitializedRef = useRef(false);
 
   const hasSavedParams = savedSettings != null;
 
-  const schemaLayout = useMemo(
-    () =>
-      getOptionalJobParamsSchemaLayout(
-        saltFunction?.json_schema as JsonSchemaRecord | undefined,
-        saltFunction?.ui_schema as UiSchemaRecord | undefined
-      ),
-    [saltFunction]
-  );
+  const schemaLayout = useMemo(() => {
+    const schema = resolveBuiltinJobSchema(CMD_RUN_JOB_SCHEMA, i18n.language);
+
+    return getOptionalJobParamsSchemaLayout(
+      schema.json_schema as JsonSchemaRecord,
+      schema.ui_schema as UiSchemaRecord | undefined
+    );
+  }, [i18n.language]);
 
   const ttlPlaceholder = String(
-    parseTtlValue(saltFunction?.default_ttl) ?? DEFAULT_JOB_TIMEOUT_SECONDS
+    parseTtlValue(CMD_RUN_JOB_SCHEMA.defaults?.ttl) ?? DEFAULT_JOB_TIMEOUT_SECONDS
   );
 
   const defaultKwargs = useMemo(
@@ -76,31 +70,6 @@ export function useTerminalCmdSettings() {
     () => ({ kwargs: defaultKwargs, ttlSeconds: Number(ttlPlaceholder) }),
     [defaultKwargs, ttlPlaceholder]
   );
-
-  const loadSchema = useCallback(async () => {
-    const requestId = ++loadRequestIdRef.current;
-    setIsSchemaLoading(true);
-    setHasSchemaLoadError(false);
-
-    try {
-      const schema = await fetchJobFunctionSchema(TERMINAL_CMD_FUNCTION, (name) =>
-        apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name })
-      );
-      if (requestId !== loadRequestIdRef.current) {
-        return;
-      }
-      setSaltFunction(schema);
-    } catch {
-      if (requestId !== loadRequestIdRef.current) {
-        return;
-      }
-      setHasSchemaLoadError(true);
-    } finally {
-      if (requestId === loadRequestIdRef.current) {
-        setIsSchemaLoading(false);
-      }
-    }
-  }, []);
 
   const initializeFields = useCallback(() => {
     const savedSettings = loadTerminalCmdRunSettings();
@@ -120,10 +89,7 @@ export function useTerminalCmdSettings() {
       hasInitializedRef.current = true;
     }
     setIsOpen(true);
-    if (!saltFunction && !isSchemaLoading) {
-      loadSchema();
-    }
-  }, [initializeFields, isSchemaLoading, loadSchema, saltFunction]);
+  }, [initializeFields]);
 
   const closeSettings = useCallback(() => {
     setIsOpen(false);
@@ -179,12 +145,6 @@ export function useTerminalCmdSettings() {
     setJsonFormValue({ kwargs: {} });
   }, []);
 
-  const retrySchemaLoad = useCallback(() => {
-    if (!isSchemaLoading) {
-      loadSchema();
-    }
-  }, [isSchemaLoading, loadSchema]);
-
   const handleTtlInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isTimeoutInputKeyAllowed(event)) {
       event.preventDefault();
@@ -222,8 +182,6 @@ export function useTerminalCmdSettings() {
     savedSettings,
     defaultSettings,
     hasSavedParams,
-    isSchemaLoading,
-    hasSchemaLoadError,
     schemaLayout,
     ttlValue,
     setTtlValue,
@@ -241,6 +199,5 @@ export function useTerminalCmdSettings() {
     cancelSettings,
     saveSettings,
     resetFields,
-    retrySchemaLoad,
   };
 }

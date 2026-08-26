@@ -23,6 +23,7 @@ export interface TemplateMetaDefaults {
 export interface TemplateMeta {
   fun?: string;
   query?: Record<string, unknown>;
+  title?: DescriptionValue;
   description?: DescriptionValue;
   json_schema?: JSONSchema;
   ui_schema?: UISchema;
@@ -47,6 +48,7 @@ export const isSlsFunction = (fun: string | undefined | null): boolean =>
 const META_KEY_ORDER: readonly string[] = [
   "fun",
   "query",
+  "title",
   "description",
   "json_schema",
   "ui_schema",
