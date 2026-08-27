@@ -40,9 +40,6 @@
     "table-total-clients": "Клиенты",
     "table-failed-clients": "С ошибкой",
     "table-progress": "Прогресс",
-    "table-source-type": "Тип источника",
-    "table-soruce-type-rest": "Пользователь",
-    "table-soruce-type-scheduler": "Планировщик",
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
     "minion": "Клиент",
@@ -536,12 +533,6 @@
     "table-target-type": "Тип цели",
     "table-created": "Создана",
     "table-targets": "Цели",
-    "table-source": "Источник",
-    "table-source-id": "ID источника",
-    "table-source-rest": "Вручную",
-    "table-source-task": "Из задачи",
-    "table-source-scheduler": "Из планировщика",
-    "table-source-scenario": "Из сценария",
     "table-user": "Пользователь",
     "table-jid": "JID",
     "table-master": "Контроллер",
@@ -980,6 +971,17 @@
     "connect": "Подключить",
     "disconnect": "Отключить",
     "sync": "Синхронизировать"
+  },
+  "entity-source": {
+    "column": "Тип источника",
+    "id-column": "ID источника",
+    "type": {
+      "rest": "Вручную",
+      "task": "Из задачи",
+      "scheduler": "Из планировщика",
+      "migration": "Из сценария",
+      "system": "Системой"
+    }
   },
   "task-template-editor": {
     "create-title": "Создание шаблона задачи",

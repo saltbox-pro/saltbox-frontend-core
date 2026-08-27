@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-interface JobSourceLinkProps {
+interface EntitySourceLinkProps {
   to: string;
   state?: unknown;
   children: ReactNode;
 }
 
-export function JobSourceLink({ to, state, children }: JobSourceLinkProps) {
+export function EntitySourceLink({ to, state, children }: EntitySourceLinkProps) {
   return (
     <Link
       to={to}

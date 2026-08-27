@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
 import { TaskMinionsCountProgress } from "saltbox-core/shared/components/task/task-minions-count-progress";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
@@ -84,17 +85,8 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         : [
             columnHelper.accessor("source.type", {
               id: "source.type",
-              header: t("minions.table-source-type"),
-              cell: (data) => {
-                switch (data.getValue()) {
-                  case "rest":
-                    return t("minions.table-soruce-type-rest");
-                  case "scheduler":
-                    return t("minions.table-soruce-type-scheduler");
-                  default:
-                    return data.getValue();
-                }
-              },
+              header: t("entity-source.column"),
+              cell: (data) => <EntitySourceType type={data.getValue()} />,
               meta: {
                 width: "9%",
                 minWidth: 150,

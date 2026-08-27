@@ -23,7 +23,7 @@ import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
 import { JobModalShell, type JobModalTargeting } from "saltbox-core/features/job-modal";
-import { JobSourceType } from "saltbox-core/shared/components/job/source-type";
+import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import {
@@ -193,9 +193,11 @@ const JobsPage = observer(() => {
       }),
       columnHelper.accessor((row) => row.source?.type, {
         id: "source.type",
-        header: t("jobs.table-source"),
+        header: t("entity-source.column"),
         cell: (data) => {
-          return <JobSourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />;
+          return (
+            <EntitySourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />
+          );
         },
         meta: {
           width: "10%",

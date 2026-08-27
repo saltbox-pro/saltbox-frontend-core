@@ -40,9 +40,6 @@
     "table-total-clients": "Clients",
     "table-failed-clients": "Failed",
     "table-progress": "Progress",
-    "table-source-type": "Source Type",
-    "table-soruce-type-rest": "User",
-    "table-soruce-type-scheduler": "Scheduler",
     "tasks-table-total-minions": "Total Minions",
     "tasks-table-status-header": "Minions Statistics",
     "minion": "Minion",
@@ -536,12 +533,6 @@
     "table-target-type": "Target Type",
     "table-created": "Created",
     "table-targets": "Targets",
-    "table-source": "Source",
-    "table-source-id": "Source ID",
-    "table-source-rest": "Manual",
-    "table-source-task": "From task",
-    "table-source-scheduler": "From scheduler",
-    "table-source-scenario": "From scenario",
     "table-user": "User",
     "table-jid": "JID",
     "table-master": "Master",
@@ -980,6 +971,17 @@
     "connect": "Connect",
     "disconnect": "Disconnect",
     "sync": "Sync"
+  },
+  "entity-source": {
+    "column": "Source type",
+    "id-column": "Source ID",
+    "type": {
+      "rest": "Manual",
+      "task": "From task",
+      "scheduler": "From scheduler",
+      "migration": "From scenario",
+      "system": "By system"
+    }
   },
   "task-template-editor": {
     "create-title": "Create task template",

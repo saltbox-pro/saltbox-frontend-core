@@ -10,6 +10,12 @@ import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
 import type { OptionList } from "react-querybuilder";
 
+import {
+  getEntitySourceTypeSelectOptions,
+  JOB_SOURCE_TYPE_FILTER_VALUES,
+  TASK_SOURCE_TYPE_FILTER_VALUES,
+} from "saltbox-core/shared/entity-source";
+
 export type TasksFilterSchemaOptions = {
   includeTargetCollection?: boolean;
   includeSourceType?: boolean;
@@ -23,11 +29,6 @@ const statusSelectOptions = (t: TFunction) => [
   { label: t("task.stopped"), value: TaskStatus.Stopped },
   { label: t("task.finished"), value: TaskStatus.Finished },
   { label: t("task.wait-minions"), value: TaskStatus.WaitMinions },
-];
-
-const sourceTypeSelectOptions = (t: TFunction) => [
-  { label: t("minions.table-soruce-type-rest"), value: "rest" },
-  { label: t("minions.table-soruce-type-scheduler"), value: "scheduler" },
 ];
 
 export const getTasksFilterSchema = (
@@ -50,10 +51,10 @@ export const getTasksFilterSchema = (
   if (showSourceType) {
     fields.push({
       name: "source.type",
-      label: t("minions.table-source-type"),
+      label: t("entity-source.column"),
       operators: defaultListOperators,
       type: "multiselect",
-      selectOptions: sourceTypeSelectOptions(t),
+      selectOptions: getEntitySourceTypeSelectOptions(TASK_SOURCE_TYPE_FILTER_VALUES, t),
     });
   }
 
@@ -104,13 +105,6 @@ export const getTasksFilterSchema = (
   return fields as OptionList;
 };
 
-const jobSourceTypeSelectOptions = (t: TFunction) => [
-  { label: t("jobs.table-source-rest"), value: "rest" },
-  { label: t("jobs.table-source-task"), value: "task" },
-  { label: t("jobs.table-source-scheduler"), value: "scheduler" },
-  { label: t("jobs.table-source-scenario"), value: "migration" },
-];
-
 const jobStatusSelectOptions = (t: TFunction) => [
   { label: t("jobs.table-status-starting"), value: JobStatus.Starting },
   { label: t("jobs.table-status-running"), value: JobStatus.Running },
@@ -153,14 +147,14 @@ export const getJobsFilterSchema = (
     },
     {
       name: "source.type",
-      label: t("jobs.table-source"),
+      label: t("entity-source.column"),
       operators: defaultListOperators,
       type: "multiselect",
-      selectOptions: jobSourceTypeSelectOptions(t),
+      selectOptions: getEntitySourceTypeSelectOptions(JOB_SOURCE_TYPE_FILTER_VALUES, t),
     },
     {
       name: "source.id",
-      label: t("jobs.table-source-id"),
+      label: t("entity-source.id-column"),
       operators: defaultStringOperators,
     },
     {
