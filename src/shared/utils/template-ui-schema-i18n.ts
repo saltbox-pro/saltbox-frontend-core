@@ -33,6 +33,53 @@ function localizeString(
   });
 }
 
+export function localizeText(
+  value: string | undefined,
+  i18n: TemplateI18nDictionary | undefined,
+  language: string
+): string | undefined {
+  if (value == null || !i18n || Object.keys(i18n).length === 0) {
+    return value;
+  }
+
+  return localizeString(value, i18n, language);
+}
+
+const COMBINATOR_KEY_REGEX = /^(oneOf|anyOf)_(\d+)$/;
+
+function normalizeUiSchemaCombinators(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(normalizeUiSchemaCombinators);
+  }
+
+  if (!isPlainObject(value)) {
+    return value;
+  }
+
+  const rest: Record<string, unknown> = {};
+  const indexedByCombinator = new Map<string, Map<number, unknown>>();
+
+  for (const [key, item] of Object.entries(value)) {
+    const match = COMBINATOR_KEY_REGEX.exec(key);
+    if (!match || Array.isArray(value[match[1]])) {
+      rest[key] = normalizeUiSchemaCombinators(item);
+      continue;
+    }
+
+    const [, combinator, index] = match;
+    const entries = indexedByCombinator.get(combinator) ?? new Map<number, unknown>();
+    entries.set(Number(index), normalizeUiSchemaCombinators(item));
+    indexedByCombinator.set(combinator, entries);
+  }
+
+  for (const [combinator, entries] of indexedByCombinator) {
+    const size = Math.max(...entries.keys()) + 1;
+    rest[combinator] = Array.from({ length: size }, (_, index) => entries.get(index) ?? {});
+  }
+
+  return rest;
+}
+
 function localizeValue(
   value: unknown,
   i18n: Record<string, Record<string, string>>,
@@ -82,14 +129,24 @@ export function collectTextPlaceholders(source: unknown): Set<string> {
   return keys;
 }
 
+/**
+ * Сырой `ui_schema` шаблона → пригодный для rjsf: варианты комбинаторов
+ * приводятся к массивам, `{{ключи}}` заменяются переводами под язык.
+ */
 export function localizeUiSchema<T>(
   uiSchema: T,
   i18n: TemplateI18nDictionary | undefined,
   language: string
 ): T {
-  if (!uiSchema || !i18n || Object.keys(i18n).length === 0) {
+  if (!uiSchema) {
     return uiSchema;
   }
 
-  return localizeValue(uiSchema, i18n, language) as T;
+  const normalized = normalizeUiSchemaCombinators(uiSchema) as T;
+
+  if (!i18n || Object.keys(i18n).length === 0) {
+    return normalized;
+  }
+
+  return localizeValue(normalized, i18n, language) as T;
 }

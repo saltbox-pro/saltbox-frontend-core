@@ -75,8 +75,8 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
             ? "core-minion-extra-data-categories-drawer"
             : "core-minion-extra-data-categories"
         }
-        enableColumnResize={false}
         columns={columns}
+        enableColumnSettings={false}
         data={toJS(store.categories)}
         total={store.total}
         isLoading={store.isLoading}

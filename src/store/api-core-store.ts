@@ -1,7 +1,6 @@
 import {
   Configuration,
   FiltersApi,
-  JSONSchemasApi,
   JobsApi,
   MastersApi,
   MinionCollectionsApi,
@@ -46,10 +45,6 @@ class ApiCoreStore {
 
   @computed get filtersApi() {
     return this.apiConfig && new FiltersApi(this.apiConfig);
-  }
-
-  @computed get jsonSchemasApi() {
-    return this.apiConfig && new JSONSchemasApi(this.apiConfig);
   }
 
   @computed get jobsApi() {

@@ -115,7 +115,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     <>
       <TaskMinionsTable
         tableId="core-task-minions"
-        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={taskStore.minions}

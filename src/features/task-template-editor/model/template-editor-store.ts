@@ -1,9 +1,9 @@
 import type {
   FormSchema,
   JSONSchema,
-  UISchema,
   VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
+import type { TaskTemplateMetaSchemaInput } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
@@ -55,6 +55,11 @@ export interface DuplicateTargetSource {
   id: string;
   name: string;
 }
+
+export type CatalogTemplateSchema = Pick<
+  TemplateMeta,
+  "title" | "description" | "json_schema" | "ui_schema" | "i18n"
+>;
 
 export class TemplateEditorStore {
   readonly mode: TemplateEditorMode;
@@ -204,11 +209,11 @@ export class TemplateEditorStore {
   /**
    * Меняет функцию вместе со схемой: подставляет схему из каталога, а когда её
    * нет — пустой каркас под параметры этой функции.
+   *
+   * Схему из каталога переносим целиком, вместе с `i18n` и заголовками: подписи
+   * в ней — плейсхолдеры `{{ключ}}`, без словаря переводов они останутся сырыми.
    */
-  applyFunction = (
-    fun: string,
-    catalogSchema?: { json_schema?: JSONSchema; ui_schema?: UISchema } | null
-  ) => {
+  applyFunction = (fun: string, catalogSchema?: CatalogTemplateSchema | null) => {
     const normalizedFun = normalizeManualSaltFunctionName(fun);
 
     this.updateMeta((meta) => {
@@ -225,8 +230,11 @@ export class TemplateEditorStore {
       return {
         ...meta,
         fun: normalizedFun,
+        title: catalogSchema.title ?? meta.title,
+        description: catalogSchema.description ?? meta.description,
         json_schema: catalogSchema.json_schema,
         ui_schema: catalogSchema.ui_schema ?? {},
+        i18n: catalogSchema.i18n ?? {},
       };
     });
   };
@@ -348,10 +356,11 @@ export class TemplateEditorStore {
       throw new Error("invalid template function");
     }
 
-    // `sls_raw` отправляем всегда, пока функция его использует: без него
-    // бекенд удаляет существующий .sls-файл шаблона
-    const slsRaw = isSlsFunction(normalizedFun) ? this.slsRaw : null;
-    const payloadMeta = { ...meta, fun: normalizedFun } as Record<string, unknown>;
+    const slsRaw = isSlsFunction(normalizedFun) ? this.slsRaw : "";
+    const payloadMeta = {
+      ...meta,
+      fun: normalizedFun,
+    } as unknown as TaskTemplateMetaSchemaInput;
 
     runInAction(() => {
       this.isSaving = true;

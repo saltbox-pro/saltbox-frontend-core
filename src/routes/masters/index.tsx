@@ -212,7 +212,6 @@ function MastersPage() {
 
       <MastersTable
         tableId="core-masters"
-        enableColumnResize={false}
         columns={columns}
         data={toJS(masters)}
         isLoading={isLoading}

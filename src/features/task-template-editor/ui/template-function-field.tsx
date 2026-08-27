@@ -4,14 +4,14 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { findBuiltinJobSchema } from "saltbox-core/shared/job-schemas";
 import {
   areSameManualSaltFunctionName,
   isValidManualSaltFunctionName,
   normalizeManualSaltFunctionName,
 } from "saltbox-core/shared/utils/salt-function-name";
-import { apiCoreStore } from "saltbox-core/store";
 
-import type { TemplateEditorStore } from "../model/template-editor-store";
+import type { CatalogTemplateSchema, TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./template-function-field.module.css";
 
@@ -19,21 +19,17 @@ interface TemplateFunctionFieldProps {
   store: TemplateEditorStore;
 }
 
-type CatalogSchema = { json_schema?: JSONSchema; ui_schema?: UISchema } | null;
+const loadCatalogSchema = (fun: string): CatalogTemplateSchema | null => {
+  const schema = findBuiltinJobSchema(fun);
+  if (!schema?.json_schema) return null;
 
-const loadCatalogSchema = async (fun: string): Promise<CatalogSchema> => {
-  try {
-    const schema = await apiCoreStore.jsonSchemasApi?.jobsSchemasGet({ name: fun });
-    if (!schema?.json_schema) return null;
-
-    return {
-      json_schema: schema.json_schema as JSONSchema,
-      ui_schema: (schema.ui_schema ?? {}) as UISchema,
-    };
-  } catch {
-    // Функции нет в каталоге — обычная ситуация для введённой руками
-    return null;
-  }
+  return {
+    title: schema.title,
+    description: schema.description,
+    json_schema: schema.json_schema as JSONSchema,
+    ui_schema: (schema.ui_schema ?? {}) as UISchema,
+    i18n: schema.i18n,
+  };
 };
 
 export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldProps) => {
@@ -70,10 +66,10 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
     };
   }, [store]);
 
-  const applyWithCatalogSchema = async (fun: string) => {
+  const applyWithCatalogSchema = (fun: string) => {
     store.setFunctionSchemaApplying(true);
     try {
-      store.applyFunction(fun, await loadCatalogSchema(fun));
+      store.applyFunction(fun, loadCatalogSchema(fun));
       setLastAppliedFun(fun);
       setDraftFun(fun);
     } finally {
@@ -108,11 +104,11 @@ export const TemplateFunctionField = observer(({ store }: TemplateFunctionFieldP
     store.setPendingFunctionChange(nextFun);
   };
 
-  const handleReplaceSchema = async () => {
+  const handleReplaceSchema = () => {
     if (!pendingFun) return;
 
     try {
-      await applyWithCatalogSchema(pendingFun);
+      applyWithCatalogSchema(pendingFun);
     } finally {
       store.setPendingFunctionChange(null);
     }

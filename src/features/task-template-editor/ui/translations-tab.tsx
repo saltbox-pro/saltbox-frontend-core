@@ -75,7 +75,7 @@ export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
         getRowId={(row) => row.key}
         isEmpty={rows.length === 0}
         hideFooter
-        enableColumnResize={false}
+        enableColumnSettings={false}
         activeRowId={editingKey}
         onRowClick={(row) => setEditingKey(row.key)}
         locale={{ empty: t("task-template-editor.translations-empty") }}

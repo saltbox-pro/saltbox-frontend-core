@@ -640,7 +640,6 @@
     "timeout-unit-seconds": "Сек",
     "timeout-unit-minutes": "Мин",
     "timeout-unit-hours": "Час",
-    "error-load-function-schema": "Не удалось загрузить схему функции",
     "error-job-create": "Не удалось создать команду"
   },
   "terminal": {
@@ -662,7 +661,6 @@
     "settings-save": "Сохранить",
     "settings-cancel": "Отмена",
     "settings-reset": "Сбросить",
-    "settings-retry": "Повторить",
     "help-intro": "Терминал выполняет отдельные команды через cmd.run и не является интерактивной консолью",
     "help-unsupported-title": "Не поддерживаются:",
     "help-unsupported-interactive": "интерактивные приложения (vim, nano, top, htop, less, man и др.)",
@@ -672,28 +670,12 @@
     "help-recommendation": "Рекомендуется использовать абсолютные пути к файлам или задавать рабочую директорию через параметр cwd в расширенных настройках команды"
   },
   "job-function-select": {
-    "title": "Выберите функцию",
-    "search-placeholder": "Поиск или ввод module.function (например file.append)",
-    "empty": "Нет доступных функций",
-    "nothing-found": "Ничего не найдено по запросу",
     "invalid-function-format": "Укажите функцию в формате module.function (пример: file.append)",
     "create-with-function": "Создать команду с функцией \"{{name}}\"",
-    "table-module": "Модуль",
-    "table-functions": "Функции",
     "error": "Не удалось загрузить данные",
     "tooltip-description": "Описание",
     "tooltip-arguments": "Аргументы",
-    "tooltip-example": "Пример команды",
-    "module-descriptions": {
-      "default": "Модуль {{module}}",
-      "test": "Тестирование и диагностика",
-      "cmd": "Выполнение команд",
-      "grains": "Информация о системе (Grains)",
-      "pillar": "Pillar-данные",
-      "pkg": "Управление пакетами",
-      "service": "Управление сервисами",
-      "file": "Работа с файлами"
-    }
+    "tooltip-example": "Пример команды"
   },
   "job-return": {
     "waiting-client-response": "Ожидание ответа от клиента",

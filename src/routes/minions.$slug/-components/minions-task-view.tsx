@@ -228,7 +228,6 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
       )}
       <TasksTable
         tableId={props.taskType === TaskType.Policy ? "core-minion-policies" : "core-minion-tasks"}
-        enableColumnResize={false}
         columns={columns}
         getRowId={(row) => row.id}
         data={tasksStore.tasks}
