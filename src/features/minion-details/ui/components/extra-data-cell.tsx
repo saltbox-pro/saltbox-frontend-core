@@ -27,6 +27,8 @@ export function ExtraDataCell({ value, filterTitle, onFilter, onCopy }: ExtraDat
   const { t } = useTranslation("common");
   const [hovered, setHovered] = useState(false);
 
+  const displayValue = toCopyValue(value);
+
   const handleCopy = (e: MouseEvent<HTMLElement>) => {
     e.stopPropagation();
 
@@ -53,8 +55,8 @@ export function ExtraDataCell({ value, filterTitle, onFilter, onCopy }: ExtraDat
       onMouseLeave={() => setHovered(false)}
     >
       <span className={styles.content}>
-        <span className={styles.text} title={String(value)}>
-          {String(value)}
+        <span className={styles.text} title={displayValue}>
+          {displayValue}
         </span>
       </span>
 

@@ -90,7 +90,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
     const records = extraDataRecordsStore?.records;
 
     const fields = useMemo(() => {
-      const declared = category?.category_fields ?? [];
+      const declared = category?.fields?.map((field) => field.name) ?? [];
 
       if (declared.length > 0) return declared;
 
