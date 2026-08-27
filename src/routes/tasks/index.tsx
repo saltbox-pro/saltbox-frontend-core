@@ -89,7 +89,9 @@ export default observer(function TasksPage() {
       columnHelper.accessor("source.type", {
         id: "source.type",
         header: t("entity-source.column"),
-        cell: (data) => <EntitySourceType type={data.getValue()} />,
+        cell: (data) => (
+          <EntitySourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />
+        ),
         meta: {
           width: "9%",
           minWidth: 150,
