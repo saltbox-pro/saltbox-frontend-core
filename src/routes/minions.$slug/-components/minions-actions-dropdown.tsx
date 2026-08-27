@@ -15,6 +15,7 @@ type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export type MinionsActionsDropdownProps = {
   slug: string;
+  collectionTitle?: string;
   searchFilters: RuleGroupType;
   query: Record<string, unknown>;
   selectedMinions: SelectedMinion[];
@@ -24,6 +25,7 @@ export type MinionsActionsDropdownProps = {
 
 export function MinionsActionsDropdown({
   slug,
+  collectionTitle,
   selectedMinions,
   searchFilters,
   query,
@@ -53,13 +55,14 @@ export function MinionsActionsDropdown({
   const pluginActionContext = useMemo(
     () => ({
       collectionSlug: slug,
+      collectionTitle,
       query,
       selectedMinions: selectedMinions.map(({ minion_id, salt_master }) => ({
         minion_id,
         salt_master,
       })),
     }),
-    [slug, query, selectedMinions]
+    [slug, collectionTitle, query, selectedMinions]
   );
 
   const pluginItems = buildMinionsActionPluginItems(pluginActionContext);

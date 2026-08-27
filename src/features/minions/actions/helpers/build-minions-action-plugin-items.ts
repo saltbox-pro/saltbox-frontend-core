@@ -14,10 +14,11 @@ export function buildMinionsActionPluginItems(ctx: MinionsActionContext): Action
     []) as MinionsActionPlugin[];
 
   return plugins.map((plugin): ActionDropdownItem => {
+    const rawLabel = plugin.getLabel?.(ctx) ?? plugin.label;
     const label =
-      typeof plugin.label === "string"
-        ? plugin.label
-        : plugin.label[i18nStore.currentLanguage] || plugin.label.en || plugin.key;
+      typeof rawLabel === "string"
+        ? rawLabel
+        : rawLabel[i18nStore.currentLanguage] || rawLabel.en || plugin.key;
 
     const busy = resolvePluginBusy(plugin, ctx);
 
