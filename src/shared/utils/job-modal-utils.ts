@@ -82,6 +82,46 @@ const resolveSchemaPropertyKey = (
   preferredKeys: string[]
 ): string | undefined => preferredKeys.find((key) => key in properties);
 
+const COMBINATOR_KEYWORDS = ["$ref", "oneOf", "anyOf", "allOf", "enum", "const"] as const;
+
+const matchesAnyPattern = (patterns: string[], key: string): boolean =>
+  patterns.some((pattern) => {
+    try {
+      return new RegExp(pattern).test(key);
+    } catch {
+      // Паттерн не компилируется — считаем ключ подходящим, чтобы не терять данные.
+      return true;
+    }
+  });
+
+export const pruneKwargsBySchema = (
+  kwargs: Record<string, unknown>,
+  jsonSchema?: unknown
+): Record<string, unknown> => {
+  const rootProperties = getSchemaRootProperties(jsonSchema);
+  const kwargsKey = resolveSchemaPropertyKey(rootProperties, ["kwargs", "kwarg"]);
+  const kwargsSchema = kwargsKey ? rootProperties[kwargsKey] : undefined;
+
+  if (!isPlainObject(kwargsSchema) || kwargsSchema.additionalProperties !== false) {
+    return kwargs;
+  }
+
+  if (COMBINATOR_KEYWORDS.some((keyword) => kwargsSchema[keyword] !== undefined)) {
+    return kwargs;
+  }
+
+  const allowedProperties = isPlainObject(kwargsSchema.properties) ? kwargsSchema.properties : {};
+  const allowedPatterns = isPlainObject(kwargsSchema.patternProperties)
+    ? Object.keys(kwargsSchema.patternProperties)
+    : [];
+
+  return Object.fromEntries(
+    Object.entries(kwargs).filter(
+      ([key]) => key in allowedProperties || matchesAnyPattern(allowedPatterns, key)
+    )
+  );
+};
+
 export const getArgAndKwargForRequest = ({
   jsonFormValue,
   arg,
@@ -139,7 +179,7 @@ export const getRepeatJsonFormValue = (
   jsonSchema?: unknown
 ): Record<string, unknown> => {
   const properties = getSchemaRootProperties(jsonSchema);
-  const cleanedKwargs = cleanNullsFromKwargs(kwarg);
+  const cleanedKwargs = pruneKwargsBySchema(cleanNullsFromKwargs(kwarg), jsonSchema);
   const normalizedArgs = normalizeArgList(arg);
   const hasArgsValue = normalizedArgs.length > 0;
   const hasKwargsValue = Object.keys(cleanedKwargs).length > 0;

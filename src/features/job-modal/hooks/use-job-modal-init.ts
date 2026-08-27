@@ -17,10 +17,12 @@ import { useNavigate } from "react-router";
 import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/job-schemas";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import {
+  cleanNullsFromKwargs,
   getDefaultJsonFormValue,
   getRepeatJsonFormValue,
   hasBaselineJobArgs,
   parseTtlValue,
+  pruneKwargsBySchema,
   totalSecondsToTtlParts,
   type TtlUnit,
 } from "saltbox-core/shared/utils/job-modal-utils";
@@ -108,14 +110,16 @@ const loadParamsSource = async (
   return { kind: "function", schema: getBuiltinJobSchema(fun) };
 };
 
+const getParamsJsonSchema = (source: JobParamsSource): unknown =>
+  source.kind === "template" ? source.template.json_schema : source.schema.json_schema;
+
 const getInitialJsonFormValue = (
   source: JobParamsSource,
   initialJsonFormValue: Record<string, unknown> | undefined,
   arg: unknown[] | undefined,
   kwarg: Record<string, unknown> | undefined
 ): Record<string, unknown> => {
-  const jsonSchema =
-    source.kind === "template" ? source.template.json_schema : source.schema.json_schema;
+  const jsonSchema = getParamsJsonSchema(source);
 
   if (initialJsonFormValue) {
     return initialJsonFormValue;
@@ -125,6 +129,12 @@ const getInitialJsonFormValue = (
     ? getRepeatJsonFormValue(arg, kwarg, jsonSchema)
     : getDefaultJsonFormValue(jsonSchema);
 };
+
+const getBaselineKwarg = (
+  source: JobParamsSource,
+  kwarg: Record<string, unknown> | undefined
+): Record<string, unknown> | undefined =>
+  kwarg ? pruneKwargsBySchema(cleanNullsFromKwargs(kwarg), getParamsJsonSchema(source)) : undefined;
 
 export const useJobModalInit = ({
   fun,
@@ -150,6 +160,7 @@ export const useJobModalInit = ({
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
   const [paramsSource, setParamsSource] = useState<JobParamsSource>();
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
+  const [baselineKwarg, setBaselineKwarg] = useState<Record<string, unknown>>();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
 
@@ -173,6 +184,7 @@ export const useJobModalInit = ({
     setMasterList([]);
     setParamsSource(undefined);
     setJsonFormValue({});
+    setBaselineKwarg(undefined);
     setTtlValue(null);
     setTtlUnit("seconds");
   }, []);
@@ -195,6 +207,7 @@ export const useJobModalInit = ({
       setMasterList(masters);
       setParamsSource(source);
       setJsonFormValue(getInitialJsonFormValue(source, initialJsonFormValue, arg, kwarg));
+      setBaselineKwarg(getBaselineKwarg(source, kwarg));
       applyTtlFromInitialOrDefault(
         initialTtlSeconds,
         source.kind === "template" ? source.template.defaults?.ttl : source.schema.defaults?.ttl
@@ -264,6 +277,7 @@ export const useJobModalInit = ({
     paramsSource,
     jsonFormValue,
     setJsonFormValue,
+    baselineKwarg,
     ttlValue,
     setTtlValue,
     ttlUnit,

@@ -17,6 +17,11 @@ import {
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  getJobParamsSchemaLayout,
+  type JsonSchemaRecord,
+  type UiSchemaRecord,
+} from "saltbox-core/shared/utils/job-schema-split";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 
@@ -59,6 +64,16 @@ export function TaskConfigurationTab({
   const paramsSchema = useMemo(
     () => getTemplateParamsSchema(template, i18n.language),
     [template, i18n.language]
+  );
+
+  const paramsSchemaLayout = useMemo(
+    () =>
+      getJobParamsSchemaLayout(
+        paramsSchema.jsonSchema as JsonSchemaRecord | undefined,
+        paramsSchema.uiSchema as UiSchemaRecord | undefined,
+        showAdvanced
+      ),
+    [paramsSchema, showAdvanced]
   );
 
   useEffect(() => {
@@ -148,6 +163,10 @@ export function TaskConfigurationTab({
   };
 
   const handleTaskDataFinish: TaskDataFormProps["onSubmit"] = async (jsonDataFromForm) => {
+    if (!taskDataFormRef.current?.validate()) {
+      return;
+    }
+
     try {
       const settingsFormValue = await settingsForm.validateFields();
 
@@ -270,10 +289,14 @@ export function TaskConfigurationTab({
             ref={taskDataFormRef}
             jsonSchema={paramsSchema.jsonSchema}
             uiSchema={paramsSchema.uiSchema}
+            displaySchema={paramsSchemaLayout.displaySchema}
+            displayUiSchema={paramsSchemaLayout.displayUiSchema}
             isFieldless={paramsSchema.isFieldless}
+            isAdvanced={showAdvanced}
             initialData={initialData?.data}
             onSubmit={handleTaskDataFinish}
             onError={showValidationError}
+            onRequestAdvanced={() => setShowAdvanced(true)}
           />
         </Flex>
 

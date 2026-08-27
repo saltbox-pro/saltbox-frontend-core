@@ -137,6 +137,7 @@ export function JobModal({
     paramsSource,
     jsonFormValue,
     setJsonFormValue,
+    baselineKwarg,
     ttlValue,
     setTtlValue,
     ttlUnit,
@@ -190,19 +191,20 @@ export function JobModal({
     [paramsSource, i18n.language]
   );
 
-  const functionParamsSchemaLayout = useMemo(
-    () => getJobParamsSchemaLayout(functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled),
-    [functionJsonSchema, functionUiSchema, isAdvancedSettingsEnabled]
-  );
+  const paramsJsonSchema = isTemplateMode
+    ? templateParamsSchema.isFieldless
+      ? undefined
+      : (templateParamsSchema.jsonSchema as JsonSchemaRecord | undefined)
+    : functionJsonSchema;
 
-  const jobParamsSchemaLayout = isTemplateMode
-    ? {
-        displaySchema: templateParamsSchema.isFieldless
-          ? null
-          : (templateParamsSchema.jsonSchema as JsonSchemaRecord | null),
-        displayUiSchema: templateParamsSchema.uiSchema as JsonSchemaRecord | undefined,
-      }
-    : functionParamsSchemaLayout;
+  const paramsUiSchema = isTemplateMode
+    ? (templateParamsSchema.uiSchema as JsonSchemaRecord | undefined)
+    : functionUiSchema;
+
+  const jobParamsSchemaLayout = useMemo(
+    () => getJobParamsSchemaLayout(paramsJsonSchema, paramsUiSchema, isAdvancedSettingsEnabled),
+    [paramsJsonSchema, paramsUiSchema, isAdvancedSettingsEnabled]
+  );
 
   useEffect(() => {
     if (paramsSource?.kind !== "function") {
@@ -375,14 +377,10 @@ export function JobModal({
     getArgAndKwargForRequest({
       jsonFormValue,
       arg,
-      kwarg,
+      kwarg: baselineKwarg,
     });
 
   const validateJsonForm = (): boolean => {
-    if (isTemplateMode) {
-      return refJobParamsForm.current?.validateForm() ?? true;
-    }
-
     const formStateData = refJobParamsForm.current?.state?.formData;
     const formData =
       formStateData && typeof formStateData === "object" && !Array.isArray(formStateData)
@@ -391,8 +389,8 @@ export function JobModal({
 
     const result = validateJobJsonFormData(
       formData,
-      functionJsonSchema,
-      functionUiSchema,
+      paramsJsonSchema,
+      paramsUiSchema,
       isAdvancedSettingsEnabled,
       jobParamsSchemaLayout.displaySchema,
       jobParamsSchemaLayout.displayUiSchema
