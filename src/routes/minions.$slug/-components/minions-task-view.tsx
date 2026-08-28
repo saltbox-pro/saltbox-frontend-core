@@ -48,7 +48,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
     [props.taskType, t]
   );
 
-  const [webSocketService] = useState(new WebSocketService<TaskListResponseSchema>());
+  const [webSocketService] = useState(() => new WebSocketService<TaskListResponseSchema>());
 
   const columns = useMemo(
     () => [

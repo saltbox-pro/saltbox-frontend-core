@@ -23,7 +23,7 @@ const useWebSocket = (
   taskId: string,
   onUpdate: (messages: Array<WebSocketMessage<TaskWebSocketMessage>>) => void
 ) => {
-  const [webSocketService] = useState(new WebSocketService<TaskWebSocketMessage>());
+  const [webSocketService] = useState(() => new WebSocketService<TaskWebSocketMessage>());
 
   useEffect(() => {
     webSocketService.connect(

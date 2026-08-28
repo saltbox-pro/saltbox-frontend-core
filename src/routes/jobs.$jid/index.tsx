@@ -65,7 +65,7 @@ const JobPage = observer(() => {
   const [messageApi, contextHolder] = message.useMessage();
   const withAcceptedMastersCheck = useWithAcceptedMastersCheck(messageApi);
 
-  const [webSocketService] = useState(new WebSocketService<JobWebSocketMessage>());
+  const [webSocketService] = useState(() => new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
