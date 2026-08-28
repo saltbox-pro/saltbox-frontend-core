@@ -35,12 +35,6 @@ const useWebSocket = (
     );
     return () => webSocketService.disconnect();
   }, []);
-
-  useEffect(() => {
-    if (webSocketService && appStore.authStore?.user?.access_token) {
-      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
-    }
-  }, [appStore.authStore?.user]);
 };
 
 const TaskPage = observer(() => {

@@ -2,7 +2,7 @@ import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
-import { appStore, getTerminalSessionStore } from "saltbox-core/store";
+import { getTerminalSessionStore } from "saltbox-core/store";
 
 import type { TerminalCmdRunSettings } from "../model/terminal-cmd-settings";
 import {
@@ -460,13 +460,6 @@ export function useMinionTerminal(
   }, [isCommandRunning, isSettingsOpen, isTabActive, terminalSessionStore]);
 
   useDocumentEvent("keydown", handleRunningKeyDown);
-
-  useEffect(() => {
-    const accessToken = appStore.authStore?.user?.access_token;
-    if (accessToken) {
-      terminalSessionStore.sendAccessToken(accessToken);
-    }
-  }, [appStore.authStore?.user, terminalSessionStore]);
 
   useEffect(() => {
     terminalSessionStore.printGreeting(buildTerminalGreeting(minion.grains, effectiveCmdSettings));

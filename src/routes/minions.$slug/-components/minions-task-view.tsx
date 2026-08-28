@@ -182,12 +182,6 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   }, []);
 
   useEffect(() => {
-    if (webSocketService && appStore.authStore?.user?.access_token) {
-      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
-    }
-  }, [appStore.authStore?.user]);
-
-  useEffect(() => {
     props.filterStore.updateFilterSchema(filterSchema);
   }, [filterSchema, props.filterStore]);
 

@@ -165,12 +165,6 @@ export default observer(function PoliciesPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (webSocketService && appStore.authStore?.user?.access_token) {
-      webSocketService.sendAccessToken(appStore.authStore.user.access_token);
-    }
-  }, [appStore.authStore?.user]);
-
   const handleSearchButtonClick = () => {
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(undefined);

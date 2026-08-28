@@ -169,10 +169,6 @@ export class TerminalSessionStore {
     lines.forEach((text) => this.appendLine({ kind: "info", text }));
   };
 
-  sendAccessToken = (accessToken: string) => {
-    this.webSocketService?.sendAccessToken(accessToken);
-  };
-
   @action
   private applyCreatedJob = (job: JobModel | null | undefined) => {
     if (!job?.jid || job.status === JobStatus.LaunchError) {
