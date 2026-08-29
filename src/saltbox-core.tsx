@@ -1,7 +1,9 @@
 import {
   SaltboxLocaleProvider,
+  bindWebSocketAccessTokenSync,
   createSingleSpaErrorBoundary,
   withParcelBoundary,
+  type AuthStoreWithAccessToken,
 } from "@saltbox/saltbox-frontend-common";
 import { autorun, runInAction } from "mobx";
 import { observer } from "mobx-react";
@@ -28,6 +30,8 @@ import {
   type MinionDetailsDrawerWrapperProps,
 } from "./features/minion-details-drawer";
 import { dashboardStore } from "./features/minions-dashboard";
+
+let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
 
@@ -224,6 +228,10 @@ export const saltboxModule = {
   },
   init: (authStore, services, localeStore, pluginsStore) => {
     appStore.init(authStore, pluginsStore);
+    disposeWebSocketAccessTokenSync?.();
+    disposeWebSocketAccessTokenSync = bindWebSocketAccessTokenSync(
+      authStore as AuthStoreWithAccessToken
+    );
     runInAction(() => {
       for (const service of services) {
         envStore.services.set(service.service_name, service.env);
