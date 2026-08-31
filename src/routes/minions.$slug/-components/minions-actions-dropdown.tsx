@@ -1,15 +1,16 @@
 import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { ActionDropdown, type ActionDropdownItem } from "@saltbox/saltbox-frontend-common";
+import { ActionDropdown, type ActionDropdownItem, UiEvent } from "@saltbox/saltbox-frontend-common";
 import { message } from "antd";
 import { useMemo } from "react";
 import type { RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
+import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
 import {
   buildMinionsActionPluginItems,
-  useMinionsActionsTick,
-} from "saltbox-core/features/minions/actions";
-import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
+  useActionPluginClickGuard,
+  usePluginActionsTick,
+} from "saltbox-core/features/plugins";
 
 type SelectedMinion = TaskTargetMinion & { mid: string };
 
@@ -33,7 +34,8 @@ export function MinionsActionsDropdown({
   reloadMinions,
 }: MinionsActionsDropdownProps) {
   const [messageApi, messageContextHolder] = message.useMessage();
-  useMinionsActionsTick();
+  const actionPluginClickGuard = useActionPluginClickGuard(messageApi);
+  usePluginActionsTick(UiEvent.MinionsActionsChanged);
 
   const exportAction = useCsvDownloadDropdownItem({
     slug,
@@ -65,16 +67,15 @@ export function MinionsActionsDropdown({
     [slug, collectionTitle, query, selectedMinions]
   );
 
-  const pluginItems = buildMinionsActionPluginItems(pluginActionContext);
+  const pluginItems = buildMinionsActionPluginItems(pluginActionContext, actionPluginClickGuard);
 
-  const items = useMemo<ActionDropdownItem[]>(() => {
-    const base: ActionDropdownItem[] = [...pluginItems, exportAction.item];
-
-    if (selectedMinions.length <= 0) return base;
-
+  const items: ActionDropdownItem[] = [...pluginItems, exportAction.item];
+  if (selectedMinions.length > 0) {
     const deleteItem = removeAction.item;
-    return deleteItem ? [...base, deleteItem] : base;
-  }, [pluginItems, exportAction.item, removeAction.item, selectedMinions.length]);
+    if (deleteItem) {
+      items.push(deleteItem);
+    }
+  }
 
   return (
     <>

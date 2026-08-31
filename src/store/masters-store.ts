@@ -1,8 +1,10 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   createMastersStore,
+  createHasAcceptedMastersChecker,
   isGlobalServerError,
   publishAcceptedMastersChanged,
+  subscribeAcceptedMastersChanged,
   toBackendSorting,
 } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
@@ -44,6 +46,10 @@ export class MastersStore {
       return result?.data?.length ?? 0;
     },
   });
+  private readonly masterAcceptedCheckers = new Map<
+    string,
+    ReturnType<typeof createHasAcceptedMastersChecker>
+  >();
 
   constructor() {
     this.isLoading = false;
@@ -59,7 +65,31 @@ export class MastersStore {
       pageIndex: 0,
       pageSize: 50,
     };
+    subscribeAcceptedMastersChanged(() => {
+      for (const checker of this.masterAcceptedCheckers.values()) {
+        checker.invalidate();
+      }
+    });
     makeObservable(this);
+  }
+
+  private getMasterAcceptedChecker(masterId: string) {
+    let checker = this.masterAcceptedCheckers.get(masterId);
+    if (!checker) {
+      checker = createHasAcceptedMastersChecker({
+        loadAcceptedMastersCount: async () => {
+          const result = await apiCoreStore.mastersApi?.mastersList({
+            MasterListBody: {
+              query: { master_id: masterId, status: "accepted" },
+              limit: 1,
+            },
+          });
+          return result?.data?.length ?? 0;
+        },
+      });
+      this.masterAcceptedCheckers.set(masterId, checker);
+    }
+    return checker;
   }
 
   @action
@@ -69,6 +99,7 @@ export class MastersStore {
     this.masters = [];
     this.totalMasters = 0;
     this.availabilityByMasterId = {};
+    this.masterAcceptedCheckers.clear();
     this.isPinging = false;
     this.isManualPinging = false;
     this.pingFailed = false;
@@ -88,6 +119,7 @@ export class MastersStore {
   clearMasterAvailability = (masterId: string): void => {
     const { [masterId]: _removedAvailability, ...nextAvailability } = this.availabilityByMasterId;
     this.availabilityByMasterId = nextAvailability;
+    this.masterAcceptedCheckers.delete(masterId);
   };
 
   @action
@@ -230,6 +262,20 @@ export class MastersStore {
   }): Promise<boolean> => {
     const force = params?.force ?? false;
     return this.mastersCommonStore.hasAcceptedMasters({ force });
+  };
+
+  isMasterAccepted = async (
+    masterId: string,
+    params?: {
+      force?: boolean;
+    }
+  ): Promise<boolean> => {
+    if (!masterId) {
+      return false;
+    }
+
+    const force = params?.force ?? false;
+    return this.getMasterAcceptedChecker(masterId).check({ force });
   };
 }
 

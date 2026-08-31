@@ -1,9 +1,14 @@
+import {
+  type MinionDetailTabPlugin,
+  resolvePluginLocalizedLabel,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, type TabsProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ComponentProps, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
+import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, i18nStore } from "saltbox-core/store";
 
 import {
@@ -27,21 +32,8 @@ type MinionDetailsTabsViewProps = MinionDetailsCommonProps & {
   onTabChange: (key: MinionDetailsTabKey) => void;
 };
 
-type DetailTabPlugin = {
-  key: string;
-  label?: { en?: string; ru?: string } | string;
-  parcel: ComponentProps<typeof Parcel>["config"];
-  wrapWith?: string;
-  wrapStyle?: React.CSSProperties;
-  tabStyle?: React.CSSProperties;
-};
-
-function getDetailTabPlugins(): DetailTabPlugin[] {
-  const plugins =
-    appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ??
-    appStore.pluginsStore?.plugins?.["minion.tabs"] ??
-    [];
-  return plugins as DetailTabPlugin[];
+function getDetailTabPlugins(): MinionDetailTabPlugin[] {
+  return appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ?? [];
 }
 
 function buildToolkitSlug(minion: MinionDetailsCommonProps["minion"]): string {
@@ -171,10 +163,11 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     const toolkitSlug = buildToolkitSlug(minion);
 
     const pluginTabItems = pluginTabs.map((pluginTab) => {
-      const label =
-        typeof pluginTab.label === "string"
-          ? pluginTab.label
-          : pluginTab.label?.[i18nStore.currentLanguage] || pluginTab.label?.en || pluginTab.key;
+      const label = resolvePluginLocalizedLabel(
+        pluginTab.label ?? pluginTab.key,
+        i18nStore.currentLanguage,
+        pluginTab.key
+      );
 
       return {
         key: pluginTab.key,
@@ -182,7 +175,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         style: pluginTab.tabStyle,
         children: tabKey === pluginTab.key && (
           <Parcel
-            config={pluginTab.parcel}
+            config={asParcelConfig(pluginTab.parcel)}
             wrapWith={pluginTab.wrapWith}
             wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
             customProps={{

@@ -6,6 +6,7 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import {
   publish,
+  resolvePluginLocalizedLabel,
   subscribe,
   unsubscribe,
   Modal,
@@ -544,7 +545,11 @@ export function JobModal({
                   type="default"
                   onClick={() => handleCreateJobPlugin(plugin.key)}
                 >
-                  {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+                  {resolvePluginLocalizedLabel(
+                    plugin.label ?? plugin.key,
+                    i18nStore.currentLanguage,
+                    plugin.key
+                  )}
                 </Button>
               ))}
 

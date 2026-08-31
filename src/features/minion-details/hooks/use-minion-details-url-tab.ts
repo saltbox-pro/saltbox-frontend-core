@@ -7,11 +7,8 @@ import { appStore } from "saltbox-core/store";
 import { type MinionDetailsTabKey, parseMinionDetailsTabKey } from "../model/tabs";
 
 function getDetailPluginKeys(): string[] {
-  const plugins =
-    appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ??
-    appStore.pluginsStore?.plugins?.["minion.tabs"] ??
-    [];
-  return (plugins as { key?: string }[]).map((plugin) => plugin.key).filter(Boolean) as string[];
+  const plugins = appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ?? [];
+  return plugins.map((plugin) => plugin.key).filter(Boolean);
 }
 
 export function useMinionDetailsUrlTab() {

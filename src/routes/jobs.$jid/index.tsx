@@ -46,6 +46,7 @@ import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return
 import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
+import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
 import { apiCoreStore, appStore, jobStore, mastersStore } from "saltbox-core/store";
 
@@ -162,7 +163,7 @@ const JobPage = observer(() => {
     jobModalCreatePlugin = (
       <>
         {jobModalCreatePlugin}
-        <Parcel config={plugin.parcel} wrapWith="div" />
+        <Parcel config={asParcelConfig(plugin.parcel)} wrapWith="div" />
       </>
     );
   });

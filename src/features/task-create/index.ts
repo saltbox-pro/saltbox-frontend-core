@@ -1,2 +1,2 @@
 export * from "./ui";
-export type { TaskCreatePlugin, PluginRenderData, PluginRenderHandlers } from "./type/types";
+export type { PluginRenderData, PluginRenderHandlers } from "./type/types";

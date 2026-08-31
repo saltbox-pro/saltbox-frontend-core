@@ -18,6 +18,7 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import { AddTaskIcon } from "saltbox-core/shared/components/icons";
+import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
   CollectionStore,
@@ -121,7 +122,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     taskModalCreatePlugin = (
       <>
         {taskModalCreatePlugin}
-        <Parcel config={plugin.parcel} wrapWith="div" />
+        <Parcel config={asParcelConfig(plugin.parcel)} wrapWith="div" />
       </>
     );
   });
@@ -131,7 +132,11 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
     pageActionsButtonsPlugin = (
       <>
         {pageActionsButtonsPlugin}
-        <Parcel config={plugin.parcel} wrapWith="div" selectedMinions={selectedMinions} />
+        <Parcel
+          config={asParcelConfig(plugin.parcel)}
+          wrapWith="div"
+          selectedMinions={selectedMinions}
+        />
       </>
     );
   });

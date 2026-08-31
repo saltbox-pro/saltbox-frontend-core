@@ -3,7 +3,11 @@ import {
   type TaskTargetMinion,
   TaskType,
 } from "@saltbox/saltbox-core-api-client";
-import { publish } from "@saltbox/saltbox-frontend-common";
+import {
+  type MinionsTaskModalCreatePlugin,
+  publish,
+  resolvePluginLocalizedLabel,
+} from "@saltbox/saltbox-frontend-common";
 import { Button } from "antd";
 import { type FC, useCallback, useMemo } from "react";
 import type { OptionList } from "react-querybuilder";
@@ -12,7 +16,6 @@ import {
   TaskCreate,
   PluginRenderData,
   PluginRenderHandlers,
-  TaskCreatePlugin,
 } from "saltbox-core/features/task-create";
 import { appStore, i18nStore } from "saltbox-core/store";
 
@@ -52,9 +55,13 @@ export const TaskCreateModal: FC<TaskCreateModalProps> = ({
 
       const plugins = appStore.pluginsStore?.plugins?.["minions.taskmodal.create"] ?? [];
 
-      return plugins.map((plugin: TaskCreatePlugin) => (
+      return plugins.map((plugin: MinionsTaskModalCreatePlugin) => (
         <Button key={plugin.key} type="default" onClick={() => handleCreateTaskPlugin(plugin.key)}>
-          {plugin.label?.[i18nStore.currentLanguage] || plugin.label?.en || plugin.key}
+          {resolvePluginLocalizedLabel(
+            plugin.label ?? plugin.key,
+            i18nStore.currentLanguage,
+            plugin.key
+          )}
         </Button>
       ));
     },

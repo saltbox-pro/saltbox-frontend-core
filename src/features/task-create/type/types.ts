@@ -49,12 +49,6 @@ export type PluginRenderHandlers = {
   onHandoff: () => void;
 };
 
-export type TaskCreatePlugin = {
-  key: string;
-  label?: Record<string, string>;
-  parcel: unknown;
-};
-
 export type PluginRenderData = {
   taskCreateRequest: TaskCreateRequestSchema;
   templateDescription: string;

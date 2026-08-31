@@ -7,6 +7,7 @@ import {
   isGlobalServerError,
   Modal,
   PageHeader,
+  resolvePluginLocalizedLabel,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, message, Tabs } from "antd";
@@ -22,6 +23,7 @@ import {
   MinionsDashboardAddBlockModal,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
+import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
   CollectionStore,
@@ -303,13 +305,16 @@ const MinionsPage = observer(() => {
     if (appStore.pluginsStore?.plugins?.["minions.tabs"]) {
       for (const pluginTab of appStore.pluginsStore.plugins["minions.tabs"]) {
         tabs.push({
-          label:
-            pluginTab.label?.[i18nStore.currentLanguage] || pluginTab.label?.en || pluginTab.key,
+          label: resolvePluginLocalizedLabel(
+            pluginTab.label ?? pluginTab.key,
+            i18nStore.currentLanguage,
+            pluginTab.key
+          ),
           key: pluginTab.key,
           children:
             tabKey === pluginTab.key ? (
               <Parcel
-                config={pluginTab.parcel}
+                config={asParcelConfig(pluginTab.parcel)}
                 wrapWith={pluginTab.wrapWith}
                 wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
                 customProps={{

@@ -30,6 +30,7 @@ import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
+import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, JobFilterStore, JobsStore, mastersStore } from "saltbox-core/store";
 
 import { JobDatetimeRangeSelector } from "./-components/job-datetime-range-selector";
@@ -281,7 +282,7 @@ const JobsPage = observer(() => {
     jobModalCreatePlugin = (
       <>
         {jobModalCreatePlugin}
-        <Parcel config={plugin.parcel} wrapWith="div" />
+        <Parcel config={asParcelConfig(plugin.parcel)} wrapWith="div" />
       </>
     );
   });
