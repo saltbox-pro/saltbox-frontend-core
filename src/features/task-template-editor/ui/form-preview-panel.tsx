@@ -5,6 +5,7 @@ import {
   Dropdown,
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
+  localizeTemplateUiSchema,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
@@ -16,7 +17,6 @@ import {
   toRjsfSchema,
   toRjsfUiSchema,
 } from "saltbox-core/shared/utils/template-rjsf-schema";
-import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import { pickPreviewLanguage } from "../lib/template-i18n";
 import type { TemplateEditorStore } from "../model/template-editor-store";
@@ -72,7 +72,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const [isDataModalOpen, setDataModalOpen] = useState(false);
 
   const localizedUiSchema = useMemo(
-    () => localizeUiSchema(uiSchema, meta?.i18n, language),
+    () => localizeTemplateUiSchema(uiSchema, meta?.i18n, language),
     [uiSchema, meta?.i18n, language]
   );
 

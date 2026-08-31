@@ -1,4 +1,4 @@
-import type { TemplateI18nDictionary } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import type { TemplateSchemaI18n } from "@saltbox/saltbox-frontend-common";
 
 export type BuiltinJobSchemaMeta = {
   name: string;
@@ -7,7 +7,7 @@ export type BuiltinJobSchemaMeta = {
   fun?: string;
   json_schema: Record<string, unknown>;
   ui_schema?: Record<string, unknown>;
-  i18n?: TemplateI18nDictionary;
+  i18n?: TemplateSchemaI18n;
   defaults?: { ttl?: number | null } | null;
 };
 

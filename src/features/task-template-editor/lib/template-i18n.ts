@@ -1,7 +1,7 @@
 import {
-  collectTextPlaceholders,
-  type TemplateI18nDictionary,
-} from "saltbox-core/shared/utils/template-ui-schema-i18n";
+  collectTemplateSchemaI18nKeys,
+  type TemplateSchemaI18n,
+} from "@saltbox/saltbox-frontend-common";
 
 import type { TemplateMeta } from "./template-meta";
 
@@ -31,8 +31,8 @@ function readI18n(meta: TemplateMeta | null | undefined): Record<string, Record<
 /** Подписи живут в `ui_schema`, но плейсхолдеры встречаются и в `json_schema`. */
 export function collectTranslationKeys(meta: TemplateMeta | null | undefined): Set<string> {
   return new Set([
-    ...collectTextPlaceholders(meta?.ui_schema),
-    ...collectTextPlaceholders(meta?.json_schema),
+    ...collectTemplateSchemaI18nKeys(meta?.ui_schema),
+    ...collectTemplateSchemaI18nKeys(meta?.json_schema),
   ]);
 }
 
@@ -116,5 +116,5 @@ export function applyTranslations(
     return rest;
   }
 
-  return { ...meta, i18n: next as TemplateI18nDictionary };
+  return { ...meta, i18n: next as TemplateSchemaI18n };
 }

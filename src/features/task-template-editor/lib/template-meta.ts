@@ -3,8 +3,7 @@ import type {
   JSONSchema,
   UISchema,
 } from "@saltbox/react-jsonschema-form-generator";
-
-import type { TemplateI18nDictionary } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import type { TemplateSchemaI18n } from "@saltbox/saltbox-frontend-common";
 
 /** Дефолты запуска задачи. Редактируются только в текстовом редакторе схемы. */
 export interface TemplateMetaDefaults {
@@ -27,7 +26,7 @@ export interface TemplateMeta {
   description?: DescriptionValue;
   json_schema?: JSONSchema;
   ui_schema?: UISchema;
-  i18n?: TemplateI18nDictionary;
+  i18n?: TemplateSchemaI18n;
   defaults?: TemplateMetaDefaults | null;
   secret_pillars?: string[];
   [key: string]: unknown;

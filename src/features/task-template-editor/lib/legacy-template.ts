@@ -1,6 +1,5 @@
 import type { UISchema } from "@saltbox/react-jsonschema-form-generator";
-
-import type { TemplateI18nDictionary } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import type { TemplateSchemaI18n } from "@saltbox/saltbox-frontend-common";
 
 import { DEFAULT_TEMPLATE_FUN, type TemplateMeta } from "./template-meta";
 
@@ -38,7 +37,7 @@ function parseLegacySchemaBlock(sls: string): TemplateMeta {
 }
 
 /** Ключ перевода по конвенции, со счётчиком на случай занятого имени. */
-function pickFreeI18nKey(i18n: TemplateI18nDictionary, base: string): string {
+function pickFreeI18nKey(i18n: TemplateSchemaI18n, base: string): string {
   const isTaken = (key: string) =>
     Object.values(i18n).some((dictionary) => dictionary?.[key] !== undefined);
 
@@ -118,7 +117,7 @@ function moveTextToUiSchema(
 
   if (translations.length === 0) return { meta, moved: false };
 
-  const i18n: TemplateI18nDictionary = { ...(meta.i18n ?? {}) };
+  const i18n: TemplateSchemaI18n = { ...(meta.i18n ?? {}) };
   const key = pickFreeI18nKey(i18n, i18nKeyBase);
 
   for (const [locale, text] of translations) {

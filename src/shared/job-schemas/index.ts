@@ -1,4 +1,7 @@
-import { localizeText, localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
+import {
+  localizeTemplateSchemaText,
+  localizeTemplateUiSchema,
+} from "@saltbox/saltbox-frontend-common";
 
 import { CMD_RUN_JOB_SCHEMA } from "./cmd-run-job-schema";
 import { DEFAULT_JOB_SCHEMA } from "./default-job-schema";
@@ -32,8 +35,8 @@ export const resolveBuiltinJobSchema = (
     return cached;
   }
 
-  const title = localizeText(meta.title, meta.i18n, language);
-  const description = localizeText(meta.description, meta.i18n, language);
+  const title = localizeTemplateSchemaText(meta.title, meta.i18n, language);
+  const description = localizeTemplateSchemaText(meta.description, meta.i18n, language);
 
   const resolved: BuiltinJobSchema = {
     name: meta.name,
@@ -42,7 +45,7 @@ export const resolveBuiltinJobSchema = (
       ...(title ? { title } : {}),
       ...(description ? { description } : {}),
     },
-    ui_schema: localizeUiSchema(meta.ui_schema, meta.i18n, language),
+    ui_schema: localizeTemplateUiSchema(meta.ui_schema, meta.i18n, language),
   };
 
   resolvedCache.set(cacheKey, resolved);

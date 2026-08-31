@@ -1,9 +1,9 @@
 import validator from "@rjsf/validator-ajv8";
 import type { JSONSchema } from "@saltbox/react-jsonschema-form-generator";
+import { collectTemplateSchemaI18nKeys } from "@saltbox/saltbox-frontend-common";
 
 import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/salt-function-name";
 import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
-import { collectTextPlaceholders } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import type { TemplateMeta, TemplateMetaDefaults } from "../lib/template-meta";
 
@@ -52,7 +52,7 @@ function checkFun(meta: TemplateMeta, issues: MetaValidationIssue[]): void {
 
 /** Плейсхолдеры ui-схемы должны быть во всех объявленных локалях. */
 function checkTranslations(meta: TemplateMeta, issues: MetaValidationIssue[]): void {
-  const placeholders = collectTextPlaceholders(meta.ui_schema);
+  const placeholders = collectTemplateSchemaI18nKeys(meta.ui_schema);
   if (placeholders.size === 0) return;
 
   const i18n = meta.i18n ?? {};

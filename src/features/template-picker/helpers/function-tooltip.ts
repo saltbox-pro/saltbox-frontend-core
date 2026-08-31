@@ -1,7 +1,7 @@
 import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { localizeTemplateUiSchema } from "@saltbox/saltbox-frontend-common";
 
 import { getTemplateDescriptionText } from "saltbox-core/shared/utils/template-localized-text";
-import { localizeUiSchema } from "saltbox-core/shared/utils/template-ui-schema-i18n";
 
 import { getFunctionDisplayName } from "./template-kind";
 
@@ -50,7 +50,7 @@ export const buildFunctionTooltipData = (
   language: string
 ): FunctionTooltipData => {
   const schema = (template.json_schema ?? {}) as FunctionSchema;
-  const uiSchema = (localizeUiSchema(template.ui_schema, template.i18n, language) ??
+  const uiSchema = (localizeTemplateUiSchema(template.ui_schema, template.i18n, language) ??
     {}) as FunctionUiSchema;
 
   const kwargsSchema = schema.properties?.kwargs;
