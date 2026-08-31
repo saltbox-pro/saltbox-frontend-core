@@ -1,11 +1,17 @@
 ---
-
 include:
-  - project: 'saltbox/ci-lib'
-    file: 'build-image.yml'
-  - project: 'saltbox/ci-lib'
-    file: 'def-branch-merge-guard.yml'
+  - project: "saltbox/ci-lib"
+    file: "build-image.yml"
 
+  - project: "saltbox/ci-lib"
+    file: "def-branch-merge-guard.yml"
+
+  - project: "saltbox/ci-lib"
+    file: "mirror-repo.yml"
 
 Build Frontend Core image:
   extends: .build-image
+
+Mirror Repository:
+  extends: .mirror-repo
+  stage: build
