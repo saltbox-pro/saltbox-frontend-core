@@ -918,15 +918,6 @@
         "exampleDescription": "Selects all minions where the role value ends with server."
       }
     },
-    "nodegroup": {
-      "label": "nodegroup",
-      "hint": {
-        "title": "nodegroup - Match on nodegroup",
-        "description": "Uses predefined node groups from the Salt Master configuration.",
-        "example": "webservers",
-        "exampleDescription": "Executes the command on all nodes in the webservers group."
-      }
-    },
     "compound": {
       "label": "compound",
       "hint": {

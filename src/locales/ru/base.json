@@ -918,15 +918,6 @@
         "exampleDescription": "Выберет всех minion'ов, у которых значение role оканчивается на server."
       }
     },
-    "nodegroup": {
-      "label": "nodegroup",
-      "hint": {
-        "title": "nodegroup – Сопоставление по nodegroup",
-        "description": "Использует заранее определённые группы узлов из конфигурации контроллера Salt.",
-        "example": "webservers",
-        "exampleDescription": "Выполнит команду для всех узлов из группы webservers."
-      }
-    },
     "compound": {
       "label": "compound",
       "hint": {

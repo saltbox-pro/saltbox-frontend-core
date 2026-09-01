@@ -18,7 +18,6 @@ const targetTypes = [
   "grain_pcre",
   "pillar",
   "pillar_pcre",
-  "nodegroup",
   "compound",
   "ipcidr",
 ];
