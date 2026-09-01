@@ -194,7 +194,9 @@
   "policy-create": {
     "configure-policy-title": "Policy Configuration",
     "create-button": "Create Policy",
-    "create-with-function": "Create policy with function \"{{name}}\""
+    "create-with-function": "Create policy with function \"{{name}}\"",
+    "policy-created-successfully": "Policy created successfully",
+    "error-creating-policy": "Error creating policy"
   },
   "task-create": {
     "configure-task-title": "Task Configuration",

@@ -77,6 +77,7 @@ export function TaskModal({
   const closeReasonRef = useRef<TaskModalCloseReason | null>(null);
 
   const collectionName = context.collection?.title ?? context.slug;
+  const isPolicy = context.taskType === TaskType.Policy;
 
   useEffect(() => {
     const scrollToTop = () => {
@@ -127,7 +128,7 @@ export function TaskModal({
     };
 
     if (selection.kind === "custom-function") {
-      applyTemplate(buildDefaultTaskTemplate(selection.fun));
+      applyTemplate(buildDefaultTaskTemplate(selection.fun, context.taskType));
       return;
     }
 
@@ -208,11 +209,7 @@ export function TaskModal({
   const confirmTaskTargetScope = (
     targetMode: "filtered" | "whole-collection"
   ): Promise<boolean> => {
-    const entityType = t(
-      context.taskType === TaskType.Policy
-        ? "task.type-policy-accusative"
-        : "task.type-classic-accusative"
-    );
+    const entityType = t(isPolicy ? "task.type-policy-accusative" : "task.type-classic-accusative");
 
     const descriptionKey =
       targetMode === "filtered"
@@ -266,11 +263,19 @@ export function TaskModal({
       );
 
       const taskId = await taskCreationService.createTask(request);
-      messageApi.success(t("task-create.task-created-successfully"));
+      messageApi.success(
+        t(
+          isPolicy
+            ? "policy-create.policy-created-successfully"
+            : "task-create.task-created-successfully"
+        )
+      );
       onTaskCreated(taskId);
     } catch (error) {
       if (isGlobalServerError(error)) return;
-      messageApi.error(t("task-create.error-creating-task"));
+      messageApi.error(
+        t(isPolicy ? "policy-create.error-creating-policy" : "task-create.error-creating-task")
+      );
     } finally {
       setIsCreating(false);
     }
@@ -363,9 +368,7 @@ export function TaskModal({
 
       <Modal
         title={t(
-          context.taskType === TaskType.Policy
-            ? "policy-create.configure-policy-title"
-            : "task-create.configure-task-title"
+          isPolicy ? "policy-create.configure-policy-title" : "task-create.configure-task-title"
         )}
         open={isModalOpen}
         onCancel={handleModalDismiss}

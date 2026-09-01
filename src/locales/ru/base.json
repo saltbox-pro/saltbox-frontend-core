@@ -194,7 +194,9 @@
   "policy-create": {
     "configure-policy-title": "Настройка политики",
     "create-button": "Создать политику",
-    "create-with-function": "Создать политику с функцией \"{{name}}\""
+    "create-with-function": "Создать политику с функцией \"{{name}}\"",
+    "policy-created-successfully": "Политика успешно создана",
+    "error-creating-policy": "Ошибка создания политики"
   },
   "task-create": {
     "configure-task-title": "Настройки задачи",
