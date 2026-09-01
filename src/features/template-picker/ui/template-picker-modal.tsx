@@ -75,7 +75,6 @@ export function TemplatePickerModal({
   const hasFunctionNameSearch =
     trimmedSearch.length > 0 && isValidManualSaltFunctionName(trimmedSearch);
 
-  // commands: the action sits right under the search input and replaces the empty state
   const showCommandCustomFunction =
     isCustomFunctionAllowed &&
     isCommandMode &&
@@ -94,6 +93,8 @@ export function TemplatePickerModal({
     !isCommandMode &&
     hasFunctionNameSearch &&
     (hasNoResults || hasNoData);
+
+  const showNoResults = hasNoResults && !showCommandCustomFunction && !showInvalidFormatHint;
 
   const customFunctionButton =
     showCommandCustomFunction || showEmptyStateCustomFunction ? (
@@ -151,10 +152,7 @@ export function TemplatePickerModal({
             isLoading={isLoading}
             isError={isError}
             hasNoData={hasNoData}
-            hasNoResults={
-              hasNoResults &&
-              !(isCommandMode && (showCommandCustomFunction || showInvalidFormatHint))
-            }
+            hasNoResults={showNoResults}
             customFunctionAction={showEmptyStateCustomFunction ? customFunctionButton : undefined}
             isSearchReset={isSearchReset}
             activeKeys={activeKeys}
