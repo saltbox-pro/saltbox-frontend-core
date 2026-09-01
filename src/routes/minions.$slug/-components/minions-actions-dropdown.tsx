@@ -2,7 +2,7 @@ import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { ActionDropdown, type ActionDropdownItem, UiEvent } from "@saltbox/saltbox-frontend-common";
 import { message } from "antd";
 import { useMemo } from "react";
-import type { RuleGroupType } from "react-querybuilder";
+import type { OptionList, RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
@@ -18,6 +18,7 @@ export type MinionsActionsDropdownProps = {
   slug: string;
   collectionTitle?: string;
   searchFilters: RuleGroupType;
+  filterSchema?: OptionList;
   query: Record<string, unknown>;
   selectedMinions: SelectedMinion[];
   clearSelection: () => void;
@@ -29,6 +30,7 @@ export function MinionsActionsDropdown({
   collectionTitle,
   selectedMinions,
   searchFilters,
+  filterSchema,
   query,
   clearSelection,
   reloadMinions,
@@ -40,6 +42,7 @@ export function MinionsActionsDropdown({
   const exportAction = useCsvDownloadDropdownItem({
     slug,
     searchFilters,
+    filterSchema,
     selectedMinions,
     messageApi,
   });

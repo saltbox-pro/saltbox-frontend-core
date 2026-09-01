@@ -93,7 +93,7 @@ const retcodeOperators = [{ name: "=", value: "=", label: "=" }] as const;
 const jobReturnsFilterSchema = [
   { name: "jid", label: "JID", operators: defaultStringOperators },
   { name: "fun", label: "Function", operators: defaultStringOperators },
-  { name: "retcode", label: "Return Code", operators: retcodeOperators },
+  { name: "retcode", label: "Return Code", operators: retcodeOperators, caseSensitive: true },
   {
     name: "stamp",
     label: "Timestamp",

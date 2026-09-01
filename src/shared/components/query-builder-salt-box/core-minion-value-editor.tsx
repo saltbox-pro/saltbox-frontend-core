@@ -1,4 +1,6 @@
 import {
+  CASE_INSENSITIVE_PREFIX,
+  escapeRegExp,
   GetOptionsCallback,
   SaltBoxOptionsValueEditor,
   ValueEditorProps,
@@ -17,7 +19,7 @@ const getRequestKey = (slug: string, field: string, value: unknown) =>
   `${slug}::${field}::${String(value ?? "")}`;
 
 const fetchFilterValues = (slug: string, field: string, value: string): Promise<string[]> => {
-  const escapedValue = value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedValue = escapeRegExp(value);
   return (
     apiCoreStore.filtersApi
       ?.filterValues({
@@ -25,7 +27,7 @@ const fetchFilterValues = (slug: string, field: string, value: string): Promise<
           collection_slug: slug,
           query: {
             [field]: {
-              $regex: `(?i)${escapedValue}`,
+              $regex: `${CASE_INSENSITIVE_PREFIX}${escapedValue}`,
             },
           },
           field,

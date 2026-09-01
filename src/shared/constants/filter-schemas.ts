@@ -121,6 +121,7 @@ export const getJobsFilterSchema = (
       name: "jid",
       label: t("jobs.table-jid"),
       operators: defaultStringOperators,
+      caseSensitive: true,
     },
     {
       name: "salt_master",
@@ -156,6 +157,7 @@ export const getJobsFilterSchema = (
       name: "source.id",
       label: t("entity-source.id-column"),
       operators: defaultStringOperators,
+      caseSensitive: true,
     },
     {
       name: "user.name",

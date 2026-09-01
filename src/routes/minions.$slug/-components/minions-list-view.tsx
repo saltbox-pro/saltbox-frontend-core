@@ -189,6 +189,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
             slug={props.slug}
             collectionTitle={props.collectionStore.collection?.title}
             searchFilters={props.filterStore.searchFilters}
+            filterSchema={props.filterStore.filterSchema}
             query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
             selectedMinions={selectedMinions}
             clearSelection={clearSelection}

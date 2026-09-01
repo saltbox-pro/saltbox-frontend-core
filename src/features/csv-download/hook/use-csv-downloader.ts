@@ -3,7 +3,7 @@ import { createRuleGroup, formatToMongoDB } from "@saltbox/saltbox-frontend-comm
 import type { MessageInstance } from "antd/es/message/interface";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { RuleGroupType, RuleType } from "react-querybuilder";
+import { OptionList, RuleGroupType, RuleType } from "react-querybuilder";
 
 import { fileDownloader } from "saltbox-core/features/file-download";
 
@@ -12,12 +12,14 @@ import { csvDownloader } from "../service/csv-downloader.service";
 export const useCsvDownloader = ({
   slug,
   searchFilters,
+  filterSchema,
   selectedMinions,
   messageApi,
   onError,
 }: {
   slug: string;
   searchFilters: RuleGroupType;
+  filterSchema?: OptionList;
   selectedMinions?: TaskTargetMinion[];
   messageApi?: MessageInstance;
   onError?: () => void;
@@ -48,10 +50,13 @@ export const useCsvDownloader = ({
     try {
       setIsCSVLoading(true);
 
-      const filters = selectedMinions?.length
-        ? createMinionIdsRuleGroup(selectedMinions)
+      const hasSelectedMinions = Boolean(selectedMinions?.length);
+      const filters = hasSelectedMinions
+        ? createMinionIdsRuleGroup(selectedMinions as TaskTargetMinion[])
         : searchFilters;
-      const query = formatToMongoDB(filters);
+      const query = hasSelectedMinions
+        ? formatToMongoDB(filters, filterSchema, { caseInsensitive: false })
+        : formatToMongoDB(filters, filterSchema);
 
       const response = await csvDownloader.createCsv("/minions/export", slug, query);
       const filename =
@@ -67,7 +72,16 @@ export const useCsvDownloader = ({
     } finally {
       setIsCSVLoading(false);
     }
-  }, [createMinionIdsRuleGroup, messageApi, onError, searchFilters, selectedMinions, slug, t]);
+  }, [
+    createMinionIdsRuleGroup,
+    filterSchema,
+    messageApi,
+    onError,
+    searchFilters,
+    selectedMinions,
+    slug,
+    t,
+  ]);
 
   return {
     isCSVLoading,

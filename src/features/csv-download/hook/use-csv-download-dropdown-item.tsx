@@ -4,13 +4,14 @@ import type { ActionDropdownItem } from "@saltbox/saltbox-frontend-common";
 import type { MessageInstance } from "antd/es/message/interface";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import type { RuleGroupType } from "react-querybuilder";
+import type { OptionList, RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloader } from "./use-csv-downloader";
 
 export interface UseCsvDownloadDropdownItemOptions {
   slug: string;
   searchFilters: RuleGroupType;
+  filterSchema?: OptionList;
   selectedMinions?: TaskTargetMinion[];
   messageApi?: MessageInstance;
 }
@@ -22,6 +23,7 @@ export interface UseCsvDownloadDropdownItemResult {
 export function useCsvDownloadDropdownItem({
   slug,
   searchFilters,
+  filterSchema,
   selectedMinions,
   messageApi,
 }: UseCsvDownloadDropdownItemOptions): UseCsvDownloadDropdownItemResult {
@@ -30,6 +32,7 @@ export function useCsvDownloadDropdownItem({
   const exportAction = useCsvDownloader({
     slug,
     searchFilters,
+    filterSchema,
     selectedMinions,
     messageApi,
   });
