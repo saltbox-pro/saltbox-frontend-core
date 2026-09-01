@@ -193,11 +193,13 @@
   },
   "policy-create": {
     "configure-policy-title": "Настройка политики",
-    "create-button": "Создать политику"
+    "create-button": "Создать политику",
+    "create-with-function": "Создать политику с функцией \"{{name}}\""
   },
   "task-create": {
     "configure-task-title": "Настройки задачи",
     "create-button": "Создать задачу",
+    "create-with-function": "Создать задачу с функцией \"{{name}}\"",
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
     "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
@@ -243,7 +245,7 @@
   "template-picker": {
     "title": "Выберите шаблон",
     "search-placeholder": "Поиск по источнику, шаблону",
-    "search-placeholder-command": "Поиск по источнику, шаблону или ввод module.function (например file.append)",
+    "search-placeholder-with-function": "Поиск по источнику, шаблону или ввод module.function (например file.append)",
     "function-schema-hint": "Описание функции"
   },
   "task": {

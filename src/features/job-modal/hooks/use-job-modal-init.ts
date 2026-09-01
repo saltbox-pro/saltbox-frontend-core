@@ -14,8 +14,8 @@ import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/job-schemas";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
+import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/sls-templates";
 import {
   cleanNullsFromKwargs,
   getDefaultJsonFormValue,

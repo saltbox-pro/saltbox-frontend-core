@@ -1,4 +1,5 @@
-import { Alert, Button, Empty } from "antd";
+import { Alert, Button, Empty, Flex } from "antd";
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { TemplateSourceRow } from "../helpers/template-picker-rows";
@@ -16,6 +17,7 @@ export type TemplatePickerContentProps = {
   activeKeys: string[];
   filteredRows: TemplateSourceRow[];
   searchQuery?: string;
+  customFunctionAction?: ReactNode;
   getSourceLabel: (sourceName: string) => string;
   onCollapseChange: (keys: string | string[]) => void;
   onSelectTemplate: (template: PickedTemplate) => void;
@@ -31,6 +33,7 @@ export function TemplatePickerContent({
   activeKeys,
   filteredRows,
   searchQuery,
+  customFunctionAction,
   getSourceLabel,
   onCollapseChange,
   onSelectTemplate,
@@ -39,6 +42,18 @@ export function TemplatePickerContent({
   const { t } = useTranslation();
 
   const shouldShowCollapse = !isLoading && !isError && filteredRows.length > 0;
+
+  const emptyStateActions = (
+    <Flex justify="center" align="center" gap="small" wrap>
+      {customFunctionAction}
+      <Button
+        type={customFunctionAction ? "default" : "primary"}
+        onClick={onGoToConfigurationTemplates}
+      >
+        {t("task-create.go-to-configuration-templates")}
+      </Button>
+    </Flex>
+  );
 
   return (
     <div className={styles.modalContent}>
@@ -51,9 +66,7 @@ export function TemplatePickerContent({
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={t("task-create.no-sources-available")}
         >
-          <Button type="primary" onClick={onGoToConfigurationTemplates}>
-            {t("task-create.go-to-configuration-templates")}
-          </Button>
+          {emptyStateActions}
         </Empty>
       )}
 
@@ -62,9 +75,7 @@ export function TemplatePickerContent({
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={t("configuration-templates.search.no-results")}
         >
-          <Button type="primary" onClick={onGoToConfigurationTemplates}>
-            {t("task-create.go-to-configuration-templates")}
-          </Button>
+          {emptyStateActions}
         </Empty>
       )}
 

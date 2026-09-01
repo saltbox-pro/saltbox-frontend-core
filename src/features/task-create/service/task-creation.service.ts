@@ -5,6 +5,7 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import { isValidDataWithAjv } from "@saltbox/saltbox-frontend-common";
 
+import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { TaskConfigurationFormData, TaskCreationContext } from "../type/types";
@@ -15,8 +16,11 @@ export class TaskCreationService {
     context: TaskCreationContext,
     taskTemplate?: TaskTemplateModel
   ): TaskCreateRequestSchema {
+    const isCustomFunction = isDefaultTaskTemplate(taskTemplate);
+
     return {
-      task_template_id: formData.task_template_id,
+      task_template_id: isCustomFunction ? null : formData.task_template_id,
+      fun: isCustomFunction ? taskTemplate?.fun : undefined,
       task_type: context.taskType,
       collection_slug: context.collection?.slug ?? context.slug,
       minions: context.minionList ?? [],

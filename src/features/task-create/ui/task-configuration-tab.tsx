@@ -17,6 +17,7 @@ import {
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
 import {
   getJobParamsSchemaLayout,
   type JsonSchemaRecord,
@@ -47,7 +48,7 @@ const memoize = createObjectMemoizer({ deep: true });
 export function TaskConfigurationTab({
   template,
   initialData,
-  initialShowAdvanced = false,
+  initialShowAdvanced,
   topContent,
   onSubmit,
   onReturnToTemplatePicker,
@@ -57,9 +58,15 @@ export function TaskConfigurationTab({
 
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
-  const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced);
+  const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced ?? false);
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
+
+  useEffect(() => {
+    if (initialShowAdvanced == null && isDefaultTaskTemplate(template)) {
+      setShowAdvanced(true);
+    }
+  }, [initialShowAdvanced, template]);
 
   const paramsSchema = useMemo(
     () => getTemplateParamsSchema(template, i18n.language),

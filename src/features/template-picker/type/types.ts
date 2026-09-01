@@ -8,7 +8,7 @@ export type TaskTemplatePickerItem = TaskTemplateWithRepository & {
   isAccessible: boolean;
 };
 
-export type TemplatePickerMode = "task" | "command";
+export type TemplatePickerMode = "task" | "command" | "policy";
 
 export type PickedTemplate = {
   sourceId: string;

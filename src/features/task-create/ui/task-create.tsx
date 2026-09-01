@@ -1,3 +1,4 @@
+import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { type FC, useCallback } from "react";
 
 import { TemplatePickerModal, type PickedTemplate } from "saltbox-core/features/template-picker";
@@ -33,7 +34,18 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
 
   const handleTemplatePicked = useCallback(
     (template: PickedTemplate) => {
-      handleSelectTemplate({ sourceId: template.sourceId, templateId: template.templateId });
+      handleSelectTemplate({
+        kind: "template",
+        sourceId: template.sourceId,
+        templateId: template.templateId,
+      });
+    },
+    [handleSelectTemplate]
+  );
+
+  const handleCustomFunctionPicked = useCallback(
+    (fun: string) => {
+      handleSelectTemplate({ kind: "custom-function", fun });
     },
     [handleSelectTemplate]
   );
@@ -42,19 +54,19 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
     <>
       {isPickerMounted && (
         <TemplatePickerModal
-          mode="task"
+          mode={context.taskType === TaskType.Policy ? "policy" : "task"}
           isOpen={isOpen && isPickerModalOpen}
           onClose={handlePickerCloseRequest}
           onAfterClose={handlePickerAfterClose}
           onLeaveFlow={handleFlowDismissed}
           onSelectTemplate={handleTemplatePicked}
+          onSelectCustomFunction={handleCustomFunctionPicked}
         />
       )}
       {isOpen && isTaskModalMounted && selectedTemplate && (
         <TaskModal
           key={`${getTemplateCacheKey(selectedTemplate)}-${modalSession}`}
-          sourceId={selectedTemplate.sourceId}
-          templateId={selectedTemplate.templateId}
+          selection={selectedTemplate}
           context={context}
           initialDraft={initialDraft}
           onReturnedToPicker={handleReturnedToPicker}

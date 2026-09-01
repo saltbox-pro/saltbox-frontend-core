@@ -43,7 +43,7 @@ import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
-import { resolveBuiltinJobSchema } from "saltbox-core/shared/job-schemas";
+import { resolveBuiltinJobSchema } from "saltbox-core/shared/sls-templates";
 import {
   getArgAndKwargForRequest,
   isTimeoutInputKeyAllowed,

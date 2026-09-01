@@ -193,11 +193,13 @@
   },
   "policy-create": {
     "configure-policy-title": "Policy Configuration",
-    "create-button": "Create Policy"
+    "create-button": "Create Policy",
+    "create-with-function": "Create policy with function \"{{name}}\""
   },
   "task-create": {
     "configure-task-title": "Task Configuration",
     "create-button": "Create Task",
+    "create-with-function": "Create task with function \"{{name}}\"",
     "unknown-repository": "Without source",
     "no-sources-available": "No sources available",
     "go-to-configuration-templates": "Go to configuration templates",
@@ -243,7 +245,7 @@
   "template-picker": {
     "title": "Select template",
     "search-placeholder": "Search by source, template",
-    "search-placeholder-command": "Search by source, template or type module.function (e.g. file.append)",
+    "search-placeholder-with-function": "Search by source, template or type module.function (e.g. file.append)",
     "function-schema-hint": "Function reference"
   },
   "task": {

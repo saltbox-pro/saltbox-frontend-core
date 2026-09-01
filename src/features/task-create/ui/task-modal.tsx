@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
+import { buildDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
 import {
   getTemplateDescriptionText,
   getTemplateTitleText,
@@ -19,6 +20,7 @@ import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskCreationService } from "../service";
 import type {
   PluginRenderData,
+  SelectedTaskTemplate,
   TaskConfigurationFormData,
   TaskCreationContext,
   TaskOverviewData,
@@ -32,8 +34,7 @@ import { TaskTargetScopeWarning } from "./task-target-scope-warning";
 const { Paragraph, Text } = Typography;
 
 export type TaskModalProps = {
-  sourceId: string;
-  templateId: string;
+  selection: SelectedTaskTemplate;
   context: TaskCreationContext;
   initialDraft?: TaskTemplateDraft;
   onReturnedToPicker: () => void;
@@ -50,8 +51,7 @@ const enum TabKey {
 type TaskModalCloseReason = "return-to-picker" | "dismiss" | "scheduler-handoff";
 
 export function TaskModal({
-  sourceId,
-  templateId,
+  selection,
   context,
   initialDraft,
   onReturnedToPicker,
@@ -93,6 +93,45 @@ export function TaskModal({
   }, [activeTabKey]);
 
   useEffect(() => {
+    const applyTemplate = (loadedTemplate: TaskTemplateModel) => {
+      setTemplate(loadedTemplate);
+
+      if (initialDraft?.configuration) {
+        setConfiguration(initialDraft.configuration);
+        return;
+      }
+
+      const defaultConfig = taskCreationService.getDefaultConfiguration();
+      const templateDefaults = (loadedTemplate as unknown as { defaults?: Record<string, unknown> })
+        .defaults;
+      setConfiguration({
+        task_template_id: loadedTemplate.id,
+        batch_size:
+          typeof templateDefaults?.batch_size === "number"
+            ? templateDefaults.batch_size
+            : defaultConfig.batch_size,
+        max_retries:
+          typeof templateDefaults?.max_retries === "number"
+            ? templateDefaults.max_retries
+            : defaultConfig.max_retries,
+        retry_delay:
+          typeof templateDefaults?.retry_delay === "number"
+            ? templateDefaults.retry_delay
+            : defaultConfig.retry_delay,
+        max_jobs_count_at_same_time:
+          typeof templateDefaults?.max_jobs_count_at_same_time === "number"
+            ? templateDefaults.max_jobs_count_at_same_time
+            : defaultConfig.max_jobs_count_at_same_time,
+        data: {},
+      });
+    };
+
+    if (selection.kind === "custom-function") {
+      applyTemplate(buildDefaultTaskTemplate(selection.fun));
+      return;
+    }
+
+    const { sourceId, templateId } = selection;
     if (!templateId || !sourceId) {
       return;
     }
@@ -100,37 +139,7 @@ export function TaskModal({
     const loadTemplate = async () => {
       try {
         const loadedTemplate = await taskTemplateService.loadTemplateById(sourceId, templateId);
-        setTemplate(loadedTemplate);
-
-        if (initialDraft?.configuration) {
-          setConfiguration(initialDraft.configuration);
-          return;
-        }
-
-        const defaultConfig = taskCreationService.getDefaultConfiguration();
-        const templateDefaults = (
-          loadedTemplate as unknown as { defaults?: Record<string, unknown> }
-        ).defaults;
-        setConfiguration({
-          task_template_id: loadedTemplate.id,
-          batch_size:
-            typeof templateDefaults?.batch_size === "number"
-              ? templateDefaults.batch_size
-              : defaultConfig.batch_size,
-          max_retries:
-            typeof templateDefaults?.max_retries === "number"
-              ? templateDefaults.max_retries
-              : defaultConfig.max_retries,
-          retry_delay:
-            typeof templateDefaults?.retry_delay === "number"
-              ? templateDefaults.retry_delay
-              : defaultConfig.retry_delay,
-          max_jobs_count_at_same_time:
-            typeof templateDefaults?.max_jobs_count_at_same_time === "number"
-              ? templateDefaults.max_jobs_count_at_same_time
-              : defaultConfig.max_jobs_count_at_same_time,
-          data: {},
-        });
+        applyTemplate(loadedTemplate);
       } catch (error) {
         if (!isGlobalServerError(error)) {
           messageApi.error(t("task-create.error-loading-template"));
@@ -141,9 +150,7 @@ export function TaskModal({
     };
 
     loadTemplate();
-    // should trigger only when the props are changed
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sourceId, templateId]);
+  }, [selection]);
 
   const closeModal = (reason?: TaskModalCloseReason) => {
     if (isCreating) {

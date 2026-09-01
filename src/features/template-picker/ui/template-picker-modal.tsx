@@ -13,6 +13,12 @@ import type { PickedTemplate, TemplatePickerMode } from "../type/types";
 import { TemplatePickerContent } from "./template-picker-content";
 import styles from "./template-picker-modal.module.css";
 
+const CREATE_WITH_FUNCTION_KEY_BY_MODE: Record<TemplatePickerMode, string> = {
+  command: "job-function-select.create-with-function",
+  task: "task-create.create-with-function",
+  policy: "policy-create.create-with-function",
+};
+
 export type TemplatePickerModalProps = {
   mode: TemplatePickerMode;
   isOpen: boolean;
@@ -64,19 +70,37 @@ export function TemplatePickerModal({
 
   const trimmedSearch = appliedSearchQuery.trim();
   const normalizedSearchLower = trimmedSearch.toLowerCase();
-  const isCustomFunctionAllowed = mode === "command" && onSelectCustomFunction != null;
+  const isCustomFunctionAllowed = onSelectCustomFunction != null;
+  const isCommandMode = mode === "command";
+  const hasFunctionNameSearch =
+    trimmedSearch.length > 0 && isValidManualSaltFunctionName(trimmedSearch);
 
-  const showCreateWithCustomFunction =
+  // commands: the action sits right under the search input and replaces the empty state
+  const showCommandCustomFunction =
     isCustomFunctionAllowed &&
-    trimmedSearch.length > 0 &&
-    isValidManualSaltFunctionName(trimmedSearch) &&
+    isCommandMode &&
+    hasFunctionNameSearch &&
     !functionNamesLower.has(normalizedSearchLower);
 
   const showInvalidFormatHint =
     isCustomFunctionAllowed &&
+    isCommandMode &&
     trimmedSearch.length > 0 &&
     !isValidManualSaltFunctionName(trimmedSearch) &&
     hasNoResults;
+
+  const showEmptyStateCustomFunction =
+    isCustomFunctionAllowed &&
+    !isCommandMode &&
+    hasFunctionNameSearch &&
+    (hasNoResults || hasNoData);
+
+  const customFunctionButton =
+    showCommandCustomFunction || showEmptyStateCustomFunction ? (
+      <Button type="primary" onClick={() => onSelectCustomFunction(normalizedSearchLower)}>
+        {t(CREATE_WITH_FUNCTION_KEY_BY_MODE[mode], { name: normalizedSearchLower })}
+      </Button>
+    ) : null;
 
   return (
     <>
@@ -103,8 +127,8 @@ export function TemplatePickerModal({
           <SearchInput
             ref={searchInputRef}
             placeholder={t(
-              mode === "command"
-                ? "template-picker.search-placeholder-command"
+              isCustomFunctionAllowed
+                ? "template-picker.search-placeholder-with-function"
                 : "template-picker.search-placeholder"
             )}
             defaultValue={appliedSearchQuery}
@@ -119,19 +143,19 @@ export function TemplatePickerModal({
             />
           )}
 
-          {showCreateWithCustomFunction && (
-            <div className={styles.customFunctionAction}>
-              <Button type="primary" onClick={() => onSelectCustomFunction(normalizedSearchLower)}>
-                {t("job-function-select.create-with-function", { name: normalizedSearchLower })}
-              </Button>
-            </div>
+          {showCommandCustomFunction && (
+            <div className={styles.customFunctionAction}>{customFunctionButton}</div>
           )}
 
           <TemplatePickerContent
             isLoading={isLoading}
             isError={isError}
             hasNoData={hasNoData}
-            hasNoResults={hasNoResults && !showCreateWithCustomFunction && !showInvalidFormatHint}
+            hasNoResults={
+              hasNoResults &&
+              !(isCommandMode && (showCommandCustomFunction || showInvalidFormatHint))
+            }
+            customFunctionAction={showEmptyStateCustomFunction ? customFunctionButton : undefined}
             isSearchReset={isSearchReset}
             activeKeys={activeKeys}
             filteredRows={filteredRows}

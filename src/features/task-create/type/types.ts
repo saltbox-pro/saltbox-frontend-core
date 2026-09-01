@@ -9,10 +9,9 @@ import {
 import { ReactNode } from "react";
 import type { OptionList } from "react-querybuilder";
 
-export type SelectedTaskTemplate = {
-  sourceId: string;
-  templateId: string;
-};
+export type SelectedTaskTemplate =
+  | { kind: "template"; sourceId: string; templateId: string }
+  | { kind: "custom-function"; fun: string };
 
 export type TaskOverviewData = {
   template: TaskTemplateModel;

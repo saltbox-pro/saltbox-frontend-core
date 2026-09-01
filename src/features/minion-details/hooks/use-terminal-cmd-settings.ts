@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
-import { CMD_RUN_JOB_SCHEMA, resolveBuiltinJobSchema } from "saltbox-core/shared/job-schemas";
+import { CMD_RUN_JOB_SCHEMA, resolveBuiltinJobSchema } from "saltbox-core/shared/sls-templates";
 import {
   cleanNullsFromKwargs,
   getDefaultJsonFormValue,

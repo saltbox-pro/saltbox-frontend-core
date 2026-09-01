@@ -9,6 +9,11 @@ import type { BuiltinJobSchema, BuiltinJobSchemaMeta } from "./types";
 
 export { CMD_RUN_JOB_SCHEMA } from "./cmd-run-job-schema";
 export { DEFAULT_JOB_SCHEMA } from "./default-job-schema";
+export {
+  DEFAULT_TASK_TEMPLATE,
+  buildDefaultTaskTemplate,
+  isDefaultTaskTemplate,
+} from "./default-task-template";
 export type { BuiltinJobSchema, BuiltinJobSchemaMeta } from "./types";
 
 const BUILTIN_JOB_SCHEMAS: readonly BuiltinJobSchemaMeta[] = [CMD_RUN_JOB_SCHEMA];
