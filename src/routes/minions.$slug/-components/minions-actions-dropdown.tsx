@@ -76,6 +76,7 @@ export function MinionsActionsDropdown({
   if (selectedMinions.length > 0) {
     const deleteItem = removeAction.item;
     if (deleteItem) {
+      items.push({ type: "divider" });
       items.push(deleteItem);
     }
   }
