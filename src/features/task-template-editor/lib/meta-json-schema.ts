@@ -29,9 +29,12 @@ export const TEMPLATE_META_JSON_SCHEMA = {
         "Предустановленный фильтр минионов (MongoQuery). Пустой объект — без ограничения.",
       additionalProperties: true,
     },
+    title: {
+      description: "Название шаблона. Показывается в списках шаблонов и в форме создания задачи.",
+      anyOf: [{ type: "string" }, localizedText],
+    },
     description: {
-      description:
-        "Описание шаблона. Используется, если не задан или не разрешился ui:description.",
+      description: "Описание шаблона. Помогает выбрать шаблон перед запуском задачи.",
       anyOf: [{ type: "string" }, localizedText],
     },
     json_schema: {
@@ -83,7 +86,7 @@ export const TEMPLATE_META_JSON_SCHEMA = {
     },
     secret_pillars: {
       type: "array",
-      description: "Пути пилларов, которые шифруются at-rest, например kwargs.pillar.token.",
+      description: "Имена параметров формы, значения которых шифруются at-rest, например token.",
       items: { type: "string" },
     },
   },

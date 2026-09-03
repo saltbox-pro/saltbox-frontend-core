@@ -40,12 +40,12 @@ describe("params subtree", () => {
     expect(ui_schema.test).toEqual({ "ui:title": "{{test_title}}" });
   });
 
-  it("поднимает подписи шаблона из корня ui_schema в корень поддерева", () => {
+  it("не тащит подписи шаблона в поддерево: они правятся в шапке редактора", () => {
     const { ui_schema } = extractParamsFormSchema(stateApplyMeta());
 
-    expect(ui_schema["ui:title"]).toBe("{{ui_title}}");
-    expect(ui_schema["ui:description"]).toBe("{{ui_description}}");
-    // подпись обёртки pillar в поддерево не протекает
+    expect(ui_schema["ui:title"]).toBeUndefined();
+    expect(ui_schema["ui:description"]).toBeUndefined();
+    // настройки самой обёртки pillar при этом на месте
     expect(ui_schema["ui:label"]).toBe(false);
   });
 
@@ -57,30 +57,18 @@ describe("params subtree", () => {
     expect(wrapped.ui_schema).toEqual(meta.ui_schema);
   });
 
-  it("возвращает подписи шаблона в корень ui_schema, а не в поддерево", () => {
+  it("подписи из поддерева не всплывают в корень ui_schema", () => {
     const meta = stateApplyMeta();
     const edited = extractParamsFormSchema(meta);
 
     const wrapped = wrapParamsFormSchema(meta, meta.fun, {
       ...edited,
-      ui_schema: { ...edited.ui_schema, "ui:title": "Новое название" },
+      ui_schema: { ...edited.ui_schema, "ui:title": "Подпись группы параметров" },
     });
 
     const uiSchema = wrapped.ui_schema as Record<string, any>;
-    expect(uiSchema["ui:title"]).toBe("Новое название");
-    expect(uiSchema.kwargs.pillar["ui:title"]).toBeUndefined();
-  });
-
-  it("убирает подпись из корня, когда её очистили", () => {
-    const meta = stateApplyMeta();
-    const edited = extractParamsFormSchema(meta);
-
-    const wrapped = wrapParamsFormSchema(meta, meta.fun, {
-      ...edited,
-      ui_schema: { ...edited.ui_schema, "ui:description": "   " },
-    });
-
-    expect(wrapped.ui_schema).not.toHaveProperty("ui:description");
+    expect(uiSchema["ui:title"]).toBe("{{ui_title}}");
+    expect(uiSchema.kwargs.pillar["ui:title"]).toBe("Подпись группы параметров");
   });
 
   it("для обычной функции параметры лежат прямо в kwargs", () => {

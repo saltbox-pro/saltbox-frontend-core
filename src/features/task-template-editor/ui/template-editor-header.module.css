@@ -9,11 +9,13 @@
 .mainFields {
   display: flex;
   flex: 1;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 16px;
   min-width: 0;
 }
 
-.save {
+.actions {
   flex-shrink: 0;
+  margin-bottom: 0;
 }

@@ -44,6 +44,25 @@ describe("переводы шаблона", () => {
     expect([...collectTranslationKeys(meta)].sort()).toEqual(["host_description", "host_title"]);
   });
 
+  it("считает используемыми ключи из собственных title и description шаблона", () => {
+    const withOwnLabels: TemplateMeta = {
+      ...meta,
+      title: "{{template_title}}",
+      description: "{{template_description}}",
+    };
+
+    expect([...collectTranslationKeys(withOwnLabels)].sort()).toEqual([
+      "host_description",
+      "host_title",
+      "template_description",
+      "template_title",
+    ]);
+
+    const rows = collectTranslationRows(withOwnLabels);
+    expect(rows.find((row) => row.key === "template_title")?.isOrphan).toBe(false);
+    expect(rows.find((row) => row.key === "template_description")?.isOrphan).toBe(false);
+  });
+
   it("показывает ru и en всегда, дальше локали шаблона по алфавиту", () => {
     expect(collectTemplateLocales({})).toEqual(["ru", "en"]);
     expect(collectTemplateLocales({ i18n: { fr: {}, de: {}, en: {} } })).toEqual([

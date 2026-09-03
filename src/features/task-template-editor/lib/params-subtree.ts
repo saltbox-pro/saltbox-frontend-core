@@ -55,7 +55,7 @@ function setJsonSchemaAtPath(
   };
 }
 
-function getUiSchemaAtPath(uiSchema: UISchema, path: string[]): UISchema {
+export function getUiSchemaAtPath(uiSchema: UISchema, path: string[]): UISchema {
   let current: unknown = uiSchema;
 
   for (const segment of path) {
@@ -70,7 +70,11 @@ function getUiSchemaAtPath(uiSchema: UISchema, path: string[]): UISchema {
  * Замена, а не слияние: `setUISchemaAtPath` из библиотеки мержит значение с
  * тем, что уже лежит по пути, и настройки удалённых полей остались бы висеть.
  */
-function replaceUiSchemaAtPath(uiSchema: UISchema, path: string[], value: UISchema): UISchema {
+export function replaceUiSchemaAtPath(
+  uiSchema: UISchema,
+  path: string[],
+  value: UISchema
+): UISchema {
   if (path.length === 0) return value;
 
   const [segment, ...rest] = path;
@@ -79,36 +83,17 @@ function replaceUiSchemaAtPath(uiSchema: UISchema, path: string[], value: UISche
   return { ...uiSchema, [segment]: replaceUiSchemaAtPath(child, rest, value) };
 }
 
-function withRootLabel(uiSchema: UISchema, key: string, value: unknown): UISchema {
-  const text = typeof value === "string" ? value.trim() : "";
-
-  if (!text) {
-    const { [key]: _removed, ...rest } = uiSchema;
-    return rest as UISchema;
-  }
-
-  return { ...uiSchema, [key]: text };
-}
-
 /**
- * Поддерево параметров для визуального редактора. Заголовок и описание самого
- * шаблона лежат в корне `ui_schema` — поднимаем их в корень поддерева, чтобы
- * редактор показывал и правил именно их.
+ * Поддерево параметров для визуального редактора. Название и описание самого
+ * шаблона в него не попадают: они лежат в корне `meta` и правятся в шапке
+ * редактора.
  */
 export function extractParamsFormSchema(meta: TemplateMeta, fun?: string): FormSchema {
   const path = getParamsPath(fun ?? meta.fun);
-  const rootUiSchema = (meta.ui_schema ?? {}) as UISchema;
-  const paramsUiSchema = getUiSchemaAtPath(rootUiSchema, path);
 
   return {
     json_schema: getJsonSchemaAtPath(meta.json_schema, path) ?? EMPTY_PARAMS_SCHEMA,
-    ui_schema: {
-      ...paramsUiSchema,
-      ...(rootUiSchema["ui:title"] === undefined ? {} : { "ui:title": rootUiSchema["ui:title"] }),
-      ...(rootUiSchema["ui:description"] === undefined
-        ? {}
-        : { "ui:description": rootUiSchema["ui:description"] }),
-    },
+    ui_schema: getUiSchemaAtPath((meta.ui_schema ?? {}) as UISchema, path),
   };
 }
 
@@ -123,22 +108,10 @@ export function wrapParamsFormSchema(
   const editedJsonSchema = isForm ? edited.json_schema : (edited as JSONSchema);
   const editedUiSchema = ((isForm ? edited.ui_schema : {}) ?? {}) as UISchema;
 
-  const { "ui:title": title, "ui:description": description, ...paramsUiSchema } = editedUiSchema;
-
-  const uiSchemaWithParams = replaceUiSchemaAtPath(
-    (meta.ui_schema ?? {}) as UISchema,
-    path,
-    paramsUiSchema as UISchema
-  );
-
   return {
     ...meta,
     json_schema: setJsonSchemaAtPath(meta.json_schema, path, editedJsonSchema),
-    ui_schema: withRootLabel(
-      withRootLabel(uiSchemaWithParams, "ui:title", title),
-      "ui:description",
-      description
-    ),
+    ui_schema: replaceUiSchemaAtPath((meta.ui_schema ?? {}) as UISchema, path, editedUiSchema),
   };
 }
 

@@ -19,7 +19,10 @@
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-gutter: stable;
-  padding-right: 16px;
+  padding: 16px;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: 8px;
+  background: var(--ant-color-bg-container, #fff);
 }
 
 .formWrapper > :global(.ant-flex) {
@@ -37,11 +40,8 @@
 }
 
 .actions {
-  position: sticky;
-  z-index: 1;
-  bottom: 0;
-  padding: 12px 0;
-  background: var(--ant-color-bg-container, #fff);
+  flex-shrink: 0;
+  padding-top: 12px;
 }
 
 .stateWrapper {

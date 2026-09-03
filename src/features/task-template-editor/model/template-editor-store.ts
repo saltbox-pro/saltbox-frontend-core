@@ -1,7 +1,8 @@
-import type {
-  FormSchema,
-  JSONSchema,
-  VisualEditorCompatibilityResult,
+import {
+  canRenderInVisualEditor,
+  type FormSchema,
+  type JSONSchema,
+  type VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
 import type { TaskTemplateMetaSchemaInput } from "@saltbox/saltbox-core-api-client";
 import { makeAutoObservable, runInAction } from "mobx";
@@ -16,16 +17,20 @@ import {
   isValidManualSaltFunctionName,
   normalizeManualSaltFunctionName,
 } from "saltbox-core/shared/utils/salt-function-name";
-import { apiCoreStore } from "saltbox-core/store";
+import { apiCoreStore, i18nStore } from "saltbox-core/store";
 
 import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
 import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
 import { hasLegacySchemaBlock, migrateLegacyTemplate } from "../lib/legacy-template";
+import { migrateMetaFormat } from "../lib/migrate-meta-format";
 import { getParamsCompatibility } from "../lib/params-compatibility";
 import { extractParamsFormSchema, wrapParamsFormSchema } from "../lib/params-subtree";
+import { readTemplateLabel, writeTemplateLabel, type TemplateLabelKey } from "../lib/root-labels";
+import { readSecretNames, syncSecretWidgets, writeSecretNames } from "../lib/secret-pillars";
 import {
   applyTranslations,
   collectTemplateLocales,
+  collectTranslationKeys,
   collectTranslationRows,
   type TranslationRow,
 } from "../lib/template-i18n";
@@ -56,10 +61,15 @@ export interface DuplicateTargetSource {
   name: string;
 }
 
-export type CatalogTemplateSchema = Pick<
-  TemplateMeta,
-  "title" | "description" | "json_schema" | "ui_schema" | "i18n"
->;
+/** Параметр формы верхнего уровня — для списка вставки в SLS и статуса схемы. */
+export interface TemplateParamSummary {
+  name: string;
+  schema: JSONSchema | undefined;
+  isRequired: boolean;
+  isSecret: boolean;
+  /** Визуальный редактор не разбирает конструкцию: правится только в Meta JSON. */
+  isUnsupported: boolean;
+}
 
 export class TemplateEditorStore {
   readonly mode: TemplateEditorMode;
@@ -73,9 +83,8 @@ export class TemplateEditorStore {
   hadSlsContent = false;
 
   isSaving = false;
-  isFunctionSchemaApplying = false;
-  pendingFunctionChange: string | null = null;
-  isFunctionDraftInvalid = false;
+  /** Свитч "Расширенные параметры": открывает табы Meta JSON и Переводы. */
+  isAdvancedMode = false;
   sourceName: string | null = null;
   isLoadingTemplate = false;
   hasLoadError = false;
@@ -181,16 +190,8 @@ export class TemplateEditorStore {
     this.targetSourceId = value;
   };
 
-  setFunctionSchemaApplying = (value: boolean) => {
-    this.isFunctionSchemaApplying = value;
-  };
-
-  setPendingFunctionChange = (value: string | null) => {
-    this.pendingFunctionChange = value;
-  };
-
-  setFunctionDraftInvalid = (value: boolean) => {
-    this.isFunctionDraftInvalid = value;
+  setAdvancedMode = (value: boolean) => {
+    this.isAdvancedMode = value;
   };
 
   private updateMeta = (update: (meta: TemplateMeta) => TemplateMeta) => {
@@ -201,46 +202,79 @@ export class TemplateEditorStore {
     this.metaText = stringifyMeta(update(meta));
   };
 
-  setFun = (fun: string) => {
-    const normalizedFun = normalizeManualSaltFunctionName(fun);
-    this.updateMeta((meta) => ({ ...meta, fun: normalizedFun }));
+  /**
+   * Название и описание шаблона живут в корне `meta`: оттуда их читают списки
+   * шаблонов и форма создания задачи, и туда же можно положить плейсхолдер
+   * перевода.
+   */
+  private setRootLabel = (key: TemplateLabelKey, value: string) => {
+    this.updateMeta((meta) => writeTemplateLabel(meta, key, value, i18nStore.currentLanguage));
   };
+
+  private getRootLabel = (key: TemplateLabelKey): string =>
+    readTemplateLabel(this.meta, key, i18nStore.currentLanguage);
+
+  get templateTitle(): string {
+    return this.getRootLabel("title");
+  }
+
+  setTemplateTitle = (value: string) => {
+    this.setRootLabel("title", value);
+  };
+
+  get templateDescription(): string {
+    return this.getRootLabel("description");
+  }
+
+  setTemplateDescription = (value: string) => {
+    this.setRootLabel("description", value);
+  };
+
+  get secretNames(): string[] {
+    return this.meta ? readSecretNames(this.meta, this.fun) : [];
+  }
+
+  setSecretNames = (names: string[]) => {
+    this.updateMeta((meta) => writeSecretNames(meta, names, this.fun));
+  };
+
+  get paramsProperties(): TemplateParamSummary[] {
+    const jsonSchema = this.paramsFormSchema?.json_schema;
+    if (!jsonSchema || typeof jsonSchema === "boolean") return [];
+
+    const required = new Set(jsonSchema.required ?? []);
+    const secret = new Set(this.secretNames);
+
+    return Object.entries(jsonSchema.properties ?? {}).map(([name, schema]) => ({
+      name,
+      schema,
+      isRequired: required.has(name),
+      isSecret: secret.has(name),
+      isUnsupported: !canRenderInVisualEditor({ json_schema: schema, ui_schema: {} }).compatible,
+    }));
+  }
 
   /**
-   * Меняет функцию вместе со схемой: подставляет схему из каталога, а когда её
-   * нет — пустой каркас под параметры этой функции.
-   *
-   * Схему из каталога переносим целиком, вместе с `i18n` и заголовками: подписи
-   * в ней — плейсхолдеры `{{ключ}}`, без словаря переводов они останутся сырыми.
+   * Подписи заданы плейсхолдерами — их значения правят на вкладке переводов,
+   * поэтому её показываем и при выключенных расширенных параметрах.
    */
-  applyFunction = (fun: string, catalogSchema?: CatalogTemplateSchema | null) => {
-    const normalizedFun = normalizeManualSaltFunctionName(fun);
+  get hasTranslationPlaceholders(): boolean {
+    return collectTranslationKeys(this.meta).size > 0;
+  }
 
-    this.updateMeta((meta) => {
-      if (!catalogSchema?.json_schema) {
-        const empty = getEmptyMeta(normalizedFun);
-        return {
-          ...meta,
-          fun: normalizedFun,
-          json_schema: empty.json_schema,
-          ui_schema: empty.ui_schema,
-        };
-      }
-
-      return {
-        ...meta,
-        fun: normalizedFun,
-        title: catalogSchema.title ?? meta.title,
-        description: catalogSchema.description ?? meta.description,
-        json_schema: catalogSchema.json_schema,
-        ui_schema: catalogSchema.ui_schema ?? {},
-        i18n: catalogSchema.i18n ?? {},
-      };
-    });
-  };
+  /**
+   * Расширенные вкладки нужны сразу: конструкции, которые визуальный редактор
+   * не разбирает, правятся только в Meta JSON. Прятать его за выключенным
+   * свитчем значило бы спрятать единственный способ их отредактировать.
+   */
+  get shouldForceAdvanced(): boolean {
+    return this.paramsCompatibility?.compatible === false;
+  }
 
   setParamsFormSchema = (edited: FormSchema | JSONSchema) => {
-    this.updateMeta((meta) => wrapParamsFormSchema(meta, this.fun, edited));
+    this.updateMeta((meta) =>
+      syncSecretWidgets(wrapParamsFormSchema(meta, this.fun, edited), this.fun)
+    );
   };
 
   get translationLocales(): string[] {
@@ -283,13 +317,19 @@ export class TemplateEditorStore {
           normalizeManualSaltFunctionName(template?.fun ?? "") ||
           DEFAULT_TEMPLATE_FUN;
 
-        this.metaText = stringifyMeta({ ...meta, fun });
+        // Подписи из `ui_schema` и полные пути в `secret_pillars` — форматы
+        // прошлой версии редактора: приводим их к текущему сразу при открытии
+        this.metaText = stringifyMeta(migrateMetaFormat({ ...meta, fun }, fun));
         this.slsRaw = template?.sls_content ?? "";
         this.hadSlsContent = Boolean(template?.sls_content?.trim());
 
         if (this.mode === "edit") {
           this.fileName = template?.name ?? "";
         }
+
+        // Открываем расширенные вкладки сразу, если в шаблоне есть то, что
+        // правится только на них: сложные конструкции схемы или переводы
+        this.isAdvancedMode = this.shouldForceAdvanced;
       });
     } catch (error) {
       console.error("Failed to load template:", error);

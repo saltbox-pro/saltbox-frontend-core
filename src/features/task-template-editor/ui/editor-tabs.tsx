@@ -1,15 +1,14 @@
-import { WarningOutlined } from "@ant-design/icons";
-import { Alert, Splitter, Tabs, Tooltip } from "antd";
+import { Alert, Splitter, Switch, Tabs, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./editor-tabs.module.css";
 import { FormPreviewPanel } from "./form-preview-panel";
-import { FullTemplateEditor } from "./full-template-editor";
 import { MetaEditorTab } from "./meta-editor-tab";
+import { SlsEditorTab } from "./sls-editor-tab";
 import { TranslationsTab } from "./translations-tab";
 import { VisualEditorTab } from "./visual-editor-tab";
 
@@ -21,52 +20,31 @@ const FORM_PREVIEW_MIN_WIDTH = 360;
 
 export const EditorTabs = observer(({ store }: EditorTabsProps) => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("visual");
+  const [activeTab, setActiveTab] = useState("params");
   const [splitSizes, setSplitSizes] = useState<(number | string)[]>(["65%", "35%"]);
 
-  const compatibility = store.paramsCompatibility;
-  const canRenderVisual = !store.hasMetaError && !!compatibility?.compatible;
+  const showAdvancedTabs = store.isAdvancedMode;
+  // Переводы показываем и при выключенном свитче, если в шаблоне есть
+  // плейсхолдеры: значения для них правятся только здесь
+  const showTranslationsTab = showAdvancedTabs || store.hasTranslationPlaceholders;
 
-  const visualTabLabel = canRenderVisual ? (
-    t("task-template-editor.tab-visual-editor")
-  ) : (
-    <Tooltip title={t("task-template-editor.visual-editor-unavailable")} placement="bottom">
-      <span className={styles.disabledLabel}>
-        <WarningOutlined className={styles.warningIcon} />
-        {t("task-template-editor.tab-visual-editor")}
-      </span>
-    </Tooltip>
-  );
+  useEffect(() => {
+    const isHidden =
+      (activeTab === "meta" && !showAdvancedTabs) ||
+      (activeTab === "translations" && !showTranslationsTab);
 
-  const visualContent = store.hasMetaError ? (
+    if (isHidden) setActiveTab("params");
+  }, [activeTab, showAdvancedTabs, showTranslationsTab]);
+
+  // Конструкции, которые визуальный редактор не разбирает, он показывает
+  // read-only — блокировать вкладку целиком больше не нужно
+  const paramsContent = store.hasMetaError ? (
     <div className={styles.alertWrapper}>
       <Alert
         type="error"
         showIcon
         message={t("task-template-editor.schema-parse-error")}
         description={store.metaError ?? undefined}
-      />
-    </div>
-  ) : !canRenderVisual ? (
-    <div className={styles.alertWrapper}>
-      <Alert
-        type="warning"
-        showIcon
-        message={t("task-template-editor.visual-editor-unavailable")}
-        description={
-          <>
-            <div>{t("task-template-editor.visual-editor-use-full")}</div>
-            {compatibility?.unsupportedFeatures.length ? (
-              <ul className={styles.unsupportedList}>
-                {compatibility.unsupportedFeatures.map((feature, index) => (
-                  <li key={`${feature.path}-${index}`}>
-                    <code>{feature.path || "/"}</code> — {feature.description}
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-          </>
-        }
       />
     </div>
   ) : (
@@ -97,31 +75,50 @@ export const EditorTabs = observer(({ store }: EditorTabsProps) => {
 
   const items = [
     {
-      key: "visual",
-      label: visualTabLabel,
-      children: renderTabBody(visualContent),
-    },
-    {
-      key: "translations",
-      label: t("task-template-editor.tab-translations"),
-      children: renderTabBody(<TranslationsTab store={store} />),
-    },
-    {
-      key: "meta",
-      label: t("task-template-editor.tab-meta-editor"),
-      children: renderTabBody(<MetaEditorTab store={store} />),
+      key: "params",
+      label: t("task-template-editor.tab-params"),
+      children: renderTabBody(paramsContent),
     },
     {
       key: "sls",
       label: slsTabLabel,
       disabled: !store.isSlsFunction,
-      children: renderTabBody(
-        <FullTemplateEditor value={store.slsRaw} onChange={store.setSlsRaw} />
-      ),
+      children: renderTabBody(<SlsEditorTab store={store} />),
     },
+    ...(showAdvancedTabs
+      ? [
+          {
+            key: "meta",
+            label: t("task-template-editor.tab-meta-editor"),
+            children: renderTabBody(<MetaEditorTab store={store} />),
+          },
+        ]
+      : []),
+    ...(showTranslationsTab
+      ? [
+          {
+            key: "translations",
+            label: t("task-template-editor.tab-translations"),
+            children: renderTabBody(<TranslationsTab store={store} />),
+          },
+        ]
+      : []),
   ];
 
+  const advancedToggle = (
+    <label className={styles.advancedToggle}>
+      <span>{t("task-template-editor.advanced-toggle")}</span>
+      <Switch size="small" checked={store.isAdvancedMode} onChange={store.setAdvancedMode} />
+    </label>
+  );
+
   return (
-    <Tabs className={styles.tabs} activeKey={activeTab} onChange={setActiveTab} items={items} />
+    <Tabs
+      className={styles.tabs}
+      activeKey={activeTab}
+      onChange={setActiveTab}
+      items={items}
+      tabBarExtraContent={advancedToggle}
+    />
   );
 });

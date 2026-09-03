@@ -28,9 +28,15 @@ function readI18n(meta: TemplateMeta | null | undefined): Record<string, Record<
   return isPlainObject(i18n) ? (i18n as Record<string, Record<string, string>>) : {};
 }
 
-/** Подписи живут в `ui_schema`, но плейсхолдеры встречаются и в `json_schema`. */
+/**
+ * Подписи живут в `ui_schema`, но плейсхолдеры встречаются и в `json_schema`,
+ * и в собственных `title` / `description` шаблона: их читают предпросмотр формы
+ * (`toRjsfSchema`) и каталог функций, так что ключи оттуда тоже используются.
+ */
 export function collectTranslationKeys(meta: TemplateMeta | null | undefined): Set<string> {
   return new Set([
+    ...collectTemplateSchemaI18nKeys(meta?.title),
+    ...collectTemplateSchemaI18nKeys(meta?.description),
     ...collectTemplateSchemaI18nKeys(meta?.ui_schema),
     ...collectTemplateSchemaI18nKeys(meta?.json_schema),
   ]);
