@@ -37,7 +37,7 @@ export type JobModalFormValues = Pick<CreateJobRequest, "tgt" | "tgt_type" | "sa
 
 export type JobParamsSource =
   | { kind: "template"; template: TaskTemplateModel }
-  | { kind: "function"; schema: BuiltinJobSchemaMeta };
+  | { kind: "function"; schema: BuiltinJobSchemaMeta; fallbackFromTemplate?: boolean };
 
 type UseJobModalInitParams = {
   fun: string;
@@ -104,6 +104,8 @@ const loadParamsSource = async (
       if (!allowBuiltinSchemaFallback) {
         throw new Error(TEMPLATE_LOAD_FAILED_ERROR);
       }
+
+      return { kind: "function", schema: getBuiltinJobSchema(fun), fallbackFromTemplate: true };
     }
   }
 
@@ -202,6 +204,10 @@ export const useJobModalInit = ({
 
       if (requestId !== loadRequestIdRef.current) {
         return;
+      }
+
+      if (source.kind === "function" && source.fallbackFromTemplate) {
+        messageApi.warning(t("job-modal.warning-template-unavailable"));
       }
 
       setMasterList(masters);

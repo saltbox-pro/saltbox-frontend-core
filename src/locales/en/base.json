@@ -635,7 +635,8 @@
     "timeout-unit-seconds": "Sec",
     "timeout-unit-minutes": "Min",
     "timeout-unit-hours": "Hour",
-    "error-job-create": "Failed to create job"
+    "error-job-create": "Failed to create job",
+    "warning-template-unavailable": "Failed to load the job template. The form is opened with default parameters"
   },
   "terminal": {
     "executing": "Executing",

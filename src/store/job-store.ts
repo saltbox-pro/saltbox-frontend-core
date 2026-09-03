@@ -11,6 +11,15 @@ import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
 const DEFAULT_SORTING: SortingState = [{ id: "stamp", desc: true }];
 const PAGE_SIZE = 50;
 
+const isSameJob = (job: JobModel, other: JobModel): boolean =>
+  job.jid === other.jid && job.salt_master === other.salt_master;
+
+const restoreFieldsMissingInSocketJob = (currentJob: JobModel, socketJob: JobModel): JobModel => ({
+  ...socketJob,
+  template_id: socketJob.template_id ?? currentJob.template_id,
+  template_source_id: socketJob.template_source_id ?? currentJob.template_source_id,
+});
+
 type FetchStatus = "idle" | "in-process" | "refetching" | "error" | "success";
 type LoadingFetchStatus = Extract<FetchStatus, "in-process" | "refetching">;
 type LoadJobReturnDataOptions = {
@@ -228,8 +237,11 @@ export class JobStore {
     const next = [...this.jobReturns];
     let changed = false;
 
+    const currentSaltMaster = this.job?.salt_master;
+
     for (const jobReturn of incoming) {
       if (!jobReturn?.id || jobReturn.jid !== this.jid) continue;
+      if (currentSaltMaster && jobReturn.salt_master !== currentSaltMaster) continue;
       const idx = next.findIndex((r) => r.id === jobReturn.id);
       if (idx !== -1) {
         const prev = next[idx];
@@ -426,19 +438,19 @@ export class JobStore {
   };
 
   @action
-  updateJob = (job: JobModel) => {
-    if (new Date(this.job?.modified).getTime() < new Date(job?.modified).getTime()) {
-      this.job = job;
-    }
-  };
-
-  @action
   updateFromJobs = (jobs: JobModel[]) => {
     if (jobs.length === 0) return;
-    const sortedJobs = jobs.sort(
+
+    const currentJob = this.job;
+    const relevantJobs = currentJob ? jobs.filter((job) => isSameJob(job, currentJob)) : jobs;
+
+    if (relevantJobs.length === 0) return;
+
+    const latestJob = [...relevantJobs].sort(
       (a, b) => new Date(b.modified).getTime() - new Date(a.modified).getTime()
-    );
-    this.job = sortedJobs.at(0);
+    )[0];
+
+    this.job = currentJob ? restoreFieldsMissingInSocketJob(currentJob, latestJob) : latestJob;
 
     if (this.shouldLoadJobReturnsAfterStarting && this.job?.status !== JobStatus.Starting) {
       this.shouldLoadJobReturnsAfterStarting = false;

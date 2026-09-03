@@ -173,6 +173,23 @@ export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unk
   }
 };
 
+const mergeDefaultsWithValues = (
+  defaults: Record<string, unknown>,
+  values: Record<string, unknown>
+): Record<string, unknown> => {
+  const merged: Record<string, unknown> = { ...defaults };
+
+  Object.entries(values).forEach(([key, value]) => {
+    const defaultValue = merged[key];
+    merged[key] =
+      isPlainObject(defaultValue) && isPlainObject(value)
+        ? mergeDefaultsWithValues(defaultValue, value)
+        : value;
+  });
+
+  return merged;
+};
+
 export const getRepeatJsonFormValue = (
   arg: unknown[] | undefined,
   kwarg: Record<string, unknown> | undefined,
@@ -213,7 +230,7 @@ export const getRepeatJsonFormValue = (
     const existingKwargs = isPlainObject(result[kwargsKey])
       ? (result[kwargsKey] as Record<string, unknown>)
       : {};
-    result[kwargsKey] = { ...existingKwargs, ...cleanedKwargs };
+    result[kwargsKey] = mergeDefaultsWithValues(existingKwargs, cleanedKwargs);
   }
 
   return result;

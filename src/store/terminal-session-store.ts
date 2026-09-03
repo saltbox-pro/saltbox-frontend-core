@@ -283,7 +283,11 @@ export class TerminalSessionStore {
 
   @action
   private applyJobReturn = (jobReturn: JobReturnModel) => {
-    if (jobReturn.jid !== this.jid || jobReturn.minion_id !== this.minionId) {
+    if (
+      jobReturn.jid !== this.jid ||
+      jobReturn.salt_master !== this.saltMaster ||
+      jobReturn.minion_id !== this.minionId
+    ) {
       return;
     }
 
@@ -340,7 +344,7 @@ export class TerminalSessionStore {
 
   @action
   private applyJobUpdate = (job: JobModel) => {
-    if (job.jid !== this.jid) {
+    if (job.jid !== this.jid || job.salt_master !== this.saltMaster) {
       return;
     }
 

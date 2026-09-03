@@ -635,7 +635,8 @@
     "timeout-unit-seconds": "Сек",
     "timeout-unit-minutes": "Мин",
     "timeout-unit-hours": "Час",
-    "error-job-create": "Не удалось создать команду"
+    "error-job-create": "Не удалось создать команду",
+    "warning-template-unavailable": "Не удалось загрузить шаблон команды. Форма открыта с параметрами по умолчанию"
   },
   "terminal": {
     "executing": "Выполняется",
