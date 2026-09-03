@@ -21,6 +21,7 @@ export function toPickedTemplate(template: TaskTemplatePickerItem): PickedTempla
     fun: template.fun,
     name: template.name,
     isFunctionTemplate: isFunctionTemplate(template),
+    sourceName: template.repository,
   };
 }
 

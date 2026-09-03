@@ -18,6 +18,7 @@ type PickedTemplateBaseline = {
   sourceId: string;
   templateId: string;
   fun: string;
+  sourceName?: string;
   fromRepeat?: boolean;
 };
 
@@ -111,6 +112,7 @@ export const JobModalShell = ({
         sourceId: template.sourceId,
         templateId: template.templateId,
         fun: template.isFunctionTemplate ? template.fun : SLS_TEMPLATE_FUN,
+        sourceName: template.sourceName,
       };
 
       setPickedTemplate(baseline);
@@ -187,6 +189,7 @@ export const JobModalShell = ({
           initialTtlSeconds={targeting.ttlSeconds}
           fun={jobModalFun}
           sourceId={pickedTemplate?.sourceId}
+          sourceName={pickedTemplate?.sourceName}
           templateId={pickedTemplate?.templateId}
           allowBuiltinSchemaFallback={pickedTemplate?.fromRepeat}
           initialJsonFormValue={pickedTemplate ? cachedFormData : undefined}

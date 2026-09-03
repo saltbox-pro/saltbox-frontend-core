@@ -8,6 +8,7 @@ import {
   publish,
   resolvePluginLocalizedLabel,
   subscribe,
+  TemplateSchemaErrorView,
   unsubscribe,
   Modal,
   JsonForm,
@@ -70,6 +71,7 @@ interface JobModalProps {
   targetType?: CreateJobRequestTgtTypeEnum;
   fun: string;
   sourceId?: string;
+  sourceName?: string;
   templateId?: string;
   allowBuiltinSchemaFallback?: boolean;
   initialJsonFormValue?: Record<string, unknown>;
@@ -97,6 +99,7 @@ export function JobModal({
   targetType,
   fun,
   sourceId,
+  sourceName,
   templateId,
   allowBuiltinSchemaFallback,
   initialJsonFormValue,
@@ -136,6 +139,9 @@ export function JobModal({
     isFormReady,
     masterList,
     paramsSource,
+    schemaError,
+    templateTitle,
+    sourceDisplayName,
     jsonFormValue,
     setJsonFormValue,
     baselineKwarg,
@@ -149,7 +155,9 @@ export function JobModal({
   } = useJobModalInit({
     fun,
     sourceId,
+    sourceName,
     templateId,
+    language: i18n.language,
     allowBuiltinSchemaFallback,
     initialJsonFormValue,
     arg,
@@ -225,7 +233,7 @@ export function JobModal({
     (event: KeyboardEvent) => {
       if (event.repeat) return;
 
-      if (!isModalOpen) {
+      if (!isModalOpen || schemaError) {
         return;
       }
 
@@ -239,7 +247,7 @@ export function JobModal({
         form.submit();
       }
     },
-    [form, isLoading, isModalOpen]
+    [form, isLoading, isModalOpen, schemaError]
   );
 
   useDocumentEvent("keydown", keydownHandler, true);
@@ -258,7 +266,7 @@ export function JobModal({
   }, [cancelInit]);
 
   useLayoutEffect(() => {
-    if (!isModalOpen || !isFormReady) {
+    if (!isModalOpen || !isFormReady || schemaError) {
       return;
     }
 
@@ -281,6 +289,7 @@ export function JobModal({
     isAdvancedSettingsEnabled,
     jobParamsSchemaLayout.displaySchema,
     form,
+    schemaError,
   ]);
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
@@ -354,18 +363,18 @@ export function JobModal({
     closeModal("dismiss");
   };
 
-  const handleFooterDismiss = () => {
+  const handleReturnToFunctionPicker = (preserveFormState: boolean) => {
     if (isJobCreating) {
       return;
     }
-    const snapshot: JobReturnToPickerSnapshot = {
+
+    onReturnToFunctionPicker({
       salt_master: form.getFieldValue("salt_master") as string,
       tgt: form.getFieldValue("tgt") as string,
       tgt_type: form.getFieldValue("tgt_type") as CreateJobRequestTgtTypeEnum,
-      jsonFormData: jsonFormValue,
-      ttlSeconds: getTtlValue(),
-    };
-    onReturnToFunctionPicker(snapshot);
+      jsonFormData: preserveFormState ? jsonFormValue : {},
+      ttlSeconds: preserveFormState ? getTtlValue() : undefined,
+    });
     closeModal("return-to-picker");
   };
 
@@ -419,7 +428,7 @@ export function JobModal({
   };
 
   const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
-    if (handleFormFinishInProgressRef.current) return;
+    if (handleFormFinishInProgressRef.current || schemaError) return;
 
     if (!validateJsonForm()) {
       isSubmittingRef.current = false;
@@ -482,7 +491,7 @@ export function JobModal({
   };
 
   const handleCreateJobPlugin = (pluginKey: string) => {
-    if (!validateJsonForm()) {
+    if (schemaError || !validateJsonForm()) {
       return;
     }
     publish("jobs.jobmodal.create", {
@@ -533,9 +542,13 @@ export function JobModal({
         maskClosable={false}
         style={{ top: 50 }}
         footer={
-          !isFormReady ? null : (
+          !isFormReady || schemaError ? null : (
             <>
-              <Button type="default" disabled={isLoading} onClick={handleFooterDismiss}>
+              <Button
+                type="default"
+                disabled={isLoading}
+                onClick={() => handleReturnToFunctionPicker(true)}
+              >
                 {t("task-create.return-to-template-picker")}
               </Button>
 
@@ -571,6 +584,13 @@ export function JobModal({
           <div className={styles.spinnerContainer}>
             <Spin />
           </div>
+        ) : schemaError ? (
+          <TemplateSchemaErrorView
+            templateTitle={templateTitle}
+            schemaError={schemaError}
+            sourceName={sourceDisplayName ?? sourceId}
+            onReturn={() => handleReturnToFunctionPicker(false)}
+          />
         ) : (
           <>
             <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>

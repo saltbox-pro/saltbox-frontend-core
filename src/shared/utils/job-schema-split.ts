@@ -1,5 +1,5 @@
 import type { ErrorSchema, RJSFSchema } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
+import { rjsfValidator } from "@saltbox/saltbox-frontend-common";
 
 export type JsonSchemaRecord = Record<string, unknown>;
 export type UiSchemaRecord = Record<string, unknown>;
@@ -290,7 +290,7 @@ const validateFormDataWithSchema = (
   schema: JsonSchemaRecord,
   uiSchema?: UiSchemaRecord
 ) =>
-  validator.validateFormData(
+  rjsfValidator.validateFormData(
     formData,
     schema as RJSFSchema,
     undefined,

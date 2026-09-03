@@ -38,6 +38,7 @@ export const TaskCreate: FC<TaskCreateProps> = ({ isOpen, context, onClose, onTa
         kind: "template",
         sourceId: template.sourceId,
         templateId: template.templateId,
+        sourceName: template.sourceName,
       });
     },
     [handleSelectTemplate]

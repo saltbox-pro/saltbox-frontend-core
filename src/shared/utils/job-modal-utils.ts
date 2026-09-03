@@ -1,6 +1,8 @@
 import { getDefaultFormState } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
-import { JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS } from "@saltbox/saltbox-frontend-common";
+import {
+  JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
+  rjsfValidator,
+} from "@saltbox/saltbox-frontend-common";
 import type { KeyboardEvent } from "react";
 
 export type TtlUnit = "seconds" | "minutes" | "hours";
@@ -157,7 +159,7 @@ export const getDefaultJsonFormValue = (jsonSchema: unknown): Record<string, unk
 
   try {
     const defaults = getDefaultFormState(
-      validator,
+      rjsfValidator,
       jsonSchema as never,
       undefined,
       jsonSchema as never,

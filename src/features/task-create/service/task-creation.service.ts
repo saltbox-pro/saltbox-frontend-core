@@ -61,8 +61,16 @@ export class TaskCreationService {
   private filterTaskData(data: TaskData, taskTemplate?: TaskTemplateModel): TaskData | undefined {
     const { json_schema: schema } = taskTemplate ?? {};
 
-    if (!schema || isValidDataWithAjv({ data, schema })) {
+    if (!schema) {
       return data;
+    }
+
+    try {
+      if (isValidDataWithAjv({ data, schema })) {
+        return data;
+      }
+    } catch {
+      return undefined;
     }
 
     return undefined;

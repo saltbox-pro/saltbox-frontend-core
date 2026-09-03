@@ -1,11 +1,11 @@
 import { GlobalOutlined } from "@ant-design/icons";
 import { getDefaultFormState } from "@rjsf/utils";
-import validator from "@rjsf/validator-ajv8";
 import {
   Dropdown,
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
   localizeTemplateUiSchema,
+  rjsfValidator,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
@@ -86,7 +86,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       return false;
     }
     try {
-      validator.ajv.compile(toRjsfSchema(meta, language));
+      rjsfValidator.ajv.compile(toRjsfSchema(meta, language));
       return true;
     } catch {
       return false;
@@ -101,7 +101,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
     const rjsfSchema = toRjsfSchema(meta, language);
     const next = getDefaultFormState(
-      validator,
+      rjsfValidator,
       rjsfSchema,
       undefined,
       rjsfSchema,
