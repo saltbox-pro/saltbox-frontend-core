@@ -27,6 +27,7 @@ export const TemplateFileNameField = observer(({ store }: TemplateFileNameFieldP
         layout="vertical"
         colon={false}
         label={t("task-template-editor.file-name-label")}
+        extra={store.createsNewTemplate ? t("task-template-editor.file-name-hint") : undefined}
         validateStatus={store.createsNewTemplate && showError ? "error" : undefined}
         help={store.createsNewTemplate && showError && errorKey ? t(errorKey) : undefined}
       >

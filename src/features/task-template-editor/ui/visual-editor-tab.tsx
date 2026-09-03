@@ -30,7 +30,14 @@ export const VisualEditorTab = observer(({ store }: VisualEditorTabProps) => {
   return (
     <div className={styles.container}>
       <TranslationContext.Provider value={translation}>
-        <SchemaVisualEditor schema={formSchema} onChange={store.setParamsFormSchema} />
+        <SchemaVisualEditor
+          schema={formSchema}
+          onChange={store.setParamsFormSchema}
+          // Название и описание шаблона живут в шапке редактора
+          hideRootFields
+          secretNames={store.secretNames}
+          onSecretNamesChange={store.setSecretNames}
+        />
       </TranslationContext.Provider>
     </div>
   );

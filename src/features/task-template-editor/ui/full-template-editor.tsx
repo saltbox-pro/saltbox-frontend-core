@@ -1,4 +1,4 @@
-import Editor from "@monaco-editor/react";
+import Editor, { type OnMount } from "@monaco-editor/react";
 
 import styles from "./full-template-editor.module.css";
 
@@ -6,7 +6,7 @@ interface FullTemplateEditorProps {
   value: string;
   onChange?: (value: string) => void;
   readOnly?: boolean;
-  onMount?: () => void;
+  onMount?: OnMount;
   language?: string;
   /** Путь модели: по нему monaco сопоставляет JSON-схему для подсказок. */
   path?: string;
@@ -28,7 +28,7 @@ export function FullTemplateEditor({
         path={path}
         value={value}
         onChange={readOnly ? undefined : (next) => onChange?.(next ?? "")}
-        onMount={() => onMount?.()}
+        onMount={onMount}
         options={{
           minimap: { enabled: true },
           scrollBeyondLastLine: false,

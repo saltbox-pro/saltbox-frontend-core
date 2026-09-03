@@ -1,5 +1,5 @@
 import { SaveOutlined } from "@ant-design/icons";
-import { Button, Tooltip } from "antd";
+import { Button, Form, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +8,7 @@ import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./template-editor-header.module.css";
 import { TemplateFileNameField } from "./template-file-name-field";
-import { TemplateFunctionField } from "./template-function-field";
+import { TemplateDescriptionField, TemplateTitleField } from "./template-title-fields";
 
 interface TemplateEditorHeaderProps {
   store: TemplateEditorStore;
@@ -24,10 +24,19 @@ export const TemplateEditorHeader = observer(({ store, onSave }: TemplateEditorH
     <div className={styles.header}>
       <div className={styles.mainFields}>
         <TemplateFileNameField store={store} />
-        <TemplateFunctionField store={store} />
+        <TemplateTitleField store={store} />
+        <TemplateDescriptionField store={store} />
       </div>
 
-      <div className={styles.save}>
+      {/* Лейбл-распорка повторяет разметку полей, чтобы кнопка встала на линию
+          инпутов. Внутри неразрывный пробел: пустой элемент даёт строку другой
+          высоты, и кнопка уезжает вниз */}
+      <Form.Item
+        className={styles.actions}
+        layout="vertical"
+        colon={false}
+        label={<span aria-hidden="true">&nbsp;</span>}
+      >
         <Tooltip
           title={store.isLegacyTemplate ? t("task-template-editor.legacy-blocks-save") : undefined}
         >
@@ -35,20 +44,14 @@ export const TemplateEditorHeader = observer(({ store, onSave }: TemplateEditorH
             type="primary"
             icon={<SaveOutlined />}
             disabled={
-              store.hasMetaError ||
-              store.isLegacyTemplate ||
-              store.isFunctionSchemaApplying ||
-              store.pendingFunctionChange !== null ||
-              store.isFunctionDraftInvalid ||
-              isFileNameInvalid ||
-              !store.isFunValid
+              store.hasMetaError || store.isLegacyTemplate || isFileNameInvalid || !store.isFunValid
             }
             onClick={onSave}
           >
             {t("common.save")}
           </Button>
         </Tooltip>
-      </div>
+      </Form.Item>
     </div>
   );
 });

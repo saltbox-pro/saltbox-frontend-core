@@ -27,22 +27,13 @@
   padding: 16px;
 }
 
-.unsupportedList {
-  margin: 8px 0 0;
-  padding-left: 20px;
-}
-
-.unsupportedList code {
-  padding: 0 4px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.06);
-}
-
 .disabledLabel {
   color: rgba(0, 0, 0, 0.25);
 }
 
-.warningIcon {
-  margin-right: 4px;
-  color: #faad14;
+.advancedToggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }

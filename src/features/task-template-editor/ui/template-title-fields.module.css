@@ -1,7 +1,6 @@
 .field {
-  min-width: 280px;
-  max-width: 340px;
-  flex: 0 1 340px;
+  flex: 1;
+  min-width: 240px;
 }
 
 .item {

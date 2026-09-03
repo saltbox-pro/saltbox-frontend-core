@@ -9,7 +9,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Component, useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -70,6 +70,24 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
+  const formId = useId();
+
+  /**
+   * Название и описание шаблона показывает шапка редактора, в самой форме они
+   * не нужны. Описание к тому же уезжает под все поля: antd-шаблон RJSF отдаёт
+   * его в `extra` у корневого `Form.Item`.
+   */
+  const previewMeta = useMemo(() => {
+    if (!meta) return null;
+
+    const { title: _title, description: _description, ...rest } = meta;
+    const schema = rest.json_schema;
+
+    if (!schema || typeof schema === "boolean") return rest;
+
+    const { title: _schemaTitle, description: _schemaDescription, ...jsonSchema } = schema;
+    return { ...rest, json_schema: jsonSchema };
+  }, [meta]);
 
   const localizedUiSchema = useMemo(
     () => localizeTemplateUiSchema(uiSchema, meta?.i18n, language),
@@ -82,24 +100,24 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const isEmpty = useMemo(() => isFieldlessSchema(jsonSchema), [jsonSchema]);
 
   const isSchemaValid = useMemo(() => {
-    if (!meta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
+    if (!previewMeta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       return false;
     }
     try {
-      rjsfValidator.ajv.compile(toRjsfSchema(meta, language));
+      rjsfValidator.ajv.compile(toRjsfSchema(previewMeta, language));
       return true;
     } catch {
       return false;
     }
-  }, [meta, jsonSchema, isEmpty, language]);
+  }, [previewMeta, jsonSchema, isEmpty, language]);
 
   useEffect(() => {
-    if (!meta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
+    if (!previewMeta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
       setFormData({});
       return;
     }
 
-    const rjsfSchema = toRjsfSchema(meta, language);
+    const rjsfSchema = toRjsfSchema(previewMeta, language);
     const next = getDefaultFormState(
       rjsfValidator,
       rjsfSchema,
@@ -109,7 +127,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
     );
     setFormData(next ?? {});
-  }, [resetKey, meta, jsonSchema, isEmpty, language]);
+  }, [resetKey, previewMeta, jsonSchema, isEmpty, language]);
 
   if (store.hasMetaError) {
     return (
@@ -172,31 +190,37 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
         >
           <JsonForm
             key={resetKey}
-            schema={toRjsfSchema(meta!, language)}
+            id={formId}
+            schema={toRjsfSchema(previewMeta!, language)}
             uiSchema={toRjsfUiSchema(localizedUiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}
             onSubmit={() => message.success(t("task-template-editor.form-valid"))}
           >
-            <Flex gap="small" justify="flex-end" className={styles.actions}>
-              <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
-                <Button htmlType="submit" type="primary" disabled={!isSchemaValid}>
-                  {t("task-template-editor.validate")}
-                </Button>
-              </Tooltip>
-              <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
-                <Button
-                  htmlType="button"
-                  disabled={!isSchemaValid}
-                  onClick={() => setDataModalOpen(true)}
-                >
-                  {t("task-template-editor.preview-form-data")}
-                </Button>
-              </Tooltip>
-            </Flex>
+            {/* Кнопки вынесены за рамку формы, но пустые children обязательны:
+                иначе RJSF подставит свою кнопку отправки внутрь */}
+            <></>
           </JsonForm>
         </PreviewErrorBoundary>
       </div>
+
+      <Flex gap="small" justify="flex-end" className={styles.actions}>
+        <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
+          {/* Кнопка снаружи `<form>`, поэтому отправляем по id через атрибут `form` */}
+          <Button form={formId} htmlType="submit" type="primary" disabled={!isSchemaValid}>
+            {t("task-template-editor.validate")}
+          </Button>
+        </Tooltip>
+        <Tooltip title={isSchemaValid ? undefined : t("task-template-editor.schema-invalid")}>
+          <Button
+            htmlType="button"
+            disabled={!isSchemaValid}
+            onClick={() => setDataModalOpen(true)}
+          >
+            {t("task-template-editor.preview-form-data")}
+          </Button>
+        </Tooltip>
+      </Flex>
 
       <FormDataPreviewModal
         open={isDataModalOpen}

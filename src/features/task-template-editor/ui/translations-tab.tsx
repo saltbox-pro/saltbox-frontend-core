@@ -60,14 +60,33 @@ export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
     );
   }
 
+  // Пустая таблица переводов ничего не объясняет: показываем, как их завести
+  if (rows.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <Typography.Paragraph>
+            {t("task-template-editor.translations-empty-state-title")}
+          </Typography.Paragraph>
+          <Typography.Paragraph>
+            {t("task-template-editor.translations-empty-state-hint")}
+          </Typography.Paragraph>
+          <Typography.Paragraph>
+            {t("task-template-editor.translations-empty-state-example")}{" "}
+            <code className={styles.emptyStateExample}>{"{{ message_title }}"}</code>
+          </Typography.Paragraph>
+          <Typography.Paragraph type="secondary">
+            {t("task-template-editor.translations-empty-state-footer")}
+          </Typography.Paragraph>
+        </div>
+      </div>
+    );
+  }
+
   const editingRow = rows.find((row) => row.key === editingKey);
 
   return (
     <div className={styles.container}>
-      <Typography.Title level={5} className={styles.title}>
-        {t("task-template-editor.translations-title")}
-      </Typography.Title>
-
       <FastTableListed<TranslationRow>
         tableId="core-task-template-editor-translations"
         columns={columns}
