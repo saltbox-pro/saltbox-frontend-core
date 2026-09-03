@@ -7,6 +7,7 @@ import type {
 import {
   useAcceptedMastersErrorMessage,
   useAcceptedMastersWarningMessage,
+  type TemplateSchemaError,
 } from "@saltbox/saltbox-frontend-common";
 import type { FormInstance } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
@@ -26,6 +27,8 @@ import {
   totalSecondsToTtlParts,
   type TtlUnit,
 } from "saltbox-core/shared/utils/job-modal-utils";
+import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
+import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 import { apiCoreStore } from "saltbox-core/store";
 
 export type MasterOption = {
@@ -42,7 +45,9 @@ export type JobParamsSource =
 type UseJobModalInitParams = {
   fun: string;
   sourceId?: string;
+  sourceName?: string;
   templateId?: string;
+  language: string;
   allowBuiltinSchemaFallback?: boolean;
   initialJsonFormValue?: Record<string, unknown>;
   arg?: unknown[];
@@ -136,10 +141,54 @@ const getBaselineKwarg = (
 ): Record<string, unknown> | undefined =>
   kwarg ? pruneKwargsBySchema(cleanNullsFromKwargs(kwarg), getParamsJsonSchema(source)) : undefined;
 
+const getTemplateTitle = (template: TaskTemplateModel, language: string): string =>
+  getTemplateTitleText(template.title, language) || template.name || template.fun || "";
+
+const resolveSourceDisplayName = async (
+  sourceId: string | undefined,
+  sourceName: string | undefined
+): Promise<string | undefined> => {
+  if (sourceName) {
+    return sourceName;
+  }
+
+  if (!sourceId) {
+    return undefined;
+  }
+
+  try {
+    const source = await apiCoreStore.taskTemplateSourcesApi?.templateSourceGet({
+      source_id: sourceId,
+    });
+    return source?.name;
+  } catch {
+    return undefined;
+  }
+};
+
+const applyTargetFormValues = (
+  form: FormInstance<JobModalFormValues>,
+  target: string | undefined,
+  targetType: CreateJobRequestTgtTypeEnum | undefined,
+  saltMaster: string | undefined
+) => {
+  form.resetFields();
+  form.setFieldsValue({
+    tgt: target,
+    tgt_type: targetType,
+    salt_master: saltMaster,
+  });
+};
+
+const getSourceDefaultTtl = (source: JobParamsSource): unknown =>
+  source.kind === "template" ? source.template.defaults?.ttl : source.schema.defaults?.ttl;
+
 export const useJobModalInit = ({
   fun,
   sourceId,
+  sourceName,
   templateId,
+  language,
   allowBuiltinSchemaFallback,
   initialJsonFormValue,
   arg,
@@ -159,6 +208,9 @@ export const useJobModalInit = ({
   const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
   const [paramsSource, setParamsSource] = useState<JobParamsSource>();
+  const [schemaError, setSchemaError] = useState<TemplateSchemaError | null>(null);
+  const [templateTitle, setTemplateTitle] = useState("");
+  const [sourceDisplayName, setSourceDisplayName] = useState<string | undefined>(sourceName);
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
   const [baselineKwarg, setBaselineKwarg] = useState<Record<string, unknown>>();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
@@ -183,11 +235,42 @@ export const useJobModalInit = ({
   const resetLoadedData = useCallback(() => {
     setMasterList([]);
     setParamsSource(undefined);
+    setSchemaError(null);
+    setTemplateTitle("");
+    setSourceDisplayName(sourceName);
     setJsonFormValue({});
     setBaselineKwarg(undefined);
     setTtlValue(null);
     setTtlUnit("seconds");
-  }, []);
+  }, [sourceName]);
+
+  const applyReadySource = useCallback(
+    (source: JobParamsSource, masters: MasterOption[], resolvedSourceName: string | undefined) => {
+      setMasterList(masters);
+      setParamsSource(source);
+      setSchemaError(null);
+      setTemplateTitle(
+        source.kind === "template" ? getTemplateTitle(source.template, language) : ""
+      );
+      setSourceDisplayName(resolvedSourceName);
+      setJsonFormValue(getInitialJsonFormValue(source, initialJsonFormValue, arg, kwarg));
+      setBaselineKwarg(getBaselineKwarg(source, kwarg));
+      applyTtlFromInitialOrDefault(initialTtlSeconds, getSourceDefaultTtl(source));
+      applyTargetFormValues(form, target, targetType, defaultMaster || masters[0]?.value);
+    },
+    [
+      applyTtlFromInitialOrDefault,
+      arg,
+      defaultMaster,
+      form,
+      initialJsonFormValue,
+      initialTtlSeconds,
+      kwarg,
+      language,
+      target,
+      targetType,
+    ]
+  );
 
   const initializeModal = useCallback(async () => {
     const requestId = ++loadRequestIdRef.current;
@@ -195,6 +278,39 @@ export const useJobModalInit = ({
     resetLoadedData();
 
     try {
+      const isTemplateMode = Boolean(sourceId && templateId);
+
+      if (isTemplateMode) {
+        const [source, resolvedSourceName] = await Promise.all([
+          loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
+          resolveSourceDisplayName(sourceId, sourceName),
+        ]);
+
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
+
+        if (source.kind === "template") {
+          const error = getTemplateSchemaError(source.template, language);
+          if (error) {
+            setParamsSource(source);
+            setSchemaError(error);
+            setTemplateTitle(getTemplateTitle(source.template, language));
+            setSourceDisplayName(resolvedSourceName);
+            applyTargetFormValues(form, target, targetType, defaultMaster);
+            return;
+          }
+        }
+
+        const masters = await loadAcceptedMasters();
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
+
+        applyReadySource(source, masters, resolvedSourceName);
+        return;
+      }
+
       const [masters, source] = await Promise.all([
         loadAcceptedMasters(),
         loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
@@ -204,21 +320,7 @@ export const useJobModalInit = ({
         return;
       }
 
-      setMasterList(masters);
-      setParamsSource(source);
-      setJsonFormValue(getInitialJsonFormValue(source, initialJsonFormValue, arg, kwarg));
-      setBaselineKwarg(getBaselineKwarg(source, kwarg));
-      applyTtlFromInitialOrDefault(
-        initialTtlSeconds,
-        source.kind === "template" ? source.template.defaults?.ttl : source.schema.defaults?.ttl
-      );
-
-      form.resetFields();
-      form.setFieldsValue({
-        tgt: target,
-        tgt_type: targetType,
-        salt_master: defaultMaster || masters[0]?.value,
-      });
+      applyReadySource(source, masters, undefined);
     } catch (error) {
       if (requestId !== loadRequestIdRef.current) {
         return;
@@ -244,22 +346,20 @@ export const useJobModalInit = ({
       }
     }
   }, [
-    allowBuiltinSchemaFallback,
-    arg,
     acceptedMastersErrorMessage,
-    applyTtlFromInitialOrDefault,
+    allowBuiltinSchemaFallback,
+    applyReadySource,
     defaultMaster,
     form,
     fun,
-    initialJsonFormValue,
-    initialTtlSeconds,
-    kwarg,
+    language,
     messageApi,
     navigate,
     onLoadFailed,
     renderWarningMessage,
     resetLoadedData,
     sourceId,
+    sourceName,
     t,
     target,
     targetType,
@@ -275,6 +375,9 @@ export const useJobModalInit = ({
     isFormReady: !isInitialLoading && paramsSource != null,
     masterList,
     paramsSource,
+    schemaError,
+    templateTitle,
+    sourceDisplayName,
     jsonFormValue,
     setJsonFormValue,
     baselineKwarg,

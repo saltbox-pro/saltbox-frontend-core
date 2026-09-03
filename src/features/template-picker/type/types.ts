@@ -16,4 +16,5 @@ export type PickedTemplate = {
   fun: string;
   name: string;
   isFunctionTemplate: boolean;
+  sourceName?: string;
 };

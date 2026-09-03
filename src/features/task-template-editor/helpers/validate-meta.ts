@@ -1,6 +1,5 @@
-import validator from "@rjsf/validator-ajv8";
 import type { JSONSchema } from "@saltbox/react-jsonschema-form-generator";
-import { collectTemplateSchemaI18nKeys } from "@saltbox/saltbox-frontend-common";
+import { collectTemplateSchemaI18nKeys, rjsfValidator } from "@saltbox/saltbox-frontend-common";
 
 import { isValidManualSaltFunctionName } from "saltbox-core/shared/utils/salt-function-name";
 import { toRjsfSchema } from "saltbox-core/shared/utils/template-rjsf-schema";
@@ -33,7 +32,7 @@ function checkSchemaCompiles(meta: TemplateMeta, issues: MetaValidationIssue[]):
   if (!jsonSchema || typeof jsonSchema === "boolean") return;
 
   try {
-    validator.ajv.compile(toRjsfSchema(meta, "en"));
+    rjsfValidator.ajv.compile(toRjsfSchema(meta, "en"));
   } catch (error) {
     issues.push({
       severity: "error",

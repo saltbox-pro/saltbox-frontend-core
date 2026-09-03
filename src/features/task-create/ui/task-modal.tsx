@@ -1,12 +1,13 @@
 import { type TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Modal,
+  TemplateSchemaErrorView,
   isGlobalServerError,
   subscribe,
   unsubscribe,
 } from "@saltbox/saltbox-frontend-common";
-import { Flex, Tabs, message, Typography } from "antd";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Flex, Spin, Tabs, message, Typography } from "antd";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
@@ -15,6 +16,7 @@ import {
   getTemplateDescriptionText,
   getTemplateTitleText,
 } from "saltbox-core/shared/utils/template-localized-text";
+import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskCreationService } from "../service";
@@ -197,6 +199,33 @@ export function TaskModal({
     closeModal("return-to-picker");
   };
 
+  const schemaError = useMemo(() => {
+    if (!template) {
+      return null;
+    }
+
+    return getTemplateSchemaError(template, i18n.language);
+  }, [i18n.language, template]);
+
+  const templateTitle =
+    getTemplateTitleText(template?.title, i18n.language) || template?.name || template?.fun || "";
+
+  const sourceName = selection.kind === "template" ? selection.sourceName : undefined;
+
+  const handleReturnFromSchemaError = () => {
+    const defaultConfig = taskCreationService.getDefaultConfiguration();
+
+    handleReturnToTemplatePicker({
+      configuration: {
+        task_template_id: template?.id ?? "",
+        ...defaultConfig,
+        save_pillars_as_default: false,
+        data: {},
+      },
+      showAdvanced: initialDraft?.showAdvanced ?? false,
+    });
+  };
+
   const handleConfigurationSubmit = (data: TaskConfigurationFormData) => {
     setConfiguration(data);
     setActiveTabKey(TabKey.Overview);
@@ -289,29 +318,34 @@ export function TaskModal({
     } as TaskOverviewData;
   }, [configuration, context, template]);
 
-  const pluginData = useMemo<PluginRenderData>(
-    () => ({
+  const pluginData = useMemo<PluginRenderData | undefined>(() => {
+    if (!template || schemaError) {
+      return undefined;
+    }
+
+    return {
       taskCreateRequest: taskCreationService.buildCreateRequest(
         configuration as TaskConfigurationFormData,
         context,
         template
       ),
       templateDescription:
-        getTemplateDescriptionText(template?.description ?? null, i18n.language) ||
-        getTemplateTitleText(template?.title, i18n.language) ||
-        template?.name ||
+        getTemplateDescriptionText(template.description ?? null, i18n.language) ||
+        getTemplateTitleText(template.title, i18n.language) ||
+        template.name ||
         "",
       collectionName,
-    }),
-    [configuration, context, template, i18n.language, collectionName]
-  );
+    };
+  }, [collectionName, configuration, context, i18n.language, schemaError, template]);
 
   const handleSchedulerHandoff = () => {
     closeModal("scheduler-handoff");
   };
 
   const pluginButtons =
-    context.renderPluginButtons?.(pluginData, { onHandoff: handleSchedulerHandoff }) ?? [];
+    pluginData == null
+      ? []
+      : (context.renderPluginButtons?.(pluginData, { onHandoff: handleSchedulerHandoff }) ?? []);
 
   const configurationTopContent = useMemo(() => {
     const targetMode = getTaskTargetMode(context);
@@ -328,27 +362,31 @@ export function TaskModal({
     );
   }, [collectionName, context]);
 
-  const tabs = [
-    {
-      key: TabKey.Configuration,
-      label: t("task-create.configuration-tab"),
-      children: (
-        <TaskConfigurationTab
-          template={template}
-          initialData={configuration}
-          initialShowAdvanced={initialDraft?.showAdvanced}
-          topContent={configurationTopContent}
-          onSubmit={handleConfigurationSubmit}
-          onReturnToTemplatePicker={handleReturnToTemplatePicker}
-        />
-      ),
-    },
-    {
-      key: TabKey.Overview,
-      label: t("task-create.overview-tab"),
-      disabled: activeTabKey !== TabKey.Overview,
-      children:
-        template && configuration ? (
+  const tabs = useMemo(() => {
+    if (!template || schemaError) {
+      return null;
+    }
+
+    return [
+      {
+        key: TabKey.Configuration,
+        label: t("task-create.configuration-tab"),
+        children: (
+          <TaskConfigurationTab
+            template={template}
+            initialData={configuration}
+            initialShowAdvanced={initialDraft?.showAdvanced}
+            topContent={configurationTopContent}
+            onSubmit={handleConfigurationSubmit}
+            onReturnToTemplatePicker={handleReturnToTemplatePicker}
+          />
+        ),
+      },
+      {
+        key: TabKey.Overview,
+        label: t("task-create.overview-tab"),
+        disabled: activeTabKey !== TabKey.Overview,
+        children: configuration && (
           <TaskOverviewTab
             type={context.taskType}
             isLoading={isCreating}
@@ -357,9 +395,49 @@ export function TaskModal({
             onBack={handleBackToConfiguration}
             onConfirm={handleCreateTask}
           />
-        ) : null,
-    },
-  ];
+        ),
+      },
+    ];
+  }, [
+    activeTabKey,
+    configuration,
+    configurationTopContent,
+    context.taskType,
+    handleBackToConfiguration,
+    handleConfigurationSubmit,
+    handleCreateTask,
+    handleReturnToTemplatePicker,
+    initialDraft?.showAdvanced,
+    isCreating,
+    overviewData,
+    pluginButtons,
+    schemaError,
+    t,
+    template,
+  ]);
+
+  let modalContent: ReactNode;
+
+  if (!template) {
+    modalContent = (
+      <Flex align="center" justify="center" style={{ minHeight: 200 }}>
+        <Spin />
+      </Flex>
+    );
+  } else if (schemaError) {
+    modalContent = (
+      <TemplateSchemaErrorView
+        templateTitle={templateTitle}
+        schemaError={schemaError}
+        sourceName={sourceName}
+        onReturn={handleReturnFromSchemaError}
+      />
+    );
+  } else {
+    modalContent = tabs && (
+      <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
+    );
+  }
 
   return (
     <>
@@ -391,7 +469,7 @@ export function TaskModal({
         style={{ top: 50 }}
       >
         <Flex ref={contentRef} vertical>
-          <Tabs activeKey={activeTabKey} onChange={setActiveTabKey} items={tabs} />
+          {modalContent}
         </Flex>
       </Modal>
     </>
