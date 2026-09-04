@@ -93,6 +93,7 @@ export const TemplateSourceListEntry = observer(
           showActiveStatusTag={view.presentation.showActiveStatus}
           description={source.description || undefined}
           webUrl={view.webUrl}
+          branch={view.branch}
           mountedPath={view.mountedPath}
           namespace={view.namespace}
           isConnected={view.isConnected}

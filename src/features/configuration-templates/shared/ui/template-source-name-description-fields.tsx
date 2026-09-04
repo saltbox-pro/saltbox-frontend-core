@@ -3,24 +3,15 @@ import { useTranslation } from "react-i18next";
 
 import {
   TEMPLATE_SOURCE_DESCRIPTION_MAX_LENGTH,
+  TEMPLATE_SOURCE_DESCRIPTION_ROWS,
+  TEMPLATE_SOURCE_FORM_I18N_PREFIX,
   TEMPLATE_SOURCE_NAME_MAX_LENGTH,
-} from "../constants/template-source-form";
+  type TemplateSourceNameDescriptionFormValues,
+} from "../constants/template-source-name-description-form";
 
-type NameDescriptionFormValues = {
-  name: string;
-  description?: string;
-};
-
-type TemplateSourceNameDescriptionFieldsProps = {
-  i18nKeyPrefix: string;
-  descriptionRows?: number;
-};
-
-export function TemplateSourceNameDescriptionFields({
-  i18nKeyPrefix,
-  descriptionRows = 2,
-}: TemplateSourceNameDescriptionFieldsProps) {
+export function TemplateSourceNameDescriptionFields() {
   const { t } = useTranslation();
+  const i18nKeyPrefix = TEMPLATE_SOURCE_FORM_I18N_PREFIX;
 
   const nameRules: FormRule[] = [
     {
@@ -47,7 +38,7 @@ export function TemplateSourceNameDescriptionFields({
 
   return (
     <>
-      <Form.Item<NameDescriptionFormValues>
+      <Form.Item<TemplateSourceNameDescriptionFormValues>
         label={t(`${i18nKeyPrefix}.name`)}
         name="name"
         validateFirst
@@ -56,13 +47,13 @@ export function TemplateSourceNameDescriptionFields({
         <Input placeholder={t(`${i18nKeyPrefix}.name-placeholder`)} />
       </Form.Item>
 
-      <Form.Item<NameDescriptionFormValues>
+      <Form.Item<TemplateSourceNameDescriptionFormValues>
         label={t(`${i18nKeyPrefix}.description`)}
         name="description"
         rules={descriptionRules}
       >
         <Input.TextArea
-          rows={descriptionRows}
+          rows={TEMPLATE_SOURCE_DESCRIPTION_ROWS}
           placeholder={t(`${i18nKeyPrefix}.description-placeholder`)}
         />
       </Form.Item>

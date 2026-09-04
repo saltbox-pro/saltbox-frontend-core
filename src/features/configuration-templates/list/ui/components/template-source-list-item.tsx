@@ -34,6 +34,7 @@ export interface TemplateSourceListItemProps {
   currentOperation: SourceOperation | null;
   showActiveStatusTag?: boolean;
   webUrl?: string;
+  branch?: string;
   mountedPath?: string;
   namespace?: string;
   isConnected: boolean;
@@ -61,6 +62,7 @@ export function TemplateSourceListItem({
   syncedAt,
   showNotSynced,
   webUrl,
+  branch,
   mountedPath,
   namespace,
   extras,
@@ -123,6 +125,7 @@ export function TemplateSourceListItem({
         <TemplateSourceInfo
           description={description}
           webUrl={webUrl}
+          branch={branch}
           mountedPath={mountedPath}
           namespace={namespace}
           createdAt={createdAt}

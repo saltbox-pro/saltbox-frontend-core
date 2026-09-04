@@ -1,7 +1,3 @@
-export const TEMPLATE_SOURCE_FORM_I18N_PREFIX = "configuration-templates.source-form";
-
-export const TEMPLATE_SOURCE_NAME_MAX_LENGTH = 100;
-export const TEMPLATE_SOURCE_DESCRIPTION_MAX_LENGTH = 500;
 export const TEMPLATE_SOURCE_BRANCH_MAX_LENGTH = 100;
 export const TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH = 64;
 export const TEMPLATE_SOURCE_NAMESPACE_PATTERN = /^[a-z0-9_]*$/;
@@ -26,12 +22,3 @@ export const TEMPLATE_SOURCE_ARCHIVE_ACCEPT = TEMPLATE_SOURCE_ARCHIVE_ALLOWED_EX
 
 export const TEMPLATE_SOURCE_ARCHIVE_FORMATS_LABEL =
   ".zip, .tar, .tar.gz (.tgz), .tar.bz2 (.tbz2), .tar.xz (.txz)";
-
-export function trimRequired(value: string): string {
-  return value.trim();
-}
-
-export function trimOptional(value?: string): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed || undefined;
-}

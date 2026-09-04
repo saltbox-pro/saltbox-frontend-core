@@ -6,6 +6,7 @@ export type TemplateSourceStatePort = {
   actionBySourceId: Map<string, SourceActionKind>;
   isSourcePresent: (sourceId: string) => boolean;
   patchOptimisticTask: (sourceId: string, operation: SourceOperation, taskId: string) => void;
+  applySourceMetadataUpdate: (sourceId: string, updated: SourceListWithExtrasSchema) => void;
   removeSource: (sourceId: string) => void;
   reloadSource: (sourceId: string) => Promise<void>;
   getSource: (sourceId: string) => SourceListWithExtrasSchema | undefined;

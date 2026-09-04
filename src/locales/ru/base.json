@@ -1101,6 +1101,13 @@
       "add-archive-source": "Добавить источник из архива"
     },
     "source-form": {
+      "name": "Название",
+      "name-required": "Укажите название",
+      "name-max": "Не более {{max}} символов",
+      "name-placeholder": "Введите название",
+      "description": "Описание",
+      "description-max": "Не более {{max}} символов",
+      "description-placeholder": "Введите описание",
       "namespace": "Пространство имён",
       "namespace-placeholder": "my_namespace",
       "namespace-required": "Укажите пространство имён",
@@ -1110,25 +1117,11 @@
     },
     "local-source-modal": {
       "title": "Добавление локального источника",
-      "name": "Название",
-      "name-required": "Укажите название",
-      "name-max": "Не более {{max}} символов",
-      "name-placeholder": "Введите название",
-      "description": "Описание",
-      "description-max": "Не более {{max}} символов",
-      "description-placeholder": "Введите описание",
       "create-success": "Источник \"{{name}}\" успешно добавлен",
       "create-error": "Не удалось создать источник"
     },
     "git-source-modal": {
       "title": "Добавление сетевого источника",
-      "name": "Название",
-      "name-required": "Укажите название",
-      "name-max": "Не более {{max}} символов",
-      "name-placeholder": "Введите название",
-      "description": "Описание",
-      "description-max": "Не более {{max}} символов",
-      "description-placeholder": "Введите описание",
       "repo-url": "URL репозитория",
       "repo-url-required": "Укажите URL репозитория",
       "repo-url-invalid": "Укажите корректный URL (http или https)",
@@ -1160,13 +1153,6 @@
     },
     "archive-source-modal": {
       "title": "Добавление источника из архива",
-      "name": "Название",
-      "name-required": "Укажите название",
-      "name-max": "Не более {{max}} символов",
-      "name-placeholder": "Введите название",
-      "description": "Описание",
-      "description-max": "Не более {{max}} символов",
-      "description-placeholder": "Введите описание",
       "file": "Архив",
       "file-button": "Выбрать файл",
       "file-drag-title": "Нажмите или перетащите файл в эту область",
@@ -1179,6 +1165,7 @@
       "create-error": "Не удалось создать источник"
     },
     "source": {
+      "edit-title": "Редактирование источника",
       "type": {
         "local_bundle": "Локальный",
         "git_repo": "Git",
@@ -1186,6 +1173,7 @@
         "mounted_repo": "Смонтированный"
       },
       "mounted-path": "Путь монтирования",
+      "branch": "Ветка",
       "status": {
         "active": "Активен",
         "not-synced": "Не синхронизирован",
@@ -1203,7 +1191,10 @@
         "unplug-success": "Источник \"{{name}}\" успешно отключён",
         "delete-error": "Не удалось удалить источник",
         "delete-success": "Источник \"{{name}}\" успешно удалён",
-        "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует"
+        "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует",
+        "update-error": "Не удалось сохранить данные источника",
+        "duplicate-name-error": "Источник с таким названием уже существует",
+        "update-success": "Данные источника \"{{name}}\" сохранены"
       },
       "broken-operation": "Ошибка при {{operation}}",
       "operation-broken": {

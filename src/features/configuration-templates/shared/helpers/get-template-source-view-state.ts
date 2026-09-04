@@ -9,6 +9,7 @@ import {
   isUnplugInProgress,
 } from "./source-action-progress";
 import {
+  getSourceBranch,
   getSourceMountedPath,
   getSourceNamespaceLabel,
   getSourcePresentation,
@@ -42,6 +43,7 @@ export function getTemplateSourceViewState(
     isConnected: (presentation.isConnected || syncInProgress) && !isActuallyPlugging,
     forceDimmed: (presentation.isDimmed && !syncInProgress) || isActuallyPlugging,
     webUrl: getSourceWebUrl(source),
+    branch: getSourceBranch(source),
     mountedPath: getSourceMountedPath(source),
     namespace: getSourceNamespaceLabel(source),
     showNotSynced:

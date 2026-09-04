@@ -5,25 +5,27 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
-import { getSourceCreateErrorMessage } from "../../shared/helpers/get-source-create-error-message";
 import {
   TEMPLATE_SOURCE_FORM_I18N_PREFIX,
-  TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
-  TEMPLATE_SOURCE_NAMESPACE_PATTERN,
+  type TemplateSourceNameDescriptionFormValues,
   trimOptional,
   trimRequired,
+} from "../../shared/constants/template-source-name-description-form";
+import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
+import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
+import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
+import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
+import {
+  TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
+  TEMPLATE_SOURCE_NAMESPACE_PATTERN,
 } from "../constants/template-source-form";
 
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
-import { TemplateSourceCreateErrorAlert } from "./template-source-create-error-alert";
-import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
 const FORM_ID = "local-source-form";
 const I18N_PREFIX = "configuration-templates.local-source-modal";
 
-type LocalSourceFormValues = {
-  name: string;
-  description?: string;
+type LocalSourceFormValues = TemplateSourceNameDescriptionFormValues & {
   namespace: string;
 };
 
@@ -96,7 +98,11 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      setApiError(await getSourceCreateErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
+      if (await trySetSourceDuplicateNameFieldError(form, reason, t)) {
+        return;
+      }
+
+      setApiError(await getSourceFormErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +135,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
           onValuesChange={() => setApiError(null)}
           autoComplete="off"
         >
-          <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} descriptionRows={3} />
+          <TemplateSourceNameDescriptionFields />
 
           <Form.Item<LocalSourceFormValues>
             label={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace`)}
@@ -142,7 +148,7 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
             <Input placeholder={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-placeholder`)} />
           </Form.Item>
 
-          {apiError && <TemplateSourceCreateErrorAlert message={apiError} />}
+          {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
         </Form>
       </Modal>
     </>

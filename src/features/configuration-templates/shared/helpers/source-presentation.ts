@@ -53,6 +53,14 @@ export function getSourceWebUrl(source: TemplateSourcePublicSchema): string | un
   return String(source.repo_url);
 }
 
+export function getSourceBranch(source: TemplateSourcePublicSchema): string | undefined {
+  if (!getSourceWebUrl(source) || !source.branch?.trim()) {
+    return undefined;
+  }
+
+  return source.branch.trim();
+}
+
 export function getSourceMountedPath(source: TemplateSourcePublicSchema): string | undefined {
   if (source.source_type !== SourceType.MountedRepo || !source.repo_mounted_path) {
     return undefined;

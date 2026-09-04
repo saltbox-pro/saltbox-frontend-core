@@ -2,6 +2,7 @@ import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-clien
 import { Space } from "antd";
 
 import {
+  getSourceBranch,
   getSourceMountedPath,
   getSourceNamespaceLabel,
   getSourceWebUrl,
@@ -26,6 +27,7 @@ export function TemplateSourceContent({
       <TemplateSourceInfo
         description={source.description}
         webUrl={getSourceWebUrl(source)}
+        branch={getSourceBranch(source)}
         mountedPath={getSourceMountedPath(source)}
         namespace={getSourceNamespaceLabel(source)}
         createdAt={source.created}

@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { ConnectSourceButton } from "../../connect/ui/connect-source-button";
 import { SourceOperationSpinner } from "../../connect/ui/source-operation-spinner";
 import { DisconnectSourceButton } from "../../disconnect/ui/disconnect-source-button";
+import { EditSourceButton } from "../../edit/ui/edit-source-button";
 import { DeleteSourceButton } from "../../remove/ui/delete-source-button";
 import { SyncSourceButton } from "../../sync/ui/sync-source-button";
 import {
@@ -56,6 +57,7 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
   const syncDisabled =
     deleteInProgress || unplugInProgress || isActuallyPlugging || isActuallyUnplugging;
   const unplugDisabled = deleteInProgress || syncInProgress || isActuallyPlugging;
+  const editDisabled = deleteInProgress;
 
   const showOperationSpinner = shouldShowSourceOperationSpinner({
     source,
@@ -99,6 +101,8 @@ export const TemplateSourceActionsToolbar = observer(function TemplateSourceActi
         canUnplug={canUnplug}
         disabled={unplugDisabled}
       />
+
+      <EditSourceButton source={source} actions={actions} disabled={editDisabled} />
 
       {showDelete && <DeleteSourceButton source={source} actions={actions} />}
     </Flex>

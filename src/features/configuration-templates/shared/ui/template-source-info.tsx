@@ -12,6 +12,7 @@ import { TemplateSourceMountedPath, TemplateSourceNamespace } from "./template-s
 export type TemplateSourceInfoProps = {
   description?: string | null;
   webUrl?: string;
+  branch?: string;
   mountedPath?: string;
   namespace?: string;
   createdAt?: string;
@@ -24,6 +25,7 @@ export type TemplateSourceInfoProps = {
 export function TemplateSourceInfo({
   description,
   webUrl,
+  branch,
   mountedPath,
   namespace,
   createdAt,
@@ -57,7 +59,7 @@ export function TemplateSourceInfo({
 
         {!!webUrl && (
           <TemplateSourceDimmed dimmed={dimmed}>
-            <TemplateSourceLink href={webUrl} />
+            <TemplateSourceLink href={webUrl} branch={branch} />
           </TemplateSourceDimmed>
         )}
 

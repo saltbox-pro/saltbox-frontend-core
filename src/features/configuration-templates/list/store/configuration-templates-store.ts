@@ -25,6 +25,7 @@ import type { RefreshSourceResult } from "../../shared/types/refresh-source-resu
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { SourceActionKind, SourceActionsPort } from "../../shared/types/source-action";
 import type { TemplateSourceStatePort } from "../../shared/types/template-source-state-port";
+import type { UpdateTemplateSourcePayload } from "../../shared/types/update-template-source";
 import { resolveGitlabSyncErrorKind, type GitlabSyncErrorKind } from "../helpers/gitlab-sync-error";
 import {
   resolveMountedSyncErrorKind,
@@ -129,6 +130,14 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       isSourcePresent: (sourceId) => this.sources.some((item) => item.id === sourceId),
       patchOptimisticTask: (sourceId, operation, taskId) =>
         this.patchOptimisticTask(sourceId, operation, taskId),
+      applySourceMetadataUpdate: (sourceId, updated) => {
+        const index = this.sources.findIndex((item) => item.id === sourceId);
+        if (index === -1) {
+          return;
+        }
+
+        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
+      },
       removeSource: (sourceId) => this.removeSourceFromList(sourceId),
       reloadSource: (sourceId) => this.reloadSource(sourceId),
       getSource: (sourceId) => this.sources.find((item) => item.id === sourceId),
@@ -440,6 +449,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   syncSource = (sourceId: string): Promise<void> => this.runtime.syncSource(sourceId);
 
   unplugSource = (sourceId: string): Promise<void> => this.runtime.unplugSource(sourceId);
+
+  updateSource = (sourceId: string, payload: UpdateTemplateSourcePayload) =>
+    this.runtime.updateSource(sourceId, payload);
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);

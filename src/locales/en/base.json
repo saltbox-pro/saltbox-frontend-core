@@ -1101,6 +1101,13 @@
       "add-archive-source": "Add source from archive"
     },
     "source-form": {
+      "name": "Name",
+      "name-required": "Name is required",
+      "name-max": "Maximum {{max}} characters",
+      "name-placeholder": "Enter name",
+      "description": "Description",
+      "description-max": "Maximum {{max}} characters",
+      "description-placeholder": "Enter description",
       "namespace": "Namespace",
       "namespace-placeholder": "my_namespace",
       "namespace-required": "Namespace is required",
@@ -1110,25 +1117,11 @@
     },
     "local-source-modal": {
       "title": "Add local source",
-      "name": "Name",
-      "name-required": "Name is required",
-      "name-max": "Maximum {{max}} characters",
-      "name-placeholder": "Enter name",
-      "description": "Description",
-      "description-max": "Maximum {{max}} characters",
-      "description-placeholder": "Enter description",
       "create-success": "Source \"{{name}}\" has been added",
       "create-error": "Failed to create source"
     },
     "git-source-modal": {
       "title": "Add network source",
-      "name": "Name",
-      "name-required": "Name is required",
-      "name-max": "Maximum {{max}} characters",
-      "name-placeholder": "Enter name",
-      "description": "Description",
-      "description-max": "Maximum {{max}} characters",
-      "description-placeholder": "Enter description",
       "repo-url": "Repository URL",
       "repo-url-required": "Repository URL is required",
       "repo-url-invalid": "Enter a valid URL (http or https)",
@@ -1160,13 +1153,6 @@
     },
     "archive-source-modal": {
       "title": "Add archive source",
-      "name": "Name",
-      "name-required": "Name is required",
-      "name-max": "Maximum {{max}} characters",
-      "name-placeholder": "Enter name",
-      "description": "Description",
-      "description-max": "Maximum {{max}} characters",
-      "description-placeholder": "Enter description",
       "file": "Archive",
       "file-button": "Choose file",
       "file-drag-title": "Click or drag file to this area",
@@ -1178,6 +1164,7 @@
       "create-error": "Failed to create source"
     },
     "source": {
+      "edit-title": "Edit source",
       "type": {
         "local_bundle": "Local",
         "git_repo": "Git",
@@ -1185,6 +1172,7 @@
         "mounted_repo": "Mounted"
       },
       "mounted-path": "Mount path",
+      "branch": "Branch",
       "status": {
         "active": "Active",
         "not-synced": "Not synced",
@@ -1202,7 +1190,10 @@
         "unplug-success": "Source \"{{name}}\" has been disconnected",
         "delete-error": "Failed to delete source",
         "delete-success": "Source \"{{name}}\" has been deleted",
-        "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist"
+        "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist",
+        "update-error": "Failed to save source details",
+        "duplicate-name-error": "A source with this name already exists",
+        "update-success": "Source \"{{name}}\" details saved"
       },
       "broken-operation": "Error during {{operation}}",
       "operation-broken": {

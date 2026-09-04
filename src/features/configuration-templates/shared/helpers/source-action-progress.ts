@@ -39,7 +39,12 @@ export function isRemoveInProgress(source: SourceOperationProgressSnapshot): boo
 }
 
 export function isPlugInProgress({ actionKind, source }: IsPlugInProgressParams): boolean {
-  if (actionKind === "sync" || actionKind === "unplug" || actionKind === "delete_template") {
+  if (
+    actionKind === "sync" ||
+    actionKind === "unplug" ||
+    actionKind === "delete_template" ||
+    actionKind === "update"
+  ) {
     return false;
   }
   if (actionKind === "plug") return true;
@@ -101,6 +106,10 @@ export function isUnplugInProgress({ actionKind, source }: IsUnplugInProgressPar
   if (!source) return false;
 
   return isSourceOperationInProgress(source) && isUnplugSourceOperation(source.current_operation);
+}
+
+export function isUpdateInProgress({ actionKind }: SourceActionContext): boolean {
+  return actionKind === "update";
 }
 
 export function isPlugSourceOperation(operation: SourceOperation | null): boolean {

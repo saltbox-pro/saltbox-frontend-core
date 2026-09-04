@@ -12,9 +12,11 @@ import { deleteSourceTemplateWithPolling } from "../../templates/service/delete-
 import { getSourceActionContext } from "../helpers/source-action-progress";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";
 import type { TemplateSourceStatePort } from "../types/template-source-state-port";
+import type { UpdateTemplateSourcePayload } from "../types/update-template-source";
 
 import { SourceBgTaskPollingService } from "./source-bg-task-polling.service";
 import { TemplateSourceActionsService } from "./template-source-actions.service";
+import { updateTemplateSource } from "./update-template-source.service";
 
 export class TemplateSourceRuntime {
   private readonly bgTaskPolling: SourceBgTaskPollingService;
@@ -63,6 +65,24 @@ export class TemplateSourceRuntime {
   syncSource = (sourceId: string): Promise<void> => this.sourceActions.syncSource(sourceId);
 
   unplugSource = (sourceId: string): Promise<void> => this.sourceActions.unplugSource(sourceId);
+
+  updateSource = async (sourceId: string, payload: UpdateTemplateSourcePayload): Promise<void> => {
+    runInAction(() => {
+      this.port.actionBySourceId.set(sourceId, "update");
+    });
+
+    try {
+      const updated = await updateTemplateSource(sourceId, payload);
+
+      runInAction(() => {
+        this.port.applySourceMetadataUpdate(sourceId, updated);
+      });
+    } finally {
+      runInAction(() => {
+        this.port.actionBySourceId.delete(sourceId);
+      });
+    }
+  };
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);

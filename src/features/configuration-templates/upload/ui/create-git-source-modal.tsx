@@ -5,24 +5,26 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConfigurationTemplatesStore } from "../../list/store/configuration-templates-store";
-import { getSourceCreateErrorMessage } from "../../shared/helpers/get-source-create-error-message";
+import {
+  type TemplateSourceNameDescriptionFormValues,
+  trimOptional,
+  trimRequired,
+} from "../../shared/constants/template-source-name-description-form";
+import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
+import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
+import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
+import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
 import {
   TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
   TEMPLATE_SOURCE_REPO_URL_PATTERN,
-  trimOptional,
-  trimRequired,
 } from "../constants/template-source-form";
 
 import { CreateTemplateSourceModalFooter } from "./create-template-source-modal-footer";
-import { TemplateSourceCreateErrorAlert } from "./template-source-create-error-alert";
-import { TemplateSourceNameDescriptionFields } from "./template-source-name-description-fields";
 
 const FORM_ID = "git-source-form";
 const I18N_PREFIX = "configuration-templates.git-source-modal";
 
-type GitSourceFormValues = {
-  name: string;
-  description?: string;
+type GitSourceFormValues = TemplateSourceNameDescriptionFormValues & {
   repo_url: string;
   repo_user?: string;
   repo_pass?: string;
@@ -83,7 +85,11 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
 
       if (isGlobalServerError(reason)) return;
 
-      setApiError(await getSourceCreateErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
+      if (await trySetSourceDuplicateNameFieldError(form, reason, t)) {
+        return;
+      }
+
+      setApiError(await getSourceFormErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +122,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
           onValuesChange={() => setApiError(null)}
           autoComplete="off"
         >
-          <TemplateSourceNameDescriptionFields i18nKeyPrefix={I18N_PREFIX} />
+          <TemplateSourceNameDescriptionFields />
 
           <Form.Item<GitSourceFormValues>
             label={t(`${I18N_PREFIX}.repo-url`)}
@@ -178,7 +184,7 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
             <Input placeholder={t(`${I18N_PREFIX}.branch-placeholder`)} />
           </Form.Item>
 
-          {apiError && <TemplateSourceCreateErrorAlert message={apiError} />}
+          {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
         </Form>
       </Modal>
     </>
