@@ -14,9 +14,7 @@ export const CollectionFilterQueryBlock = observer(function CollectionFilterQuer
 }: CollectionFilterQueryBlockProps) {
   return (
     <div className={styles.content}>
-      <strong className={styles.title}>{title}</strong>
-
-      <SaltBoxReadonlyQueryBuilder filterStore={filterStore} />
+      <SaltBoxReadonlyQueryBuilder filterStore={filterStore} title={title} showCopyFilterButton />
     </div>
   );
 });
