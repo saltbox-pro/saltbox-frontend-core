@@ -19,7 +19,7 @@ export const MinionsQueryBuilder = observer(
         filterStore={props.filterStore}
         onSearchButtonClick={props.onSearch}
         onResetButtonClick={props.onReset}
-        additionalButtons={null}
+        showCopyFilterButton
         controlElements={{
           valueEditor: CoreMinionValueEditor(props.slug),
           valueSelector: SaltBoxMinionValueSelector,

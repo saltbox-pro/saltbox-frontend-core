@@ -73,7 +73,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@saltbox/react-jsonschema-form-generator": "^0.1.10",
     "@saltbox/saltbox-core-api-client": "^0.3.0-4ecc2677da1924323b453823550fe8acd8208fe0",
-    "@saltbox/saltbox-frontend-common": "^0.4.19",
+    "@saltbox/saltbox-frontend-common": "^0.4.20",
     "antd": "5.26.0",
     "clsx": "^2.1.1",
     "i18next": "^25.2.1",
