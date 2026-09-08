@@ -12,8 +12,9 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Input, message, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { formatQuery } from "react-querybuilder";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
@@ -41,10 +42,7 @@ const CollectionEditPage = observer(() => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [collectionStore] = useState(new CollectionStore());
-  const filterStore = useMemo(
-    () => new MinionFilterStore(`collectionFilter:${slug ?? "root"}`),
-    [slug]
-  );
+  const [filterStore] = useState(() => new MinionFilterStore());
   const [minionsStore] = useState(new MinionsStore(undefined, undefined));
   const [newTitle, setNewTitle] = useState("");
   const [originalTitle, setOriginalTitle] = useState("");
@@ -164,6 +162,7 @@ const CollectionEditPage = observer(() => {
       return;
     }
     filterStore.initializeByQuery(collectionQuery);
+    setOriginalQuery(formatQuery(filterStore.currentFilters, "json_without_ids"));
     minionsStore.syncAndLoad(minionsCollectionSlug, filterStore.searchMongoDBQuery);
   }, [minionsCollectionSlug, serverQueryKey, collectionStore, filterStore, minionsStore]);
 
@@ -172,15 +171,12 @@ const CollectionEditPage = observer(() => {
       setNewTitle(collectionStore.collection.title);
       setOriginalTitle(collectionStore.collection.title);
     }
-    if (collectionStore.collection?.query) {
-      setOriginalQuery(JSON.stringify(collectionStore.collection.query));
-    }
-  }, [collectionStore.collection?.title, collectionStore.collection?.query]);
+  }, [collectionStore.collection?.title]);
 
   const handleSaveButton = async () => {
     try {
       const titleDirty = newTitle !== originalTitle;
-      const currentQueryString = JSON.stringify(filterStore.currentFilters);
+      const currentQueryString = formatQuery(filterStore.currentFilters, "json_without_ids");
       const queryDirty = currentQueryString !== originalQuery;
 
       if (queryDirty) {
@@ -203,7 +199,8 @@ const CollectionEditPage = observer(() => {
   };
 
   const isSaveDisabled =
-    (newTitle === originalTitle && JSON.stringify(filterStore.currentFilters) === originalQuery) ||
+    (newTitle === originalTitle &&
+      formatQuery(filterStore.currentFilters, "json_without_ids") === originalQuery) ||
     newTitle.trim() === "";
 
   return (
