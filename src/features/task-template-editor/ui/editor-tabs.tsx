@@ -79,12 +79,6 @@ export const EditorTabs = observer(({ store }: EditorTabsProps) => {
       label: t("task-template-editor.tab-params"),
       children: renderTabBody(paramsContent),
     },
-    {
-      key: "sls",
-      label: slsTabLabel,
-      disabled: !store.isSlsFunction,
-      children: renderTabBody(<SlsEditorTab store={store} />),
-    },
     ...(showAdvancedTabs
       ? [
           {
@@ -103,12 +97,18 @@ export const EditorTabs = observer(({ store }: EditorTabsProps) => {
           },
         ]
       : []),
+    {
+      key: "sls",
+      label: slsTabLabel,
+      disabled: !store.isSlsFunction,
+      children: renderTabBody(<SlsEditorTab store={store} />),
+    },
   ];
 
   const advancedToggle = (
     <label className={styles.advancedToggle}>
       <span>{t("task-template-editor.advanced-toggle")}</span>
-      <Switch size="small" checked={store.isAdvancedMode} onChange={store.setAdvancedMode} />
+      <Switch checked={store.isAdvancedMode} onChange={store.setAdvancedMode} />
     </label>
   );
 

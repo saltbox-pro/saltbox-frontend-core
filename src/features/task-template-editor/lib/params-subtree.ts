@@ -32,7 +32,7 @@ function getJsonSchemaAtPath(
 }
 
 /** Достраивает недостающие объекты-обёртки по пути и делает их обязательными. */
-function setJsonSchemaAtPath(
+export function setJsonSchemaAtPath(
   schema: JSONSchema | undefined,
   path: string[],
   value: JSONSchema

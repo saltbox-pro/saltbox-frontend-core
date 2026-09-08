@@ -38,6 +38,13 @@ const metaWithParams = (): TemplateMeta => ({
 const paramsUiSchema = (meta: TemplateMeta) =>
   (meta.ui_schema as Record<string, Record<string, Record<string, unknown>>>).kwargs.pillar;
 
+const getProperties = (schema: unknown): Record<string, Record<string, unknown>> =>
+  (schema as { properties: Record<string, Record<string, unknown>> }).properties;
+
+/** Свойства поддерева параметров в `json_schema`. */
+const paramsJsonSchema = (meta: TemplateMeta) =>
+  getProperties(getProperties(getProperties(meta.json_schema).kwargs).pillar);
+
 describe("secret pillars", () => {
   it("читает и короткое имя, и легаси-путь", () => {
     const short: TemplateMeta = { ...metaWithParams(), secret_pillars: ["token"] };
@@ -139,6 +146,41 @@ describe("secret pillars", () => {
     const meta = metaWithParams();
 
     expect(syncSecretWidgets(meta).ui_schema).toEqual(meta.ui_schema);
+  });
+
+  describe("format в json_schema", () => {
+    it("проставляет format секретному параметру", () => {
+      const next = writeSecretNames(metaWithParams(), ["token"]);
+
+      expect(paramsJsonSchema(next).token).toEqual({ type: "string", format: "password" });
+      expect(paramsJsonSchema(next).message).toEqual({ type: "string" });
+    });
+
+    it("снимает format вместе с секретностью", () => {
+      const secret = writeSecretNames(metaWithParams(), ["token"]);
+      const next = writeSecretNames(secret, []);
+
+      expect(paramsJsonSchema(next).token).toEqual({ type: "string" });
+    });
+
+    it("не затирает чужой format у несекретного параметра", () => {
+      const meta = metaWithParams();
+      paramsJsonSchema(meta).message = { type: "string", format: "email" };
+
+      const next = writeSecretNames(meta, ["token"]);
+
+      expect(paramsJsonSchema(next).message).toEqual({ type: "string", format: "email" });
+    });
+
+    it("не ставит format нестроковому параметру", () => {
+      const meta = metaWithParams();
+      paramsJsonSchema(meta).token = { type: "number" };
+
+      const next = writeSecretNames(meta, ["token"]);
+
+      expect(next.secret_pillars).toEqual(["token"]);
+      expect(paramsJsonSchema(next).token).toEqual({ type: "number" });
+    });
   });
 
   describe("нормализация при открытии шаблона", () => {
