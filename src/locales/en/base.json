@@ -725,6 +725,7 @@
     "error-deleting-collection": "Error deleting collection",
     "error-loading-tree": "Failed to load collections tree",
     "apply-search-before-save": "Please apply search to confirm filters before saving",
+    "filter-schema-unavailable": "Filter schema is not loaded, saving filters is unavailable. Please reload the page",
     "open-collection-page": "Open collection page",
     "parent-collection": "Parent collection",
     "parent-collection-required": "Parent collection is required",

@@ -132,6 +132,9 @@ const CollectionEditPage = observer(() => {
 
   const minionsCollectionSlug = collectionStore.collection?.parent_slug || slug || "";
   const serverQueryKey = JSON.stringify(collectionStore.collection?.query ?? null);
+  const searchQueryKey = JSON.stringify(filterStore.searchMongoDBQuery);
+  const isCollectionLoaded = Boolean(collectionStore.collection?.query);
+  const shouldWaitForFilterSchema = filterStore.activeFiltersCount > 0 && filterStore.isLoading;
 
   const applySearchFilters = useCallback(() => {
     if (!minionsCollectionSlug) {
@@ -163,8 +166,24 @@ const CollectionEditPage = observer(() => {
     }
     filterStore.initializeByQuery(collectionQuery);
     setOriginalQuery(formatQuery(filterStore.currentFilters, "json_without_ids"));
+  }, [minionsCollectionSlug, serverQueryKey, collectionStore, filterStore]);
+
+  useLayoutEffect(() => {
+    if (!isCollectionLoaded || !minionsCollectionSlug) {
+      return;
+    }
+    if (filterStore.activeFiltersCount > 0 && filterStore.isLoading) {
+      return;
+    }
     minionsStore.syncAndLoad(minionsCollectionSlug, filterStore.searchMongoDBQuery);
-  }, [minionsCollectionSlug, serverQueryKey, collectionStore, filterStore, minionsStore]);
+  }, [
+    isCollectionLoaded,
+    minionsCollectionSlug,
+    searchQueryKey,
+    shouldWaitForFilterSchema,
+    filterStore,
+    minionsStore,
+  ]);
 
   useEffect(() => {
     if (collectionStore.collection?.title) {
@@ -198,10 +217,14 @@ const CollectionEditPage = observer(() => {
     }
   };
 
+  const isFilterSchemaMissing =
+    filterStore.filterSchema.length === 0 && filterStore.currentFilters.rules.length > 0;
+
   const isSaveDisabled =
     (newTitle === originalTitle &&
       formatQuery(filterStore.currentFilters, "json_without_ids") === originalQuery) ||
-    newTitle.trim() === "";
+    newTitle.trim() === "" ||
+    isFilterSchemaMissing;
 
   return (
     <>
@@ -238,10 +261,14 @@ const CollectionEditPage = observer(() => {
             <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
               {t("minions.save")}
             </Button>
-            {filterStore.isSearchEnabled && (
+            {(isFilterSchemaMissing || filterStore.isSearchEnabled) && (
               <Popover
                 style={{ width: 420 }}
-                content={t("collection.apply-search-before-save")}
+                content={
+                  isFilterSchemaMissing
+                    ? t("collection.filter-schema-unavailable")
+                    : t("collection.apply-search-before-save")
+                }
                 trigger="hover"
               >
                 <QuestionCircleOutlined />
