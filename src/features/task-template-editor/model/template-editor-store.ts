@@ -5,6 +5,7 @@ import {
   type VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
 import type { TaskTemplateMetaSchemaInput } from "@saltbox/saltbox-core-api-client";
+import dayjs from "dayjs";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { connectedLocalSourcesQuery } from "saltbox-core/features/configuration-templates/shared/helpers/connected-local-sources-query";
@@ -21,6 +22,7 @@ import { apiCoreStore, i18nStore } from "saltbox-core/store";
 
 import { extractCreatedTemplateId } from "../helpers/extract-created-template-id";
 import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
+import { deriveTemplateFileName } from "../lib/derive-file-name";
 import { hasLegacySchemaBlock, migrateLegacyTemplate } from "../lib/legacy-template";
 import { migrateMetaFormat } from "../lib/migrate-meta-format";
 import { getParamsCompatibility } from "../lib/params-compatibility";
@@ -44,6 +46,9 @@ import {
 } from "../lib/template-meta";
 
 export type TemplateEditorMode = "create" | "edit" | "duplicate";
+
+/** Описание по умолчанию — момент создания шаблона: `08.09.2026 14:32`. */
+const DEFAULT_DESCRIPTION_FORMAT = "DD.MM.YYYY HH:mm";
 
 export interface TemplateEditorParams {
   mode: TemplateEditorMode;
@@ -76,7 +81,8 @@ export class TemplateEditorStore {
   readonly sourceId: string;
   readonly templateId?: string;
 
-  fileName = "";
+  /** Имя файла, заданное руками или пришедшее с бекенда: см. геттер `fileName`. */
+  fileNameDraft = "";
   slsRaw = "";
   metaText: string;
   /** Был ли у шаблона .sls при загрузке: сохранение без `sls_raw` его удаляет. */
@@ -175,8 +181,28 @@ export class TemplateEditorStore {
   };
 
   setFileName = (value: string) => {
-    this.fileName = value;
+    this.fileNameDraft = value;
   };
+
+  /**
+   * В базовом режиме имя файла не поле, а производная от названия шаблона:
+   * инженеру незачем придумывать его отдельно. В расширенном — то, что он ввёл
+   * сам, а у существующего шаблона — то, что пришло с бекенда.
+   */
+  get fileName(): string {
+    if (this.mode === "edit") return this.fileNameDraft;
+
+    return this.isAdvancedMode ? this.fileNameDraft : deriveTemplateFileName(this.templateTitle);
+  }
+
+  get isFileNameValid(): boolean {
+    return isValidTemplateFileName(this.fileName);
+  }
+
+  /** Без названия шаблон не найти в списке — сохранять такой не даём. */
+  get isTitleValid(): boolean {
+    return this.templateTitle.trim().length > 0;
+  }
 
   setSlsRaw = (value: string) => {
     this.slsRaw = value;
@@ -191,6 +217,12 @@ export class TemplateEditorStore {
   };
 
   setAdvancedMode = (value: boolean) => {
+    // Поле открывается с тем именем, которое подставлялось автоматически;
+    // дальше название и имя файла живут независимо друг от друга
+    if (value && this.createsNewTemplate) {
+      this.fileNameDraft = this.fileName;
+    }
+
     this.isAdvancedMode = value;
   };
 
@@ -324,12 +356,12 @@ export class TemplateEditorStore {
         this.hadSlsContent = Boolean(template?.sls_content?.trim());
 
         if (this.mode === "edit") {
-          this.fileName = template?.name ?? "";
+          this.fileNameDraft = template?.name ?? "";
         }
 
         // Открываем расширенные вкладки сразу, если в шаблоне есть то, что
         // правится только на них: сложные конструкции схемы или переводы
-        this.isAdvancedMode = this.shouldForceAdvanced;
+        this.setAdvancedMode(this.shouldForceAdvanced);
       });
     } catch (error) {
       console.error("Failed to load template:", error);
@@ -386,6 +418,11 @@ export class TemplateEditorStore {
   };
 
   save = async (): Promise<string | undefined> => {
+    // Пустое описание в списке шаблонов ничего не говорит — подставляем момент создания
+    if (this.mode === "create" && !this.templateDescription.trim()) {
+      this.setTemplateDescription(dayjs().format(DEFAULT_DESCRIPTION_FORMAT));
+    }
+
     const meta = this.meta;
     if (!meta) {
       throw new Error("cannot save a template with unparsable meta");
@@ -412,7 +449,7 @@ export class TemplateEditorStore {
         if (!targetSourceId) {
           throw new Error("target source is required to create a template");
         }
-        if (!isValidTemplateFileName(this.fileName)) {
+        if (!this.isFileNameValid) {
           throw new Error("invalid template file name");
         }
 

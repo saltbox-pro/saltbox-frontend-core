@@ -17,6 +17,10 @@ export const TemplateFileNameField = observer(({ store }: TemplateFileNameFieldP
 
   const [isTouched, setTouched] = useState(false);
 
+  // В базовом режиме имя файла выводится из названия шаблона: показывать его
+  // отдельным полем незачем, итоговое значение видно в модалке сохранения
+  if (store.createsNewTemplate && !store.isAdvancedMode) return null;
+
   const errorKey = store.createsNewTemplate ? getTemplateFileNameErrorKey(store.fileName) : null;
   const showError = isTouched && errorKey !== null;
 
