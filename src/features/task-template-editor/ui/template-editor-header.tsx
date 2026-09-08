@@ -3,7 +3,6 @@ import { Button, Form, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
-import { isValidTemplateFileName } from "../helpers/validate-template-file-name";
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
 import styles from "./template-editor-header.module.css";
@@ -18,7 +17,7 @@ interface TemplateEditorHeaderProps {
 export const TemplateEditorHeader = observer(({ store, onSave }: TemplateEditorHeaderProps) => {
   const { t } = useTranslation();
 
-  const isFileNameInvalid = store.createsNewTemplate && !isValidTemplateFileName(store.fileName);
+  const isFileNameInvalid = store.createsNewTemplate && !store.isFileNameValid;
 
   return (
     <div className={styles.header}>
@@ -44,7 +43,11 @@ export const TemplateEditorHeader = observer(({ store, onSave }: TemplateEditorH
             type="primary"
             icon={<SaveOutlined />}
             disabled={
-              store.hasMetaError || store.isLegacyTemplate || isFileNameInvalid || !store.isFunValid
+              store.hasMetaError ||
+              store.isLegacyTemplate ||
+              isFileNameInvalid ||
+              !store.isTitleValid ||
+              !store.isFunValid
             }
             onClick={onSave}
           >

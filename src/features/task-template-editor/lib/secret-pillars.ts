@@ -1,6 +1,12 @@
-import type { UISchema } from "@saltbox/react-jsonschema-form-generator";
+import type { JSONSchema, UISchema } from "@saltbox/react-jsonschema-form-generator";
 
-import { getParamsPath, getUiSchemaAtPath, replaceUiSchemaAtPath } from "./params-subtree";
+import {
+  extractParamsFormSchema,
+  getParamsPath,
+  getUiSchemaAtPath,
+  replaceUiSchemaAtPath,
+  setJsonSchemaAtPath,
+} from "./params-subtree";
 import type { TemplateMeta } from "./template-meta";
 
 /**
@@ -14,6 +20,12 @@ import type { TemplateMeta } from "./template-meta";
  * оба формата, пишем короткий.
  */
 const SECRET_WIDGET = "password";
+
+/**
+ * `format: "password"` в `json_schema` — вторая производная от `secret_pillars`:
+ * по ней форму рисуют звёздочками те, кто читает схему без нашей ui-схемы.
+ */
+const SECRET_FORMAT = "password";
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -75,6 +87,49 @@ function withSecretWidgets(paramsUiSchema: UISchema, names: string[]): UISchema 
   return next as UISchema;
 }
 
+/** Секретный `format` применим только к строке: у прочих типов RJSF его игнорирует. */
+function withParamSecretFormat(
+  schema: JSONSchema | undefined,
+  isSecret: boolean
+): JSONSchema | undefined {
+  if (!schema || typeof schema === "boolean" || schema.type !== "string") return schema;
+
+  if (isSecret) {
+    return schema.format === SECRET_FORMAT ? schema : { ...schema, format: SECRET_FORMAT };
+  }
+
+  // Свой `format` (`email`, `date` и прочие) снимать нельзя — он не про секретность
+  if (schema.format !== SECRET_FORMAT) return schema;
+
+  const { format: _removed, ...rest } = schema;
+
+  return rest;
+}
+
+/**
+ * Проставляет и снимает `format: "password"` у параметров. Схему возвращаем той
+ * же ссылкой, если менять нечего: вызывающий по этому понимает, что переписывать
+ * `json_schema` не нужно.
+ */
+export function withSecretFormat(paramsJsonSchema: JSONSchema, names: string[]): JSONSchema {
+  if (!paramsJsonSchema || typeof paramsJsonSchema === "boolean") return paramsJsonSchema;
+
+  const properties = paramsJsonSchema.properties;
+  if (!properties) return paramsJsonSchema;
+
+  const secret = new Set(names);
+  const next: Record<string, JSONSchema> = {};
+  let changed = false;
+
+  for (const [key, schema] of Object.entries(properties)) {
+    const updated = withParamSecretFormat(schema, secret.has(key));
+    if (updated !== schema) changed = true;
+    if (updated !== undefined) next[key] = updated;
+  }
+
+  return changed ? { ...paramsJsonSchema, properties: next } : paramsJsonSchema;
+}
+
 /**
  * Записывает список секретных параметров. Записи, которые мы не опознали как
  * параметр верхнего уровня (вложенные или от другой функции), переносим как
@@ -96,8 +151,18 @@ export function writeSecretNames(meta: TemplateMeta, names: string[], fun?: stri
     withSecretWidgets(getUiSchemaAtPath(rootUiSchema, prefix), unique)
   );
 
+  const paramsJsonSchema = extractParamsFormSchema(meta, fun).json_schema;
+  const nextParamsJsonSchema = withSecretFormat(paramsJsonSchema, unique);
+  // Схема не изменилась — не подставляем пустое поддерево параметров туда,
+  // где его в `json_schema` вовсе не было
+  const jsonSchema =
+    nextParamsJsonSchema === paramsJsonSchema
+      ? meta.json_schema
+      : setJsonSchemaAtPath(meta.json_schema, prefix, nextParamsJsonSchema);
+
   return {
     ...meta,
+    json_schema: jsonSchema,
     ui_schema: uiSchema,
     secret_pillars: secretPillars.length > 0 ? secretPillars : undefined,
   };
