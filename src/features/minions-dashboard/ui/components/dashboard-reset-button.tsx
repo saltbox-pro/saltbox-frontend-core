@@ -11,7 +11,7 @@ export const DashboardResetButton = () => {
     Modal.confirm({
       title: t("dashboard.reset-confirm-title"),
       icon: null,
-      content: t("dashboard.delete-card-confirm-description"),
+      content: t("dashboard.reset-confirm-description"),
       okButtonProps: { danger: true },
       okText: t("dashboard.reset-button"),
       cancelText: t("common.cancel"),

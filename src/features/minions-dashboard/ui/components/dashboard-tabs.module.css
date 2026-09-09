@@ -1,0 +1,43 @@
+.dashboardTabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dashboardTabs :global(.ant-tabs) {
+  min-width: 0;
+  flex: 1;
+}
+
+.dashboardTabs :global(.ant-tabs-nav) {
+  margin: 0;
+}
+
+.dashboardTabs :global(.ant-tabs-content-holder) {
+  display: none;
+}
+
+.tabLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.tabLabelText {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabMenuTrigger {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+}
+
+.tabNameInput {
+  width: 160px;
+}

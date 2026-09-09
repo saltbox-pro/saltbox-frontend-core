@@ -48,9 +48,17 @@ export type DashboardLayoutItem = {
   height: number;
 };
 
-export type DashboardStorageConfig = {
+export type DashboardTab = {
+  id: string;
+  name: string;
+  nameIndex: number;
   cards: DashboardCardConfig[];
   layout: DashboardLayoutItem[];
+};
+
+export type DashboardStorageConfig = {
+  tabs: DashboardTab[];
+  activeTabId: string;
 };
 
 export type DashboardFieldOption = {
@@ -77,6 +85,10 @@ const normalizeFieldName = (field: string): string => {
 
 const createCardId = (field: string, suffix: number): string => {
   return `dashboard-card-${field.replace(/[^a-zA-Z0-9_-]/g, "-")}-${suffix}`;
+};
+
+const createTabId = (): string => {
+  return `dashboard-tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 };
 
 const inferDashboardFieldType = (field: SchemaOption): DashboardFieldType => {
@@ -207,26 +219,70 @@ export const getUpdatedDashboardCard = (
   };
 };
 
-export const normalizeDashboardStorage = (rawValue: string | null): DashboardStorageConfig => {
-  const defaultConfig: DashboardStorageConfig = {
-    cards: DEFAULT_DASHBOARD_CARDS,
+export const createDefaultTabCards = (tabId: string): DashboardCardConfig[] => {
+  return DEFAULT_DASHBOARD_CARDS.map((card, index) => ({
+    ...card,
+    id: `${tabId}-${createCardId(card.field, index)}`,
+  }));
+};
+
+export const createDashboardTab = (nameIndex: number): DashboardTab => {
+  const id = createTabId();
+  return {
+    id,
+    name: "",
+    nameIndex,
+    cards: createDefaultTabCards(id),
     layout: [],
+  };
+};
+
+export const normalizeTabName = (name: string): string => {
+  return name.trim();
+};
+
+const normalizeTab = (tab: Partial<DashboardTab>, fallbackNameIndex: number): DashboardTab => {
+  return {
+    id: typeof tab?.id === "string" && tab.id ? tab.id : createTabId(),
+    name: typeof tab?.name === "string" ? normalizeTabName(tab.name) : "",
+    nameIndex: typeof tab?.nameIndex === "number" ? tab.nameIndex : fallbackNameIndex,
+    cards: Array.isArray(tab?.cards)
+      ? tab.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard)
+      : [],
+    layout: Array.isArray(tab?.layout) ? tab.layout : [],
+  };
+};
+
+export const normalizeDashboardStorage = (rawValue: string | null): DashboardStorageConfig => {
+  const createDefaultConfig = (): DashboardStorageConfig => {
+    const tab = createDashboardTab(1);
+    return { tabs: [tab], activeTabId: tab.id };
   };
 
   if (!rawValue) {
-    return defaultConfig;
+    return createDefaultConfig();
   }
 
   try {
     const parsed = JSON.parse(rawValue);
-    if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
-      return {
-        cards: parsed.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard),
-        layout: parsed.layout,
-      };
+
+    if (Array.isArray(parsed?.tabs) && parsed.tabs.length > 0) {
+      const tabs: DashboardTab[] = parsed.tabs.map((tab: Partial<DashboardTab>, index: number) =>
+        normalizeTab(tab, index + 1)
+      );
+      const activeTabId = tabs.some((tab) => tab.id === parsed.activeTabId)
+        ? parsed.activeTabId
+        : tabs[0].id;
+      return { tabs, activeTabId };
     }
-    return defaultConfig;
+
+    if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
+      const tab = normalizeTab({ cards: parsed.cards, layout: parsed.layout }, 1);
+      return { tabs: [tab], activeTabId: tab.id };
+    }
+
+    return createDefaultConfig();
   } catch {
-    return defaultConfig;
+    return createDefaultConfig();
   }
 };
