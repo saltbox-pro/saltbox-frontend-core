@@ -21,6 +21,7 @@ import {
   dashboardStore,
   getDashboardFieldOptions,
   MinionsDashboardAddBlockModal,
+  useDashboardCollection,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
@@ -197,6 +198,8 @@ const MinionsPage = observer(() => {
     //   title: slug === "root" ? t("minions.root-collection-cannot-delete") : undefined,
     // },
   ];
+
+  useDashboardCollection(slug);
 
   useEffect(() => {
     if (slug) {

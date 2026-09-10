@@ -1,11 +1,11 @@
 import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import { Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Button, Input, Tabs } from "antd";
+import { Button, Input, InputRef, Tabs, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useState } from "react";
+import { ComponentProps, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { DashboardTab } from "../../model/dashboard-model";
+import { canRemoveDashboardTab, DashboardTab, TabNameError } from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 
 import styles from "./dashboard-tabs.module.css";
@@ -14,24 +14,48 @@ type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type TabNameEditorProps = {
   initialName: string;
-  onCommit: (name: string) => void;
+  onCommit: (name: string) => TabNameError | null;
+  onCancel: () => void;
 };
 
-const TabNameEditor = ({ initialName, onCommit }: TabNameEditorProps) => {
+const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) => {
+  const { t } = useTranslation();
+  const inputRef = useRef<InputRef>(null);
   const [value, setValue] = useState(initialName);
+  const [error, setError] = useState<TabNameError | null>(null);
+
+  const commit = () => {
+    const nextError = onCommit(value);
+    setError(nextError);
+    if (nextError) {
+      inputRef.current?.focus();
+    }
+  };
 
   return (
-    <Input
-      autoFocus
-      size="small"
-      value={value}
-      className={styles.tabNameInput}
-      onChange={(event) => setValue(event.target.value)}
-      onPressEnter={() => onCommit(value)}
-      onBlur={() => onCommit(value)}
-      onKeyDown={(event) => event.stopPropagation()}
-      onClick={(event) => event.stopPropagation()}
-    />
+    <Tooltip open={error !== null} title={error ? t(`dashboard.tab-name-${error}`) : ""}>
+      <Input
+        autoFocus
+        ref={inputRef}
+        size="small"
+        value={value}
+        status={error ? "error" : undefined}
+        className={styles.tabNameInput}
+        onChange={(event) => {
+          setValue(event.target.value);
+          setError(null);
+        }}
+        onPressEnter={commit}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          event.stopPropagation();
+          if (event.key === "Escape") {
+            onCancel();
+          }
+        }}
+        onClick={(event) => event.stopPropagation()}
+      />
+    </Tooltip>
   );
 };
 
@@ -39,23 +63,20 @@ export const DashboardTabs = observer(() => {
   const { t } = useTranslation();
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
 
-  const getTabName = (tab: DashboardTab) =>
-    tab.name || t("dashboard.tab-default-name", { index: tab.nameIndex });
-
-  const getMenuItems = (tabId: string): MenuItems => [
+  const getMenuItems = (tab: DashboardTab): MenuItems => [
     {
       key: "rename",
       icon: <EditOutlined />,
       label: t("dashboard.rename-tab"),
-      onClick: () => setEditingTabId(tabId),
+      onClick: () => setEditingTabId(tab.id),
     },
     {
       key: "remove",
       icon: <DeleteOutlined />,
       label: t("dashboard.delete-tab"),
       danger: true,
-      disabled: !dashboardStore.canRemoveTab,
-      onClick: () => dashboardStore.removeTab(tabId),
+      disabled: !canRemoveDashboardTab(tab, dashboardStore.tabs),
+      onClick: () => dashboardStore.removeTab(tab.id),
     },
   ];
 
@@ -66,16 +87,20 @@ export const DashboardTabs = observer(() => {
       <span className={styles.tabLabel} onFocus={(event) => event.stopPropagation()}>
         {editingTabId === tab.id ? (
           <TabNameEditor
-            initialName={getTabName(tab)}
+            initialName={tab.name}
+            onCancel={() => setEditingTabId(null)}
             onCommit={(name) => {
-              dashboardStore.renameTab(tab.id, name);
-              setEditingTabId(null);
+              const error = dashboardStore.renameTab(tab.id, name);
+              if (!error) {
+                setEditingTabId(null);
+              }
+              return error;
             }}
           />
         ) : (
           <>
-            <span className={styles.tabLabelText}>{getTabName(tab)}</span>
-            <Dropdown menu={{ items: getMenuItems(tab.id) }} trigger={["click"]}>
+            <span className={styles.tabLabelText}>{tab.name}</span>
+            <Dropdown menu={{ items: getMenuItems(tab) }} trigger={["click"]}>
               <Button
                 type="text"
                 size="small"
@@ -102,7 +127,7 @@ export const DashboardTabs = observer(() => {
         onChange={(tabId) => dashboardStore.setActiveTab(tabId)}
         onEdit={(_, action) => {
           if (action === "add") {
-            dashboardStore.addTab();
+            setEditingTabId(dashboardStore.addTab());
           }
         }}
       />
