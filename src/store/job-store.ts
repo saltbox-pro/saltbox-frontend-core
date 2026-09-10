@@ -11,8 +11,7 @@ import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
 const DEFAULT_SORTING: SortingState = [{ id: "stamp", desc: true }];
 const PAGE_SIZE = 50;
 
-const isSameJob = (job: JobModel, other: JobModel): boolean =>
-  job.jid === other.jid && job.salt_master === other.salt_master;
+const isSameJob = (job: JobModel, other: JobModel): boolean => job.id === other.id;
 
 const restoreFieldsMissingInSocketJob = (currentJob: JobModel, socketJob: JobModel): JobModel => ({
   ...socketJob,
@@ -28,7 +27,7 @@ type LoadJobReturnDataOptions = {
 };
 
 export class JobStore {
-  @observable jid: string;
+  @observable jobId: string;
   @observable job: JobModel | null;
   @observable total: number;
   @observable pagination: PaginationState;
@@ -56,7 +55,7 @@ export class JobStore {
   private shouldLoadJobReturnsAfterStarting = false;
 
   constructor() {
-    this.jid = "";
+    this.jobId = "";
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
@@ -86,7 +85,7 @@ export class JobStore {
 
   @action
   reset = () => {
-    this.jid = "";
+    this.jobId = "";
     this.isJobLoading = false;
     this.isJobReturnsLoading = false;
     this.job = null;
@@ -232,16 +231,13 @@ export class JobStore {
 
   @action
   mergeJobReturnsFromSocket = (incoming: JobReturnModel[]) => {
-    if (!this.jid || incoming.length === 0) return;
+    if (!this.jobId || incoming.length === 0) return;
 
     const next = [...this.jobReturns];
     let changed = false;
 
-    const currentSaltMaster = this.job?.salt_master;
-
     for (const jobReturn of incoming) {
-      if (!jobReturn?.id || jobReturn.jid !== this.jid) continue;
-      if (currentSaltMaster && jobReturn.salt_master !== currentSaltMaster) continue;
+      if (!jobReturn?.id || jobReturn.job_id !== this.jobId) continue;
       const idx = next.findIndex((r) => r.id === jobReturn.id);
       if (idx !== -1) {
         const prev = next[idx];
@@ -265,24 +261,24 @@ export class JobStore {
   };
 
   @action
-  reload = (jid: string | undefined) => {
+  reload = (jobId: string | undefined) => {
     this.jobReturns = [];
-    this.jid = jid;
+    this.jobId = jobId;
     this.shouldLoadJobReturnsAfterStarting = false;
-    if (this.jid) {
+    if (this.jobId) {
       this.loadJob();
     }
   };
 
   @action
   loadJob = () => {
-    if (this.jid.length === 0) {
+    if (this.jobId.length === 0) {
       return;
     }
     this.isJobLoading = true;
     this.error = null;
     apiCoreStore.jobsApi
-      ?.jobRetrieve({ jid: this.jid })
+      ?.jobRetrieve({ job_id: this.jobId })
       .then((job) => {
         if (!job) {
           runInAction(() => {
@@ -314,7 +310,7 @@ export class JobStore {
 
   @action
   loadJobReturns = (isSilentLoading: boolean = false): Promise<void> => {
-    if (this.jid && this.job?.status === JobStatus.Starting) {
+    if (this.jobId && this.job?.status === JobStatus.Starting) {
       this.shouldLoadJobReturnsAfterStarting = true;
       return Promise.resolve();
     }
@@ -330,7 +326,7 @@ export class JobStore {
           JobReturnsListBody: {
             query: {
               ...this.mongoDBQuery,
-              ...(this.jid ? { jid: this?.jid } : {}),
+              ...(this.jobId ? { job_id: this.jobId } : {}),
             },
             limit: this.pagination.pageSize,
             skip: this.pagination.pageIndex * this.pagination.pageSize,
@@ -358,7 +354,7 @@ export class JobStore {
 
   @action
   loadJobReturnsTable = (): Promise<void> => {
-    if (this.jid && this.job?.status === JobStatus.Starting) {
+    if (this.jobId && this.job?.status === JobStatus.Starting) {
       this.isJobReturnTableLoading = false;
       return Promise.resolve();
     }
@@ -372,7 +368,7 @@ export class JobStore {
           JobReturnsListBody: {
             query: {
               ...this.mongoDBQuery,
-              ...(this.jid ? { jid: this.jid } : {}),
+              ...(this.jobId ? { job_id: this.jobId } : {}),
             },
             limit: this.tablePagination.pageSize,
             skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
@@ -422,7 +418,7 @@ export class JobStore {
     if (index > -1) {
       this.jobReturns[index] = jobReturn;
       this.jobReturns = [...this.jobReturns];
-    } else if (this.pagination.pageIndex === 0 && jobReturn.jid === this.jid) {
+    } else if (this.pagination.pageIndex === 0 && jobReturn.job_id === this.jobId) {
       let newJobReturns = [jobReturn, ...this.jobReturns];
       if (newJobReturns.length > this.pagination.pageSize) {
         newJobReturns = newJobReturns.slice(0, this.pagination.pageSize);

@@ -279,7 +279,7 @@ const MinionJobReturnsTable = ({
         sorting={sorting}
         onLazyLoad={onLazyLoad}
         getRowId={(row) => row.id}
-        onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.jid)}
+        onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.job_id)}
         useVirtualScroll={false}
         renderSubComponent={renderJobResult}
         getRowCanExpand={() => true}
