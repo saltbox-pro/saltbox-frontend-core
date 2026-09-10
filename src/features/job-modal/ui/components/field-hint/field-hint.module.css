@@ -1,0 +1,10 @@
+.helpIcon {
+  cursor: help;
+  color: var(--ant-color-text-tertiary, #8c8c8c);
+  margin-left: 4px;
+}
+
+.hintContent {
+  display: block;
+  max-width: min(40vw, 600px);
+}

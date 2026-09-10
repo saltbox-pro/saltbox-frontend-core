@@ -28,8 +28,3 @@
 .jobFormGather {
   margin-top: calc(var(--app-layout-gap) / 3 + 23px);
 }
-
-.helpIcon {
-  cursor: help;
-  color: var(--ant-color-text-tertiary, #8c8c8c);
-}
