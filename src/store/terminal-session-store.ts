@@ -35,6 +35,7 @@ export interface TerminalRunOptions {
 export class TerminalSessionStore {
   @observable screenLines: TerminalLine[];
   @observable status: TerminalSessionStatus;
+  @observable jobId: string | null;
   @observable jid: string | null;
   @observable commandHistory: string[];
 
@@ -53,6 +54,7 @@ export class TerminalSessionStore {
     this.saltMaster = saltMaster;
     this.screenLines = [];
     this.status = "idle";
+    this.jobId = null;
     this.jid = null;
     this.commandHistory = [];
     makeObservable(this);
@@ -183,9 +185,10 @@ export class TerminalSessionStore {
       return;
     }
 
+    this.jobId = job.id;
     this.jid = job.jid;
     this.status = this.pendingInterruptEcho ? "interrupting" : "running";
-    this.connectJobSocket(job.jid);
+    this.connectJobSocket(job.id);
 
     if (this.pendingInterruptEcho) {
       this.createKillJob();
@@ -235,11 +238,11 @@ export class TerminalSessionStore {
       });
   };
 
-  private connectJobSocket = (jid: string) => {
+  private connectJobSocket = (jobId: string) => {
     const webSocketService = new WebSocketService<JobModel | JobReturnModel>();
     this.webSocketService = webSocketService;
     webSocketService.connect(
-      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jobId}/info`,
       appStore.authStore?.user?.access_token,
       {
         onMessage: (messages: Array<WebSocketMessage<JobModel | JobReturnModel>>) => {
@@ -252,17 +255,17 @@ export class TerminalSessionStore {
             .forEach((message) => this.applyJobUpdate(message.payload as JobModel));
         },
         onOpen: () => {
-          this.loadJobReturns(jid);
+          this.loadJobReturns(jobId);
         },
       }
     );
   };
 
-  private loadJobReturns = (jid: string, onLoaded?: () => void) => {
+  private loadJobReturns = (jobId: string, onLoaded?: () => void) => {
     apiCoreStore.jobsApi
       ?.jobReturnsList({
         JobReturnsListBody: {
-          query: { jid, minion_id: this.minionId },
+          query: { job_id: jobId, minion_id: this.minionId },
           limit: 10,
           skip: 0,
         },
@@ -283,11 +286,7 @@ export class TerminalSessionStore {
 
   @action
   private applyJobReturn = (jobReturn: JobReturnModel) => {
-    if (
-      jobReturn.jid !== this.jid ||
-      jobReturn.salt_master !== this.saltMaster ||
-      jobReturn.minion_id !== this.minionId
-    ) {
+    if (jobReturn.job_id !== this.jobId || jobReturn.minion_id !== this.minionId) {
       return;
     }
 
@@ -344,7 +343,7 @@ export class TerminalSessionStore {
 
   @action
   private applyJobUpdate = (job: JobModel) => {
-    if (job.jid !== this.jid || job.salt_master !== this.saltMaster) {
+    if (job.id !== this.jobId) {
       return;
     }
 
@@ -365,7 +364,7 @@ export class TerminalSessionStore {
       return;
     }
 
-    this.loadJobReturns(job.jid, () => {
+    this.loadJobReturns(job.id, () => {
       if (this.resultHandled) {
         return;
       }
@@ -416,6 +415,7 @@ export class TerminalSessionStore {
     }
 
     this.status = "idle";
+    this.jobId = null;
     this.jid = null;
     this.pendingInterruptEcho = null;
     this.webSocketService?.disconnect();

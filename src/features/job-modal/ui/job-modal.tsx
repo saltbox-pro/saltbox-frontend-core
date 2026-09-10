@@ -63,6 +63,7 @@ import { apiCoreStore, appStore, i18nStore } from "saltbox-core/store";
 import { useJobModalInit, type JobModalFormValues } from "../hooks/use-job-modal-init";
 import type { JobReturnToPickerSnapshot } from "../type/types";
 
+import { FieldHint } from "./components/field-hint/field-hint";
 import { TargetTypeSelect } from "./components/target-type-select/target-type-select";
 import styles from "./job-modal.module.css";
 
@@ -463,8 +464,8 @@ export function JobModal({
         resetModalState();
         setIsModalOpen(false);
         onAfterClose?.();
-        if (response?.jid) {
-          navigate(`/core/jobs/${response.jid}`);
+        if (response?.id) {
+          navigate(`/core/jobs/${response.id}`);
         }
       })
       .catch((_) => {
@@ -615,7 +616,12 @@ export function JobModal({
               onFinishFailed={handleFormFinishFailed}
             >
               <Form.Item<JobFormData>
-                label={t("job-modal.salt-master")}
+                label={
+                  <FieldHint
+                    label={t("job-modal.salt-master")}
+                    hint={t("job-modal.salt-master-hint")}
+                  />
+                }
                 name="salt_master"
                 rules={[
                   {
@@ -628,7 +634,12 @@ export function JobModal({
               </Form.Item>
               <Flex gap={8}>
                 <Form.Item<JobFormData>
-                  label={t("job-modal.target-type")}
+                  label={
+                    <FieldHint
+                      label={t("job-modal.target-type")}
+                      hint={t("job-modal.target-type-hint")}
+                    />
+                  }
                   name="tgt_type"
                   rules={[
                     {
@@ -642,7 +653,9 @@ export function JobModal({
                 </Form.Item>
 
                 <Form.Item<JobFormData>
-                  label={t("job-modal.target")}
+                  label={
+                    <FieldHint label={t("job-modal.target")} hint={t("job-modal.target-hint")} />
+                  }
                   name="tgt"
                   rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
                   className={styles.jobFormTgt}
@@ -658,7 +671,11 @@ export function JobModal({
                 />
               </Flex>
 
-              <Form.Item label={t("job-modal.function")}>
+              <Form.Item
+                label={
+                  <FieldHint label={t("job-modal.function")} hint={t("job-modal.function-hint")} />
+                }
+              >
                 <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
               </Form.Item>
 

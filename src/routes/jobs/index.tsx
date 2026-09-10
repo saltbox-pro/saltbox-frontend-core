@@ -365,7 +365,7 @@ const JobsPage = observer(() => {
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(job) => handleNavigateToJob(job.jid)}
+        onRowClick={(job) => handleNavigateToJob(job.id)}
         useVirtualScroll={false}
         locale={{ empty: jobsEmptyText }}
       />

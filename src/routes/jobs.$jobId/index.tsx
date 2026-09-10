@@ -40,8 +40,8 @@ import {
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
-import { JobLaunchError } from "saltbox-core/routes/jobs.$jid/-components/job-launch-error";
-import { JobStatusProgress } from "saltbox-core/routes/jobs.$jid/-components/job-status-progress";
+import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
+import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
@@ -61,7 +61,7 @@ type JobWebSocketMessage = JobModel | JobReturnModel;
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
-  const { jid } = useParams();
+  const { jobId } = useParams();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const withAcceptedMastersCheck = useWithAcceptedMastersCheck(messageApi);
@@ -92,9 +92,9 @@ const JobPage = observer(() => {
     setRepeatPickerOpen(false);
     setRepeatBaseline(null);
     setIsExportModalOpen(false);
-  }, [jid]);
+  }, [jobId]);
 
-  const effectiveJobReturns = jid && jobStore.jid === jid ? jobStore.jobReturns : [];
+  const effectiveJobReturns = jobId && jobStore.jobId === jobId ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const isTableViewAvailable = statusCounts.success > 0;
   const showExportButton = isTableViewAvailable;
@@ -196,7 +196,7 @@ const JobPage = observer(() => {
   }, [isTableViewMode]);
 
   const handleExportToCsv = useCallback(async () => {
-    if (!jid) {
+    if (!jobId) {
       return;
     }
 
@@ -206,9 +206,9 @@ const JobPage = observer(() => {
       await downloadJobReturnsTableCsv(
         {
           ...jobStore.mongoDBQuery,
-          jid,
+          job_id: jobId,
         },
-        `job-returns-${jid}-${Date.now()}.csv`
+        `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
       );
       setIsExportModalOpen(false);
     } catch (error) {
@@ -220,7 +220,7 @@ const JobPage = observer(() => {
     } finally {
       setIsTableExportLoading(false);
     }
-  }, [jid, t]);
+  }, [jobId, t]);
 
   useEffect(() => {
     if (jobStore.error) {
@@ -229,7 +229,7 @@ const JobPage = observer(() => {
   }, [jobStore.error]);
 
   useEffect(() => {
-    if (!jid) {
+    if (!jobId) {
       return;
     }
     jobStore.reset();
@@ -240,7 +240,7 @@ const JobPage = observer(() => {
     }
     setIsWebSocketConnecting(true);
     webSocketService.connect(
-      `${apiCoreStore.env?.ws_server_url}/jobs/${jid}/info`,
+      `${apiCoreStore.env?.ws_server_url}/jobs/${jobId}/info`,
       appStore.authStore?.user?.access_token,
       {
         onMessage: (messages: Array<WebSocketMessage<JobWebSocketMessage>>) => {
@@ -258,7 +258,7 @@ const JobPage = observer(() => {
         },
         onOpen: () => {
           setIsWebSocketConnecting(false);
-          jobStore.reload(jid);
+          jobStore.reload(jobId);
         },
       }
     );
@@ -267,12 +267,12 @@ const JobPage = observer(() => {
       jobStore.reset();
       webSocketService.disconnect();
     };
-  }, [jid]);
+  }, [jobId]);
 
   return (
     <>
       {contextHolder}
-      <PageHeader title={t("jobs.job-title", { jobId: jid })} />
+      <PageHeader title={t("jobs.job-title", { jobId: jobStore.job?.jid ?? "" })} />
 
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
         <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
@@ -291,7 +291,7 @@ const JobPage = observer(() => {
             />
 
             <JobModalShell
-              key={jid}
+              key={jobId}
               pickerOpen={repeatPickerOpen}
               onPickerOpenChange={setRepeatPickerOpen}
               configureFunction={repeatConfigureFun}
