@@ -20,6 +20,7 @@ import {
   DashboardTab,
   DashboardTabNames,
   getUpdatedDashboardCard,
+  moveDashboardTab,
   normalizeDashboardStorage,
   normalizeTabName,
   TabNameError,
@@ -165,6 +166,15 @@ export class DashboardStore {
       this.activeTabId = this.tabs[Math.min(tabIndex, this.tabs.length - 1)].id;
     }
     this.fullScreenCardId = null;
+    this.saveToLocalStorage();
+  }
+
+  moveTab(fromTabId: string, toTabId: string) {
+    const tabs = moveDashboardTab(this.tabs, fromTabId, toTabId);
+    if (tabs === this.tabs) {
+      return;
+    }
+    this.tabs = tabs;
     this.saveToLocalStorage();
   }
 

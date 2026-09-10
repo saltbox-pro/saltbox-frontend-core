@@ -268,6 +268,22 @@ export const validateTabName = (
   return null;
 };
 
+export const moveDashboardTab = (
+  tabs: DashboardTab[],
+  fromTabId: string,
+  toTabId: string
+): DashboardTab[] => {
+  const fromIndex = tabs.findIndex((tab) => tab.id === fromTabId);
+  const toIndex = tabs.findIndex((tab) => tab.id === toTabId);
+  if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) {
+    return tabs;
+  }
+  const result = [...tabs];
+  const [movedTab] = result.splice(fromIndex, 1);
+  result.splice(toIndex, 0, movedTab);
+  return result;
+};
+
 export const canRemoveDashboardTab = (tab: DashboardTab, tabs: DashboardTab[]): boolean => {
   return !tab.primary && tabs.length > 1;
 };

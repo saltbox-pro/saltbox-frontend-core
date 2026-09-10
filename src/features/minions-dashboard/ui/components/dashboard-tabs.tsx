@@ -1,10 +1,19 @@
 import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import { Dropdown } from "@saltbox/saltbox-frontend-common";
 import { Button, Input, InputRef, Tabs, Tooltip } from "antd";
+import clsx from "clsx";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useRef, useState } from "react";
+import {
+  cloneElement,
+  ComponentProps,
+  HTMLAttributes,
+  ReactElement,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 
+import { useDashboardTabDrag } from "../../hooks/use-dashboard-tab-drag";
 import { canRemoveDashboardTab, DashboardTab, TabNameError } from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 
@@ -62,6 +71,23 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
 export const DashboardTabs = observer(() => {
   const { t } = useTranslation();
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const { draggedTabId, getDropSide, getDragProps } = useDashboardTabDrag(
+    dashboardStore.tabs.map((tab) => tab.id)
+  );
+
+  const renderDraggableTab = (node: ReactElement) => {
+    const element = node as ReactElement<HTMLAttributes<HTMLElement>>;
+    const tabId = String(element.key);
+    const dropSide = getDropSide(tabId);
+    return cloneElement(element, {
+      ...getDragProps(tabId, editingTabId !== tabId),
+      className: clsx(element.props.className, {
+        [styles.tabDragging]: draggedTabId === tabId,
+        [styles.tabDropBefore]: dropSide === "before",
+        [styles.tabDropAfter]: dropSide === "after",
+      }),
+    });
+  };
 
   const getMenuItems = (tab: DashboardTab): MenuItems => [
     {
@@ -124,6 +150,9 @@ export const DashboardTabs = observer(() => {
         items={items}
         activeKey={dashboardStore.activeTabId}
         addIcon={<PlusOutlined />}
+        renderTabBar={(tabBarProps, DefaultTabBar) => (
+          <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
+        )}
         onChange={(tabId) => dashboardStore.setActiveTab(tabId)}
         onEdit={(_, action) => {
           if (action === "add") {
