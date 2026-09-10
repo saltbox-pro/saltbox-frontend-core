@@ -464,8 +464,8 @@ export function JobModal({
         resetModalState();
         setIsModalOpen(false);
         onAfterClose?.();
-        if (response?.jid) {
-          navigate(`/core/jobs/${response.jid}`);
+        if (response?.id) {
+          navigate(`/core/jobs/${response.id}`);
         }
       })
       .catch((_) => {
