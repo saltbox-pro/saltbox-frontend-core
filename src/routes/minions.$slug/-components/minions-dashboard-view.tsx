@@ -16,6 +16,7 @@ import {
   dashboardStore,
   DashboardLayoutItem,
   DashboardResetButton,
+  DashboardTabs,
   MinionDashboardCard,
   MinionsDashboardSummary,
 } from "saltbox-core/features/minions-dashboard";
@@ -78,36 +79,40 @@ export const MinionsDashboardView = observer(
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
         {props.filterControls}
 
-        {!dashboardStore.isCardFullScreen && (
-          <div className="page-actions-buttons" style={{ margin: 0 }}>
-            <Flex flex="1" justify="space-between" align="center">
-              <Button
-                onClick={props.onAddCard}
-                type="default"
-                disabled={!dashboardStore.canAddCard}
-                icon={<PlusOutlined />}
-              >
-                {t("minions.add-block-button")}
-              </Button>
-              {!dashboardStore.canAddCard && (
-                <Popover
-                  content={
-                    <div style={{ maxWidth: 300 }}>
-                      {t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
-                    </div>
-                  }
-                  trigger="hover"
-                  placement="bottom"
-                >
-                  <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
-                </Popover>
-              )}
-              <DashboardResetButton />
-            </Flex>
-          </div>
-        )}
-
         <MinionsDashboardSummary slug={props.slug} filterStore={props.filterStore} />
+
+        {!dashboardStore.isCardFullScreen && (
+          <>
+            <div className="page-actions-buttons" style={{ margin: 0 }}>
+              <Flex flex="1" justify="space-between" align="center">
+                <Button
+                  onClick={props.onAddCard}
+                  type="default"
+                  disabled={!dashboardStore.canAddCard}
+                  icon={<PlusOutlined />}
+                >
+                  {t("minions.add-block-button")}
+                </Button>
+                {!dashboardStore.canAddCard && (
+                  <Popover
+                    content={
+                      <div style={{ maxWidth: 300 }}>
+                        {t("minions.blocks-limit-tooltip", { limit: DASHBOARD_MAX_CARDS })}
+                      </div>
+                    }
+                    trigger="hover"
+                    placement="bottom"
+                  >
+                    <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
+                  </Popover>
+                )}
+                <DashboardResetButton />
+              </Flex>
+            </div>
+
+            <DashboardTabs />
+          </>
+        )}
 
         {dashboardStore.cards.length === 0 ? (
           <div className={styles.emptyState}>
