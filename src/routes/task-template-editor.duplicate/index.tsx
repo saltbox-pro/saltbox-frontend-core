@@ -1,6 +1,4 @@
-import { loader } from "@monaco-editor/react";
 import { observer } from "mobx-react-lite";
-import * as monaco from "monaco-editor";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
@@ -11,8 +9,6 @@ import {
 } from "saltbox-core/features/task-template-editor";
 
 import NotFound from "../not-found";
-
-loader.config({ monaco });
 
 const DuplicateTemplatePage = observer(() => {
   const { t } = useTranslation();

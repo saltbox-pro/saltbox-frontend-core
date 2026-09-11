@@ -1,4 +1,7 @@
 import Editor, { type OnMount } from "@monaco-editor/react";
+import { Spin } from "antd";
+
+import { useMonacoReady } from "../hooks/use-monaco-ready";
 
 import styles from "./full-template-editor.module.css";
 
@@ -20,6 +23,18 @@ export function FullTemplateEditor({
   language = "yaml",
   path,
 }: FullTemplateEditorProps) {
+  // Редактор монтируется только после настройки загрузчика: иначе
+  // `@monaco-editor/react` пойдёт за monaco в CDN
+  const isMonacoReady = useMonacoReady();
+
+  if (!isMonacoReady) {
+    return (
+      <div className={styles.loading}>
+        <Spin />
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <Editor

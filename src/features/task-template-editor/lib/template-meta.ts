@@ -88,9 +88,17 @@ export function stringifyMeta(meta: TemplateMeta): string {
   return JSON.stringify(ordered, null, 2);
 }
 
+/** Языки интерфейса, для которых в новом шаблоне сразу заведены переводы. */
+const DEFAULT_TEMPLATE_LOCALES: readonly string[] = ["en", "ru"];
+
+const getEmptyI18n = (): TemplateSchemaI18n =>
+  Object.fromEntries(DEFAULT_TEMPLATE_LOCALES.map((locale) => [locale, {}]));
+
 /**
  * Каркас схемы для новой функции: `state.apply` принимает параметры в
- * `kwargs.pillar`, обычная Salt-функция — прямо в `kwargs`.
+ * `kwargs.pillar`, обычная Salt-функция — прямо в `kwargs`. Подписи, дефолты и
+ * переводы заведены пустыми, чтобы в Meta JSON были видны все ключи, которые
+ * можно заполнить.
  */
 export function getEmptyMeta(fun: string): TemplateMeta {
   const params: JSONSchema = {
@@ -103,6 +111,8 @@ export function getEmptyMeta(fun: string): TemplateMeta {
     return {
       fun,
       query: {},
+      title: "",
+      description: "",
       json_schema: {
         type: "object",
         additionalProperties: false,
@@ -119,12 +129,16 @@ export function getEmptyMeta(fun: string): TemplateMeta {
       ui_schema: {
         kwargs: { "ui:label": false, pillar: { "ui:label": false } },
       },
+      i18n: getEmptyI18n(),
+      defaults: {},
     };
   }
 
   return {
     fun,
     query: {},
+    title: "",
+    description: "",
     json_schema: {
       type: "object",
       additionalProperties: false,
@@ -132,5 +146,7 @@ export function getEmptyMeta(fun: string): TemplateMeta {
       properties: { kwargs: params },
     },
     ui_schema: { kwargs: { "ui:label": false } },
+    i18n: getEmptyI18n(),
+    defaults: {},
   };
 }
