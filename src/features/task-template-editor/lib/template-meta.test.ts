@@ -47,6 +47,27 @@ describe("template meta", () => {
     expect(jsonSchema.properties.kwargs.properties.pillar).toBeDefined();
   });
 
+  it("каркас содержит пустые подписи, переводы и дефолты, но не секреты", () => {
+    for (const fun of ["state.apply", "pkg.install"]) {
+      const meta = getEmptyMeta(fun);
+
+      expect(Object.keys(JSON.parse(stringifyMeta(meta)))).toEqual([
+        "fun",
+        "query",
+        "title",
+        "description",
+        "json_schema",
+        "ui_schema",
+        "i18n",
+        "defaults",
+      ]);
+      expect(meta.title).toBe("");
+      expect(meta.description).toBe("");
+      expect(meta.i18n).toEqual({ en: {}, ru: {} });
+      expect(meta.defaults).toEqual({});
+    }
+  });
+
   it("каркас обычной функции кладёт параметры прямо в kwargs", () => {
     const meta = getEmptyMeta("pkg.install");
     const jsonSchema = meta.json_schema as Record<string, any>;

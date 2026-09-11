@@ -38,6 +38,8 @@ export function readTemplateLabel(
 /**
  * Пишет подпись, сохраняя форму значения: строку правим целиком, а словарь
  * локалей — только на текущем языке, чтобы не потерять остальные переводы.
+ * Очищенная строка остаётся пустой строкой: ключ не должен пропадать из
+ * Meta JSON.
  */
 export function writeTemplateLabel(
   meta: TemplateMeta,
@@ -60,7 +62,7 @@ export function writeTemplateLabel(
     return { ...meta, [key]: Object.keys(next).length > 0 ? next : undefined };
   }
 
-  return { ...meta, [key]: text || undefined };
+  return { ...meta, [key]: text };
 }
 
 /** Заполнена ли подпись: бекенд шлёт и `null`, и пустую строку, и пустой словарь. */

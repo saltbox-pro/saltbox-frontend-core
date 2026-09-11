@@ -30,11 +30,11 @@ export const TEMPLATE_META_JSON_SCHEMA = {
       additionalProperties: true,
     },
     title: {
-      description: "Название шаблона. Показывается в списках шаблонов и в форме создания задачи.",
+      description: "Название шаблона. Отображается в списке шаблонов и в форме запуска.",
       anyOf: [{ type: "string" }, localizedText],
     },
     description: {
-      description: "Описание шаблона. Помогает выбрать шаблон перед запуском задачи.",
+      description: "Описание шаблона. Помогает выбрать шаблон перед запуском.",
       anyOf: [{ type: "string" }, localizedText],
     },
     json_schema: {

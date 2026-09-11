@@ -100,14 +100,40 @@ export class TemplateEditorStore {
   isLoadingTargetSources = false;
   previewLanguage: string | null = null;
 
+  /** Снимок сохранённого состояния: с ним сравниваем текущее, см. `isDirty`. */
+  private cleanSnapshot = "";
+
   constructor(params: TemplateEditorParams) {
     this.mode = params.mode;
     this.sourceId = params.sourceId;
     this.templateId = params.templateId;
     this.metaText = stringifyMeta(getEmptyMeta(DEFAULT_TEMPLATE_FUN));
+    this.markClean();
 
     makeAutoObservable(this);
   }
+
+  /**
+   * Всё, что уходит на бекенд при сохранении. Имя файла в базовом режиме
+   * производное от названия, а название уже лежит в `metaText`, поэтому
+   * лишних срабатываний не даёт.
+   */
+  private get snapshot(): string {
+    return JSON.stringify({
+      fileName: this.fileName,
+      slsRaw: this.slsRaw,
+      metaText: this.metaText,
+    });
+  }
+
+  /** Есть ли правки, которых нет на бекенде: уход со страницы их потеряет. */
+  get isDirty(): boolean {
+    return this.snapshot !== this.cleanSnapshot;
+  }
+
+  private markClean = () => {
+    this.cleanSnapshot = this.snapshot;
+  };
 
   get createsNewTemplate(): boolean {
     return this.mode !== "edit";
@@ -362,6 +388,7 @@ export class TemplateEditorStore {
         // Открываем расширенные вкладки сразу, если в шаблоне есть то, что
         // правится только на них: сложные конструкции схемы или переводы
         this.setAdvancedMode(this.shouldForceAdvanced);
+        this.markClean();
       });
     } catch (error) {
       console.error("Failed to load template:", error);
@@ -466,6 +493,9 @@ export class TemplateEditorStore {
         }
 
         const result = await waitForBgTaskWithResult(extractTaskId(response));
+        // Сохранённое состояние — чистое: переход на список после сохранения
+        // не должен спрашивать про несохранённые изменения
+        this.markClean();
 
         return extractCreatedTemplateId(result.return_value);
       }
@@ -485,6 +515,7 @@ export class TemplateEditorStore {
       if (response) {
         await waitForBgTask(extractTaskId(response));
       }
+      this.markClean();
 
       return this.templateId;
     } finally {
