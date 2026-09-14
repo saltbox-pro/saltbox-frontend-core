@@ -239,6 +239,7 @@ const JobPage = observer(() => {
       webSocketService.disconnect();
     }
     setIsWebSocketConnecting(true);
+    let hasSocketOpened = false;
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jobId}/info`,
       appStore.authStore?.user?.access_token,
@@ -257,6 +258,14 @@ const JobPage = observer(() => {
           );
         },
         onOpen: () => {
+          hasSocketOpened = true;
+          setIsWebSocketConnecting(false);
+          jobStore.reload(jobId);
+        },
+        onClose: () => {
+          if (hasSocketOpened) {
+            return;
+          }
           setIsWebSocketConnecting(false);
           jobStore.reload(jobId);
         },
@@ -265,7 +274,7 @@ const JobPage = observer(() => {
     return () => {
       setIsWebSocketConnecting(false);
       jobStore.reset();
-      webSocketService.disconnect();
+      webSocketService.disconnect({ notify: false });
     };
   }, [jobId]);
 
