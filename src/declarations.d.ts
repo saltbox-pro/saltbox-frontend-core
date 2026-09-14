@@ -42,3 +42,5 @@ declare module "*.module.css" {
   const classes: { [key: string]: string };
   export default classes;
 }
+
+declare module "monaco-editor/esm/nls.messages.ru.js";

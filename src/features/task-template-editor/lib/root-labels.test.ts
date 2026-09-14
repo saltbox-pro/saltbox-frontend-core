@@ -35,8 +35,9 @@ describe("подписи шаблона", () => {
     });
   });
 
-  it("очистка убирает подпись, а из словаря — только текущий язык", () => {
-    expect(writeTemplateLabel({ title: "Название" }, "title", "   ", "ru").title).toBeUndefined();
+  it("очистка строки оставляет пустую строку, а из словаря убирает только текущий язык", () => {
+    expect(writeTemplateLabel({ title: "Название" }, "title", "   ", "ru").title).toBe("");
+    expect(writeTemplateLabel({ fun: "state.apply" }, "title", "", "ru").title).toBe("");
 
     const localized: TemplateMeta = { title: { ru: "Название", en: "Title" } };
     expect(writeTemplateLabel(localized, "title", "", "ru").title).toEqual({ en: "Title" });

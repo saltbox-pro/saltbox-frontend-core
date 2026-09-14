@@ -1,6 +1,7 @@
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { createRuleGroup, formatToMongoDB } from "@saltbox/saltbox-frontend-common";
 import type { MessageInstance } from "antd/es/message/interface";
+import { toJS } from "mobx";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { OptionList, RuleGroupType, RuleType } from "react-querybuilder";
@@ -53,10 +54,11 @@ export const useCsvDownloader = ({
       const hasSelectedMinions = Boolean(selectedMinions?.length);
       const filters = hasSelectedMinions
         ? createMinionIdsRuleGroup(selectedMinions as TaskTargetMinion[])
-        : searchFilters;
+        : toJS(searchFilters);
+      const fields = filterSchema ? toJS(filterSchema) : undefined;
       const query = hasSelectedMinions
-        ? formatToMongoDB(filters, filterSchema, { caseInsensitive: false })
-        : formatToMongoDB(filters, filterSchema);
+        ? formatToMongoDB(filters, fields, { caseInsensitive: false })
+        : formatToMongoDB(filters, fields);
 
       const response = await csvDownloader.createCsv("/minions/export", slug, query);
       const filename =
