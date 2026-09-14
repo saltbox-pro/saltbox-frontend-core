@@ -1,6 +1,6 @@
 import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import type { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
@@ -21,6 +21,8 @@ export class ExtraDataRecordsStore {
   @observable sorting: SortingState;
   @observable records: Array<ExtraDataRecord>;
   @observable totalRecords: number;
+  @observable totalRecordsUnfiltered: number;
+  @observable hasLoaded: boolean;
   @observable search: string;
 
   readonly minionId: string;
@@ -36,6 +38,8 @@ export class ExtraDataRecordsStore {
     this.error = null;
     this.records = [];
     this.totalRecords = 0;
+    this.totalRecordsUnfiltered = 0;
+    this.hasLoaded = false;
     this.search = "";
     this.sorting = [];
     this.pagination = {
@@ -46,12 +50,19 @@ export class ExtraDataRecordsStore {
     makeObservable(this);
   }
 
+  @computed
+  get isSingleRecord(): boolean {
+    return this.hasLoaded && this.totalRecordsUnfiltered === 1;
+  }
+
   @action
   reset = (): void => {
     this.isLoading = false;
     this.error = null;
     this.records = [];
     this.totalRecords = 0;
+    this.totalRecordsUnfiltered = 0;
+    this.hasLoaded = false;
     this.search = "";
     this.sorting = [];
     this.pagination = {
@@ -77,6 +88,8 @@ export class ExtraDataRecordsStore {
     this.isLoading = true;
     this.error = null;
 
+    const search = this.search || undefined;
+
     apiCoreStore.minionsApi
       ?.minionsExtraDataList({
         ExtraDataListBody: {
@@ -86,13 +99,17 @@ export class ExtraDataRecordsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          search: this.search || undefined,
+          search,
         },
       })
       .then((response) => {
         runInAction(() => {
           this.records = response.data.filter((item): item is ExtraDataRecord => item != null);
           this.totalRecords = response.total;
+
+          if (!search) {
+            this.totalRecordsUnfiltered = response.total;
+          }
         });
       })
       .catch(() => {
@@ -103,6 +120,7 @@ export class ExtraDataRecordsStore {
       .finally(() => {
         runInAction(() => {
           this.isLoading = false;
+          this.hasLoaded = true;
         });
       });
   };

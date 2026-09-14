@@ -1,11 +1,6 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import {
-  FastTablePaginated,
-  InfoDrawer,
-  type InfoDrawerProps,
-} from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper } from "@tanstack/react-table";
-import { message } from "antd";
+import { InfoDrawer, type InfoDrawerProps } from "@saltbox/saltbox-frontend-common";
+import { message, Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
@@ -16,13 +11,10 @@ import { type ExtraDataRecord, ExtraDataRecordsStore } from "saltbox-core/store"
 
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
-import { ExtraDataCell, isPrimitive } from "./extra-data-cell";
 import { ExtraDataSearchField } from "./extra-data-search-field";
 import styles from "./minion-extra-data-category-drawer.module.css";
-
-const columnHelper = createColumnHelper<ExtraDataRecord>();
-
-const ExtraDataRecordsTable = FastTablePaginated<ExtraDataRecord>;
+import { MinionExtraDataRecordList } from "./minion-extra-data-record-list";
+import { MinionExtraDataRecordTable } from "./minion-extra-data-record-table";
 
 function collectFieldsFromRecords(records: Array<ExtraDataRecord>): string[] {
   const seen = new Set<string>();
@@ -97,48 +89,16 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       return records ? collectFieldsFromRecords(records) : [];
     }, [category, records]);
 
-    const columns = useMemo(
-      () =>
-        fields.map((field) =>
-          columnHelper.accessor((row) => row[field], {
-            id: field,
-            header: field,
-            cell: ({ getValue }) => {
-              const value = getValue();
-              const canFilter =
-                !!onFilterButton &&
-                !!category &&
-                (isPrimitive(value) || (Array.isArray(value) && value.every(isPrimitive)));
-
-              return (
-                <ExtraDataCell
-                  value={value}
-                  onCopy={() => {}}
-                  filterTitle={t("minions.extra-data.apply-to-filters")}
-                  onFilter={
-                    canFilter
-                      ? () =>
-                          onFilterButton({
-                            name: `extra.${category.source}.${category.name}.${field}`,
-                            value,
-                            keepDrawerOpen: true,
-                          })
-                      : undefined
-                  }
-                />
-              );
-            },
-            meta: {
-              minWidth: 160,
-            },
-          })
-        ),
-      [fields, onFilterButton, category, t]
-    );
-
     const handleSearch = (value: string) => {
       extraDataRecordsStore?.setSearch(value);
     };
+
+    const hasLoaded = extraDataRecordsStore?.hasLoaded ?? false;
+    const singleRecord =
+      extraDataRecordsStore?.isSingleRecord && records && records.length > 0
+        ? toJS(records[0])
+        : null;
+    const viewKey = !hasLoaded ? "loading" : singleRecord ? "list" : "table";
 
     return (
       <InfoDrawer
@@ -151,29 +111,35 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
               })
             : undefined
         }
-        transitionKey={open ? "opened" : "closed"}
+        transitionKey={open ? viewKey : "closed"}
         {...restProps}
         titleCopyable={false}
       >
-        <div className="page-actions-buttons">
-          <div className={styles.rightGroup}>
-            <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+        {hasLoaded && !singleRecord && (
+          <div className="page-actions-buttons">
+            <div className={styles.rightGroup}>
+              <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+            </div>
           </div>
-        </div>
+        )}
 
-        {extraDataRecordsStore && category && (
-          <ExtraDataRecordsTable
-            tableId="core-minion-extra-data-records"
-            columns={columns}
-            data={toJS(extraDataRecordsStore.records)}
-            total={extraDataRecordsStore.totalRecords}
-            isLoading={extraDataRecordsStore.isLoading}
-            pagination={extraDataRecordsStore.pagination}
-            sorting={extraDataRecordsStore.sorting}
-            onLazyLoad={(pagination, sorting) =>
-              extraDataRecordsStore.handleLazyLoad(pagination, sorting)
-            }
-            locale={{ empty: t("minions.extra-data.empty") }}
+        {!hasLoaded && <Skeleton active />}
+
+        {hasLoaded && singleRecord && category && (
+          <MinionExtraDataRecordList
+            record={singleRecord}
+            fields={fields}
+            category={category}
+            onFilterButton={onFilterButton}
+          />
+        )}
+
+        {hasLoaded && !singleRecord && extraDataRecordsStore && category && (
+          <MinionExtraDataRecordTable
+            store={extraDataRecordsStore}
+            fields={fields}
+            category={category}
+            onFilterButton={onFilterButton}
           />
         )}
       </InfoDrawer>
