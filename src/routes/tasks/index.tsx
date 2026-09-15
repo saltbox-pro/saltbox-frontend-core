@@ -1,6 +1,8 @@
 import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   PageHeader,
   WebSocketMessage,
   WebSocketService,
@@ -202,8 +204,8 @@ export default observer(function TasksPage() {
   };
 
   return (
-    <>
-      <PageHeader title={t("aggregated-tasks.title")} />
+    <FastTableToolbarSlotProvider>
+      <PageHeader title={t("aggregated-tasks.title")} extra={<FastTableToolbarSlot />} />
       <TasksQueryBuilder
         filterStore={filterStore}
         onSearchButtonClick={handleSearchButtonClick}
@@ -224,6 +226,6 @@ export default observer(function TasksPage() {
         }
         useVirtualScroll={false}
       />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });

@@ -2,6 +2,8 @@ import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   PageHeader,
   Popover,
   formatTimeByUserTZ,
@@ -227,7 +229,7 @@ const CollectionEditPage = observer(() => {
     isFilterSchemaMissing;
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {contextHolder}
       <PageHeader
         title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
@@ -275,6 +277,7 @@ const CollectionEditPage = observer(() => {
               </Popover>
             )}
           </Flex>
+          <FastTableToolbarSlot />
         </div>
         <MinionsTable
           tableId="core-collection-minions"
@@ -301,7 +304,7 @@ const CollectionEditPage = observer(() => {
       </Flex>
 
       <MinionDetailsDrawer drawer={drawer} />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
 

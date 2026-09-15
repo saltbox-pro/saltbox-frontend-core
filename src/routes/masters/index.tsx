@@ -3,6 +3,8 @@ import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   PageHeader,
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -194,7 +196,7 @@ function MastersPage() {
   };
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {contextHolder}
 
       <PageHeader title={t("masters.title")} />
@@ -208,6 +210,7 @@ function MastersPage() {
         >
           {t("masters.check-availability")}
         </Button>
+        <FastTableToolbarSlot />
       </div>
 
       <MastersTable
@@ -225,7 +228,7 @@ function MastersPage() {
         }}
         isRowClickable={(master) => master.status === "accepted"}
       />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 }
 

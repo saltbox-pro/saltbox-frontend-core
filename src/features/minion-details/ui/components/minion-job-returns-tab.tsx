@@ -7,6 +7,8 @@ import {
 import {
   createExpanderColumn,
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   FilterToggleButton,
   formatTimeByUserTZ,
   useFiltersToggle,
@@ -297,13 +299,18 @@ function MinionJobReturnsTabView({
   return (
     <Flex vertical className={styles.jobReturnsWrapper}>
       {jobReturnsFilter && <div className={styles.jobReturnsFilterWrapper}>{jobReturnsFilter}</div>}
-      {isFullView && !!jobReturnsTabActions && (
-        <div className="page-actions-buttons">{jobReturnsTabActions}</div>
-      )}
-      <MinionJobReturnsTable
-        {...jobReturnsConfig}
-        tableId={isFullView ? "core-minion-job-returns" : "core-minion-job-returns-drawer"}
-      />
+      <FastTableToolbarSlotProvider>
+        {isFullView && !!jobReturnsTabActions && (
+          <div className="page-actions-buttons">
+            {jobReturnsTabActions}
+            <FastTableToolbarSlot />
+          </div>
+        )}
+        <MinionJobReturnsTable
+          {...jobReturnsConfig}
+          tableId={isFullView ? "core-minion-job-returns" : "core-minion-job-returns-drawer"}
+        />
+      </FastTableToolbarSlotProvider>
     </Flex>
   );
 }

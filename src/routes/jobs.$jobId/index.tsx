@@ -7,6 +7,8 @@ import {
 } from "@saltbox/saltbox-core-api-client";
 import {
   CopyToClipboardButton,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   PageHeader,
   WebSocketMessage,
   WebSocketService,
@@ -270,7 +272,7 @@ const JobPage = observer(() => {
   }, [jobId]);
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {contextHolder}
       <PageHeader title={t("jobs.job-title", { jobId: jobStore.job?.jid ?? "" })} />
 
@@ -488,6 +490,7 @@ const JobPage = observer(() => {
                       <QuestionCircleOutlined className={styles.helpIcon} />
                     </Tooltip>
                   )}
+                  <FastTableToolbarSlot />
                 </Flex>
               </Flex>
             )}
@@ -537,7 +540,7 @@ const JobPage = observer(() => {
       >
         <span>{t("jobs.export-to-csv-warning")}</span>
       </Modal>
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
 

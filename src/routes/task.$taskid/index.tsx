@@ -3,7 +3,13 @@ import {
   type TaskMinionListResponse,
   type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
+  PageHeader,
+  WebSocketMessage,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
@@ -77,7 +83,7 @@ const TaskPage = observer(() => {
   });
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       <PageHeader
         title={t("task.page-title", {
           templateName:
@@ -89,6 +95,7 @@ const TaskPage = observer(() => {
         customParentPathGenerator={() =>
           `/core/${taskStore.task?.task_type === "policy" ? "policies" : "tasks"}`
         }
+        extra={<FastTableToolbarSlot />}
       />
 
       <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
@@ -108,7 +115,7 @@ const TaskPage = observer(() => {
 
         <TaskMinions taskStore={taskStore} />
       </Flex>
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
 

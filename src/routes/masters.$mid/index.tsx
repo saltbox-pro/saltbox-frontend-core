@@ -3,6 +3,7 @@ import { SaltKeyMinion, SaltKeyStatusType } from "@saltbox/saltbox-core-api-clie
 import {
   createSelectColumn,
   FastTablePaginated,
+  FastTableToolbarSlotProvider,
   isGlobalServerError,
   PageHeader,
   useInfoDrawer,
@@ -423,7 +424,7 @@ const MasterPage = observer(() => {
   );
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {modalContextHolder}
       {messageContextHolder}
 
@@ -452,7 +453,7 @@ const MasterPage = observer(() => {
         }}
         onClose={() => setDeleteConfirmOpen(false)}
       />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
 

@@ -1,5 +1,10 @@
 import { PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { FilterToggleButton, useFiltersToggle } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
+  FilterToggleButton,
+  useFiltersToggle,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -97,22 +102,25 @@ export const MinionPillarsTab = observer(function MinionPillarsTab({
 
       {!!pillarsFilter && <div className={styles.pillarsFilterWrapper}>{pillarsFilter}</div>}
 
-      <div className="page-actions-buttons">
-        <CreatePillar
-          targetType={PillarTgtType.Minion}
-          tgtId={targetId}
-          targetName={displayName}
-          loadPillars={pillarsStore.reloadFromFirstPage}
-        />
-      </div>
+      <FastTableToolbarSlotProvider>
+        <div className="page-actions-buttons">
+          <CreatePillar
+            targetType={PillarTgtType.Minion}
+            tgtId={targetId}
+            targetName={displayName}
+            loadPillars={pillarsStore.reloadFromFirstPage}
+          />
+          <FastTableToolbarSlot />
+        </div>
 
-      <PillarsTable
-        store={pillarsStore}
-        tableId={isInDrawer ? "core-minion-pillars-drawer" : "core-minion-pillars"}
-        hideTargetColumns
-        hideSecretColumn={isInDrawer}
-        hideDateColumns={isInDrawer}
-      />
+        <PillarsTable
+          store={pillarsStore}
+          tableId={isInDrawer ? "core-minion-pillars-drawer" : "core-minion-pillars"}
+          hideTargetColumns
+          hideSecretColumn={isInDrawer}
+          hideDateColumns={isInDrawer}
+        />
+      </FastTableToolbarSlotProvider>
     </Flex>
   );
 });

@@ -1,5 +1,9 @@
 import { PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { PageHeader } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
+  PageHeader,
+} from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -47,7 +51,7 @@ function PillarsPage() {
   };
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       <PageHeader title={t("pillars.title")} />
 
       <PillarsQueryBuilder
@@ -61,10 +65,11 @@ function PillarsPage() {
           targetType={PillarTgtType.Root}
           loadPillars={pillarsStore.reloadFromFirstPage}
         />
+        <FastTableToolbarSlot />
       </div>
 
       <PillarsTable store={pillarsStore} tableId="core-pillars" />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 }
 

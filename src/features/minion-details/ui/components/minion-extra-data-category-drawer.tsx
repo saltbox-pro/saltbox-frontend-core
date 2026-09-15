@@ -1,6 +1,8 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
@@ -155,27 +157,30 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         {...restProps}
         titleCopyable={false}
       >
-        <div className="page-actions-buttons">
-          <div className={styles.rightGroup}>
-            <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+        <FastTableToolbarSlotProvider>
+          <div className="page-actions-buttons">
+            <div className={styles.rightGroup}>
+              <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+              <FastTableToolbarSlot />
+            </div>
           </div>
-        </div>
 
-        {extraDataRecordsStore && category && (
-          <ExtraDataRecordsTable
-            tableId="core-minion-extra-data-records"
-            columns={columns}
-            data={toJS(extraDataRecordsStore.records)}
-            total={extraDataRecordsStore.totalRecords}
-            isLoading={extraDataRecordsStore.isLoading}
-            pagination={extraDataRecordsStore.pagination}
-            sorting={extraDataRecordsStore.sorting}
-            onLazyLoad={(pagination, sorting) =>
-              extraDataRecordsStore.handleLazyLoad(pagination, sorting)
-            }
-            locale={{ empty: t("minions.extra-data.empty") }}
-          />
-        )}
+          {extraDataRecordsStore && category && (
+            <ExtraDataRecordsTable
+              tableId="core-minion-extra-data-records"
+              columns={columns}
+              data={toJS(extraDataRecordsStore.records)}
+              total={extraDataRecordsStore.totalRecords}
+              isLoading={extraDataRecordsStore.isLoading}
+              pagination={extraDataRecordsStore.pagination}
+              sorting={extraDataRecordsStore.sorting}
+              onLazyLoad={(pagination, sorting) =>
+                extraDataRecordsStore.handleLazyLoad(pagination, sorting)
+              }
+              locale={{ empty: t("minions.extra-data.empty") }}
+            />
+          )}
+        </FastTableToolbarSlotProvider>
       </InfoDrawer>
     );
   }

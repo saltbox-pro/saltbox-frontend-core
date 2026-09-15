@@ -6,6 +6,8 @@ import {
 } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   PageHeader,
   formatTimeByUserTZ,
   CellAction,
@@ -310,7 +312,7 @@ const JobsPage = observer(() => {
   }, []);
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {contextHolder}
       <PageHeader title={t("jobs.title")} />
 
@@ -352,6 +354,7 @@ const JobsPage = observer(() => {
             title={t("jobs.refresh")}
             disabled={jobsStore.isJobsLoading}
           />
+          <FastTableToolbarSlot />
         </div>
       </div>
 
@@ -380,7 +383,7 @@ const JobsPage = observer(() => {
       />
 
       {jobModalCreatePlugin}
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
 

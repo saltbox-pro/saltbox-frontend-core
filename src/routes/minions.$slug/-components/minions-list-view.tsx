@@ -1,6 +1,8 @@
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
   AcceptedMastersActionButton,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   RefreshButton,
   SelectedItemsCounter,
 } from "@saltbox/saltbox-frontend-common";
@@ -142,7 +144,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   });
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
       {contextHolder}
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
@@ -203,6 +205,8 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           />
 
           <SelectedItemsCounter count={selectedMinionsCount} />
+
+          <FastTableToolbarSlot />
         </div>
 
         <MinionsTableWithDetailsDrawer
@@ -242,6 +246,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       </Flex>
 
       {taskModalCreatePlugin}
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });
