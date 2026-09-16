@@ -8,10 +8,15 @@ export const DashboardResetButton = () => {
   const { t } = useTranslation();
 
   const handleClick = () => {
+    const isPrimaryTab = dashboardStore.activeTab?.primary === true;
     Modal.confirm({
       title: t("dashboard.reset-confirm-title"),
       icon: null,
-      content: t("dashboard.reset-confirm-description"),
+      content: t(
+        isPrimaryTab
+          ? "dashboard.reset-confirm-description"
+          : "dashboard.reset-confirm-description-empty"
+      ),
       okButtonProps: { danger: true },
       okText: t("dashboard.reset-button"),
       cancelText: t("common.cancel"),

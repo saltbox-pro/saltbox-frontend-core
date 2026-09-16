@@ -32,11 +32,13 @@ export const useDashboardTabDrag = (tabIds: string[]) => {
         return;
       }
       event.preventDefault();
+      event.stopPropagation();
       event.dataTransfer.dropEffect = "move";
       setOverTabId(tabId);
     },
     onDrop: (event: DragEvent<HTMLElement>) => {
       event.preventDefault();
+      event.stopPropagation();
       if (draggedTabId) {
         dashboardStore.moveTab(draggedTabId, tabId);
       }
@@ -45,5 +47,25 @@ export const useDashboardTabDrag = (tabIds: string[]) => {
     onDragEnd: reset,
   });
 
-  return { draggedTabId, getDropSide, getDragProps };
+  const lastTabId = tabIds[tabIds.length - 1] ?? null;
+
+  const containerDragProps = {
+    onDragOver: (event: DragEvent<HTMLElement>) => {
+      if (!draggedTabId || !lastTabId) {
+        return;
+      }
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      setOverTabId(lastTabId);
+    },
+    onDrop: (event: DragEvent<HTMLElement>) => {
+      event.preventDefault();
+      if (draggedTabId && lastTabId) {
+        dashboardStore.moveTab(draggedTabId, lastTabId);
+      }
+      reset();
+    },
+  };
+
+  return { draggedTabId, getDropSide, getDragProps, containerDragProps };
 };

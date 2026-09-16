@@ -777,6 +777,7 @@
     "reset-button": "Reset",
     "reset-confirm-title": "Reset tab to default?",
     "reset-confirm-description": "Blocks of the current tab will be replaced with the default set, this action cannot be undone",
+    "reset-confirm-description-empty": "All blocks of the current tab will be removed, this action cannot be undone",
     "first-tab-name": "Statistics",
     "new-tab-name": "New tab",
     "rename-tab": "Rename tab",
