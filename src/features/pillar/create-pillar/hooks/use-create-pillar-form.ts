@@ -1,9 +1,10 @@
 import type { PillarCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  type AppError,
   isInvalidJsonValueResult,
   parseAndValidateJsonValue,
+  runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { message } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -32,13 +33,18 @@ export function useCreatePillarForm({
 
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<AppError | null>(null);
 
-  const resetCreateError = useCallback(() => setCreateError(null), []);
+  const resetCreateError = useCallback(() => {
+    setCreateError(null);
+    setMutationError(null);
+  }, []);
 
   const handleSubmit = useCallback(
     async (values: CreatePillarFormValues) => {
       setIsCreating(true);
       setCreateError(null);
+      setMutationError(null);
 
       const parsed = parseAndValidateJsonValue(values.value);
 
@@ -56,19 +62,27 @@ export function useCreatePillarForm({
         tgt_id: tgtType === "root" ? null : tgtId,
       };
 
-      try {
-        await createPillar(body);
-        message.success(t("pillars.create.success"));
-        refreshPillars();
-        onClose();
-      } catch {
-        setCreateError(t("pillars.create.error"));
-      } finally {
-        setIsCreating(false);
-      }
+      const result = await runMutation({
+        run: () => createPillar(body),
+        successMessage: t("pillars.create.success"),
+        onError: setMutationError,
+      });
+
+      setIsCreating(false);
+      if (!result.ok) return;
+
+      refreshPillars();
+      onClose();
     },
     [onClose, refreshPillars, tgtId, tgtType, t]
   );
 
-  return { handleSubmit, isCreating, createError, resetCreateError };
+  return {
+    handleSubmit,
+    isCreating,
+    createError,
+    mutationError,
+    setMutationError,
+    resetCreateError,
+  };
 }

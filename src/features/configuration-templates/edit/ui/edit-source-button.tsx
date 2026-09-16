@@ -1,6 +1,7 @@
 import { EditOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { Button, message } from "antd";
+import { notify } from "@saltbox/saltbox-frontend-common";
+import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +29,6 @@ export const EditSourceButton = observer(function EditSourceButton({
   disabled = false,
 }: EditSourceButtonProps) {
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const actionContext = getSourceActionContext(actions, source.id);
@@ -45,15 +45,13 @@ export const EditSourceButton = observer(function EditSourceButton({
 
   const handleSuccess = useCallback(
     (name: string) => {
-      messageApi.success(t("configuration-templates.source.action.update-success", { name }));
+      notify.success(t("configuration-templates.source.action.update-success", { name }));
     },
-    [messageApi, t]
+    [t]
   );
 
   return (
     <>
-      {contextHolder}
-
       <Button
         type="default"
         size="small"

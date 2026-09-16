@@ -1,6 +1,7 @@
 import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
 import { Alert } from "antd";
-import { useMemo, type FC } from "react";
+import { observer } from "mobx-react-lite";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getMinionIdGroupKey } from "../../../helpers/get-minion-id-group-key";
@@ -12,31 +13,22 @@ import styles from "./table-view.module.css";
 
 const JobReturnDataTable = FastTablePaginated<TableRow>;
 
-export const TableView: FC<BackendTableViewProps> = ({
+export const TableView = observer<BackendTableViewProps>(function TableView({
   columns,
   rows,
   total,
   pagination,
   isLoading,
-  loadError,
+  loader,
   onLazyLoad,
   isInfoAlertVisible = true,
   onInfoAlertClose,
-}) => {
+}) {
   const { t } = useTranslation();
   const tableColumns = useMemo(() => buildTableViewColumns(columns), [columns]);
 
   return (
     <div className={styles.tableContainer}>
-      {loadError && (
-        <Alert
-          className={styles.infoAlert}
-          type="error"
-          showIcon
-          message={t("jobs.table-view-load-error")}
-        />
-      )}
-
       {isInfoAlertVisible && (
         <Alert
           className={styles.infoAlert}
@@ -54,6 +46,7 @@ export const TableView: FC<BackendTableViewProps> = ({
         data={rows}
         total={total}
         isLoading={isLoading}
+        loader={loader}
         pagination={pagination}
         onLazyLoad={onLazyLoad}
         getRowId={getTableRowId}
@@ -66,4 +59,4 @@ export const TableView: FC<BackendTableViewProps> = ({
       />
     </div>
   );
-};
+});

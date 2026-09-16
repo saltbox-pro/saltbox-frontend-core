@@ -5,9 +5,10 @@ import {
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
   localizeTemplateUiSchema,
+  notify,
   rjsfValidator,
 } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Flex, Tooltip, Typography, message } from "antd";
+import { Alert, Button, Flex, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { Component, useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -195,7 +196,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
             uiSchema={toRjsfUiSchema(localizedUiSchema!)}
             formData={formData}
             onChange={(event) => setFormData(event.formData)}
-            onSubmit={() => message.success(t("task-template-editor.form-valid"))}
+            onSubmit={() => notify.success(t("task-template-editor.form-valid"))}
           >
             {/* Кнопки вынесены за рамку формы, но пустые children обязательны:
                 иначе RJSF подставит свою кнопку отправки внутрь */}

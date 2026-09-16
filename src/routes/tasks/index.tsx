@@ -216,6 +216,7 @@ export default observer(function TasksPage() {
         data={tasksStore.tasks}
         total={tasksStore.total}
         isLoading={tasksStore.isTasksLoading}
+        loader={tasksStore.tasksLoad}
         pagination={tasksStore.pagination}
         sorting={tasksStore.sorting}
         onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}

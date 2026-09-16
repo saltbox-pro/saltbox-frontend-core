@@ -1,6 +1,6 @@
 import type { TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
+import { ErrorZone } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
-import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
@@ -46,20 +46,10 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
 
     const { minion_id: minionId = openedId, minion_inner_id: minionInnerId } = displayMinion ?? {};
 
-    const errorMessage = useMemo(() => {
-      switch (taskStore.taskJobReturnsError) {
-        case "missing-context":
-          return t("task.minion.job-returns-missing-context");
-        case "not-found":
-          return t("task.minion.job-returns-not-found");
-        case "access-denied":
-          return t("errors.access-denied");
-        case "load-failed":
-          return t("task.minion.job-returns-load-error");
-        default:
-          return null;
-      }
-    }, [taskStore.taskJobReturnsError, t]);
+    const errorMessage =
+      taskStore.taskJobReturnsError === "missing-context"
+        ? t("task.minion.job-returns-missing-context")
+        : null;
 
     const transitionKey =
       isOpened && taskMinionMongoId
@@ -80,12 +70,14 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
         errorMessage={errorMessage}
         transitionKey={transitionKey}
       >
-        <MinionTaskResults
-          selectedMinion={displayMinion}
-          jobReturns={taskStore.taskJobReturns}
-          isJobReturnsLoading={isLoading}
-          onRestartFailedMinion={onRestartFailedMinion}
-        />
+        <ErrorZone level="block" loaders={[taskStore.taskJobReturnsStore.taskJobReturnsLoad]}>
+          <MinionTaskResults
+            selectedMinion={displayMinion}
+            jobReturns={taskStore.taskJobReturns}
+            isJobReturnsLoading={isLoading}
+            onRestartFailedMinion={onRestartFailedMinion}
+          />
+        </ErrorZone>
       </BaseMinionDrawer>
     );
   }

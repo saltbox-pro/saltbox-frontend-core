@@ -1,8 +1,8 @@
-import { PageHeader } from "@saltbox/saltbox-frontend-common";
-import { Alert, Skeleton } from "antd";
+import { ErrorZone, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { Skeleton } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router";
 
 import type { TemplateEditorStore } from "../model/template-editor-store";
 
@@ -18,7 +18,7 @@ interface ExistingTemplateEditorProps {
 
 export const ExistingTemplateEditor = observer(
   ({ store, title, backPath }: ExistingTemplateEditorProps) => {
-    const { t } = useTranslation();
+    const navigate = useNavigate();
 
     useEffect(() => {
       store.loadTemplate();
@@ -37,11 +37,17 @@ export const ExistingTemplateEditor = observer(
       );
     }
 
-    if (store.hasLoadError) {
+    if (store.templateLoad.error) {
       return (
         <div className={styles.page}>
           <PageHeader title={title} customParentPathGenerator={() => backPath} />
-          <Alert type="error" showIcon message={t("task-template-editor.load-error")} />
+          <ErrorZone
+            level="page"
+            loaders={[store.templateLoad]}
+            onNavigateHome={() => navigate(backPath)}
+          >
+            {null}
+          </ErrorZone>
         </div>
       );
     }

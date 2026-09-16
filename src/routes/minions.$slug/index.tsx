@@ -2,15 +2,17 @@ import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
+  ErrorZone,
   FilterToggleButton,
   generateIdsForQuery,
-  isGlobalServerError,
   Modal,
+  notify,
   PageHeader,
   resolvePluginLocalizedLabel,
+  runMutation,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message, Tabs } from "antd";
+import { Button, Flex, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -69,8 +71,6 @@ const MinionsPage = observer(() => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [collectionStore] = useState(new CollectionStore());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -217,12 +217,6 @@ const MinionsPage = observer(() => {
   }, [location, navigate]);
 
   useEffect(() => {
-    if (collectionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [collectionStore.error, navigate]);
-
-  useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {
       openMinionsFilters();
     }
@@ -344,88 +338,97 @@ const MinionsPage = observer(() => {
 
   return (
     <>
-      {contextHolder}
-
       <PageHeader title={`${t("minions.title")} ${collectionStore.collection?.title}`}></PageHeader>
 
-      <Tabs
-        className={styles.minionsTabs}
-        tabBarExtraContent={{
-          right: (
-            <>
-              <Flex gap={8}>
-                {["list", "statistics"].includes(tabKey) && (
-                  <>
-                    <CollectionInfoPopover
-                      slug={slug}
-                      collectionStore={collectionStore}
-                      filterSchema={minionFilterStore.filterSchema}
-                    />
+      <ErrorZone
+        level="page"
+        loaders={[collectionStore.collectionLoad]}
+        onNavigateHome={() => navigate("/core/minions")}
+      >
+        {/* Схема фильтров не блокирует таблицу: ошибка показывается баннером сверху. */}
+        <ErrorZone level="block" keepContentOnError loaders={[minionFilterStore.filterSchemaLoad]}>
+          <Tabs
+            className={styles.minionsTabs}
+            tabBarExtraContent={{
+              right: (
+                <>
+                  <Flex gap={8}>
+                    {["list", "statistics"].includes(tabKey) && (
+                      <>
+                        <CollectionInfoPopover
+                          slug={slug}
+                          collectionStore={collectionStore}
+                          filterSchema={minionFilterStore.filterSchema}
+                        />
 
-                    <FilterToggleButton
-                      isOpen={shownMinionsFilters}
-                      activeFiltersCount={minionFilterStore.activeFiltersCount}
-                      onToggle={toggleShownMinionsFilters}
-                    />
+                        <FilterToggleButton
+                          isOpen={shownMinionsFilters}
+                          activeFiltersCount={minionFilterStore.activeFiltersCount}
+                          onToggle={toggleShownMinionsFilters}
+                        />
 
-                    <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
-                      <Button>
-                        <Flex gap={8}>
-                          <SettingOutlined />
-                        </Flex>
-                      </Button>
-                    </Dropdown>
-                  </>
-                )}
+                        <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
+                          <Button>
+                            <Flex gap={8}>
+                              <SettingOutlined />
+                            </Flex>
+                          </Button>
+                        </Dropdown>
+                      </>
+                    )}
 
-                {tabKey === "tasks" && (
-                  <FilterToggleButton
-                    isOpen={shownTasksFilters}
-                    activeFiltersCount={tasksFilterStore.activeFiltersCount}
-                    onToggle={toggleShownTasksFilters}
-                  />
-                )}
+                    {tabKey === "tasks" && (
+                      <FilterToggleButton
+                        isOpen={shownTasksFilters}
+                        activeFiltersCount={tasksFilterStore.activeFiltersCount}
+                        onToggle={toggleShownTasksFilters}
+                      />
+                    )}
 
-                {tabKey === "policies" && (
-                  <FilterToggleButton
-                    isOpen={shownPoliciesFilters}
-                    activeFiltersCount={policiesFilterStore.activeFiltersCount}
-                    onToggle={toggleShownPoliciesFilters}
-                  />
-                )}
-              </Flex>
-            </>
-          ),
-        }}
-        items={minionsTabs}
-        onChange={(newTabKey) => {
-          setSearchParams((prev) => {
-            const newParams = new URLSearchParams(prev);
-            newParams.set("tab", newTabKey);
-            return newParams;
-          });
-        }}
-        activeKey={tabKey}
-        destroyOnHidden={true}
-      />
+                    {tabKey === "policies" && (
+                      <FilterToggleButton
+                        isOpen={shownPoliciesFilters}
+                        activeFiltersCount={policiesFilterStore.activeFiltersCount}
+                        onToggle={toggleShownPoliciesFilters}
+                      />
+                    )}
+                  </Flex>
+                </>
+              ),
+            }}
+            items={minionsTabs}
+            onChange={(newTabKey) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set("tab", newTabKey);
+                return newParams;
+              });
+            }}
+            activeKey={tabKey}
+            destroyOnHidden={true}
+          />
+        </ErrorZone>
+      </ErrorZone>
 
       <Modal
         title={t("collection.delete-collection")}
         open={isDeleteModalOpen}
         onOk={async () => {
-          try {
-            const parentSlug = collectionStore.collection.parent_slug;
-            const deletedSlug = collectionStore.collection.slug;
-            await collectionStore.deleteCollection();
-            collectionsTreeStore.removeNode(deletedSlug);
-            setIsDeleteModalOpen(false);
-            messageApi.success(t("collection.collection-deleted-successfully"));
-            minionFilterStore.handleResetFilters();
-            navigate(`/core/minions/${parentSlug}`);
-          } catch (error) {
-            if (isGlobalServerError(error)) return;
-            messageApi.error(t("collection.error-deleting-collection"));
-          }
+          const parentSlug = collectionStore.collection.parent_slug;
+          const deletedSlug = collectionStore.collection.slug;
+
+          const result = await runMutation({
+            run: () => collectionStore.deleteCollection(),
+            errorMessage: t("collection.error-deleting-collection"),
+          });
+
+          setIsDeleteModalOpen(false);
+          if (!result.ok) return;
+
+          collectionsTreeStore.removeNode(deletedSlug);
+          notify.success(t("collection.collection-deleted-successfully"));
+          minionFilterStore.handleResetFilters();
+          navigate(`/core/minions/${parentSlug}`);
         }}
         onCancel={() => setIsDeleteModalOpen(false)}
         okText={t("common.delete")}

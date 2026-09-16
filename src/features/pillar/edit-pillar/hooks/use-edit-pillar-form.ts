@@ -1,9 +1,11 @@
 import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  type AppError,
   isInvalidJsonValueResult,
   parseAndValidateJsonValue,
+  runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { message, type FormInstance } from "antd";
+import { type FormInstance } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,9 +30,11 @@ export function useEditPillarForm({
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<AppError | null>(null);
 
   const resetSaveState = useCallback(() => {
     setSaveError(null);
+    setMutationError(null);
     setIsSaving(false);
   }, []);
 
@@ -38,6 +42,7 @@ export function useEditPillarForm({
     if (!pillar || isSecret) return;
 
     setSaveError(null);
+    setMutationError(null);
 
     let values: { value: string };
     try {
@@ -54,23 +59,24 @@ export function useEditPillarForm({
     }
 
     setIsSaving(true);
-    try {
-      const updated = await editPillar({
-        pillarId: pillar.id,
-        value: parsed.value,
-        tgtInfo: pillar.tgt_info,
-      });
 
-      onReplacePillar?.(updated);
-      message.success(t("pillars.edit.success"));
+    const result = await runMutation({
+      run: () =>
+        editPillar({
+          pillarId: pillar.id,
+          value: parsed.value,
+          tgtInfo: pillar.tgt_info,
+        }),
+      successMessage: t("pillars.edit.success"),
+      onError: setMutationError,
+    });
 
-      onSuccess?.();
-    } catch {
-      setSaveError(t("pillars.edit.error"));
-    } finally {
-      setIsSaving(false);
-    }
+    setIsSaving(false);
+    if (!result.ok) return;
+
+    onReplacePillar?.(result.data);
+    onSuccess?.();
   }, [form, isSecret, onSuccess, onReplacePillar, pillar, t]);
 
-  return { handleSave, isSaving, saveError, resetSaveState };
+  return { handleSave, isSaving, saveError, mutationError, setMutationError, resetSaveState };
 }

@@ -1,12 +1,18 @@
 import { type TaskTemplateModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
+  type AppError,
+  createLoader,
+  ErrorZone,
   Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
   TemplateSchemaErrorView,
-  isGlobalServerError,
   subscribe,
   unsubscribe,
 } from "@saltbox/saltbox-frontend-common";
-import { Flex, Spin, Tabs, message, Typography } from "antd";
+import { Flex, Spin, Tabs, Typography } from "antd";
+import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -52,7 +58,7 @@ const enum TabKey {
 
 type TaskModalCloseReason = "return-to-picker" | "dismiss" | "scheduler-handoff";
 
-export function TaskModal({
+export const TaskModal = observer(function TaskModal({
   selection,
   context,
   initialDraft,
@@ -62,11 +68,11 @@ export function TaskModal({
   onTaskCreated,
 }: TaskModalProps) {
   const { t, i18n } = useTranslation();
-  const [messageApi, messageContextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
 
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<AppError | null>(null);
   const [template, setTemplate] = useState<TaskTemplateModel | undefined>();
   const [activeTabKey, setActiveTabKey] = useState<string>(TabKey.Configuration);
   const [configuration, setConfiguration] = useState<Partial<TaskConfigurationFormData>>(
@@ -77,6 +83,16 @@ export function TaskModal({
 
   const contentRef = useRef<HTMLDivElement | null>(null);
   const closeReasonRef = useRef<TaskModalCloseReason | null>(null);
+  // Лоадер живёт дольше эффекта, а раскладка ответа по состоянию — внутри него: держим её в ref.
+  const applyTemplateRef = useRef<(loadedTemplate: TaskTemplateModel) => void>(() => undefined);
+
+  const [templateLoad] = useState(() =>
+    createLoader({
+      run: (sourceId: string, templateId: string) =>
+        taskTemplateService.loadTemplateById(sourceId, templateId),
+      onSuccess: (loadedTemplate) => applyTemplateRef.current(loadedTemplate),
+    })
+  );
 
   const collectionName = context.collection?.title ?? context.slug;
   const isPolicy = context.taskType === TaskType.Policy;
@@ -129,6 +145,8 @@ export function TaskModal({
       });
     };
 
+    applyTemplateRef.current = applyTemplate;
+
     if (selection.kind === "custom-function") {
       applyTemplate(buildDefaultTaskTemplate(selection.fun, context.taskType));
       return;
@@ -139,20 +157,7 @@ export function TaskModal({
       return;
     }
 
-    const loadTemplate = async () => {
-      try {
-        const loadedTemplate = await taskTemplateService.loadTemplateById(sourceId, templateId);
-        applyTemplate(loadedTemplate);
-      } catch (error) {
-        if (!isGlobalServerError(error)) {
-          messageApi.error(t("task-create.error-loading-template"));
-        }
-        closeReasonRef.current = "dismiss";
-        setIsModalOpen(false);
-      }
-    };
-
-    loadTemplate();
+    templateLoad.run(sourceId, templateId).catch(() => undefined);
   }, [selection]);
 
   const closeModal = (reason?: TaskModalCloseReason) => {
@@ -271,7 +276,7 @@ export function TaskModal({
 
   const handleCreateTask = async () => {
     if (!configuration || !template) {
-      messageApi.error(t("task-create.invalid-configuration"));
+      notify.error(t("task-create.invalid-configuration"));
       return;
     }
 
@@ -284,30 +289,29 @@ export function TaskModal({
     }
 
     setIsCreating(true);
-    try {
-      const request = taskCreationService.buildCreateRequest(
-        configuration as TaskConfigurationFormData,
-        context,
-        template
-      );
+    setCreateError(null);
 
-      const taskId = await taskCreationService.createTask(request);
-      messageApi.success(
-        t(
-          isPolicy
-            ? "policy-create.policy-created-successfully"
-            : "task-create.task-created-successfully"
-        )
-      );
-      onTaskCreated(taskId);
-    } catch (error) {
-      if (isGlobalServerError(error)) return;
-      messageApi.error(
-        t(isPolicy ? "policy-create.error-creating-policy" : "task-create.error-creating-task")
-      );
-    } finally {
-      setIsCreating(false);
-    }
+    const result = await runMutation({
+      run: () =>
+        taskCreationService.createTask(
+          taskCreationService.buildCreateRequest(
+            configuration as TaskConfigurationFormData,
+            context,
+            template
+          )
+        ),
+      successMessage: t(
+        isPolicy
+          ? "policy-create.policy-created-successfully"
+          : "task-create.task-created-successfully"
+      ),
+      onError: setCreateError,
+    });
+
+    setIsCreating(false);
+    if (!result.ok) return;
+
+    onTaskCreated(result.data);
   };
 
   const overviewData = useMemo(() => {
@@ -419,7 +423,7 @@ export function TaskModal({
   let modalContent: ReactNode;
 
   if (!template) {
-    modalContent = (
+    modalContent = templateLoad.error ? null : (
       <Flex align="center" justify="center" style={{ minHeight: 200 }}>
         <Spin />
       </Flex>
@@ -441,7 +445,6 @@ export function TaskModal({
 
   return (
     <>
-      {messageContextHolder}
       {modalContextHolder}
 
       <Modal
@@ -469,9 +472,19 @@ export function TaskModal({
         style={{ top: 50 }}
       >
         <Flex ref={contentRef} vertical>
-          {modalContent}
+          <MutationErrorAlert
+            error={createError}
+            fallback={t(
+              isPolicy ? "policy-create.error-creating-policy" : "task-create.error-creating-task"
+            )}
+            onClose={() => setCreateError(null)}
+          />
+
+          <ErrorZone level="block" loaders={[templateLoad]}>
+            {modalContent}
+          </ErrorZone>
         </Flex>
       </Modal>
     </>
   );
-}
+});

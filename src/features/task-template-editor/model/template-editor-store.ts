@@ -4,7 +4,11 @@ import {
   type JSONSchema,
   type VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
-import type { TaskTemplateMetaSchemaInput } from "@saltbox/saltbox-core-api-client";
+import type {
+  TaskTemplateMetaSchemaInput,
+  TaskTemplatePublicWithContentSchema,
+} from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import dayjs from "dayjs";
 import { makeAutoObservable, runInAction } from "mobx";
 
@@ -92,12 +96,9 @@ export class TemplateEditorStore {
   /** Свитч "Расширенные параметры": открывает табы Meta JSON и Переводы. */
   isAdvancedMode = false;
   sourceName: string | null = null;
-  isLoadingTemplate = false;
-  hasLoadError = false;
 
   targetSourceId: string | null = null;
   targetSources: DuplicateTargetSource[] = [];
-  isLoadingTargetSources = false;
   previewLanguage: string | null = null;
 
   /** Снимок сохранённого состояния: с ним сравниваем текущее, см. `isDirty`. */
@@ -110,7 +111,11 @@ export class TemplateEditorStore {
     this.metaText = stringifyMeta(getEmptyMeta(DEFAULT_TEMPLATE_FUN));
     this.markClean();
 
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      templateLoad: false,
+      targetSourcesLoad: false,
+      sourceLoad: false,
+    });
   }
 
   /**
@@ -354,93 +359,85 @@ export class TemplateEditorStore {
     this.previewLanguage = language;
   };
 
-  loadTemplate = async () => {
-    if (!this.templateId) return;
+  readonly templateLoad = createLoader({
+    run: () =>
+      this.templateId
+        ? apiCoreStore.taskTemplatesApi?.taskTemplateRead({
+            source_id: this.sourceId,
+            template_id: this.templateId,
+          })
+        : undefined,
+    onSuccess: (template) => this.applyLoadedTemplate(template),
+  });
 
-    runInAction(() => {
-      this.isLoadingTemplate = true;
-      this.hasLoadError = false;
-    });
-
-    try {
-      const template = await apiCoreStore.taskTemplatesApi?.taskTemplateRead({
-        source_id: this.sourceId,
-        template_id: this.templateId,
-      });
-
-      runInAction(() => {
-        const meta = (template?.meta ?? {}) as TemplateMeta;
-        const fun =
-          normalizeManualSaltFunctionName(meta.fun ?? "") ||
-          normalizeManualSaltFunctionName(template?.fun ?? "") ||
-          DEFAULT_TEMPLATE_FUN;
-
-        // Подписи из `ui_schema` и полные пути в `secret_pillars` — форматы
-        // прошлой версии редактора: приводим их к текущему сразу при открытии
-        this.metaText = stringifyMeta(migrateMetaFormat({ ...meta, fun }, fun));
-        this.slsRaw = template?.sls_content ?? "";
-        this.hadSlsContent = Boolean(template?.sls_content?.trim());
-
-        if (this.mode === "edit") {
-          this.fileNameDraft = template?.name ?? "";
-        }
-
-        // Открываем расширенные вкладки сразу, если в шаблоне есть то, что
-        // правится только на них: сложные конструкции схемы или переводы
-        this.setAdvancedMode(this.shouldForceAdvanced);
-        this.markClean();
-      });
-    } catch (error) {
-      console.error("Failed to load template:", error);
-      runInAction(() => {
-        this.hasLoadError = true;
-      });
-    } finally {
-      runInAction(() => {
-        this.isLoadingTemplate = false;
-      });
-    }
-  };
-
-  loadTargetSources = async () => {
-    runInAction(() => {
-      this.isLoadingTargetSources = true;
-    });
-
-    try {
-      const response = await apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
+  readonly targetSourcesLoad = createLoader({
+    run: () =>
+      apiCoreStore.taskTemplateSourcesApi?.templateSourceList({
         TemplateSourceListBody: {
           query: connectedLocalSourcesQuery,
         },
-      });
-
-      const editable = (response?.data ?? []).map((source) => ({
+      }),
+    onSuccess: (response) => {
+      this.targetSources = (response?.data ?? []).map((source) => ({
         id: source.id,
         name: source.name,
       }));
+    },
+  });
 
-      runInAction(() => {
-        this.targetSources = editable;
-      });
-    } catch (error) {
-      console.error("Failed to load target template sources:", error);
-    } finally {
-      runInAction(() => {
-        this.isLoadingTargetSources = false;
-      });
-    }
+  readonly sourceLoad = createLoader({
+    run: () =>
+      apiCoreStore.taskTemplateSourcesApi?.templateSourceGet({
+        source_id: this.sourceId,
+      }),
+    onSuccess: (source) => {
+      this.sourceName = source?.name ?? null;
+    },
+  });
+
+  loadTemplate = () => {
+    if (!this.templateId) return;
+    this.templateLoad.run().catch(() => undefined);
   };
 
-  loadSource = async () => {
-    try {
-      const source = await apiCoreStore.taskTemplateSourcesApi?.templateSourceGet({
-        source_id: this.sourceId,
-      });
-      runInAction(() => {
-        this.sourceName = source?.name ?? null;
-      });
-    } catch (error) {
-      console.error("Failed to load template source:", error);
+  loadTargetSources = () => {
+    this.targetSourcesLoad.run().catch(() => undefined);
+  };
+
+  loadSource = () => {
+    this.sourceLoad.run().catch(() => undefined);
+  };
+
+  get isLoadingTemplate(): boolean {
+    return this.templateLoad.isLoading;
+  }
+
+  get isLoadingTargetSources(): boolean {
+    return this.targetSourcesLoad.isLoading;
+  }
+
+  private applyLoadedTemplate = (template: TaskTemplatePublicWithContentSchema | undefined) => {
+    {
+      const meta = (template?.meta ?? {}) as TemplateMeta;
+      const fun =
+        normalizeManualSaltFunctionName(meta.fun ?? "") ||
+        normalizeManualSaltFunctionName(template?.fun ?? "") ||
+        DEFAULT_TEMPLATE_FUN;
+
+      // Подписи из `ui_schema` и полные пути в `secret_pillars` — форматы
+      // прошлой версии редактора: приводим их к текущему сразу при открытии
+      this.metaText = stringifyMeta(migrateMetaFormat({ ...meta, fun }, fun));
+      this.slsRaw = template?.sls_content ?? "";
+      this.hadSlsContent = Boolean(template?.sls_content?.trim());
+
+      if (this.mode === "edit") {
+        this.fileNameDraft = template?.name ?? "";
+      }
+
+      // Открываем расширенные вкладки сразу, если в шаблоне есть то, что
+      // правится только на них: сложные конструкции схемы или переводы
+      this.setAdvancedMode(this.shouldForceAdvanced);
+      this.markClean();
     }
   };
 

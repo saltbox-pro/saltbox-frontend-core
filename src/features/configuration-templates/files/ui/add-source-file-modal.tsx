@@ -1,7 +1,13 @@
 import { InboxOutlined } from "@ant-design/icons";
 import type { UnpackAs } from "@saltbox/saltbox-core-api-client";
-import { Modal, getApiErrorMessage, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Alert, Form, Select, Upload, type UploadFile, message } from "antd";
+import {
+  type AppError,
+  Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Form, Select, Upload, type UploadFile } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -35,9 +41,8 @@ export function AddSourceFileModal({
 }: AddSourceFileModalProps) {
   const { t } = useTranslation();
   const [form] = Form.useForm<AddSourceFileFormValues>();
-  const [messageApi, contextHolder] = message.useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<AppError | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -64,26 +69,25 @@ export function AddSourceFileModal({
   const handleFinish = async (values: AddSourceFileFormValues) => {
     setIsSubmitting(true);
     setApiError(null);
-    try {
-      await onAddFile(sourceId, {
-        file: values.file![0].originFileObj!,
-        unpack_as: values.unpack_as ?? null,
-      });
 
-      messageApi.success(t(`${I18N_PREFIX}.success`));
-      onClose();
-    } catch (reason) {
-      if (isGlobalServerError(reason)) return;
-      console.error("Failed to add source file:", reason);
-      setApiError(await getApiErrorMessage(reason, t(`${I18N_PREFIX}.error`)));
-    } finally {
-      setIsSubmitting(false);
-    }
+    const result = await runMutation({
+      run: () =>
+        onAddFile(sourceId, {
+          file: values.file![0].originFileObj!,
+          unpack_as: values.unpack_as ?? null,
+        }),
+      onError: setApiError,
+    });
+
+    setIsSubmitting(false);
+    if (!result.ok) return;
+
+    notify.success(t(`${I18N_PREFIX}.success`));
+    onClose();
   };
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t(`${I18N_PREFIX}.title`, { name: sourceName })}
         open={open}
@@ -108,6 +112,12 @@ export function AddSourceFileModal({
           onFinish={handleFinish}
           onValuesChange={() => setApiError(null)}
         >
+          <MutationErrorAlert
+            error={apiError}
+            fallback={t(`${I18N_PREFIX}.error`)}
+            onClose={() => setApiError(null)}
+          />
+
           <Form.Item<AddSourceFileFormValues>
             label={t(`${I18N_PREFIX}.file`)}
             required
@@ -144,8 +154,6 @@ export function AddSourceFileModal({
               options={UNPACK_AS_SELECT_OPTIONS}
             />
           </Form.Item>
-
-          {apiError && <Alert type="error" showIcon message={apiError} />}
         </Form>
       </Modal>
     </>

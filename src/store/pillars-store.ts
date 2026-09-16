@@ -1,7 +1,7 @@
 import type { PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import type { PaginationState, SortingState } from "@tanstack/react-table";
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
@@ -13,8 +13,6 @@ export interface PillarsStoreOptions {
 }
 
 export class PillarsStore {
-  isLoading: boolean;
-  error: string | null;
   pagination: PaginationState;
   sorting: SortingState;
   pillars: Array<PillarWithTgtInfoSchema>;
@@ -22,12 +20,29 @@ export class PillarsStore {
   mongoDBQuery: object | undefined;
   readonly targetId: string | undefined;
 
+  readonly pillarsLoad = createLoader({
+    run: () =>
+      apiCoreStore.pillarsApi?.pillarsList({
+        PillarListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+          query: {
+            ...(this.mongoDBQuery ?? {}),
+            ...(this.targetId ? { tgt_id: this.targetId } : {}),
+          },
+        },
+      }),
+    onSuccess: (response) => {
+      this.pillars = response.data;
+      this.totalPillars = response.total;
+    },
+  });
+
   constructor(options?: PillarsStoreOptions) {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { pillarsLoad: false });
 
     this.targetId = options?.targetId;
-    this.isLoading = false;
-    this.error = null;
     this.pillars = [];
     this.totalPillars = 0;
     this.mongoDBQuery = undefined;
@@ -38,9 +53,11 @@ export class PillarsStore {
     };
   }
 
+  get isLoading(): boolean {
+    return this.pillarsLoad.isLoading;
+  }
+
   reset = (): void => {
-    this.isLoading = false;
-    this.error = null;
     this.pillars = [];
     this.totalPillars = 0;
     this.mongoDBQuery = undefined;
@@ -57,37 +74,7 @@ export class PillarsStore {
   };
 
   loadPillars = (): void => {
-    this.isLoading = true;
-    this.error = null;
-
-    apiCoreStore.pillarsApi
-      ?.pillarsList({
-        PillarListBody: {
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-          query: {
-            ...(this.mongoDBQuery ?? {}),
-            ...(this.targetId ? { tgt_id: this.targetId } : {}),
-          },
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.pillars = response.data;
-          this.totalPillars = response.total;
-        });
-      })
-      .catch((_) => {
-        runInAction(() => {
-          this.error = "pillars.load-error";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isLoading = false;
-        });
-      });
+    this.pillarsLoad.run().catch(() => undefined);
   };
 
   handleLazyLoad(pagination: PaginationState, sorting: SortingState): void {

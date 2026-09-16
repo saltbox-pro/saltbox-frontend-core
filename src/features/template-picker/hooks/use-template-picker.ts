@@ -1,4 +1,4 @@
-import type { MessageInstance } from "antd/es/message/interface";
+import type { LoadSource } from "@saltbox/saltbox-frontend-common";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,14 +10,13 @@ import { useTemplateSourceRows } from "./use-template-source-rows";
 
 export type UseTemplatePickerParams = {
   isOpen: boolean;
-  messageApi: MessageInstance;
 };
 
 export type UseTemplatePickerResult = {
   appliedSearchQuery: string;
   setAppliedSearchQuery: (query: string) => void;
   isLoading: boolean;
-  isError: boolean;
+  sourceRowsLoad: LoadSource;
   hasNoData: boolean;
   hasNoResults: boolean;
   isSearchReset: boolean;
@@ -29,15 +28,10 @@ export type UseTemplatePickerResult = {
   getSourceLabel: (sourceName: string) => string;
 };
 
-export function useTemplatePicker({
-  isOpen,
-  messageApi,
-}: UseTemplatePickerParams): UseTemplatePickerResult {
+export function useTemplatePicker({ isOpen }: UseTemplatePickerParams): UseTemplatePickerResult {
   const { t, i18n } = useTranslation();
 
-  const { sourceRows, setSourceRows, isLoading, isError } = useTemplateSourceRows({
-    messageApi,
-  });
+  const { sourceRows, setSourceRows, isLoading, sourceRowsLoad } = useTemplateSourceRows();
 
   const {
     appliedSearchQuery,
@@ -62,9 +56,10 @@ export function useTemplatePicker({
 
   const functionNamesLower = useMemo(() => collectFunctionNamesLower(sourceRows), [sourceRows]);
 
-  const hasNoData = !isLoading && !isError && sourceRows.length === 0;
+  const hasError = Boolean(sourceRowsLoad.error);
+  const hasNoData = !isLoading && !hasError && sourceRows.length === 0;
   const hasNoResults =
-    !isLoading && !isError && hasSearchQuery && sourceRows.length > 0 && filteredRows.length === 0;
+    !isLoading && !hasError && hasSearchQuery && sourceRows.length > 0 && filteredRows.length === 0;
 
   const getSourceLabel = useCallback(
     (sourceName: string) => sourceName.trim() || t("task-create.unknown-repository"),
@@ -75,7 +70,7 @@ export function useTemplatePicker({
     appliedSearchQuery,
     setAppliedSearchQuery,
     isLoading,
-    isError,
+    sourceRowsLoad,
     hasNoData,
     hasNoResults,
     isSearchReset,

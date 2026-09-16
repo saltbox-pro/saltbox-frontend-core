@@ -38,7 +38,6 @@ export const MinionDetailActionsMenu = observer(function MinionDetailActionsMenu
     collectionSlug: collectionSlug ?? "",
     minionMongoId: resolvedMongoId,
     minionDisplayId: resolvedDisplayId,
-    messageApi,
     onDeleted,
   });
 

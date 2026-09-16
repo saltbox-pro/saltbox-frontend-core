@@ -1,11 +1,8 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { message } from "antd";
+import { notify, runMutation } from "@saltbox/saltbox-frontend-common";
 import type { TFunction } from "i18next";
 
-import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 export type DeleteTemplateItemParams = {
   template: Pick<TaskTemplatePublicSchema, "id">;
@@ -26,31 +23,25 @@ export async function deleteTemplateItem({
   onSuccess,
   t,
 }: DeleteTemplateItemParams): Promise<DeleteTemplateItemResult> {
-  try {
-    await onDelete(template.id);
-    message.success(
-      t("configuration-templates.source.template-delete-success", {
-        title: templateTitle,
-      })
-    );
-    onSuccess?.();
-    return "success";
-  } catch (error) {
-    if (isGlobalServerError(error) || isBgTaskPollAborted(error)) {
+  const result = await runMutation({
+    run: () => onDelete(template.id),
+    errorMessage: t("configuration-templates.source.template-delete-error"),
+  });
+
+  if (result.ok === false) {
+    if (isBgTaskPollAborted(result.error.raw)) {
       return "cancelled";
     }
 
-    if (isBgTaskFailedError(error)) {
-      message.error(
-        getBgTaskErrorMessage(error, t("configuration-templates.source.template-delete-error"))
-      );
-      await onDeleteError?.();
-      return "failed";
-    }
-
-    console.error(error);
-    message.error(t("configuration-templates.source.template-delete-error"));
     await onDeleteError?.();
     return "failed";
   }
+
+  notify.success(
+    t("configuration-templates.source.template-delete-success", {
+      title: templateTitle,
+    })
+  );
+  onSuccess?.();
+  return "success";
 }

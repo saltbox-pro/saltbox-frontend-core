@@ -3,7 +3,6 @@ export { i18nStore } from "./i18n-store";
 export { appStore } from "./app-store";
 export { apiCoreStore } from "./api-core-store";
 export { jobStore } from "./job-store";
-export { defaultCollectionStore } from "./default-collection-store";
 export { mastersStore } from "./masters-store";
 
 export { TasksStore } from "./tasks-store";
@@ -21,7 +20,6 @@ export type { ExtraDataRecord, ExtraDataRecordsStoreOptions } from "./extra-data
 export { JobFilterStore } from "./job-filter-store";
 export { JobStore } from "./job-store";
 export { JobsStore } from "./jobs-store";
-export { DefaultCollectionStore } from "./default-collection-store";
 export { collectionsTreeStore, CollectionsTreeStore } from "./collections-tree-store";
 export { TasksFilterStore } from "./tasks-filter-store";
 export { PillarsFilterStore } from "./pillars-filter-store";

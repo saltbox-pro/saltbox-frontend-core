@@ -1,6 +1,5 @@
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { createRuleGroup, formatToMongoDB } from "@saltbox/saltbox-frontend-common";
-import type { MessageInstance } from "antd/es/message/interface";
+import { createRuleGroup, formatToMongoDB, runMutation } from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,14 +14,12 @@ export const useCsvDownloader = ({
   searchFilters,
   filterSchema,
   selectedMinions,
-  messageApi,
   onError,
 }: {
   slug: string;
   searchFilters: RuleGroupType;
   filterSchema?: OptionList;
   selectedMinions?: TaskTargetMinion[];
-  messageApi?: MessageInstance;
   onError?: () => void;
 }) => {
   const { t } = useTranslation();
@@ -48,42 +45,30 @@ export const useCsvDownloader = ({
   );
 
   const handleCSVDownload = useCallback(async () => {
-    try {
-      setIsCSVLoading(true);
+    setIsCSVLoading(true);
 
-      const hasSelectedMinions = Boolean(selectedMinions?.length);
-      const filters = hasSelectedMinions
-        ? createMinionIdsRuleGroup(selectedMinions as TaskTargetMinion[])
-        : toJS(searchFilters);
-      const fields = filterSchema ? toJS(filterSchema) : undefined;
-      const query = hasSelectedMinions
-        ? formatToMongoDB(filters, fields, { caseInsensitive: false })
-        : formatToMongoDB(filters, fields);
+    const result = await runMutation({
+      run: async () => {
+        const hasSelectedMinions = Boolean(selectedMinions?.length);
+        const filters = hasSelectedMinions
+          ? createMinionIdsRuleGroup(selectedMinions as TaskTargetMinion[])
+          : toJS(searchFilters);
+        const fields = filterSchema ? toJS(filterSchema) : undefined;
+        const query = hasSelectedMinions
+          ? formatToMongoDB(filters, fields, { caseInsensitive: false })
+          : formatToMongoDB(filters, fields);
 
-      const response = await csvDownloader.createCsv("/minions/export", slug, query);
-      const filename =
-        "export_minions_" + new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] + ".csv";
-      await fileDownloader.downloadByResponse(response, filename);
-    } catch (error) {
-      console.error("CSV download failed:", error);
-      if (onError) {
-        onError();
-      } else {
-        messageApi?.error(t("minions.error-on-csv-download"));
-      }
-    } finally {
-      setIsCSVLoading(false);
-    }
-  }, [
-    createMinionIdsRuleGroup,
-    filterSchema,
-    messageApi,
-    onError,
-    searchFilters,
-    selectedMinions,
-    slug,
-    t,
-  ]);
+        const response = await csvDownloader.createCsv("/minions/export", slug, query);
+        const filename =
+          "export_minions_" + new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] + ".csv";
+        await fileDownloader.downloadByResponse(response, filename);
+      },
+      errorMessage: t("minions.error-on-csv-download"),
+    });
+
+    setIsCSVLoading(false);
+    if (!result.ok) onError?.();
+  }, [createMinionIdsRuleGroup, filterSchema, onError, searchFilters, selectedMinions, slug, t]);
 
   return {
     isCSVLoading,

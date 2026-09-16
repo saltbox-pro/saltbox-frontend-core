@@ -1,11 +1,23 @@
-import { JsonEditorField, Modal } from "@saltbox/saltbox-frontend-common";
-import { Button, Form, Input, message } from "antd";
+import {
+  type AppError,
+  JsonEditorField,
+  Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Button, Form, Input } from "antd";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
+
+const isDuplicateTitleError = (error: AppError): boolean =>
+  error.status === 409 ||
+  ((error.status === 400 || error.status === 422) &&
+    Boolean(error.serverMessage?.includes("Duplicate key")));
 
 type collectionCreateFormType = {
   title: string;
@@ -36,7 +48,7 @@ function CollectionCreateModal({
 
   const [form] = Form.useForm<collectionCreateFormType>();
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
+  const [createError, setCreateError] = useState<AppError | null>(null);
 
   useEffect(() => {
     setIsModalOpen(isOpen);
@@ -45,6 +57,7 @@ function CollectionCreateModal({
   useEffect(() => {
     if (isModalOpen) {
       form.resetFields();
+      setCreateError(null);
       if (editableFilter) {
         form.setFieldValue("query", JSON.stringify(query ?? {}, null, 2));
       }
@@ -58,59 +71,60 @@ function CollectionCreateModal({
     }
   };
 
-  const handleFormFinish = (formValue: collectionCreateFormType) => {
+  const handleFormFinish = async (formValue: collectionCreateFormType) => {
     let filterQuery = query;
     if (editableFilter) {
       try {
         filterQuery = JSON.parse(formValue.query || "{}");
       } catch {
-        messageApi.error(t("collection.invalid-filter-json"));
+        notify.error(t("collection.invalid-filter-json"));
         return;
       }
     }
 
     setIsCollectionCreating(true);
-    apiCoreStore.minionCollectionsApi
-      ?.minionCollectionCreate({
-        CollectionCreateRequestSchema: {
-          query: filterQuery,
-          title: formValue.title,
-          description: formValue.description?.trim() || undefined,
-          parent_slug: parentSlug,
+    setCreateError(null);
+
+    const result = await runMutation({
+      run: () =>
+        apiCoreStore.minionCollectionsApi?.minionCollectionCreate({
+          CollectionCreateRequestSchema: {
+            query: filterQuery,
+            title: formValue.title,
+            description: formValue.description?.trim() || undefined,
+            parent_slug: parentSlug,
+          },
+        }) ?? Promise.reject(new Error("Minion collections API is not available")),
+      onError: (error) => {
+        if (isDuplicateTitleError(error)) {
+          form.setFields([
+            { name: "title", errors: [t("collection-create-modal.error-duplicate-title")] },
+          ]);
+          return;
+        }
+        setCreateError(error);
+      },
+    });
+
+    setIsCollectionCreating(false);
+    if (!result.ok) return;
+
+    notify.success(t("collection-create-modal.success"));
+    collectionsTreeStore.addNode(result.data);
+    setIsModalOpen(false);
+    onClose?.(true);
+    if (navigateAfterCreate && result.data.slug) {
+      onBeforeNavigate?.();
+      navigate(`/core/minions/${result.data.slug}`, {
+        state: {
+          resetFilters: true,
         },
-      })
-      .then((response) => {
-        messageApi.success(t("collection-create-modal.success"));
-        collectionsTreeStore.addNode(response);
-        setIsModalOpen(false);
-        onClose?.(true);
-        if (navigateAfterCreate && response.slug) {
-          onBeforeNavigate?.();
-          navigate(`/core/minions/${response.slug}`, {
-            state: {
-              resetFilters: true,
-            },
-          });
-        }
-      })
-      .catch(async (error) => {
-        if (error?.response?.status === 400) {
-          const errorBody = await error?.response?.json();
-          if (errorBody?.detail?.includes("Duplicate key")) {
-            messageApi.error(t("collection-create-modal.error-duplicate-title"));
-            return;
-          }
-        }
-        messageApi.error(t("collection-create-modal.error"));
-      })
-      .finally(() => {
-        setIsCollectionCreating(false);
       });
+    }
   };
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t("collection-create-modal.dialog-title")}
         open={isModalOpen}
@@ -143,6 +157,12 @@ function CollectionCreateModal({
           autoComplete="off"
           id="collection-form"
         >
+          <MutationErrorAlert
+            error={createError}
+            fallback={t("collection-create-modal.error")}
+            onClose={() => setCreateError(null)}
+          />
+
           <Form.Item<collectionCreateFormType>
             label={t("collection-create-modal.form-title")}
             name="title"

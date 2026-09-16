@@ -1,8 +1,8 @@
 import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { Alert, Flex, Skeleton } from "antd";
+import { ErrorZone } from "@saltbox/saltbox-frontend-common";
+import { Flex, Skeleton } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useRef } from "react";
-import { useTranslation } from "react-i18next";
 
 import { JobReturnOutput, JobReturnSteps } from "saltbox-core/shared/components/job-return";
 import type { JobStore } from "saltbox-core/store";
@@ -22,14 +22,10 @@ export const JobReturnRow = observer(function JobReturnRow({
   isStepsView,
   jobStore,
 }: JobReturnRowProps) {
-  const { t } = useTranslation();
-
-  const { getJobReturnDataStatus, getJobReturnDataError, getJobReturnData, loadJobReturnData } =
-    jobStore;
+  const { getJobReturnData, getJobReturnDataState, loadJobReturnData } = jobStore;
 
   const jobReturnId = row.id;
-  const status = getJobReturnDataStatus(jobReturnId);
-  const error = getJobReturnDataError(jobReturnId);
+  const load = getJobReturnDataState(jobReturnId);
   const dataFromRequest = getJobReturnData(jobReturnId);
   const didRequestOnMountRef = useRef(false);
   const didRequestOnIdleRef = useRef(false);
@@ -39,41 +35,21 @@ export const JobReturnRow = observer(function JobReturnRow({
     if (didRequestOnMountRef.current) return;
     didRequestOnMountRef.current = true;
 
-    loadJobReturnData(jobReturnId, {
-      force: true,
-      loadingStatus: "in-process",
-    });
+    loadJobReturnData(jobReturnId, { force: true });
   }, [jobReturnId, loadJobReturnData]);
 
   useEffect(() => {
     if (!jobReturnId) return;
 
-    if (status === "idle") {
+    if (load.status === "idle") {
       if (didRequestOnIdleRef.current) return;
       didRequestOnIdleRef.current = true;
-      loadJobReturnData(jobReturnId, {
-        force: true,
-        loadingStatus: "refetching",
-      });
+      loadJobReturnData(jobReturnId, { force: true });
       return;
     }
 
     didRequestOnIdleRef.current = false;
-  }, [jobReturnId, loadJobReturnData, status]);
-
-  const errorMessage = useMemo(() => {
-    switch (error) {
-      case "not-found":
-        return t("job-return.not-found");
-      case "access-denied":
-        return t("errors.access-denied");
-      case "api-unavailable":
-      case "load-failed":
-        return t("job-return.load-error");
-      default:
-        return null;
-    }
-  }, [error, t]);
+  }, [jobReturnId, load.status, loadJobReturnData]);
 
   const jobReturnToRender = useMemo(() => {
     return {
@@ -82,21 +58,24 @@ export const JobReturnRow = observer(function JobReturnRow({
     };
   }, [dataFromRequest, row]);
 
+  const isFirstLoad = load.isLoading && load.isInitialLoad;
+  const isRefetching = load.isLoading && !load.isInitialLoad;
+
   return (
     <Flex className={styles.jobReturnsRow} align="center">
-      {status === "error" ? (
-        <Alert message={errorMessage} type="error" showIcon />
-      ) : status === "idle" || status === "in-process" ? (
-        <Skeleton.Input block active />
-      ) : isStepsView ? (
-        <JobReturnSteps jobReturn={jobReturnToRender} inProcess={status === "refetching"} />
-      ) : (
-        <JobReturnOutput
-          isFullOutput={isFullOutput}
-          inProcess={status === "refetching"}
-          jobReturn={jobReturnToRender}
-        />
-      )}
+      <ErrorZone level="block" loaders={[load]}>
+        {load.status === "idle" || isFirstLoad ? (
+          <Skeleton.Input block active />
+        ) : isStepsView ? (
+          <JobReturnSteps jobReturn={jobReturnToRender} inProcess={isRefetching} />
+        ) : (
+          <JobReturnOutput
+            isFullOutput={isFullOutput}
+            inProcess={isRefetching}
+            jobReturn={jobReturnToRender}
+          />
+        )}
+      </ErrorZone>
     </Flex>
   );
 });

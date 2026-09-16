@@ -5,9 +5,12 @@ import type {
   CreateJobRequestTgtTypeEnum,
 } from "@saltbox/saltbox-core-api-client";
 import {
+  type AppError,
   publish,
   resolvePluginLocalizedLabel,
+  runMutation,
   subscribe,
+  MutationErrorAlert,
   TemplateSchemaErrorView,
   unsubscribe,
   Modal,
@@ -119,6 +122,7 @@ export function JobModal({
   const [isGatherModalOpen, setIsGatherModalOpen] = useState(false);
   const [isJobCreating, setIsJobCreating] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [createError, setCreateError] = useState<AppError | null>(null);
   const [isAdvancedSettingsEnabled, setIsAdvancedSettingsEnabled] = useState(false);
   const [jsonFormExtraErrors, setJsonFormExtraErrors] = useState<ErrorSchema>();
 
@@ -428,7 +432,7 @@ export function JobModal({
     return false;
   };
 
-  const handleFormFinish: FormProps<JobFormData>["onFinish"] = (formValue) => {
+  const handleFormFinish: FormProps<JobFormData>["onFinish"] = async (formValue) => {
     if (handleFormFinishInProgressRef.current || schemaError) return;
 
     if (!validateJsonForm()) {
@@ -439,6 +443,7 @@ export function JobModal({
 
     handleFormFinishInProgressRef.current = true;
     setIsJobCreating(true);
+    setCreateError(null);
 
     const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg();
 
@@ -447,35 +452,36 @@ export function JobModal({
       requestTgt = (requestTgt as String)?.split(",") ?? requestTgt;
     }
 
-    apiCoreStore.jobsApi
-      ?.jobCreate({
-        CreateJobRequest: {
-          tgt: requestTgt,
-          fun,
-          template_id: isTemplateMode ? templateId : undefined,
-          tgt_type: formValue.tgt_type,
-          salt_master: formValue.salt_master,
-          arg: requestArg,
-          kwarg: requestKwarg,
-          ttl: getTtlValue(),
-        },
-      })
-      .then((response) => {
-        resetModalState();
-        setIsModalOpen(false);
-        onAfterClose?.();
-        if (response?.id) {
-          navigate(`/core/jobs/${response.id}`);
-        }
-      })
-      .catch((_) => {
-        messageApi.error(t("job-modal.error-job-create"));
-      })
-      .finally(() => {
-        setIsJobCreating(false);
-        isSubmittingRef.current = false;
-        handleFormFinishInProgressRef.current = false;
-      });
+    const result = await runMutation({
+      run: () =>
+        apiCoreStore.jobsApi?.jobCreate({
+          CreateJobRequest: {
+            tgt: requestTgt,
+            fun,
+            template_id: isTemplateMode ? templateId : undefined,
+            tgt_type: formValue.tgt_type,
+            salt_master: formValue.salt_master,
+            arg: requestArg,
+            kwarg: requestKwarg,
+            ttl: getTtlValue(),
+          },
+        }) ?? Promise.reject(new Error("Jobs API is not available")),
+      onError: setCreateError,
+      form,
+    });
+
+    setIsJobCreating(false);
+    isSubmittingRef.current = false;
+    handleFormFinishInProgressRef.current = false;
+
+    if (!result.ok) return;
+
+    resetModalState();
+    setIsModalOpen(false);
+    onAfterClose?.();
+    if (result.data?.id) {
+      navigate(`/core/jobs/${result.data.id}`);
+    }
   };
 
   const handleFormFinishFailed: FormProps<JobFormData>["onFinishFailed"] = (errorInfo) => {
@@ -615,6 +621,12 @@ export function JobModal({
               onFinish={handleFormFinish}
               onFinishFailed={handleFormFinishFailed}
             >
+              <MutationErrorAlert
+                error={createError}
+                fallback={t("job-modal.error-job-create")}
+                onClose={() => setCreateError(null)}
+              />
+
               <Form.Item<JobFormData>
                 label={
                   <FieldHint

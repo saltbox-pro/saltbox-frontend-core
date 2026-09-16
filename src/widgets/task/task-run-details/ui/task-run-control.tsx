@@ -1,6 +1,6 @@
 import { CaretRightOutlined, IssuesCloseOutlined, StopOutlined } from "@ant-design/icons";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message } from "antd";
+import { runMutation } from "@saltbox/saltbox-frontend-common";
+import { Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
 import { type TaskRunControlInput, useTaskPermissions } from "../hooks/useTaskPermition";
@@ -27,33 +27,16 @@ export function TaskRunControl({
 }: TaskRunControlProps) {
   const { t } = useTranslation();
 
-  const [messageApi, contextHolder] = message.useMessage();
-
-  const handleRunClick = async () => {
-    try {
-      await onRunTask();
-    } catch (e) {
-      if (isGlobalServerError(e)) return;
-      messageApi.error(t("task.run-error"));
-    }
+  const handleRunClick = () => {
+    runMutation({ run: onRunTask, errorMessage: t("task.run-error") });
   };
 
-  const handleStopClick = async () => {
-    try {
-      await onStopTask();
-    } catch (e) {
-      if (isGlobalServerError(e)) return;
-      messageApi.error(t("task.stop-error"));
-    }
+  const handleStopClick = () => {
+    runMutation({ run: onStopTask, errorMessage: t("task.stop-error") });
   };
 
-  const handleRestartFailedClick = async () => {
-    try {
-      await onRestartFailed();
-    } catch (e) {
-      if (isGlobalServerError(e)) return;
-      messageApi.error(t("task.restart-failed-error"));
-    }
+  const handleRestartFailedClick = () => {
+    runMutation({ run: onRestartFailed, errorMessage: t("task.restart-failed-error") });
   };
 
   const { canRun, canStop, canRestartFailed } = useTaskPermissions({
@@ -63,40 +46,36 @@ export function TaskRunControl({
   });
 
   return (
-    <>
-      {contextHolder}
+    <Flex gap={7}>
+      <Button
+        onClick={handleRunClick}
+        color="primary"
+        variant="solid"
+        icon={<CaretRightOutlined />}
+        disabled={!canRun}
+        loading={isRunTaskLoading}
+        title={t("task.run")}
+      />
 
-      <Flex gap={7}>
-        <Button
-          onClick={handleRunClick}
-          color="primary"
-          variant="solid"
-          icon={<CaretRightOutlined />}
-          disabled={!canRun}
-          loading={isRunTaskLoading}
-          title={t("task.run")}
-        />
+      <Button
+        onClick={handleStopClick}
+        color="danger"
+        variant="solid"
+        icon={<StopOutlined />}
+        disabled={!canStop}
+        loading={isStopTaskLoading}
+        title={t("task.stop")}
+      />
 
-        <Button
-          onClick={handleStopClick}
-          color="danger"
-          variant="solid"
-          icon={<StopOutlined />}
-          disabled={!canStop}
-          loading={isStopTaskLoading}
-          title={t("task.stop")}
-        />
-
-        <Button
-          onClick={handleRestartFailedClick}
-          color="orange"
-          variant="solid"
-          icon={<IssuesCloseOutlined />}
-          disabled={!canRestartFailed}
-          loading={isRestartFailedLoading}
-          title={t("task.restart-failed")}
-        />
-      </Flex>
-    </>
+      <Button
+        onClick={handleRestartFailedClick}
+        color="orange"
+        variant="solid"
+        icon={<IssuesCloseOutlined />}
+        disabled={!canRestartFailed}
+        loading={isRestartFailedLoading}
+        title={t("task.restart-failed")}
+      />
+    </Flex>
   );
 }

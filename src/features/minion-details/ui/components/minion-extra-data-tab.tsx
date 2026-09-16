@@ -1,7 +1,7 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { FastTablePaginated, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Flex, message } from "antd";
+import { Flex } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
@@ -48,12 +48,6 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
     };
   }, [store]);
 
-  useEffect(() => {
-    if (store.error) {
-      message.error(t(store.error));
-    }
-  }, [store.error, t]);
-
   const columns = useMemo(
     () => [
       columnHelper.accessor("name", {
@@ -80,6 +74,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
         data={toJS(store.categories)}
         total={store.total}
         isLoading={store.isLoading}
+        loader={store.categoriesLoad}
         pagination={store.pagination}
         sorting={store.sorting}
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}

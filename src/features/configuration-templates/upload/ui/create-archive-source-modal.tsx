@@ -1,6 +1,12 @@
 import { InboxOutlined } from "@ant-design/icons";
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Form, Upload, type UploadFile, message } from "antd";
+import {
+  type AppError,
+  Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Form, Upload, type UploadFile } from "antd";
 import type { RcFile } from "antd/es/upload";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,9 +18,7 @@ import {
   trimOptional,
   trimRequired,
 } from "../../shared/constants/template-source-name-description-form";
-import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
 import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
-import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
 import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
 import {
   TEMPLATE_SOURCE_ARCHIVE_ACCEPT,
@@ -51,9 +55,8 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
   const { t } = useTranslation();
 
   const [form] = Form.useForm<ArchiveSourceFormValues>();
-  const [messageApi, contextHolder] = message.useMessage();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<AppError | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -114,110 +117,108 @@ export const CreateArchiveSourceModal = observer(function CreateArchiveSourceMod
   const handleFinish = async (values: ArchiveSourceFormValues) => {
     setIsSubmitting(true);
     setApiError(null);
-    try {
-      const name = trimRequired(values.name);
-      const fileObj = values.file?.[0]?.originFileObj;
 
-      if (!fileObj) {
-        return;
-      }
+    const name = trimRequired(values.name);
+    const fileObj = values.file?.[0]?.originFileObj;
 
-      await store.createArchiveSource({
-        name,
-        description: trimOptional(values.description),
-        file: fileObj,
-      });
-
-      messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
-      onClose();
-    } catch (reason) {
-      console.error("Failed to create archive template source:", reason);
-      if (isGlobalServerError(reason)) return;
-
-      if (await trySetSourceDuplicateNameFieldError(form, reason, t)) {
-        return;
-      }
-
-      setApiError(await getSourceFormErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
-    } finally {
-      setIsSubmitting(false);
+    if (!fileObj) {
+      return;
     }
+
+    const result = await runMutation({
+      run: () =>
+        store.createArchiveSource({
+          name,
+          description: trimOptional(values.description),
+          file: fileObj,
+        }),
+      onError: (error) => {
+        if (trySetSourceDuplicateNameFieldError(form, error, t)) return;
+        setApiError(error);
+      },
+    });
+
+    setIsSubmitting(false);
+    if (!result.ok) return;
+
+    notify.success(t(`${I18N_PREFIX}.create-success`, { name }));
+    onClose();
   };
 
   return (
-    <>
-      {contextHolder}
-
-      <Modal
-        title={t(`${I18N_PREFIX}.title`)}
-        open={open}
-        onCancel={handleCancel}
-        destroyOnHidden
-        footer={
-          <CreateTemplateSourceModalFooter
-            formId={FORM_ID}
-            isSubmitting={isSubmitting}
-            cancelLabel={t("common.cancel")}
-            createLabel={t("common.add")}
-            onCancel={handleCancel}
-          />
-        }
+    <Modal
+      title={t(`${I18N_PREFIX}.title`)}
+      open={open}
+      onCancel={handleCancel}
+      destroyOnHidden
+      footer={
+        <CreateTemplateSourceModalFooter
+          formId={FORM_ID}
+          isSubmitting={isSubmitting}
+          cancelLabel={t("common.cancel")}
+          createLabel={t("common.add")}
+          onCancel={handleCancel}
+        />
+      }
+    >
+      <Form
+        id={FORM_ID}
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        onValuesChange={() => setApiError(null)}
+        autoComplete="off"
       >
-        <Form
-          id={FORM_ID}
-          form={form}
-          layout="vertical"
-          onFinish={handleFinish}
-          onValuesChange={() => setApiError(null)}
-          autoComplete="off"
+        <MutationErrorAlert
+          error={apiError}
+          fallback={t(`${I18N_PREFIX}.create-error`)}
+          onClose={() => setApiError(null)}
+        />
+
+        <TemplateSourceNameDescriptionFields />
+
+        <Form.Item<ArchiveSourceFormValues>
+          className={styles.fileField}
+          label={t(`${I18N_PREFIX}.file`)}
+          required
+          name="file"
+          validateFirst
+          valuePropName="fileList"
+          getValueFromEvent={(e: { fileList: UploadFile[] } | undefined) => e?.fileList ?? []}
+          rules={[
+            {
+              required: true,
+              type: "array",
+              min: 1,
+              message: t(`${I18N_PREFIX}.file-required`),
+            },
+            {
+              validator: async (_, fileList: UploadFile[]) => {
+                const fileObj = fileList?.[0]?.originFileObj;
+                if (!fileObj) return;
+
+                const validationError = validateArchiveSourceFile(fileObj);
+                if (!validationError) return;
+
+                throw new Error(formatArchiveSourceFileValidationError(validationError, t));
+              },
+            },
+          ]}
         >
-          <TemplateSourceNameDescriptionFields />
-
-          <Form.Item<ArchiveSourceFormValues>
-            className={styles.fileField}
-            label={t(`${I18N_PREFIX}.file`)}
-            required
-            name="file"
-            validateFirst
-            valuePropName="fileList"
-            getValueFromEvent={(e: { fileList: UploadFile[] } | undefined) => e?.fileList ?? []}
-            rules={[
-              {
-                required: true,
-                type: "array",
-                min: 1,
-                message: t(`${I18N_PREFIX}.file-required`),
-              },
-              {
-                validator: async (_, fileList: UploadFile[]) => {
-                  const fileObj = fileList?.[0]?.originFileObj;
-                  if (!fileObj) return;
-
-                  const validationError = validateArchiveSourceFile(fileObj);
-                  if (!validationError) return;
-
-                  throw new Error(formatArchiveSourceFileValidationError(validationError, t));
-                },
-              },
-            ]}
-          >
-            <Dragger {...uploadProps}>
-              <p className="ant-upload-drag-icon">
-                <InboxOutlined />
-              </p>
-              <p className="ant-upload-text">{t(`${I18N_PREFIX}.file-drag-title`)}</p>
-              <p className="ant-upload-hint">
-                {t(`${I18N_PREFIX}.file-drag-hint`, {
-                  formats: TEMPLATE_SOURCE_ARCHIVE_FORMATS_LABEL,
-                  maxSizeGb: TEMPLATE_SOURCE_ARCHIVE_MAX_SIZE_GB,
-                })}
-              </p>
-            </Dragger>
-          </Form.Item>
-
-          {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
-        </Form>
-      </Modal>
-    </>
+          <Dragger {...uploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">{t(`${I18N_PREFIX}.file-drag-title`)}</p>
+            <p className="ant-upload-hint">
+              {t(`${I18N_PREFIX}.file-drag-hint`, {
+                formats: TEMPLATE_SOURCE_ARCHIVE_FORMATS_LABEL,
+                maxSizeGb: TEMPLATE_SOURCE_ARCHIVE_MAX_SIZE_GB,
+              })}
+            </p>
+          </Dragger>
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 });

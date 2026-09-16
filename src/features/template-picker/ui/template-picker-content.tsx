@@ -1,4 +1,6 @@
-import { Alert, Button, Empty, Flex } from "antd";
+import { ErrorZone, type LoadSource } from "@saltbox/saltbox-frontend-common";
+import { Button, Empty, Flex } from "antd";
+import { observer } from "mobx-react-lite";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -10,7 +12,7 @@ import styles from "./template-picker-modal.module.css";
 
 export type TemplatePickerContentProps = {
   isLoading: boolean;
-  isError: boolean;
+  loader: LoadSource;
   hasNoData: boolean;
   hasNoResults: boolean;
   isSearchReset: boolean;
@@ -24,9 +26,9 @@ export type TemplatePickerContentProps = {
   onGoToConfigurationTemplates: () => void;
 };
 
-export function TemplatePickerContent({
+export const TemplatePickerContent = observer(function TemplatePickerContent({
   isLoading,
-  isError,
+  loader,
   hasNoData,
   hasNoResults,
   isSearchReset,
@@ -41,7 +43,7 @@ export function TemplatePickerContent({
 }: TemplatePickerContentProps) {
   const { t } = useTranslation();
 
-  const shouldShowCollapse = !isLoading && !isError && filteredRows.length > 0;
+  const shouldShowCollapse = !isLoading && !loader.error && filteredRows.length > 0;
 
   const emptyStateActions = (
     <Flex justify="center" align="center" gap="small" wrap>
@@ -57,39 +59,37 @@ export function TemplatePickerContent({
 
   return (
     <div className={styles.modalContent}>
-      {!isLoading && isError && (
-        <Alert type="error" message={t("task-create.error-loading-templates")} showIcon />
-      )}
+      <ErrorZone level="block" loaders={[loader]}>
+        {hasNoData && (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("task-create.no-sources-available")}
+          >
+            {emptyStateActions}
+          </Empty>
+        )}
 
-      {hasNoData && (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={t("task-create.no-sources-available")}
-        >
-          {emptyStateActions}
-        </Empty>
-      )}
+        {hasNoResults && (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={t("configuration-templates.search.no-results")}
+          >
+            {emptyStateActions}
+          </Empty>
+        )}
 
-      {hasNoResults && (
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={t("configuration-templates.search.no-results")}
-        >
-          {emptyStateActions}
-        </Empty>
-      )}
-
-      {shouldShowCollapse && (
-        <TemplateListSourcesCollapse
-          filteredRows={filteredRows}
-          activeKeys={activeKeys}
-          searchQuery={searchQuery}
-          isSearchReset={isSearchReset}
-          getSourceLabel={getSourceLabel}
-          onCollapseChange={onCollapseChange}
-          onSelectTemplate={onSelectTemplate}
-        />
-      )}
+        {shouldShowCollapse && (
+          <TemplateListSourcesCollapse
+            filteredRows={filteredRows}
+            activeKeys={activeKeys}
+            searchQuery={searchQuery}
+            isSearchReset={isSearchReset}
+            getSourceLabel={getSourceLabel}
+            onCollapseChange={onCollapseChange}
+            onSelectTemplate={onSelectTemplate}
+          />
+        )}
+      </ErrorZone>
     </div>
   );
-}
+});

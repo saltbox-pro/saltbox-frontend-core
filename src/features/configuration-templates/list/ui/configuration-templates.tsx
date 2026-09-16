@@ -1,5 +1,10 @@
 import { SettingOutlined } from "@ant-design/icons";
-import { RefreshButton, SearchInput } from "@saltbox/saltbox-frontend-common";
+import {
+  ErrorZone,
+  RefreshButton,
+  SearchInput,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
 import {
   type MenuProps,
   Alert,
@@ -27,8 +32,6 @@ import { TemplatePreviewDrawer } from "../../templates/ui/template-preview-drawe
 import { CreateArchiveSourceModal } from "../../upload/ui/create-archive-source-modal";
 import { CreateGitSourceModal } from "../../upload/ui/create-git-source-modal";
 import { CreateLocalSourceModal } from "../../upload/ui/create-local-source-modal";
-import { getGitlabSyncErrorMessageKey } from "../helpers/gitlab-sync-error";
-import { getMountedSyncErrorMessageKey } from "../helpers/mounted-sync-error";
 import { ConfigurationTemplatesStore } from "../store/configuration-templates-store";
 
 import { SyncGitlabSourcesButton } from "./components/sync-gitlab-sources-button";
@@ -63,17 +66,19 @@ export const ConfigurationTemplates = observer(() => {
   const handleLoadSources = useCallback(() => store.load(), [store]);
 
   const handleSyncGitlabSources = useCallback(async () => {
-    const succeeded = await store.refreshWithExternalCheck();
-    if (succeeded) {
-      message.success(t("configuration-templates.sync-gitlab-sources-success"));
-    }
+    await runMutation({
+      run: () => store.refreshWithExternalCheck(),
+      successMessage: t("configuration-templates.sync-gitlab-sources-success"),
+      errorMessage: t("configuration-templates.sync-gitlab-sources-error"),
+    });
   }, [store, t]);
 
   const handleSyncMountedSources = useCallback(async () => {
-    const succeeded = await store.refreshWithMountedCheck();
-    if (succeeded) {
-      message.success(t("configuration-templates.sync-mounted-sources-success"));
-    }
+    await runMutation({
+      run: () => store.refreshWithMountedCheck(),
+      successMessage: t("configuration-templates.sync-mounted-sources-success"),
+      errorMessage: t("configuration-templates.sync-mounted-sources-error"),
+    });
   }, [store, t]);
 
   const filteredSources = useMemo(() => {
@@ -129,7 +134,7 @@ export const ConfigurationTemplates = observer(() => {
   const hasSearchQuery = searchQuery !== undefined;
   const isSourcesListEmpty = store.sortedSources.length === 0;
   const showGitlabSourcesAlert =
-    store.hasLoadedOnce && !store.hasError && isSourcesListEmpty && !hasSearchQuery;
+    store.hasLoadedOnce && !store.sourcesLoad.error && isSourcesListEmpty && !hasSearchQuery;
   const isRefreshingList =
     store.isLoading && store.hasLoadedOnce && !store.isCheckingExternal && !store.isCheckingMounted;
   const isListAreaLoading = isRefreshingList || store.isCheckingExternal || store.isCheckingMounted;
@@ -171,70 +176,50 @@ export const ConfigurationTemplates = observer(() => {
           </Space>
         </Flex>
 
-        {!!store.hasError && (
-          <Alert message={t("configuration-templates.load-error")} type="error" showIcon />
-        )}
-
-        {store.gitlabSyncError && (
-          <Alert
-            message={t(getGitlabSyncErrorMessageKey(store.gitlabSyncError))}
-            description={store.gitlabSyncErrorDetail ?? undefined}
-            type="error"
-            showIcon
-          />
-        )}
-
-        {store.mountedSyncError && (
-          <Alert
-            message={t(getMountedSyncErrorMessageKey(store.mountedSyncError))}
-            description={store.mountedSyncErrorDetail ?? undefined}
-            type="error"
-            showIcon
-          />
-        )}
-
-        <Flex vertical gap="large">
-          {showGitlabSourcesAlert && (
-            <Alert
-              type="info"
-              showIcon
-              message={t("configuration-templates.sync-gitlab-sources-not-loaded.message")}
-              action={
-                <SyncGitlabSourcesButton
-                  isSyncing={store.isCheckingExternal}
-                  onSync={handleSyncGitlabSources}
-                  size="small"
-                />
-              }
-            />
-          )}
-
-          <Spin spinning={isListAreaLoading}>
-            {filteredSources.length === 0 ? (
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={
-                  hasSearchQuery
-                    ? t("configuration-templates.search.no-results")
-                    : t("configuration-templates.empty")
+        <ErrorZone level="block" loaders={[store.sourcesLoad]}>
+          <Flex vertical gap="large">
+            {showGitlabSourcesAlert && (
+              <Alert
+                type="info"
+                showIcon
+                message={t("configuration-templates.sync-gitlab-sources-not-loaded.message")}
+                action={
+                  <SyncGitlabSourcesButton
+                    isSyncing={store.isCheckingExternal}
+                    onSync={handleSyncGitlabSources}
+                    size="small"
+                  />
                 }
               />
-            ) : (
-              <Flex ref={drawer.mainContentRef} vertical gap="large">
-                {filteredSources.map((source) => (
-                  <TemplateSourceListEntry
-                    key={source.id}
-                    source={source}
-                    store={store}
-                    searchQuery={searchQuery}
-                    templatePreview={templatesListProps}
-                    messageApi={messageApi}
-                  />
-                ))}
-              </Flex>
             )}
-          </Spin>
-        </Flex>
+
+            <Spin spinning={isListAreaLoading}>
+              {filteredSources.length === 0 ? (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={
+                    hasSearchQuery
+                      ? t("configuration-templates.search.no-results")
+                      : t("configuration-templates.empty")
+                  }
+                />
+              ) : (
+                <Flex ref={drawer.mainContentRef} vertical gap="large">
+                  {filteredSources.map((source) => (
+                    <TemplateSourceListEntry
+                      key={source.id}
+                      source={source}
+                      store={store}
+                      searchQuery={searchQuery}
+                      templatePreview={templatesListProps}
+                      messageApi={messageApi}
+                    />
+                  ))}
+                </Flex>
+              )}
+            </Spin>
+          </Flex>
+        </ErrorZone>
       </Space>
 
       <CreateLocalSourceModal

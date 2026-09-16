@@ -1,14 +1,10 @@
 import { DisconnectOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, message } from "antd";
+import { runMutation } from "@saltbox/saltbox-frontend-common";
+import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-
-import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
-import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import {
   getSourceActionContext,
@@ -41,26 +37,13 @@ export const DisconnectSourceButton = observer(function DisconnectSourceButton({
   const isLoading = isActuallyUnplugging || unplugRequestLoading;
 
   const handleDisconnect = useCallback(async () => {
-    try {
-      await actions.unplugSource(source.id);
-      message.success(
-        t("configuration-templates.source.action.unplug-success", {
-          name: source.name,
-        })
-      );
-    } catch (error) {
-      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
-
-      if (isBgTaskFailedError(error)) {
-        message.error(
-          getBgTaskErrorMessage(error, t("configuration-templates.source.action.unplug-error"))
-        );
-        return;
-      }
-
-      console.error(error);
-      message.error(t("configuration-templates.source.action.unplug-error"));
-    }
+    await runMutation({
+      run: () => actions.unplugSource(source.id),
+      successMessage: t("configuration-templates.source.action.unplug-success", {
+        name: source.name,
+      }),
+      errorMessage: t("configuration-templates.source.action.unplug-error"),
+    });
   }, [actions, source.id, source.name, t]);
 
   if (!showDisconnect) return null;

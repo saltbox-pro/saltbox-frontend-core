@@ -1,16 +1,13 @@
 import { SyncOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { AcceptedMastersActionButton, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Tag, message } from "antd";
+import { AcceptedMastersActionButton, runMutation } from "@saltbox/saltbox-frontend-common";
+import { Tag } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
-import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 import { mastersStore } from "saltbox-core/store";
 
 import {
@@ -46,26 +43,13 @@ export const SyncSourceButton = observer(function SyncSourceButton({
   const syncRequestLoading = isSyncRequestLoading(actionContext);
 
   const executeSync = useCallback(async () => {
-    try {
-      await actions.syncSource(source.id);
-      message.success(
-        t("configuration-templates.source.action.sync-success", {
-          name: source.name,
-        })
-      );
-    } catch (error) {
-      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
-
-      if (isBgTaskFailedError(error)) {
-        message.error(
-          getBgTaskErrorMessage(error, t("configuration-templates.source.action.sync-error"))
-        );
-        return;
-      }
-
-      console.error(error);
-      message.error(t("configuration-templates.source.action.sync-error"));
-    }
+    await runMutation({
+      run: () => actions.syncSource(source.id),
+      successMessage: t("configuration-templates.source.action.sync-success", {
+        name: source.name,
+      }),
+      errorMessage: t("configuration-templates.source.action.sync-error"),
+    });
   }, [actions, source.id, source.name, t]);
 
   if (!showSync) return null;

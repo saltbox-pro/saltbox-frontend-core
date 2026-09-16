@@ -186,6 +186,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         data={props.minionsStore.minions}
         total={props.minionsStore.totalMinions}
         isLoading={props.minionsStore.isLoading}
+        loader={props.minionsStore.minionsLoad}
         pagination={props.minionsStore.pagination}
         sorting={props.minionsStore.sorting}
         onRowSelectionChange={props.onRowSelectionChange}

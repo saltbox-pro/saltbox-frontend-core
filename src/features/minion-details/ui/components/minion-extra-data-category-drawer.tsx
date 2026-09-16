@@ -1,6 +1,6 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { InfoDrawer, type InfoDrawerProps } from "@saltbox/saltbox-frontend-common";
-import { message, Skeleton } from "antd";
+import { Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
@@ -72,12 +72,6 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         extraDataRecordsStore.reset();
       };
     }, [extraDataRecordsStore]);
-
-    useEffect(() => {
-      if (extraDataRecordsStore?.error) {
-        message.error(t(extraDataRecordsStore.error));
-      }
-    }, [extraDataRecordsStore?.error, t]);
 
     const records = extraDataRecordsStore?.records;
 

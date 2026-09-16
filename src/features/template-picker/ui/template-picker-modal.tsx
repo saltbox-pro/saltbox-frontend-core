@@ -1,5 +1,5 @@
 import { Modal, SearchInput, useFocusOnOpenChange } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Flex, message, type InputRef } from "antd";
+import { Alert, Button, Flex, type InputRef } from "antd";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
@@ -42,14 +42,13 @@ export function TemplatePickerModal({
 }: TemplatePickerModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
     useFocusOnOpenChange<InputRef>();
   const {
     appliedSearchQuery,
     setAppliedSearchQuery,
     isLoading,
-    isError,
+    sourceRowsLoad,
     hasNoData,
     hasNoResults,
     isSearchReset,
@@ -59,7 +58,7 @@ export function TemplatePickerModal({
     functionNamesLower,
     searchQuery,
     getSourceLabel,
-  } = useTemplatePicker({ isOpen, messageApi });
+  } = useTemplatePicker({ isOpen });
 
   const isEmptyState = hasNoData || hasNoResults;
 
@@ -105,7 +104,6 @@ export function TemplatePickerModal({
 
   return (
     <>
-      {contextHolder}
       <Modal
         title={t("template-picker.title")}
         open={isOpen}
@@ -150,7 +148,7 @@ export function TemplatePickerModal({
 
           <TemplatePickerContent
             isLoading={isLoading}
-            isError={isError}
+            loader={sourceRowsLoad}
             hasNoData={hasNoData}
             hasNoResults={showNoResults}
             customFunctionAction={showEmptyStateCustomFunction ? customFunctionButton : undefined}

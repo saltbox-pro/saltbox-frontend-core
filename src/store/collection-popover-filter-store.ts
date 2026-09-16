@@ -1,26 +1,30 @@
-import { FilterStore } from "@saltbox/saltbox-frontend-common";
-import { action, makeObservable, runInAction } from "mobx";
+import { createLoader, FilterStore } from "@saltbox/saltbox-frontend-common";
+import { makeObservable, runInAction } from "mobx";
+import type { OptionList } from "react-querybuilder";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionPopoverFilterStore extends FilterStore {
+  readonly filterSchemaLoad = createLoader({
+    run: () => apiCoreStore.filtersApi?.filterSchema(),
+    onSuccess: (schema) => {
+      this.filterSchema = schema as unknown as OptionList;
+    },
+  });
+
   constructor() {
     super();
     makeObservable(this);
   }
 
-  @action
   loadFiltersScheme = () => {
-    this.isLoading = true;
-    apiCoreStore.filtersApi
-      ?.filterSchema()
-      .then((schema) => {
-        runInAction(() => {
-          this.filterSchema = schema as any;
-        });
-      })
-      .finally(() => {
+    runInAction(() => {
+      this.isLoading = true;
+    });
+    this.filterSchemaLoad.run().finally(() => {
+      runInAction(() => {
         this.isLoading = false;
       });
+    });
   };
 }

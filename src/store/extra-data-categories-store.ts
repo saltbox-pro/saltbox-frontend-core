@@ -1,7 +1,7 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import type { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
@@ -11,16 +11,28 @@ const DEFAULT_SORTING: SortingState = [{ id: "name", desc: false }];
 const PAGE_SIZE = 50;
 
 export class ExtraDataCategoriesStore {
-  @observable isLoading: boolean;
-  @observable error: string | null;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
   @observable categories: Array<ExtraDataCategoryModel>;
   @observable total: number;
 
+  readonly categoriesLoad = createLoader({
+    run: () =>
+      apiCoreStore.minionsApi?.minionsExtraCategoryList({
+        ExtraDataCategoryListBody: {
+          source: EXTRA_DATA_SOURCE,
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
+      }),
+    onSuccess: (response) => {
+      this.categories = response.data;
+      this.total = response.total;
+    },
+  });
+
   constructor() {
-    this.isLoading = false;
-    this.error = null;
     this.categories = [];
     this.total = 0;
     this.sorting = [...DEFAULT_SORTING];
@@ -32,10 +44,12 @@ export class ExtraDataCategoriesStore {
     makeObservable(this);
   }
 
+  @computed get isLoading(): boolean {
+    return this.categoriesLoad.isLoading;
+  }
+
   @action
   reset = (): void => {
-    this.isLoading = false;
-    this.error = null;
     this.categories = [];
     this.total = 0;
     this.sorting = [...DEFAULT_SORTING];
@@ -51,36 +65,8 @@ export class ExtraDataCategoriesStore {
     this.loadCategories();
   };
 
-  @action
   loadCategories = (): void => {
-    this.isLoading = true;
-    this.error = null;
-
-    apiCoreStore.minionsApi
-      ?.minionsExtraCategoryList({
-        ExtraDataCategoryListBody: {
-          source: EXTRA_DATA_SOURCE,
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.categories = response.data;
-          this.total = response.total;
-        });
-      })
-      .catch(() => {
-        runInAction(() => {
-          this.error = "minions.extra-data.load-error";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isLoading = false;
-        });
-      });
+    this.categoriesLoad.run().catch(() => undefined);
   };
 
   @action
