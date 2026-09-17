@@ -1,26 +1,40 @@
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class MinionsStore {
-  isLoading: boolean;
   minions: Array<MinionShortSchema>;
   totalMinions: number;
   collectionSlug: string | undefined;
   mongoDBQuery: object | undefined;
   pagination: PaginationState;
   sorting: SortingState;
-  private loadRequestId = 0;
   private lastLoadedContextKey = "";
 
+  readonly minionsLoad = createLoader({
+    run: () =>
+      apiCoreStore.minionsApi?.minionsList({
+        MinionListBody: {
+          collection_slug: this.collectionSlug,
+          query: this.mongoDBQuery,
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
+      }),
+    onSuccess: (response) => {
+      this.minions = response.data;
+      this.totalMinions = response.total;
+    },
+  });
+
   constructor(mongoDBQueryInit: object | undefined, collectionSlug: string | undefined) {
-    makeAutoObservable(this);
-    this.isLoading = false;
+    makeAutoObservable(this, { minionsLoad: false });
     this.minions = [];
     this.totalMinions = 0;
     this.pagination = {
@@ -32,41 +46,14 @@ export class MinionsStore {
     this.collectionSlug = collectionSlug;
   }
 
+  get isLoading(): boolean {
+    return this.minionsLoad.isLoading;
+  }
+
   loadMinions = (collectionSlug: string) => {
-    const requestId = ++this.loadRequestId;
     this.lastLoadedContextKey = this.getContextKey(collectionSlug, this.mongoDBQuery);
-    this.isLoading = true;
     this.collectionSlug = collectionSlug;
-    apiCoreStore.minionsApi
-      ?.minionsList({
-        MinionListBody: {
-          collection_slug: this.collectionSlug,
-          query: this.mongoDBQuery,
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-        },
-      })
-      .then((response) => {
-        if (requestId !== this.loadRequestId) return;
-        runInAction(() => {
-          this.minions = response.data;
-          this.totalMinions = response.total;
-        });
-      })
-      .catch(() => {
-        if (requestId !== this.loadRequestId) return;
-        runInAction(() => {
-          this.minions = [];
-          this.totalMinions = 0;
-        });
-      })
-      .finally(() => {
-        if (requestId !== this.loadRequestId) return;
-        runInAction(() => {
-          this.isLoading = false;
-        });
-      });
+    this.minionsLoad.run().catch(() => undefined);
   };
 
   handleLazyLoad(pagination: PaginationState, sorting: SortingState) {

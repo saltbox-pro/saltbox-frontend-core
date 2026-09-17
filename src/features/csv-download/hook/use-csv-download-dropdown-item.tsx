@@ -1,7 +1,6 @@
 import { ExportOutlined } from "@ant-design/icons";
 import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import type { ActionDropdownItem } from "@saltbox/saltbox-frontend-common";
-import type { MessageInstance } from "antd/es/message/interface";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { OptionList, RuleGroupType } from "react-querybuilder";
@@ -13,7 +12,6 @@ export interface UseCsvDownloadDropdownItemOptions {
   searchFilters: RuleGroupType;
   filterSchema?: OptionList;
   selectedMinions?: TaskTargetMinion[];
-  messageApi?: MessageInstance;
 }
 
 export interface UseCsvDownloadDropdownItemResult {
@@ -25,7 +23,6 @@ export function useCsvDownloadDropdownItem({
   searchFilters,
   filterSchema,
   selectedMinions,
-  messageApi,
 }: UseCsvDownloadDropdownItemOptions): UseCsvDownloadDropdownItemResult {
   const { t } = useTranslation();
 
@@ -34,7 +31,6 @@ export function useCsvDownloadDropdownItem({
     searchFilters,
     filterSchema,
     selectedMinions,
-    messageApi,
   });
 
   const item = useMemo<ActionDropdownItem>(() => {

@@ -1,4 +1,5 @@
-import { Alert, Card, Flex, message, Skeleton, Space } from "antd";
+import { ErrorZone } from "@saltbox/saltbox-frontend-common";
+import { Card, Flex, message, Skeleton, Space } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -40,7 +41,7 @@ type TemplateSourceDetailProps = {
 export const TemplateSourceDetail = observer(function TemplateSourceDetail({
   store,
 }: TemplateSourceDetailProps) {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
   const [addFileModalOpen, setAddFileModalOpen] = useState(false);
@@ -60,8 +61,16 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
     return <Skeleton active />;
   }
 
-  if (store.hasError) {
-    return <Alert type="error" showIcon message={t("configuration-templates.detail.load-error")} />;
+  if (store.sourceLoad.error) {
+    return (
+      <ErrorZone
+        level="page"
+        loaders={[store.sourceLoad]}
+        onNavigateHome={() => navigate("/core/configuration-templates")}
+      >
+        {null}
+      </ErrorZone>
+    );
   }
 
   if (!store.source) {

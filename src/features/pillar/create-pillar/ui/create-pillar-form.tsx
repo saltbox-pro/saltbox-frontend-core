@@ -1,6 +1,10 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { PillarCreateRequestSchema } from "@saltbox/saltbox-core-api-client";
-import { createJsonValueValidator, JsonEditorField } from "@saltbox/saltbox-frontend-common";
+import {
+  createJsonValueValidator,
+  JsonEditorField,
+  MutationErrorAlert,
+} from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Checkbox, Flex, Form, Input, Tooltip } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,7 +28,14 @@ export function CreatePillarForm({
 
   const [form] = Form.useForm<CreatePillarFormValues>();
 
-  const { handleSubmit, isCreating, createError, resetCreateError } = useCreatePillarForm({
+  const {
+    handleSubmit,
+    isCreating,
+    createError,
+    mutationError,
+    setMutationError,
+    resetCreateError,
+  } = useCreatePillarForm({
     refreshPillars,
     tgtType,
     tgtId,
@@ -79,6 +90,12 @@ export function CreatePillarForm({
       </Form.Item>
 
       <Flex vertical gap="middle">
+        <MutationErrorAlert
+          error={mutationError}
+          fallback={t("pillars.create.error")}
+          onClose={() => setMutationError(null)}
+        />
+
         {!!createError && <Alert message={createError} type="error" showIcon />}
 
         <Flex justify="end" gap="small">

@@ -1,54 +1,22 @@
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import type { MessageInstance } from "antd/es/message/interface";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 
 import type { TemplateSourceRow } from "../helpers/template-picker-rows";
 import { templatePickerService } from "../service";
 
-type UseTemplateSourceRowsParams = {
-  messageApi: MessageInstance;
-};
-
-export function useTemplateSourceRows({ messageApi }: UseTemplateSourceRowsParams) {
-  const { t } = useTranslation();
+export function useTemplateSourceRows() {
   const [sourceRows, setSourceRows] = useState<TemplateSourceRow[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
+
+  const [sourceRowsLoad] = useState(() =>
+    createLoader({
+      run: () => templatePickerService.loadTemplateSourceRows(),
+      onSuccess: setSourceRows,
+    })
+  );
 
   useEffect(() => {
-    let isCancelled = false;
+    sourceRowsLoad.run().catch(() => undefined);
+  }, [sourceRowsLoad]);
 
-    const loadSourceRows = async () => {
-      setIsError(false);
-      setIsLoading(true);
-
-      try {
-        const loadedSourceRows = await templatePickerService.loadTemplateSourceRows();
-        if (!isCancelled) {
-          setSourceRows(loadedSourceRows);
-        }
-      } catch (error) {
-        if (isCancelled) {
-          return;
-        }
-        if (!isGlobalServerError(error)) {
-          messageApi.error(t("task-create.error-loading-templates"));
-        }
-        setIsError(true);
-      } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadSourceRows();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [messageApi, t]);
-
-  return { sourceRows, setSourceRows, isLoading, isError };
+  return { sourceRows, setSourceRows, isLoading: sourceRowsLoad.isLoading, sourceRowsLoad };
 }

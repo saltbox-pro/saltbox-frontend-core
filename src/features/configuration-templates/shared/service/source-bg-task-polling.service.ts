@@ -1,5 +1,4 @@
 import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
 
 import {
   resolveSourceBgTaskOutcome,
@@ -83,8 +82,6 @@ export class SourceBgTaskPollingService {
     if (wait) return pollPromise;
 
     pollPromise.catch((error) => {
-      if (isGlobalServerError(error)) return;
-
       console.error("Failed to poll template source background task:", error);
     });
 

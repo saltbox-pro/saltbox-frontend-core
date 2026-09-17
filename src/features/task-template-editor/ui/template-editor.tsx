@@ -1,5 +1,11 @@
-import { Modal, PageHeader, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Spin, message } from "antd";
+import {
+  type AppError,
+  Modal,
+  PageHeader,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -29,9 +35,9 @@ interface TemplateEditorProps {
 export const TemplateEditor = observer(({ store, title, backPath }: TemplateEditorProps) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const [modalApi, modalContextHolder] = Modal.useModal();
   const [isSaveModalOpen, setSaveModalOpen] = useState(false);
+  const [saveError, setSaveError] = useState<AppError | null>(null);
   // Вкладки трогают monaco при монтировании (`useMonaco`), поэтому ждём,
   // пока загрузчик настроен на локальную сборку и переводы
   const isMonacoReady = useMonacoReady();
@@ -66,27 +72,31 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
     store.isDuplicate && !store.isLoadingTargetSources && store.targetSources.length === 0;
 
   const saveTemplate = async () => {
-    try {
-      const savedTemplateId = await store.save();
-      const highlightState: TemplateSourceNavigationState | undefined = savedTemplateId
-        ? { highlightedTemplateId: savedTemplateId }
-        : undefined;
+    setSaveError(null);
 
-      messageApi.success(t("task-template-editor.save-success"));
-      setSaveModalOpen(false);
-      navigate(getPostSavePath(), { state: highlightState });
-    } catch (error) {
-      console.error("Failed to save template:", error);
-      if (isGlobalServerError(error)) return;
-      messageApi.error(getBgTaskErrorMessage(error, t("task-template-editor.save-error")));
-    }
+    const result = await runMutation({
+      run: () => store.save(),
+      onError: setSaveError,
+    });
+
+    if (!result.ok) return;
+
+    const highlightState: TemplateSourceNavigationState | undefined = result.data
+      ? { highlightedTemplateId: result.data }
+      : undefined;
+
+    notify.success(t("task-template-editor.save-success"));
+    setSaveModalOpen(false);
+    navigate(getPostSavePath(), { state: highlightState });
   };
 
-  const handleSaveClick = () => setSaveModalOpen(true);
+  const handleSaveClick = () => {
+    setSaveError(null);
+    setSaveModalOpen(true);
+  };
 
   return (
     <div className={styles.page}>
-      {contextHolder}
       {modalContextHolder}
       <PageHeader title={title} customParentPathGenerator={() => backPath} />
 
@@ -109,7 +119,13 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
       <SaveTemplateModal
         store={store}
         open={isSaveModalOpen}
-        onCancel={() => setSaveModalOpen(false)}
+        error={saveError}
+        errorFallback={getBgTaskErrorMessage(saveError?.raw, t("task-template-editor.save-error"))}
+        onErrorClose={() => setSaveError(null)}
+        onCancel={() => {
+          setSaveError(null);
+          setSaveModalOpen(false);
+        }}
         onConfirm={saveTemplate}
       />
     </div>

@@ -1,16 +1,12 @@
 import { LinkOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { AcceptedMastersActionButton, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { message } from "antd";
+import { AcceptedMastersActionButton, runMutation } from "@saltbox/saltbox-frontend-common";
 import type { MessageInstance } from "antd/es/message/interface";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
-import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 import { mastersStore } from "saltbox-core/store";
 
 import {
@@ -45,26 +41,13 @@ export const ConnectSourceButton = observer(function ConnectSourceButton({
   const isLoading = isActuallyPlugging;
 
   const executeConnect = useCallback(async () => {
-    try {
-      await actions.plugSource(source.id);
-      message.success(
-        t("configuration-templates.source.action.plug-success", {
-          name: source.name,
-        })
-      );
-    } catch (error) {
-      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
-
-      if (isBgTaskFailedError(error)) {
-        message.error(
-          getBgTaskErrorMessage(error, t("configuration-templates.source.action.plug-error"))
-        );
-        return;
-      }
-
-      console.error(error);
-      message.error(t("configuration-templates.source.action.plug-error"));
-    }
+    await runMutation({
+      run: () => actions.plugSource(source.id),
+      successMessage: t("configuration-templates.source.action.plug-success", {
+        name: source.name,
+      }),
+      errorMessage: t("configuration-templates.source.action.plug-error"),
+    });
   }, [actions, source.id, source.name, t]);
 
   if (!showConnect) return null;

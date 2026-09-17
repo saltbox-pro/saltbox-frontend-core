@@ -1,3 +1,5 @@
+import { ResponseError } from "@saltbox/saltbox-core-api-client";
+
 import { apiCoreStore, appStore } from "saltbox-core/store";
 
 class CsvDownloader {
@@ -14,7 +16,7 @@ class CsvDownloader {
       }),
     });
 
-    if (!response.ok) throw new Error("Loading Error");
+    if (!response.ok) throw new ResponseError(response, "Response returned an error code");
 
     return response;
   }

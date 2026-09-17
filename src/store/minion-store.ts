@@ -1,4 +1,5 @@
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { isAbortError } from "saltbox-core/shared/helpers/is-abort-error";
@@ -8,22 +9,29 @@ export class MinionStore {
   mid: string;
   slug: string;
   minion: MinionDetailSchema | null;
-  isMinionLoading: boolean;
   isMinionRefreshing: boolean;
-  error: string | null;
-  private loadGeneration = 0;
-  private loadAbortController: AbortController | null = null;
   private refreshAbortController: AbortController | null = null;
 
+  readonly minionLoad = createLoader({
+    run: () =>
+      this.mid.length === 0
+        ? undefined
+        : apiCoreStore.minionsApi?.minionGet({
+            collection_slug: this.slug,
+            mid: this.mid,
+          }),
+    onSuccess: (minion) => {
+      this.minion = minion;
+    },
+  });
+
   constructor(slug: string, minionId: string, options?: { initialMinion?: MinionDetailSchema }) {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { minionLoad: false });
 
     this.slug = slug;
     this.mid = minionId;
-    this.isMinionLoading = false;
     this.isMinionRefreshing = false;
     this.minion = null;
-    this.error = null;
 
     if (options?.initialMinion) {
       this.minion = options.initialMinion;
@@ -31,6 +39,10 @@ export class MinionStore {
     }
 
     this.loadMinion();
+  }
+
+  get isMinionLoading(): boolean {
+    return this.minionLoad.isLoading;
   }
 
   loadMinion = () => {
@@ -41,50 +53,8 @@ export class MinionStore {
     this.refreshAbortController?.abort();
     this.refreshAbortController = null;
     this.isMinionRefreshing = false;
-    this.loadAbortController?.abort();
-    const abortController = new AbortController();
-    this.loadAbortController = abortController;
-    const generation = ++this.loadGeneration;
 
-    this.isMinionLoading = true;
-    this.error = null;
-
-    apiCoreStore.minionsApi
-      ?.minionGet(
-        {
-          collection_slug: this.slug,
-          mid: this.mid,
-        },
-        { signal: abortController.signal }
-      )
-      .then((minion) => {
-        if (generation !== this.loadGeneration) {
-          return;
-        }
-        runInAction(() => {
-          this.minion = minion;
-        });
-      })
-      .catch((error) => {
-        if (generation !== this.loadGeneration) {
-          return;
-        }
-        if (isAbortError(error)) {
-          return;
-        }
-        console.error("Error loading minion:", error);
-        runInAction(() => {
-          this.error = "Failed to load minion";
-        });
-      })
-      .finally(() => {
-        if (generation !== this.loadGeneration) {
-          return;
-        }
-        runInAction(() => {
-          this.isMinionLoading = false;
-        });
-      });
+    this.minionLoad.run().catch(() => undefined);
   };
 
   refreshMinion = () => {
@@ -116,7 +86,6 @@ export class MinionStore {
         }
         runInAction(() => {
           this.minion = minion;
-          this.error = null;
         });
       })
       .catch((error) => {

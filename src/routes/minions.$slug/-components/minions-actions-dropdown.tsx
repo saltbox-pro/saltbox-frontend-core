@@ -44,13 +44,11 @@ export function MinionsActionsDropdown({
     searchFilters,
     filterSchema,
     selectedMinions,
-    messageApi,
   });
 
   const removeAction = useRemoveMinionsDropdownItem({
     collectionSlug: slug,
     minionMongoIds: selectedMinions.map((minion) => minion.mid),
-    messageApi,
     onDeleted: () => {
       reloadMinions();
       clearSelection();

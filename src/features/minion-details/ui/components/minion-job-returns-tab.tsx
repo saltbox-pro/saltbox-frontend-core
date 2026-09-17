@@ -11,6 +11,7 @@ import {
   formatTimeByUserTZ,
   useFiltersToggle,
   AcceptedMastersActionButton,
+  type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
@@ -46,6 +47,7 @@ interface JobReturnsConfig {
   jobReturns: JobReturnModel[];
   jobStore: JobStore;
   isLoading: boolean;
+  loader?: LoadSource;
   pagination: PaginationState;
   sorting: SortingState;
   total: number;
@@ -175,6 +177,7 @@ const MinionJobReturnsTable = ({
   jobReturns,
   jobStore,
   isLoading,
+  loader,
   total,
   pagination,
   onReplayJob,
@@ -275,6 +278,7 @@ const MinionJobReturnsTable = ({
         data={jobReturns}
         total={total}
         isLoading={isLoading}
+        loader={loader}
         pagination={pagination}
         sorting={sorting}
         onLazyLoad={onLazyLoad}
@@ -472,6 +476,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
           jobReturns: jobStore.jobReturns,
           jobStore,
           isLoading: jobStore.isJobReturnsLoading,
+          loader: jobStore.jobReturnsLoad,
           pagination: jobStore.pagination,
           sorting: jobStore.sorting,
           total: jobStore.total,

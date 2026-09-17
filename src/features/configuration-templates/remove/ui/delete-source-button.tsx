@@ -1,14 +1,10 @@
 import { DeleteOutlined } from "@ant-design/icons";
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Button, message } from "antd";
+import { notify, runMutation } from "@saltbox/saltbox-frontend-common";
+import { Button } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-
-import { isBgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
-import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import {
   getSourceActionContext,
@@ -36,36 +32,27 @@ export const DeleteSourceButton = observer(function DeleteSourceButton({
   });
 
   const handleDeleteConfirm = useCallback(async () => {
-    try {
-      const result = await actions.deleteSource(source.id);
+    const result = await runMutation({
+      run: () => actions.deleteSource(source.id),
+      errorMessage: t("configuration-templates.source.action.delete-error"),
+    });
 
-      if (result === "not_found") {
-        message.warning(
-          t("configuration-templates.source.action.delete-not-found", {
-            name: source.name,
-          })
-        );
-        return;
-      }
+    if (!result.ok) return;
 
-      message.success(
-        t("configuration-templates.source.action.delete-success", {
+    if (result.data === "not_found") {
+      notify.warning(
+        t("configuration-templates.source.action.delete-not-found", {
           name: source.name,
         })
       );
-    } catch (error) {
-      if (isGlobalServerError(error) || isBgTaskPollAborted(error)) return;
-
-      if (isBgTaskFailedError(error)) {
-        message.error(
-          getBgTaskErrorMessage(error, t("configuration-templates.source.action.delete-error"))
-        );
-        return;
-      }
-
-      console.error(error);
-      message.error(t("configuration-templates.source.action.delete-error"));
+      return;
     }
+
+    notify.success(
+      t("configuration-templates.source.action.delete-success", {
+        name: source.name,
+      })
+    );
   }, [actions, source.id, source.name, t]);
 
   const handleClick = () => {

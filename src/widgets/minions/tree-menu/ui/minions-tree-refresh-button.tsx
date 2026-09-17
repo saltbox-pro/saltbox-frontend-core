@@ -14,7 +14,7 @@ export const MinionsTreeRefreshButton = observer(function MinionsTreeRefreshButt
       className={styles.refreshButton}
       size="small"
       title={t("collection.refresh-tree")}
-      loading={collectionsTreeStore.fetchTreeStatus === "in-process"}
+      loading={collectionsTreeStore.treeLoad.isLoading}
       onClick={() => collectionsTreeStore.loadTree(true)}
     />
   );

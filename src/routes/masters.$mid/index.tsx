@@ -3,12 +3,13 @@ import { SaltKeyMinion, SaltKeyStatusType } from "@saltbox/saltbox-core-api-clie
 import {
   createSelectColumn,
   FastTablePaginated,
-  isGlobalServerError,
+  notify,
   PageHeader,
+  runMutation,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { Flex, message, Modal, Tabs, Tag } from "antd";
+import { Flex, Modal, Tabs, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +18,6 @@ import { Link, useParams } from "react-router";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
   ALL_FILTER,
-  apiCoreStore,
   DUPLICATES_FILTER,
   SaltKeysStore,
   type SaltKeyWithId,
@@ -27,6 +27,13 @@ import {
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
+import {
+  acceptAllSaltKeys,
+  deleteAllSaltKeys,
+  deleteSaltKeys,
+  rejectAllSaltKeys,
+  rejectSaltKeys,
+} from "./-api/salt-keys-actions";
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
 import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
 import { SaltKeysDeleteConfirmModal } from "./-components/salt-keys-delete-confirm-modal";
@@ -57,7 +64,6 @@ function getSelectedSaltKeyMinions(
 const MasterPage = observer(() => {
   const { t } = useTranslation();
   const [modalApi, modalContextHolder] = Modal.useModal();
-  const [messageApi, messageContextHolder] = message.useMessage();
 
   const { mid: masterId } = useParams();
 
@@ -80,13 +86,6 @@ const MasterPage = observer(() => {
       saltKeysStore.loadSaltKeys(masterId);
     }
   }, [masterId, saltKeysStore]);
-
-  useEffect(() => {
-    if (saltKeysStore.error) {
-      messageApi.error(t("master.load-salt-keys-failed"));
-      saltKeysStore.resetError();
-    }
-  }, [messageApi, saltKeysStore, saltKeysStore.error, t]);
 
   const saltKeysColumns = useMemo(
     () => [
@@ -156,7 +155,6 @@ const MasterPage = observer(() => {
     saltKeysStore,
     selection,
     modalApi,
-    messageApi,
     setSelection,
     isSendingAction,
     setIsSendingAction,
@@ -176,30 +174,26 @@ const MasterPage = observer(() => {
       okButtonProps: { loading: isSendingAction },
       onOk: async () => {
         setIsSendingAction(true);
-        try {
-          const selectedMinions = getSelectedSaltKeyMinions(
-            saltKeysStore.allSaltKeys,
-            selection,
-            masterId
+        const selectedMinions = getSelectedSaltKeyMinions(
+          saltKeysStore.allSaltKeys,
+          selection,
+          masterId
+        );
+        const result = await runMutation({
+          run: () => rejectSaltKeys(selectedMinions),
+          errorMessage: t("master.reject-selected-failed"),
+        });
+        if (result.ok) {
+          notify.success(
+            t("master.reject-selected-success", { count: result.data?.minions?.length ?? 0 })
           );
-          const response = await apiCoreStore.saltKeysApi?.saltKeysReject({
-            SaltKeySetStatusRequestBody: { minions: selectedMinions },
-          });
-          messageApi.success(
-            t("master.reject-selected-success", { count: response?.minions?.length ?? 0 })
-          );
-        } catch (error) {
-          console.error("Failed to reject selected salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.reject-selected-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
         }
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
       },
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
 
   const handleDeleteSelected = useCallback(() => {
     if (Object.keys(selection).length === 0) return;
@@ -216,30 +210,24 @@ const MasterPage = observer(() => {
       okButtonProps: { danger: true, loading: isSendingAction },
       onOk: async () => {
         setIsSendingAction(true);
-        try {
-          const selectedMinions = getSelectedSaltKeyMinions(
-            saltKeysStore.allSaltKeys,
-            selection,
-            masterId
-          );
-          await apiCoreStore.saltKeysApi?.saltKeysDelete({
-            SaltKeySetStatusRequestBody: { minions: selectedMinions },
-          });
-          messageApi.success(
-            t("master.delete-selected-success", { count: selectedMinions.length })
-          );
-        } catch (error) {
-          console.error("Failed to delete selected salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.delete-selected-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
+        const selectedMinions = getSelectedSaltKeyMinions(
+          saltKeysStore.allSaltKeys,
+          selection,
+          masterId
+        );
+        const result = await runMutation({
+          run: () => deleteSaltKeys(selectedMinions),
+          errorMessage: t("master.delete-selected-failed"),
+        });
+        if (result.ok) {
+          notify.success(t("master.delete-selected-success", { count: selectedMinions.length }));
         }
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
       },
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
 
   const handleAcceptAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
@@ -253,27 +241,21 @@ const MasterPage = observer(() => {
       okButtonProps: { loading: isSendingAction },
       onOk: async () => {
         setIsSendingAction(true);
-        try {
-          const response = await apiCoreStore.saltKeysApi?.saltKeysAcceptUnaccepted({
-            SaltKeySetStatusToAllRequestBody: {
-              masters: [masterId!],
-            },
-          });
-          messageApi.success(
-            t("master.accept-all-success", { count: response?.minions?.length ?? 0 })
+        const result = await runMutation({
+          run: () => acceptAllSaltKeys(masterId!),
+          errorMessage: t("master.accept-all-failed"),
+        });
+        if (result.ok) {
+          notify.success(
+            t("master.accept-all-success", { count: result.data?.minions?.length ?? 0 })
           );
-        } catch (error) {
-          console.error("Failed to accept all salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.accept-all-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
         }
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
       },
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
 
   const handleRejectAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
@@ -287,27 +269,21 @@ const MasterPage = observer(() => {
       okButtonProps: { loading: isSendingAction },
       onOk: async () => {
         setIsSendingAction(true);
-        try {
-          const response = await apiCoreStore.saltKeysApi?.saltKeysRejectAllUnaccepted({
-            SaltKeySetStatusToAllRequestBody: {
-              masters: [masterId!],
-            },
-          });
-          messageApi.success(
-            t("master.reject-all-success", { count: response?.minions?.length ?? 0 })
+        const result = await runMutation({
+          run: () => rejectAllSaltKeys(masterId!),
+          errorMessage: t("master.reject-all-failed"),
+        });
+        if (result.ok) {
+          notify.success(
+            t("master.reject-all-success", { count: result.data?.minions?.length ?? 0 })
           );
-        } catch (error) {
-          console.error("Failed to reject all salt keys:", error);
-          if (isGlobalServerError(error)) return;
-          messageApi.error(t("master.reject-all-failed"));
-        } finally {
-          setIsSendingAction(false);
-          setSelection({});
-          saltKeysStore.refresh();
         }
+        setIsSendingAction(false);
+        setSelection({});
+        saltKeysStore.refresh();
       },
     });
-  }, [isSendingAction, masterId, messageApi, modalApi, saltKeysStore, selection, t]);
+  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
 
   const handleDeleteAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
@@ -316,25 +292,20 @@ const MasterPage = observer(() => {
     setDeleteConfirmDescription(t("master.delete-all-confirm-description", { master: masterId }));
     setDeleteConfirmAction(() => async () => {
       setIsSendingAction(true);
-      try {
-        await apiCoreStore.saltKeysApi?.saltKeysDeleteAll({
-          SaltKeySetStatusToAllRequestBody: {
-            masters: [masterId!],
-          },
-        });
-        messageApi.success(t("master.delete-all-success", { count: saltKeysStore.total }));
-      } catch (error) {
-        console.error("Failed to delete all salt keys:", error);
-        if (isGlobalServerError(error)) return;
-        messageApi.error(t("master.delete-all-failed"));
-      } finally {
-        setIsSendingAction(false);
-        setSelection({});
-        saltKeysStore.refresh();
+      const totalBeforeDelete = saltKeysStore.total;
+      const result = await runMutation({
+        run: () => deleteAllSaltKeys(masterId!),
+        errorMessage: t("master.delete-all-failed"),
+      });
+      if (result.ok) {
+        notify.success(t("master.delete-all-success", { count: totalBeforeDelete }));
       }
+      setIsSendingAction(false);
+      setSelection({});
+      saltKeysStore.refresh();
     });
     setDeleteConfirmOpen(true);
-  }, [masterId, messageApi, saltKeysStore, selection, t]);
+  }, [masterId, saltKeysStore, selection, t]);
 
   const tabItems = useMemo(
     () => [
@@ -378,6 +349,7 @@ const MasterPage = observer(() => {
                 data={saltKeysStore.pagedKeys}
                 total={saltKeysStore.totalFiltred}
                 isLoading={saltKeysStore.isLoading}
+                loader={saltKeysStore.saltKeysLoad}
                 pagination={saltKeysStore.pagination}
                 sorting={saltKeysStore.sorting}
                 onLazyLoad={(pagination, sorting) => {
@@ -425,7 +397,6 @@ const MasterPage = observer(() => {
   return (
     <>
       {modalContextHolder}
-      {messageContextHolder}
 
       <PageHeader title={masterId ?? ""} />
 

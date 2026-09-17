@@ -6,7 +6,7 @@
     "tab-policies": "Policies",
     "tab-statistics": "Statistics",
     "add-block-button": "Add block",
-    "filters-button": "Filters",
+    "client-filters-button": "Client filters",
     "blocks-limit-tooltip": "For page performance optimization, the number of blocks is limited to {{limit}}",
     "table-minion-id": "Minion ID",
     "table-master": "Master",
@@ -43,7 +43,6 @@
     "tasks-table-total-minions": "Total Minions",
     "tasks-table-status-header": "Minions Statistics",
     "minion": "Minion",
-    "minion-not-found": "Minion not found",
     "no-minion-data-available": "No minion data available",
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
@@ -53,19 +52,21 @@
       "tab": "Extra data",
       "category-column": "Category",
       "empty": "No extra data available",
+      "empty-category": "No extra data in the \"{{category}}\" category",
       "apply-to-filters": "Apply value to filters",
-      "load-error": "Failed to load extra data",
+      "add-to-client-filters": "Add this value to client filters",
+      "remove-from-client-filters": "Remove this value from client filters",
       "search-label": "Search records",
       "search-placeholder": "Enter value",
       "categories": {
         "local_groups": "Local Groups",
-        "storages": "Storages",
+        "storages": "Physical disks",
         "softwares": "Software",
         "bios": "BIOS",
         "cpus": "CPUs",
         "hardware": "Hardware",
         "inputs": "Inputs",
-        "drives": "Drives",
+        "drives": "Logical disks",
         "networks": "Networks",
         "local_users": "Local Users",
         "batteries": "Batteries",
@@ -205,7 +206,6 @@
     "unknown-repository": "Without source",
     "no-sources-available": "No sources available",
     "go-to-configuration-templates": "Go to configuration templates",
-    "error-loading-templates": "Error loading templates",
     "error-loading-template-accessibility": "Error loading template accessibility",
     "template-accessible": "Available",
     "template-inaccessible": "No access",
@@ -380,8 +380,6 @@
       "last-run": "Last Run",
       "job-title": "Job (retry {{run}})",
       "job-running": "Running",
-      "job-returns-load-error": "Failed to load job returns for this minion",
-      "job-returns-not-found": "Job returns not found",
       "job-returns-missing-context": "Task or minion identifier is missing",
       "attempt-status-success": "Success",
       "attempt-status-failed": "Failed"
@@ -425,7 +423,6 @@
     "table-status-unknown": "Unknown status",
     "table-status-duplicates": "Duplicates",
     "table-status-all": "All",
-    "load-salt-keys-failed": "Failed to load master keys",
     "salt-keys-empty-with-status": "No keys with status \"{{status}}\"",
     "salt-keys-empty-duplicates": "No duplicate keys",
     "salt-keys-empty-all": "No keys",
@@ -491,7 +488,6 @@
   },
   "pillars": {
     "title": "Pillars",
-    "load-error": "Failed to load pillars",
     "create": {
       "add-button": "Create pillar",
       "modal-title-root": "Create a global pillar",
@@ -527,7 +523,6 @@
   "jobs": {
     "title": "Jobs",
     "refresh": "Refresh",
-    "load-error": "Failed to load data",
     "open-related": "Open jobs",
     "open-related-tooltip-task": "Show jobs created from this task",
     "open-related-tooltip-policy": "Show jobs created from this policy",
@@ -581,7 +576,6 @@
     "table-view": "Table",
     "table-view-info-total": "Showing {{count}} Job Return.",
     "table-view-info-success-only": "Only successfully completed Job Return are shown in the table",
-    "table-view-load-error": "Failed to load Job Return table view",
     "table-view-export-error": "Failed to export Job Return table to CSV",
     "table-view-pagination-total-label": "Total successful Job Return:",
     "export-to-csv-title": "Export to CSV",
@@ -680,7 +674,6 @@
   "job-return": {
     "waiting-client-response": "Waiting for client response",
     "no-execution-result": "Execution result is missing",
-    "load-error": "Failed to load job return result",
     "not-found": "Job return result not found",
     "copy-job-data-to-clipboard": "Copy technical output",
     "step": {
@@ -727,7 +720,6 @@
     "error-updating-collection": "Error updating collection",
     "collection-deleted-successfully": "Collection deleted successfully",
     "error-deleting-collection": "Error deleting collection",
-    "error-loading-tree": "Failed to load collections tree",
     "apply-search-before-save": "Please apply search to confirm filters before saving",
     "filter-schema-unavailable": "Filter schema is not loaded, saving filters is unavailable. Please reload the page",
     "open-collection-page": "Open collection page",
@@ -737,8 +729,7 @@
     "edit-filter": "Edit filter",
     "invalid-filter-json": "Filter query is not valid JSON",
     "filter-updated-successfully": "Filter has been updated",
-    "error-updating-filter": "Error updating filter",
-    "error-loading-collection": "Failed to load collection"
+    "error-updating-filter": "Error updating filter"
   },
   "dashboard": {
     "minions-total": "Minions in Selection",
@@ -768,8 +759,6 @@
     "kpi-max": "Max",
     "loading-chart": "Building chart...",
     "other-values": "{{count}} more values",
-    "statistics-unavailable": "Statistics are unavailable for this field",
-    "statistics-unavailable-description": "The field may be computed or unsupported by this grouping endpoint",
     "edit-card": "Edit",
     "delete-card": "Delete",
     "delete-card-confirm-title": "Delete statistics block?",
@@ -956,7 +945,6 @@
   "base": {
     "back-home": "Back Home",
     "not-found": "Sorry, the page you visited does not exist.",
-    "failed-to-load-default-collection": "Failed to load default collection",
     "please-contact-administrator-for-assistance": "Please contact the administrator for assistance",
     "logout": "Logout"
   },
@@ -1021,7 +1009,6 @@
     "form-data-preview-title": "Resulting form data",
     "save-success": "Template saved",
     "save-error": "Failed to save template",
-    "load-error": "Failed to load template",
     "tab-meta-editor": "Meta JSON",
     "tab-sls-editor": "SLS editor",
     "tab-translations": "Translations",
@@ -1088,16 +1075,13 @@
     "detail": {
       "page-title": "Template source"
     },
-    "load-error": "Failed to load configuration template sources",
     "warning-action": {
       "connect-source": "connect a source",
       "sync-source": "sync a source"
     },
     "sync-gitlab-sources-error": "Failed to get network sources",
-    "sync-gitlab-sources-failed": "Getting network sources failed",
     "sync-gitlab-sources-success": "Network sources have been retrieved",
     "sync-mounted-sources-error": "Failed to get local sources",
-    "sync-mounted-sources-failed": "Getting local sources failed",
     "sync-mounted-sources-success": "Local sources have been retrieved",
     "empty": "No templates available",
     "sync-gitlab-sources-not-loaded": {
@@ -1211,6 +1195,7 @@
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist",
         "update-error": "Failed to save source details",
         "duplicate-name-error": "A source with this name already exists",
+        "duplicate-namespace-error": "A source with this namespace already exists",
         "update-success": "Source \"{{name}}\" details saved"
       },
       "broken-operation": "Error during {{operation}}",
@@ -1248,17 +1233,14 @@
       "synced-at": "Synced",
       "templates": "Templates",
       "templates-empty": "No templates",
-      "templates-load-error": "Failed to load data",
       "files": "Files (sshfs)",
       "files-empty": "No files",
-      "files-load-error": "Failed to load files",
       "add-file": "Add file",
       "add-template": "Create template",
       "edit-template": "Edit template",
       "duplicate-template": "Duplicate template",
       "duplicate-disabled-no-local-source": "Connect a local source to duplicate a template",
       "preview-drawer-title": "Template",
-      "preview-load-error": "Failed to load template content",
       "preview-empty-content": "Template content is empty",
       "preview-tab-meta": "Metadata",
       "preview-tab-sls": "SLS",
@@ -1284,8 +1266,6 @@
     "policies-title": "Policies"
   },
   "errors": {
-    "load-failed": "Failed to load data",
-    "access-denied": "Access denied",
     "form-validation": "Form validation error"
   }
 }

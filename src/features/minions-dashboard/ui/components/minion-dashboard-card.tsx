@@ -6,8 +6,8 @@ import {
   FullscreenOutlined,
   HolderOutlined,
 } from "@ant-design/icons";
-import { CopyToClipboardButton, Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
+import { CopyToClipboardButton, Dropdown, ErrorZone } from "@saltbox/saltbox-frontend-common";
+import { Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
@@ -176,17 +176,6 @@ export const MinionDashboardCard = observer(
     };
 
     const renderChart = () => {
-      if (dashboardCardStore.hasError) {
-        return (
-          <Alert
-            type="warning"
-            showIcon
-            message={t("dashboard.statistics-unavailable")}
-            description={t("dashboard.statistics-unavailable-description")}
-          />
-        );
-      }
-
       const { grainValues } = dashboardCardStore;
 
       if (!dashboardCardStore.isFilterLoading && grainValues.length === 0) {
@@ -284,44 +273,46 @@ export const MinionDashboardCard = observer(
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <div
-            className={clsx(
-              styles.dashboardTableBlockHeader,
-              !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
-            )}
-          >
-            <HolderOutlined className={styles.dashboardDragIcon} />
-            <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
-              <Typography.Text
-                strong
-                ellipsis
-                title={fieldTitle}
-                className={styles.dashboardTableBlockTitle}
-              >
-                {fieldTitle}
-              </Typography.Text>
-              <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
-                {t(`dashboard.preset-${card.preset}`)}
-              </Typography.Text>
-            </Flex>
-            <div className={styles.dashboardTableBlockHeaderSettings}>
-              {showChartActions && (
-                <CopyToClipboardButton size="small" type="text" text={copyDataText} />
+          <ErrorZone level="block" loaders={[dashboardCardStore.grainLoad]}>
+            <div
+              className={clsx(
+                styles.dashboardTableBlockHeader,
+                !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
               )}
-              <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
-                <Button
-                  type="text"
-                  size="small"
-                  loading={isTogglingFullScreen}
-                  icon={<DashOutlined />}
-                  className={styles.dashboardTableBlockMenuIcon}
-                />
-              </Dropdown>
+            >
+              <HolderOutlined className={styles.dashboardDragIcon} />
+              <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
+                <Typography.Text
+                  strong
+                  ellipsis
+                  title={fieldTitle}
+                  className={styles.dashboardTableBlockTitle}
+                >
+                  {fieldTitle}
+                </Typography.Text>
+                <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
+                  {t(`dashboard.preset-${card.preset}`)}
+                </Typography.Text>
+              </Flex>
+              <div className={styles.dashboardTableBlockHeaderSettings}>
+                {showChartActions && (
+                  <CopyToClipboardButton size="small" type="text" text={copyDataText} />
+                )}
+                <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
+                  <Button
+                    type="text"
+                    size="small"
+                    loading={isTogglingFullScreen}
+                    icon={<DashOutlined />}
+                    className={styles.dashboardTableBlockMenuIcon}
+                  />
+                </Dropdown>
+              </div>
             </div>
-          </div>
-          <div className={styles.dashboardTableBlockChartBody}>
-            {!isLayoutTransitioning && renderChart()}
-          </div>
+            <div className={styles.dashboardTableBlockChartBody}>
+              {!isLayoutTransitioning && renderChart()}
+            </div>
+          </ErrorZone>
         </Spin>
       </Card>
     );

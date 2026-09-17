@@ -1,15 +1,17 @@
 import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  ErrorZone,
   FastTablePaginated,
   PageHeader,
   Popover,
   formatTimeByUserTZ,
-  isGlobalServerError,
+  notify,
+  runMutation,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Flex, Input, message, Tag } from "antd";
+import { Button, Flex, Input, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
@@ -19,12 +21,7 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
-import {
-  CollectionStore,
-  defaultCollectionStore,
-  MinionFilterStore,
-  MinionsStore,
-} from "saltbox-core/store";
+import { CollectionStore, MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
@@ -40,7 +37,6 @@ const CollectionEditPage = observer(() => {
   const { t } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
   const [collectionStore] = useState(new CollectionStore());
   const [filterStore] = useState(() => new MinionFilterStore());
   const [minionsStore] = useState(new MinionsStore(undefined, undefined));
@@ -124,12 +120,6 @@ const CollectionEditPage = observer(() => {
     }),
   ];
 
-  useEffect(() => {
-    if (collectionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [collectionStore.error]);
-
   const minionsCollectionSlug = collectionStore.collection?.parent_slug || slug || "";
   const serverQueryKey = JSON.stringify(collectionStore.collection?.query ?? null);
   const searchQueryKey = JSON.stringify(filterStore.searchMongoDBQuery);
@@ -149,7 +139,7 @@ const CollectionEditPage = observer(() => {
 
   useEffect(() => {
     if (slug === "root") {
-      navigate(`/core/minions/${defaultCollectionStore.defaultCollection?.slug ?? ""}`);
+      navigate("/core/minions");
     }
   }, [slug, navigate]);
 
@@ -193,28 +183,29 @@ const CollectionEditPage = observer(() => {
   }, [collectionStore.collection?.title]);
 
   const handleSaveButton = async () => {
-    try {
-      const titleDirty = newTitle !== originalTitle;
-      const currentQueryString = formatQuery(filterStore.currentFilters, "json_without_ids");
-      const queryDirty = currentQueryString !== originalQuery;
+    const titleDirty = newTitle !== originalTitle;
+    const currentQueryString = formatQuery(filterStore.currentFilters, "json_without_ids");
+    const queryDirty = currentQueryString !== originalQuery;
 
-      if (queryDirty) {
-        filterStore.handleSearch();
-      }
-
-      await collectionStore.updateCollection({
-        title: titleDirty ? newTitle : undefined,
-        query: queryDirty ? filterStore.searchMongoDBQuery : undefined,
-      });
-
-      if (titleDirty) setOriginalTitle(newTitle);
-      if (queryDirty) setOriginalQuery(currentQueryString);
-
-      messageApi.success(t("collection.collection-has-been-changed"));
-    } catch (error) {
-      if (isGlobalServerError(error)) return;
-      messageApi.error(t("collection.error-updating-collection"));
+    if (queryDirty) {
+      filterStore.handleSearch();
     }
+
+    const result = await runMutation({
+      run: () =>
+        collectionStore.updateCollection({
+          title: titleDirty ? newTitle : undefined,
+          query: queryDirty ? filterStore.searchMongoDBQuery : undefined,
+        }),
+      errorMessage: t("collection.error-updating-collection"),
+    });
+
+    if (!result.ok) return;
+
+    if (titleDirty) setOriginalTitle(newTitle);
+    if (queryDirty) setOriginalQuery(currentQueryString);
+
+    notify.success(t("collection.collection-has-been-changed"));
   };
 
   const isFilterSchemaMissing =
@@ -228,77 +219,86 @@ const CollectionEditPage = observer(() => {
 
   return (
     <>
-      {contextHolder}
       <PageHeader
         title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
       />
-      <Flex className={styles.collectionHeader} gap={8} vertical>
-        <Input
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          className={styles.editInput}
-        />
-      </Flex>
-      <Flex className={styles.collectionFlex} gap={8} vertical>
-        <div className={styles.filterBuilderWrapper}>
-          <CollectionQueryBuilder
-            slug={collectionStore.collection?.parent_slug || ""}
-            filterStore={filterStore}
-            onSearch={applySearchFilters}
-            onReset={applySearchFilters}
+      <ErrorZone
+        level="page"
+        loaders={[collectionStore.collectionLoad]}
+        onNavigateHome={() => navigate(`/core/minions/${slug}`)}
+      >
+        <Flex className={styles.collectionHeader} gap={8} vertical>
+          <Input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className={styles.editInput}
           />
-        </div>
-        <div className={styles.editButtonsContainer}>
-          <Button
-            type="default"
-            onClick={() => {
-              navigate(`/core/minions/${slug}`);
-            }}
-          >
-            {t("minions.cancel")}
-          </Button>
-          <Flex gap={8} align="center">
-            <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
-              {t("minions.save")}
-            </Button>
-            {(isFilterSchemaMissing || filterStore.isSearchEnabled) && (
-              <Popover
-                style={{ width: 420 }}
-                content={
-                  isFilterSchemaMissing
-                    ? t("collection.filter-schema-unavailable")
-                    : t("collection.apply-search-before-save")
-                }
-                trigger="hover"
+        </Flex>
+        {/* Схема фильтров не блокирует таблицу: ошибка показывается баннером сверху. */}
+        <ErrorZone level="block" keepContentOnError loaders={[filterStore.filterSchemaLoad]}>
+          <Flex className={styles.collectionFlex} gap={8} vertical>
+            <div className={styles.filterBuilderWrapper}>
+              <CollectionQueryBuilder
+                slug={collectionStore.collection?.parent_slug || ""}
+                filterStore={filterStore}
+                onSearch={applySearchFilters}
+                onReset={applySearchFilters}
+              />
+            </div>
+            <div className={styles.editButtonsContainer}>
+              <Button
+                type="default"
+                onClick={() => {
+                  navigate(`/core/minions/${slug}`);
+                }}
               >
-                <QuestionCircleOutlined />
-              </Popover>
-            )}
+                {t("minions.cancel")}
+              </Button>
+              <Flex gap={8} align="center">
+                <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
+                  {t("minions.save")}
+                </Button>
+                {(isFilterSchemaMissing || filterStore.isSearchEnabled) && (
+                  <Popover
+                    style={{ width: 420 }}
+                    content={
+                      isFilterSchemaMissing
+                        ? t("collection.filter-schema-unavailable")
+                        : t("collection.apply-search-before-save")
+                    }
+                    trigger="hover"
+                  >
+                    <QuestionCircleOutlined />
+                  </Popover>
+                )}
+              </Flex>
+            </div>
+            <MinionsTable
+              tableId="core-collection-minions"
+              columns={minionsColumns}
+              getRowId={(row) => row.id}
+              data={toJS(minionsStore.minions)}
+              total={toJS(minionsStore.totalMinions)}
+              isLoading={minionsStore.isLoading}
+              loader={minionsStore.minionsLoad}
+              pagination={toJS(minionsStore.pagination)}
+              sorting={minionsStore.sorting}
+              onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
+              activeRowId={drawer.activeRowId}
+              bodyRef={drawer.mainContentRef}
+              onRowClick={(minion) => {
+                drawer.toggle({
+                  slug: slug ?? "",
+                  minionId: minion.minion_id ?? minion.id,
+                  drawerId: minion.id,
+                  innerId: minion.id,
+                });
+              }}
+              actionLinkComponent={Link}
+            />
           </Flex>
-        </div>
-        <MinionsTable
-          tableId="core-collection-minions"
-          columns={minionsColumns}
-          getRowId={(row) => row.id}
-          data={toJS(minionsStore.minions)}
-          total={toJS(minionsStore.totalMinions)}
-          isLoading={minionsStore.isLoading}
-          pagination={toJS(minionsStore.pagination)}
-          sorting={minionsStore.sorting}
-          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          activeRowId={drawer.activeRowId}
-          bodyRef={drawer.mainContentRef}
-          onRowClick={(minion) => {
-            drawer.toggle({
-              slug: slug ?? "",
-              minionId: minion.minion_id ?? minion.id,
-              drawerId: minion.id,
-              innerId: minion.id,
-            });
-          }}
-          actionLinkComponent={Link}
-        />
-      </Flex>
+        </ErrorZone>
+      </ErrorZone>
 
       <MinionDetailsDrawer drawer={drawer} />
     </>

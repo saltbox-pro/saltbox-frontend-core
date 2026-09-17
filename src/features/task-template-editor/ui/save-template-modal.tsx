@@ -1,3 +1,4 @@
+import { type AppError, MutationErrorAlert } from "@saltbox/saltbox-frontend-common";
 import { Alert, Form, Modal, Select, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
@@ -12,6 +13,9 @@ import styles from "./save-template-modal.module.css";
 interface SaveTemplateModalProps {
   store: TemplateEditorStore;
   open: boolean;
+  error?: AppError | null;
+  errorFallback?: string;
+  onErrorClose?: () => void;
   onCancel: () => void;
   onConfirm: () => void;
 }
@@ -21,7 +25,15 @@ type SaveTemplateFormValues = {
 };
 
 export const SaveTemplateModal = observer(
-  ({ store, open, onCancel, onConfirm }: SaveTemplateModalProps) => {
+  ({
+    store,
+    open,
+    error,
+    errorFallback,
+    onErrorClose,
+    onCancel,
+    onConfirm,
+  }: SaveTemplateModalProps) => {
     const { t } = useTranslation();
     const [form] = Form.useForm<SaveTemplateFormValues>();
 
@@ -69,6 +81,12 @@ export const SaveTemplateModal = observer(
         maskClosable={!store.isSaving}
         destroyOnHidden
       >
+        <MutationErrorAlert
+          error={error ?? null}
+          fallback={errorFallback ?? t("task-template-editor.save-error")}
+          onClose={onErrorClose}
+        />
+
         {issues.length > 0 && (
           <Alert
             className={styles.warning}

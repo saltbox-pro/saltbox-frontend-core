@@ -1,5 +1,11 @@
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Col, Form, Input, Row, message } from "antd";
+import {
+  type AppError,
+  Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Col, Form, Input, Row } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,9 +16,7 @@ import {
   trimOptional,
   trimRequired,
 } from "../../shared/constants/template-source-name-description-form";
-import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
 import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
-import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
 import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
 import {
   TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
@@ -43,11 +47,10 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
   onClose,
 }: CreateGitSourceModalProps) {
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<GitSourceFormValues>();
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<AppError | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -65,128 +68,118 @@ export const CreateGitSourceModal = observer(function CreateGitSourceModal({
   const handleFinish = async (values: GitSourceFormValues) => {
     setIsSubmitting(true);
     setApiError(null);
-    try {
-      const name = trimRequired(values.name);
 
-      await store.createGitSource({
-        name,
-        description: trimOptional(values.description),
-        repo_url: trimRequired(values.repo_url),
-        repo_user: trimOptional(values.repo_user),
-        repo_pass: trimOptional(values.repo_pass),
-        branch: trimOptional(values.branch),
-      });
+    const name = trimRequired(values.name);
 
-      messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
+    const result = await runMutation({
+      run: () =>
+        store.createGitSource({
+          name,
+          description: trimOptional(values.description),
+          repo_url: trimRequired(values.repo_url),
+          repo_user: trimOptional(values.repo_user),
+          repo_pass: trimOptional(values.repo_pass),
+          branch: trimOptional(values.branch),
+        }),
+      onError: (error) => {
+        if (trySetSourceDuplicateNameFieldError(form, error, t)) return;
+        setApiError(error);
+      },
+    });
 
-      onClose();
-    } catch (reason) {
-      console.error("Failed to create git template source:", reason);
+    setIsSubmitting(false);
+    if (!result.ok) return;
 
-      if (isGlobalServerError(reason)) return;
-
-      if (await trySetSourceDuplicateNameFieldError(form, reason, t)) {
-        return;
-      }
-
-      setApiError(await getSourceFormErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
-    } finally {
-      setIsSubmitting(false);
-    }
+    notify.success(t(`${I18N_PREFIX}.create-success`, { name }));
+    onClose();
   };
 
   return (
-    <>
-      {contextHolder}
-
-      <Modal
-        title={t(`${I18N_PREFIX}.title`)}
-        open={open}
-        onCancel={handleCancel}
-        destroyOnHidden
-        footer={
-          <CreateTemplateSourceModalFooter
-            formId={FORM_ID}
-            isSubmitting={isSubmitting}
-            cancelLabel={t("common.cancel")}
-            createLabel={t("common.add")}
-            onCancel={handleCancel}
-          />
-        }
+    <Modal
+      title={t(`${I18N_PREFIX}.title`)}
+      open={open}
+      onCancel={handleCancel}
+      destroyOnHidden
+      footer={
+        <CreateTemplateSourceModalFooter
+          formId={FORM_ID}
+          isSubmitting={isSubmitting}
+          cancelLabel={t("common.cancel")}
+          createLabel={t("common.add")}
+          onCancel={handleCancel}
+        />
+      }
+    >
+      <Form
+        id={FORM_ID}
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        onValuesChange={() => setApiError(null)}
+        autoComplete="off"
       >
-        <Form
-          id={FORM_ID}
-          form={form}
-          layout="vertical"
-          onFinish={handleFinish}
-          onValuesChange={() => setApiError(null)}
-          autoComplete="off"
+        <MutationErrorAlert
+          error={apiError}
+          fallback={t(`${I18N_PREFIX}.create-error`)}
+          onClose={() => setApiError(null)}
+        />
+
+        <TemplateSourceNameDescriptionFields />
+
+        <Form.Item<GitSourceFormValues>
+          label={t(`${I18N_PREFIX}.repo-url`)}
+          name="repo_url"
+          validateFirst
+          rules={[
+            {
+              required: true,
+              whitespace: true,
+              message: t(`${I18N_PREFIX}.repo-url-required`),
+            },
+            {
+              pattern: TEMPLATE_SOURCE_REPO_URL_PATTERN,
+              message: t(`${I18N_PREFIX}.repo-url-invalid`),
+            },
+          ]}
         >
-          <TemplateSourceNameDescriptionFields />
+          <Input placeholder={t(`${I18N_PREFIX}.repo-url-placeholder`)} />
+        </Form.Item>
 
-          <Form.Item<GitSourceFormValues>
-            label={t(`${I18N_PREFIX}.repo-url`)}
-            name="repo_url"
-            validateFirst
-            rules={[
-              {
-                required: true,
-                whitespace: true,
-                message: t(`${I18N_PREFIX}.repo-url-required`),
-              },
-              {
-                pattern: TEMPLATE_SOURCE_REPO_URL_PATTERN,
-                message: t(`${I18N_PREFIX}.repo-url-invalid`),
-              },
-            ]}
-          >
-            <Input placeholder={t(`${I18N_PREFIX}.repo-url-placeholder`)} />
-          </Form.Item>
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item<GitSourceFormValues> label={t(`${I18N_PREFIX}.repo-user`)} name="repo_user">
+              <Input
+                autoComplete="username"
+                placeholder={t(`${I18N_PREFIX}.repo-user-placeholder`)}
+              />
+            </Form.Item>
+          </Col>
 
-          <Row gutter={12}>
-            <Col span={12}>
-              <Form.Item<GitSourceFormValues>
-                label={t(`${I18N_PREFIX}.repo-user`)}
-                name="repo_user"
-              >
-                <Input
-                  autoComplete="username"
-                  placeholder={t(`${I18N_PREFIX}.repo-user-placeholder`)}
-                />
-              </Form.Item>
-            </Col>
+          <Col span={12}>
+            <Form.Item<GitSourceFormValues> label={t(`${I18N_PREFIX}.repo-pass`)} name="repo_pass">
+              <Input.Password
+                autoComplete="new-password"
+                placeholder={t(`${I18N_PREFIX}.repo-pass-placeholder`)}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-            <Col span={12}>
-              <Form.Item<GitSourceFormValues>
-                label={t(`${I18N_PREFIX}.repo-pass`)}
-                name="repo_pass"
-              >
-                <Input.Password
-                  autoComplete="new-password"
-                  placeholder={t(`${I18N_PREFIX}.repo-pass-placeholder`)}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item<GitSourceFormValues>
-            label={t(`${I18N_PREFIX}.branch`)}
-            name="branch"
-            rules={[
-              {
+        <Form.Item<GitSourceFormValues>
+          label={t(`${I18N_PREFIX}.branch`)}
+          name="branch"
+          rules={[
+            {
+              max: TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
+              message: t(`${I18N_PREFIX}.branch-max`, {
                 max: TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
-                message: t(`${I18N_PREFIX}.branch-max`, {
-                  max: TEMPLATE_SOURCE_BRANCH_MAX_LENGTH,
-                }),
-              },
-            ]}
-          >
-            <Input placeholder={t(`${I18N_PREFIX}.branch-placeholder`)} />
-          </Form.Item>
-
-          {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
-        </Form>
-      </Modal>
-    </>
+              }),
+            },
+          ]}
+        >
+          <Input placeholder={t(`${I18N_PREFIX}.branch-placeholder`)} />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 });

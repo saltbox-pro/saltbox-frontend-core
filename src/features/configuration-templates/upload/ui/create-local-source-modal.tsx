@@ -1,5 +1,11 @@
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { Form, Input, message, type FormRule } from "antd";
+import {
+  type AppError,
+  Modal,
+  MutationErrorAlert,
+  notify,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
+import { Form, Input, type FormRule } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,9 +17,7 @@ import {
   trimOptional,
   trimRequired,
 } from "../../shared/constants/template-source-name-description-form";
-import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
 import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
-import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
 import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
 import {
   TEMPLATE_SOURCE_NAMESPACE_MAX_LENGTH,
@@ -41,11 +45,10 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
   onClose,
 }: CreateLocalSourceModalProps) {
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [form] = Form.useForm<LocalSourceFormValues>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<AppError | null>(null);
 
   const namespaceRules: FormRule[] = [
     {
@@ -81,76 +84,72 @@ export const CreateLocalSourceModal = observer(function CreateLocalSourceModal({
   const handleFinish = async (values: LocalSourceFormValues) => {
     setIsSubmitting(true);
     setApiError(null);
-    try {
-      const name = trimRequired(values.name);
 
-      await store.createLocalSource({
-        name,
-        description: trimOptional(values.description),
-        namespace: trimRequired(values.namespace),
-      });
+    const name = trimRequired(values.name);
 
-      messageApi.success(t(`${I18N_PREFIX}.create-success`, { name }));
+    const result = await runMutation({
+      run: () =>
+        store.createLocalSource({
+          name,
+          description: trimOptional(values.description),
+          namespace: trimRequired(values.namespace),
+        }),
+      onError: (error) => {
+        if (trySetSourceDuplicateNameFieldError(form, error, t)) return;
+        setApiError(error);
+      },
+    });
 
-      onClose();
-    } catch (reason) {
-      console.error("Failed to create local template source:", reason);
+    setIsSubmitting(false);
+    if (!result.ok) return;
 
-      if (isGlobalServerError(reason)) return;
-
-      if (await trySetSourceDuplicateNameFieldError(form, reason, t)) {
-        return;
-      }
-
-      setApiError(await getSourceFormErrorMessage(reason, t(`${I18N_PREFIX}.create-error`)));
-    } finally {
-      setIsSubmitting(false);
-    }
+    notify.success(t(`${I18N_PREFIX}.create-success`, { name }));
+    onClose();
   };
 
   return (
-    <>
-      {contextHolder}
-
-      <Modal
-        title={t(`${I18N_PREFIX}.title`)}
-        open={open}
-        onCancel={handleCancel}
-        destroyOnHidden
-        footer={
-          <CreateTemplateSourceModalFooter
-            formId={FORM_ID}
-            isSubmitting={isSubmitting}
-            cancelLabel={t("common.cancel")}
-            createLabel={t("common.add")}
-            onCancel={handleCancel}
-          />
-        }
+    <Modal
+      title={t(`${I18N_PREFIX}.title`)}
+      open={open}
+      onCancel={handleCancel}
+      destroyOnHidden
+      footer={
+        <CreateTemplateSourceModalFooter
+          formId={FORM_ID}
+          isSubmitting={isSubmitting}
+          cancelLabel={t("common.cancel")}
+          createLabel={t("common.add")}
+          onCancel={handleCancel}
+        />
+      }
+    >
+      <Form
+        id={FORM_ID}
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        onValuesChange={() => setApiError(null)}
+        autoComplete="off"
       >
-        <Form
-          id={FORM_ID}
-          form={form}
-          layout="vertical"
-          onFinish={handleFinish}
-          onValuesChange={() => setApiError(null)}
-          autoComplete="off"
+        <MutationErrorAlert
+          error={apiError}
+          fallback={t(`${I18N_PREFIX}.create-error`)}
+          onClose={() => setApiError(null)}
+        />
+
+        <TemplateSourceNameDescriptionFields />
+
+        <Form.Item<LocalSourceFormValues>
+          label={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace`)}
+          name="namespace"
+          required
+          validateFirst
+          rules={namespaceRules}
+          tooltip={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-tooltip`)}
         >
-          <TemplateSourceNameDescriptionFields />
-
-          <Form.Item<LocalSourceFormValues>
-            label={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace`)}
-            name="namespace"
-            required
-            validateFirst
-            rules={namespaceRules}
-            tooltip={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-tooltip`)}
-          >
-            <Input placeholder={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-placeholder`)} />
-          </Form.Item>
-
-          {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
-        </Form>
-      </Modal>
-    </>
+          <Input placeholder={t(`${TEMPLATE_SOURCE_FORM_I18N_PREFIX}.namespace-placeholder`)} />
+        </Form.Item>
+      </Form>
+    </Modal>
   );
 });

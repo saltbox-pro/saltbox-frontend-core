@@ -5,6 +5,7 @@ import {
   FastTablePaginated,
   formatTimeByUserTZ,
   useInfoDrawer,
+  type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
 import {
   type PaginationState,
@@ -53,7 +54,8 @@ interface DefaultJobReturnTableProps {
   tableColumns?: string[];
   tableRows?: Array<Record<string, unknown>>;
   isTableLoading?: boolean;
-  tableLoadError?: boolean;
+  tableLoader?: LoadSource;
+  loader?: LoadSource;
   onTableLazyLoad?: (pagination: PaginationState) => void;
 }
 
@@ -74,7 +76,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     tableColumns = [],
     tableRows = [],
     isTableLoading = false,
-    tableLoadError = false,
+    tableLoader,
+    loader,
     onTableLazyLoad,
   }) => {
     const { t } = useTranslation();
@@ -226,7 +229,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             total={total}
             pagination={pagination}
             isLoading={isTableLoading}
-            loadError={tableLoadError}
+            loader={tableLoader}
             onLazyLoad={onTableLazyLoad}
             isInfoAlertVisible={isTableInfoAlertVisible}
             onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
@@ -239,6 +242,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             data={jobReturns}
             total={total}
             isLoading={isLoading}
+            loader={loader}
             pagination={pagination}
             sorting={sorting}
             onLazyLoad={onLazyLoad}

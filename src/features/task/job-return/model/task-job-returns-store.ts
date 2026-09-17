@@ -1,4 +1,5 @@
 import type { JobReturnModel, TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -10,20 +11,29 @@ export type TaskJobReturnsContext = {
   master: string;
 };
 
-export type TaskJobReturnsErrorKey =
-  | null
-  | "missing-context"
-  | "not-found"
-  | "access-denied"
-  | "load-failed";
+export type TaskJobReturnsErrorKey = null | "missing-context";
 
 export class TaskJobReturnsStore {
   @observable taskJobReturnsContext: TaskJobReturnsContext | null = null;
   @observable drawerMinion: TaskMinionListResponse | null = null;
   @observable taskJobReturns: JobReturnModel[] = [];
-  @observable taskJobReturnsLoading: boolean = false;
   @observable taskJobReturnsError: TaskJobReturnsErrorKey = null;
   @observable taskJobReturnsFetched: boolean = false;
+
+  readonly taskJobReturnsLoad = createLoader({
+    run: (taskId: string, taskMinionMongoId: string, signal: AbortSignal) =>
+      apiCoreStore.tasksApi?.taskJobsReturns(
+        { tid: taskId, task_minion_mongo_id: taskMinionMongoId },
+        { signal }
+      ),
+    onSuccess: (list, _taskId, taskMinionMongoId) => {
+      this.replace(list ?? []);
+      this.taskJobReturnsFetched = true;
+      this.loadedKey = taskMinionMongoId;
+      this.loadingKey = null;
+      this.taskJobReturnsError = null;
+    },
+  });
 
   private abortController: AbortController | null = null;
   private loadedKey: string | null = null;
@@ -33,6 +43,11 @@ export class TaskJobReturnsStore {
 
   constructor(private readonly getTaskId: () => string | null) {
     makeObservable(this);
+  }
+
+  @computed
+  get taskJobReturnsLoading(): boolean {
+    return this.taskJobReturnsLoad.isLoading;
   }
 
   @computed
@@ -47,7 +62,6 @@ export class TaskJobReturnsStore {
     this.taskJobReturnsContext = null;
     this.drawerMinion = null;
     this.taskJobReturns = [];
-    this.taskJobReturnsLoading = false;
     this.taskJobReturnsError = null;
     this.taskJobReturnsFetched = false;
     this.loadedKey = null;
@@ -75,7 +89,6 @@ export class TaskJobReturnsStore {
   setLoadError = (key: TaskJobReturnsErrorKey) => {
     this.abortController?.abort();
     this.abortController = null;
-    this.taskJobReturnsLoading = false;
     this.taskJobReturnsFetched = false;
     this.loadedKey = null;
     this.loadingKey = null;
@@ -106,10 +119,8 @@ export class TaskJobReturnsStore {
       return;
     }
 
+    // Тихая догрузка по сокету: ошибку показывать нечем, данные на экране остаются прежними.
     const promise = (async () => {
-      runInAction(() => {
-        this.taskJobReturnsLoading = true;
-      });
       try {
         const list = await apiCoreStore.tasksApi?.taskJobsReturns({
           tid: expectedTaskId,
@@ -126,18 +137,9 @@ export class TaskJobReturnsStore {
           this.replace(list ?? []);
           this.taskJobReturnsFetched = true;
           this.taskJobReturnsError = null;
-          this.taskJobReturnsLoading = false;
         });
       } catch (err) {
         console.error("reloadTaskJobReturns:", err);
-        const isStillSameContext =
-          this.getTaskId() === expectedTaskId &&
-          this.taskJobReturnsContext?.taskMinionMongoId === expectedTaskMinionMongoId;
-        if (isStillSameContext) {
-          runInAction(() => {
-            this.taskJobReturnsLoading = false;
-          });
-        }
       } finally {
         this.inFlightReturnsReload = null;
       }
@@ -161,7 +163,6 @@ export class TaskJobReturnsStore {
     this.abortController = ac;
 
     runInAction(() => {
-      this.taskJobReturnsLoading = true;
       this.taskJobReturnsError = null;
       this.taskJobReturnsFetched = false;
       this.loadedKey = null;
@@ -175,44 +176,10 @@ export class TaskJobReturnsStore {
       this.taskJobReturns = [];
     });
 
-    try {
-      const promise = apiCoreStore.tasksApi?.taskJobsReturns(
-        { tid: taskId, task_minion_mongo_id: taskMinionMongoId },
-        { signal: ac.signal }
-      );
-      if (!promise) {
-        if (this.abortController !== ac) return;
-        this.setLoadError("load-failed");
-        return;
-      }
-      const list = await promise;
-      if (this.abortController !== ac) return;
-      runInAction(() => {
-        this.replace(list ?? []);
-        this.taskJobReturnsFetched = true;
-        this.loadedKey = key;
-        this.loadingKey = null;
-        this.taskJobReturnsLoading = false;
-        this.taskJobReturnsError = null;
-        if (this.abortController === ac) {
-          this.abortController = null;
-        }
-      });
-    } catch (err: unknown) {
-      const isAbortError =
-        (err as { name?: string })?.name === "AbortError" ||
-        (err as { cause?: { name?: string; code?: number } })?.cause?.name === "AbortError" ||
-        (err as { cause?: { code?: number } })?.cause?.code === DOMException.ABORT_ERR;
-      if (isAbortError) return;
+    await this.taskJobReturnsLoad.run(taskId, taskMinionMongoId, ac.signal);
 
-      console.error("taskJobsReturns:", err);
-      if (this.abortController !== ac) return;
-
-      const status = (err as { response?: { status?: number } })?.response?.status;
-      let errKey: TaskJobReturnsErrorKey = "load-failed";
-      if (status === 404) errKey = "not-found";
-      else if (status === 403) errKey = "access-denied";
-      this.setLoadError(errKey);
+    if (this.abortController === ac) {
+      this.abortController = null;
     }
   };
 

@@ -3,7 +3,12 @@ import {
   type TaskMinionListResponse,
   type TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { PageHeader, WebSocketMessage, WebSocketService } from "@saltbox/saltbox-frontend-common";
+import {
+  ErrorZone,
+  PageHeader,
+  WebSocketMessage,
+  WebSocketService,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useState } from "react";
@@ -50,12 +55,6 @@ const TaskPage = observer(() => {
     }
   }, [taskId]);
 
-  useEffect(() => {
-    if (taskStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [taskStore.error]);
-
   useWebSocket(taskId, (messages) => {
     if (messages?.length > 0) {
       taskStore.updateTasks(
@@ -91,23 +90,31 @@ const TaskPage = observer(() => {
         }
       />
 
-      <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
-        <TaskRunDetails taskStore={taskStore} />
+      <ErrorZone
+        level="page"
+        loaders={[taskStore.taskLoad]}
+        onNavigateHome={() =>
+          navigate(`/core/${taskStore.task?.task_type === "policy" ? "policies" : "tasks"}`)
+        }
+      >
+        <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
+          <TaskRunDetails taskStore={taskStore} />
 
-        <TaskStatusProgress
-          counts={taskStore.task?.minions_count}
-          taskType={taskStore.task?.task_type}
-        />
+          <TaskStatusProgress
+            counts={taskStore.task?.minions_count}
+            taskType={taskStore.task?.task_type}
+          />
 
-        <TaskMinionStatusFilter
-          counts={taskStore.task?.minions_count}
-          taskType={taskStore.task?.task_type}
-          selectedCategory={taskStore.minionCategoryFilter}
-          onSelectCategory={taskStore.setMinionCategoryFilter}
-        />
+          <TaskMinionStatusFilter
+            counts={taskStore.task?.minions_count}
+            taskType={taskStore.task?.task_type}
+            selectedCategory={taskStore.minionCategoryFilter}
+            onSelectCategory={taskStore.setMinionCategoryFilter}
+          />
 
-        <TaskMinions taskStore={taskStore} />
-      </Flex>
+          <TaskMinions taskStore={taskStore} />
+        </Flex>
+      </ErrorZone>
     </>
   );
 });

@@ -1,8 +1,13 @@
 import { JobModel, JobReturnModel, JobStatus } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  createKeyedLoader,
+  createLoader,
+  type LoadSource,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
-import { action, computed, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -19,13 +24,6 @@ const restoreFieldsMissingInSocketJob = (currentJob: JobModel, socketJob: JobMod
   template_source_id: socketJob.template_source_id ?? currentJob.template_source_id,
 });
 
-type FetchStatus = "idle" | "in-process" | "refetching" | "error" | "success";
-type LoadingFetchStatus = Extract<FetchStatus, "in-process" | "refetching">;
-type LoadJobReturnDataOptions = {
-  force?: boolean;
-  loadingStatus: LoadingFetchStatus;
-};
-
 export class JobStore {
   @observable jobId: string;
   @observable job: JobModel | null;
@@ -33,31 +31,79 @@ export class JobStore {
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
   @observable jobReturns: Array<JobReturnModel>;
-  @observable isJobLoading: boolean;
-  @observable isJobReturnsLoading: boolean;
   @observable jobReturnDataById: Record<string, unknown>;
-  @observable jobReturnDataStatusById: Record<string, FetchStatus>;
-  @observable jobReturnDataErrorById: Record<
-    string,
-    null | "not-found" | "access-denied" | "load-failed" | "api-unavailable"
-  >;
   @observable jobReturnTableColumns: string[];
   @observable jobReturnTableRows: Array<Record<string, unknown>>;
   @observable jobReturnTableTotal: number;
-  @observable isJobReturnTableLoading: boolean;
-  @observable jobReturnTableLoadError: boolean;
   @observable tablePagination: PaginationState;
-  @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
 
-  private inFlightJobReturnDataLoads: Map<string, Promise<void>> = new Map();
   private staleJobReturnDataIds: Set<string> = new Set();
   private shouldLoadJobReturnsAfterStarting = false;
 
+  readonly jobLoad = createLoader({
+    run: () => (this.jobId ? apiCoreStore.jobsApi?.jobRetrieve({ job_id: this.jobId }) : undefined),
+    onSuccess: (job) => {
+      this.job = job;
+      if (job.status === JobStatus.Starting) {
+        this.shouldLoadJobReturnsAfterStarting = true;
+      } else {
+        this.loadJobReturns();
+      }
+    },
+  });
+
+  readonly jobReturnsLoad = createLoader({
+    run: () =>
+      apiCoreStore.jobsApi?.jobReturnsList({
+        JobReturnsListBody: {
+          query: {
+            ...this.mongoDBQuery,
+            ...(this.jobId ? { job_id: this.jobId } : {}),
+          },
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
+      }),
+    onSuccess: (jobReturns) => {
+      this.jobReturns = jobReturns.data;
+      this.total = jobReturns.total;
+    },
+  });
+
+  readonly jobReturnsTableLoad = createLoader({
+    run: () =>
+      apiCoreStore.jobsApi?.jobReturnsTable({
+        JobReturnsListBody: {
+          query: {
+            ...this.mongoDBQuery,
+            ...(this.jobId ? { job_id: this.jobId } : {}),
+          },
+          limit: this.tablePagination.pageSize,
+          skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
+        },
+      }),
+    onSuccess: (response) => {
+      this.jobReturnTableColumns = response.columns;
+      this.jobReturnTableRows = (response.data ?? []).filter(
+        (row): row is Record<string, unknown> => row != null
+      );
+      this.jobReturnTableTotal = response.total;
+    },
+  });
+
+  readonly jobReturnDataLoad = createKeyedLoader({
+    run: (jobReturnId: string) =>
+      apiCoreStore.jobsApi?.jobReturnData({ job_return_mongo_id: jobReturnId }),
+    onSuccess: (data, jobReturnId) => {
+      this.jobReturnDataById = { ...this.jobReturnDataById, [jobReturnId]: data };
+      this.staleJobReturnDataIds.delete(jobReturnId);
+    },
+  });
+
   constructor() {
     this.jobId = "";
-    this.isJobLoading = false;
-    this.isJobReturnsLoading = false;
     this.job = null;
     this.jobReturns = [];
     this.total = 0;
@@ -68,26 +114,31 @@ export class JobStore {
     this.sorting = [...DEFAULT_SORTING];
     this.mongoDBQuery = undefined;
     this.jobReturnDataById = {};
-    this.jobReturnDataStatusById = {};
-    this.jobReturnDataErrorById = {};
     this.jobReturnTableColumns = [];
     this.jobReturnTableRows = [];
     this.jobReturnTableTotal = 0;
-    this.isJobReturnTableLoading = false;
-    this.jobReturnTableLoadError = false;
     this.tablePagination = {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.error = null;
     makeObservable(this);
+  }
+
+  @computed get isJobLoading(): boolean {
+    return this.jobLoad.isLoading;
+  }
+
+  @computed get isJobReturnsLoading(): boolean {
+    return this.jobReturnsLoad.isLoading;
+  }
+
+  @computed get isJobReturnTableLoading(): boolean {
+    return this.jobReturnsTableLoad.isLoading;
   }
 
   @action
   reset = () => {
     this.jobId = "";
-    this.isJobLoading = false;
-    this.isJobReturnsLoading = false;
     this.job = null;
     this.jobReturns = [];
     this.total = 0;
@@ -98,21 +149,15 @@ export class JobStore {
     this.sorting = [...DEFAULT_SORTING];
     this.mongoDBQuery = undefined;
     this.jobReturnDataById = {};
-    this.jobReturnDataStatusById = {};
-    this.jobReturnDataErrorById = {};
-    this.inFlightJobReturnDataLoads.clear();
     this.staleJobReturnDataIds.clear();
     this.shouldLoadJobReturnsAfterStarting = false;
     this.jobReturnTableColumns = [];
     this.jobReturnTableRows = [];
     this.jobReturnTableTotal = 0;
-    this.isJobReturnTableLoading = false;
-    this.jobReturnTableLoadError = false;
     this.tablePagination = {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.error = null;
   };
 
   @action
@@ -120,97 +165,25 @@ export class JobStore {
     this.jobReturnTableColumns = [];
     this.jobReturnTableRows = [];
     this.jobReturnTableTotal = 0;
-    this.jobReturnTableLoadError = false;
-    this.isJobReturnTableLoading = true;
   };
 
-  @action
-  beginJobReturnsReload = () => {
-    this.isJobReturnsLoading = true;
-  };
+  loadJobReturnData = (jobReturnId: string, opts?: { force?: boolean }): Promise<void> => {
+    if (!jobReturnId) return Promise.resolve();
 
-  @action
-  private setJobReturnDataStatus = (jobReturnId: string, value: FetchStatus) => {
-    this.jobReturnDataStatusById = { ...this.jobReturnDataStatusById, [jobReturnId]: value };
-  };
-
-  @action
-  private setJobReturnDataError = (
-    jobReturnId: string,
-    value: null | "not-found" | "access-denied" | "load-failed" | "api-unavailable"
-  ) => {
-    this.jobReturnDataErrorById = { ...this.jobReturnDataErrorById, [jobReturnId]: value };
-  };
-
-  @action
-  private setJobReturnData = (jobReturnId: string, data: unknown) => {
-    this.jobReturnDataById = { ...this.jobReturnDataById, [jobReturnId]: data };
-  };
-
-  loadJobReturnData = async (
-    jobReturnId: string,
-    opts: LoadJobReturnDataOptions
-  ): Promise<void> => {
-    if (!jobReturnId) return;
     const shouldForceRefetch = this.staleJobReturnDataIds.has(jobReturnId);
     const hasCachedData = Object.prototype.hasOwnProperty.call(this.jobReturnDataById, jobReturnId);
-    const force = Boolean(opts?.force);
-    if (hasCachedData && !shouldForceRefetch && !force) return;
+    if (hasCachedData && !shouldForceRefetch && !opts?.force) return Promise.resolve();
 
-    const inFlight = this.inFlightJobReturnDataLoads.get(jobReturnId);
-    if (inFlight) return await inFlight;
-
-    const promise = (async () => {
-      this.setJobReturnDataStatus(jobReturnId, opts.loadingStatus);
-      this.setJobReturnDataError(jobReturnId, null);
-
-      try {
-        if (!apiCoreStore.jobsApi) {
-          runInAction(() => {
-            this.setJobReturnDataError(jobReturnId, "api-unavailable");
-            this.setJobReturnDataStatus(jobReturnId, "error");
-          });
-          return;
-        }
-
-        const data = await apiCoreStore.jobsApi.jobReturnData({
-          job_return_mongo_id: jobReturnId,
-        });
-        runInAction(() => {
-          this.setJobReturnData(jobReturnId, data);
-          this.setJobReturnDataStatus(jobReturnId, "success");
-          this.staleJobReturnDataIds.delete(jobReturnId);
-        });
-      } catch (e) {
-        console.error("loadJobReturnData:", e);
-        const status = (e as { response?: { status?: number } })?.response?.status;
-        runInAction(() => {
-          if (status === 404) this.setJobReturnDataError(jobReturnId, "not-found");
-          else if (status === 403) this.setJobReturnDataError(jobReturnId, "access-denied");
-          else this.setJobReturnDataError(jobReturnId, "load-failed");
-          this.setJobReturnDataStatus(jobReturnId, "error");
-        });
-      } finally {
-        this.inFlightJobReturnDataLoads.delete(jobReturnId);
-      }
-    })();
-
-    this.inFlightJobReturnDataLoads.set(jobReturnId, promise);
-    return await promise;
+    return this.jobReturnDataLoad.run(jobReturnId);
   };
+
+  getJobReturnDataState = (jobReturnId: string): LoadSource =>
+    this.jobReturnDataLoad.state(jobReturnId);
 
   isJobReturnDataStale = (jobReturnId: string): boolean => {
     if (!jobReturnId) return false;
     return this.staleJobReturnDataIds.has(jobReturnId);
   };
-
-  getJobReturnDataStatus = (jobReturnId: string): FetchStatus =>
-    this.jobReturnDataStatusById[jobReturnId] ?? "idle";
-
-  getJobReturnDataError = (
-    jobReturnId: string
-  ): null | "not-found" | "access-denied" | "load-failed" | "api-unavailable" =>
-    this.jobReturnDataErrorById[jobReturnId] ?? null;
 
   getJobReturn = (jobReturnId: string): JobReturnModel | undefined =>
     this.jobReturns.find((r) => r.id === jobReturnId);
@@ -221,12 +194,7 @@ export class JobStore {
   invalidateJobReturnData = (jobReturnId: string) => {
     if (!jobReturnId) return;
     const { [jobReturnId]: _data, ...nextData } = this.jobReturnDataById;
-    const { [jobReturnId]: _status, ...nextStatus } = this.jobReturnDataStatusById;
-    const { [jobReturnId]: _error, ...nextError } = this.jobReturnDataErrorById;
     this.jobReturnDataById = nextData;
-    this.jobReturnDataStatusById = nextStatus;
-    this.jobReturnDataErrorById = nextError;
-    this.inFlightJobReturnDataLoads.delete(jobReturnId);
   };
 
   @action
@@ -270,132 +238,31 @@ export class JobStore {
     }
   };
 
-  @action
   loadJob = () => {
     if (this.jobId.length === 0) {
       return;
     }
-    this.isJobLoading = true;
-    this.error = null;
-    apiCoreStore.jobsApi
-      ?.jobRetrieve({ job_id: this.jobId })
-      .then((job) => {
-        if (!job) {
-          runInAction(() => {
-            this.error = "Job not found";
-          });
-        } else {
-          runInAction(() => {
-            this.job = job;
-          });
-          if (job.status === JobStatus.Starting) {
-            this.shouldLoadJobReturnsAfterStarting = true;
-          } else {
-            this.loadJobReturns();
-          }
-        }
-      })
-      .catch((error) => {
-        console.error("Error loading job:", error);
-        runInAction(() => {
-          this.error = "Failed to load job";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isJobLoading = false;
-        });
-      });
+    this.jobLoad.run().catch(() => undefined);
   };
 
   @action
-  loadJobReturns = (isSilentLoading: boolean = false): Promise<void> => {
+  loadJobReturns = (): Promise<void> => {
     if (this.jobId && this.job?.status === JobStatus.Starting) {
       this.shouldLoadJobReturnsAfterStarting = true;
       return Promise.resolve();
     }
 
     this.shouldLoadJobReturnsAfterStarting = false;
-    if (!isSilentLoading) {
-      this.isJobReturnsLoading = true;
-    }
 
-    return (
-      apiCoreStore.jobsApi
-        ?.jobReturnsList({
-          JobReturnsListBody: {
-            query: {
-              ...this.mongoDBQuery,
-              ...(this.jobId ? { job_id: this.jobId } : {}),
-            },
-            limit: this.pagination.pageSize,
-            skip: this.pagination.pageIndex * this.pagination.pageSize,
-            sort: toBackendSorting(this.sorting),
-          },
-        })
-        .then((jobReturns) => {
-          runInAction(() => {
-            this.jobReturns = jobReturns.data;
-            this.total = jobReturns.total;
-          });
-        })
-        .catch((error) => {
-          console.error("Error loading job returns:", error);
-        })
-        .finally(() => {
-          if (!isSilentLoading) {
-            runInAction(() => {
-              this.isJobReturnsLoading = false;
-            });
-          }
-        }) ?? Promise.resolve()
-    );
+    return this.jobReturnsLoad.run();
   };
 
-  @action
   loadJobReturnsTable = (): Promise<void> => {
     if (this.jobId && this.job?.status === JobStatus.Starting) {
-      this.isJobReturnTableLoading = false;
       return Promise.resolve();
     }
 
-    this.isJobReturnTableLoading = true;
-    this.jobReturnTableLoadError = false;
-
-    return (
-      apiCoreStore.jobsApi
-        ?.jobReturnsTable({
-          JobReturnsListBody: {
-            query: {
-              ...this.mongoDBQuery,
-              ...(this.jobId ? { job_id: this.jobId } : {}),
-            },
-            limit: this.tablePagination.pageSize,
-            skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
-          },
-        })
-        .then((response) => {
-          runInAction(() => {
-            this.jobReturnTableColumns = response.columns;
-            this.jobReturnTableRows = (response.data ?? []).filter(
-              (row): row is Record<string, unknown> => row != null
-            );
-            this.jobReturnTableTotal = response.total;
-            this.jobReturnTableLoadError = false;
-          });
-        })
-        .catch((error) => {
-          console.error("Error loading job returns table:", error);
-          runInAction(() => {
-            this.jobReturnTableLoadError = true;
-          });
-        })
-        .finally(() => {
-          runInAction(() => {
-            this.isJobReturnTableLoading = false;
-          });
-        }) ?? Promise.resolve()
-    );
+    return this.jobReturnsTableLoad.run();
   };
 
   @action

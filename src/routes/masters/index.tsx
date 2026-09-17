@@ -4,9 +4,11 @@ import {
   PageHeader,
   FastTablePaginated,
   formatTimeByUserTZ,
+  notify,
+  runMutation,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Flex, Tag, message } from "antd";
+import { Button, Flex, Tag } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { JSX, useEffect } from "react";
@@ -27,18 +29,8 @@ const columnHelper = createColumnHelper<TableRowData>();
 function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
-  const {
-    availabilityByMasterId,
-    error,
-    isLoading,
-    isManualPinging,
-    isPinging,
-    masters,
-    pagination,
-    pingFailed,
-    sorting,
-  } = mastersStore;
+  const { availabilityByMasterId, isManualPinging, isPinging, masters, pagination, sorting } =
+    mastersStore;
 
   const columns = [
     columnHelper.accessor("master_id", {
@@ -93,6 +85,8 @@ function MastersPage() {
       cell: ({ row }) => {
         const id = row.original.id;
         const status = row.original.status;
+        // Читаем ObservableSet в теле observer-компонента: ленивый колбэк подписку не создаёт.
+        const isChanging = mastersStore.changingMasterIds.has(id);
 
         return (
           <Flex gap={5}>
@@ -104,7 +98,7 @@ function MastersPage() {
                   e.stopPropagation();
                   handleAccept(id);
                 }}
-                disabled={isLoading}
+                loading={isChanging}
                 title={t("masters.table-accept-title")}
               >
                 {t("masters.table-accept")}
@@ -118,7 +112,7 @@ function MastersPage() {
                   e.stopPropagation();
                   handleReject(id);
                 }}
-                disabled={isLoading}
+                loading={isChanging}
                 title={t("masters.table-reject-title")}
               >
                 {t("masters.table-reject")}
@@ -131,72 +125,50 @@ function MastersPage() {
     }),
   ];
 
+  const handlePingMasters = (manual: boolean) => {
+    runMutation({
+      run: () => mastersStore.pingMasters({ manual }),
+      errorMessage: t("masters.error-on-ping-masters"),
+    });
+  };
+
   useEffect(() => {
     mastersStore.loadMasters();
-    mastersStore.pingMasters();
+    handlePingMasters(false);
 
     return () => {
       mastersStore.reset();
     };
   }, []);
 
-  useEffect(() => {
-    if (error) {
-      navigate("/core/not-found");
-    }
-  }, [error, navigate]);
+  const changeMasterStatus = (
+    id: string,
+    change: (id: string) => Promise<MasterViewSchema>
+  ): void => {
+    runMutation({
+      run: () => change(id),
+      errorMessage: t("masters.error-on-change-master-status"),
+    }).then((result) => {
+      if (!result.ok) return;
 
-  useEffect(() => {
-    if (!pingFailed) {
-      return;
-    }
-
-    messageApi.error(t("masters.error-on-ping-masters"));
-    mastersStore.clearPingFailed();
-  }, [pingFailed, messageApi, t]);
-
-  const handleAccept = (id: string) => {
-    mastersStore
-      .acceptMaster(id)
-      .then((master) => {
-        messageApi.success(
-          t("masters.success-on-change-master-status", {
-            name: master.title,
-            status:
-              master.status === "accepted"
-                ? t("masters.table-accepted")
-                : t("masters.table-rejected"),
-          })
-        );
-      })
-      .catch(() => {
-        messageApi.error(t("masters.error-on-change-master-status"));
-      });
+      notify.success(
+        t("masters.success-on-change-master-status", {
+          name: result.data.title,
+          status:
+            result.data.status === "accepted"
+              ? t("masters.table-accepted")
+              : t("masters.table-rejected"),
+        })
+      );
+    });
   };
 
-  const handleReject = (id: string) => {
-    mastersStore
-      .rejectMaster(id)
-      .then((master) => {
-        messageApi.success(
-          t("masters.success-on-change-master-status", {
-            name: master.title,
-            status:
-              master.status === "accepted"
-                ? t("masters.table-accepted")
-                : t("masters.table-rejected"),
-          })
-        );
-      })
-      .catch(() => {
-        messageApi.error(t("masters.error-on-change-master-status"));
-      });
-  };
+  const handleAccept = (id: string) => changeMasterStatus(id, mastersStore.acceptMaster);
+
+  const handleReject = (id: string) => changeMasterStatus(id, mastersStore.rejectMaster);
 
   return (
     <>
-      {contextHolder}
-
       <PageHeader title={t("masters.title")} />
 
       <div className="page-actions-buttons">
@@ -204,7 +176,7 @@ function MastersPage() {
           icon={<ApiOutlined />}
           disabled={isPinging && !isManualPinging}
           loading={isManualPinging}
-          onClick={() => mastersStore.pingMasters({ manual: true })}
+          onClick={() => handlePingMasters(true)}
         >
           {t("masters.check-availability")}
         </Button>
@@ -214,7 +186,8 @@ function MastersPage() {
         tableId="core-masters"
         columns={columns}
         data={toJS(masters)}
-        isLoading={isLoading}
+        isLoading={mastersStore.isLoading}
+        loader={mastersStore.mastersLoad}
         pagination={pagination}
         sorting={sorting}
         onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}

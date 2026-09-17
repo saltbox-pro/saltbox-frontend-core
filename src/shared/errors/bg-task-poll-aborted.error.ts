@@ -1,7 +1,7 @@
 export class BgTaskPollAbortedError extends Error {
   constructor(cause?: unknown) {
     super("BG_TASK_POLL_ABORTED", { cause });
-    this.name = "BgTaskPollAbortedError";
+    this.name = "AbortError";
   }
 
   static fromSignal(signal: AbortSignal): BgTaskPollAbortedError {
