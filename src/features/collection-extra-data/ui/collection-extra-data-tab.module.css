@@ -1,0 +1,16 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.loader {
+  min-height: 240px;
+  width: 100%;
+}
+
+.content {
+  min-height: 0;
+  flex: 1;
+}

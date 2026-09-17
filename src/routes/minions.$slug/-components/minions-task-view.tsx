@@ -29,7 +29,6 @@ type MinionsTaskViewProps = {
   slug?: string;
   taskType?: TaskType;
   filterStore: TasksFilterStore;
-  showFilter: boolean;
 };
 
 export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
@@ -207,13 +206,11 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
 
   return (
     <Flex className={styles.tabWrapper} vertical>
-      {props.showFilter && props.filterStore && (
-        <TasksQueryBuilder
-          filterStore={props.filterStore}
-          onSearchButtonClick={handleSearchButtonClick}
-          onResetButtonClick={handleResetButtonClick}
-        />
-      )}
+      <TasksQueryBuilder
+        filterStore={props.filterStore}
+        onSearchButtonClick={handleSearchButtonClick}
+        onResetButtonClick={handleResetButtonClick}
+      />
       <TasksTable
         tableId={props.taskType === TaskType.Policy ? "core-minion-policies" : "core-minion-tasks"}
         columns={columns}

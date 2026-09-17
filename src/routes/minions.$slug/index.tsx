@@ -14,11 +14,23 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  ComponentProps,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import {
+  CollectionExtraDataTab,
+  EXTRA_DATA_CATEGORY_QUERY_PARAM,
+} from "saltbox-core/features/collection-extra-data";
 import {
   dashboardStore,
   getDashboardFieldOptions,
@@ -94,16 +106,8 @@ const MinionsPage = observer(() => {
     open: openMinionsFilters,
     close: closeMinionsFilters,
   } = useFiltersToggle(false);
-  const {
-    isOpen: shownTasksFilters,
-    toggle: toggleShownTasksFilters,
-    open: openTasksFilters,
-  } = useFiltersToggle(false);
-  const {
-    isOpen: shownPoliciesFilters,
-    toggle: toggleShownPoliciesFilters,
-    open: openPoliciesFilters,
-  } = useFiltersToggle(false);
+  const deferredShownMinionsFilters = useDeferredValue(shownMinionsFilters);
+  const showMinionsFilters = shownMinionsFilters && deferredShownMinionsFilters;
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
@@ -222,17 +226,14 @@ const MinionsPage = observer(() => {
     }
   }, [minionFilterStore.activeFiltersCount, openMinionsFilters]);
 
-  useEffect(() => {
-    if (tasksFilterStore.activeFiltersCount > 0) {
-      openTasksFilters();
-    }
-  }, [tasksFilterStore.activeFiltersCount, openTasksFilters]);
-
-  useEffect(() => {
-    if (policiesFilterStore.activeFiltersCount > 0) {
-      openPoliciesFilters();
-    }
-  }, [policiesFilterStore.activeFiltersCount, openPoliciesFilters]);
+  const goToClientList = useCallback(() => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("tab", "list");
+      newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
+      return newParams;
+    });
+  }, [setSearchParams]);
 
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
@@ -244,7 +245,7 @@ const MinionsPage = observer(() => {
             <MinionsListView
               slug={slug}
               filterStore={minionFilterStore}
-              showFilter={shownMinionsFilters}
+              showFilter={showMinionsFilters}
               collectionStore={collectionStore}
               onAddFilter={openMinionsFilters}
             />
@@ -260,7 +261,7 @@ const MinionsPage = observer(() => {
               slug={slug}
               filterStore={minionFilterStore}
               filterControls={
-                shownMinionsFilters && (
+                showMinionsFilters && (
                   <MinionsQueryBuilder slug={slug} filterStore={minionFilterStore} />
                 )
               }
@@ -269,6 +270,32 @@ const MinionsPage = observer(() => {
             />
           ) : null,
       },
+    ];
+
+    tabs.push({
+      label: t("minions.extra-data.tab"),
+      key: "extra-data",
+      children:
+        tabKey === "extra-data" ? (
+          <CollectionExtraDataTab
+            collectionSlug={slug}
+            filterStore={minionFilterStore}
+            onFilterAdded={openMinionsFilters}
+            filterControls={
+              showMinionsFilters ? (
+                <MinionsQueryBuilder
+                  slug={slug}
+                  filterStore={minionFilterStore}
+                  onSearch={goToClientList}
+                />
+              ) : null
+            }
+          />
+        ) : null,
+      className: styles.flexTab,
+    });
+
+    tabs.push(
       {
         label: t("minions.tab-tasks"),
         key: "tasks",
@@ -278,7 +305,6 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Classic}
               filterStore={tasksFilterStore}
-              showFilter={shownTasksFilters}
             />
           ) : null,
         className: styles.flexTab,
@@ -292,12 +318,11 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Policy}
               filterStore={policiesFilterStore}
-              showFilter={shownPoliciesFilters}
             />
           ) : null,
         className: styles.flexTab,
-      },
-    ];
+      }
+    );
 
     if (appStore.pluginsStore?.plugins?.["minions.tabs"]) {
       for (const pluginTab of appStore.pluginsStore.plugins["minions.tabs"]) {
@@ -328,12 +353,18 @@ const MinionsPage = observer(() => {
   }, [
     slug,
     collectionStore.collection?.id,
-    shownMinionsFilters,
-    shownTasksFilters,
-    shownPoliciesFilters,
+    showMinionsFilters,
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
     tabKey,
+    t,
+    minionFilterStore,
+    tasksFilterStore,
+    policiesFilterStore,
+    openMinionsFilters,
+    goToClientList,
+    editDashboardCard,
+    addDashboardCard,
   ]);
 
   return (
@@ -353,7 +384,7 @@ const MinionsPage = observer(() => {
               right: (
                 <>
                   <Flex gap={8}>
-                    {["list", "statistics"].includes(tabKey) && (
+                    {["list", "statistics", "extra-data"].includes(tabKey) && (
                       <>
                         <CollectionInfoPopover
                           slug={slug}
@@ -362,6 +393,7 @@ const MinionsPage = observer(() => {
                         />
 
                         <FilterToggleButton
+                          label={t("minions.client-filters-button")}
                           isOpen={shownMinionsFilters}
                           activeFiltersCount={minionFilterStore.activeFiltersCount}
                           onToggle={toggleShownMinionsFilters}
@@ -376,22 +408,6 @@ const MinionsPage = observer(() => {
                         </Dropdown>
                       </>
                     )}
-
-                    {tabKey === "tasks" && (
-                      <FilterToggleButton
-                        isOpen={shownTasksFilters}
-                        activeFiltersCount={tasksFilterStore.activeFiltersCount}
-                        onToggle={toggleShownTasksFilters}
-                      />
-                    )}
-
-                    {tabKey === "policies" && (
-                      <FilterToggleButton
-                        isOpen={shownPoliciesFilters}
-                        activeFiltersCount={policiesFilterStore.activeFiltersCount}
-                        onToggle={toggleShownPoliciesFilters}
-                      />
-                    )}
                   </Flex>
                 </>
               ),
@@ -401,6 +417,9 @@ const MinionsPage = observer(() => {
               setSearchParams((prev) => {
                 const newParams = new URLSearchParams(prev);
                 newParams.set("tab", newTabKey);
+                if (newTabKey !== "extra-data") {
+                  newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
+                }
                 return newParams;
               });
             }}

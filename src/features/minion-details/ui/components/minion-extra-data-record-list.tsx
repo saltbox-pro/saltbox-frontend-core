@@ -9,11 +9,15 @@ import { Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  buildExtraDataFilterField,
+  canFilterExtraDataValue,
+  toExtraDataCopyValue,
+} from "saltbox-core/shared/helpers/extra-data-value";
 import type { ExtraDataRecord } from "saltbox-core/store";
 
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
-import { isPrimitive, toCopyValue } from "./extra-data-cell";
 import styles from "./minion-extra-data-record-list.module.css";
 
 export interface MinionExtraDataRecordListProps {
@@ -35,37 +39,32 @@ export function MinionExtraDataRecordList({
     () =>
       fields.map((field) => {
         const value = record[field];
-        const displayValue = toCopyValue(value);
-        const canFilter =
-          !!onFilterButton &&
-          (isPrimitive(value) || (Array.isArray(value) && value.every(isPrimitive)));
+        const displayValue = toExtraDataCopyValue(value);
+        const canFilter = !!onFilterButton && canFilterExtraDataValue(value);
 
         return {
           key: field,
           label: field,
-          children:
-            value == null ? (
-              ""
-            ) : (
-              <Flex justify="space-between" gap="small">
-                <Flex className={styles.value}>{displayValue}</Flex>
-                <Flex gap={2} className={styles.actions}>
-                  <CopyToClipboardButton text={displayValue} />
-                  {canFilter && (
-                    <FilterActionButton
-                      title={t("minions.extra-data.apply-to-filters")}
-                      onClick={() =>
-                        onFilterButton({
-                          name: `extra.${category.source}.${category.name}.${field}`,
-                          value,
-                          keepDrawerOpen: true,
-                        })
-                      }
-                    />
-                  )}
-                </Flex>
+          children: !displayValue ? undefined : (
+            <Flex justify="space-between" gap="small">
+              <Flex className={styles.value}>{displayValue}</Flex>
+              <Flex gap={2} className={styles.actions}>
+                <CopyToClipboardButton text={displayValue} />
+                {canFilter && (
+                  <FilterActionButton
+                    title={t("minions.extra-data.apply-to-filters")}
+                    onClick={() =>
+                      onFilterButton({
+                        name: buildExtraDataFilterField(category.source, category.name, field),
+                        value,
+                        keepDrawerOpen: true,
+                      })
+                    }
+                  />
+                )}
               </Flex>
-            ),
+            </Flex>
+          ),
         };
       }),
     [fields, record, category, onFilterButton, t]
