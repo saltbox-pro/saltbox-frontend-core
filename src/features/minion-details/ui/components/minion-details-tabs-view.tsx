@@ -199,7 +199,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     pluginTabs,
     t,
     tabKey,
-    i18nStore.currentLanguage,
   ]);
 
   return (

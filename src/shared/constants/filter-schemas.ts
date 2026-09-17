@@ -1,4 +1,4 @@
-import { JobStatus, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
+import { JobReturnStatus, JobStatus, TaskStatus, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   defaultDateTimeOperators,
   defaultListOperators,
@@ -170,6 +170,50 @@ export const getJobsFilterSchema = (
       operators: defaultListOperators,
       type: "multiselect",
       selectOptions: jobStatusSelectOptions(t),
+    },
+    {
+      name: "created",
+      label: t("jobs.table-created"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
+    },
+  ] as OptionList;
+
+const jobReturnStatusSelectOptions = (t: TFunction) => [
+  { label: t("task.job-returns-table.status-waiting"), value: JobReturnStatus.Waiting },
+  { label: t("task.job-returns-table.status-timeout"), value: JobReturnStatus.Timeout },
+  { label: t("task.job-returns-table.status-ignored"), value: JobReturnStatus.Ignored },
+  { label: t("task.job-returns-table.status-success"), value: JobReturnStatus.Success },
+  { label: t("task.job-returns-table.status-failed"), value: JobReturnStatus.Failed },
+];
+
+export const getMinionJobReturnsFilterSchema = (t: TFunction): OptionList =>
+  [
+    {
+      name: "jid",
+      label: t("jobs.table-jid"),
+      operators: defaultStringOperators,
+      caseSensitive: true,
+    },
+    {
+      name: "status",
+      label: t("task.job-returns-table.table-status"),
+      operators: defaultListOperators,
+      type: "multiselect",
+      selectOptions: jobReturnStatusSelectOptions(t),
+    },
+    {
+      name: "fun",
+      label: t("task.job-returns-table.table-fun"),
+      operators: defaultStringOperators,
+    },
+    {
+      name: "stamp",
+      label: t("task.job-returns-table.table-execution-time"),
+      operators: defaultDateTimeOperators,
+      inputType: "datetime-local",
+      valueEditorType: "datetime-local",
     },
     {
       name: "created",
