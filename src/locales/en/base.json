@@ -1194,6 +1194,7 @@
         "delete-not-found": "Source \"{{name}}\" was already deleted or does not exist",
         "update-error": "Failed to save source details",
         "duplicate-name-error": "A source with this name already exists",
+        "duplicate-namespace-error": "A source with this namespace already exists",
         "update-success": "Source \"{{name}}\" details saved"
       },
       "broken-operation": "Error during {{operation}}",
