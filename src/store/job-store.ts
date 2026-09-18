@@ -41,6 +41,9 @@ export class JobStore {
 
   private staleJobReturnDataIds: Set<string> = new Set();
   private shouldLoadJobReturnsAfterStarting = false;
+  private readonly initialSorting: SortingState;
+  private minionId: string | null = null;
+  private saltMaster: string | null = null;
 
   readonly jobLoad = createLoader({
     run: () => (this.jobId ? apiCoreStore.jobsApi?.jobRetrieve({ job_id: this.jobId }) : undefined),
@@ -58,10 +61,7 @@ export class JobStore {
     run: () =>
       apiCoreStore.jobsApi?.jobReturnsList({
         JobReturnsListBody: {
-          query: {
-            ...this.mongoDBQuery,
-            ...(this.jobId ? { job_id: this.jobId } : {}),
-          },
+          query: this.getJobReturnsListQuery(),
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
@@ -77,10 +77,7 @@ export class JobStore {
     run: () =>
       apiCoreStore.jobsApi?.jobReturnsTable({
         JobReturnsListBody: {
-          query: {
-            ...this.mongoDBQuery,
-            ...(this.jobId ? { job_id: this.jobId } : {}),
-          },
+          query: this.getJobReturnsListQuery(),
           limit: this.tablePagination.pageSize,
           skip: this.tablePagination.pageIndex * this.tablePagination.pageSize,
         },
@@ -103,7 +100,8 @@ export class JobStore {
     },
   });
 
-  constructor() {
+  constructor(initialSorting: SortingState = DEFAULT_SORTING) {
+    this.initialSorting = [...initialSorting];
     this.jobId = "";
     this.job = null;
     this.jobReturns = [];
@@ -112,7 +110,7 @@ export class JobStore {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.sorting = [...DEFAULT_SORTING];
+    this.sorting = [...this.initialSorting];
     this.mongoDBQuery = undefined;
     this.jobReturnDataById = {};
     this.jobReturnTableColumns = [];
@@ -147,8 +145,10 @@ export class JobStore {
       pageIndex: 0,
       pageSize: PAGE_SIZE,
     };
-    this.sorting = [...DEFAULT_SORTING];
+    this.sorting = [...this.initialSorting];
     this.mongoDBQuery = undefined;
+    this.minionId = null;
+    this.saltMaster = null;
     this.jobReturnDataById = {};
     this.staleJobReturnDataIds.clear();
     this.shouldLoadJobReturnsAfterStarting = false;
@@ -160,6 +160,19 @@ export class JobStore {
       pageSize: PAGE_SIZE,
     };
   };
+
+  @action
+  setMinionContext = (minionId: string | null, saltMaster: string | null) => {
+    this.minionId = minionId;
+    this.saltMaster = saltMaster;
+  };
+
+  private getJobReturnsListQuery = (): object => ({
+    ...(this.mongoDBQuery ?? {}),
+    ...(this.jobId ? { job_id: this.jobId } : {}),
+    ...(this.minionId ? { minion_id: this.minionId } : {}),
+    ...(this.saltMaster ? { salt_master: this.saltMaster } : {}),
+  });
 
   @action
   prepareTableViewLoad = () => {
@@ -233,6 +246,8 @@ export class JobStore {
   reload = (jobId: string | undefined) => {
     this.jobReturns = [];
     this.jobId = jobId;
+    this.minionId = null;
+    this.saltMaster = null;
     this.shouldLoadJobReturnsAfterStarting = false;
     if (this.jobId) {
       this.loadJob();

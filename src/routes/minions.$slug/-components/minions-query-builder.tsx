@@ -7,6 +7,8 @@ import { observer } from "mobx-react-lite";
 import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-editor";
 import { MinionFilterStore } from "saltbox-core/store";
 
+import styles from "./minions-query-builder.module.css";
+
 export const MinionsQueryBuilder = observer(
   (props: {
     slug: string;
@@ -16,6 +18,7 @@ export const MinionsQueryBuilder = observer(
   }) => {
     return (
       <SaltBoxQueryBuilderContainer
+        className={styles.clientFilters}
         filterStore={props.filterStore}
         onSearchButtonClick={props.onSearch}
         onResetButtonClick={props.onReset}

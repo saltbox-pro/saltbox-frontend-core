@@ -7,6 +7,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExtraDataCategoryLabel } from "saltbox-core/shared/components/extra-data-category-label";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { ExtraDataCategoriesStore } from "saltbox-core/store";
 
@@ -20,9 +21,7 @@ const ExtraDataCategoriesTable = FastTablePaginated<ExtraDataCategoryModel>;
 
 interface MinionExtraDataTabProps {
   minionId: string;
-  minionName?: string;
   isInDrawer?: boolean;
-  isFullView?: boolean;
   onFilterButton?: OnFilterButtonHandler;
 }
 
@@ -52,10 +51,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
     () => [
       columnHelper.accessor("name", {
         header: t("minions.extra-data.category-column"),
-        cell: (info) =>
-          t(`minions.extra-data.categories.${info.getValue()}`, {
-            defaultValue: info.getValue(),
-          }),
+        cell: (info) => <ExtraDataCategoryLabel name={info.getValue()} />,
       }),
     ],
     [t]

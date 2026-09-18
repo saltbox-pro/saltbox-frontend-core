@@ -15,8 +15,8 @@ export function ExtraDataSearchField(props: ExtraDataSearchFieldProps) {
   const [value, setValue] = useState("");
 
   return (
-    <Flex align="center" gap={8}>
-      <Flex className={styles.extraDataSearchTitle}>{t("minions.extra-data.search-label")}</Flex>
+    <Flex align="center" gap={8} className={styles.root}>
+      <span className={styles.extraDataSearchTitle}>{t("minions.extra-data.search-label")}</span>
       <Search
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -24,7 +24,7 @@ export function ExtraDataSearchField(props: ExtraDataSearchFieldProps) {
         allowClear
         enterButton
         placeholder={t("minions.extra-data.search-placeholder")}
-        style={{ minWidth: 200 }}
+        className={styles.search}
       />
     </Flex>
   );

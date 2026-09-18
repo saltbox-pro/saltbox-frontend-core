@@ -35,8 +35,18 @@ describe("подписи шаблона", () => {
     });
   });
 
+  it("сохраняет пробелы по краям при чтении и записи", () => {
+    const meta: TemplateMeta = { title: "Установка ", description: { ru: " по хостам " } };
+
+    expect(readTemplateLabel(meta, "title", "ru")).toBe("Установка ");
+    expect(readTemplateLabel(meta, "description", "ru")).toBe(" по хостам ");
+    expect(writeTemplateLabel(meta, "title", "Установка nginx ", "ru").title).toBe(
+      "Установка nginx "
+    );
+    expect(writeTemplateLabel({ title: "Название" }, "title", "   ", "ru").title).toBe("   ");
+  });
+
   it("очистка строки оставляет пустую строку, а из словаря убирает только текущий язык", () => {
-    expect(writeTemplateLabel({ title: "Название" }, "title", "   ", "ru").title).toBe("");
     expect(writeTemplateLabel({ fun: "state.apply" }, "title", "", "ru").title).toBe("");
 
     const localized: TemplateMeta = { title: { ru: "Название", en: "Title" } };

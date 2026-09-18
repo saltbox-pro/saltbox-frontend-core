@@ -5,10 +5,14 @@ import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
-export const EXTRA_DATA_SOURCE = "static.inventory";
+const EXTRA_DATA_SOURCE = "static.inventory";
 
 const DEFAULT_SORTING: SortingState = [{ id: "name", desc: false }];
 const PAGE_SIZE = 50;
+
+export type ExtraDataCategoriesStoreOptions = {
+  pageSize?: number;
+};
 
 export class ExtraDataCategoriesStore {
   @observable pagination: PaginationState;
@@ -16,53 +20,66 @@ export class ExtraDataCategoriesStore {
   @observable categories: Array<ExtraDataCategoryModel>;
   @observable total: number;
 
+  private loadAbortController: AbortController | null = null;
+
   readonly categoriesLoad = createLoader({
-    run: () =>
-      apiCoreStore.minionsApi?.minionsExtraCategoryList({
-        ExtraDataCategoryListBody: {
-          source: EXTRA_DATA_SOURCE,
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
+    run: () => {
+      const api = apiCoreStore.minionsApi;
+      if (!api) {
+        return undefined;
+      }
+
+      this.loadAbortController?.abort();
+      const abortController = new AbortController();
+      this.loadAbortController = abortController;
+
+      return api.minionsExtraCategoryList(
+        {
+          ExtraDataCategoryListBody: {
+            source: EXTRA_DATA_SOURCE,
+            limit: this.pagination.pageSize,
+            skip: this.pagination.pageIndex * this.pagination.pageSize,
+            sort: toBackendSorting(this.sorting),
+          },
         },
-      }),
+        { signal: abortController.signal }
+      );
+    },
     onSuccess: (response) => {
       this.categories = response.data;
       this.total = response.total;
     },
   });
 
-  constructor() {
+  constructor(options?: ExtraDataCategoriesStoreOptions) {
     this.categories = [];
     this.total = 0;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
-      pageSize: PAGE_SIZE,
+      pageSize: options?.pageSize ?? PAGE_SIZE,
     };
 
     makeObservable(this);
   }
 
-  @computed get isLoading(): boolean {
+  @computed
+  get isLoading(): boolean {
     return this.categoriesLoad.isLoading;
   }
 
   @action
   reset = (): void => {
+    this.loadAbortController?.abort();
+    this.loadAbortController = null;
+
     this.categories = [];
     this.total = 0;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
-      pageSize: PAGE_SIZE,
+      pageSize: this.pagination.pageSize,
     };
-  };
-
-  @action
-  reloadFromFirstPage = (): void => {
-    this.pagination = { ...this.pagination, pageIndex: 0 };
-    this.loadCategories();
   };
 
   loadCategories = (): void => {

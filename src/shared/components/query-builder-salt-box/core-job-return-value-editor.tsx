@@ -4,25 +4,15 @@ import {
   ValueEditorProps,
 } from "@saltbox/saltbox-frontend-common";
 import { FC, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
-import { retcodeValues } from "saltbox-core/shared/conf/retcode-values";
 import { JobStore } from "saltbox-core/store";
 
 type CoreJobReturnValueEditorInnerProps = ValueEditorProps & {
   jobStore?: JobStore;
 };
 
-const createGetOptions = (jobStore?: JobStore, t?: (key: string) => string): GetOptionsCallback => {
+const createGetOptions = (jobStore?: JobStore): GetOptionsCallback => {
   return (field, value, setOptions) => {
-    if (field === "retcode" && t) {
-      setOptions([
-        { value: retcodeValues.yes, label: t("minions.efi-yes") },
-        { value: retcodeValues.no, label: t("minions.efi-no") },
-      ]);
-      return;
-    }
-
     if (!jobStore?.jobReturns?.length) {
       setOptions([]);
       return;
@@ -53,8 +43,7 @@ const CoreJobReturnValueEditorInner: FC<CoreJobReturnValueEditorInnerProps> = ({
   jobStore,
   ...props
 }) => {
-  const { t } = useTranslation();
-  const getOptions = useMemo(() => createGetOptions(jobStore, t), [jobStore, t]);
+  const getOptions = useMemo(() => createGetOptions(jobStore), [jobStore]);
   return <SaltBoxOptionsValueEditor getOptions={getOptions} {...props} />;
 };
 

@@ -3,7 +3,6 @@ import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
-  formatTimeByUserTZ,
   useInfoDrawer,
   type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
@@ -14,7 +13,7 @@ import {
   createColumnHelper,
   Row,
 } from "@tanstack/react-table";
-import { Flex, Tag, Typography } from "antd";
+import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -22,6 +21,10 @@ import { Link } from "react-router";
 
 import { EditableTtl, setMinionsTtl } from "saltbox-core/features/job-ttl";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
+import {
+  JobReturnExecutionTime,
+  JobReturnStatusTag,
+} from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { resolveEffectiveTtl } from "saltbox-core/shared/utils/job-ttl-utils";
 import type { JobStore } from "saltbox-core/store";
@@ -137,36 +140,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         columnHelper.accessor("status", {
           id: "status",
           header: t("task.job-returns-table.table-status"),
-          cell: (data) => {
-            const status = data.getValue() as string | undefined;
-            const retcode = data.row.original.retcode;
-
-            if (!status && retcode === undefined) {
-              return <Tag>{t("task.job-returns-table.status-unknown")}</Tag>;
-            }
-
-            if (status === "waiting") {
-              return <Tag color="blue">{t("task.job-returns-table.status-waiting")}</Tag>;
-            }
-
-            if (status === "timeout") {
-              return <Tag color="orange">{t("task.job-returns-table.status-timeout")}</Tag>;
-            }
-
-            if (status === "ignored") {
-              return <Tag>{t("task.job-returns-table.status-ignored")}</Tag>;
-            }
-
-            if (status === "success" || retcode === 0) {
-              return <Tag color="green">{t("task.job-returns-table.status-success")}</Tag>;
-            }
-
-            if (status === "failed" || (retcode !== undefined && retcode !== 0)) {
-              return <Tag color="red">{t("task.job-returns-table.status-failed")}</Tag>;
-            }
-
-            return <Tag>{status}</Tag>;
-          },
+          cell: (data) => (
+            <JobReturnStatusTag status={data.getValue()} retcode={data.row.original.retcode} />
+          ),
           meta: { width: 140 },
         }),
         columnHelper.accessor("retcode", {
@@ -176,32 +152,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         }),
         columnHelper.accessor("stamp", {
           header: t("task.job-returns-table.table-execution-time"),
-          cell: (data) => {
-            const stamp = data.getValue();
-            const status = data.row.original.status;
-            if (status === "timeout") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.status-timeout")}
-                </Typography.Text>
-              );
-            }
-            if (status === "ignored") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.status-ignored")}
-                </Typography.Text>
-              );
-            }
-            if (stamp == null || stamp === "") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.execution-time-pending")}
-                </Typography.Text>
-              );
-            }
-            return formatTimeByUserTZ(stamp);
-          },
+          cell: (data) => (
+            <JobReturnExecutionTime stamp={data.getValue()} status={data.row.original.status} />
+          ),
           meta: { width: "15%", minWidth: 170 },
         }),
         columnHelper.display({

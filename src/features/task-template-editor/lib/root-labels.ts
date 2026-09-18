@@ -1,10 +1,5 @@
 import type { UISchema } from "@saltbox/react-jsonschema-form-generator";
 
-import {
-  getLocalizedTemplateText,
-  type LocalizedTextValue,
-} from "saltbox-core/shared/utils/template-localized-text";
-
 import type { TemplateMeta } from "./template-meta";
 
 /**
@@ -26,13 +21,22 @@ const baseLanguage = (language: string): string => language.split("-")[0] || lan
 const isLocalizedText = (value: unknown): value is Record<string, string> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** Текст подписи на языке интерфейса: значением бывает и словарь локалей. */
+/**
+ * Текст подписи на языке интерфейса: значением бывает и словарь локалей.
+ * Пробелы не срезаем: значение кладётся в controlled-инпут, и trim при чтении
+ * съедал бы каждый набранный пробел. Нормализация — при сохранении.
+ */
 export function readTemplateLabel(
   meta: TemplateMeta | null | undefined,
   key: TemplateLabelKey,
   language: string
 ): string {
-  return getLocalizedTemplateText(meta?.[key] as LocalizedTextValue, language);
+  const value = meta?.[key];
+  if (value == null) return "";
+  if (typeof value === "string") return value;
+  if (!isLocalizedText(value)) return "";
+
+  return value[baseLanguage(language)] ?? value["en"] ?? Object.values(value)[0] ?? "";
 }
 
 /**
@@ -44,10 +48,9 @@ export function readTemplateLabel(
 export function writeTemplateLabel(
   meta: TemplateMeta,
   key: TemplateLabelKey,
-  value: string,
+  text: string,
   language: string
 ): TemplateMeta {
-  const text = value.trim() ? value : "";
   const current = meta[key];
 
   if (isLocalizedText(current)) {

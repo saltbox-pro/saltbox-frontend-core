@@ -6,7 +6,7 @@
     "tab-policies": "Политики",
     "tab-statistics": "Статистика",
     "add-block-button": "Добавить блок",
-    "filters-button": "Фильтры",
+    "client-filters-button": "Фильтры клиентов",
     "blocks-limit-tooltip": "Для оптимизации работы страницы количество блоков ограничено до {{limit}}",
     "table-minion-id": "ID клиента",
     "table-master": "Контроллер",
@@ -52,18 +52,21 @@
       "tab": "Расширенные данные",
       "category-column": "Категория",
       "empty": "Нет расширенных данных",
+      "empty-category": "Нет расширенных данных в категории \"{{category}}\"",
       "apply-to-filters": "Применить значение к фильтрам",
+      "add-to-client-filters": "Добавить это значение в фильтр клиентов",
+      "remove-from-client-filters": "Убрать это значение из фильтра клиентов",
       "search-label": "Поиск по записям",
       "search-placeholder": "Введите значение",
       "categories": {
         "local_groups": "Локальные группы",
-        "storages": "Хранилища",
+        "storages": "Физические диски",
         "softwares": "Программное обеспечение",
         "bios": "BIOS",
         "cpus": "Процессоры",
         "hardware": "Оборудование",
         "inputs": "Устройства ввода",
-        "drives": "Диски",
+        "drives": "Логические диски",
         "networks": "Сети",
         "local_users": "Локальные пользователи",
         "batteries": "Батареи",
@@ -555,8 +558,8 @@
     "job-title": "Команда {{jobId}}",
     "table-copy-success": "Скопировано в буфер обмена",
     "key-value-arguments": "Именованные аргументы",
-    "failed-minions": "Неудачные миньоны",
-    "pending-minions": "Ожидающие миньоны",
+    "failed-minions": "Неудачные клиенты",
+    "pending-minions": "Ожидающие клиенты",
     "copy-list": "Скопировать список",
     "replay-job": "Повторить команду",
     "repeat-job": "Повторить команду (Alt+R)",
@@ -773,6 +776,7 @@
     "reset-button": "Сбросить",
     "reset-confirm-title": "Сбросить вкладку к состоянию по умолчанию?",
     "reset-confirm-description": "Блоки текущей вкладки будут заменены набором по умолчанию, действие нельзя отменить",
+    "reset-confirm-description-empty": "Все блоки текущей вкладки будут удалены, действие нельзя отменить",
     "first-tab-name": "Статистика",
     "new-tab-name": "Новая вкладка",
     "rename-tab": "Переименовать вкладку",
@@ -870,25 +874,25 @@
       "label": "glob",
       "hint": {
         "title": "glob – Сопоставление по шаблону Bash (glob)",
-        "description": "Использует шаблонные выражения в стиле Bash для выбора minion'ов по имени.",
+        "description": "Использует шаблонные выражения в стиле Bash для выбора клиентов по имени.",
         "example": "web*",
-        "exampleDescription": "Выберет всех minion'ов, имя которых начинается на web."
+        "exampleDescription": "Выберет всех клиентов, имя которых начинается на web."
       }
     },
     "pcre": {
       "label": "pcre",
       "hint": {
         "title": "pcre – Регулярное выражение в стиле Perl",
-        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени minion'а.",
+        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени клиента.",
         "example": "web[0-9]{2}",
-        "exampleDescription": "Выберет всех minion'ов с именами web01, web02 и т. д."
+        "exampleDescription": "Выберет всех клиентов с именами web01, web02 и т. д."
       }
     },
     "list": {
       "label": "list",
       "hint": {
         "title": "list – Список хостов в формате Python",
-        "description": "Позволяет указать список конкретных minion'ов.",
+        "description": "Позволяет указать список конкретных клиентов.",
         "example": "web01,web02,db01",
         "exampleDescription": "Команда будет выполнена только на указанных узлах."
       }
@@ -899,7 +903,7 @@
         "title": "grain – Сопоставление на основе сравнения grain",
         "description": "Сравнивает значение указанного grain с заданным.",
         "example": "os:Ubuntu",
-        "exampleDescription": "Выберет всех minion'ов, у которых grain os равен Ubuntu."
+        "exampleDescription": "Выберет всех клиентов, у которых grain os равен Ubuntu."
       }
     },
     "grain_pcre": {
@@ -917,7 +921,7 @@
         "title": "pillar – Сравнение данных pillar",
         "description": "Сопоставление на основе значений из pillar.",
         "example": "role:db",
-        "exampleDescription": "Выберет minion'ов, у которых в pillar указана роль db."
+        "exampleDescription": "Выберет клиентов, у которых в pillar указана роль db."
       }
     },
     "pillar_pcre": {
@@ -926,7 +930,7 @@
         "title": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
         "description": "Аналогично pillar, но позволяет применять regex.",
         "example": "role:.*server",
-        "exampleDescription": "Выберет всех minion'ов, у которых значение role оканчивается на server."
+        "exampleDescription": "Выберет всех клиентов, у которых значение role оканчивается на server."
       }
     },
     "compound": {
@@ -935,16 +939,16 @@
         "title": "compound – Составное условие сопоставления",
         "description": "Позволяет комбинировать разные методы в одном запросе.",
         "example": "G@os:Ubuntu and L@web01,web02",
-        "exampleDescription": "Выберет minion'ов с ОС Ubuntu и именами web01 или web02."
+        "exampleDescription": "Выберет клиентов с ОС Ubuntu и именами web01 или web02."
       }
     },
     "ipcidr": {
       "label": "ipcidr",
       "hint": {
         "title": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
-        "description": "Позволяет выбрать minion'ов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
+        "description": "Позволяет выбрать клиентов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
         "example": "192.168.0.0/24",
-        "exampleDescription": "Выберет всех minion'ов, IP-адрес которых находится в подсети 192.168.0.0/24."
+        "exampleDescription": "Выберет всех клиентов, IP-адрес которых находится в подсети 192.168.0.0/24."
       }
     }
   },
@@ -1024,7 +1028,7 @@
     "translations-column-text": "Текст",
     "translations-missing": "нет перевода",
     "translations-orphan": "не используется",
-    "translations-orphan-hint": "Перевод есть в i18n, но в схеме на этот ключ никто не ссылается",
+    "translations-orphan-hint": "Перевод есть в i18n, но в схеме этот ключ не используется",
     "translations-modal-title": "Переводы ключа",
     "translations-text-placeholder": "Введите текст",
     "translations-add-locale": "Добавить язык",
@@ -1066,6 +1070,7 @@
     "tab-params": "Параметры формы",
     "meta-status-valid": "JSON валиден",
     "meta-status-unsupported": "Часть параметров редактируется только здесь",
+    "meta-status-unsupported-hint": "Визуальный редактор не умеет отображать эти конструкции JSON Schema. Они сохраняются в шаблоне как есть, а изменить их можно только в этом редакторе.",
     "sls-insert-param": "Добавить параметр {{name}}",
     "translations-empty-state-title": "В шаблоне пока нет переводимых значений.",
     "translations-empty-state-hint": "Чтобы добавить перевод, укажите placeholder в названии или описании поля.",
@@ -1200,6 +1205,7 @@
         "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует",
         "update-error": "Не удалось сохранить данные источника",
         "duplicate-name-error": "Источник с таким названием уже существует",
+        "duplicate-namespace-error": "Источник с таким пространством имён уже существует",
         "update-success": "Данные источника \"{{name}}\" сохранены"
       },
       "broken-operation": "Ошибка при {{operation}}",

@@ -441,9 +441,20 @@ export class TemplateEditorStore {
     }
   };
 
+  /** Пробелы по краям подписей живут только пока пользователь печатает. */
+  private trimLabels = () => {
+    const title = this.templateTitle.trim();
+    if (title !== this.templateTitle) this.setTemplateTitle(title);
+
+    const description = this.templateDescription.trim();
+    if (description !== this.templateDescription) this.setTemplateDescription(description);
+  };
+
   save = async (): Promise<string | undefined> => {
+    this.trimLabels();
+
     // Пустое описание в списке шаблонов ничего не говорит — подставляем момент создания
-    if (this.mode === "create" && !this.templateDescription.trim()) {
+    if (this.mode === "create" && !this.templateDescription) {
       this.setTemplateDescription(dayjs().format(DEFAULT_DESCRIPTION_FORMAT));
     }
 

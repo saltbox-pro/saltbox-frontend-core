@@ -1,34 +1,33 @@
+import type { CollectionExtraDataListItemSchema } from "@saltbox/saltbox-core-api-client";
 import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import type { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, computed, makeObservable, observable, toJS } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
 const PAGE_SIZE = 50;
+const DEFAULT_SORTING: SortingState = [{ id: "minions_count", desc: true }];
 
-export type ExtraDataRecord = Record<string, unknown>;
-
-export interface ExtraDataRecordsStoreOptions {
-  minionId: string;
+export type CollectionExtraDataRecordsStoreOptions = {
+  collectionSlug: string;
   categoryId: string;
-}
+};
 
-export class ExtraDataRecordsStore {
-  @observable pagination: PaginationState;
-  @observable sorting: SortingState;
-  @observable records: Array<ExtraDataRecord>;
-  @observable totalRecords: number;
-  @observable totalRecordsUnfiltered: number;
-  @observable search: string;
+export class CollectionExtraDataRecordsStore {
+  @observable pagination: PaginationState = { pageIndex: 0, pageSize: PAGE_SIZE };
+  @observable sorting: SortingState = [...DEFAULT_SORTING];
+  @observable records: CollectionExtraDataListItemSchema[] = [];
+  @observable totalRecords = 0;
+  @observable search = "";
 
-  readonly minionId: string;
+  readonly collectionSlug: string;
   readonly categoryId: string;
 
   private loadAbortController: AbortController | null = null;
 
   readonly recordsLoad = createLoader({
     run: () => {
-      const api = apiCoreStore.minionsApi;
+      const api = apiCoreStore.minionCollectionsApi;
       if (!api) {
         return undefined;
       }
@@ -37,14 +36,18 @@ export class ExtraDataRecordsStore {
       const abortController = new AbortController();
       this.loadAbortController = abortController;
 
-      return api.minionsExtraDataList(
+      return api.minionCollectionsExtraDataList(
         {
-          ExtraDataListBody: {
-            minion_id: this.minionId,
+          CollectionExtraDataListBody: {
+            collection_slug: this.collectionSlug,
             category_id: this.categoryId,
             limit: this.pagination.pageSize,
             skip: this.pagination.pageIndex * this.pagination.pageSize,
-            sort: toBackendSorting(this.sorting),
+            sort: toBackendSorting(
+              this.sorting.map((item) =>
+                item.id === "minions_count" ? { ...item, backendId: "_minions_count" } : item
+              )
+            ),
             search: this.search || undefined,
           },
         },
@@ -52,28 +55,14 @@ export class ExtraDataRecordsStore {
       );
     },
     onSuccess: (response) => {
-      this.records = response.data.filter((item): item is ExtraDataRecord => item != null);
+      this.records = response.data.filter((item) => item != null);
       this.totalRecords = response.total;
-
-      if (!this.search) {
-        this.totalRecordsUnfiltered = response.total;
-      }
     },
   });
 
-  constructor(options: ExtraDataRecordsStoreOptions) {
-    this.minionId = options.minionId;
+  constructor(options: CollectionExtraDataRecordsStoreOptions) {
+    this.collectionSlug = options.collectionSlug;
     this.categoryId = options.categoryId;
-
-    this.records = [];
-    this.totalRecords = 0;
-    this.totalRecordsUnfiltered = 0;
-    this.search = "";
-    this.sorting = [];
-    this.pagination = {
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
-    };
 
     makeObservable(this);
   }
@@ -84,8 +73,8 @@ export class ExtraDataRecordsStore {
   }
 
   @computed
-  get isSingleRecord(): boolean {
-    return !this.recordsLoad.isInitialLoad && this.totalRecordsUnfiltered === 1;
+  get recordsSnapshot(): CollectionExtraDataListItemSchema[] {
+    return toJS(this.records);
   }
 
   @action
@@ -95,13 +84,9 @@ export class ExtraDataRecordsStore {
 
     this.records = [];
     this.totalRecords = 0;
-    this.totalRecordsUnfiltered = 0;
     this.search = "";
-    this.sorting = [];
-    this.pagination = {
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
-    };
+    this.sorting = [...DEFAULT_SORTING];
+    this.pagination = { pageIndex: 0, pageSize: PAGE_SIZE };
   };
 
   loadRecords = (): void => {
@@ -116,9 +101,9 @@ export class ExtraDataRecordsStore {
   };
 
   @action
-  handleLazyLoad(pagination: PaginationState, sorting: SortingState): void {
+  handleLazyLoad = (pagination: PaginationState, sorting: SortingState): void => {
     this.pagination = pagination;
     this.sorting = sorting;
     this.loadRecords();
-  }
+  };
 }

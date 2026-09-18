@@ -143,9 +143,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         children: !!minion?.id && (
           <MinionExtraDataTab
             minionId={minion.id}
-            minionName={minion.minion_id}
             isInDrawer={isInDrawer}
-            isFullView={isFullView}
             onFilterButton={onFilterButton}
           />
         ),
@@ -201,7 +199,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     pluginTabs,
     t,
     tabKey,
-    i18nStore.currentLanguage,
   ]);
 
   return (
