@@ -5,12 +5,14 @@ import { type MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/ta
 
 import { MinionTaskResultsJobResult } from "./minion-task-results-job-result";
 import { MinionTaskResultsShortInfo } from "./minion-task-results-short-info";
+import { type MinionTaskResultsTtlProps } from "./minion-task-results-ttl";
 
 export interface MinionTaskResultsProps {
   selectedMinion: TaskMinionListResponse | null;
   jobReturns: JobReturnModel[];
   isJobReturnsLoading: boolean;
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
+  onTtlApplied: MinionTaskResultsTtlProps["onTtlApplied"];
 }
 
 export function MinionTaskResults({
@@ -18,6 +20,7 @@ export function MinionTaskResults({
   jobReturns,
   isJobReturnsLoading,
   onRestartFailedMinion,
+  onTtlApplied,
 }: MinionTaskResultsProps) {
   const {
     status,
@@ -27,6 +30,9 @@ export function MinionTaskResults({
     minion_inner_id: minionInnerId,
   } = selectedMinion ?? {};
 
+  // Список уже отсортирован от новых к старым, поэтому актуальный Job — первый.
+  const latestJobReturn = jobReturns?.[0] ?? null;
+
   return (
     <Flex vertical gap="large">
       <MinionTaskResultsShortInfo
@@ -35,7 +41,9 @@ export function MinionTaskResults({
         finishedDt={finishedDt}
         minionId={minionId}
         minionInnerId={minionInnerId}
+        latestJobReturn={latestJobReturn}
         onRestartFailedMinion={onRestartFailedMinion}
+        onTtlApplied={onTtlApplied}
       />
 
       <MinionTaskResultsJobResult

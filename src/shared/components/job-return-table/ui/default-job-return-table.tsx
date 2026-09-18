@@ -20,8 +20,10 @@ import { type ComponentProps, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { EditableTtl, setMinionsTtl } from "saltbox-core/features/job-ttl";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
+import { resolveEffectiveTtl } from "saltbox-core/shared/utils/job-ttl-utils";
 import type { JobStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -86,6 +88,29 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
       getId: (params) => params.drawerId ?? params.minionId,
     });
+
+    const handleMinionTtlSubmit = useCallback(
+      async (minionId: string, ttlSeconds: number | null) => {
+        const jobId = jobStore.jobId;
+        if (!jobId) {
+          return false;
+        }
+
+        const result = await setMinionsTtl({
+          jobId,
+          minions: [minionId],
+          ttl: ttlSeconds,
+          errorMessage: t("jobs.ttl-update-error"),
+        });
+
+        if (result.ok) {
+          jobStore.applyJobReturnsTtl([minionId], ttlSeconds);
+        }
+
+        return result.ok;
+      },
+      [jobStore, t]
+    );
 
     const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
@@ -193,8 +218,36 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           },
           meta: { width: "18%" },
         }),
+        columnHelper.display({
+          id: "ttl",
+          header: t("task.job-returns-table.table-ttl"),
+          cell: ({ row }) => {
+            const { seconds, isInherited } = resolveEffectiveTtl(
+              row.original.ttl,
+              jobStore.job?.ttl
+            );
+
+            return (
+              <EditableTtl
+                value={seconds}
+                isInherited={isInherited}
+                allowInherit
+                disabled={!jobStore.isJobTtlEditable}
+                onSubmit={(ttlSeconds) => handleMinionTtlSubmit(row.original.minion_id, ttlSeconds)}
+              />
+            );
+          },
+          meta: { width: 200 },
+        }),
       ],
-      [jobReturns, jobStartTimestamp, t]
+      [
+        handleMinionTtlSubmit,
+        jobReturns,
+        jobStartTimestamp,
+        jobStore.isJobTtlEditable,
+        jobStore.job?.ttl,
+        t,
+      ]
     );
 
     const handleRowClick = useCallback(

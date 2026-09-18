@@ -76,6 +76,7 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
             jobReturns={taskStore.taskJobReturns}
             isJobReturnsLoading={isLoading}
             onRestartFailedMinion={onRestartFailedMinion}
+            onTtlApplied={taskStore.taskJobReturnsStore.applyJobReturnTtl}
           />
         </ErrorZone>
       </BaseMinionDrawer>

@@ -40,6 +40,7 @@ import {
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
+import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
@@ -193,6 +194,34 @@ const JobPage = observer(() => {
       setIsManualRefreshLoading(false);
     }
   }, [isTableViewMode]);
+
+  const handleJobTtlSubmit = useCallback(
+    async (ttlSeconds: number | null) => {
+      if (!jobId) {
+        return false;
+      }
+
+      const minions = jobStore.jobMinions;
+      const result = await setJobTtlForAll({
+        jobId,
+        minions,
+        ttl: ttlSeconds,
+        errorMessage: t("jobs.ttl-update-error"),
+      });
+
+      if (result.ok) {
+        const waitingExpiresAt = new Date(result.data.waiting_expires_at_dt);
+        jobStore.applyJobTtl(
+          ttlSeconds,
+          Number.isNaN(waitingExpiresAt.getTime()) ? null : waitingExpiresAt
+        );
+        jobStore.applyJobReturnsTtl(minions, null);
+      }
+
+      return result.ok;
+    },
+    [jobId, t]
+  );
 
   const handleExportToCsv = useCallback(async () => {
     if (!jobId) {
@@ -386,33 +415,49 @@ const JobPage = observer(() => {
             {jobStore.jobStartTimestamp && (
               <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
                 <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
-                <span className={styles.jobDetailValue}>
-                  <span title={t("jobs.job-execution-duration-actual-tooltip")}>
-                    {isLaunchError ? (
-                      "—"
-                    ) : !jobStore.isJobComplete ? (
-                      <Timer
-                        type="countup"
-                        value={jobStore.jobStartTimestamp.getTime()}
-                        format="HH:mm:ss"
-                      />
-                    ) : jobStore.actualJobDuration != null ? (
-                      formatJobDuration(jobStore.actualJobDuration)
-                    ) : (
-                      "—"
-                    )}
-                  </span>
-                  <span>/</span>
-                  <span title={t("jobs.job-execution-duration-max-tooltip")}>
-                    {jobStore.job?.ttl == null
-                      ? "-"
-                      : jobStore.job.ttl === 0
-                        ? t("jobs.ttl-unlimited")
-                        : formatJobDuration(jobStore.job.ttl)}
-                  </span>
+                <span
+                  className={styles.jobDetailValue}
+                  title={t("jobs.job-execution-duration-actual-tooltip")}
+                >
+                  {isLaunchError ? (
+                    "—"
+                  ) : !jobStore.isJobComplete ? (
+                    <Timer
+                      type="countup"
+                      value={jobStore.jobStartTimestamp.getTime()}
+                      format="HH:mm:ss"
+                    />
+                  ) : jobStore.actualJobDuration != null ? (
+                    formatJobDuration(jobStore.actualJobDuration)
+                  ) : (
+                    "—"
+                  )}
                 </span>
               </div>
             )}
+
+            <div
+              className={`${styles.jobDetailItem} ${jobStore.jobStartTimestamp ? "" : styles.jobDetailItemRight}`}
+            >
+              <span
+                className={styles.jobDetailLabel}
+                title={t("jobs.job-execution-duration-max-tooltip")}
+              >
+                {t("jobs.ttl-label")}:
+              </span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.isJobLoading ? (
+                  <Skeleton.Input size="small" />
+                ) : (
+                  <EditableTtl
+                    value={jobStore.job?.ttl ?? null}
+                    disabled={!jobStore.isJobTtlEditable}
+                    expiresAt={jobStore.job?.waiting_expires_at_dt}
+                    onSubmit={handleJobTtlSubmit}
+                  />
+                )}
+              </span>
+            </div>
           </Flex>
 
           {showJobBodyLoader ? (

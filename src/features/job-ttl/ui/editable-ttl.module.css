@@ -1,0 +1,27 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.editButton {
+  display: inline-flex;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.15s ease-in-out;
+}
+
+.root:hover .editButton,
+.root:focus-within .editButton {
+  visibility: visible;
+  opacity: 1;
+}
+
+.select {
+  width: 160px;
+  max-width: 100%;
+}

@@ -12,6 +12,7 @@ import { action, computed, makeObservable, observable } from "mobx";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { getMaxExecutionTime } from "../shared/utils/execution-time-utils";
+import { isJobTtlEditable } from "../shared/utils/job-ttl-utils";
 
 const DEFAULT_SORTING: SortingState = [{ id: "stamp", desc: true }];
 const PAGE_SIZE = 50;
@@ -320,6 +321,47 @@ export class JobStore {
       this.loadJobReturns();
     }
   };
+
+  /** Локально применяем новый TTL команды, не дожидаясь подтверждения по сокету. */
+  @action
+  applyJobTtl = (ttl: number | null, waitingExpiresAt?: Date | null) => {
+    if (!this.job) return;
+
+    this.job = {
+      ...this.job,
+      ttl: ttl ?? undefined,
+      ...(waitingExpiresAt ? { waiting_expires_at_dt: waitingExpiresAt } : {}),
+    };
+  };
+
+  /** ttl === null снимает персональный оверрайд, возвращая клиента под TTL команды. */
+  @action
+  applyJobReturnsTtl = (minionIds: string[], ttl: number | null) => {
+    if (minionIds.length === 0) return;
+
+    const targets = new Set(minionIds);
+    let changed = false;
+
+    const next = this.jobReturns.map((jobReturn) => {
+      if (!targets.has(jobReturn.minion_id)) return jobReturn;
+      changed = true;
+      return { ...jobReturn, ttl };
+    });
+
+    if (changed) {
+      this.jobReturns = next;
+    }
+  };
+
+  @computed
+  get jobMinions(): string[] {
+    return (this.job?.minions ?? []).filter((minion): minion is string => !!minion);
+  }
+
+  @computed
+  get isJobTtlEditable(): boolean {
+    return isJobTtlEditable(this.job);
+  }
 
   @computed
   get jobStartTimestamp() {
