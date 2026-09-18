@@ -1,5 +1,10 @@
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import {
+  type AppError,
+  Modal,
+  MutationErrorAlert,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, Form } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -10,7 +15,6 @@ import {
   trimOptional,
   trimRequired,
 } from "../../shared/constants/template-source-name-description-form";
-import { getSourceFormErrorMessage } from "../../shared/helpers/get-source-form-error-message";
 import {
   getSourceActionContext,
   isUpdateInProgress,
@@ -18,7 +22,6 @@ import {
 import { trySetSourceDuplicateNameFieldError } from "../../shared/helpers/try-set-source-duplicate-name-field-error";
 import type { SourceActionsPort } from "../../shared/types/source-action";
 import type { SourceOperationProgressSnapshot } from "../../shared/types/source-operation-progress";
-import { TemplateSourceFormErrorAlert } from "../../shared/ui/template-source-form-error-alert";
 import { TemplateSourceNameDescriptionFields } from "../../shared/ui/template-source-name-description-fields";
 
 const FORM_ID = "edit-source-form";
@@ -41,7 +44,7 @@ export const EditSourceModal = observer(function EditSourceModal({
 }: EditSourceModalProps) {
   const { t } = useTranslation();
   const [form] = Form.useForm<TemplateSourceNameDescriptionFormValues>();
-  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<AppError | null>(null);
   const wasOpenRef = useRef(false);
 
   const updateInProgress = isUpdateInProgress(getSourceActionContext(actions, source.id));
@@ -72,32 +75,22 @@ export const EditSourceModal = observer(function EditSourceModal({
       const name = trimRequired(values.name);
       setApiError(null);
 
-      try {
-        await actions.updateSource(source.id, {
-          name,
-          description: trimOptional(values.description),
-        });
+      const result = await runMutation({
+        run: () =>
+          actions.updateSource(source.id, {
+            name,
+            description: trimOptional(values.description),
+          }),
+        onError: (error) => {
+          if (trySetSourceDuplicateNameFieldError(form, error, t)) return;
+          setApiError(error);
+        },
+      });
 
-        onSuccess(name);
-        onClose();
-      } catch (error) {
-        if (isGlobalServerError(error)) {
-          return;
-        }
+      if (!result.ok) return;
 
-        console.error(error);
-
-        if (await trySetSourceDuplicateNameFieldError(form, error, t)) {
-          return;
-        }
-
-        setApiError(
-          await getSourceFormErrorMessage(
-            error,
-            t("configuration-templates.source.action.update-error")
-          )
-        );
-      }
+      onSuccess(name);
+      onClose();
     },
     [actions, form, onClose, onSuccess, source.id, t]
   );
@@ -127,9 +120,13 @@ export const EditSourceModal = observer(function EditSourceModal({
         onFinish={handleFinish}
         onValuesChange={() => setApiError(null)}
       >
-        <TemplateSourceNameDescriptionFields />
+        <MutationErrorAlert
+          error={apiError}
+          fallback={t("configuration-templates.source.action.update-error")}
+          onClose={() => setApiError(null)}
+        />
 
-        {apiError && <TemplateSourceFormErrorAlert message={apiError} />}
+        <TemplateSourceNameDescriptionFields />
       </Form>
     </Modal>
   );

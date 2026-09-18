@@ -1,11 +1,4 @@
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-
 import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
-
-type LoadOptions = {
-  signal?: AbortSignal;
-  isCancelled?: () => boolean;
-};
 
 type SyncSourcesDeps = {
   signal?: AbortSignal;
@@ -19,14 +12,12 @@ export type RefreshWithSyncCheckDeps = {
   setAbortController: (controller: AbortController | null) => void;
   isStale: (generation: number) => boolean;
   sync: (deps: SyncSourcesDeps) => Promise<void>;
-  load: (options: LoadOptions) => Promise<void>;
-  onSyncError: (reason: unknown) => Promise<void>;
+  load: (signal?: AbortSignal) => Promise<void>;
   finish: (generation: number) => void;
-  logMessage: string;
 };
 
-export async function refreshWithSyncCheck(deps: RefreshWithSyncCheckDeps): Promise<boolean> {
-  if (deps.isAlreadyChecking()) return false;
+export async function refreshWithSyncCheck(deps: RefreshWithSyncCheckDeps): Promise<void> {
+  if (deps.isAlreadyChecking()) return;
 
   deps.start();
 
@@ -35,33 +26,16 @@ export async function refreshWithSyncCheck(deps: RefreshWithSyncCheckDeps): Prom
   deps.setAbortController(abortController);
 
   const isCancelled = () => deps.isStale(generation);
-  const syncDeps: SyncSourcesDeps = {
-    signal: abortController.signal,
-    isCancelled,
-  };
 
   try {
-    await deps.sync(syncDeps);
+    await deps.sync({ signal: abortController.signal, isCancelled });
 
-    if (isCancelled()) return false;
+    if (isCancelled()) return;
 
-    await deps.load({
-      signal: abortController.signal,
-      isCancelled,
-    });
-
-    if (isCancelled()) return false;
-
-    return true;
+    await deps.load(abortController.signal);
   } catch (reason) {
-    if (isBgTaskPollAborted(reason) || isCancelled()) return false;
-
-    console.error(deps.logMessage, reason);
-    if (isGlobalServerError(reason)) return false;
-
-    await deps.onSyncError(reason);
-
-    return false;
+    if (isBgTaskPollAborted(reason) || isCancelled()) return;
+    throw reason;
   } finally {
     deps.finish(generation);
   }

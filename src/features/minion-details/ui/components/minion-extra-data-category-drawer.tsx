@@ -1,46 +1,29 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
-  FastTablePaginated,
+  ErrorZone,
   FastTableToolbarSlot,
   FastTableToolbarSlotProvider,
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper } from "@tanstack/react-table";
-import { message } from "antd";
+import { Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import { type ExtraDataRecord, ExtraDataRecordsStore } from "saltbox-core/store";
+import {
+  collectExtraDataFieldNamesFromRecords,
+  getDeclaredExtraDataFieldNames,
+} from "saltbox-core/shared/helpers/extra-data-value";
+import { ExtraDataRecordsStore } from "saltbox-core/store";
 
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
-import { ExtraDataCell, isPrimitive } from "./extra-data-cell";
-import { ExtraDataSearchField } from "./extra-data-search-field";
-import styles from "./minion-extra-data-category-drawer.module.css";
-
-const columnHelper = createColumnHelper<ExtraDataRecord>();
-
-const ExtraDataRecordsTable = FastTablePaginated<ExtraDataRecord>;
-
-function collectFieldsFromRecords(records: Array<ExtraDataRecord>): string[] {
-  const seen = new Set<string>();
-  const fields: string[] = [];
-
-  for (const record of records) {
-    for (const key of Object.keys(record)) {
-      if (!seen.has(key)) {
-        seen.add(key);
-        fields.push(key);
-      }
-    }
-  }
-
-  return fields;
-}
+import { MinionExtraDataRecordList } from "./minion-extra-data-record-list";
+import { MinionExtraDataRecordTable } from "./minion-extra-data-record-table";
 
 export type MinionExtraDataCategoryDrawerProps = Omit<
   InfoDrawerProps,
@@ -61,17 +44,18 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
   }) {
     const { t } = useTranslation();
 
-    const extraDataRecordsStore = useMemo(
-      () =>
-        category
-          ? new ExtraDataRecordsStore({
-              minionId,
-              categoryName: category.name,
-              categorySource: category.source,
-            })
-          : null,
-      [category, minionId]
-    );
+    const categoryId = category?.id;
+
+    const extraDataRecordsStore = useMemo(() => {
+      if (!categoryId) {
+        return null;
+      }
+
+      return new ExtraDataRecordsStore({
+        minionId,
+        categoryId,
+      });
+    }, [categoryId, minionId]);
 
     useEffect(() => {
       if (!extraDataRecordsStore) return;
@@ -83,64 +67,32 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       };
     }, [extraDataRecordsStore]);
 
-    useEffect(() => {
-      if (extraDataRecordsStore?.error) {
-        message.error(t(extraDataRecordsStore.error));
-      }
-    }, [extraDataRecordsStore?.error, t]);
-
     const records = extraDataRecordsStore?.records;
 
-    const fields = useMemo(() => {
-      const declared = category?.fields?.map((field) => field.name) ?? [];
-
-      if (declared.length > 0) return declared;
-
-      return records ? collectFieldsFromRecords(records) : [];
-    }, [category, records]);
-
-    const columns = useMemo(
-      () =>
-        fields.map((field) =>
-          columnHelper.accessor((row) => row[field], {
-            id: field,
-            header: field,
-            cell: ({ getValue }) => {
-              const value = getValue();
-              const canFilter =
-                !!onFilterButton &&
-                !!category &&
-                (isPrimitive(value) || (Array.isArray(value) && value.every(isPrimitive)));
-
-              return (
-                <ExtraDataCell
-                  value={value}
-                  onCopy={() => {}}
-                  filterTitle={t("minions.extra-data.apply-to-filters")}
-                  onFilter={
-                    canFilter
-                      ? () =>
-                          onFilterButton({
-                            name: `extra.${category.source}.${category.name}.${field}`,
-                            value,
-                            keepDrawerOpen: true,
-                          })
-                      : undefined
-                  }
-                />
-              );
-            },
-            meta: {
-              minWidth: 160,
-            },
-          })
-        ),
-      [fields, onFilterButton, category, t]
+    const declaredFields = useMemo(
+      () => (category ? getDeclaredExtraDataFieldNames(category) : []),
+      [category]
     );
+
+    const fields = useMemo(() => {
+      if (declaredFields.length > 0) {
+        return declaredFields;
+      }
+
+      return collectExtraDataFieldNamesFromRecords(records ?? []);
+    }, [declaredFields, records]);
 
     const handleSearch = (value: string) => {
       extraDataRecordsStore?.setSearch(value);
     };
+
+    const loadStatus = extraDataRecordsStore?.recordsLoad.status;
+    const isLoaded = loadStatus === "success";
+    const showSkeleton = !!extraDataRecordsStore && !isLoaded && loadStatus !== "error";
+    const singleRecord =
+      isLoaded && extraDataRecordsStore?.isSingleRecord && records && records.length > 0
+        ? toJS(records[0])
+        : null;
 
     return (
       <InfoDrawer
@@ -153,34 +105,42 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
               })
             : undefined
         }
-        transitionKey={open ? "opened" : "closed"}
+        transitionKey={open ? (category?.id ?? "opened") : "closed"}
         {...restProps}
         titleCopyable={false}
       >
-        <FastTableToolbarSlotProvider>
-          <div className="page-actions-buttons">
-            <div className={styles.rightGroup}>
-              <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-              <FastTableToolbarSlot />
-            </div>
-          </div>
+        {!!extraDataRecordsStore && (
+          <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
+            <FastTableToolbarSlotProvider>
+              {isLoaded && !singleRecord && (
+                <div className="page-actions-buttons">
+                  <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+                  <FastTableToolbarSlot />
+                </div>
+              )}
 
-          {extraDataRecordsStore && category && (
-            <ExtraDataRecordsTable
-              tableId="core-minion-extra-data-records"
-              columns={columns}
-              data={toJS(extraDataRecordsStore.records)}
-              total={extraDataRecordsStore.totalRecords}
-              isLoading={extraDataRecordsStore.isLoading}
-              pagination={extraDataRecordsStore.pagination}
-              sorting={extraDataRecordsStore.sorting}
-              onLazyLoad={(pagination, sorting) =>
-                extraDataRecordsStore.handleLazyLoad(pagination, sorting)
-              }
-              locale={{ empty: t("minions.extra-data.empty") }}
-            />
-          )}
-        </FastTableToolbarSlotProvider>
+              {showSkeleton && <Skeleton active />}
+
+              {isLoaded && singleRecord && category && (
+                <MinionExtraDataRecordList
+                  record={singleRecord}
+                  fields={fields}
+                  category={category}
+                  onFilterButton={onFilterButton}
+                />
+              )}
+
+              {isLoaded && !singleRecord && category && (
+                <MinionExtraDataRecordTable
+                  store={extraDataRecordsStore}
+                  fields={fields}
+                  category={category}
+                  onFilterButton={onFilterButton}
+                />
+              )}
+            </FastTableToolbarSlotProvider>
+          </ErrorZone>
+        )}
       </InfoDrawer>
     );
   }

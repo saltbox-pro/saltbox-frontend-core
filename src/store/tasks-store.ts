@@ -1,7 +1,7 @@
 import { TaskListResponseSchema, TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, computed, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -9,7 +9,6 @@ const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class TasksStore {
   @observable tasks: Array<TaskListResponseSchema>;
-  @observable isTasksLoading: boolean;
   @observable collectionSlug: string | null;
   @observable mongoDBQuery: object | undefined;
   @observable taskType: TaskType;
@@ -18,37 +17,9 @@ export class TasksStore {
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
 
-  constructor(taskType: TaskType) {
-    this.tasks = [];
-    this.total = 0;
-    this.isTasksLoading = false;
-    this.collectionSlug = null;
-    this.taskType = taskType;
-    this.pagination = {
-      pageIndex: 0,
-      pageSize: 50,
-    };
-    this.sorting = [...DEFAULT_SORTING];
-    makeObservable(this);
-  }
-
-  @action init = () => {
-    this.tasks = [];
-    this.total = 0;
-    this.isTasksLoading = false;
-    this.collectionSlug = null;
-    this.pagination.pageIndex = 0;
-    this.pagination.pageSize = 50;
-    this.sorting = [...DEFAULT_SORTING];
-  };
-
-  @action loadTasks = (collectionSlug?: string) => {
-    if (collectionSlug !== undefined) {
-      this.collectionSlug = collectionSlug;
-    }
-    this.isTasksLoading = true;
-    apiCoreStore.tasksApi
-      ?.tasksList({
+  readonly tasksLoad = createLoader({
+    run: () =>
+      apiCoreStore.tasksApi?.tasksList({
         TaskListBody: {
           query: {
             ...(this.collectionSlug ? { "target_collection.slug": this.collectionSlug } : {}),
@@ -59,18 +30,44 @@ export class TasksStore {
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
         },
-      })
-      .then((tasks) => {
-        runInAction(() => {
-          this.total = tasks.total ?? 0;
-          this.tasks = tasks.data ?? [];
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isTasksLoading = false;
-        });
-      });
+      }),
+    onSuccess: (tasks) => {
+      this.total = tasks.total ?? 0;
+      this.tasks = tasks.data ?? [];
+    },
+  });
+
+  constructor(taskType: TaskType) {
+    this.tasks = [];
+    this.total = 0;
+    this.collectionSlug = null;
+    this.taskType = taskType;
+    this.pagination = {
+      pageIndex: 0,
+      pageSize: 50,
+    };
+    this.sorting = [...DEFAULT_SORTING];
+    makeObservable(this);
+  }
+
+  @computed get isTasksLoading(): boolean {
+    return this.tasksLoad.isLoading;
+  }
+
+  @action init = () => {
+    this.tasks = [];
+    this.total = 0;
+    this.collectionSlug = null;
+    this.pagination.pageIndex = 0;
+    this.pagination.pageSize = 50;
+    this.sorting = [...DEFAULT_SORTING];
+  };
+
+  @action loadTasks = (collectionSlug?: string) => {
+    if (collectionSlug !== undefined) {
+      this.collectionSlug = collectionSlug;
+    }
+    this.tasksLoad.run().catch(() => undefined);
   };
 
   @action handleLazyLoad(pagination: PaginationState, sorting: SortingState) {

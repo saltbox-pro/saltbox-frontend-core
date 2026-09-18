@@ -3,8 +3,9 @@ import {
   SaltKeyMinionWithStatus,
   SaltKeyStatusType,
 } from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, computed, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -23,21 +24,44 @@ export class SaltKeysStore {
   @observable statusFilter: SaltKeyFilterType;
   @observable sorting: SortingState;
   @observable pagination: PaginationState;
-  @observable isLoading: boolean;
   @observable masterId: string | null;
-  @observable error: string | null;
 
   private initialFilterApplied = false;
+
+  readonly saltKeysLoad = createLoader({
+    run: (masterId: string) =>
+      apiCoreStore.saltKeysApi?.saltKeysList({
+        SaltKeyListRequestBody: {
+          masters: [masterId],
+        },
+      }),
+    onSuccess: (response) => {
+      this.allSaltKeys = (response?.data ?? []).map((item, index) => ({
+        ...item,
+        _index: String(index),
+      }));
+
+      if (!this.initialFilterApplied) {
+        const hasUnaccepted = this.allSaltKeys.some(
+          (key) => key.status === SaltKeyStatusType.Unaccepted
+        );
+        this.statusFilter = hasUnaccepted ? SaltKeyStatusType.Unaccepted : ALL_FILTER;
+        this.initialFilterApplied = true;
+      }
+    },
+  });
 
   constructor() {
     this.allSaltKeys = [];
     this.statusFilter = SaltKeyStatusType.Unaccepted;
     this.sorting = [];
     this.pagination = { ...DEFAULT_PAGINATION };
-    this.isLoading = false;
     this.masterId = null;
-    this.error = null;
     makeObservable(this);
+  }
+
+  @computed get isLoading(): boolean {
+    return this.saltKeysLoad.isLoading;
   }
 
   @computed get filteredKeys(): Array<SaltKeyWithId> {
@@ -99,42 +123,7 @@ export class SaltKeysStore {
 
   @action loadSaltKeys = (masterId: string) => {
     this.masterId = masterId;
-    this.isLoading = true;
-    this.error = null;
-
-    apiCoreStore.saltKeysApi
-      ?.saltKeysList({
-        SaltKeyListRequestBody: {
-          masters: [masterId],
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.allSaltKeys = (response?.data ?? []).map((item, index) => ({
-            ...item,
-            _index: String(index),
-          }));
-
-          if (!this.initialFilterApplied) {
-            const hasUnaccepted = this.allSaltKeys.some(
-              (k) => k.status === SaltKeyStatusType.Unaccepted
-            );
-            this.statusFilter = hasUnaccepted ? SaltKeyStatusType.Unaccepted : ALL_FILTER;
-            this.initialFilterApplied = true;
-          }
-        });
-      })
-      .catch(() => {
-        runInAction(() => {
-          this.allSaltKeys = [];
-          this.error = "Failed to load salt keys";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isLoading = false;
-        });
-      });
+    this.saltKeysLoad.run(masterId).catch(() => undefined);
   };
 
   @action refresh = () => {
@@ -148,10 +137,6 @@ export class SaltKeysStore {
     this.pagination.pageIndex = pagination.pageIndex;
     this.pagination.pageSize = pagination.pageSize;
     this.sorting = sorting;
-  };
-
-  @action resetError = () => {
-    this.error = null;
   };
 
   getAcceptConflicts = (

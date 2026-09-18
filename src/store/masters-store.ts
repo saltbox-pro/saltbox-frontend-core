@@ -1,14 +1,14 @@
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  createLoader,
   createMastersStore,
   createHasAcceptedMastersChecker,
-  isGlobalServerError,
   publishAcceptedMastersChanged,
   subscribeAcceptedMastersChanged,
   toBackendSorting,
 } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
-import { action, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
 import {
   mapMasterPingResults,
@@ -24,8 +24,6 @@ type PingMastersParams = {
 };
 
 export class MastersStore {
-  @observable isLoading: boolean;
-  @observable error: string | null;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
   @observable masters: Array<MasterViewSchema>;
@@ -33,7 +31,22 @@ export class MastersStore {
   @observable availabilityByMasterId: MasterAvailabilityById;
   @observable isPinging: boolean;
   @observable isManualPinging: boolean;
-  @observable pingFailed: boolean;
+  readonly changingMasterIds = observable.set<string>();
+
+  readonly mastersLoad = createLoader({
+    run: () =>
+      apiCoreStore.mastersApi?.mastersList({
+        MasterListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+        },
+      }),
+    onSuccess: (response) => {
+      this.masters = response.data;
+      this.totalMasters = response.total;
+    },
+  });
 
   private readonly mastersCommonStore = createMastersStore({
     loadAcceptedMastersCount: async () => {
@@ -52,14 +65,11 @@ export class MastersStore {
   >();
 
   constructor() {
-    this.isLoading = false;
-    this.error = null;
     this.masters = [];
     this.totalMasters = 0;
     this.availabilityByMasterId = {};
     this.isPinging = false;
     this.isManualPinging = false;
-    this.pingFailed = false;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
@@ -92,27 +102,27 @@ export class MastersStore {
     return checker;
   }
 
+  @computed
+  get isLoading(): boolean {
+    return this.mastersLoad.isLoading;
+  }
+
+  isMasterChanging = (id: string): boolean => this.changingMasterIds.has(id);
+
   @action
   reset = (): void => {
-    this.isLoading = false;
-    this.error = null;
     this.masters = [];
     this.totalMasters = 0;
     this.availabilityByMasterId = {};
     this.masterAcceptedCheckers.clear();
+    this.changingMasterIds.clear();
     this.isPinging = false;
     this.isManualPinging = false;
-    this.pingFailed = false;
     this.sorting = [...DEFAULT_SORTING];
     this.pagination = {
       pageIndex: 0,
       pageSize: 50,
     };
-  };
-
-  @action
-  clearPingFailed = (): void => {
-    this.pingFailed = false;
   };
 
   @action
@@ -132,24 +142,20 @@ export class MastersStore {
 
     this.isPinging = true;
     this.isManualPinging = manual;
-    this.pingFailed = false;
+
+    const request = apiCoreStore.systemApi?.pingMasterSystemPingMastersPost();
+    if (!request) {
+      runInAction(() => {
+        this.isPinging = false;
+        this.isManualPinging = false;
+      });
+      return Promise.reject(new Error("System API is not available"));
+    }
 
     try {
-      const response = await apiCoreStore.systemApi?.pingMasterSystemPingMastersPost();
-      if (!response) {
-        throw new Error("Failed to ping masters");
-      }
-
+      const response = await request;
       runInAction(() => {
         this.availabilityByMasterId = mapMasterPingResults(response);
-      });
-    } catch (error) {
-      if (isGlobalServerError(error)) {
-        return;
-      }
-
-      runInAction(() => {
-        this.pingFailed = true;
       });
     } finally {
       runInAction(() => {
@@ -159,86 +165,41 @@ export class MastersStore {
     }
   };
 
-  @action
-  rejectMaster = (id: string): Promise<MasterViewSchema> => {
-    this.isLoading = true;
-    const result = new Promise<MasterViewSchema>((resolve, reject) => {
-      apiCoreStore.mastersApi
-        ?.taskReject({
-          mid: id,
-        })
-        .then((master) => {
-          runInAction(() => {
-            this.isLoading = false;
-            this.clearMasterAvailability(master.master_id);
-          });
-          publishAcceptedMastersChanged();
-          this.updateMaster(master);
-          resolve(master);
-        })
-        .catch(() => {
-          runInAction(() => {
-            this.isLoading = false;
-          });
-          reject();
-        });
+  private changeMasterStatus = async (
+    id: string,
+    request: Promise<MasterViewSchema> | undefined
+  ): Promise<MasterViewSchema> => {
+    if (!request) {
+      return Promise.reject(new Error("Masters API is not available"));
+    }
+
+    runInAction(() => {
+      this.changingMasterIds.add(id);
     });
-    return result;
-  };
 
-  @action
-  acceptMaster = (id: string): Promise<MasterViewSchema> => {
-    this.isLoading = true;
-    const result = new Promise<MasterViewSchema>((resolve, reject) => {
-      apiCoreStore.mastersApi
-        ?.taskAccept({
-          mid: id,
-        })
-        .then((master) => {
-          runInAction(() => {
-            this.isLoading = false;
-            this.clearMasterAvailability(master.master_id);
-          });
-          publishAcceptedMastersChanged();
-          this.updateMaster(master);
-          resolve(master);
-        })
-        .catch(() => {
-          runInAction(() => {
-            this.isLoading = false;
-          });
-          reject();
-        });
-    });
-    return result;
-  };
-
-  @action
-  loadMasters = () => {
-    this.isLoading = true;
-    this.error = null;
-
-    apiCoreStore.mastersApi
-      ?.mastersList({
-        MasterListBody: {
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.isLoading = false;
-          this.masters = response.data;
-          this.totalMasters = response.total;
-        });
-      })
-      .catch((_) => {
-        runInAction(() => {
-          this.isLoading = false;
-          this.error = "Failed to load masters";
-        });
+    try {
+      const master = await request;
+      runInAction(() => {
+        this.clearMasterAvailability(master.master_id);
       });
+      publishAcceptedMastersChanged();
+      this.updateMaster(master);
+      return master;
+    } finally {
+      runInAction(() => {
+        this.changingMasterIds.delete(id);
+      });
+    }
+  };
+
+  rejectMaster = (id: string): Promise<MasterViewSchema> =>
+    this.changeMasterStatus(id, apiCoreStore.mastersApi?.taskReject({ mid: id }));
+
+  acceptMaster = (id: string): Promise<MasterViewSchema> =>
+    this.changeMasterStatus(id, apiCoreStore.mastersApi?.taskAccept({ mid: id }));
+
+  loadMasters = () => {
+    this.mastersLoad.run().catch(() => undefined);
   };
 
   @action

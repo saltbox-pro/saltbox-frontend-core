@@ -60,10 +60,6 @@ export class DashboardStore {
     this.reload();
   }
 
-  get isReady(): boolean {
-    return this.storageKey !== null && this.tabs.length > 0;
-  }
-
   private reload() {
     if (!this.userId || !this.collectionSlug || !this.tabNames) {
       this.storageKey = null;
@@ -279,7 +275,7 @@ export class DashboardStore {
     if (!tab) {
       return;
     }
-    tab.cards = createDefaultTabCards(tab.id);
+    tab.cards = tab.primary ? createDefaultTabCards(tab.id) : [];
     tab.layout = this.buildDefaultLayout(tab.cards);
     this.fullScreenCardId = null;
     this.saveToLocalStorage();

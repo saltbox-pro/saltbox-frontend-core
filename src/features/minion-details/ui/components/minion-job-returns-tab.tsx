@@ -11,8 +11,10 @@ import {
   FastTableToolbarSlotProvider,
   FilterToggleButton,
   formatTimeByUserTZ,
+  RefreshButton,
   useFiltersToggle,
   AcceptedMastersActionButton,
+  type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
 import {
   ColumnDef,
@@ -21,7 +23,7 @@ import {
   Row,
   SortingState,
 } from "@tanstack/react-table";
-import { Flex, message, Tag } from "antd";
+import { Flex, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -33,9 +35,13 @@ import {
   useJobModalFlowState,
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
+import {
+  JobReturnExecutionTime,
+  JobReturnStatusTag,
+} from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
-import { retcodeLegacyValues, retcodeValues } from "saltbox-core/shared/conf/retcode-values";
+import { getMinionJobReturnsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { JobFilterStore, JobStore, mastersStore } from "saltbox-core/store";
 
 import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
@@ -43,11 +49,13 @@ import styles from "./minion-job-returns-tab.module.css";
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
 const JobReturnsTable = FastTablePaginated<JobReturnModel>;
+const minionJobReturnsSorting: SortingState = [{ id: "created", desc: true }];
 
 interface JobReturnsConfig {
   jobReturns: JobReturnModel[];
   jobStore: JobStore;
   isLoading: boolean;
+  loader?: LoadSource;
   pagination: PaginationState;
   sorting: SortingState;
   total: number;
@@ -66,117 +74,13 @@ interface MinionJobReturnsTabViewProps {
   jobReturnsFilter?: React.ReactNode;
 }
 
-type MongoDBQuery = Record<string, unknown> & {
-  retcode?: { $in?: Array<number | string> } | number | string | { $ne: number };
-  $and?: Array<MongoDBQuery>;
-  $or?: Array<MongoDBQuery>;
-};
-
-const defaultStringOperators = [
-  { name: "=", value: "=", label: "=" },
-  { name: "!=", value: "!=", label: "!=" },
-  { name: "contains", value: "contains", label: "contains" },
-  { name: "beginsWith", value: "beginsWith", label: "begins with" },
-  { name: "endsWith", value: "endsWith", label: "ends with" },
-  { name: "doesNotContain", value: "doesNotContain", label: "does not contain" },
-  { name: "doesNotBeginWith", value: "doesNotBeginWith", label: "does not begin with" },
-  { name: "doesNotEndWith", value: "doesNotEndWith", label: "does not end with" },
-] as const;
-
-const defaultDateTimeOperators = [
-  { name: "<", value: "<", label: "<" },
-  { name: ">", value: ">", label: ">" },
-  { name: "<=", value: "<=", label: "<=" },
-  { name: ">=", value: ">=", label: ">=" },
-] as const;
-
-const retcodeOperators = [{ name: "=", value: "=", label: "=" }] as const;
-
-const jobReturnsFilterSchema = [
-  { name: "jid", label: "JID", operators: defaultStringOperators },
-  { name: "fun", label: "Function", operators: defaultStringOperators },
-  { name: "retcode", label: "Return Code", operators: retcodeOperators, caseSensitive: true },
-  {
-    name: "stamp",
-    label: "Timestamp",
-    operators: defaultDateTimeOperators,
-    inputType: "datetime-local",
-    valueEditorType: "datetime-local",
-  },
-];
-
-const transformRetcodeValue = (retcode: unknown): number | { $ne: number } | undefined => {
-  if (
-    typeof retcode === "object" &&
-    retcode !== null &&
-    "$in" in retcode &&
-    Array.isArray(retcode.$in)
-  ) {
-    const retcodeIn = retcode.$in as Array<number | string>;
-    const hasYes =
-      retcodeIn.includes(retcodeLegacyValues.zero) ||
-      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.yes.toLowerCase());
-    const hasNo =
-      retcodeIn.includes(retcodeLegacyValues.notSuccess) ||
-      retcodeIn.some((v) => String(v).toLowerCase() === retcodeValues.no.toLowerCase());
-
-    if (hasYes === hasNo) return undefined;
-    return hasNo ? { $ne: 0 } : 0;
-  }
-
-  const retcodeStr = String(retcode).toLowerCase();
-  const isNo =
-    retcodeStr === retcodeValues.no.toLowerCase() || retcode === retcodeLegacyValues.notSuccess;
-  const isYes =
-    retcodeStr === retcodeValues.yes.toLowerCase() ||
-    retcode === retcodeLegacyValues.zero ||
-    Number(retcode) === 0;
-
-  if (isNo) return { $ne: 0 };
-  if (isYes) return 0;
-  return undefined;
-};
-
-const transformRetcodeFilter = (query: object): MongoDBQuery => {
-  const mongoQuery = query as MongoDBQuery;
-  const result: MongoDBQuery = {};
-
-  if (mongoQuery?.retcode) {
-    const transformedRetcode = transformRetcodeValue(mongoQuery.retcode);
-    if (transformedRetcode !== undefined) {
-      result.retcode = transformedRetcode;
-    }
-  }
-
-  if (Array.isArray(mongoQuery.$and)) {
-    const transformedAnd = mongoQuery.$and
-      .map(transformRetcodeFilter)
-      .filter((item) => Object.keys(item).length > 0);
-    if (transformedAnd.length > 0) result.$and = transformedAnd;
-  }
-
-  if (Array.isArray(mongoQuery.$or)) {
-    const transformedOr = mongoQuery.$or
-      .map(transformRetcodeFilter)
-      .filter((item) => Object.keys(item).length > 0);
-    if (transformedOr.length > 0) result.$or = transformedOr;
-  }
-
-  Object.keys(mongoQuery).forEach((key) => {
-    if (key !== "retcode" && key !== "$and" && key !== "$or") {
-      result[key] = mongoQuery[key];
-    }
-  });
-
-  return result;
-};
-
 const MinionJobReturnsTable = ({
   onLazyLoad,
   sorting,
   jobReturns,
   jobStore,
   isLoading,
+  loader,
   total,
   pagination,
   onReplayJob,
@@ -212,24 +116,20 @@ const MinionJobReturnsTable = ({
             },
           ],
           color: "accent",
-          width: "10%",
-          minWidth: 300,
+          width: "16%",
+          minWidth: 250,
         },
       }),
-      jobReturnsColumnHelper.accessor("retcode", {
-        header: t("task.job-returns-table.table-success"),
+      jobReturnsColumnHelper.accessor("status", {
+        header: t("task.job-returns-table.table-status"),
         cell: (data) => (
-          <Tag color={data.getValue() === 0 ? "green" : "red"}>
-            {data.getValue() === 0
-              ? t("task.job-returns-table.table-yes")
-              : t("task.job-returns-table.table-no")}
-          </Tag>
+          <JobReturnStatusTag status={data.getValue()} retcode={data.row.original.retcode} />
         ),
         meta: { width: "10%" },
       }),
       jobReturnsColumnHelper.accessor("fun", {
         header: t("task.job-returns-table.table-fun"),
-        meta: { width: "15%", minWidth: 150 },
+        meta: { width: "14%", minWidth: 150 },
       }),
       jobReturnsColumnHelper.accessor("fun_args", {
         header: t("jobs.arguments"),
@@ -240,7 +140,7 @@ const MinionJobReturnsTable = ({
             emptyLabel={t("jobs.no-arguments")}
           />
         ),
-        meta: { width: "20%", minWidth: 200 },
+        meta: { width: "15%", minWidth: 200 },
       }),
       jobReturnsColumnHelper.accessor("fun_kwarg", {
         header: t("jobs.key-value-arguments"),
@@ -251,10 +151,17 @@ const MinionJobReturnsTable = ({
             emptyLabel={t("jobs.no-key-value-arguments")}
           />
         ),
-        meta: { width: "20%", minWidth: 200 },
+        meta: { width: "15%", minWidth: 200 },
       }),
       jobReturnsColumnHelper.accessor("stamp", {
         header: t("task.job-returns-table.table-execution-time"),
+        cell: (data) => (
+          <JobReturnExecutionTime stamp={data.getValue()} status={data.row.original.status} />
+        ),
+        meta: { width: "15%", minWidth: 170 },
+      }),
+      jobReturnsColumnHelper.accessor("created", {
+        header: t("jobs.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
         meta: { width: "15%", minWidth: 170 },
       }),
@@ -277,6 +184,7 @@ const MinionJobReturnsTable = ({
         data={jobReturns}
         total={total}
         isLoading={isLoading}
+        loader={loader}
         pagination={pagination}
         sorting={sorting}
         onLazyLoad={onLazyLoad}
@@ -327,8 +235,9 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   const navigate = useNavigate();
   const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
   const [filtersExtraContainer, setFiltersExtraContainer] = useState<HTMLElement | null>(null);
+  const [isManualRefreshLoading, setIsManualRefreshLoading] = useState(false);
 
-  const jobStore = useMemo(() => new JobStore(), []);
+  const jobStore = useMemo(() => new JobStore(minionJobReturnsSorting), []);
   const lastLoadedMinionIdRef = useRef<string | null>(null);
 
   const minionTargeting = useMemo(
@@ -384,22 +293,23 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     setReplayBaseline(null);
   }, []);
 
-  const jobReturnsFilterStore = useMemo(() => {
-    const storageKey = `jobReturnsFilter:${minion?.id ?? "unknown"}`;
-    return new JobFilterStore(jobReturnsFilterSchema, storageKey);
-  }, [minion?.id]);
+  const jobReturnsFilterSchema = useMemo(() => getMinionJobReturnsFilterSchema(t), [t]);
+  const jobReturnsFilterStore = useMemo(
+    () => new JobFilterStore([], `jobReturnsFilter:${minion?.id ?? "unknown"}`),
+    [minion?.id]
+  );
+
+  useEffect(() => {
+    jobReturnsFilterStore.updateFilterSchema(jobReturnsFilterSchema);
+  }, [jobReturnsFilterSchema, jobReturnsFilterStore]);
 
   const handleJobReturnsFilterSearch = useCallback(() => {
     const minionId = minion?.minion_id;
     const masterId = minion?.master;
-
     if (!minionId || !masterId) return;
 
-    const baseQuery = { minion_id: minionId, salt_master: masterId };
-    const filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
-    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
-
-    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
+    jobStore.setMinionContext(minionId, masterId);
+    jobStore.mongoDBQuery = jobReturnsFilterStore.searchMongoDBQuery;
     jobStore.pagination.pageIndex = 0;
     jobStore.loadJobReturns();
   }, [jobReturnsFilterStore, jobStore, minion?.master, minion?.minion_id]);
@@ -419,15 +329,13 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     const masterId = minion?.master;
     if (!minionId || !masterId) return;
 
+    jobStore.setMinionContext(minionId, masterId);
+
     if (lastLoadedMinionIdRef.current === minionId) {
       return;
     }
 
-    const baseQuery = { minion_id: minionId, salt_master: masterId };
-    const filterQuery = transformRetcodeFilter(jobReturnsFilterStore.searchMongoDBQuery);
-    const hasFilters = filterQuery && Object.keys(filterQuery).length > 0;
-
-    jobStore.mongoDBQuery = hasFilters ? { ...baseQuery, ...filterQuery } : baseQuery;
+    jobStore.mongoDBQuery = jobReturnsFilterStore.searchMongoDBQuery;
     jobStore.loadJobReturns();
     lastLoadedMinionIdRef.current = minionId;
   }, [jobReturnsFilterStore, jobStore, minion?.master, minion?.minion_id]);
@@ -453,6 +361,15 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     />
   ) : null;
 
+  const handleRefreshJobReturns = useCallback(async () => {
+    setIsManualRefreshLoading(true);
+    try {
+      await jobStore.loadJobReturns();
+    } finally {
+      setIsManualRefreshLoading(false);
+    }
+  }, [jobStore]);
+
   const jobReturnsTabActions = isFullView ? (
     <Flex justify="flex-end">
       <AcceptedMastersActionButton
@@ -466,6 +383,11 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
       >
         {t("job-modal.create-job")}
       </AcceptedMastersActionButton>
+      <RefreshButton
+        loading={isManualRefreshLoading}
+        onClick={handleRefreshJobReturns}
+        title={t("minions.refresh")}
+      />
     </Flex>
   ) : null;
 
@@ -479,6 +401,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
           jobReturns: jobStore.jobReturns,
           jobStore,
           isLoading: jobStore.isJobReturnsLoading,
+          loader: jobStore.jobReturnsLoad,
           pagination: jobStore.pagination,
           sorting: jobStore.sorting,
           total: jobStore.total,

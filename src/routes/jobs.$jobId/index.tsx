@@ -13,9 +13,9 @@ import {
   WebSocketMessage,
   WebSocketService,
   AcceptedMastersActionButton,
+  ErrorZone,
   RefreshButton,
-  getApiErrorMessage,
-  isGlobalServerError,
+  runMutation,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -42,6 +42,7 @@ import {
   type JobModalTargeting,
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
+import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
@@ -178,7 +179,6 @@ const JobPage = observer(() => {
       return;
     }
 
-    jobStore.beginJobReturnsReload();
     setViewMode(nextMode);
     jobStore.loadJobReturns();
   }, []);
@@ -197,6 +197,34 @@ const JobPage = observer(() => {
     }
   }, [isTableViewMode]);
 
+  const handleJobTtlSubmit = useCallback(
+    async (ttlSeconds: number | null) => {
+      if (!jobId) {
+        return false;
+      }
+
+      const minions = jobStore.jobMinions;
+      const result = await setJobTtlForAll({
+        jobId,
+        minions,
+        ttl: ttlSeconds,
+        errorMessage: t("jobs.ttl-update-error"),
+      });
+
+      if (result.ok) {
+        const waitingExpiresAt = new Date(result.data.waiting_expires_at_dt);
+        jobStore.applyJobTtl(
+          ttlSeconds,
+          Number.isNaN(waitingExpiresAt.getTime()) ? null : waitingExpiresAt
+        );
+        jobStore.applyJobReturnsTtl(minions, null);
+      }
+
+      return result.ok;
+    },
+    [jobId, t]
+  );
+
   const handleExportToCsv = useCallback(async () => {
     if (!jobId) {
       return;
@@ -204,31 +232,23 @@ const JobPage = observer(() => {
 
     setIsTableExportLoading(true);
 
-    try {
-      await downloadJobReturnsTableCsv(
-        {
-          ...jobStore.mongoDBQuery,
-          job_id: jobId,
-        },
-        `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
-      );
+    const result = await runMutation({
+      run: () =>
+        downloadJobReturnsTableCsv(
+          {
+            ...jobStore.mongoDBQuery,
+            job_id: jobId,
+          },
+          `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
+        ),
+      errorMessage: t("jobs.table-view-export-error"),
+    });
+
+    setIsTableExportLoading(false);
+    if (result.ok) {
       setIsExportModalOpen(false);
-    } catch (error) {
-      console.error("Error exporting job returns table:", error);
-      if (isGlobalServerError(error)) {
-        return;
-      }
-      message.error(await getApiErrorMessage(error, t("jobs.table-view-export-error")));
-    } finally {
-      setIsTableExportLoading(false);
     }
   }, [jobId, t]);
-
-  useEffect(() => {
-    if (jobStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [jobStore.error]);
 
   useEffect(() => {
     if (!jobId) {
@@ -241,6 +261,7 @@ const JobPage = observer(() => {
       webSocketService.disconnect();
     }
     setIsWebSocketConnecting(true);
+    let hasSocketOpened = false;
     webSocketService.connect(
       `${apiCoreStore.env?.ws_server_url}/jobs/${jobId}/info`,
       appStore.authStore?.user?.access_token,
@@ -259,6 +280,14 @@ const JobPage = observer(() => {
           );
         },
         onOpen: () => {
+          hasSocketOpened = true;
+          setIsWebSocketConnecting(false);
+          jobStore.reload(jobId);
+        },
+        onClose: () => {
+          if (hasSocketOpened) {
+            return;
+          }
           setIsWebSocketConnecting(false);
           jobStore.reload(jobId);
         },
@@ -267,7 +296,7 @@ const JobPage = observer(() => {
     return () => {
       setIsWebSocketConnecting(false);
       jobStore.reset();
-      webSocketService.disconnect();
+      webSocketService.disconnect({ notify: false });
     };
   }, [jobId]);
 
@@ -276,115 +305,122 @@ const JobPage = observer(() => {
       {contextHolder}
       <PageHeader title={t("jobs.job-title", { jobId: jobStore.job?.jid ?? "" })} />
 
-      <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
-        <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
-          <div className={styles.jobDetailItem}>
-            <AcceptedMastersActionButton
-              shape="default"
-              icon={<ReloadOutlined />}
-              type="default"
-              title={t("jobs.repeat-job")}
-              messageApi={messageApi}
-              navigate={navigate}
-              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-              warningActionText={t("job-modal.warning-action.repeat-job")}
-              onAction={openRepeatConfigure}
-              disabled={!jobStore.job}
-            />
+      <ErrorZone
+        level="page"
+        loaders={[jobStore.jobLoad]}
+        onNavigateHome={() => navigate("/core/jobs")}
+      >
+        <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
+          <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
+            <div className={styles.jobDetailItem}>
+              <AcceptedMastersActionButton
+                shape="default"
+                icon={<ReloadOutlined />}
+                type="default"
+                title={t("jobs.repeat-job")}
+                messageApi={messageApi}
+                navigate={navigate}
+                checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+                warningActionText={t("job-modal.warning-action.repeat-job")}
+                onAction={openRepeatConfigure}
+                disabled={!jobStore.job}
+              />
 
-            <JobModalShell
-              key={jobId}
-              pickerOpen={repeatPickerOpen}
-              onPickerOpenChange={setRepeatPickerOpen}
-              configureFunction={repeatConfigureFun}
-              onConfigureFunctionChange={setRepeatConfigureFun}
-              targeting={repeatTargeting}
-              onTargetingChange={setRepeatTargeting}
-              repeatBaseline={repeatBaseline}
-              onAfterConfigureClose={handleRepeatConfigureClose}
-            />
+              <JobModalShell
+                key={jobId}
+                pickerOpen={repeatPickerOpen}
+                onPickerOpenChange={setRepeatPickerOpen}
+                configureFunction={repeatConfigureFun}
+                onConfigureFunctionChange={setRepeatConfigureFun}
+                targeting={repeatTargeting}
+                onTargetingChange={setRepeatTargeting}
+                repeatBaseline={repeatBaseline}
+                onAfterConfigureClose={handleRepeatConfigureClose}
+              />
 
-            <span className={styles.jobDetailLabel}>{t("jobs.table-master")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.job?.salt_master ?? <Skeleton.Input size="small" />}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
-            <span className={`${styles.jobDetailValue} ${styles.jobDetailValueTargets}`}>
-              {jobStore.jobTargets ? (
-                <>
-                  <Text ellipsis className={styles.targetText} title={jobStore.jobTargets}>
-                    {jobStore.jobTargets}
-                  </Text>
-                  <Flex>
-                    <CopyToClipboardButton text={jobStore.jobTargets} />
-                  </Flex>
-                </>
-              ) : (
-                <Skeleton.Input size="small" />
-              )}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.table-function")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.job?.fun ?? <Skeleton.Input size="small" />}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.arguments")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.isJobLoading ? (
-                <Skeleton.Input size="small" />
-              ) : (
-                <JsonPreview
-                  value={jobStore.job?.arg}
-                  title={t("jobs.arguments")}
-                  emptyLabel={t("jobs.no-arguments")}
-                />
-              )}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.key-value-arguments")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.isJobLoading ? (
-                <Skeleton.Input size="small" />
-              ) : (
-                <JsonPreview
-                  value={jobStore.job?.kwarg}
-                  title={t("jobs.key-value-arguments")}
-                  emptyLabel={t("jobs.no-key-value-arguments")}
-                  maxPreviewEntries={2}
-                />
-              )}
-            </span>
-          </div>
-
-          <div className={styles.jobDetailItem}>
-            <span className={styles.jobDetailLabel}>{t("jobs.table-user")}:</span>
-            <span className={styles.jobDetailValue}>
-              {jobStore.job?.user?.name ?? <Skeleton.Input size="small" />}
-            </span>
-          </div>
-
-          {jobStore.jobStartTimestamp && (
-            <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
-              <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
+              <span className={styles.jobDetailLabel}>{t("jobs.table-master")}:</span>
               <span className={styles.jobDetailValue}>
-                <span title={t("jobs.job-execution-duration-actual-tooltip")}>
+                {jobStore.job?.salt_master ?? <Skeleton.Input size="small" />}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.table-target-type")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.job?.tgt_type ?? <Skeleton.Input size="small" />}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.table-targets")}:</span>
+              <span className={`${styles.jobDetailValue} ${styles.jobDetailValueTargets}`}>
+                {jobStore.jobTargets ? (
+                  <>
+                    <Text ellipsis className={styles.targetText} title={jobStore.jobTargets}>
+                      {jobStore.jobTargets}
+                    </Text>
+                    <Flex>
+                      <CopyToClipboardButton text={jobStore.jobTargets} />
+                    </Flex>
+                  </>
+                ) : (
+                  <Skeleton.Input size="small" />
+                )}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.table-function")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.job?.fun ?? <Skeleton.Input size="small" />}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.arguments")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.isJobLoading ? (
+                  <Skeleton.Input size="small" />
+                ) : (
+                  <JsonPreview
+                    value={jobStore.job?.arg}
+                    title={t("jobs.arguments")}
+                    emptyLabel={t("jobs.no-arguments")}
+                  />
+                )}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.key-value-arguments")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.isJobLoading ? (
+                  <Skeleton.Input size="small" />
+                ) : (
+                  <JsonPreview
+                    value={jobStore.job?.kwarg}
+                    title={t("jobs.key-value-arguments")}
+                    emptyLabel={t("jobs.no-key-value-arguments")}
+                    maxPreviewEntries={2}
+                  />
+                )}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.table-user")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.job?.user?.name ?? <Skeleton.Input size="small" />}
+              </span>
+            </div>
+
+            {jobStore.jobStartTimestamp && (
+              <div className={`${styles.jobDetailItem} ${styles.jobDetailItemRight}`}>
+                <span className={styles.jobDetailLabel}>{t("jobs.job-execution-duration")}:</span>
+                <span
+                  className={styles.jobDetailValue}
+                  title={t("jobs.job-execution-duration-actual-tooltip")}
+                >
                   {isLaunchError ? (
                     "—"
                   ) : !jobStore.isJobComplete ? (
@@ -399,135 +435,153 @@ const JobPage = observer(() => {
                     "—"
                   )}
                 </span>
-                <span>/</span>
-                <span title={t("jobs.job-execution-duration-max-tooltip")}>
-                  {jobStore.job?.ttl == null
-                    ? "-"
-                    : jobStore.job.ttl === 0
-                      ? t("jobs.ttl-unlimited")
-                      : formatJobDuration(jobStore.job.ttl)}
-                </span>
-              </span>
-            </div>
-          )}
-        </Flex>
-
-        {showJobBodyLoader ? (
-          <Flex className={styles.jobLoader} vertical align="center" justify="center" gap={20}>
-            <Spin />
-
-            {!!isCommandInitializing && <Text type="secondary">{t("jobs.executing-command")}</Text>}
-          </Flex>
-        ) : (
-          <FastTableToolbarSlotProvider>
-            <JobStatusProgress counts={statusCounts} />
-
-            {showJobReturnsToolbar && (
-              <Flex
-                className={styles.switchContainer}
-                justify="space-between"
-                align="center"
-                gap={16}
-                wrap
-              >
-                <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-                  <Tag color="green">
-                    {t("task.job-returns-table.status-success")}: {statusCounts.success}
-                  </Tag>
-                  <Tag color="red">
-                    {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-                  </Tag>
-                  <Tag color="orange">
-                    {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-                  </Tag>
-                  <Tag color="default">
-                    {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-                  </Tag>
-                  <Tag color="blue">
-                    {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-                  </Tag>
-                </Flex>
-                <Flex align="center" gap={8}>
-                  <RefreshButton
-                    title={t("common.refresh")}
-                    loading={isManualRefreshLoading}
-                    onClick={handleJobReturnsRefresh}
-                  />
-                  {showExportButton && (
-                    <Tooltip title={t("jobs.download-to-csv")}>
-                      <Button
-                        type="primary"
-                        icon={<DownloadOutlined />}
-                        loading={isTableExportLoading}
-                        onClick={() => setIsExportModalOpen(true)}
-                      />
-                    </Tooltip>
-                  )}
-                  <Radio.Group
-                    value={viewMode}
-                    onChange={(event) => handleViewModeChange(event.target.value)}
-                    options={[
-                      { label: t("jobs.standard-view"), value: "standard" },
-                      { label: t("jobs.detailed-view"), value: "detailed" },
-                      ...(isStateApplyJob
-                        ? [{ label: t("jobs.state-apply-view"), value: "state-apply" }]
-                        : []),
-                      {
-                        label: t("jobs.table-view"),
-                        value: "table",
-                        disabled: !isTableViewAvailable,
-                      },
-                    ]}
-                    optionType="button"
-                    buttonStyle="solid"
-                  />
-                  {!isTableViewAvailable && (
-                    <Tooltip
-                      title={t("jobs.table-conversion-not-possible")}
-                      placement="left"
-                      overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
-                    >
-                      <QuestionCircleOutlined className={styles.helpIcon} />
-                    </Tooltip>
-                  )}
-                  <FastTableToolbarSlot />
-                </Flex>
-              </Flex>
+              </div>
             )}
 
-            <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
-              {isLaunchError ? (
-                <JobLaunchError
-                  launchErrorType={jobStore.job?.launch_error_type}
-                  target={jobStore.jobTargetsText}
-                />
-              ) : (
-                <DefaultJobReturnTable
-                  jobReturns={effectiveJobReturns}
-                  jobStore={jobStore}
-                  isFullOutput={isFullOutput}
-                  isStepsView={isStepsViewMode}
-                  isTableViewMode={isTableViewMode}
-                  jobStartTimestamp={jobStore.jobStartTimestamp}
-                  pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
-                  sorting={jobStore.sorting}
-                  total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
-                  onLazyLoad={jobStore.handleLazyLoad}
-                  isLoading={jobStore.isJobReturnsLoading}
-                  forceExpand={jobStore.isSingleJobReturn}
-                  tableColumns={jobStore.jobReturnTableColumns}
-                  tableRows={jobStore.jobReturnTableRows}
-                  isTableLoading={jobStore.isJobReturnTableLoading}
-                  tableLoadError={jobStore.jobReturnTableLoadError}
-                  onTableLazyLoad={jobStore.handleTableLazyLoad}
-                />
+            <div
+              className={`${styles.jobDetailItem} ${jobStore.jobStartTimestamp ? "" : styles.jobDetailItemRight}`}
+            >
+              <span
+                className={styles.jobDetailLabel}
+                title={t("jobs.job-execution-duration-max-tooltip")}
+              >
+                {t("jobs.ttl-label")}:
+              </span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.isJobLoading ? (
+                  <Skeleton.Input size="small" />
+                ) : (
+                  <EditableTtl
+                    value={jobStore.job?.ttl ?? null}
+                    disabled={!jobStore.isJobTtlEditable}
+                    expiresAt={jobStore.job?.waiting_expires_at_dt}
+                    onSubmit={handleJobTtlSubmit}
+                  />
+                )}
+              </span>
+            </div>
+          </Flex>
+
+          {showJobBodyLoader ? (
+            <Flex className={styles.jobLoader} vertical align="center" justify="center" gap={20}>
+              <Spin />
+
+              {!!isCommandInitializing && (
+                <Text type="secondary">{t("jobs.executing-command")}</Text>
               )}
             </Flex>
+          ) : (
+            <FastTableToolbarSlotProvider>
+              <JobStatusProgress counts={statusCounts} />
 
-            {jobModalCreatePlugin}
-          </FastTableToolbarSlotProvider>
-        )}
-      </Flex>
+              {showJobReturnsToolbar && (
+                <Flex
+                  className={styles.switchContainer}
+                  justify="space-between"
+                  align="center"
+                  gap={16}
+                  wrap
+                >
+                  <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
+                    <Tag color="green">
+                      {t("task.job-returns-table.status-success")}: {statusCounts.success}
+                    </Tag>
+                    <Tag color="red">
+                      {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
+                    </Tag>
+                    <Tag color="orange">
+                      {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+                    </Tag>
+                    <Tag color="default">
+                      {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
+                    </Tag>
+                    <Tag color="blue">
+                      {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
+                    </Tag>
+                  </Flex>
+                  <Flex align="center" gap={8}>
+                    <RefreshButton
+                      title={t("common.refresh")}
+                      loading={isManualRefreshLoading}
+                      onClick={handleJobReturnsRefresh}
+                    />
+                    {showExportButton && (
+                      <Tooltip title={t("jobs.download-to-csv")}>
+                        <Button
+                          type="primary"
+                          icon={<DownloadOutlined />}
+                          loading={isTableExportLoading}
+                          onClick={() => setIsExportModalOpen(true)}
+                        />
+                      </Tooltip>
+                    )}
+                    <Radio.Group
+                      value={viewMode}
+                      onChange={(event) => handleViewModeChange(event.target.value)}
+                      options={[
+                        { label: t("jobs.standard-view"), value: "standard" },
+                        { label: t("jobs.detailed-view"), value: "detailed" },
+                        ...(isStateApplyJob
+                          ? [{ label: t("jobs.state-apply-view"), value: "state-apply" }]
+                          : []),
+                        {
+                          label: t("jobs.table-view"),
+                          value: "table",
+                          disabled: !isTableViewAvailable,
+                        },
+                      ]}
+                      optionType="button"
+                      buttonStyle="solid"
+                    />
+                    {!isTableViewAvailable && (
+                      <Tooltip
+                        title={t("jobs.table-conversion-not-possible")}
+                        placement="left"
+                        overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
+                      >
+                        <QuestionCircleOutlined className={styles.helpIcon} />
+                      </Tooltip>
+                    )}
+                    <FastTableToolbarSlot />
+                  </Flex>
+                </Flex>
+              )}
+
+              <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
+                {isLaunchError ? (
+                  <JobLaunchError
+                    launchErrorType={jobStore.job?.launch_error_type}
+                    target={jobStore.jobTargetsText}
+                  />
+                ) : (
+                  <DefaultJobReturnTable
+                    jobReturns={effectiveJobReturns}
+                    jobStore={jobStore}
+                    isFullOutput={isFullOutput}
+                    isStepsView={isStepsViewMode}
+                    isTableViewMode={isTableViewMode}
+                    jobStartTimestamp={jobStore.jobStartTimestamp}
+                    pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
+                    sorting={jobStore.sorting}
+                    total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
+                    onLazyLoad={jobStore.handleLazyLoad}
+                    isLoading={jobStore.isJobReturnsLoading}
+                    loader={jobStore.jobReturnsLoad}
+                    forceExpand={jobStore.isSingleJobReturn}
+                    tableColumns={jobStore.jobReturnTableColumns}
+                    tableRows={jobStore.jobReturnTableRows}
+                    isTableLoading={jobStore.isJobReturnTableLoading}
+                    tableLoader={jobStore.jobReturnsTableLoad}
+                    onTableLazyLoad={jobStore.handleTableLazyLoad}
+                  />
+                )}
+              </Flex>
+
+              {jobModalCreatePlugin}
+            </FastTableToolbarSlotProvider>
+          )}
+        </Flex>
+      </ErrorZone>
 
       <Modal
         title={t("jobs.export-to-csv-title")}

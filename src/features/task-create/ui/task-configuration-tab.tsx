@@ -1,5 +1,6 @@
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
+import { notify } from "@saltbox/saltbox-frontend-common";
 import {
   Button,
   Col,
@@ -9,7 +10,6 @@ import {
   InputNumber,
   Row,
   Switch,
-  message,
   type FormProps,
   Tooltip,
   Checkbox,
@@ -54,7 +54,6 @@ export function TaskConfigurationTab({
   onReturnToTemplatePicker,
 }: TaskConfigurationTabProps) {
   const { t, i18n } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
 
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
@@ -129,7 +128,7 @@ export function TaskConfigurationTab({
   };
 
   const showValidationError = () => {
-    messageApi.error(t("errors.form-validation"));
+    notify.error(t("errors.form-validation"));
   };
 
   const handleFormFinishFailed: FormProps<
@@ -189,8 +188,6 @@ export function TaskConfigurationTab({
 
   return (
     <>
-      {contextHolder}
-
       <Flex vertical>
         <Flex vertical gap="middle">
           {topContent}

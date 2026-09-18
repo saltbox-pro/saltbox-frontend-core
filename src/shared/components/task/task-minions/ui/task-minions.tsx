@@ -126,6 +126,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         data={taskStore.minions}
         total={taskStore.totalMinions}
         isLoading={taskStore.isMinionsLoading}
+        loader={taskStore.taskMinionsLoad}
         pagination={taskStore.minionsPagination}
         sorting={taskStore.minionsSorting}
         onLazyLoad={taskStore.handleMinionsLazyLoad}

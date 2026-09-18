@@ -1,11 +1,15 @@
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import {
+  type AppError,
+  ErrorZone,
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
-  isGlobalServerError,
+  MutationErrorAlert,
+  notify,
+  runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Form, Input, message, TreeSelect, Typography } from "antd";
+import { Button, Flex, Form, Input, TreeSelect, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,6 +17,7 @@ import { Link } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
 import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { type CollectionStore, collectionsTreeStore } from "saltbox-core/store";
 
@@ -43,11 +48,11 @@ interface CollectionDetailsDrawerProps {
 export const CollectionDetailsDrawer = observer(
   ({ drawer, collectionStore, onCreateSubcollection }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
-    const [messageApi, contextHolder] = message.useMessage();
     const [form] = Form.useForm<CollectionEditFormType>();
 
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<AppError | null>(null);
 
     const { isOpened, openedArg } = drawer;
 
@@ -161,6 +166,7 @@ export const CollectionDetailsDrawer = observer(
     }, [collection, isRoot, isEditing, parentTreeData, t]);
 
     const handleEdit = () => {
+      setSaveError(null);
       collectionsTreeStore.loadTree();
       form.setFieldsValue({
         title: collection?.title,
@@ -172,6 +178,7 @@ export const CollectionDetailsDrawer = observer(
     };
 
     const handleCancel = () => {
+      setSaveError(null);
       setIsEditing(false);
     };
 
@@ -187,7 +194,7 @@ export const CollectionDetailsDrawer = observer(
       try {
         parsedQuery = JSON.parse(values.query);
       } catch {
-        messageApi.error(t("collection.invalid-filter-json"));
+        notify.error(t("collection.invalid-filter-json"));
         return;
       }
 
@@ -202,41 +209,40 @@ export const CollectionDetailsDrawer = observer(
           (child) => child.title === values.title && child.slug !== currentSlug
         );
         if (hasDuplicateTitle) {
-          messageApi.warning(t("collection.duplicate-title-on-move"));
+          notify.warning(t("collection.duplicate-title-on-move"));
           return;
         }
       }
 
       setIsSaving(true);
-      try {
-        await collectionStore.updateCollection({
-          title: values.title,
-          description: values.description?.trim() ?? "",
-          query: parsedQuery,
-        });
+      setSaveError(null);
 
-        if (newParent && collection) {
-          const moved = await collectionsTreeStore.moveCollection(
-            collection.id,
-            newParent.id,
-            newParent.children?.[0]?.id ?? null
-          );
-          if (!moved) {
-            messageApi.error(t("collection.error-moving-collection"));
-            return;
+      const result = await runMutation({
+        run: async () => {
+          await collectionStore.updateCollection({
+            title: values.title,
+            description: values.description?.trim() ?? "",
+            query: parsedQuery,
+          });
+
+          if (newParent && collection) {
+            await collectionsTreeStore.moveCollection(
+              collection.id,
+              newParent.id,
+              newParent.children?.[0]?.id ?? null
+            );
+            collectionStore.loadCollection();
           }
-          collectionStore.loadCollection();
-        }
+        },
+        onError: setSaveError,
+        form: asFormFieldsSetter(form),
+      });
 
-        messageApi.success(t("collection.collection-has-been-changed"));
-        setIsEditing(false);
-      } catch (error) {
-        if (!isGlobalServerError(error)) {
-          messageApi.error(t("collection.error-updating-collection"));
-        }
-      } finally {
-        setIsSaving(false);
-      }
+      setIsSaving(false);
+      if (!result.ok) return;
+
+      notify.success(t("collection.collection-has-been-changed"));
+      setIsEditing(false);
     };
 
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
@@ -262,7 +268,6 @@ export const CollectionDetailsDrawer = observer(
 
     return (
       <>
-        {contextHolder}
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
@@ -273,40 +278,47 @@ export const CollectionDetailsDrawer = observer(
           linkComponent={Link}
           loading={collectionStore.isLoading}
           hasData={!!collection && !isSaving}
-          errorMessage={collectionStore.error ? t("collection.error-loading-collection") : null}
           transitionKey={collection?.slug}
           onClose={drawer.close}
         >
-          <Form form={form} component={false}>
-            <Flex vertical gap="large" className={styles.body}>
-              <InfoDescriptions items={descriptionItems} extra={extra} />
+          <ErrorZone level="block" loaders={[collectionStore.collectionLoad]}>
+            <Form form={form} component={false}>
+              <Flex vertical gap="large" className={styles.body}>
+                <MutationErrorAlert
+                  error={saveError}
+                  fallback={t("collection.error-updating-collection")}
+                  onClose={() => setSaveError(null)}
+                />
 
-              <section className={styles.section}>
-                {isRoot ? (
-                  <Typography.Text type="secondary">
-                    {t("minions.root-collection-info")}
-                  </Typography.Text>
-                ) : (
-                  <CollectionFilterSection
-                    collectionStore={collectionStore}
-                    isEditing={isEditing}
-                    form={form}
-                  />
+                <InfoDescriptions items={descriptionItems} extra={extra} />
+
+                <section className={styles.section}>
+                  {isRoot ? (
+                    <Typography.Text type="secondary">
+                      {t("minions.root-collection-info")}
+                    </Typography.Text>
+                  ) : (
+                    <CollectionFilterSection
+                      collectionStore={collectionStore}
+                      isEditing={isEditing}
+                      form={form}
+                    />
+                  )}
+                </section>
+
+                {isEditing && (
+                  <Flex gap="small" justify="end">
+                    <Button onClick={handleCancel} disabled={isSaving}>
+                      {t("common.cancel")}
+                    </Button>
+                    <Button type="primary" onClick={handleSave} loading={isSaving}>
+                      {t("common.save")}
+                    </Button>
+                  </Flex>
                 )}
-              </section>
-
-              {isEditing && (
-                <Flex gap="small" justify="end">
-                  <Button onClick={handleCancel} disabled={isSaving}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="primary" onClick={handleSave} loading={isSaving}>
-                    {t("common.save")}
-                  </Button>
-                </Flex>
-              )}
-            </Flex>
-          </Form>
+              </Flex>
+            </Form>
+          </ErrorZone>
         </InfoDrawer>
       </>
     );

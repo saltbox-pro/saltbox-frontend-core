@@ -1,9 +1,0 @@
-.leftGroup,
-.rightGroup {
-  display: flex;
-}
-
-.rightGroup {
-  gap: calc(var(--app-layout-gap) / 2);
-  margin-left: auto;
-}

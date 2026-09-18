@@ -4,6 +4,7 @@ import {
   CopyToClipboardButton,
   createJsonValueValidator,
   JsonEditorField,
+  MutationErrorAlert,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Form } from "antd";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
@@ -30,13 +31,14 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
   const isSecret = pillar?.is_secret;
   const valueString = useMemo(() => formatPillarValueToString(pillar?.value), [pillar?.value]);
 
-  const { handleSave, isSaving, saveError, resetSaveState } = useEditPillarForm({
-    form,
-    pillar,
-    onReplacePillar,
-    isSecret,
-    onSuccess: () => setIsEditing(false),
-  });
+  const { handleSave, isSaving, saveError, mutationError, setMutationError, resetSaveState } =
+    useEditPillarForm({
+      form,
+      pillar,
+      onReplacePillar,
+      isSecret,
+      onSuccess: () => setIsEditing(false),
+    });
 
   useEffect(() => {
     if (!pillar || isSecret) {
@@ -96,6 +98,12 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
 
         {isEditing && (
           <Flex vertical gap="small">
+            <MutationErrorAlert
+              error={mutationError}
+              fallback={t("pillars.edit.error")}
+              onClose={() => setMutationError(null)}
+            />
+
             {!!saveError && <Alert message={saveError} type="error" showIcon />}
 
             <Flex justify="end" gap="small">

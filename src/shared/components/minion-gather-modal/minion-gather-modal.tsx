@@ -1,6 +1,12 @@
 import { GatheredMinionSchema, MinionsGatherTgtTypeEnum } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton, Modal } from "@saltbox/saltbox-frontend-common";
+import {
+  CopyToClipboardButton,
+  createLoader,
+  ErrorZone,
+  Modal,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, List, Spin, Typography } from "antd";
+import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,7 +22,7 @@ interface MinionGatherModalProps {
   master: string;
 }
 
-export function MinionGatherModal({
+export const MinionGatherModal = observer(function MinionGatherModal({
   isOpen,
   onClose,
   target,
@@ -26,7 +32,21 @@ export function MinionGatherModal({
   const { t } = useTranslation();
   const [minions, setMinions] = useState<GatheredMinionSchema[]>([]);
   const [count, setCount] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [minionsLoad] = useState(() =>
+    createLoader({
+      run: (tgt: string, tgtType: MinionsGatherTgtTypeEnum, master: string) =>
+        apiCoreStore.minionsApi?.minionsGather({
+          tgt,
+          tgt_type: tgtType,
+          master,
+        }),
+      onSuccess: (response) => {
+        setMinions(response?.minions ?? []);
+        setCount(response?.count ?? 0);
+      },
+    })
+  );
   const totalMinionsText =
     count >= 100
       ? t("minion-gather-modal.first-100-minions")
@@ -34,25 +54,9 @@ export function MinionGatherModal({
 
   useEffect(() => {
     if (isOpen && target && targetType && master) {
-      setIsLoading(true);
-      apiCoreStore.minionsApi
-        ?.minionsGather({
-          tgt: target,
-          tgt_type: targetType,
-          master: master,
-        })
-        .then((response) => {
-          setMinions(response?.minions ?? []);
-          setCount(response?.count ?? 0);
-        })
-        .catch(() => {
-          setMinions([]);
-          setCount(0);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+      minionsLoad.run(target, targetType, master).catch(() => undefined);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, target, targetType, master]);
 
   return (
@@ -66,22 +70,24 @@ export function MinionGatherModal({
         </Button>,
       ]}
     >
-      <Spin spinning={isLoading}>
-        <Typography.Text strong>{totalMinionsText}</Typography.Text>
-        <List
-          dataSource={minions}
-          renderItem={(item) => (
-            <List.Item className={styles.listRow}>
-              <span className={styles.rowContent}>
-                <span className={styles.minionId}>{item.minion_id}</span>
-                <span className={styles.rowActions}>
-                  <CopyToClipboardButton text={item.minion_id} />
+      <Spin spinning={minionsLoad.isLoading}>
+        <ErrorZone level="block" loaders={[minionsLoad]}>
+          <Typography.Text strong>{totalMinionsText}</Typography.Text>
+          <List
+            dataSource={minions}
+            renderItem={(item) => (
+              <List.Item className={styles.listRow}>
+                <span className={styles.rowContent}>
+                  <span className={styles.minionId}>{item.minion_id}</span>
+                  <span className={styles.rowActions}>
+                    <CopyToClipboardButton text={item.minion_id} />
+                  </span>
                 </span>
-              </span>
-            </List.Item>
-          )}
-        />
+              </List.Item>
+            )}
+          />
+        </ErrorZone>
       </Spin>
     </Modal>
   );
-}
+});

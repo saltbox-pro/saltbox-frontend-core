@@ -3,10 +3,11 @@ import { SshfsFileType, type SshfsFilePublicSchema } from "@saltbox/saltbox-core
 import {
   BaseActionButton,
   formatTimeByUserTZ,
-  isGlobalServerError,
+  notify,
+  runMutation,
   SearchHighlightText,
 } from "@saltbox/saltbox-frontend-common";
-import { Flex, List, Tag, Tooltip, message } from "antd";
+import { Flex, List, Tag, Tooltip } from "antd";
 import clsx from "clsx";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,7 +37,6 @@ export function TemplateSourceFilesList({
   canDeleteFile = true,
 }: TemplateSourceFilesListProps) {
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
   const { confirmDeleteFile, modalContextHolder } = useConfirmDeleteFile();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(() => new Set());
   const deletingIdsRef = useRef<Set<string>>(new Set());
@@ -50,35 +50,38 @@ export function TemplateSourceFilesList({
       const next = new Set(deletingIdsRef.current).add(file.id);
       deletingIdsRef.current = next;
       setDeletingIds(next);
-      try {
-        const result = await onDeleteFile(file.id);
 
-        if (result === "not_found") {
-          messageApi.warning(
-            t("configuration-templates.source.files-delete-not-found", {
-              path: file.rel_path,
-            })
-          );
-        } else {
-          messageApi.success(
-            t("configuration-templates.source.files-delete-success", {
-              path: file.rel_path,
-            })
-          );
-        }
-      } catch (reason) {
-        if (isGlobalServerError(reason)) return;
-        console.error("Failed to delete source file:", reason);
-        messageApi.error(t("configuration-templates.source.files-delete-error"));
+      const result = await runMutation({
+        run: () => onDeleteFile(file.id),
+        errorMessage: t("configuration-templates.source.files-delete-error"),
+      });
+
+      const done = new Set(deletingIdsRef.current);
+      done.delete(file.id);
+      deletingIdsRef.current = done;
+      setDeletingIds(done);
+
+      if (!result.ok) {
         await onDeleteError?.();
-      } finally {
-        const done = new Set(deletingIdsRef.current);
-        done.delete(file.id);
-        deletingIdsRef.current = done;
-        setDeletingIds(done);
+        return;
       }
+
+      if (result.data === "not_found") {
+        notify.warning(
+          t("configuration-templates.source.files-delete-not-found", {
+            path: file.rel_path,
+          })
+        );
+        return;
+      }
+
+      notify.success(
+        t("configuration-templates.source.files-delete-success", {
+          path: file.rel_path,
+        })
+      );
     },
-    [messageApi, onDeleteError, onDeleteFile, t]
+    [onDeleteError, onDeleteFile, t]
   );
 
   const handleDeleteClick = useCallback(
@@ -95,7 +98,6 @@ export function TemplateSourceFilesList({
 
   return (
     <>
-      {contextHolder}
       {modalContextHolder}
       <List
         className={clsx(styles.files, constrainHeight && styles.filesConstrained)}

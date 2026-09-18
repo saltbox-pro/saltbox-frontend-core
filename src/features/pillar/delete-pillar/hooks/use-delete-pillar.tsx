@@ -1,5 +1,4 @@
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { message } from "antd";
+import { notify, runMutation } from "@saltbox/saltbox-frontend-common";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -31,32 +30,24 @@ export function useDeletePillar({ pillarId, pillarName, onDeleted }: UseDeletePi
     if (!pillarId) return;
 
     setIsDeleting(true);
-    try {
-      await deletePillar({ pillarId });
 
-      const displayName = pillarName ?? pillarId;
+    const result = await runMutation({
+      run: () => deletePillar({ pillarId }),
+      errorMessage: t("pillars.delete.error"),
+    });
 
-      if (displayName) {
-        message.success({
-          content: (
-            <>
-              {t("pillars.delete.success-before-name")}
-              <strong>{displayName}</strong>
-              {t("pillars.delete.success-after-name")}
-            </>
-          ),
-        });
-      } else {
-        message.success(t("pillars.delete.success"));
-      }
-      onDeleted?.();
-    } catch (e) {
-      if (isGlobalServerError(e)) return;
-      message.error(t("pillars.delete.error"));
-    } finally {
-      setIsDeleting(false);
-      setIsOpen(false);
-    }
+    setIsDeleting(false);
+    setIsOpen(false);
+
+    if (!result.ok) return;
+
+    const displayName = pillarName ?? pillarId;
+    notify.success(
+      displayName
+        ? `${t("pillars.delete.success-before-name")}${displayName}${t("pillars.delete.success-after-name")}`
+        : t("pillars.delete.success")
+    );
+    onDeleted?.();
   }, [onDeleted, pillarId, pillarName, t]);
 
   return {

@@ -35,12 +35,6 @@ const TemplateSourceDetailPage = observer(function TemplateSourceDetailPage() {
     return () => store.reset();
   }, [navigate, sourceId, store]);
 
-  useEffect(() => {
-    if (store?.notFound) {
-      navigate("/core/not-found");
-    }
-  }, [navigate, store?.notFound]);
-
   return (
     <PageLayout title={store?.source?.name ?? ""}>
       {!!store && <TemplateSourceDetail store={store} />}

@@ -2,21 +2,35 @@ import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
+  ErrorZone,
   FilterToggleButton,
   generateIdsForQuery,
-  isGlobalServerError,
   Modal,
+  notify,
   PageHeader,
   resolvePluginLocalizedLabel,
+  runMutation,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message, Tabs } from "antd";
+import { Button, Flex, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  ComponentProps,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import {
+  CollectionExtraDataTab,
+  EXTRA_DATA_CATEGORY_QUERY_PARAM,
+} from "saltbox-core/features/collection-extra-data";
 import {
   dashboardStore,
   getDashboardFieldOptions,
@@ -70,8 +84,6 @@ const MinionsPage = observer(() => {
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [messageApi, contextHolder] = message.useMessage();
-
   const [collectionStore] = useState(new CollectionStore());
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -94,16 +106,8 @@ const MinionsPage = observer(() => {
     open: openMinionsFilters,
     close: closeMinionsFilters,
   } = useFiltersToggle(false);
-  const {
-    isOpen: shownTasksFilters,
-    toggle: toggleShownTasksFilters,
-    open: openTasksFilters,
-  } = useFiltersToggle(false);
-  const {
-    isOpen: shownPoliciesFilters,
-    toggle: toggleShownPoliciesFilters,
-    open: openPoliciesFilters,
-  } = useFiltersToggle(false);
+  const deferredShownMinionsFilters = useDeferredValue(shownMinionsFilters);
+  const showMinionsFilters = shownMinionsFilters && deferredShownMinionsFilters;
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
 
@@ -217,28 +221,19 @@ const MinionsPage = observer(() => {
   }, [location, navigate]);
 
   useEffect(() => {
-    if (collectionStore.error) {
-      navigate("/core/not-found");
-    }
-  }, [collectionStore.error, navigate]);
-
-  useEffect(() => {
     if (minionFilterStore.activeFiltersCount > 0) {
       openMinionsFilters();
     }
   }, [minionFilterStore.activeFiltersCount, openMinionsFilters]);
 
-  useEffect(() => {
-    if (tasksFilterStore.activeFiltersCount > 0) {
-      openTasksFilters();
-    }
-  }, [tasksFilterStore.activeFiltersCount, openTasksFilters]);
-
-  useEffect(() => {
-    if (policiesFilterStore.activeFiltersCount > 0) {
-      openPoliciesFilters();
-    }
-  }, [policiesFilterStore.activeFiltersCount, openPoliciesFilters]);
+  const goToClientList = useCallback(() => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set("tab", "list");
+      newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
+      return newParams;
+    });
+  }, [setSearchParams]);
 
   const minionsTabs = useMemo<TabItems>(() => {
     const tabs: TabItems = [
@@ -250,7 +245,7 @@ const MinionsPage = observer(() => {
             <MinionsListView
               slug={slug}
               filterStore={minionFilterStore}
-              showFilter={shownMinionsFilters}
+              showFilter={showMinionsFilters}
               collectionStore={collectionStore}
               onAddFilter={openMinionsFilters}
             />
@@ -266,7 +261,7 @@ const MinionsPage = observer(() => {
               slug={slug}
               filterStore={minionFilterStore}
               filterControls={
-                shownMinionsFilters && (
+                showMinionsFilters && (
                   <MinionsQueryBuilder slug={slug} filterStore={minionFilterStore} />
                 )
               }
@@ -275,6 +270,32 @@ const MinionsPage = observer(() => {
             />
           ) : null,
       },
+    ];
+
+    tabs.push({
+      label: t("minions.extra-data.tab"),
+      key: "extra-data",
+      children:
+        tabKey === "extra-data" ? (
+          <CollectionExtraDataTab
+            collectionSlug={slug}
+            filterStore={minionFilterStore}
+            onFilterAdded={openMinionsFilters}
+            filterControls={
+              showMinionsFilters ? (
+                <MinionsQueryBuilder
+                  slug={slug}
+                  filterStore={minionFilterStore}
+                  onSearch={goToClientList}
+                />
+              ) : null
+            }
+          />
+        ) : null,
+      className: styles.flexTab,
+    });
+
+    tabs.push(
       {
         label: t("minions.tab-tasks"),
         key: "tasks",
@@ -284,7 +305,6 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Classic}
               filterStore={tasksFilterStore}
-              showFilter={shownTasksFilters}
             />
           ) : null,
         className: styles.flexTab,
@@ -298,12 +318,11 @@ const MinionsPage = observer(() => {
               slug={slug}
               taskType={TaskType.Policy}
               filterStore={policiesFilterStore}
-              showFilter={shownPoliciesFilters}
             />
           ) : null,
         className: styles.flexTab,
-      },
-    ];
+      }
+    );
 
     if (appStore.pluginsStore?.plugins?.["minions.tabs"]) {
       for (const pluginTab of appStore.pluginsStore.plugins["minions.tabs"]) {
@@ -334,98 +353,101 @@ const MinionsPage = observer(() => {
   }, [
     slug,
     collectionStore.collection?.id,
-    shownMinionsFilters,
-    shownTasksFilters,
-    shownPoliciesFilters,
+    showMinionsFilters,
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
     tabKey,
+    t,
+    minionFilterStore,
+    tasksFilterStore,
+    policiesFilterStore,
+    openMinionsFilters,
+    goToClientList,
+    editDashboardCard,
+    addDashboardCard,
   ]);
 
   return (
     <>
-      {contextHolder}
-
       <PageHeader title={`${t("minions.title")} ${collectionStore.collection?.title}`}></PageHeader>
 
-      <Tabs
-        className={styles.minionsTabs}
-        tabBarExtraContent={{
-          right: (
-            <>
-              <Flex gap={8}>
-                {["list", "statistics"].includes(tabKey) && (
-                  <>
-                    <CollectionInfoPopover
-                      slug={slug}
-                      collectionStore={collectionStore}
-                      filterSchema={minionFilterStore.filterSchema}
-                    />
+      <ErrorZone
+        level="page"
+        loaders={[collectionStore.collectionLoad]}
+        onNavigateHome={() => navigate("/core/minions")}
+      >
+        {/* Схема фильтров не блокирует таблицу: ошибка показывается баннером сверху. */}
+        <ErrorZone level="block" keepContentOnError loaders={[minionFilterStore.filterSchemaLoad]}>
+          <Tabs
+            className={styles.minionsTabs}
+            tabBarExtraContent={{
+              right: (
+                <>
+                  <Flex gap={8}>
+                    {["list", "statistics", "extra-data"].includes(tabKey) && (
+                      <>
+                        <CollectionInfoPopover
+                          slug={slug}
+                          collectionStore={collectionStore}
+                          filterSchema={minionFilterStore.filterSchema}
+                        />
 
-                    <FilterToggleButton
-                      isOpen={shownMinionsFilters}
-                      activeFiltersCount={minionFilterStore.activeFiltersCount}
-                      onToggle={toggleShownMinionsFilters}
-                    />
+                        <FilterToggleButton
+                          label={t("minions.client-filters-button")}
+                          isOpen={shownMinionsFilters}
+                          activeFiltersCount={minionFilterStore.activeFiltersCount}
+                          onToggle={toggleShownMinionsFilters}
+                        />
 
-                    <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
-                      <Button>
-                        <Flex gap={8}>
-                          <SettingOutlined />
-                        </Flex>
-                      </Button>
-                    </Dropdown>
-                  </>
-                )}
-
-                {tabKey === "tasks" && (
-                  <FilterToggleButton
-                    isOpen={shownTasksFilters}
-                    activeFiltersCount={tasksFilterStore.activeFiltersCount}
-                    onToggle={toggleShownTasksFilters}
-                  />
-                )}
-
-                {tabKey === "policies" && (
-                  <FilterToggleButton
-                    isOpen={shownPoliciesFilters}
-                    activeFiltersCount={policiesFilterStore.activeFiltersCount}
-                    onToggle={toggleShownPoliciesFilters}
-                  />
-                )}
-              </Flex>
-            </>
-          ),
-        }}
-        items={minionsTabs}
-        onChange={(newTabKey) => {
-          setSearchParams((prev) => {
-            const newParams = new URLSearchParams(prev);
-            newParams.set("tab", newTabKey);
-            return newParams;
-          });
-        }}
-        activeKey={tabKey}
-        destroyOnHidden={true}
-      />
+                        <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
+                          <Button>
+                            <Flex gap={8}>
+                              <SettingOutlined />
+                            </Flex>
+                          </Button>
+                        </Dropdown>
+                      </>
+                    )}
+                  </Flex>
+                </>
+              ),
+            }}
+            items={minionsTabs}
+            onChange={(newTabKey) => {
+              setSearchParams((prev) => {
+                const newParams = new URLSearchParams(prev);
+                newParams.set("tab", newTabKey);
+                if (newTabKey !== "extra-data") {
+                  newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
+                }
+                return newParams;
+              });
+            }}
+            activeKey={tabKey}
+            destroyOnHidden={true}
+          />
+        </ErrorZone>
+      </ErrorZone>
 
       <Modal
         title={t("collection.delete-collection")}
         open={isDeleteModalOpen}
         onOk={async () => {
-          try {
-            const parentSlug = collectionStore.collection.parent_slug;
-            const deletedSlug = collectionStore.collection.slug;
-            await collectionStore.deleteCollection();
-            collectionsTreeStore.removeNode(deletedSlug);
-            setIsDeleteModalOpen(false);
-            messageApi.success(t("collection.collection-deleted-successfully"));
-            minionFilterStore.handleResetFilters();
-            navigate(`/core/minions/${parentSlug}`);
-          } catch (error) {
-            if (isGlobalServerError(error)) return;
-            messageApi.error(t("collection.error-deleting-collection"));
-          }
+          const parentSlug = collectionStore.collection.parent_slug;
+          const deletedSlug = collectionStore.collection.slug;
+
+          const result = await runMutation({
+            run: () => collectionStore.deleteCollection(),
+            errorMessage: t("collection.error-deleting-collection"),
+          });
+
+          setIsDeleteModalOpen(false);
+          if (!result.ok) return;
+
+          collectionsTreeStore.removeNode(deletedSlug);
+          notify.success(t("collection.collection-deleted-successfully"));
+          minionFilterStore.handleResetFilters();
+          navigate(`/core/minions/${parentSlug}`);
         }}
         onCancel={() => setIsDeleteModalOpen(false)}
         okText={t("common.delete")}

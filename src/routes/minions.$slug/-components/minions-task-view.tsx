@@ -31,7 +31,6 @@ type MinionsTaskViewProps = {
   slug?: string;
   taskType?: TaskType;
   filterStore: TasksFilterStore;
-  showFilter: boolean;
 };
 
 export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
@@ -210,13 +209,11 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   return (
     <FastTableToolbarSlotProvider>
       <Flex className={styles.tabWrapper} vertical>
-        {props.showFilter && props.filterStore && (
-          <TasksQueryBuilder
-            filterStore={props.filterStore}
-            onSearchButtonClick={handleSearchButtonClick}
-            onResetButtonClick={handleResetButtonClick}
-          />
-        )}
+        <TasksQueryBuilder
+          filterStore={props.filterStore}
+          onSearchButtonClick={handleSearchButtonClick}
+          onResetButtonClick={handleResetButtonClick}
+        />
         <div className="page-actions-buttons">
           <FastTableToolbarSlot />
         </div>
@@ -229,6 +226,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
           data={tasksStore.tasks}
           total={tasksStore.total}
           isLoading={tasksStore.isTasksLoading}
+          loader={tasksStore.tasksLoad}
           pagination={tasksStore.pagination}
           sorting={tasksStore.sorting}
           onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}

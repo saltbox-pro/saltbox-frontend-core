@@ -17,6 +17,10 @@
   display: none;
 }
 
+.dashboardTabs :global(.ant-tabs-nav-more) {
+  display: none;
+}
+
 .tabLabel {
   display: inline-flex;
   align-items: center;

@@ -8,6 +8,7 @@ import {
   ComponentProps,
   HTMLAttributes,
   ReactElement,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -33,18 +34,26 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
   const [value, setValue] = useState(initialName);
   const [error, setError] = useState<TabNameError | null>(null);
 
-  const commit = () => {
+  useLayoutEffect(() => {
+    inputRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  const commit = (keepFocusOnError: boolean) => {
     const nextError = onCommit(value);
-    setError(nextError);
-    if (nextError) {
-      inputRef.current?.focus();
+    if (!nextError) {
+      return;
     }
+    if (!keepFocusOnError) {
+      onCancel();
+      return;
+    }
+    setError(nextError);
+    inputRef.current?.focus({ preventScroll: true });
   };
 
   return (
     <Tooltip open={error !== null} title={error ? t(`dashboard.tab-name-${error}`) : ""}>
       <Input
-        autoFocus
         ref={inputRef}
         size="small"
         value={value}
@@ -54,8 +63,8 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
           setValue(event.target.value);
           setError(null);
         }}
-        onPressEnter={commit}
-        onBlur={commit}
+        onPressEnter={() => commit(true)}
+        onBlur={() => commit(false)}
         onKeyDown={(event) => {
           event.stopPropagation();
           if (event.key === "Escape") {
@@ -71,7 +80,7 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
 export const DashboardTabs = observer(() => {
   const { t } = useTranslation();
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
-  const { draggedTabId, getDropSide, getDragProps } = useDashboardTabDrag(
+  const { draggedTabId, getDropSide, getDragProps, containerDragProps } = useDashboardTabDrag(
     dashboardStore.tabs.map((tab) => tab.id)
   );
 
@@ -106,44 +115,50 @@ export const DashboardTabs = observer(() => {
     },
   ];
 
-  const items = dashboardStore.tabs.map((tab) => ({
-    key: tab.id,
-    closable: false,
-    label: (
-      <span className={styles.tabLabel} onFocus={(event) => event.stopPropagation()}>
-        {editingTabId === tab.id ? (
-          <TabNameEditor
-            initialName={tab.name}
-            onCancel={() => setEditingTabId(null)}
-            onCommit={(name) => {
-              const error = dashboardStore.renameTab(tab.id, name);
-              if (!error) {
-                setEditingTabId(null);
-              }
-              return error;
-            }}
-          />
-        ) : (
-          <>
-            <span className={styles.tabLabelText}>{tab.name}</span>
-            <Dropdown menu={{ items: getMenuItems(tab) }} trigger={["click"]}>
-              <Button
-                type="text"
-                size="small"
-                icon={<MoreOutlined />}
-                className={styles.tabMenuTrigger}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={(event) => event.stopPropagation()}
-              />
-            </Dropdown>
-          </>
-        )}
-      </span>
-    ),
-  }));
+  const items = dashboardStore.tabs.map((tab) => {
+    const isEditing = editingTabId === tab.id;
+    return {
+      key: tab.id,
+      closable: false,
+      label: (
+        <span
+          className={styles.tabLabel}
+          onFocus={isEditing ? (event) => event.stopPropagation() : undefined}
+        >
+          {isEditing ? (
+            <TabNameEditor
+              initialName={tab.name}
+              onCancel={() => setEditingTabId(null)}
+              onCommit={(name) => {
+                const error = dashboardStore.renameTab(tab.id, name);
+                if (!error) {
+                  setEditingTabId(null);
+                }
+                return error;
+              }}
+            />
+          ) : (
+            <>
+              <span className={styles.tabLabelText}>{tab.name}</span>
+              <Dropdown menu={{ items: getMenuItems(tab) }} trigger={["click"]}>
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<MoreOutlined />}
+                  className={styles.tabMenuTrigger}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={(event) => event.stopPropagation()}
+                />
+              </Dropdown>
+            </>
+          )}
+        </span>
+      ),
+    };
+  });
 
   return (
-    <div className={styles.dashboardTabs}>
+    <div className={styles.dashboardTabs} {...containerDragProps}>
       <Tabs
         type="editable-card"
         size="small"

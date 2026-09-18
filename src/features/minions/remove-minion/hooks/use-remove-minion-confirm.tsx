@@ -1,5 +1,4 @@
-import { Modal, isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import type { MessageInstance } from "antd/es/message/interface";
+import { Modal, notify, runMutation } from "@saltbox/saltbox-frontend-common";
 import { type ReactNode, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,7 +8,6 @@ export interface UseRemoveMinionConfirmOptions {
   collectionSlug: string;
   minionMongoId: string;
   minionDisplayId?: string;
-  messageApi: MessageInstance;
   onDeleted?: () => void;
 }
 
@@ -23,7 +21,6 @@ export function useRemoveMinionConfirm({
   collectionSlug,
   minionMongoId,
   minionDisplayId,
-  messageApi,
   onDeleted,
 }: UseRemoveMinionConfirmOptions): UseRemoveMinionConfirmResult {
   const { t } = useTranslation();
@@ -33,28 +30,24 @@ export function useRemoveMinionConfirm({
 
   const handleDelete = useCallback(async () => {
     if (!collectionSlug || !minionMongoId) return;
-    if (!apiCoreStore.minionsApi) {
-      console.error("minionDelete: minionsApi is not initialized");
-      messageApi.error(t("minions.delete-failed", { minionId: minionDisplayId }));
-      return;
-    }
 
     setIsRemoving(true);
-    try {
-      await apiCoreStore.minionsApi.minionDelete({
-        mid: minionMongoId,
-        collection_slug: collectionSlug,
-      });
-      messageApi.success(t("minions.deleted-successfully", { minionId: minionDisplayId }));
-      onDeleted?.();
-    } catch (error) {
-      console.error("Failed to delete minion:", error);
-      if (isGlobalServerError(error)) return;
-      messageApi.error(t("minions.delete-failed", { minionId: minionDisplayId }));
-    } finally {
-      setIsRemoving(false);
-    }
-  }, [collectionSlug, minionMongoId, t, onDeleted, messageApi, minionDisplayId]);
+
+    const result = await runMutation({
+      run: () =>
+        apiCoreStore.minionsApi?.minionDelete({
+          mid: minionMongoId,
+          collection_slug: collectionSlug,
+        }) ?? Promise.reject(new Error("Minions API is not available")),
+      errorMessage: t("minions.delete-failed", { minionId: minionDisplayId }),
+    });
+
+    setIsRemoving(false);
+    if (!result.ok) return;
+
+    notify.success(t("minions.deleted-successfully", { minionId: minionDisplayId }));
+    onDeleted?.();
+  }, [collectionSlug, minionMongoId, t, onDeleted, minionDisplayId]);
 
   const openConfirm = useCallback(() => {
     if (!collectionSlug || !minionMongoId) return;

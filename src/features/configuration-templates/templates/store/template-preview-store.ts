@@ -1,6 +1,6 @@
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
-import { isBgTaskPollAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { apiCoreStore } from "saltbox-core/store";
 
 import { formatTemplatePreviewMeta } from "../helpers/format-template-preview-meta";
@@ -11,14 +11,28 @@ export class TemplatePreviewStore {
   slsContent = "";
   metaText = "";
   loadedTemplateId: string | null = null;
-  isLoading = false;
-  hasError = false;
 
   private loadAbortController: AbortController | null = null;
-  private loadGeneration = 0;
+
+  readonly previewLoad = createLoader({
+    run: (sourceId: string, templateId: string, signal: AbortSignal) =>
+      apiCoreStore.taskTemplatesApi?.taskTemplateRead(
+        { source_id: sourceId, template_id: templateId },
+        { signal }
+      ),
+    onSuccess: (template, _sourceId, templateId) => {
+      this.slsContent = template?.sls_content ?? "";
+      this.metaText = formatTemplatePreviewMeta(template?.meta);
+      this.loadedTemplateId = templateId;
+    },
+  });
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { previewLoad: false });
+  }
+
+  get isLoading(): boolean {
+    return this.previewLoad.isLoading;
   }
 
   get hasSlsContent(): boolean {
@@ -40,64 +54,31 @@ export class TemplatePreviewStore {
   private cancelLoad = () => {
     this.loadAbortController?.abort();
     this.loadAbortController = null;
-    this.loadGeneration += 1;
   };
 
   load = async (sourceId: string, templateId: string): Promise<boolean> => {
     this.cancelLoad();
 
-    const generation = this.loadGeneration;
     const abortController = new AbortController();
     this.loadAbortController = abortController;
-    const isCancelled = () => generation !== this.loadGeneration;
 
     runInAction(() => {
-      this.isLoading = true;
-      this.hasError = false;
       this.slsContent = "";
       this.metaText = "";
       this.loadedTemplateId = null;
     });
 
-    try {
-      const template = await apiCoreStore.taskTemplatesApi?.taskTemplateRead(
-        { source_id: sourceId, template_id: templateId },
-        { signal: abortController.signal }
-      );
+    await this.previewLoad.run(sourceId, templateId, abortController.signal);
 
-      if (isCancelled()) return false;
-
-      runInAction(() => {
-        this.slsContent = template?.sls_content ?? "";
-        this.metaText = formatTemplatePreviewMeta(template?.meta);
-        this.loadedTemplateId = templateId;
-        this.isLoading = false;
-      });
-
-      return true;
-    } catch (error) {
-      if (isCancelled() || isBgTaskPollAborted(error)) {
-        return false;
-      }
-
-      console.error("Failed to load template preview:", error);
-      runInAction(() => {
-        this.hasError = true;
-        this.isLoading = false;
-      });
-
-      return true;
-    } finally {
-      if (generation === this.loadGeneration) {
-        this.loadAbortController = null;
-      }
+    if (this.loadAbortController === abortController) {
+      this.loadAbortController = null;
     }
+
+    return !abortController.signal.aborted;
   };
 
   reset = () => {
     this.cancelLoad();
-    this.isLoading = false;
-    this.hasError = false;
   };
 
   clearContent = () => {

@@ -6,7 +6,7 @@
     "tab-policies": "Политики",
     "tab-statistics": "Статистика",
     "add-block-button": "Добавить блок",
-    "filters-button": "Фильтры",
+    "client-filters-button": "Фильтры клиентов",
     "blocks-limit-tooltip": "Для оптимизации работы страницы количество блоков ограничено до {{limit}}",
     "table-minion-id": "ID клиента",
     "table-master": "Контроллер",
@@ -43,7 +43,6 @@
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
     "minion": "Клиент",
-    "minion-not-found": "Клиент не найден",
     "no-minion-data-available": "Нет данных о клиенте",
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
@@ -53,19 +52,21 @@
       "tab": "Расширенные данные",
       "category-column": "Категория",
       "empty": "Нет расширенных данных",
+      "empty-category": "Нет расширенных данных в категории \"{{category}}\"",
       "apply-to-filters": "Применить значение к фильтрам",
-      "load-error": "Не удалось загрузить расширенные данные",
+      "add-to-client-filters": "Добавить это значение в фильтр клиентов",
+      "remove-from-client-filters": "Убрать это значение из фильтра клиентов",
       "search-label": "Поиск по записям",
       "search-placeholder": "Введите значение",
       "categories": {
         "local_groups": "Локальные группы",
-        "storages": "Хранилища",
+        "storages": "Физические диски",
         "softwares": "Программное обеспечение",
         "bios": "BIOS",
         "cpus": "Процессоры",
         "hardware": "Оборудование",
         "inputs": "Устройства ввода",
-        "drives": "Диски",
+        "drives": "Логические диски",
         "networks": "Сети",
         "local_users": "Локальные пользователи",
         "batteries": "Батареи",
@@ -205,7 +206,6 @@
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
     "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
-    "error-loading-templates": "Ошибка загрузки шаблонов",
     "error-loading-template-accessibility": "Ошибка загрузки доступности шаблонов",
     "template-accessible": "Доступен",
     "template-inaccessible": "Нет доступа",
@@ -351,6 +351,7 @@
       "table-timestamp": "Время",
       "table-execution-time": "Время выполнения",
       "table-execution-duration": "Длительность",
+      "table-ttl": "TTL",
       "table-yes": "Да",
       "table-no": "Нет",
       "table-fun": "Функция",
@@ -380,8 +381,6 @@
       "last-run": "Последний запуск",
       "job-title": "Команда (попытка запуска №{{run}})",
       "job-running": "Выполняется",
-      "job-returns-load-error": "Не удалось загрузить ответы команд для этого клиента",
-      "job-returns-not-found": "Ответы команд не найдены",
       "job-returns-missing-context": "Не задан идентификатор задачи или клиента",
       "attempt-status-success": "Успешно",
       "attempt-status-failed": "С ошибкой"
@@ -425,7 +424,6 @@
     "table-status-unknown": "Неизвестный статус",
     "table-status-duplicates": "Дубликаты",
     "table-status-all": "Все",
-    "load-salt-keys-failed": "Не удалось загрузить ключи контроллера",
     "salt-keys-empty-with-status": "Нет ключей со статусом \"{{status}}\"",
     "salt-keys-empty-duplicates": "Нет ключей-дубликатов",
     "salt-keys-empty-all": "Нет ключей",
@@ -491,7 +489,6 @@
   },
   "pillars": {
     "title": "Pillars",
-    "load-error": "Не удалось получить pillars",
     "create": {
       "add-button": "Создать pillar",
       "modal-title-root": "Создание глобального pillar",
@@ -527,7 +524,6 @@
   "jobs": {
     "title": "Команды",
     "refresh": "Обновить",
-    "load-error": "Не удалось загрузить данные",
     "open-related": "Открыть команды",
     "open-related-tooltip-task": "Показать команды, созданные из этой задачи",
     "open-related-tooltip-policy": "Показать команды, созданные из этой политики",
@@ -562,8 +558,8 @@
     "job-title": "Команда {{jobId}}",
     "table-copy-success": "Скопировано в буфер обмена",
     "key-value-arguments": "Именованные аргументы",
-    "failed-minions": "Неудачные миньоны",
-    "pending-minions": "Ожидающие миньоны",
+    "failed-minions": "Неудачные клиенты",
+    "pending-minions": "Ожидающие клиенты",
     "copy-list": "Скопировать список",
     "replay-job": "Повторить команду",
     "repeat-job": "Повторить команду (Alt+R)",
@@ -581,7 +577,6 @@
     "table-view": "Табличный",
     "table-view-info-total": "Отображается {{count}} Job Return.",
     "table-view-info-success-only": "В таблице представлены только успешно выполненные Job Return",
-    "table-view-load-error": "Не удалось загрузить табличное представление Job Return",
     "table-view-export-error": "Не удалось выгрузить табличное представление Job Return в CSV",
     "table-view-pagination-total-label": "Всего успешных Job Return:",
     "export-to-csv-title": "Экспорт в CSV",
@@ -603,6 +598,15 @@
     "job-execution-duration-max-tooltip": "Максимально допустимое время выполнения команды, после которого команда завершится с тайм-аутом",
     "ttl-label": "Время ожидания (TTL)",
     "ttl-unlimited": "Без ограничений",
+    "ttl-edit": "Изменить TTL",
+    "ttl-manual-option": "{{seconds}} сек ({{formatted}})",
+    "ttl-preset-hour": "1 час",
+    "ttl-preset-day": "1 день",
+    "ttl-preset-week": "1 неделя",
+    "ttl-inherit-option": "Как у команды",
+    "ttl-inherited-hint": "Унаследован от TTL команды",
+    "ttl-expires-at": "Истекает: {{time}}",
+    "ttl-update-error": "Не удалось изменить TTL",
     "waiting-expires-at-label": "Ожидание ответов до",
     "waiting-expires-at-label-past": "Дедлайн ответов был",
     "waiting-countdown-label": "Осталось времени",
@@ -680,7 +684,6 @@
   "job-return": {
     "waiting-client-response": "Ожидание ответа от клиента",
     "no-execution-result": "Результат выполнения отсутствует",
-    "load-error": "Не удалось загрузить результат выполнения команды",
     "not-found": "Результат выполнения команды не найден",
     "copy-job-data-to-clipboard": "Скопировать полный вывод",
     "step": {
@@ -727,7 +730,6 @@
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
-    "error-loading-tree": "Не удалось загрузить дерево коллекций",
     "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением",
     "filter-schema-unavailable": "Схема фильтров не загружена, сохранение фильтра недоступно. Обновите страницу",
     "open-collection-page": "Перейти на страницу коллекции",
@@ -737,8 +739,7 @@
     "edit-filter": "Редактировать фильтр",
     "invalid-filter-json": "Запрос фильтра — некорректный JSON",
     "filter-updated-successfully": "Фильтр обновлён",
-    "error-updating-filter": "Ошибка при обновлении фильтра",
-    "error-loading-collection": "Не удалось загрузить коллекцию"
+    "error-updating-filter": "Ошибка при обновлении фильтра"
   },
   "dashboard": {
     "minions-total": "Клиентов в выборке",
@@ -768,8 +769,6 @@
     "kpi-max": "Максимум",
     "loading-chart": "Строим график...",
     "other-values": "Ещё {{count}} значений",
-    "statistics-unavailable": "Статистика по этому полю недоступна",
-    "statistics-unavailable-description": "Поле может быть вычисляемым или не поддерживаться этим типом группировки",
     "edit-card": "Редактировать",
     "delete-card": "Удалить",
     "delete-card-confirm-title": "Удалить блок статистики?",
@@ -777,6 +776,7 @@
     "reset-button": "Сбросить",
     "reset-confirm-title": "Сбросить вкладку к состоянию по умолчанию?",
     "reset-confirm-description": "Блоки текущей вкладки будут заменены набором по умолчанию, действие нельзя отменить",
+    "reset-confirm-description-empty": "Все блоки текущей вкладки будут удалены, действие нельзя отменить",
     "first-tab-name": "Статистика",
     "new-tab-name": "Новая вкладка",
     "rename-tab": "Переименовать вкладку",
@@ -874,25 +874,25 @@
       "label": "glob",
       "hint": {
         "title": "glob – Сопоставление по шаблону Bash (glob)",
-        "description": "Использует шаблонные выражения в стиле Bash для выбора minion'ов по имени.",
+        "description": "Использует шаблонные выражения в стиле Bash для выбора клиентов по имени.",
         "example": "web*",
-        "exampleDescription": "Выберет всех minion'ов, имя которых начинается на web."
+        "exampleDescription": "Выберет всех клиентов, имя которых начинается на web."
       }
     },
     "pcre": {
       "label": "pcre",
       "hint": {
         "title": "pcre – Регулярное выражение в стиле Perl",
-        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени minion'а.",
+        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени клиента.",
         "example": "web[0-9]{2}",
-        "exampleDescription": "Выберет всех minion'ов с именами web01, web02 и т. д."
+        "exampleDescription": "Выберет всех клиентов с именами web01, web02 и т. д."
       }
     },
     "list": {
       "label": "list",
       "hint": {
         "title": "list – Список хостов в формате Python",
-        "description": "Позволяет указать список конкретных minion'ов.",
+        "description": "Позволяет указать список конкретных клиентов.",
         "example": "web01,web02,db01",
         "exampleDescription": "Команда будет выполнена только на указанных узлах."
       }
@@ -903,7 +903,7 @@
         "title": "grain – Сопоставление на основе сравнения grain",
         "description": "Сравнивает значение указанного grain с заданным.",
         "example": "os:Ubuntu",
-        "exampleDescription": "Выберет всех minion'ов, у которых grain os равен Ubuntu."
+        "exampleDescription": "Выберет всех клиентов, у которых grain os равен Ubuntu."
       }
     },
     "grain_pcre": {
@@ -921,7 +921,7 @@
         "title": "pillar – Сравнение данных pillar",
         "description": "Сопоставление на основе значений из pillar.",
         "example": "role:db",
-        "exampleDescription": "Выберет minion'ов, у которых в pillar указана роль db."
+        "exampleDescription": "Выберет клиентов, у которых в pillar указана роль db."
       }
     },
     "pillar_pcre": {
@@ -930,7 +930,7 @@
         "title": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
         "description": "Аналогично pillar, но позволяет применять regex.",
         "example": "role:.*server",
-        "exampleDescription": "Выберет всех minion'ов, у которых значение role оканчивается на server."
+        "exampleDescription": "Выберет всех клиентов, у которых значение role оканчивается на server."
       }
     },
     "compound": {
@@ -939,23 +939,22 @@
         "title": "compound – Составное условие сопоставления",
         "description": "Позволяет комбинировать разные методы в одном запросе.",
         "example": "G@os:Ubuntu and L@web01,web02",
-        "exampleDescription": "Выберет minion'ов с ОС Ubuntu и именами web01 или web02."
+        "exampleDescription": "Выберет клиентов с ОС Ubuntu и именами web01 или web02."
       }
     },
     "ipcidr": {
       "label": "ipcidr",
       "hint": {
         "title": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
-        "description": "Позволяет выбрать minion'ов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
+        "description": "Позволяет выбрать клиентов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
         "example": "192.168.0.0/24",
-        "exampleDescription": "Выберет всех minion'ов, IP-адрес которых находится в подсети 192.168.0.0/24."
+        "exampleDescription": "Выберет всех клиентов, IP-адрес которых находится в подсети 192.168.0.0/24."
       }
     }
   },
   "base": {
     "back-home": "На главную",
     "not-found": "Извините, страница, которую вы посетили, не существует.",
-    "failed-to-load-default-collection": "Не удалось загрузить коллекцию по умолчанию",
     "please-contact-administrator-for-assistance": "Пожалуйста, свяжитесь с администратором для получения помощи",
     "logout": "Выйти"
   },
@@ -1020,7 +1019,6 @@
     "form-data-preview-title": "Результирующие данные формы",
     "save-success": "Шаблон сохранён",
     "save-error": "Не удалось сохранить шаблон",
-    "load-error": "Не удалось загрузить шаблон",
     "tab-meta-editor": "Meta JSON",
     "tab-sls-editor": "Редактор SLS",
     "tab-translations": "Переводы",
@@ -1030,7 +1028,7 @@
     "translations-column-text": "Текст",
     "translations-missing": "нет перевода",
     "translations-orphan": "не используется",
-    "translations-orphan-hint": "Перевод есть в i18n, но в схеме на этот ключ никто не ссылается",
+    "translations-orphan-hint": "Перевод есть в i18n, но в схеме этот ключ не используется",
     "translations-modal-title": "Переводы ключа",
     "translations-text-placeholder": "Введите текст",
     "translations-add-locale": "Добавить язык",
@@ -1072,6 +1070,7 @@
     "tab-params": "Параметры формы",
     "meta-status-valid": "JSON валиден",
     "meta-status-unsupported": "Часть параметров редактируется только здесь",
+    "meta-status-unsupported-hint": "Визуальный редактор не умеет отображать эти конструкции JSON Schema. Они сохраняются в шаблоне как есть, а изменить их можно только в этом редакторе.",
     "sls-insert-param": "Добавить параметр {{name}}",
     "translations-empty-state-title": "В шаблоне пока нет переводимых значений.",
     "translations-empty-state-hint": "Чтобы добавить перевод, укажите placeholder в названии или описании поля.",
@@ -1084,19 +1083,14 @@
   },
   "configuration-templates": {
     "page-title": "Шаблоны конфигураций",
-    "detail": {
-      "load-error": "Не удалось загрузить источник"
-    },
-    "load-error": "Не удалось загрузить источники шаблонов конфигураций",
+    "detail": {},
     "warning-action": {
       "connect-source": "подключения источника",
       "sync-source": "синхронизации источника"
     },
     "sync-gitlab-sources-error": "Не удалось получить сетевые источники",
-    "sync-gitlab-sources-failed": "Получение сетевых источников завершилось с ошибкой",
     "sync-gitlab-sources-success": "Сетевые источники получены",
     "sync-mounted-sources-error": "Не удалось получить локальные источники",
-    "sync-mounted-sources-failed": "Получение локальных источников завершилось с ошибкой",
     "sync-mounted-sources-success": "Локальные источники получены",
     "empty": "Нет доступных шаблонов",
     "sync-gitlab-sources-not-loaded": {
@@ -1211,6 +1205,7 @@
         "delete-not-found": "Источник \"{{name}}\" уже удалён или не существует",
         "update-error": "Не удалось сохранить данные источника",
         "duplicate-name-error": "Источник с таким названием уже существует",
+        "duplicate-namespace-error": "Источник с таким пространством имён уже существует",
         "update-success": "Данные источника \"{{name}}\" сохранены"
       },
       "broken-operation": "Ошибка при {{operation}}",
@@ -1248,17 +1243,14 @@
       "synced-at": "Синхронизирован",
       "templates": "Шаблоны",
       "templates-empty": "Нет шаблонов",
-      "templates-load-error": "Не удалось загрузить данные",
       "files": "Файлы (sshfs)",
       "files-empty": "Нет файлов",
-      "files-load-error": "Не удалось загрузить файлы",
       "add-file": "Добавить файл",
       "add-template": "Создать шаблон",
       "edit-template": "Редактировать шаблон",
       "duplicate-template": "Дублировать шаблон",
       "duplicate-disabled-no-local-source": "Для дублирования шаблона необходимо подключить локальный источник",
       "preview-drawer-title": "Шаблон",
-      "preview-load-error": "Не удалось загрузить содержимое шаблона",
       "preview-empty-content": "Содержимое шаблона отсутствует",
       "preview-tab-meta": "Метаданные",
       "preview-tab-sls": "SLS",
@@ -1284,8 +1276,6 @@
     "policies-title": "Политики"
   },
   "errors": {
-    "load-failed": "Не удалось загрузить данные",
-    "access-denied": "Доступ запрещен",
     "form-validation": "Ошибка валидации формы"
   }
 }

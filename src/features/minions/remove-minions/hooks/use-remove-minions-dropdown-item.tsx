@@ -2,9 +2,9 @@ import { DeleteOutlined } from "@ant-design/icons";
 import {
   type ActionDropdownItem,
   Modal,
-  isGlobalServerError,
+  notify,
+  runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import type { MessageInstance } from "antd/es/message/interface";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -13,7 +13,6 @@ import { useRemoveMinions } from "./use-remove-minions";
 export interface UseRemoveMinionsDropdownItemOptions {
   collectionSlug: string;
   minionMongoIds: string[];
-  messageApi: MessageInstance;
   onDeleted?: () => void;
 }
 
@@ -25,7 +24,6 @@ export interface UseRemoveMinionsDropdownItemResult {
 export function useRemoveMinionsDropdownItem({
   collectionSlug,
   minionMongoIds,
-  messageApi,
   onDeleted,
 }: UseRemoveMinionsDropdownItemOptions): UseRemoveMinionsDropdownItemResult {
   const { t } = useTranslation();
@@ -38,16 +36,16 @@ export function useRemoveMinionsDropdownItem({
   const handleDelete = useCallback(async () => {
     if (!collectionSlug || selectedCount === 0) return;
 
-    try {
-      await remove(minionMongoIds);
-      messageApi.success(t("minions.delete-selected-success", { count: selectedCount }));
-      onDeleted?.();
-    } catch (error) {
-      console.error("Failed to delete selected minions:", error);
-      if (isGlobalServerError(error)) return;
-      messageApi.error(t("minions.delete-selected-failed", { count: selectedCount }));
-    }
-  }, [collectionSlug, selectedCount, remove, minionMongoIds, t, onDeleted, messageApi]);
+    const result = await runMutation({
+      run: () => remove(minionMongoIds),
+      errorMessage: t("minions.delete-selected-failed", { count: selectedCount }),
+    });
+
+    if (!result.ok) return;
+
+    notify.success(t("minions.delete-selected-success", { count: selectedCount }));
+    onDeleted?.();
+  }, [collectionSlug, selectedCount, remove, minionMongoIds, t, onDeleted]);
 
   const openConfirm = useCallback(() => {
     if (!collectionSlug || selectedCount === 0) return;

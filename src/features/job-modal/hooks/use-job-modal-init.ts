@@ -15,6 +15,7 @@ import type { TFunction } from "i18next";
 import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { notifyApiError } from "saltbox-core/shared/helpers/notify-api-error";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/sls-templates";
 import {
@@ -63,8 +64,6 @@ type UseJobModalInitParams = {
 };
 
 const NO_ACCEPTED_MASTERS_ERROR = "NO_ACCEPTED_MASTERS";
-const MASTERS_LOAD_FAILED_ERROR = "MASTERS_LOAD_FAILED";
-const TEMPLATE_LOAD_FAILED_ERROR = "TEMPLATE_LOAD_FAILED";
 
 const mapMastersToOptions = (masters: MasterViewSchema[]): MasterOption[] =>
   masters.map((master) => ({
@@ -73,26 +72,19 @@ const mapMastersToOptions = (masters: MasterViewSchema[]): MasterOption[] =>
   }));
 
 const loadAcceptedMasters = async (): Promise<MasterOption[]> => {
-  try {
-    const result = await apiCoreStore.mastersApi?.mastersList({
-      MasterListBody: {
-        query: {
-          status: "accepted",
-        },
+  const result = await apiCoreStore.mastersApi?.mastersList({
+    MasterListBody: {
+      query: {
+        status: "accepted",
       },
-    });
+    },
+  });
 
-    if (!result?.data?.length) {
-      throw new Error(NO_ACCEPTED_MASTERS_ERROR);
-    }
-
-    return mapMastersToOptions(result.data);
-  } catch (error) {
-    if (error instanceof Error && error.message === NO_ACCEPTED_MASTERS_ERROR) {
-      throw error;
-    }
-    throw new Error(MASTERS_LOAD_FAILED_ERROR);
+  if (!result?.data?.length) {
+    throw new Error(NO_ACCEPTED_MASTERS_ERROR);
   }
+
+  return mapMastersToOptions(result.data);
 };
 
 const loadParamsSource = async (
@@ -105,9 +97,9 @@ const loadParamsSource = async (
     try {
       const template = await taskTemplateService.loadTemplateById(sourceId, templateId);
       return { kind: "template", template };
-    } catch {
+    } catch (error) {
       if (!allowBuiltinSchemaFallback) {
-        throw new Error(TEMPLATE_LOAD_FAILED_ERROR);
+        throw error;
       }
 
       return { kind: "function", schema: getBuiltinJobSchema(fun), fallbackFromTemplate: true };
@@ -339,10 +331,13 @@ export const useJobModalInit = ({
             navigate,
           })
         );
-      } else if (error instanceof Error && error.message === TEMPLATE_LOAD_FAILED_ERROR) {
-        messageApi.error(t("task-create.error-loading-template"));
       } else {
-        messageApi.error(acceptedMastersErrorMessage);
+        await notifyApiError(
+          error,
+          sourceId && templateId
+            ? t("task-create.error-loading-template")
+            : acceptedMastersErrorMessage
+        );
       }
 
       onLoadFailed();

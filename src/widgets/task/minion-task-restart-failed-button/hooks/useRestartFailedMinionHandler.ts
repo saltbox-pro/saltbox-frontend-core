@@ -1,5 +1,4 @@
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
-import { message } from "antd";
+import { runMutation } from "@saltbox/saltbox-frontend-common";
 import type { TFunction } from "i18next";
 import { useCallback } from "react";
 
@@ -17,16 +16,10 @@ export const useRestartFailedMinionHandler = (
 
       const displayId = minionId ?? minionInnerId;
 
-      try {
-        await onRestartFailedMinion(minionInnerId);
-      } catch (e) {
-        if (isGlobalServerError(e)) return;
-        message.error(
-          t("task.restart-failed-minion-error", {
-            minionId: displayId,
-          })
-        );
-      }
+      await runMutation({
+        run: () => onRestartFailedMinion(minionInnerId),
+        errorMessage: t("task.restart-failed-minion-error", { minionId: displayId }),
+      });
     },
     [onRestartFailedMinion, t]
   );

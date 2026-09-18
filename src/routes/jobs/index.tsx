@@ -252,12 +252,6 @@ const JobsPage = observer(() => {
   );
 
   useEffect(() => {
-    if (jobsStore.error) {
-      message.error(t("jobs.load-error"));
-    }
-  }, [jobsStore.error, t]);
-
-  useEffect(() => {
     if (didInitFromLocationRef.current) {
       return;
     }
@@ -365,6 +359,7 @@ const JobsPage = observer(() => {
         data={jobsStore.jobs}
         total={jobsStore.total}
         isLoading={jobsStore.isJobsLoading}
+        loader={jobsStore.jobsLoad}
         pagination={jobsStore.pagination}
         sorting={jobsStore.sorting}
         onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}

@@ -5,7 +5,7 @@ import {
   TaskMinionStatus,
   TaskModel,
 } from "@saltbox/saltbox-core-api-client";
-import { toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 
@@ -28,11 +28,37 @@ export class TaskStore {
   @observable isRestartFailedLoading: boolean;
   @observable minionsPagination: PaginationState;
   @observable minionsSorting: SortingState;
-  @observable isMinionsLoading: boolean;
   @observable minionCategoryFilter: TaskMinionStatus | null;
   @observable loadingCounter: number;
-  @observable error: string | null;
   taskJobReturnsStore: TaskJobReturnsStore;
+
+  readonly taskLoad = createLoader({
+    run: (taskId: string) => apiCoreStore.tasksApi?.taskRetrieve({ tid: taskId }),
+    onSuccess: (task, taskId) => {
+      this.task = task;
+      this.minionCategoryFilter = null;
+      this.minionsPagination.pageIndex = 0;
+      this.loadMinions(taskId);
+    },
+  });
+
+  readonly taskMinionsLoad = createLoader({
+    run: (taskId: string) =>
+      apiCoreStore.tasksApi?.tasksMinions({
+        tid: taskId,
+        TaskMinionListBody: {
+          limit: this.minionsPagination.pageSize,
+          skip: this.minionsPagination.pageIndex * this.minionsPagination.pageSize,
+          sort: toBackendSorting(this.minionsSorting),
+          query:
+            this.minionCategoryFilter != null ? { status: this.minionCategoryFilter } : undefined,
+        },
+      }),
+    onSuccess: (response) => {
+      this.minions = response.data;
+      this.totalMinions = response.total;
+    },
+  });
 
   constructor() {
     this.task = null;
@@ -44,12 +70,15 @@ export class TaskStore {
 
     this.minionsPagination = { pageIndex: 0, pageSize: PAGE_SIZE };
     this.minionsSorting = [...DEFAULT_SORTING];
-    this.isMinionsLoading = false;
     this.minionCategoryFilter = null;
     this.loadingCounter = 0;
-    this.error = null;
     this.taskJobReturnsStore = new TaskJobReturnsStore(() => this.task?.id ?? null);
     makeObservable(this);
+  }
+
+  @computed
+  get isMinionsLoading(): boolean {
+    return this.taskMinionsLoad.isLoading;
   }
 
   @computed
@@ -88,7 +117,7 @@ export class TaskStore {
 
   @computed
   get isTaskLoading() {
-    return this.loadingCounter > 0;
+    return this.loadingCounter > 0 || this.taskLoad.isLoading;
   }
 
   @action
@@ -106,71 +135,12 @@ export class TaskStore {
     this.loadTask(taskId);
   };
 
-  @action
   loadTask = (taskId: string) => {
-    this.startLoading();
-    this.error = null;
-    apiCoreStore.tasksApi
-      ?.taskRetrieve({
-        tid: taskId,
-      })
-      .then((task) => {
-        if (!task) {
-          this.error = "Task not found";
-          return;
-        }
-        runInAction(() => {
-          this.task = task;
-          this.minionCategoryFilter = null;
-          this.minionsPagination.pageIndex = 0;
-          this.loadMinions(taskId);
-        });
-      })
-      .catch((error) => {
-        console.error("Error loading task:", error);
-        runInAction(() => {
-          this.error = "Failed to load task";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.finishLoading();
-        });
-      });
+    this.taskLoad.run(taskId).catch(() => undefined);
   };
 
-  @action
   loadMinions = (taskId: string) => {
-    this.isMinionsLoading = true;
-    const query =
-      this.minionCategoryFilter != null ? { status: this.minionCategoryFilter } : undefined;
-    apiCoreStore.tasksApi
-      ?.tasksMinions({
-        tid: taskId,
-        TaskMinionListBody: {
-          limit: this.minionsPagination.pageSize,
-          skip: this.minionsPagination.pageIndex * this.minionsPagination.pageSize,
-          sort: toBackendSorting(this.minionsSorting),
-          query,
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.minions = response.data;
-          this.totalMinions = response.total;
-        });
-      })
-      .catch((error) => {
-        console.error("Error loading task minions:", error);
-        runInAction(() => {
-          this.error = "Failed to load task minions";
-        });
-      })
-      .finally(() => {
-        runInAction(() => {
-          this.isMinionsLoading = false;
-        });
-      });
+    this.taskMinionsLoad.run(taskId).catch(() => undefined);
   };
 
   @action
@@ -211,15 +181,10 @@ export class TaskStore {
     }
 
     try {
-      try {
-        const task = await promise;
-        runInAction(() => {
-          this.task = task;
-        });
-      } catch (error) {
-        console.error("Error running task:", error);
-        throw error;
-      }
+      const task = await promise;
+      runInAction(() => {
+        this.task = task;
+      });
     } finally {
       runInAction(() => {
         this.finishLoading();
@@ -247,15 +212,10 @@ export class TaskStore {
     }
 
     try {
-      try {
-        const task = await promise;
-        runInAction(() => {
-          this.task = task;
-        });
-      } catch (error) {
-        console.error("Error stopping task:", error);
-        throw error;
-      }
+      const task = await promise;
+      runInAction(() => {
+        this.task = task;
+      });
     } finally {
       runInAction(() => {
         this.finishLoading();
@@ -284,15 +244,10 @@ export class TaskStore {
     }
 
     try {
-      try {
-        const task = await promise;
-        runInAction(() => {
-          this.task = task;
-        });
-      } catch (error) {
-        console.error("Error restarting failed minions:", error);
-        throw error;
-      }
+      const task = await promise;
+      runInAction(() => {
+        this.task = task;
+      });
     } finally {
       runInAction(() => {
         this.isRestartFailedLoading = false;
@@ -321,24 +276,19 @@ export class TaskStore {
     }
 
     try {
-      try {
-        const task = await promise;
-        runInAction(() => {
-          this.task = task;
-          const index = this.minions.findIndex((m) => m.minion_inner_id === minionInnerId);
-          if (index > -1) {
-            const minion = this.minions[index];
-            this.minions[index] = {
-              ...minion,
-              status: TaskMinionStatus.Pending,
-            };
-            this.minions = [...this.minions];
-          }
-        });
-      } catch (error) {
-        console.error("Error restarting failed minion:", error);
-        throw error;
-      }
+      const task = await promise;
+      runInAction(() => {
+        this.task = task;
+        const index = this.minions.findIndex((m) => m.minion_inner_id === minionInnerId);
+        if (index > -1) {
+          const minion = this.minions[index];
+          this.minions[index] = {
+            ...minion,
+            status: TaskMinionStatus.Pending,
+          };
+          this.minions = [...this.minions];
+        }
+      });
     } finally {
       runInAction(() => {
         this.isRestartFailedLoading = false;
@@ -347,18 +297,12 @@ export class TaskStore {
     }
   };
 
-  @action
   createTask = (form: TaskCreateRequestSchema): Promise<TaskModel> => {
-    return new Promise<TaskModel>((resolve, reject) => {
-      apiCoreStore.tasksApi
-        ?.taskCreate({
-          TaskCreateRequestSchema: form,
-        })
-        .then((taskTemplate) => {
-          resolve(taskTemplate);
-        })
-        .catch(reject);
+    const request = apiCoreStore.tasksApi?.taskCreate({
+      TaskCreateRequestSchema: form,
     });
+
+    return request ?? Promise.reject(new Error("Tasks API is not available"));
   };
 
   @action

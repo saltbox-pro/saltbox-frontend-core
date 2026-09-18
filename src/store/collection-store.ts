@@ -1,48 +1,39 @@
 import { CollectionDetailSchema } from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
 
 export class CollectionStore {
-  isLoading: boolean;
+  isSaving: boolean;
   collection: CollectionDetailSchema | undefined;
   collectionSlug: string | undefined;
-  isCollectionLoading: boolean;
-  error: string | null;
+
+  readonly collectionLoad = createLoader({
+    run: () =>
+      this.collectionSlug
+        ? apiCoreStore.minionCollectionsApi?.minionCollectionRead({
+            slug: this.collectionSlug,
+          })
+        : undefined,
+    onSuccess: (collection) => {
+      this.collection = collection;
+    },
+  });
 
   constructor() {
-    makeAutoObservable(this);
-    this.isLoading = false;
-    this.isCollectionLoading = false;
-    this.error = null;
+    makeAutoObservable(this, { collectionLoad: false });
+    this.isSaving = false;
     this.loadCollection();
   }
 
+  get isLoading(): boolean {
+    return this.collectionLoad.isLoading || this.isSaving;
+  }
+
   loadCollection = () => {
-    if (this.collectionSlug) {
-      this.isLoading = true;
-      this.error = null;
-      apiCoreStore.minionCollectionsApi
-        ?.minionCollectionRead({
-          slug: this.collectionSlug,
-        })
-        .then((collection) => {
-          runInAction(() => {
-            this.collection = collection;
-          });
-        })
-        .catch((error) => {
-          console.error("Error loading collection:", error);
-          runInAction(() => {
-            this.error = "Failed to load collection";
-          });
-        })
-        .finally(() => {
-          runInAction(() => {
-            this.isLoading = false;
-          });
-        });
-    }
+    if (!this.collectionSlug) return;
+    this.collectionLoad.run().catch(() => undefined);
   };
 
   setCollectionSlug = (collectionSlug: string) => {
@@ -56,7 +47,7 @@ export class CollectionStore {
 
     const oldSlug = this.collectionSlug;
 
-    this.isLoading = true;
+    this.isSaving = true;
     try {
       const updatedCollection = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
         slug: oldSlug,
@@ -80,7 +71,7 @@ export class CollectionStore {
       });
     } finally {
       runInAction(() => {
-        this.isLoading = false;
+        this.isSaving = false;
       });
     }
   };
@@ -88,7 +79,7 @@ export class CollectionStore {
   deleteCollection = async () => {
     if (!this.collectionSlug) return;
 
-    this.isLoading = true;
+    this.isSaving = true;
     try {
       await apiCoreStore.minionCollectionsApi?.minionCollectionDelete({
         slug: this.collectionSlug,
@@ -100,7 +91,7 @@ export class CollectionStore {
       });
     } finally {
       runInAction(() => {
-        this.isLoading = false;
+        this.isSaving = false;
       });
     }
   };

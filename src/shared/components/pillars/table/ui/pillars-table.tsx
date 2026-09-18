@@ -6,7 +6,7 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Alert, Flex } from "antd";
+import { Flex } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
@@ -144,14 +144,13 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
 
   return (
     <Flex className={styles.pillarsTable} vertical gap="small" flex={1}>
-      {!!store.error && <Alert description={t(store.error)} type="error" showIcon />}
-
       <Table
         tableId={tableId}
         columns={columns}
         data={toJS(store.pillars)}
         total={store.totalPillars}
         isLoading={store.isLoading}
+        loader={store.pillarsLoad}
         pagination={store.pagination}
         sorting={store.sorting}
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}

@@ -1,4 +1,5 @@
 import type { CollectionModel, CollectionTreeNodeSchema } from "@saltbox/saltbox-core-api-client";
+import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
 
 import {
@@ -9,51 +10,33 @@ import {
 } from "saltbox-core/shared/utils/tree-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-type FetchTreeStatus = "idle" | "in-process" | "error" | "success";
-type ActionStatus = "idle" | "in-process" | "error" | "success";
-
 export class CollectionsTreeStore {
   treeNodes: CollectionTreeNodeSchema[] = [];
-  fetchTreeStatus: FetchTreeStatus = "idle";
-  error: string | null = null;
-  actionStatus: ActionStatus = "idle";
-  actionError: string | null = null;
-  actionErrorRaw: unknown = null;
-  moveStatus: ActionStatus = "idle";
+  isMoving = false;
+
+  readonly treeLoad = createLoader({
+    run: () => apiCoreStore.minionCollectionsApi?.minionCollectionsTree(),
+    onSuccess: (nodes) => {
+      this.treeNodes = nodes ?? [];
+    },
+  });
 
   constructor() {
-    makeAutoObservable(this);
+    makeAutoObservable(this, { treeLoad: false });
   }
 
-  get isMoving() {
-    return this.moveStatus === "in-process";
+  get isTreeLoaded(): boolean {
+    return this.treeLoad.status === "success";
   }
 
   loadTree = (force = false) => {
-    if ((!force && this.fetchTreeStatus === "success") || this.fetchTreeStatus === "in-process")
-      return;
+    if ((!force && this.isTreeLoaded) || this.treeLoad.isLoading) return;
 
-    this.fetchTreeStatus = "in-process";
-
-    apiCoreStore.minionCollectionsApi
-      ?.minionCollectionsTree()
-      .then((nodes) => {
-        runInAction(() => {
-          this.fetchTreeStatus = "success";
-          this.error = null;
-          this.treeNodes = nodes ?? [];
-        });
-      })
-      .catch((err) => {
-        runInAction(() => {
-          this.fetchTreeStatus = "error";
-          this.error = err instanceof Error ? err.message : "collection.error-loading-tree";
-        });
-      });
+    this.treeLoad.run().catch(() => undefined);
   };
 
   addNode = (collection: CollectionModel) => {
-    if (this.fetchTreeStatus !== "success") return;
+    if (!this.isTreeLoaded) return;
 
     const newNode: CollectionTreeNodeSchema = {
       id: collection.id,
@@ -149,68 +132,49 @@ export class CollectionsTreeStore {
     });
   };
 
-  updateCollection = async (slug: string, payload: { title: string; description?: string }) => {
-    this.actionStatus = "in-process";
+  updateCollection = async (
+    slug: string,
+    payload: { title: string; description?: string }
+  ): Promise<void> => {
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return Promise.reject(new Error("Minion collections API is not available"));
 
-    try {
-      const current = await apiCoreStore.minionCollectionsApi?.minionCollectionRead({ slug });
-      const updated = await apiCoreStore.minionCollectionsApi?.minionCollectionUpdate({
-        slug,
-        CollectionUpdateSchema: {
-          title: payload.title,
-          query: current?.query,
-          description: payload.description ?? "",
-        },
-      });
+    const current = await api.minionCollectionRead({ slug });
+    const updated = await api.minionCollectionUpdate({
+      slug,
+      CollectionUpdateSchema: {
+        title: payload.title,
+        query: current?.query,
+        description: payload.description ?? "",
+      },
+    });
 
-      if (!updated) {
-        runInAction(() => {
-          this.actionStatus = "error";
-          this.actionError = "collection.error-updating-collection";
-          this.actionErrorRaw = null;
-        });
-        return false;
-      }
-
-      this.updateNode(slug, {
-        title: updated.title,
-        slug: updated.slug,
-        description: updated.description,
-      });
-
-      runInAction(() => {
-        this.actionStatus = "success";
-        this.actionError = null;
-        this.actionErrorRaw = null;
-      });
-
-      return true;
-    } catch (err) {
-      runInAction(() => {
-        this.actionStatus = "error";
-        this.actionError =
-          err instanceof Error ? err.message : "collection.error-updating-collection";
-        this.actionErrorRaw = err;
-      });
-      return false;
-    }
+    this.updateNode(slug, {
+      title: updated.title,
+      slug: updated.slug,
+      description: updated.description,
+    });
   };
 
   moveCollection = async (
     targetId: string,
     parentId: string,
     insertBeforeId: string | null = null
-  ) => {
-    if (this.moveStatus === "in-process") return false;
+  ): Promise<void> => {
+    if (this.isMoving) return;
+
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return Promise.reject(new Error("Minion collections API is not available"));
 
     const snapshot = toJS(this.treeNodes);
 
-    this.moveStatus = "in-process";
-    this.actionStatus = "in-process";
+    runInAction(() => {
+      this.isMoving = true;
+    });
     this.moveNode(targetId, parentId, insertBeforeId);
 
     try {
-      const nodes = await apiCoreStore.minionCollectionsApi?.minionCollectionMove({
+      const nodes = await api.minionCollectionMove({
         CollectionMoveRequestSchema: {
           target_id: targetId,
           parent_id: parentId,
@@ -218,63 +182,28 @@ export class CollectionsTreeStore {
         },
       });
 
-      if (!nodes) {
-        runInAction(() => {
-          this.treeNodes = snapshot;
-          this.moveStatus = "error";
-          this.actionStatus = "error";
-          this.actionError = "collection.error-moving-collection";
-          this.actionErrorRaw = null;
-        });
-        return false;
-      }
-
       runInAction(() => {
         this.treeNodes = nodes;
-        this.moveStatus = "success";
-        this.actionStatus = "success";
-        this.actionError = null;
-        this.actionErrorRaw = null;
       });
-
-      return true;
-    } catch (err) {
+    } catch (error) {
       runInAction(() => {
         this.treeNodes = snapshot;
-        this.moveStatus = "error";
-        this.actionStatus = "error";
-        this.actionError =
-          err instanceof Error ? err.message : "collection.error-moving-collection";
-        this.actionErrorRaw = err;
       });
-      return false;
+      throw error;
+    } finally {
+      runInAction(() => {
+        this.isMoving = false;
+      });
     }
   };
 
-  deleteCollection = async (slug: string) => {
-    this.actionStatus = "in-process";
+  deleteCollection = async (slug: string): Promise<void> => {
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return Promise.reject(new Error("Minion collections API is not available"));
 
-    try {
-      await apiCoreStore.minionCollectionsApi?.minionCollectionDelete({ slug });
+    await api.minionCollectionDelete({ slug });
 
-      this.removeNode(slug);
-
-      runInAction(() => {
-        this.actionStatus = "success";
-        this.actionError = null;
-        this.actionErrorRaw = null;
-      });
-
-      return true;
-    } catch (err) {
-      runInAction(() => {
-        this.actionStatus = "error";
-        this.actionError =
-          err instanceof Error ? err.message : "collection.error-deleting-collection";
-        this.actionErrorRaw = err;
-      });
-      return false;
-    }
+    this.removeNode(slug);
   };
 }
 

@@ -3,8 +3,8 @@ import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
   createExpanderColumn,
   FastTablePaginated,
-  formatTimeByUserTZ,
   useInfoDrawer,
+  type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
 import {
   type PaginationState,
@@ -13,14 +13,20 @@ import {
   createColumnHelper,
   Row,
 } from "@tanstack/react-table";
-import { Flex, Tag, Typography } from "antd";
+import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ComponentProps, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { EditableTtl, setMinionsTtl } from "saltbox-core/features/job-ttl";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
+import {
+  JobReturnExecutionTime,
+  JobReturnStatusTag,
+} from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
+import { resolveEffectiveTtl } from "saltbox-core/shared/utils/job-ttl-utils";
 import type { JobStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -53,7 +59,8 @@ interface DefaultJobReturnTableProps {
   tableColumns?: string[];
   tableRows?: Array<Record<string, unknown>>;
   isTableLoading?: boolean;
-  tableLoadError?: boolean;
+  tableLoader?: LoadSource;
+  loader?: LoadSource;
   onTableLazyLoad?: (pagination: PaginationState) => void;
 }
 
@@ -74,7 +81,8 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     tableColumns = [],
     tableRows = [],
     isTableLoading = false,
-    tableLoadError = false,
+    tableLoader,
+    loader,
     onTableLazyLoad,
   }) => {
     const { t } = useTranslation();
@@ -83,6 +91,29 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
       getId: (params) => params.drawerId ?? params.minionId,
     });
+
+    const handleMinionTtlSubmit = useCallback(
+      async (minionId: string, ttlSeconds: number | null) => {
+        const jobId = jobStore.jobId;
+        if (!jobId) {
+          return false;
+        }
+
+        const result = await setMinionsTtl({
+          jobId,
+          minions: [minionId],
+          ttl: ttlSeconds,
+          errorMessage: t("jobs.ttl-update-error"),
+        });
+
+        if (result.ok) {
+          jobStore.applyJobReturnsTtl([minionId], ttlSeconds);
+        }
+
+        return result.ok;
+      },
+      [jobStore, t]
+    );
 
     const columns = useMemo<ColumnDef<JobReturnModel>[]>(
       () => [
@@ -109,36 +140,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         columnHelper.accessor("status", {
           id: "status",
           header: t("task.job-returns-table.table-status"),
-          cell: (data) => {
-            const status = data.getValue() as string | undefined;
-            const retcode = data.row.original.retcode;
-
-            if (!status && retcode === undefined) {
-              return <Tag>{t("task.job-returns-table.status-unknown")}</Tag>;
-            }
-
-            if (status === "waiting") {
-              return <Tag color="blue">{t("task.job-returns-table.status-waiting")}</Tag>;
-            }
-
-            if (status === "timeout") {
-              return <Tag color="orange">{t("task.job-returns-table.status-timeout")}</Tag>;
-            }
-
-            if (status === "ignored") {
-              return <Tag>{t("task.job-returns-table.status-ignored")}</Tag>;
-            }
-
-            if (status === "success" || retcode === 0) {
-              return <Tag color="green">{t("task.job-returns-table.status-success")}</Tag>;
-            }
-
-            if (status === "failed" || (retcode !== undefined && retcode !== 0)) {
-              return <Tag color="red">{t("task.job-returns-table.status-failed")}</Tag>;
-            }
-
-            return <Tag>{status}</Tag>;
-          },
+          cell: (data) => (
+            <JobReturnStatusTag status={data.getValue()} retcode={data.row.original.retcode} />
+          ),
           meta: { width: 140 },
         }),
         columnHelper.accessor("retcode", {
@@ -148,32 +152,9 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
         }),
         columnHelper.accessor("stamp", {
           header: t("task.job-returns-table.table-execution-time"),
-          cell: (data) => {
-            const stamp = data.getValue();
-            const status = data.row.original.status;
-            if (status === "timeout") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.status-timeout")}
-                </Typography.Text>
-              );
-            }
-            if (status === "ignored") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.status-ignored")}
-                </Typography.Text>
-              );
-            }
-            if (stamp == null || stamp === "") {
-              return (
-                <Typography.Text type="secondary">
-                  {t("task.job-returns-table.execution-time-pending")}
-                </Typography.Text>
-              );
-            }
-            return formatTimeByUserTZ(stamp);
-          },
+          cell: (data) => (
+            <JobReturnExecutionTime stamp={data.getValue()} status={data.row.original.status} />
+          ),
           meta: { width: "15%", minWidth: 170 },
         }),
         columnHelper.display({
@@ -190,8 +171,36 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           },
           meta: { width: "18%" },
         }),
+        columnHelper.display({
+          id: "ttl",
+          header: t("task.job-returns-table.table-ttl"),
+          cell: ({ row }) => {
+            const { seconds, isInherited } = resolveEffectiveTtl(
+              row.original.ttl,
+              jobStore.job?.ttl
+            );
+
+            return (
+              <EditableTtl
+                value={seconds}
+                isInherited={isInherited}
+                allowInherit
+                disabled={!jobStore.isJobTtlEditable}
+                onSubmit={(ttlSeconds) => handleMinionTtlSubmit(row.original.minion_id, ttlSeconds)}
+              />
+            );
+          },
+          meta: { width: 200 },
+        }),
       ],
-      [jobReturns, jobStartTimestamp, t]
+      [
+        handleMinionTtlSubmit,
+        jobReturns,
+        jobStartTimestamp,
+        jobStore.isJobTtlEditable,
+        jobStore.job?.ttl,
+        t,
+      ]
     );
 
     const handleRowClick = useCallback(
@@ -226,7 +235,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             total={total}
             pagination={pagination}
             isLoading={isTableLoading}
-            loadError={tableLoadError}
+            loader={tableLoader}
             onLazyLoad={onTableLazyLoad}
             isInfoAlertVisible={isTableInfoAlertVisible}
             onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
@@ -239,6 +248,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
             data={jobReturns}
             total={total}
             isLoading={isLoading}
+            loader={loader}
             pagination={pagination}
             sorting={sorting}
             onLazyLoad={onLazyLoad}

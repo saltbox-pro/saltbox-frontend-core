@@ -1,17 +1,6 @@
 import { ApartmentOutlined, DownOutlined, HolderOutlined } from "@ant-design/icons";
-import { SearchInput } from "@saltbox/saltbox-frontend-common";
-import {
-  Alert,
-  Button,
-  Empty,
-  Flex,
-  Spin,
-  Tooltip,
-  Tree,
-  type TreeProps,
-  Typography,
-  message,
-} from "antd";
+import { ErrorZone, SearchInput, notify, runMutation } from "@saltbox/saltbox-frontend-common";
+import { Button, Empty, Flex, Spin, Tooltip, Tree, type TreeProps, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -69,7 +58,6 @@ export const CollectionsTree = observer(
     onToggleStructureEdit,
   }: CollectionsTreeProps) => {
     const { t } = useTranslation();
-    const [messageApi, contextHolder] = message.useMessage();
 
     const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>("");
     const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
@@ -223,24 +211,24 @@ export const CollectionsTree = observer(
           (child) => child.key !== dragNode.key && child.title === dragNode.title
         );
         if (hasDuplicateTitle) {
-          messageApi.warning(t("collection.duplicate-title-on-move"));
+          notify.warning(t("collection.duplicate-title-on-move"));
           return;
         }
 
         setExpandedKeys((prev) => (prev.includes(parent.key) ? prev : [...prev, parent.key]));
         setAutoExpandParent(false);
 
-        collectionsTreeStore
-          .moveCollection(
-            String(dragNode.key),
-            String(parent.key),
-            insertBeforeKey != null ? String(insertBeforeKey) : null
-          )
-          .then((ok) => {
-            if (!ok) messageApi.error(t("collection.error-moving-collection"));
-          });
+        runMutation({
+          run: () =>
+            collectionsTreeStore.moveCollection(
+              String(dragNode.key),
+              String(parent.key),
+              insertBeforeKey != null ? String(insertBeforeKey) : null
+            ),
+          errorMessage: t("collection.error-moving-collection"),
+        });
       },
-      [treeData, messageApi, t]
+      [treeData, t]
     );
 
     const handleSearchChange = useCallback((search: string) => {
@@ -279,10 +267,9 @@ export const CollectionsTree = observer(
         flex="1"
         gap="middle"
       >
-        {contextHolder}
         <Flex className={styles.header} gap="small" align="center">
           <SearchInput
-            disabled={!!collectionsTreeStore.error}
+            disabled={Boolean(collectionsTreeStore.treeLoad.error)}
             autoFocus
             onSearch={handleSearchChange}
           />
@@ -306,53 +293,44 @@ export const CollectionsTree = observer(
 
         <Spin
           wrapperClassName={styles.content}
-          spinning={
-            collectionsTreeStore.fetchTreeStatus === "in-process" || collectionsTreeStore.isMoving
-          }
+          spinning={collectionsTreeStore.treeLoad.isLoading || collectionsTreeStore.isMoving}
         >
           <div ref={contentRef}>
-            {collectionsTreeStore.fetchTreeStatus === "error" && collectionsTreeStore.error ? (
-              <Alert
-                description={
-                  collectionsTreeStore.error.startsWith("collection.")
-                    ? t(collectionsTreeStore.error)
-                    : collectionsTreeStore.error
-                }
-                type="error"
-              />
-            ) : noResults ? (
-              <Empty
-                className={styles.searchEmptyState}
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={t("collection.search-no-results")}
-              />
-            ) : (
-              <Tree
-                className={styles.tree}
-                showLine
-                switcherIcon={<DownOutlined />}
-                selectable={!structureEditable}
-                blockNode
-                draggable={
-                  isDndActive
-                    ? {
-                        icon: <HolderOutlined />,
-                        nodeDraggable: (node) =>
-                          (node as CollectionTreeAntdNode).slug !== ROOT_SLUG,
-                      }
-                    : false
-                }
-                allowDrop={isDndActive ? allowDrop : undefined}
-                onDrop={isDndActive ? handleDrop : undefined}
-                treeData={highlightedTreeData}
-                titleRender={titleRender}
-                expandedKeys={expandedKeys}
-                selectedKeys={selectedKeys}
-                autoExpandParent={autoExpandParent}
-                onExpand={onExpand}
-                onSelect={onSelect}
-              />
-            )}
+            <ErrorZone level="block" loaders={[collectionsTreeStore.treeLoad]}>
+              {noResults ? (
+                <Empty
+                  className={styles.searchEmptyState}
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t("collection.search-no-results")}
+                />
+              ) : (
+                <Tree
+                  className={styles.tree}
+                  showLine
+                  switcherIcon={<DownOutlined />}
+                  selectable={!structureEditable}
+                  blockNode
+                  draggable={
+                    isDndActive
+                      ? {
+                          icon: <HolderOutlined />,
+                          nodeDraggable: (node) =>
+                            (node as CollectionTreeAntdNode).slug !== ROOT_SLUG,
+                        }
+                      : false
+                  }
+                  allowDrop={isDndActive ? allowDrop : undefined}
+                  onDrop={isDndActive ? handleDrop : undefined}
+                  treeData={highlightedTreeData}
+                  titleRender={titleRender}
+                  expandedKeys={expandedKeys}
+                  selectedKeys={selectedKeys}
+                  autoExpandParent={autoExpandParent}
+                  onExpand={onExpand}
+                  onSelect={onSelect}
+                />
+              )}
+            </ErrorZone>
           </div>
         </Spin>
       </Flex>

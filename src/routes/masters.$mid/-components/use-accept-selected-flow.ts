@@ -1,20 +1,19 @@
 import { SaltKeyMinion } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError } from "@saltbox/saltbox-frontend-common";
+import { notify, runMutation } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
-import { message, Modal } from "antd";
+import { Modal } from "antd";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { apiCoreStore, SaltKeysStore } from "saltbox-core/store";
+import { acceptSaltKeys } from "saltbox-core/routes/masters.$mid/-api/salt-keys-actions";
+import { SaltKeysStore } from "saltbox-core/store";
 
 type ModalApi = ReturnType<typeof Modal.useModal>[0];
-type MessageApi = ReturnType<typeof message.useMessage>[0];
 
 type UseAcceptSelectedFlowParams = {
   saltKeysStore: SaltKeysStore;
   selection: RowSelectionState;
   modalApi: ModalApi;
-  messageApi: MessageApi;
   setSelection: (selection: RowSelectionState) => void;
   isSendingAction: boolean;
   setIsSendingAction: (isSending: boolean) => void;
@@ -24,7 +23,6 @@ export function useAcceptSelectedFlow({
   saltKeysStore,
   selection,
   modalApi,
-  messageApi,
   setSelection,
   isSendingAction,
   setIsSendingAction,
@@ -44,23 +42,22 @@ export function useAcceptSelectedFlow({
   const runAccept = useCallback(
     async (minions: SaltKeyMinion[], onSuccess: (acceptedCount: number) => void) => {
       setIsSendingAction(true);
-      try {
-        const response = await apiCoreStore.saltKeysApi?.saltKeysAccept({
-          SaltKeySetStatusRequestBody: { minions },
-        });
-        onSuccess(response?.minions?.length ?? minions.length);
-      } catch (error) {
-        console.error("Failed to accept selected salt keys:", error);
-        if (isGlobalServerError(error)) return;
-        messageApi.error(t("master.accept-selected-failed"));
-      } finally {
-        setIsSendingAction(false);
-        setSelection({});
-        saltKeysStore.refresh();
-        closeModals();
+
+      const result = await runMutation({
+        run: () => acceptSaltKeys(minions),
+        errorMessage: t("master.accept-selected-failed"),
+      });
+
+      if (result.ok) {
+        onSuccess(result.data?.minions?.length ?? minions.length);
       }
+
+      setIsSendingAction(false);
+      setSelection({});
+      saltKeysStore.refresh();
+      closeModals();
     },
-    [closeModals, messageApi, saltKeysStore, setIsSendingAction, setSelection, t]
+    [closeModals, saltKeysStore, setIsSendingAction, setSelection, t]
   );
 
   const handleAcceptSelected = useCallback(() => {
@@ -82,7 +79,7 @@ export function useAcceptSelectedFlow({
 
         if (conflicts.length === 0) {
           await runAccept(nonConflicts, (acceptedCount) => {
-            messageApi.success(t("master.accept-selected-success", { count: acceptedCount }));
+            notify.success(t("master.accept-selected-success", { count: acceptedCount }));
           });
           return;
         }
@@ -92,30 +89,28 @@ export function useAcceptSelectedFlow({
         setConflictModalOpen(true);
       },
     });
-  }, [isSendingAction, messageApi, modalApi, runAccept, saltKeysStore, selection, t]);
+  }, [isSendingAction, modalApi, runAccept, saltKeysStore, selection, t]);
 
   const handleReplaceAll = useCallback(() => {
     runAccept([...nonConflictMinions, ...conflictMinions], () => {
       if (nonConflictMinions.length > 0) {
-        messageApi.success(
+        notify.success(
           t("master.accept-mixed-success", {
             accepted: nonConflictMinions.length,
             replaced: conflictMinions.length,
           })
         );
       } else {
-        messageApi.success(
-          t("master.accept-replaced-success", { replaced: conflictMinions.length })
-        );
+        notify.success(t("master.accept-replaced-success", { replaced: conflictMinions.length }));
       }
     });
-  }, [conflictMinions, messageApi, nonConflictMinions, runAccept, t]);
+  }, [conflictMinions, nonConflictMinions, runAccept, t]);
 
   const handleCancelAccept = useCallback(() => {
     closeModals();
     setSelection({});
-    messageApi.info(t("master.accept-cancelled"));
-  }, [closeModals, messageApi, setSelection, t]);
+    notify.info(t("master.accept-cancelled"));
+  }, [closeModals, setSelection, t]);
 
   const handleAskEach = useCallback(() => {
     setConflictModalOpen(false);
@@ -128,8 +123,8 @@ export function useAcceptSelectedFlow({
       const skipped = conflictMinions.length - replaced;
       const minions = [...nonConflictMinions, ...toReplace];
 
-      const notify = () =>
-        messageApi.success(
+      const notifyResult = () =>
+        notify.success(
           t("master.accept-per-key-result", {
             accepted: nonConflictMinions.length,
             replaced,
@@ -140,21 +135,13 @@ export function useAcceptSelectedFlow({
       if (minions.length === 0) {
         closeModals();
         setSelection({});
-        notify();
+        notifyResult();
         return;
       }
 
-      runAccept(minions, notify);
+      runAccept(minions, notifyResult);
     },
-    [
-      closeModals,
-      conflictMinions.length,
-      messageApi,
-      nonConflictMinions,
-      runAccept,
-      setSelection,
-      t,
-    ]
+    [closeModals, conflictMinions.length, nonConflictMinions, runAccept, setSelection, t]
   );
 
   return {

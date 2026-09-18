@@ -1,4 +1,4 @@
-import { PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
+import { createLoader, PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
 import { action, makeObservable, runInAction } from "mobx";
 import { generateID, OptionList, RuleGroupType } from "react-querybuilder";
 
@@ -7,24 +7,27 @@ import { apiCoreStore } from "saltbox-core/store";
 type RuleType = RuleGroupType["rules"][number];
 
 export class MinionFilterStore extends PersistentFilterStore {
+  readonly filterSchemaLoad = createLoader({
+    run: () => apiCoreStore.filtersApi?.filterSchema(),
+    onSuccess: (schema) => {
+      this.filterSchema = schema as unknown as OptionList;
+    },
+  });
+
   constructor(storageKey?: string) {
     super([], storageKey);
     makeObservable(this);
   }
 
-  @action
   loadFiltersScheme = () => {
-    this.isLoading = true;
-    apiCoreStore.filtersApi
-      ?.filterSchema()
-      .then((schema) => {
-        runInAction(() => {
-          this.filterSchema = schema as unknown as OptionList;
-        });
-      })
-      .finally(() => {
+    runInAction(() => {
+      this.isLoading = true;
+    });
+    this.filterSchemaLoad.run().finally(() => {
+      runInAction(() => {
         this.isLoading = false;
       });
+    });
   };
 
   @action

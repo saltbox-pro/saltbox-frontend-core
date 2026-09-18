@@ -44,10 +44,11 @@ const MetaSchemaStatus = observer(({ store }: MetaEditorTabProps) => {
       message={t("task-template-editor.meta-status-unsupported")}
       description={
         <>
+          {t("task-template-editor.meta-status-unsupported-hint")}
           <ul className={styles.unsupportedList}>
             {unsupportedFeatures.map((feature, index) => (
               <li key={`${feature.path}-${index}`}>
-                <code>{feature.path || "/"}</code> — {feature.description}
+                <code>{feature.path || "/"}</code> - <code>{feature.feature}</code>
               </li>
             ))}
           </ul>

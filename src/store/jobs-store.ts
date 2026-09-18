@@ -1,9 +1,9 @@
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { isGlobalServerError, toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
-import { action, makeObservable, observable, runInAction } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import { jsonLogicAdditionalOperators } from "react-querybuilder";
 
 import {
@@ -33,21 +33,31 @@ export class JobsStore {
   @observable total: number;
   @observable pagination: PaginationState;
   @observable sorting: SortingState;
-  @observable isInitialized: boolean;
-  @observable isJobsLoading: boolean;
-  @observable error: string | null;
   @observable mongoDBQuery: object | undefined;
   @observable createdSince: dayjs.Dayjs | null;
   @observable dateRangePreset: JobDateRangePreset;
   @observable jobFilterStore: JobFilterStore;
   @observable appliedFiltersHadCreated: boolean;
 
+  readonly jobsLoad = createLoader({
+    run: () =>
+      apiCoreStore.jobsApi?.jobsList({
+        JobListBody: {
+          limit: this.pagination.pageSize,
+          skip: this.pagination.pageIndex * this.pagination.pageSize,
+          sort: toBackendSorting(this.sorting),
+          query: buildJobsListQuery(this.createdSince, this.mongoDBQuery),
+        },
+      }),
+    onSuccess: (response) => {
+      this.total = response?.total ?? 0;
+      this.jobs = response?.data ?? [];
+    },
+  });
+
   constructor(jobFilterStore: JobFilterStore) {
     this.jobFilterStore = jobFilterStore;
     this.jobs = [];
-    this.isInitialized = false;
-    this.isJobsLoading = false;
-    this.error = null;
     this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.appliedFiltersHadCreated = false;
@@ -60,12 +70,13 @@ export class JobsStore {
     makeObservable(this);
   }
 
+  @computed get isJobsLoading(): boolean {
+    return this.jobsLoad.isLoading;
+  }
+
   @action
   resetJobs = () => {
     this.jobs = [];
-    this.isInitialized = false;
-    this.isJobsLoading = false;
-    this.error = null;
     this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
     this.sorting = [...DEFAULT_SORTING];
@@ -82,38 +93,11 @@ export class JobsStore {
     this.loadJobs();
   };
 
-  @action
   loadJobs = () => {
-    if (this.isJobsLoading) {
+    if (this.jobsLoad.isLoading) {
       return;
     }
-    this.isJobsLoading = true;
-    this.error = null;
-    apiCoreStore.jobsApi
-      ?.jobsList({
-        JobListBody: {
-          limit: this.pagination.pageSize,
-          skip: this.pagination.pageIndex * this.pagination.pageSize,
-          sort: toBackendSorting(this.sorting),
-          query: buildJobsListQuery(this.createdSince, this.mongoDBQuery),
-        },
-      })
-      .then((response) => {
-        runInAction(() => {
-          this.isInitialized = true;
-          this.isJobsLoading = false;
-          this.total = response?.total ?? 0;
-          this.jobs = response?.data ?? [];
-        });
-      })
-      .catch((e) => {
-        runInAction(() => {
-          this.isInitialized = true;
-          this.isJobsLoading = false;
-          if (isGlobalServerError(e)) return;
-          this.error = "Failed to load jobs";
-        });
-      });
+    this.jobsLoad.run().catch(() => undefined);
   };
 
   @action

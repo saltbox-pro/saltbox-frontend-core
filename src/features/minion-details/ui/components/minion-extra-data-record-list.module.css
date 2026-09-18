@@ -1,0 +1,19 @@
+.value {
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.actions {
+  flex: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    visibility 0s,
+    opacity 0.15s ease-in-out;
+}
+
+:global(.ant-descriptions-item-content:hover) .actions {
+  visibility: visible;
+  opacity: 1;
+}
