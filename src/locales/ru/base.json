@@ -557,8 +557,8 @@
     "job-title": "Команда {{jobId}}",
     "table-copy-success": "Скопировано в буфер обмена",
     "key-value-arguments": "Именованные аргументы",
-    "failed-minions": "Неудачные миньоны",
-    "pending-minions": "Ожидающие миньоны",
+    "failed-minions": "Неудачные клиенты",
+    "pending-minions": "Ожидающие клиенты",
     "copy-list": "Скопировать список",
     "replay-job": "Повторить команду",
     "repeat-job": "Повторить команду (Alt+R)",
@@ -864,25 +864,25 @@
       "label": "glob",
       "hint": {
         "title": "glob – Сопоставление по шаблону Bash (glob)",
-        "description": "Использует шаблонные выражения в стиле Bash для выбора minion'ов по имени.",
+        "description": "Использует шаблонные выражения в стиле Bash для выбора клиентов по имени.",
         "example": "web*",
-        "exampleDescription": "Выберет всех minion'ов, имя которых начинается на web."
+        "exampleDescription": "Выберет всех клиентов, имя которых начинается на web."
       }
     },
     "pcre": {
       "label": "pcre",
       "hint": {
         "title": "pcre – Регулярное выражение в стиле Perl",
-        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени minion'а.",
+        "description": "Позволяет использовать PCRE (Perl Compatible Regular Expressions) для поиска по имени клиента.",
         "example": "web[0-9]{2}",
-        "exampleDescription": "Выберет всех minion'ов с именами web01, web02 и т. д."
+        "exampleDescription": "Выберет всех клиентов с именами web01, web02 и т. д."
       }
     },
     "list": {
       "label": "list",
       "hint": {
         "title": "list – Список хостов в формате Python",
-        "description": "Позволяет указать список конкретных minion'ов.",
+        "description": "Позволяет указать список конкретных клиентов.",
         "example": "web01,web02,db01",
         "exampleDescription": "Команда будет выполнена только на указанных узлах."
       }
@@ -893,7 +893,7 @@
         "title": "grain – Сопоставление на основе сравнения grain",
         "description": "Сравнивает значение указанного grain с заданным.",
         "example": "os:Ubuntu",
-        "exampleDescription": "Выберет всех minion'ов, у которых grain os равен Ubuntu."
+        "exampleDescription": "Выберет всех клиентов, у которых grain os равен Ubuntu."
       }
     },
     "grain_pcre": {
@@ -911,7 +911,7 @@
         "title": "pillar – Сравнение данных pillar",
         "description": "Сопоставление на основе значений из pillar.",
         "example": "role:db",
-        "exampleDescription": "Выберет minion'ов, у которых в pillar указана роль db."
+        "exampleDescription": "Выберет клиентов, у которых в pillar указана роль db."
       }
     },
     "pillar_pcre": {
@@ -920,7 +920,7 @@
         "title": "pillar_pcre – Сравнение данных pillar с использованием регулярного выражения",
         "description": "Аналогично pillar, но позволяет применять regex.",
         "example": "role:.*server",
-        "exampleDescription": "Выберет всех minion'ов, у которых значение role оканчивается на server."
+        "exampleDescription": "Выберет всех клиентов, у которых значение role оканчивается на server."
       }
     },
     "compound": {
@@ -929,16 +929,16 @@
         "title": "compound – Составное условие сопоставления",
         "description": "Позволяет комбинировать разные методы в одном запросе.",
         "example": "G@os:Ubuntu and L@web01,web02",
-        "exampleDescription": "Выберет minion'ов с ОС Ubuntu и именами web01 или web02."
+        "exampleDescription": "Выберет клиентов с ОС Ubuntu и именами web01 или web02."
       }
     },
     "ipcidr": {
       "label": "ipcidr",
       "hint": {
         "title": "ipcidr – Сопоставление на основе подсети (CIDR-нотация) или IPv4-адреса",
-        "description": "Позволяет выбрать minion'ов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
+        "description": "Позволяет выбрать клиентов по IP-адресу или принадлежности к определённой подсети, указанной в формате CIDR. Это полезно, когда необходимо запускать команды только на узлах из определённого сетевого диапазона.",
         "example": "192.168.0.0/24",
-        "exampleDescription": "Выберет всех minion'ов, IP-адрес которых находится в подсети 192.168.0.0/24."
+        "exampleDescription": "Выберет всех клиентов, IP-адрес которых находится в подсети 192.168.0.0/24."
       }
     }
   },
