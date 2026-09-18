@@ -272,7 +272,7 @@ const JobPage = observer(() => {
   }, [jobId]);
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {contextHolder}
       <PageHeader title={t("jobs.job-title", { jobId: jobStore.job?.jid ?? "" })} />
 
@@ -419,7 +419,7 @@ const JobPage = observer(() => {
             {!!isCommandInitializing && <Text type="secondary">{t("jobs.executing-command")}</Text>}
           </Flex>
         ) : (
-          <>
+          <FastTableToolbarSlotProvider>
             <JobStatusProgress counts={statusCounts} />
 
             {showJobReturnsToolbar && (
@@ -525,7 +525,7 @@ const JobPage = observer(() => {
             </Flex>
 
             {jobModalCreatePlugin}
-          </>
+          </FastTableToolbarSlotProvider>
         )}
       </Flex>
 
@@ -540,7 +540,7 @@ const JobPage = observer(() => {
       >
         <span>{t("jobs.export-to-csv-warning")}</span>
       </Modal>
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });
 

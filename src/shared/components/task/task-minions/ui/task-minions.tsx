@@ -2,6 +2,8 @@ import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
@@ -112,7 +114,11 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
   );
 
   return (
-    <>
+    <FastTableToolbarSlotProvider>
+      <div className="page-actions-buttons">
+        <FastTableToolbarSlot />
+      </div>
+
       <TaskMinionsTable
         tableId="core-task-minions"
         columns={columns}
@@ -142,6 +148,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         onClose={taskDrawer.close}
         onRestartFailedMinion={taskStore.handleRestartFailedMinion}
       />
-    </>
+    </FastTableToolbarSlotProvider>
   );
 });

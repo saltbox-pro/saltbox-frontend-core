@@ -205,12 +205,15 @@ export default observer(function TasksPage() {
 
   return (
     <FastTableToolbarSlotProvider>
-      <PageHeader title={t("aggregated-tasks.title")} extra={<FastTableToolbarSlot />} />
+      <PageHeader title={t("aggregated-tasks.title")} />
       <TasksQueryBuilder
         filterStore={filterStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
       />
+      <div className="page-actions-buttons">
+        <FastTableToolbarSlot />
+      </div>
       <TasksTable
         tableId="core-tasks"
         columns={columns}

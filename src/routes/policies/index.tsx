@@ -180,12 +180,15 @@ export default observer(function PoliciesPage() {
 
   return (
     <FastTableToolbarSlotProvider>
-      <PageHeader title={t("aggregated-tasks.policies-title")} extra={<FastTableToolbarSlot />} />
+      <PageHeader title={t("aggregated-tasks.policies-title")} />
       <TasksQueryBuilder
         filterStore={filterStore}
         onSearchButtonClick={handleSearchButtonClick}
         onResetButtonClick={handleResetButtonClick}
       />
+      <div className="page-actions-buttons">
+        <FastTableToolbarSlot />
+      </div>
       <PoliciesTable
         tableId="core-policies"
         columns={columns}

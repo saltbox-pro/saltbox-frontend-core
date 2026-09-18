@@ -345,62 +345,64 @@ const MasterPage = observer(() => {
         className: styles.flexTab,
         children: (
           <Flex vertical gap="large" className={styles.tabWrapper}>
-            <div className={styles.clientsTableContainer}>
-              <div className="page-actions-buttons">
-                <SaltKeysActionsDropdown
-                  selectedSaltKeys={selection}
-                  isSendingAction={isSendingAction}
-                  unacceptedCount={saltKeysStore.unacceptedCount}
-                  onAcceptSelected={handleAcceptSelected}
-                  onRejectSelected={handleRejectSelected}
-                  onDeleteSelected={handleDeleteSelected}
-                  onAcceptAll={handleAcceptAll}
-                  onRejectAll={handleRejectAll}
-                  onDeleteAll={handleDeleteAll}
-                />
+            <FastTableToolbarSlotProvider>
+              <div className={styles.clientsTableContainer}>
+                <div className="page-actions-buttons">
+                  <SaltKeysActionsDropdown
+                    selectedSaltKeys={selection}
+                    isSendingAction={isSendingAction}
+                    unacceptedCount={saltKeysStore.unacceptedCount}
+                    onAcceptSelected={handleAcceptSelected}
+                    onRejectSelected={handleRejectSelected}
+                    onDeleteSelected={handleDeleteSelected}
+                    onAcceptAll={handleAcceptAll}
+                    onRejectAll={handleRejectAll}
+                    onDeleteAll={handleDeleteAll}
+                  />
 
-                <SaltKeysToolbar
-                  value={saltKeysStore.statusFilter}
+                  <SaltKeysToolbar
+                    value={saltKeysStore.statusFilter}
+                    isLoading={saltKeysStore.isLoading}
+                    onChange={(status) => {
+                      setSelection({});
+                      saltKeysStore.setStatusFilter(status);
+                    }}
+                    onRefresh={() => {
+                      setSelection({});
+                      saltKeysStore.refresh();
+                    }}
+                  />
+                </div>
+
+                <FastTablePaginated
+                  tableId="core-master-salt-keys"
+                  columns={saltKeysColumns}
+                  data={saltKeysStore.pagedKeys}
+                  total={saltKeysStore.totalFiltred}
                   isLoading={saltKeysStore.isLoading}
-                  onChange={(status) => {
+                  pagination={saltKeysStore.pagination}
+                  sorting={saltKeysStore.sorting}
+                  onLazyLoad={(pagination, sorting) => {
+                    saltKeysStore.handleLazyLoad(pagination, sorting);
                     setSelection({});
-                    saltKeysStore.setStatusFilter(status);
                   }}
-                  onRefresh={() => {
-                    setSelection({});
-                    saltKeysStore.refresh();
+                  getRowId={(row) => row._index}
+                  activeRowId={drawer.activeRowId}
+                  bodyRef={drawer.mainContentRef}
+                  rowSelection={selection}
+                  onRowSelectionChange={setSelection}
+                  onRowClick={(saltKey) => {
+                    drawer.toggle({
+                      masterId: saltKey.salt_master ?? masterId ?? "",
+                      minionId: saltKey.minion_id,
+                      drawerId: saltKey._index,
+                    });
                   }}
+                  locale={{ empty: saltKeysEmptyText }}
+                  actionLinkComponent={Link}
                 />
               </div>
-
-              <FastTablePaginated
-                tableId="core-master-salt-keys"
-                columns={saltKeysColumns}
-                data={saltKeysStore.pagedKeys}
-                total={saltKeysStore.totalFiltred}
-                isLoading={saltKeysStore.isLoading}
-                pagination={saltKeysStore.pagination}
-                sorting={saltKeysStore.sorting}
-                onLazyLoad={(pagination, sorting) => {
-                  saltKeysStore.handleLazyLoad(pagination, sorting);
-                  setSelection({});
-                }}
-                getRowId={(row) => row._index}
-                activeRowId={drawer.activeRowId}
-                bodyRef={drawer.mainContentRef}
-                rowSelection={selection}
-                onRowSelectionChange={setSelection}
-                onRowClick={(saltKey) => {
-                  drawer.toggle({
-                    masterId: saltKey.salt_master ?? masterId ?? "",
-                    minionId: saltKey.minion_id,
-                    drawerId: saltKey._index,
-                  });
-                }}
-                locale={{ empty: saltKeysEmptyText }}
-                actionLinkComponent={Link}
-              />
-            </div>
+            </FastTableToolbarSlotProvider>
           </Flex>
         ),
       },
@@ -424,7 +426,7 @@ const MasterPage = observer(() => {
   );
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {modalContextHolder}
       {messageContextHolder}
 
@@ -453,7 +455,7 @@ const MasterPage = observer(() => {
         }}
         onClose={() => setDeleteConfirmOpen(false)}
       />
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });
 

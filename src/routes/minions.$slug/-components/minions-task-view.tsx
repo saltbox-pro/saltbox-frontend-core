@@ -1,6 +1,8 @@
 import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
   WebSocketMessage,
   WebSocketService,
   formatTimeByUserTZ,
@@ -206,27 +208,34 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   };
 
   return (
-    <Flex className={styles.tabWrapper} vertical>
-      {props.showFilter && props.filterStore && (
-        <TasksQueryBuilder
-          filterStore={props.filterStore}
-          onSearchButtonClick={handleSearchButtonClick}
-          onResetButtonClick={handleResetButtonClick}
+    <FastTableToolbarSlotProvider>
+      <Flex className={styles.tabWrapper} vertical>
+        {props.showFilter && props.filterStore && (
+          <TasksQueryBuilder
+            filterStore={props.filterStore}
+            onSearchButtonClick={handleSearchButtonClick}
+            onResetButtonClick={handleResetButtonClick}
+          />
+        )}
+        <div className="page-actions-buttons">
+          <FastTableToolbarSlot />
+        </div>
+        <TasksTable
+          tableId={
+            props.taskType === TaskType.Policy ? "core-minion-policies" : "core-minion-tasks"
+          }
+          columns={columns}
+          getRowId={(row) => row.id}
+          data={tasksStore.tasks}
+          total={tasksStore.total}
+          isLoading={tasksStore.isTasksLoading}
+          pagination={tasksStore.pagination}
+          sorting={tasksStore.sorting}
+          onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
+          onRowClick={(task) => navigate(`/core/minions/${props.slug}/tasks/${task.id}`)}
+          useVirtualScroll={false}
         />
-      )}
-      <TasksTable
-        tableId={props.taskType === TaskType.Policy ? "core-minion-policies" : "core-minion-tasks"}
-        columns={columns}
-        getRowId={(row) => row.id}
-        data={tasksStore.tasks}
-        total={tasksStore.total}
-        isLoading={tasksStore.isTasksLoading}
-        pagination={tasksStore.pagination}
-        sorting={tasksStore.sorting}
-        onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(task) => navigate(`/core/minions/${props.slug}/tasks/${task.id}`)}
-        useVirtualScroll={false}
-      />
-    </Flex>
+      </Flex>
+    </FastTableToolbarSlotProvider>
   );
 });

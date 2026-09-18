@@ -2,8 +2,6 @@ import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   Dropdown,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   FilterToggleButton,
   generateIdsForQuery,
   isGlobalServerError,
@@ -79,7 +77,6 @@ const MinionsPage = observer(() => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isAddDashboardBlockModalOpen, setIsAddDashboardBlockModalOpen] = useState(false);
   const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
-  const [pluginToolbarContainer, setPluginToolbarContainer] = useState<HTMLElement | null>(null);
 
   const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
   const tasksFilterStore = useMemo(
@@ -109,9 +106,6 @@ const MinionsPage = observer(() => {
   } = useFiltersToggle(false);
 
   const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
-  const isPluginTab = !!appStore.pluginsStore?.plugins?.["minions.tabs"]?.some(
-    (pluginTab) => pluginTab.key === tabKey
-  );
 
   useLayoutEffect(() => {
     if (location.state?.resetFilters) {
@@ -328,7 +322,6 @@ const MinionsPage = observer(() => {
                 wrapStyle={{ ...(pluginTab.wrapStyle || {}) }}
                 customProps={{
                   slug,
-                  toolbarContainer: pluginToolbarContainer,
                 }}
               />
             ) : null,
@@ -347,11 +340,10 @@ const MinionsPage = observer(() => {
     appStore.pluginsStore?.plugins?.["minions.tabs"],
     i18nStore.currentLanguage,
     tabKey,
-    pluginToolbarContainer,
   ]);
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {contextHolder}
 
       <PageHeader title={`${t("minions.title")} ${collectionStore.collection?.title}`}></PageHeader>
@@ -401,10 +393,6 @@ const MinionsPage = observer(() => {
                     onToggle={toggleShownPoliciesFilters}
                   />
                 )}
-
-                {["tasks", "policies"].includes(tabKey) && <FastTableToolbarSlot />}
-
-                {isPluginTab && <div ref={setPluginToolbarContainer} />}
               </Flex>
             </>
           ),
@@ -482,7 +470,7 @@ const MinionsPage = observer(() => {
           setIsAddDashboardBlockModalOpen(false);
         }}
       />
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });
 

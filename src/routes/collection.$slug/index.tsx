@@ -229,7 +229,7 @@ const CollectionEditPage = observer(() => {
     isFilterSchemaMissing;
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {contextHolder}
       <PageHeader
         title={`${t("collection.editing-collection")} ${collectionStore.collection?.title}`}
@@ -241,70 +241,72 @@ const CollectionEditPage = observer(() => {
           className={styles.editInput}
         />
       </Flex>
-      <Flex className={styles.collectionFlex} gap={8} vertical>
-        <div className={styles.filterBuilderWrapper}>
-          <CollectionQueryBuilder
-            slug={collectionStore.collection?.parent_slug || ""}
-            filterStore={filterStore}
-            onSearch={applySearchFilters}
-            onReset={applySearchFilters}
-          />
-        </div>
-        <div className={styles.editButtonsContainer}>
-          <Button
-            type="default"
-            onClick={() => {
-              navigate(`/core/minions/${slug}`);
-            }}
-          >
-            {t("minions.cancel")}
-          </Button>
-          <Flex gap={8} align="center">
-            <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
-              {t("minions.save")}
+      <FastTableToolbarSlotProvider>
+        <Flex className={styles.collectionFlex} gap={8} vertical>
+          <div className={styles.filterBuilderWrapper}>
+            <CollectionQueryBuilder
+              slug={collectionStore.collection?.parent_slug || ""}
+              filterStore={filterStore}
+              onSearch={applySearchFilters}
+              onReset={applySearchFilters}
+            />
+          </div>
+          <div className={styles.editButtonsContainer}>
+            <Button
+              type="default"
+              onClick={() => {
+                navigate(`/core/minions/${slug}`);
+              }}
+            >
+              {t("minions.cancel")}
             </Button>
-            {(isFilterSchemaMissing || filterStore.isSearchEnabled) && (
-              <Popover
-                style={{ width: 420 }}
-                content={
-                  isFilterSchemaMissing
-                    ? t("collection.filter-schema-unavailable")
-                    : t("collection.apply-search-before-save")
-                }
-                trigger="hover"
-              >
-                <QuestionCircleOutlined />
-              </Popover>
-            )}
-          </Flex>
-          <FastTableToolbarSlot />
-        </div>
-        <MinionsTable
-          tableId="core-collection-minions"
-          columns={minionsColumns}
-          getRowId={(row) => row.id}
-          data={toJS(minionsStore.minions)}
-          total={toJS(minionsStore.totalMinions)}
-          isLoading={minionsStore.isLoading}
-          pagination={toJS(minionsStore.pagination)}
-          sorting={minionsStore.sorting}
-          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
-          activeRowId={drawer.activeRowId}
-          bodyRef={drawer.mainContentRef}
-          onRowClick={(minion) => {
-            drawer.toggle({
-              slug: slug ?? "",
-              minionId: minion.minion_id ?? minion.id,
-              drawerId: minion.id,
-              innerId: minion.id,
-            });
-          }}
-          actionLinkComponent={Link}
-        />
-      </Flex>
+            <Flex gap={8} align="center">
+              <Button type="primary" disabled={isSaveDisabled} onClick={handleSaveButton}>
+                {t("minions.save")}
+              </Button>
+              {(isFilterSchemaMissing || filterStore.isSearchEnabled) && (
+                <Popover
+                  style={{ width: 420 }}
+                  content={
+                    isFilterSchemaMissing
+                      ? t("collection.filter-schema-unavailable")
+                      : t("collection.apply-search-before-save")
+                  }
+                  trigger="hover"
+                >
+                  <QuestionCircleOutlined />
+                </Popover>
+              )}
+            </Flex>
+            <FastTableToolbarSlot />
+          </div>
+          <MinionsTable
+            tableId="core-collection-minions"
+            columns={minionsColumns}
+            getRowId={(row) => row.id}
+            data={toJS(minionsStore.minions)}
+            total={toJS(minionsStore.totalMinions)}
+            isLoading={minionsStore.isLoading}
+            pagination={toJS(minionsStore.pagination)}
+            sorting={minionsStore.sorting}
+            onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
+            activeRowId={drawer.activeRowId}
+            bodyRef={drawer.mainContentRef}
+            onRowClick={(minion) => {
+              drawer.toggle({
+                slug: slug ?? "",
+                minionId: minion.minion_id ?? minion.id,
+                drawerId: minion.id,
+                innerId: minion.id,
+              });
+            }}
+            actionLinkComponent={Link}
+          />
+        </Flex>
+      </FastTableToolbarSlotProvider>
 
       <MinionDetailsDrawer drawer={drawer} />
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });
 
