@@ -3,7 +3,12 @@ import type {
   CollectionExtraDataListItemSchema,
   ExtraDataCategoryModel,
 } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, type CellAction } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTablePaginated,
+  FastTableToolbarSlot,
+  FastTableToolbarSlotProvider,
+  type CellAction,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
@@ -156,21 +161,26 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
       : "";
 
   return (
-    <Flex vertical className={styles.root}>
-      <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+    <FastTableToolbarSlotProvider>
+      <Flex vertical className={styles.root}>
+        <div className="page-actions-buttons">
+          <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+          <FastTableToolbarSlot />
+        </div>
 
-      <ExtraDataRecordsTable
-        tableId={`core-collection-extra-data-${category.name}`}
-        columns={columns}
-        data={store.recordsSnapshot}
-        total={store.totalRecords}
-        isLoading={store.isLoading}
-        loader={store.recordsLoad}
-        pagination={store.pagination}
-        sorting={store.sorting}
-        onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
-        locale={{ empty: emptyMessage }}
-      />
-    </Flex>
+        <ExtraDataRecordsTable
+          tableId={`core-collection-extra-data-${category.name}`}
+          columns={columns}
+          data={store.recordsSnapshot}
+          total={store.totalRecords}
+          isLoading={store.isLoading}
+          loader={store.recordsLoad}
+          pagination={store.pagination}
+          sorting={store.sorting}
+          onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
+          locale={{ empty: emptyMessage }}
+        />
+      </Flex>
+    </FastTableToolbarSlotProvider>
   );
 });
