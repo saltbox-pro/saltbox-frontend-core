@@ -1,1 +1,1 @@
-export const DEFAULT_JOB_TIMEOUT_SECONDS = 604800;
+export { DEFAULT_JOB_TIMEOUT_SECONDS } from "@saltbox/saltbox-frontend-common";
