@@ -19,6 +19,7 @@ export interface EditableTtlProps {
   allowInherit?: boolean;
   disabled?: boolean;
   expiresAt?: Date | null;
+  editButtonAlwaysVisible?: boolean;
   onSubmit: (ttlSeconds: number | null) => Promise<boolean>;
 }
 
@@ -28,6 +29,7 @@ export function EditableTtl({
   allowInherit = false,
   disabled = false,
   expiresAt,
+  editButtonAlwaysVisible = false,
   onSubmit,
 }: EditableTtlProps) {
   const { t } = useTranslation();
@@ -113,7 +115,9 @@ export function EditableTtl({
         </Typography.Text>
 
         {!disabled && (
-          <span className={styles.editButton}>
+          <span
+            className={`${styles.editButton} ${editButtonAlwaysVisible ? styles.editButtonAlwaysVisible : ""}`}
+          >
             <BaseActionButton
               icon={<EditOutlined />}
               title={t("jobs.ttl-edit")}

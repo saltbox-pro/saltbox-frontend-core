@@ -453,6 +453,7 @@ const JobPage = observer(() => {
                     value={jobStore.job?.ttl ?? null}
                     disabled={!jobStore.isJobTtlEditable}
                     expiresAt={jobStore.job?.waiting_expires_at_dt}
+                    editButtonAlwaysVisible
                     onSubmit={handleJobTtlSubmit}
                   />
                 )}
