@@ -24,7 +24,6 @@ import { MinionExtraDataTab } from "./minion-extra-data-tab";
 import { MinionGrainsTab } from "./minion-grains-tab";
 import { MinionJobReturnsTab } from "./minion-job-returns-tab";
 import { MinionPillarsTab } from "./minion-pillars-tab";
-import { MinionTerminalTab } from "./minion-terminal-tab";
 
 type MinionDetailsTabsViewProps = MinionDetailsCommonProps & {
   isInDrawer: boolean;
@@ -146,13 +145,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
             isInDrawer={isInDrawer}
             onFilterButton={onFilterButton}
           />
-        ),
-      },
-      terminal: {
-        key: "terminal",
-        label: t("minions.terminal"),
-        children: !!minion?.id && (
-          <MinionTerminalTab minion={minion} isTabActive={tabKey === "terminal"} />
         ),
       },
     };

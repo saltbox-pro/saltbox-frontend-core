@@ -2204,10 +2204,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-33e8f78c1bde4392fe1355ba64f12666f942ae76.tgz#b2ba5c3181db82836823e2f33a8270b50543fdb1"
   integrity sha1-srpcMYHbgoNoI+LzOoJwtQVD/bE=
 
-"@saltbox/saltbox-frontend-common@^0.5.7":
-  version "0.5.7"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.5.7.tgz#8be53587cdc0140f17a0e15f286fef517d03aa0c"
-  integrity sha1-i+U1h83AFA8XoOFfKG/vUX0Dqgw=
+"@saltbox/saltbox-frontend-common@^0.5.9":
+  version "0.5.9"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.5.9.tgz#600fbdc0759bd33066d1489d2b25969f98e30486"
+  integrity sha1-YA+9wHWb0zBm0UidKyWWn5jjBIY=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -8367,11 +8367,6 @@ react-style-singleton@^2.2.2, react-style-singleton@^2.2.3:
   dependencies:
     get-nonce "^1.0.0"
     tslib "^2.0.0"
-
-react-terminal-ui@^1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/react-terminal-ui/-/react-terminal-ui-1.4.0.tgz#96d6de739f4e1d452c4c8ff7b032a9a54d8e7ed1"
-  integrity sha512-3eMdxCDiW3eBwsp0QBz6i8va0XTO8d91nBgnL5p9f3kAwIrHBu23oH+RbXGp4as/p05srMBFiDMRzRubT1VEsQ==
 
 react-textarea-autosize@^8.3.2:
   version "8.5.9"
