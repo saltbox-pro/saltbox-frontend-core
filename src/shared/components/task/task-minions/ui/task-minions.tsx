@@ -1,12 +1,6 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import {
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
-  formatTimeByUserTZ,
-  useInfoDrawer,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTable, formatTimeByUserTZ, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -20,7 +14,7 @@ import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-sta
 import type { TaskStore } from "saltbox-core/store";
 import { useRestartFailedMinionHandler } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
-const TaskMinionsTable = FastTablePaginated<TaskMinionListResponse>;
+const TaskMinionsTable = FastTable.Paginated<TaskMinionListResponse>;
 const columnHelper = createColumnHelper<TaskMinionListResponse>();
 
 export interface TaskMinionsProps {
@@ -114,9 +108,9 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
   );
 
   return (
-    <FastTableToolbarSlotProvider>
+    <FastTable.Provider>
       <div className="page-actions-buttons">
-        <FastTableToolbarSlot />
+        <FastTable.Toolbar />
       </div>
 
       <TaskMinionsTable
@@ -149,6 +143,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         onClose={taskDrawer.close}
         onRestartFailedMinion={taskStore.handleRestartFailedMinion}
       />
-    </FastTableToolbarSlotProvider>
+    </FastTable.Provider>
   );
 });

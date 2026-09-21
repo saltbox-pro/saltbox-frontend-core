@@ -5,10 +5,8 @@ import {
   type MinionDetailSchema,
 } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   createExpanderColumn,
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   FilterToggleButton,
   formatTimeByUserTZ,
   RefreshButton,
@@ -48,7 +46,7 @@ import { JobReturnsQueryBuilder } from "./job-returns-query-builder";
 import styles from "./minion-job-returns-tab.module.css";
 
 const jobReturnsColumnHelper = createColumnHelper<JobReturnModel>();
-const JobReturnsTable = FastTablePaginated<JobReturnModel>;
+const JobReturnsTable = FastTable.Paginated<JobReturnModel>;
 const minionJobReturnsSorting: SortingState = [{ id: "created", desc: true }];
 
 interface JobReturnsConfig {
@@ -207,18 +205,18 @@ function MinionJobReturnsTabView({
   return (
     <Flex vertical className={styles.jobReturnsWrapper}>
       {jobReturnsFilter && <div className={styles.jobReturnsFilterWrapper}>{jobReturnsFilter}</div>}
-      <FastTableToolbarSlotProvider>
+      <FastTable.Provider>
         {isFullView && !!jobReturnsTabActions && (
           <div className="page-actions-buttons">
             {jobReturnsTabActions}
-            <FastTableToolbarSlot />
+            <FastTable.Toolbar />
           </div>
         )}
         <MinionJobReturnsTable
           {...jobReturnsConfig}
           tableId={isFullView ? "core-minion-job-returns" : "core-minion-job-returns-drawer"}
         />
-      </FastTableToolbarSlotProvider>
+      </FastTable.Provider>
     </Flex>
   );
 }

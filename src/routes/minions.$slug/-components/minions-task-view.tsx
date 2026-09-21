@@ -1,8 +1,6 @@
 import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
+  FastTable,
   WebSocketMessage,
   WebSocketService,
   formatTimeByUserTZ,
@@ -24,7 +22,7 @@ import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-co
 import styles from "./minions-task-view.module.css";
 import { TasksQueryBuilder } from "./tasks-query-builder";
 
-const TasksTable = FastTablePaginated<TaskListResponseSchema>;
+const TasksTable = FastTable.Paginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
 
 type MinionsTaskViewProps = {
@@ -207,15 +205,15 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
   };
 
   return (
-    <FastTableToolbarSlotProvider>
-      <Flex className={styles.tabWrapper} vertical>
-        <TasksQueryBuilder
-          filterStore={props.filterStore}
-          onSearchButtonClick={handleSearchButtonClick}
-          onResetButtonClick={handleResetButtonClick}
-        />
+    <Flex className={styles.tabWrapper} vertical>
+      <TasksQueryBuilder
+        filterStore={props.filterStore}
+        onSearchButtonClick={handleSearchButtonClick}
+        onResetButtonClick={handleResetButtonClick}
+      />
+      <FastTable.Provider>
         <div className="page-actions-buttons">
-          <FastTableToolbarSlot />
+          <FastTable.Toolbar />
         </div>
         <TasksTable
           tableId={
@@ -233,7 +231,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
           onRowClick={(task) => navigate(`/core/minions/${props.slug}/tasks/${task.id}`)}
           useVirtualScroll={false}
         />
-      </Flex>
-    </FastTableToolbarSlotProvider>
+      </FastTable.Provider>
+    </Flex>
   );
 });

@@ -1,10 +1,8 @@
 import { ExportOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   ErrorZone,
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   PageHeader,
   Popover,
   formatTimeByUserTZ,
@@ -32,7 +30,7 @@ import {
 import { CollectionQueryBuilder } from "./-components/collection-query-builder";
 import styles from "./index.module.css";
 
-const MinionsTable = FastTablePaginated<MinionShortSchema>;
+const MinionsTable = FastTable.Paginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
 
 const CollectionEditPage = observer(() => {
@@ -238,16 +236,16 @@ const CollectionEditPage = observer(() => {
         </Flex>
         {/* Схема фильтров не блокирует таблицу: ошибка показывается баннером сверху. */}
         <ErrorZone level="block" keepContentOnError loaders={[filterStore.filterSchemaLoad]}>
-          <FastTableToolbarSlotProvider>
-            <Flex className={styles.collectionFlex} gap={8} vertical>
-              <div className={styles.filterBuilderWrapper}>
-                <CollectionQueryBuilder
-                  slug={collectionStore.collection?.parent_slug || ""}
-                  filterStore={filterStore}
-                  onSearch={applySearchFilters}
-                  onReset={applySearchFilters}
-                />
-              </div>
+          <Flex className={styles.collectionFlex} gap={8} vertical>
+            <div className={styles.filterBuilderWrapper}>
+              <CollectionQueryBuilder
+                slug={collectionStore.collection?.parent_slug || ""}
+                filterStore={filterStore}
+                onSearch={applySearchFilters}
+                onReset={applySearchFilters}
+              />
+            </div>
+            <FastTable.Provider>
               <div className={styles.editButtonsContainer}>
                 <Button
                   type="default"
@@ -275,7 +273,7 @@ const CollectionEditPage = observer(() => {
                     </Popover>
                   )}
                 </Flex>
-                <FastTableToolbarSlot />
+                <FastTable.Toolbar />
               </div>
               <MinionsTable
                 tableId="core-collection-minions"
@@ -302,8 +300,8 @@ const CollectionEditPage = observer(() => {
                 }}
                 actionLinkComponent={Link}
               />
-            </Flex>
-          </FastTableToolbarSlotProvider>
+            </FastTable.Provider>
+          </Flex>
         </ErrorZone>
       </ErrorZone>
 

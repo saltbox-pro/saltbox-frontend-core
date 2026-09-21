@@ -1,8 +1,7 @@
 import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   AcceptedMastersActionButton,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   RefreshButton,
   SelectedItemsCounter,
 } from "@saltbox/saltbox-frontend-common";
@@ -144,7 +143,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
   });
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {contextHolder}
       <Flex vertical className={styles.tabWrapper}>
         {props.showFilter && (
@@ -158,66 +157,68 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           </Spin>
         )}
 
-        <div className="page-actions-buttons">
-          <AcceptedMastersActionButton
-            className={styles.createButton}
-            type="primary"
-            icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
-            messageApi={messageApi}
-            navigate={navigate}
-            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-            warningActionText={t("task-create.warning-action.task")}
-            onAction={openTaskCreate}
-          >
-            {t("task-create.create-button")}
-          </AcceptedMastersActionButton>
+        <FastTable.Provider>
+          <div className="page-actions-buttons">
+            <AcceptedMastersActionButton
+              className={styles.createButton}
+              type="primary"
+              icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
+              messageApi={messageApi}
+              navigate={navigate}
+              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+              warningActionText={t("task-create.warning-action.task")}
+              onAction={openTaskCreate}
+            >
+              {t("task-create.create-button")}
+            </AcceptedMastersActionButton>
 
-          <AcceptedMastersActionButton
-            className={styles.createButton}
-            icon={<AddTaskIcon />}
-            messageApi={messageApi}
-            navigate={navigate}
-            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-            warningActionText={t("task-create.warning-action.policy")}
-            onAction={openPolicyCreate}
-            disabled={!!selectedMinionsCount}
-          >
-            {t("policy-create.create-button")}
-          </AcceptedMastersActionButton>
+            <AcceptedMastersActionButton
+              className={styles.createButton}
+              icon={<AddTaskIcon />}
+              messageApi={messageApi}
+              navigate={navigate}
+              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+              warningActionText={t("task-create.warning-action.policy")}
+              onAction={openPolicyCreate}
+              disabled={!!selectedMinionsCount}
+            >
+              {t("policy-create.create-button")}
+            </AcceptedMastersActionButton>
 
-          {pageActionsButtonsPlugin}
+            {pageActionsButtonsPlugin}
 
-          <MinionsActionsDropdown
+            <MinionsActionsDropdown
+              slug={props.slug}
+              collectionTitle={props.collectionStore.collection?.title}
+              searchFilters={props.filterStore.searchFilters}
+              filterSchema={props.filterStore.filterSchema}
+              query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
+              selectedMinions={selectedMinions}
+              clearSelection={clearSelection}
+              reloadMinions={reloadMinions}
+            />
+
+            <RefreshButton
+              loading={minionsStore.isLoading}
+              onClick={reloadMinions}
+              title={t("minions.refresh")}
+            />
+
+            <SelectedItemsCounter count={selectedMinionsCount} />
+
+            <FastTable.Toolbar />
+          </div>
+
+          <MinionsTableWithDetailsDrawer
             slug={props.slug}
-            collectionTitle={props.collectionStore.collection?.title}
-            searchFilters={props.filterStore.searchFilters}
-            filterSchema={props.filterStore.filterSchema}
-            query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
-            selectedMinions={selectedMinions}
-            clearSelection={clearSelection}
-            reloadMinions={reloadMinions}
+            minionsStore={minionsStore}
+            rowSelection={selection}
+            onRowSelectionChange={setSelection}
+            filterStore={props.filterStore}
+            onAddFilter={props.onAddFilter}
+            onFiltersApplied={applySearchFilters}
           />
-
-          <RefreshButton
-            loading={minionsStore.isLoading}
-            onClick={reloadMinions}
-            title={t("minions.refresh")}
-          />
-
-          <SelectedItemsCounter count={selectedMinionsCount} />
-
-          <FastTableToolbarSlot />
-        </div>
-
-        <MinionsTableWithDetailsDrawer
-          slug={props.slug}
-          minionsStore={minionsStore}
-          rowSelection={selection}
-          onRowSelectionChange={setSelection}
-          filterStore={props.filterStore}
-          onAddFilter={props.onAddFilter}
-          onFiltersApplied={applySearchFilters}
-        />
+        </FastTable.Provider>
 
         {isTaskCreateOpen && (
           <TaskCreateModal
@@ -246,6 +247,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
       </Flex>
 
       {taskModalCreatePlugin}
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });

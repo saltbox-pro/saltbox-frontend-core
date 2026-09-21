@@ -1,8 +1,8 @@
 import { ExportOutlined } from "@ant-design/icons";
 import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   createExpanderColumn,
-  FastTablePaginated,
   useInfoDrawer,
   type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
@@ -39,7 +39,7 @@ import styles from "./default-job-return-table.module.css";
 
 const columnHelper = createColumnHelper<JobReturnModel>();
 
-const JobReturnsTable = FastTablePaginated<JobReturnModel>;
+const JobReturnsTable = FastTable.Paginated<JobReturnModel>;
 
 type OnLazyLoad = ComponentProps<typeof JobReturnsTable>["onLazyLoad"];
 

@@ -1,7 +1,7 @@
 import { type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   BooleanDisplay,
-  FastTablePaginated,
   formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
@@ -22,7 +22,7 @@ import styles from "./pillars-table.module.css";
 
 const columnHelper = createColumnHelper<PillarWithTgtInfoSchema>();
 
-const Table = FastTablePaginated<PillarWithTgtInfoSchema>;
+const Table = FastTable.Paginated<PillarWithTgtInfoSchema>;
 
 export interface PillarsTableProps {
   store: PillarsStore;

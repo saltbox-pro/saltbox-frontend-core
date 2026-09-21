@@ -1,8 +1,8 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   createSelectColumn,
-  FastTablePaginated,
   formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
@@ -24,7 +24,7 @@ import {
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
-const MinionsTable = FastTablePaginated<MinionShortSchema>;
+const MinionsTable = FastTable.Paginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
 
 export type MinionsTableWithDetailsDrawerProps = {

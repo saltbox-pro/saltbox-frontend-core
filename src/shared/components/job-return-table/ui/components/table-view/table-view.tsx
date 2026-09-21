@@ -1,4 +1,4 @@
-import { FastTablePaginated } from "@saltbox/saltbox-frontend-common";
+import { FastTable } from "@saltbox/saltbox-frontend-common";
 import { Alert } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
@@ -11,7 +11,7 @@ import type { BackendTableViewProps, TableRow } from "../../../model/table-view-
 import { buildTableViewColumns } from "./build-table-view-columns";
 import styles from "./table-view.module.css";
 
-const JobReturnDataTable = FastTablePaginated<TableRow>;
+const JobReturnDataTable = FastTable.Paginated<TableRow>;
 
 export const TableView = observer<BackendTableViewProps>(function TableView({
   columns,

@@ -1,8 +1,7 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   ErrorZone,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
@@ -111,11 +110,11 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       >
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
-            <FastTableToolbarSlotProvider>
+            <FastTable.Provider>
               {isLoaded && !singleRecord && (
                 <div className="page-actions-buttons">
                   <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-                  <FastTableToolbarSlot />
+                  <FastTable.Toolbar />
                 </div>
               )}
 
@@ -138,7 +137,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                   onFilterButton={onFilterButton}
                 />
               )}
-            </FastTableToolbarSlotProvider>
+            </FastTable.Provider>
           </ErrorZone>
         )}
       </InfoDrawer>

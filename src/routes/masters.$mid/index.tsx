@@ -1,9 +1,8 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { SaltKeyMinion, SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   createSelectColumn,
-  FastTablePaginated,
-  FastTableToolbarSlotProvider,
   notify,
   PageHeader,
   runMutation,
@@ -316,7 +315,7 @@ const MasterPage = observer(() => {
         className: styles.flexTab,
         children: (
           <Flex vertical gap="large" className={styles.tabWrapper}>
-            <FastTableToolbarSlotProvider>
+            <FastTable.Provider>
               <div className={styles.clientsTableContainer}>
                 <div className="page-actions-buttons">
                   <SaltKeysActionsDropdown
@@ -345,7 +344,7 @@ const MasterPage = observer(() => {
                   />
                 </div>
 
-                <FastTablePaginated
+                <FastTable.Paginated
                   tableId="core-master-salt-keys"
                   columns={saltKeysColumns}
                   data={saltKeysStore.pagedKeys}
@@ -374,7 +373,7 @@ const MasterPage = observer(() => {
                   actionLinkComponent={Link}
                 />
               </div>
-            </FastTableToolbarSlotProvider>
+            </FastTable.Provider>
           </Flex>
         ),
       },

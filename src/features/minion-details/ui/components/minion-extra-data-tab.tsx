@@ -1,5 +1,5 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { FastTable, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { toJS } from "mobx";
@@ -17,7 +17,7 @@ import { MinionExtraDataCategoryDrawer } from "./minion-extra-data-category-draw
 
 const columnHelper = createColumnHelper<ExtraDataCategoryModel>();
 
-const ExtraDataCategoriesTable = FastTablePaginated<ExtraDataCategoryModel>;
+const ExtraDataCategoriesTable = FastTable.Paginated<ExtraDataCategoryModel>;
 
 interface MinionExtraDataTabProps {
   minionId: string;

@@ -5,9 +5,7 @@ import {
   JobStatus,
 } from "@saltbox/saltbox-core-api-client";
 import {
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
+  FastTable,
   PageHeader,
   formatTimeByUserTZ,
   CellAction,
@@ -40,7 +38,7 @@ import { JobsQueryBuilder } from "./-components/jobs-query-builder";
 import { LaunchErrorPopover } from "./-components/launch-error-popover";
 import styles from "./index.module.css";
 
-const JobsTable = FastTablePaginated<JobsListResponse>;
+const JobsTable = FastTable.Paginated<JobsListResponse>;
 
 const PRESET_TO_PERIOD_KEY: Record<JobDateRangePreset, string> = {
   [JOB_DATE_RANGE_PRESET.TODAY]: "jobs.period-today",
@@ -306,7 +304,7 @@ const JobsPage = observer(() => {
   }, []);
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       {contextHolder}
       <PageHeader title={t("jobs.title")} />
 
@@ -319,54 +317,56 @@ const JobsPage = observer(() => {
         onFilterButtonApplied={() => setIsFilterButtonClick(false)}
       />
 
-      <div className="page-actions-buttons">
-        <div className={styles.leftGroup}>
-          <AcceptedMastersActionButton
-            type="primary"
-            icon={<PlusOutlined />}
-            messageApi={messageApi}
-            navigate={navigate}
-            checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-            warningActionText={t("job-modal.warning-action.create-job")}
-            onAction={openFunctionPicker}
-          >
-            {t("job-modal.create-job")}
-          </AcceptedMastersActionButton>
+      <FastTable.Provider>
+        <div className="page-actions-buttons">
+          <div className={styles.leftGroup}>
+            <AcceptedMastersActionButton
+              type="primary"
+              icon={<PlusOutlined />}
+              messageApi={messageApi}
+              navigate={navigate}
+              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+              warningActionText={t("job-modal.warning-action.create-job")}
+              onAction={openFunctionPicker}
+            >
+              {t("job-modal.create-job")}
+            </AcceptedMastersActionButton>
+          </div>
+          <div className={styles.rightGroup}>
+            <JobDatetimeRangeSelector
+              label={t("jobs.date-range-label")}
+              value={jobsStore.dateRangePreset}
+              disabled={jobsStore.isJobsLoading}
+              onChange={(createdSince, preset) => {
+                jobsStore.handleDateRangeChange(createdSince, preset);
+              }}
+            />
+            <RefreshButton
+              loading={jobsStore.isJobsLoading}
+              onClick={() => jobsStore.refreshJobs()}
+              title={t("jobs.refresh")}
+              disabled={jobsStore.isJobsLoading}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
-        <div className={styles.rightGroup}>
-          <JobDatetimeRangeSelector
-            label={t("jobs.date-range-label")}
-            value={jobsStore.dateRangePreset}
-            disabled={jobsStore.isJobsLoading}
-            onChange={(createdSince, preset) => {
-              jobsStore.handleDateRangeChange(createdSince, preset);
-            }}
-          />
-          <RefreshButton
-            loading={jobsStore.isJobsLoading}
-            onClick={() => jobsStore.refreshJobs()}
-            title={t("jobs.refresh")}
-            disabled={jobsStore.isJobsLoading}
-          />
-          <FastTableToolbarSlot />
-        </div>
-      </div>
 
-      <JobsTable
-        tableId="core-jobs"
-        columns={columns}
-        getRowId={(row) => row.id}
-        data={jobsStore.jobs}
-        total={jobsStore.total}
-        isLoading={jobsStore.isJobsLoading}
-        loader={jobsStore.jobsLoad}
-        pagination={jobsStore.pagination}
-        sorting={jobsStore.sorting}
-        onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(job) => handleNavigateToJob(job.id)}
-        useVirtualScroll={false}
-        locale={{ empty: jobsEmptyText }}
-      />
+        <JobsTable
+          tableId="core-jobs"
+          columns={columns}
+          getRowId={(row) => row.id}
+          data={jobsStore.jobs}
+          total={jobsStore.total}
+          isLoading={jobsStore.isJobsLoading}
+          loader={jobsStore.jobsLoad}
+          pagination={jobsStore.pagination}
+          sorting={jobsStore.sorting}
+          onLazyLoad={(pagination, sorting) => jobsStore.handleLazyLoad(pagination, sorting)}
+          onRowClick={(job) => handleNavigateToJob(job.id)}
+          useVirtualScroll={false}
+          locale={{ empty: jobsEmptyText }}
+        />
+      </FastTable.Provider>
 
       <JobModalShell
         pickerOpen={pickerOpen}
@@ -378,7 +378,7 @@ const JobsPage = observer(() => {
       />
 
       {jobModalCreatePlugin}
-    </FastTableToolbarSlotProvider>
+    </>
   );
 });
 

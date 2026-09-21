@@ -1,10 +1,8 @@
 import { ApiOutlined } from "@ant-design/icons";
 import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  FastTable,
   PageHeader,
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
   formatTimeByUserTZ,
   notify,
   runMutation,
@@ -24,7 +22,7 @@ type TableRowData = MasterViewSchema & {
   actions: JSX.Element;
 };
 
-const MastersTable = FastTablePaginated<MasterViewSchema>;
+const MastersTable = FastTable.Paginated<MasterViewSchema>;
 
 const columnHelper = createColumnHelper<TableRowData>();
 
@@ -170,38 +168,40 @@ function MastersPage() {
   const handleReject = (id: string) => changeMasterStatus(id, mastersStore.rejectMaster);
 
   return (
-    <FastTableToolbarSlotProvider>
+    <>
       <PageHeader title={t("masters.title")} />
 
-      <div className="page-actions-buttons">
-        <Button
-          icon={<ApiOutlined />}
-          disabled={isPinging && !isManualPinging}
-          loading={isManualPinging}
-          onClick={() => handlePingMasters(true)}
-        >
-          {t("masters.check-availability")}
-        </Button>
-        <FastTableToolbarSlot />
-      </div>
+      <FastTable.Provider>
+        <div className="page-actions-buttons">
+          <Button
+            icon={<ApiOutlined />}
+            disabled={isPinging && !isManualPinging}
+            loading={isManualPinging}
+            onClick={() => handlePingMasters(true)}
+          >
+            {t("masters.check-availability")}
+          </Button>
+          <FastTable.Toolbar />
+        </div>
 
-      <MastersTable
-        tableId="core-masters"
-        columns={columns}
-        data={toJS(masters)}
-        isLoading={mastersStore.isLoading}
-        loader={mastersStore.mastersLoad}
-        pagination={pagination}
-        sorting={sorting}
-        onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
-        onRowClick={(master) => {
-          if (master.status === "accepted") {
-            navigate(`/core/masters/${master.master_id}`);
-          }
-        }}
-        isRowClickable={(master) => master.status === "accepted"}
-      />
-    </FastTableToolbarSlotProvider>
+        <MastersTable
+          tableId="core-masters"
+          columns={columns}
+          data={toJS(masters)}
+          isLoading={mastersStore.isLoading}
+          loader={mastersStore.mastersLoad}
+          pagination={pagination}
+          sorting={sorting}
+          onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
+          onRowClick={(master) => {
+            if (master.status === "accepted") {
+              navigate(`/core/masters/${master.master_id}`);
+            }
+          }}
+          isRowClickable={(master) => master.status === "accepted"}
+        />
+      </FastTable.Provider>
+    </>
   );
 }
 

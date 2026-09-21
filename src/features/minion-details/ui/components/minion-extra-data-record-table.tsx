@@ -1,6 +1,6 @@
 import { FilterOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { FastTablePaginated, type CellAction } from "@saltbox/saltbox-frontend-common";
+import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -19,7 +19,7 @@ import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
 const columnHelper = createColumnHelper<ExtraDataRecord>();
 
-const ExtraDataRecordsTable = FastTablePaginated<ExtraDataRecord>;
+const ExtraDataRecordsTable = FastTable.Paginated<ExtraDataRecord>;
 
 export interface MinionExtraDataRecordTableProps {
   store: ExtraDataRecordsStore;

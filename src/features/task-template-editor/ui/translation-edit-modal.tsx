@@ -1,4 +1,4 @@
-import { FastTableListed, Modal } from "@saltbox/saltbox-frontend-common";
+import { FastTable, Modal } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex, Input, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,6 +28,7 @@ interface LocaleRow {
 }
 
 const columnHelper = createColumnHelper<LocaleRow>();
+const LocaleTable = FastTable.Listed<LocaleRow>;
 
 export const TranslationEditModal = ({
   open,
@@ -159,7 +160,7 @@ export const TranslationEditModal = ({
     >
       {modalContextHolder}
       <TranslationDraftContext.Provider value={draftContext}>
-        <FastTableListed<LocaleRow>
+        <LocaleTable
           tableId="core-task-template-editor-translation-edit"
           columns={columns}
           data={data}

@@ -1,6 +1,6 @@
 import { FilterOutlined } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { FastTable } from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import { CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -80,7 +80,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
   }
 
   return (
-    <FastTableListed
+    <FastTable.Listed
       tableId="core-dashboard-grain"
       columns={columns}
       data={values}

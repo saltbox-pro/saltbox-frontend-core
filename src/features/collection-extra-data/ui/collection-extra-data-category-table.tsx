@@ -3,12 +3,7 @@ import type {
   CollectionExtraDataListItemSchema,
   ExtraDataCategoryModel,
 } from "@saltbox/saltbox-core-api-client";
-import {
-  FastTablePaginated,
-  FastTableToolbarSlot,
-  FastTableToolbarSlotProvider,
-  type CellAction,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
@@ -35,7 +30,7 @@ import {
 import styles from "./collection-extra-data-category-table.module.css";
 
 const columnHelper = createColumnHelper<CollectionExtraDataListItemSchema>();
-const ExtraDataRecordsTable = FastTablePaginated<CollectionExtraDataListItemSchema>;
+const ExtraDataRecordsTable = FastTable.Paginated<CollectionExtraDataListItemSchema>;
 
 export type CollectionExtraDataCategoryTableProps = {
   category: ExtraDataCategoryModel;
@@ -161,11 +156,11 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
       : "";
 
   return (
-    <FastTableToolbarSlotProvider>
+    <FastTable.Provider>
       <Flex vertical className={styles.root}>
         <div className="page-actions-buttons">
           <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
-          <FastTableToolbarSlot />
+          <FastTable.Toolbar />
         </div>
 
         <ExtraDataRecordsTable
@@ -181,6 +176,6 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
           locale={{ empty: emptyMessage }}
         />
       </Flex>
-    </FastTableToolbarSlotProvider>
+    </FastTable.Provider>
   );
 });

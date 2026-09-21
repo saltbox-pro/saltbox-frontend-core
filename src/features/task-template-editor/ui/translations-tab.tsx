@@ -1,4 +1,4 @@
-import { FastTableListed } from "@saltbox/saltbox-frontend-common";
+import { FastTable } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Alert, Tag, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
@@ -16,6 +16,7 @@ interface TranslationsTabProps {
 }
 
 const columnHelper = createColumnHelper<TranslationRow>();
+const TranslationsTable = FastTable.Listed<TranslationRow>;
 
 export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
   const { t } = useTranslation();
@@ -87,7 +88,7 @@ export const TranslationsTab = observer(({ store }: TranslationsTabProps) => {
 
   return (
     <div className={styles.container}>
-      <FastTableListed<TranslationRow>
+      <TranslationsTable
         tableId="core-task-template-editor-translations"
         columns={columns}
         data={rows}
