@@ -53,6 +53,16 @@ export function CreatePillarForm({
       initialValues={initialValues}
       autoComplete="off"
     >
+      <MutationErrorAlert
+        error={mutationError}
+        fallback={t("pillars.create.error")}
+        onClose={() => setMutationError(null)}
+      />
+
+      {!!createError && (
+        <Alert message={createError} type="error" showIcon style={{ marginBottom: 16 }} />
+      )}
+
       <Form.Item
         name="name"
         label={t("pillars.create.field-name")}
@@ -90,14 +100,6 @@ export function CreatePillarForm({
       </Form.Item>
 
       <Flex vertical gap="middle">
-        <MutationErrorAlert
-          error={mutationError}
-          fallback={t("pillars.create.error")}
-          onClose={() => setMutationError(null)}
-        />
-
-        {!!createError && <Alert message={createError} type="error" showIcon />}
-
         <Flex justify="end" gap="small">
           <Button onClick={onClose}>{t("pillars.create.cancel")}</Button>
 

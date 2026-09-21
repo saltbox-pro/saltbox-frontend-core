@@ -1,5 +1,5 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { ErrorZone, InfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { InfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
@@ -42,7 +42,7 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
       titleName={getTemplateTitleText(template?.title, i18n.language) || template?.name}
       titleLabel={t("configuration-templates.source.preview-drawer-title")}
       loading={open && store.isLoading}
-      hasData={!store.previewLoad.error}
+      loaders={[store.previewLoad]}
       transitionKey={open ? "opened" : "closed"}
       width={900}
       onClose={onClose}
@@ -68,11 +68,7 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
         ) : null
       }
     >
-      {open ? (
-        <ErrorZone level="block" loaders={[store.previewLoad]}>
-          <TemplatePreviewDrawerContent store={store} />
-        </ErrorZone>
-      ) : null}
+      {open ? <TemplatePreviewDrawerContent store={store} /> : null}
     </InfoDrawer>
   );
 });

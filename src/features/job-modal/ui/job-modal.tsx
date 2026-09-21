@@ -6,6 +6,7 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import {
   type AppError,
+  ErrorZone,
   publish,
   resolvePluginLocalizedLabel,
   runMutation,
@@ -31,6 +32,7 @@ import {
   message,
   type FormProps,
 } from "antd";
+import { observer } from "mobx-react-lite";
 import {
   Fragment,
   useCallback,
@@ -98,7 +100,7 @@ const JSON_FORM_INPUT_SELECTOR =
 const JSON_FORM_ERROR_INPUT_SELECTOR =
   "#job-params-form .ant-form-item-has-error input, #job-params-form .ant-form-item-has-error textarea, #job-params-form .ant-form-item-has-error select";
 
-export function JobModal({
+export const JobModal = observer(function JobModal({
   target,
   targetType,
   fun,
@@ -142,6 +144,7 @@ export function JobModal({
   const {
     isInitialLoading,
     isFormReady,
+    initLoad,
     masterList,
     paramsSource,
     schemaError,
@@ -587,170 +590,175 @@ export function JobModal({
           )
         }
       >
-        {!isFormReady ? (
-          <div className={styles.spinnerContainer}>
-            <Spin />
-          </div>
-        ) : schemaError ? (
-          <TemplateSchemaErrorView
-            templateTitle={templateTitle}
-            schemaError={schemaError}
-            sourceName={sourceDisplayName ?? sourceId}
-            onReturn={() => handleReturnToFunctionPicker(false)}
-          />
-        ) : (
-          <>
-            <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>
-              <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
-              <Switch
-                checked={isAdvancedSettingsEnabled}
-                onChange={(checked) => {
-                  clearJsonFormValidation();
-                  setIsAdvancedSettingsEnabled(checked);
-                }}
-                disabled={isLoading}
-              />
-            </Flex>
-
-            <Form
-              form={form}
-              name="job-form"
-              id="job-form"
-              layout="vertical"
-              autoComplete="off"
-              onFinish={handleFormFinish}
-              onFinishFailed={handleFormFinishFailed}
-            >
-              <MutationErrorAlert
-                error={createError}
-                fallback={t("job-modal.error-job-create")}
-                onClose={() => setCreateError(null)}
-              />
-
-              <Form.Item<JobFormData>
-                label={
-                  <FieldHint
-                    label={t("job-modal.salt-master")}
-                    hint={t("job-modal.salt-master-hint")}
-                  />
-                }
-                name="salt_master"
-                rules={[
-                  {
-                    required: true,
-                    message: t("job-modal.salt-master-error-required"),
-                  },
-                ]}
-              >
-                <Select allowClear options={masterList} />
-              </Form.Item>
-              <Flex gap={8}>
-                <Form.Item<JobFormData>
-                  label={
-                    <FieldHint
-                      label={t("job-modal.target-type")}
-                      hint={t("job-modal.target-type-hint")}
-                    />
-                  }
-                  name="tgt_type"
-                  rules={[
-                    {
-                      required: true,
-                      message: t("job-modal.tgt-type-error-required"),
-                    },
-                  ]}
-                  className={styles.jobFormTgtType}
-                >
-                  <TargetTypeSelect />
-                </Form.Item>
-
-                <Form.Item<JobFormData>
-                  label={
-                    <FieldHint label={t("job-modal.target")} hint={t("job-modal.target-hint")} />
-                  }
-                  name="tgt"
-                  rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
-                  className={styles.jobFormTgt}
-                >
-                  <Input />
-                </Form.Item>
-
-                <Button
-                  icon={<SearchOutlined />}
-                  onClick={() => setIsGatherModalOpen(true)}
-                  disabled={!saltMaster || !tgt || !tgtType}
-                  className={styles.jobFormGather}
+        <ErrorZone level="block" loaders={[initLoad]}>
+          {!isFormReady ? (
+            <div className={styles.spinnerContainer}>
+              <Spin />
+            </div>
+          ) : schemaError ? (
+            <TemplateSchemaErrorView
+              templateTitle={templateTitle}
+              schemaError={schemaError}
+              sourceName={sourceDisplayName ?? sourceId}
+              onReturn={() => handleReturnToFunctionPicker(false)}
+            />
+          ) : (
+            <>
+              <Flex justify="flex-end" align="center" gap={8} className={styles.advancedSettings}>
+                <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
+                <Switch
+                  checked={isAdvancedSettingsEnabled}
+                  onChange={(checked) => {
+                    clearJsonFormValidation();
+                    setIsAdvancedSettingsEnabled(checked);
+                  }}
+                  disabled={isLoading}
                 />
               </Flex>
 
-              <Form.Item
-                label={
-                  <FieldHint label={t("job-modal.function")} hint={t("job-modal.function-hint")} />
-                }
+              <Form
+                form={form}
+                name="job-form"
+                id="job-form"
+                layout="vertical"
+                autoComplete="off"
+                onFinish={handleFormFinish}
+                onFinishFailed={handleFormFinishFailed}
               >
-                <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
-              </Form.Item>
+                <MutationErrorAlert
+                  error={createError}
+                  fallback={t("job-modal.error-job-create")}
+                  onClose={() => setCreateError(null)}
+                />
 
-              {isAdvancedSettingsEnabled && (
-                <Form.Item label={t("job-modal.timeout-label")}>
-                  <Flex gap={8} align="center" wrap>
-                    <InputNumber
-                      min={0}
-                      precision={0}
-                      value={ttlValue ?? undefined}
-                      onChange={(value) => setTtlValue(value ?? null)}
-                      placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      onKeyDown={handleTimeoutInputKeyDown}
-                      onPaste={handleTimeoutInputPaste}
+                <Form.Item<JobFormData>
+                  label={
+                    <FieldHint
+                      label={t("job-modal.salt-master")}
+                      hint={t("job-modal.salt-master-hint")}
                     />
-                    <Select
-                      value={ttlUnit}
-                      onChange={(value) => setTtlUnit(value)}
-                      options={[
-                        { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                        { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                        { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                      ]}
-                      style={{ width: 100 }}
-                    />
-                  </Flex>
+                  }
+                  name="salt_master"
+                  rules={[
+                    {
+                      required: true,
+                      message: t("job-modal.salt-master-error-required"),
+                    },
+                  ]}
+                >
+                  <Select allowClear options={masterList} />
                 </Form.Item>
+                <Flex gap={8}>
+                  <Form.Item<JobFormData>
+                    label={
+                      <FieldHint
+                        label={t("job-modal.target-type")}
+                        hint={t("job-modal.target-type-hint")}
+                      />
+                    }
+                    name="tgt_type"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("job-modal.tgt-type-error-required"),
+                      },
+                    ]}
+                    className={styles.jobFormTgtType}
+                  >
+                    <TargetTypeSelect />
+                  </Form.Item>
+
+                  <Form.Item<JobFormData>
+                    label={
+                      <FieldHint label={t("job-modal.target")} hint={t("job-modal.target-hint")} />
+                    }
+                    name="tgt"
+                    rules={[{ required: true, message: t("job-modal.tgt-error-required") }]}
+                    className={styles.jobFormTgt}
+                  >
+                    <Input />
+                  </Form.Item>
+
+                  <Button
+                    icon={<SearchOutlined />}
+                    onClick={() => setIsGatherModalOpen(true)}
+                    disabled={!saltMaster || !tgt || !tgtType}
+                    className={styles.jobFormGather}
+                  />
+                </Flex>
+
+                <Form.Item
+                  label={
+                    <FieldHint
+                      label={t("job-modal.function")}
+                      hint={t("job-modal.function-hint")}
+                    />
+                  }
+                >
+                  <Alert type="info" showIcon={false} message={<strong>{fun}</strong>} />
+                </Form.Item>
+
+                {isAdvancedSettingsEnabled && (
+                  <Form.Item label={t("job-modal.timeout-label")}>
+                    <Flex gap={8} align="center" wrap>
+                      <InputNumber
+                        min={0}
+                        precision={0}
+                        value={ttlValue ?? undefined}
+                        onChange={(value) => setTtlValue(value ?? null)}
+                        placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        onKeyDown={handleTimeoutInputKeyDown}
+                        onPaste={handleTimeoutInputPaste}
+                      />
+                      <Select
+                        value={ttlUnit}
+                        onChange={(value) => setTtlUnit(value)}
+                        options={[
+                          { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
+                          { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
+                          { label: t("job-modal.timeout-unit-hours"), value: "hours" },
+                        ]}
+                        style={{ width: 100 }}
+                      />
+                    </Flex>
+                  </Form.Item>
+                )}
+              </Form>
+
+              {isTemplateMode && templateParamsSchema.isFieldless && (
+                <TemplateParamsPlaceholder
+                  jsonSchema={templateParamsSchema.jsonSchema}
+                  uiSchema={templateParamsSchema.uiSchema}
+                />
               )}
-            </Form>
 
-            {isTemplateMode && templateParamsSchema.isFieldless && (
-              <TemplateParamsPlaceholder
-                jsonSchema={templateParamsSchema.jsonSchema}
-                uiSchema={templateParamsSchema.uiSchema}
-              />
-            )}
-
-            {jobParamsSchemaLayout.displaySchema && (
-              <JsonForm
-                key={`${templateId ?? fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
-                ref={refJobParamsForm}
-                schema={jobParamsSchemaLayout.displaySchema}
-                uiSchema={jobParamsSchemaLayout.displayUiSchema}
-                omitExtraData={false}
-                extraErrors={jsonFormExtraErrors}
-                focusOnFirstError
-                id="job-params-form"
-                className={styles.jobParamsForm}
-                idPrefix="job-params-form"
-                idSeparator="-"
-                formData={jsonFormValue}
-                onChange={(d) => {
-                  clearJsonFormValidation();
-                  setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>);
-                }}
-              >
-                <Fragment />
-              </JsonForm>
-            )}
-          </>
-        )}
+              {jobParamsSchemaLayout.displaySchema && (
+                <JsonForm
+                  key={`${templateId ?? fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
+                  ref={refJobParamsForm}
+                  schema={jobParamsSchemaLayout.displaySchema}
+                  uiSchema={jobParamsSchemaLayout.displayUiSchema}
+                  omitExtraData={false}
+                  extraErrors={jsonFormExtraErrors}
+                  focusOnFirstError
+                  id="job-params-form"
+                  className={styles.jobParamsForm}
+                  idPrefix="job-params-form"
+                  idSeparator="-"
+                  formData={jsonFormValue}
+                  onChange={(d) => {
+                    clearJsonFormValidation();
+                    setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>);
+                  }}
+                >
+                  <Fragment />
+                </JsonForm>
+              )}
+            </>
+          )}
+        </ErrorZone>
       </Modal>
 
       <MinionGatherModal
@@ -762,4 +770,4 @@ export function JobModal({
       />
     </>
   );
-}
+});

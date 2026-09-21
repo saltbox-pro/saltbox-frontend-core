@@ -35,15 +35,16 @@ export class TaskCreationService {
   }
 
   async createTask(request: TaskCreateRequestSchema): Promise<string> {
-    try {
-      const task = await apiCoreStore.tasksApi?.taskCreate({
-        TaskCreateRequestSchema: request,
-      });
-      return task.id;
-    } catch (error) {
-      console.error("Failed to create task:", error);
-      throw new Error("Failed to create task");
+    const pending = apiCoreStore.tasksApi?.taskCreate({
+      TaskCreateRequestSchema: request,
+    });
+
+    if (!pending) {
+      return Promise.reject(new Error("Tasks API is not available"));
     }
+
+    const task = await pending;
+    return task.id;
   }
 
   getDefaultConfiguration(): Pick<

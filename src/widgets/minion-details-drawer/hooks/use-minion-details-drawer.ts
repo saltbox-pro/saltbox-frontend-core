@@ -74,7 +74,7 @@ export function useMinionDetailsDrawer({
     };
   }, [minion?.id, openedArg]);
 
-  const hasData = Boolean(minion?.id) && !minionLoad.error;
+  const hasData = Boolean(minion?.id);
 
   useEffect(() => {
     if (!isOpened) {

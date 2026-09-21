@@ -1,5 +1,4 @@
 import type { TaskMinionListResponse } from "@saltbox/saltbox-core-api-client";
-import { ErrorZone } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
@@ -69,16 +68,15 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
         hasData={hasData}
         errorMessage={errorMessage}
         transitionKey={transitionKey}
+        loaders={[taskStore.taskJobReturnsStore.taskJobReturnsLoad]}
       >
-        <ErrorZone level="block" loaders={[taskStore.taskJobReturnsStore.taskJobReturnsLoad]}>
-          <MinionTaskResults
-            selectedMinion={displayMinion}
-            jobReturns={taskStore.taskJobReturns}
-            isJobReturnsLoading={isLoading}
-            onRestartFailedMinion={onRestartFailedMinion}
-            onTtlApplied={taskStore.taskJobReturnsStore.applyJobReturnTtl}
-          />
-        </ErrorZone>
+        <MinionTaskResults
+          selectedMinion={displayMinion}
+          jobReturns={taskStore.taskJobReturns}
+          isJobReturnsLoading={isLoading}
+          onRestartFailedMinion={onRestartFailedMinion}
+          onTtlApplied={taskStore.taskJobReturnsStore.applyJobReturnTtl}
+        />
       </BaseMinionDrawer>
     );
   }
