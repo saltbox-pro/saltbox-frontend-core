@@ -21,6 +21,11 @@
   opacity: 1;
 }
 
+.editButtonAlwaysVisible {
+  visibility: visible;
+  opacity: 1;
+}
+
 .select {
   width: 160px;
   max-width: 100%;

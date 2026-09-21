@@ -79,6 +79,20 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
         rootClassName={styles.form}
         requiredMark={false}
       >
+        {isEditing && (
+          <>
+            <MutationErrorAlert
+              error={mutationError}
+              fallback={t("pillars.edit.error")}
+              onClose={() => setMutationError(null)}
+            />
+
+            {!!saveError && (
+              <Alert message={saveError} type="error" showIcon style={{ marginBottom: 16 }} />
+            )}
+          </>
+        )}
+
         <Form.Item
           className={styles.valueFormItem}
           name="value"
@@ -97,21 +111,11 @@ export function PillarEditForm({ pillar, onReplacePillar, deleteBlock }: PillarV
         </Form.Item>
 
         {isEditing && (
-          <Flex vertical gap="small">
-            <MutationErrorAlert
-              error={mutationError}
-              fallback={t("pillars.edit.error")}
-              onClose={() => setMutationError(null)}
-            />
-
-            {!!saveError && <Alert message={saveError} type="error" showIcon />}
-
-            <Flex justify="end" gap="small">
-              <Button onClick={handleCancelEdit}>{t("common.cancel")}</Button>
-              <Button type="primary" loading={isSaving} onClick={handleSave}>
-                {t("common.save")}
-              </Button>
-            </Flex>
+          <Flex justify="end" gap="small">
+            <Button onClick={handleCancelEdit}>{t("common.cancel")}</Button>
+            <Button type="primary" loading={isSaving} onClick={handleSave}>
+              {t("common.save")}
+            </Button>
           </Flex>
         )}
       </Form>

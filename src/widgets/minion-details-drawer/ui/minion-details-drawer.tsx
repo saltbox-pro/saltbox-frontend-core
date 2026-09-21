@@ -1,4 +1,3 @@
-import { ErrorZone } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 
 import {
@@ -49,6 +48,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
       open={drawer.isOpened}
       loading={!!isMinionLoading}
       hasData={hasData}
+      loaders={[minionLoad]}
       mask={mask}
       transitionKey={minion?.minion_id}
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
@@ -63,16 +63,14 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
       }
       onClose={drawer.close}
     >
-      <ErrorZone level="block" loaders={[minionLoad]}>
-        <MinionDetailsInDrawer
-          activeTab={tabKey}
-          onActiveTabChange={onTabChange}
-          minion={minion}
-          isMinionLoading={false}
-          isMinionRefreshing={isMinionRefreshing}
-          onFilterButton={onFilterButton}
-        />
-      </ErrorZone>
+      <MinionDetailsInDrawer
+        activeTab={tabKey}
+        onActiveTabChange={onTabChange}
+        minion={minion}
+        isMinionLoading={false}
+        isMinionRefreshing={isMinionRefreshing}
+        onFilterButton={onFilterButton}
+      />
     </BaseMinionDrawer>
   );
 });

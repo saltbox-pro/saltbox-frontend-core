@@ -5,17 +5,17 @@ import type {
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
 import {
-  useAcceptedMastersErrorMessage,
+  createLoader,
   useAcceptedMastersWarningMessage,
+  type LoadSource,
   type TemplateSchemaError,
 } from "@saltbox/saltbox-frontend-common";
 import type { FormInstance } from "antd";
 import type { MessageInstance } from "antd/es/message/interface";
 import type { TFunction } from "i18next";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
-import { notifyApiError } from "saltbox-core/shared/helpers/notify-api-error";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import { getBuiltinJobSchema, type BuiltinJobSchemaMeta } from "saltbox-core/shared/sls-templates";
 import {
@@ -63,7 +63,24 @@ type UseJobModalInitParams = {
   onLoadFailed: () => void;
 };
 
-const NO_ACCEPTED_MASTERS_ERROR = "NO_ACCEPTED_MASTERS";
+/**
+ * Результат инициализации. Отсутствие принятых мастеров — не ошибка загрузки, а штатная
+ * ветка со своим предупреждением, поэтому она приходит успешным результатом, а не исключением.
+ */
+type JobModalInitResult =
+  | { kind: "no-masters" }
+  | {
+      kind: "schema-error";
+      template: TaskTemplateModel;
+      error: TemplateSchemaError;
+      resolvedSourceName: string | undefined;
+    }
+  | {
+      kind: "ready";
+      source: JobParamsSource;
+      masters: MasterOption[];
+      resolvedSourceName: string | undefined;
+    };
 
 const mapMastersToOptions = (masters: MasterViewSchema[]): MasterOption[] =>
   masters.map((master) => ({
@@ -80,11 +97,7 @@ const loadAcceptedMasters = async (): Promise<MasterOption[]> => {
     },
   });
 
-  if (!result?.data?.length) {
-    throw new Error(NO_ACCEPTED_MASTERS_ERROR);
-  }
-
-  return mapMastersToOptions(result.data);
+  return mapMastersToOptions(result?.data ?? []);
 };
 
 const loadParamsSource = async (
@@ -196,10 +209,8 @@ export const useJobModalInit = ({
   t,
   onLoadFailed,
 }: UseJobModalInitParams) => {
-  const acceptedMastersErrorMessage = useAcceptedMastersErrorMessage();
   const renderWarningMessage = useAcceptedMastersWarningMessage();
   const navigate = useNavigate();
-  const [isInitialLoading, setIsInitialLoading] = useState(false);
   const [masterList, setMasterList] = useState<MasterOption[]>([]);
   const [paramsSource, setParamsSource] = useState<JobParamsSource>();
   const [schemaError, setSchemaError] = useState<TemplateSchemaError | null>(null);
@@ -210,7 +221,37 @@ export const useJobModalInit = ({
   const [ttlValue, setTtlValue] = useState<number | null>(null);
   const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
 
-  const loadRequestIdRef = useRef(0);
+  const runInitRef = useRef<() => Promise<JobModalInitResult>>(() =>
+    Promise.resolve({ kind: "no-masters" })
+  );
+  const applyResultRef = useRef<(result: JobModalInitResult, token: number) => void>(
+    () => undefined
+  );
+
+  const initTokenRef = useRef(0);
+
+  const [initLoad] = useState(() =>
+    createLoader({
+      run: async (token: number) => {
+        const ensureNotCancelled = () => {
+          if (token === initTokenRef.current) return;
+          const cancelled = new Error("Job modal initialization cancelled");
+          cancelled.name = "AbortError";
+          throw cancelled;
+        };
+
+        try {
+          const result = await runInitRef.current();
+          ensureNotCancelled();
+          return result;
+        } catch (error) {
+          ensureNotCancelled();
+          throw error;
+        }
+      },
+      onSuccess: (result, token) => applyResultRef.current(result, token),
+    })
+  );
 
   const applyTtlFromInitialOrDefault = useCallback(
     (totalSeconds: number | null | undefined, defaultTtl: unknown) => {
@@ -266,114 +307,108 @@ export const useJobModalInit = ({
     ]
   );
 
-  const initializeModal = useCallback(async () => {
-    const requestId = ++loadRequestIdRef.current;
-    setIsInitialLoading(true);
-    resetLoadedData();
+  const runInit = useCallback(async (): Promise<JobModalInitResult> => {
+    const isTemplateMode = Boolean(sourceId && templateId);
 
-    try {
-      const isTemplateMode = Boolean(sourceId && templateId);
-
-      if (isTemplateMode) {
-        const [source, resolvedSourceName] = await Promise.all([
-          loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
-          resolveSourceDisplayName(sourceId, sourceName),
-        ]);
-
-        if (requestId !== loadRequestIdRef.current) {
-          return;
-        }
-
-        if (source.kind === "template") {
-          const error = getTemplateSchemaError(source.template, language);
-          if (error) {
-            setParamsSource(source);
-            setSchemaError(error);
-            setTemplateTitle(getTemplateTitle(source.template, language));
-            setSourceDisplayName(resolvedSourceName);
-            applyTargetFormValues(form, target, targetType, defaultMaster);
-            return;
-          }
-        }
-
-        const masters = await loadAcceptedMasters();
-        if (requestId !== loadRequestIdRef.current) {
-          return;
-        }
-
-        if (source.kind === "function" && source.fallbackFromTemplate) {
-          messageApi.warning(t("job-modal.warning-template-unavailable"));
-        }
-
-        applyReadySource(source, masters, resolvedSourceName);
-        return;
-      }
-
-      const [masters, source] = await Promise.all([
-        loadAcceptedMasters(),
+    if (isTemplateMode) {
+      const [source, resolvedSourceName] = await Promise.all([
         loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
+        resolveSourceDisplayName(sourceId, sourceName),
       ]);
 
-      if (requestId !== loadRequestIdRef.current) {
+      if (source.kind === "template") {
+        const error = getTemplateSchemaError(source.template, language);
+        if (error) {
+          return { kind: "schema-error", template: source.template, error, resolvedSourceName };
+        }
+      }
+
+      const masters = await loadAcceptedMasters();
+      if (!masters.length) {
+        return { kind: "no-masters" };
+      }
+
+      return { kind: "ready", source, masters, resolvedSourceName };
+    }
+
+    const [masters, source] = await Promise.all([
+      loadAcceptedMasters(),
+      loadParamsSource(fun, sourceId, templateId, allowBuiltinSchemaFallback),
+    ]);
+
+    if (!masters.length) {
+      return { kind: "no-masters" };
+    }
+
+    return { kind: "ready", source, masters, resolvedSourceName: undefined };
+  }, [allowBuiltinSchemaFallback, fun, language, sourceId, sourceName, templateId]);
+
+  const applyResult = useCallback(
+    (result: JobModalInitResult, token: number) => {
+      if (token !== initTokenRef.current) {
         return;
       }
 
-      applyReadySource(source, masters, undefined);
-    } catch (error) {
-      if (requestId !== loadRequestIdRef.current) {
-        return;
-      }
-
-      if (error instanceof Error && error.message === NO_ACCEPTED_MASTERS_ERROR) {
+      if (result.kind === "no-masters") {
         messageApi.warning(
           renderWarningMessage({
             action: t("job-modal.warning-action.create-job"),
             navigate,
           })
         );
-      } else {
-        await notifyApiError(
-          error,
-          sourceId && templateId
-            ? t("task-create.error-loading-template")
-            : acceptedMastersErrorMessage
-        );
+        onLoadFailed();
+        return;
       }
 
-      onLoadFailed();
-    } finally {
-      if (requestId === loadRequestIdRef.current) {
-        setIsInitialLoading(false);
+      if (result.kind === "schema-error") {
+        setParamsSource({ kind: "template", template: result.template });
+        setSchemaError(result.error);
+        setTemplateTitle(getTemplateTitle(result.template, language));
+        setSourceDisplayName(result.resolvedSourceName);
+        applyTargetFormValues(form, target, targetType, defaultMaster);
+        return;
       }
-    }
-  }, [
-    acceptedMastersErrorMessage,
-    allowBuiltinSchemaFallback,
-    applyReadySource,
-    defaultMaster,
-    form,
-    fun,
-    language,
-    messageApi,
-    navigate,
-    onLoadFailed,
-    renderWarningMessage,
-    resetLoadedData,
-    sourceId,
-    sourceName,
-    t,
-    target,
-    targetType,
-    templateId,
-  ]);
+
+      if (result.source.kind === "function" && result.source.fallbackFromTemplate) {
+        messageApi.warning(t("job-modal.warning-template-unavailable"));
+      }
+
+      applyReadySource(result.source, result.masters, result.resolvedSourceName);
+    },
+    [
+      applyReadySource,
+      defaultMaster,
+      form,
+      language,
+      messageApi,
+      navigate,
+      onLoadFailed,
+      renderWarningMessage,
+      t,
+      target,
+      targetType,
+    ]
+  );
+
+  useEffect(() => {
+    runInitRef.current = runInit;
+    applyResultRef.current = applyResult;
+  });
+
+  const initializeModal = useCallback(() => {
+    const token = ++initTokenRef.current;
+    resetLoadedData();
+    initLoad.run(token).catch(() => undefined);
+  }, [initLoad, resetLoadedData]);
 
   const cancelInit = useCallback(() => {
-    loadRequestIdRef.current += 1;
+    initTokenRef.current += 1;
   }, []);
 
   return {
-    isInitialLoading,
-    isFormReady: !isInitialLoading && paramsSource != null,
+    isInitialLoading: initLoad.isLoading,
+    isFormReady: !initLoad.isLoading && paramsSource != null,
+    initLoad: initLoad as LoadSource,
     masterList,
     paramsSource,
     schemaError,

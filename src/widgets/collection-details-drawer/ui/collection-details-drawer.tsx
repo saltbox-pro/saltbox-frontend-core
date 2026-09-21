@@ -1,7 +1,6 @@
 import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   type AppError,
-  ErrorZone,
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
@@ -278,47 +277,46 @@ export const CollectionDetailsDrawer = observer(
           linkComponent={Link}
           loading={collectionStore.isLoading}
           hasData={!!collection && !isSaving}
+          loaders={[collectionStore.collectionLoad]}
           transitionKey={collection?.slug}
           onClose={drawer.close}
         >
-          <ErrorZone level="block" loaders={[collectionStore.collectionLoad]}>
-            <Form form={form} component={false}>
-              <Flex vertical gap="large" className={styles.body}>
-                <MutationErrorAlert
-                  error={saveError}
-                  fallback={t("collection.error-updating-collection")}
-                  onClose={() => setSaveError(null)}
-                />
+          <Form form={form} component={false}>
+            <Flex vertical gap="large" className={styles.body}>
+              <MutationErrorAlert
+                error={saveError}
+                fallback={t("collection.error-updating-collection")}
+                onClose={() => setSaveError(null)}
+              />
 
-                <InfoDescriptions items={descriptionItems} extra={extra} />
+              <InfoDescriptions items={descriptionItems} extra={extra} />
 
-                <section className={styles.section}>
-                  {isRoot ? (
-                    <Typography.Text type="secondary">
-                      {t("minions.root-collection-info")}
-                    </Typography.Text>
-                  ) : (
-                    <CollectionFilterSection
-                      collectionStore={collectionStore}
-                      isEditing={isEditing}
-                      form={form}
-                    />
-                  )}
-                </section>
-
-                {isEditing && (
-                  <Flex gap="small" justify="end">
-                    <Button onClick={handleCancel} disabled={isSaving}>
-                      {t("common.cancel")}
-                    </Button>
-                    <Button type="primary" onClick={handleSave} loading={isSaving}>
-                      {t("common.save")}
-                    </Button>
-                  </Flex>
+              <section className={styles.section}>
+                {isRoot ? (
+                  <Typography.Text type="secondary">
+                    {t("minions.root-collection-info")}
+                  </Typography.Text>
+                ) : (
+                  <CollectionFilterSection
+                    collectionStore={collectionStore}
+                    isEditing={isEditing}
+                    form={form}
+                  />
                 )}
-              </Flex>
-            </Form>
-          </ErrorZone>
+              </section>
+
+              {isEditing && (
+                <Flex gap="small" justify="end">
+                  <Button onClick={handleCancel} disabled={isSaving}>
+                    {t("common.cancel")}
+                  </Button>
+                  <Button type="primary" onClick={handleSave} loading={isSaving}>
+                    {t("common.save")}
+                  </Button>
+                </Flex>
+              )}
+            </Flex>
+          </Form>
         </InfoDrawer>
       </>
     );
