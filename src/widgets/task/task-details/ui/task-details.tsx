@@ -86,8 +86,16 @@ export function TaskDetails({
         label: t("task.details.retry-delay"),
         children: t("task.details.retry-delay-seconds", { count: system.retryDelay }),
       },
+      ...(system.ttl != null
+        ? [
+            {
+              label: t("task.details.ttl"),
+              children: t("task.details.retry-delay-seconds", { count: system.ttl }),
+            },
+          ]
+        : []),
     ],
-    [system.batchSize, system.maxParallelJobs, system.maxRetries, system.retryDelay, t]
+    [system.batchSize, system.maxParallelJobs, system.maxRetries, system.retryDelay, system.ttl, t]
   );
 
   const pillarsInfo = useMemo<InfoDescriptionsProps["items"]>(() => {

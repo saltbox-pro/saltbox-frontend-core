@@ -24,7 +24,6 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   Select,
   Spin,
   Switch,
@@ -47,13 +46,11 @@ import { useNavigate } from "react-router";
 
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
-import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
+import { TtlInput } from "saltbox-core/shared/components/ttl-input";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { resolveBuiltinJobSchema } from "saltbox-core/shared/sls-templates";
 import {
   getArgAndKwargForRequest,
-  isTimeoutInputKeyAllowed,
-  isTimeoutPasteAllowed,
   ttlPartsToTotalSeconds,
 } from "saltbox-core/shared/utils/job-modal-utils";
 import {
@@ -305,19 +302,6 @@ export const JobModal = observer(function JobModal({
   const clearJsonFormValidation = useCallback(() => {
     setJsonFormExtraErrors(undefined);
   }, []);
-
-  const handleTimeoutInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isTimeoutInputKeyAllowed(event)) {
-      event.preventDefault();
-    }
-  };
-
-  const handleTimeoutInputPaste = (event: React.ClipboardEvent<HTMLInputElement>) => {
-    const pasted = event.clipboardData.getData("text") ?? "";
-    if (!isTimeoutPasteAllowed(pasted)) {
-      event.preventDefault();
-    }
-  };
 
   const resetModalState = useCallback(() => {
     cancelInit();
@@ -700,29 +684,13 @@ export const JobModal = observer(function JobModal({
 
                 {isAdvancedSettingsEnabled && (
                   <Form.Item label={t("job-modal.timeout-label")}>
-                    <Flex gap={8} align="center" wrap>
-                      <InputNumber
-                        min={0}
-                        precision={0}
-                        value={ttlValue ?? undefined}
-                        onChange={(value) => setTtlValue(value ?? null)}
-                        placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
-                        inputMode="numeric"
-                        pattern="[0-9]*"
-                        onKeyDown={handleTimeoutInputKeyDown}
-                        onPaste={handleTimeoutInputPaste}
-                      />
-                      <Select
-                        value={ttlUnit}
-                        onChange={(value) => setTtlUnit(value)}
-                        options={[
-                          { label: t("job-modal.timeout-unit-seconds"), value: "seconds" },
-                          { label: t("job-modal.timeout-unit-minutes"), value: "minutes" },
-                          { label: t("job-modal.timeout-unit-hours"), value: "hours" },
-                        ]}
-                        style={{ width: 100 }}
-                      />
-                    </Flex>
+                    <TtlInput
+                      value={ttlValue}
+                      unit={ttlUnit}
+                      onValueChange={setTtlValue}
+                      onUnitChange={setTtlUnit}
+                      disabled={isLoading}
+                    />
                   </Form.Item>
                 )}
               </Form>

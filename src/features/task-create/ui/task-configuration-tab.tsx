@@ -17,7 +17,9 @@ import {
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { TtlInput } from "saltbox-core/shared/components/ttl-input";
 import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
+import { ttlPartsToTotalSeconds, type TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getJobParamsSchemaLayout,
   type JsonSchemaRecord,
@@ -38,6 +40,7 @@ export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
   initialData?: Partial<TaskConfigurationFormData>;
   initialShowAdvanced?: boolean;
+  initialTtlUnit?: TtlUnit;
   topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;
   onReturnToTemplatePicker: (draft: TaskTemplateDraft) => void;
@@ -45,10 +48,23 @@ export type TaskConfigurationTabProps = {
 
 const memoize = createObjectMemoizer({ deep: true });
 
+const TTL_UNIT_SECONDS: Record<TtlUnit, number> = { seconds: 1, minutes: 60, hours: 3600 };
+
+const totalSecondsToUnit = (
+  totalSeconds: number,
+  unit: TtlUnit
+): { value: number; unit: TtlUnit } => {
+  const divisor = TTL_UNIT_SECONDS[unit];
+  return totalSeconds % divisor === 0
+    ? { value: totalSeconds / divisor, unit }
+    : { value: totalSeconds, unit: "seconds" };
+};
+
 export function TaskConfigurationTab({
   template,
   initialData,
   initialShowAdvanced,
+  initialTtlUnit,
   topContent,
   onSubmit,
   onReturnToTemplatePicker,
@@ -58,6 +74,10 @@ export function TaskConfigurationTab({
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
   const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced ?? false);
+  const [ttlValue, setTtlValue] = useState<number | null>(null);
+  const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
+  const ttlPartsRef = useRef({ value: ttlValue, unit: ttlUnit });
+  ttlPartsRef.current = { value: ttlValue, unit: ttlUnit };
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
@@ -98,7 +118,23 @@ export function TaskConfigurationTab({
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
       save_pillars_as_default: initialData.save_pillars_as_default ?? true,
     });
-  }, [settingsForm, initialData, template]);
+
+    const initialTtl = initialData.ttl;
+    if (initialTtl == null || !Number.isFinite(initialTtl) || initialTtl < 0) {
+      setTtlValue(null);
+      setTtlUnit("seconds");
+      return;
+    }
+
+    const currentParts = ttlPartsRef.current;
+    if (ttlPartsToTotalSeconds(currentParts.value, currentParts.unit) === initialTtl) {
+      return;
+    }
+
+    const ttlParts = totalSecondsToUnit(initialTtl, initialTtlUnit ?? "seconds");
+    setTtlValue(ttlParts.value);
+    setTtlUnit(ttlParts.unit);
+  }, [settingsForm, initialData, initialTtlUnit, template]);
 
   const buildConfigurationFromSettings = (
     settings: Partial<Omit<TaskConfigurationFormData, "data" | "task_template_id">>,
@@ -110,7 +146,7 @@ export function TaskConfigurationTab({
 
     return buildTaskConfigurationFormData({
       templateId: template.id,
-      settings,
+      settings: { ...settings, ttl: ttlPartsToTotalSeconds(ttlValue, ttlUnit) },
       data,
       defaults: taskCreationService.getDefaultConfiguration(),
     });
@@ -124,7 +160,7 @@ export function TaskConfigurationTab({
     if (!configuration) {
       return;
     }
-    onReturnToTemplatePicker({ configuration, showAdvanced });
+    onReturnToTemplatePicker({ configuration, showAdvanced, ttlUnit });
   };
 
   const showValidationError = () => {
@@ -281,6 +317,18 @@ export function TaskConfigurationTab({
                     ])}
                   >
                     <InputNumber min={0} className={styles.formItem} />
+                  </Form.Item>
+                </Col>
+              </Row>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item label={t("task-create.ttl")} tooltip={t("task-create.ttl-tooltip")}>
+                    <TtlInput
+                      value={ttlValue}
+                      unit={ttlUnit}
+                      onValueChange={setTtlValue}
+                      onUnitChange={setTtlUnit}
+                    />
                   </Form.Item>
                 </Col>
               </Row>

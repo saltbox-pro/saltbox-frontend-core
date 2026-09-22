@@ -9,6 +9,8 @@ import {
 import { ReactNode } from "react";
 import type { OptionList } from "react-querybuilder";
 
+import type { TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
+
 export type SelectedTaskTemplate =
   | { kind: "template"; sourceId: string; templateId: string; sourceName?: string }
   | { kind: "custom-function"; fun: string };
@@ -25,6 +27,7 @@ export type TaskConfigurationFormData = {
   max_retries: number;
   retry_delay: number;
   max_jobs_count_at_same_time: number;
+  ttl?: number;
   save_pillars_as_default: boolean;
   data: TaskData;
 };
@@ -32,6 +35,7 @@ export type TaskConfigurationFormData = {
 export type TaskTemplateDraft = {
   configuration: TaskConfigurationFormData;
   showAdvanced: boolean;
+  ttlUnit?: TtlUnit;
 };
 
 export type TaskCreationContext = {

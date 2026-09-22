@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import { buildDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
+import { parseTtlValue } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getTemplateDescriptionText,
   getTemplateTitleText,
@@ -141,6 +142,7 @@ export const TaskModal = observer(function TaskModal({
           typeof templateDefaults?.max_jobs_count_at_same_time === "number"
             ? templateDefaults.max_jobs_count_at_same_time
             : defaultConfig.max_jobs_count_at_same_time,
+        ttl: parseTtlValue(templateDefaults?.ttl) ?? undefined,
         data: {},
       });
     };
@@ -380,6 +382,7 @@ export const TaskModal = observer(function TaskModal({
             template={template}
             initialData={configuration}
             initialShowAdvanced={initialDraft?.showAdvanced}
+            initialTtlUnit={initialDraft?.ttlUnit}
             topContent={configurationTopContent}
             onSubmit={handleConfigurationSubmit}
             onReturnToTemplatePicker={handleReturnToTemplatePicker}
@@ -412,6 +415,7 @@ export const TaskModal = observer(function TaskModal({
     handleCreateTask,
     handleReturnToTemplatePicker,
     initialDraft?.showAdvanced,
+    initialDraft?.ttlUnit,
     isCreating,
     overviewData,
     pluginButtons,
