@@ -14,6 +14,7 @@ import {
   AcceptedMastersActionButton,
   ErrorZone,
   RefreshButton,
+  formatTimeByUserTZ,
   runMutation,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
@@ -410,6 +411,17 @@ const JobPage = observer(() => {
               <span className={styles.jobDetailLabel}>{t("jobs.table-user")}:</span>
               <span className={styles.jobDetailValue}>
                 {jobStore.job?.user?.name ?? <Skeleton.Input size="small" />}
+              </span>
+            </div>
+
+            <div className={styles.jobDetailItem}>
+              <span className={styles.jobDetailLabel}>{t("jobs.job-created-at")}:</span>
+              <span className={styles.jobDetailValue}>
+                {jobStore.job?.created ? (
+                  formatTimeByUserTZ(jobStore.job.created)
+                ) : (
+                  <Skeleton.Input size="small" />
+                )}
               </span>
             </div>
 

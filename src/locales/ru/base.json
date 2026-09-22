@@ -566,6 +566,7 @@
     "no-arguments": "Нет аргументов",
     "no-key-value-arguments": "Нет именованных аргументов",
     "full-output": "Полный вывод",
+    "job-created-at": "Время создания",
     "job-execution-duration": "Длительность выполнения",
     "job-title-breadcrumb": "Команда",
     "json-table-view": "JSON / Таблица",

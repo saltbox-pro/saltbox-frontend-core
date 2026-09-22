@@ -567,6 +567,7 @@
     "no-arguments": "No arguments",
     "no-key-value-arguments": "No key-value arguments",
     "full-output": "Full Output",
+    "job-created-at": "Created at",
     "job-execution-duration": "Execution Duration",
     "json-table-view": "JSON / Table",
     "reveal-all-returns": "Reveal all",
