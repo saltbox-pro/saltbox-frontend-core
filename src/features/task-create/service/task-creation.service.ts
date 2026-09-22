@@ -53,7 +53,7 @@ export class TaskCreationService {
   > {
     return {
       batch_size: 0,
-      max_retries: 3,
+      max_retries: 1,
       retry_delay: 10,
       max_jobs_count_at_same_time: 1,
     };
