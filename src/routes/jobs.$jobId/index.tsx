@@ -486,110 +486,109 @@ const JobPage = observer(() => {
             <>
               <JobStatusProgress counts={statusCounts} />
 
-              <FastTable.Provider>
-                {showJobReturnsToolbar && (
-                  <Flex
-                    className={styles.switchContainer}
-                    justify="space-between"
-                    align="center"
-                    gap={16}
-                    wrap
-                  >
-                    <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-                      <Tag color="green">
-                        {t("task.job-returns-table.status-success")}: {statusCounts.success}
-                      </Tag>
-                      <Tag color="red">
-                        {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-                      </Tag>
-                      <Tag color="orange">
-                        {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-                      </Tag>
-                      <Tag color="default">
-                        {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-                      </Tag>
-                      <Tag color="blue">
-                        {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-                      </Tag>
-                    </Flex>
-                    <Flex align="center" gap={8}>
-                      <RefreshButton
-                        title={t("common.refresh")}
-                        loading={isManualRefreshLoading}
-                        onClick={handleJobReturnsRefresh}
-                      />
-                      {showExportButton && (
-                        <Tooltip title={t("jobs.download-to-csv")}>
-                          <Button
-                            type="primary"
-                            icon={<DownloadOutlined />}
-                            loading={isTableExportLoading}
-                            onClick={() => setIsExportModalOpen(true)}
-                          />
-                        </Tooltip>
-                      )}
-                      <Radio.Group
-                        value={viewMode}
-                        onChange={(event) => handleViewModeChange(event.target.value)}
-                        options={[
-                          { label: t("jobs.standard-view"), value: "standard" },
-                          { label: t("jobs.detailed-view"), value: "detailed" },
-                          ...(isStateApplyJob
-                            ? [{ label: t("jobs.state-apply-view"), value: "state-apply" }]
-                            : []),
-                          {
-                            label: t("jobs.table-view"),
-                            value: "table",
-                            disabled: !isTableViewAvailable,
-                          },
-                        ]}
-                        optionType="button"
-                        buttonStyle="solid"
-                      />
-                      {!isTableViewAvailable && (
-                        <Tooltip
-                          title={t("jobs.table-conversion-not-possible")}
-                          placement="left"
-                          overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
+              <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
+                {isLaunchError ? (
+                  <JobLaunchError
+                    launchErrorType={jobStore.job?.launch_error_type}
+                    target={jobStore.jobTargetsText}
+                  />
+                ) : (
+                  <DefaultJobReturnTable
+                    jobReturns={effectiveJobReturns}
+                    jobStore={jobStore}
+                    isFullOutput={isFullOutput}
+                    isStepsView={isStepsViewMode}
+                    isTableViewMode={isTableViewMode}
+                    jobStartTimestamp={jobStore.jobStartTimestamp}
+                    pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
+                    sorting={jobStore.sorting}
+                    total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
+                    onLazyLoad={jobStore.handleLazyLoad}
+                    isLoading={jobStore.isJobReturnsLoading}
+                    loader={jobStore.jobReturnsLoad}
+                    forceExpand={jobStore.isSingleJobReturn}
+                    tableColumns={jobStore.jobReturnTableColumns}
+                    tableRows={jobStore.jobReturnTableRows}
+                    isTableLoading={jobStore.isJobReturnTableLoading}
+                    tableLoader={jobStore.jobReturnsTableLoad}
+                    onTableLazyLoad={jobStore.handleTableLazyLoad}
+                    toolbar={
+                      showJobReturnsToolbar ? (
+                        <Flex
+                          className={styles.switchContainer}
+                          justify="space-between"
+                          align="center"
+                          gap={16}
+                          wrap
                         >
-                          <QuestionCircleOutlined className={styles.helpIcon} />
-                        </Tooltip>
-                      )}
-                      <FastTable.Toolbar />
-                    </Flex>
-                  </Flex>
+                          <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
+                            <Tag color="green">
+                              {t("task.job-returns-table.status-success")}: {statusCounts.success}
+                            </Tag>
+                            <Tag color="red">
+                              {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
+                            </Tag>
+                            <Tag color="orange">
+                              {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
+                            </Tag>
+                            <Tag color="default">
+                              {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
+                            </Tag>
+                            <Tag color="blue">
+                              {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
+                            </Tag>
+                          </Flex>
+                          <Flex align="center" className={styles.toolbarActions}>
+                            {showExportButton && (
+                              <Tooltip title={t("jobs.download-to-csv")}>
+                                <Button
+                                  type="primary"
+                                  icon={<DownloadOutlined />}
+                                  loading={isTableExportLoading}
+                                  onClick={() => setIsExportModalOpen(true)}
+                                />
+                              </Tooltip>
+                            )}
+                            <Radio.Group
+                              value={viewMode}
+                              onChange={(event) => handleViewModeChange(event.target.value)}
+                              options={[
+                                { label: t("jobs.standard-view"), value: "standard" },
+                                { label: t("jobs.detailed-view"), value: "detailed" },
+                                ...(isStateApplyJob
+                                  ? [{ label: t("jobs.state-apply-view"), value: "state-apply" }]
+                                  : []),
+                                {
+                                  label: t("jobs.table-view"),
+                                  value: "table",
+                                  disabled: !isTableViewAvailable,
+                                },
+                              ]}
+                              optionType="button"
+                              buttonStyle="solid"
+                            />
+                            {!isTableViewAvailable && (
+                              <Tooltip
+                                title={t("jobs.table-conversion-not-possible")}
+                                placement="left"
+                                overlayInnerStyle={{ color: "#000", backgroundColor: "#fff" }}
+                              >
+                                <QuestionCircleOutlined className={styles.helpIcon} />
+                              </Tooltip>
+                            )}
+                            <RefreshButton
+                              title={t("common.refresh")}
+                              loading={isManualRefreshLoading}
+                              onClick={handleJobReturnsRefresh}
+                            />
+                            <FastTable.Toolbar />
+                          </Flex>
+                        </Flex>
+                      ) : undefined
+                    }
+                  />
                 )}
-
-                <Flex vertical justify="center" className={styles.jobReturnTableWrapper}>
-                  {isLaunchError ? (
-                    <JobLaunchError
-                      launchErrorType={jobStore.job?.launch_error_type}
-                      target={jobStore.jobTargetsText}
-                    />
-                  ) : (
-                    <DefaultJobReturnTable
-                      jobReturns={effectiveJobReturns}
-                      jobStore={jobStore}
-                      isFullOutput={isFullOutput}
-                      isStepsView={isStepsViewMode}
-                      isTableViewMode={isTableViewMode}
-                      jobStartTimestamp={jobStore.jobStartTimestamp}
-                      pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
-                      sorting={jobStore.sorting}
-                      total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
-                      onLazyLoad={jobStore.handleLazyLoad}
-                      isLoading={jobStore.isJobReturnsLoading}
-                      loader={jobStore.jobReturnsLoad}
-                      forceExpand={jobStore.isSingleJobReturn}
-                      tableColumns={jobStore.jobReturnTableColumns}
-                      tableRows={jobStore.jobReturnTableRows}
-                      isTableLoading={jobStore.isJobReturnTableLoading}
-                      tableLoader={jobStore.jobReturnsTableLoad}
-                      onTableLazyLoad={jobStore.handleTableLazyLoad}
-                    />
-                  )}
-                </Flex>
-              </FastTable.Provider>
+              </Flex>
 
               {jobModalCreatePlugin}
             </>

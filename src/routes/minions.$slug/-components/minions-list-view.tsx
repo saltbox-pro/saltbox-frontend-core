@@ -157,68 +157,70 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           </Spin>
         )}
 
-        <FastTable.Provider>
-          <div className="page-actions-buttons">
-            <AcceptedMastersActionButton
-              className={styles.createButton}
-              type="primary"
-              icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
-              messageApi={messageApi}
-              navigate={navigate}
-              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-              warningActionText={t("task-create.warning-action.task")}
-              onAction={openTaskCreate}
-            >
-              {t("task-create.create-button")}
-            </AcceptedMastersActionButton>
+        <MinionsTableWithDetailsDrawer
+          slug={props.slug}
+          minionsStore={minionsStore}
+          rowSelection={selection}
+          onRowSelectionChange={setSelection}
+          filterStore={props.filterStore}
+          onAddFilter={props.onAddFilter}
+          onFiltersApplied={applySearchFilters}
+          toolbar={
+            <div className={`page-actions-buttons ${styles.actionsRow}`}>
+              <div className={styles.leftGroup}>
+                <AcceptedMastersActionButton
+                  className={styles.createButton}
+                  type="primary"
+                  icon={<AddTaskIcon badgeColor={token.colorPrimary} />}
+                  messageApi={messageApi}
+                  navigate={navigate}
+                  checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+                  warningActionText={t("task-create.warning-action.task")}
+                  onAction={openTaskCreate}
+                >
+                  {t("task-create.create-button")}
+                </AcceptedMastersActionButton>
 
-            <AcceptedMastersActionButton
-              className={styles.createButton}
-              icon={<AddTaskIcon />}
-              messageApi={messageApi}
-              navigate={navigate}
-              checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-              warningActionText={t("task-create.warning-action.policy")}
-              onAction={openPolicyCreate}
-              disabled={!!selectedMinionsCount}
-            >
-              {t("policy-create.create-button")}
-            </AcceptedMastersActionButton>
+                <AcceptedMastersActionButton
+                  className={styles.createButton}
+                  icon={<AddTaskIcon />}
+                  messageApi={messageApi}
+                  navigate={navigate}
+                  checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+                  warningActionText={t("task-create.warning-action.policy")}
+                  onAction={openPolicyCreate}
+                  disabled={!!selectedMinionsCount}
+                >
+                  {t("policy-create.create-button")}
+                </AcceptedMastersActionButton>
 
-            {pageActionsButtonsPlugin}
+                {pageActionsButtonsPlugin}
 
-            <MinionsActionsDropdown
-              slug={props.slug}
-              collectionTitle={props.collectionStore.collection?.title}
-              searchFilters={props.filterStore.searchFilters}
-              filterSchema={props.filterStore.filterSchema}
-              query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
-              selectedMinions={selectedMinions}
-              clearSelection={clearSelection}
-              reloadMinions={reloadMinions}
-            />
+                <MinionsActionsDropdown
+                  slug={props.slug}
+                  collectionTitle={props.collectionStore.collection?.title}
+                  searchFilters={props.filterStore.searchFilters}
+                  filterSchema={props.filterStore.filterSchema}
+                  query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
+                  selectedMinions={selectedMinions}
+                  clearSelection={clearSelection}
+                  reloadMinions={reloadMinions}
+                />
 
-            <RefreshButton
-              loading={minionsStore.isLoading}
-              onClick={reloadMinions}
-              title={t("minions.refresh")}
-            />
+                <SelectedItemsCounter count={selectedMinionsCount} />
+              </div>
 
-            <SelectedItemsCounter count={selectedMinionsCount} />
-
-            <FastTable.Toolbar />
-          </div>
-
-          <MinionsTableWithDetailsDrawer
-            slug={props.slug}
-            minionsStore={minionsStore}
-            rowSelection={selection}
-            onRowSelectionChange={setSelection}
-            filterStore={props.filterStore}
-            onAddFilter={props.onAddFilter}
-            onFiltersApplied={applySearchFilters}
-          />
-        </FastTable.Provider>
+              <div className={styles.rightGroup}>
+                <RefreshButton
+                  loading={minionsStore.isLoading}
+                  onClick={reloadMinions}
+                  title={t("minions.refresh")}
+                />
+                <FastTable.Toolbar />
+              </div>
+            </div>
+          }
+        />
 
         {isTaskCreateOpen && (
           <TaskCreateModal

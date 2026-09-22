@@ -1,14 +1,9 @@
-.root {
-  flex: none;
-  width: max-content;
-  max-width: 100%;
-}
-
-.extraDataSearchTitle {
-  white-space: nowrap;
-}
-
 .search {
   width: 280px;
   min-width: 200px;
+  margin-left: auto;
+}
+
+.search + :global(.fast-table-toolbar) {
+  margin-left: 0;
 }

@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ComponentProps, useMemo, useCallback, useState } from "react";
+import { type ComponentProps, type ReactNode, useMemo, useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -62,6 +62,7 @@ interface DefaultJobReturnTableProps {
   tableLoader?: LoadSource;
   loader?: LoadSource;
   onTableLazyLoad?: (pagination: PaginationState) => void;
+  toolbar?: ReactNode;
 }
 
 export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
@@ -84,6 +85,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     tableLoader,
     loader,
     onTableLazyLoad,
+    toolbar,
   }) => {
     const { t } = useTranslation();
     const [isTableInfoAlertVisible, setIsTableInfoAlertVisible] = useState(true);
@@ -227,44 +229,50 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     );
 
     return (
-      <Flex vertical className={styles.jobReturnTableContainer}>
-        {isTableViewMode && onTableLazyLoad ? (
-          <TableView
-            columns={tableColumns}
-            rows={tableRows}
-            total={total}
-            pagination={pagination}
-            isLoading={isTableLoading}
-            loader={tableLoader}
-            onLazyLoad={onTableLazyLoad}
-            isInfoAlertVisible={isTableInfoAlertVisible}
-            onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
-          />
-        ) : (
-          <JobReturnsTable
-            tableId="core-job-returns-standard"
-            columns={columns}
-            getRowId={(row) => row.id}
-            data={jobReturns}
-            total={total}
-            isLoading={isLoading}
-            loader={loader}
-            pagination={pagination}
-            sorting={sorting}
-            onLazyLoad={onLazyLoad}
-            useVirtualScroll
-            forceExpandAll={forceExpand}
-            getRowCanExpand={() => true}
-            renderSubComponent={renderJobResult}
-            activeRowId={drawer.activeRowId}
-            bodyRef={drawer.mainContentRef}
-            onRowClick={handleRowClick}
-            actionLinkComponent={Link}
-          />
-        )}
+      <>
+        <FastTable.Provider>
+          {toolbar}
+
+          <Flex vertical className={styles.jobReturnTableContainer}>
+            {isTableViewMode && onTableLazyLoad ? (
+              <TableView
+                columns={tableColumns}
+                rows={tableRows}
+                total={total}
+                pagination={pagination}
+                isLoading={isTableLoading}
+                loader={tableLoader}
+                onLazyLoad={onTableLazyLoad}
+                isInfoAlertVisible={isTableInfoAlertVisible}
+                onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
+              />
+            ) : (
+              <JobReturnsTable
+                tableId="core-job-returns-standard"
+                columns={columns}
+                getRowId={(row) => row.id}
+                data={jobReturns}
+                total={total}
+                isLoading={isLoading}
+                loader={loader}
+                pagination={pagination}
+                sorting={sorting}
+                onLazyLoad={onLazyLoad}
+                useVirtualScroll
+                forceExpandAll={forceExpand}
+                getRowCanExpand={() => true}
+                renderSubComponent={renderJobResult}
+                activeRowId={drawer.activeRowId}
+                bodyRef={drawer.mainContentRef}
+                onRowClick={handleRowClick}
+                actionLinkComponent={Link}
+              />
+            )}
+          </Flex>
+        </FastTable.Provider>
 
         <MinionDetailsDrawer drawer={drawer} />
-      </Flex>
+      </>
     );
   }
 );

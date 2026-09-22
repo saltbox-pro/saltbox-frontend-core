@@ -55,8 +55,7 @@
       "apply-to-filters": "Apply value to filters",
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
-      "search-label": "Search records",
-      "search-placeholder": "Enter value",
+      "search-placeholder": "Search records",
       "categories": {
         "local_groups": "Local Groups",
         "storages": "Physical disks",

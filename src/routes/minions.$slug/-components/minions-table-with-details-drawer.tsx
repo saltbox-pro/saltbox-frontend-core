@@ -9,7 +9,7 @@ import {
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
 import { message, Tag } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -36,6 +36,7 @@ export type MinionsTableWithDetailsDrawerProps = {
   filterStore: MinionFilterStore;
   onAddFilter: () => void;
   onFiltersApplied?: () => void;
+  toolbar: ReactNode;
 };
 
 export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer(
@@ -179,25 +180,31 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
 
   return (
     <>
-      <MinionsTable
-        tableId="core-minions"
-        columns={columns}
-        getRowId={(row) => row.id}
-        data={props.minionsStore.minions}
-        total={props.minionsStore.totalMinions}
-        isLoading={props.minionsStore.isLoading}
-        loader={props.minionsStore.minionsLoad}
-        pagination={props.minionsStore.pagination}
-        sorting={props.minionsStore.sorting}
-        onRowSelectionChange={props.onRowSelectionChange}
-        rowSelection={props.rowSelection}
-        onLazyLoad={(pagination, sorting) => props.minionsStore.handleLazyLoad(pagination, sorting)}
-        activeRowId={drawer.activeRowId}
-        bodyRef={drawer.mainContentRef}
-        onRowClick={handleRowClick}
-        useVirtualScroll={false}
-        actionLinkComponent={Link}
-      />
+      <FastTable.Provider>
+        {props.toolbar}
+
+        <MinionsTable
+          tableId="core-minions"
+          columns={columns}
+          getRowId={(row) => row.id}
+          data={props.minionsStore.minions}
+          total={props.minionsStore.totalMinions}
+          isLoading={props.minionsStore.isLoading}
+          loader={props.minionsStore.minionsLoad}
+          pagination={props.minionsStore.pagination}
+          sorting={props.minionsStore.sorting}
+          onRowSelectionChange={props.onRowSelectionChange}
+          rowSelection={props.rowSelection}
+          onLazyLoad={(pagination, sorting) =>
+            props.minionsStore.handleLazyLoad(pagination, sorting)
+          }
+          activeRowId={drawer.activeRowId}
+          bodyRef={drawer.mainContentRef}
+          onRowClick={handleRowClick}
+          useVirtualScroll={false}
+          actionLinkComponent={Link}
+        />
+      </FastTable.Provider>
 
       <MinionDetailsDrawer drawer={drawer} onFilterButton={handleDrawerFilterButtonClick} />
     </>

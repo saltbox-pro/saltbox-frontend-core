@@ -108,30 +108,32 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
   );
 
   return (
-    <FastTable.Provider>
-      <div className="page-actions-buttons">
-        <FastTable.Toolbar />
-      </div>
+    <>
+      <FastTable.Provider>
+        <div className="page-actions-buttons">
+          <FastTable.Toolbar />
+        </div>
 
-      <TaskMinionsTable
-        tableId="core-task-minions"
-        columns={columns}
-        getRowId={(row) => row.id}
-        data={taskStore.minions}
-        total={taskStore.totalMinions}
-        isLoading={taskStore.isMinionsLoading}
-        loader={taskStore.taskMinionsLoad}
-        pagination={taskStore.minionsPagination}
-        sorting={taskStore.minionsSorting}
-        onLazyLoad={taskStore.handleMinionsLazyLoad}
-        activeRowId={taskDrawer.activeRowId}
-        bodyRef={taskDrawer.mainContentRef}
-        onRowClick={(minion) => {
-          taskDrawer.toggle(toJS(minion));
-        }}
-        useVirtualScroll={false}
-        actionLinkComponent={Link}
-      />
+        <TaskMinionsTable
+          tableId="core-task-minions"
+          columns={columns}
+          getRowId={(row) => row.id}
+          data={taskStore.minions}
+          total={taskStore.totalMinions}
+          isLoading={taskStore.isMinionsLoading}
+          loader={taskStore.taskMinionsLoad}
+          pagination={taskStore.minionsPagination}
+          sorting={taskStore.minionsSorting}
+          onLazyLoad={taskStore.handleMinionsLazyLoad}
+          activeRowId={taskDrawer.activeRowId}
+          bodyRef={taskDrawer.mainContentRef}
+          onRowClick={(minion) => {
+            taskDrawer.toggle(toJS(minion));
+          }}
+          useVirtualScroll={false}
+          actionLinkComponent={Link}
+        />
+      </FastTable.Provider>
 
       <MinionTaskResultsDrawer
         taskStore={taskStore}
@@ -143,6 +145,6 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
         onClose={taskDrawer.close}
         onRestartFailedMinion={taskStore.handleRestartFailedMinion}
       />
-    </FastTable.Provider>
+    </>
   );
 });
