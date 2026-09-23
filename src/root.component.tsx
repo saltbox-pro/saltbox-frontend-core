@@ -12,6 +12,7 @@ import DefaultMinionsPage from "saltbox-core/routes/minions";
 import { i18nStore } from "saltbox-core/store";
 
 import { coreResources } from "./i18n-resources";
+import AuditEventsPage from "./routes/audit.events";
 import CollectionEditPage from "./routes/collection.$slug";
 import CollectionsPage from "./routes/collections";
 import ConfigurationTemplatesPage from "./routes/configuration-templates";
@@ -74,6 +75,7 @@ const coreRoutes = createRoutes(Route, [
     path: "/core/configuration-templates/:sourceId/templates/:templateId/duplicate",
     element: <DuplicateTemplatePage />,
   },
+  { path: "/core/audit/events", element: <AuditEventsPage /> },
   { path: "/not-found", element: <NotFound /> },
   { path: "*", element: <NotFound /> },
 ]);

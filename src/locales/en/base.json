@@ -1253,5 +1253,81 @@
   },
   "errors": {
     "form-validation": "Form validation error"
+  },
+  "audit": {
+    "events": {
+      "title": "Audit events",
+      "empty": "No events found",
+      "service-unavailable": "Audit service is unavailable",
+      "pager": {
+        "previous": "Previous",
+        "next": "Next",
+        "page-size": "{{size}} / page"
+      },
+      "columns": {
+        "created": "Time",
+        "severity": "Severity",
+        "category": "Category",
+        "action": "Action",
+        "status": "Status",
+        "subject": "Subject",
+        "resource": "Resource",
+        "source-service": "Service",
+        "source-ip": "IP address",
+        "correlation-id": "Correlation ID",
+        "details": "Details",
+        "siem-sent": "SIEM"
+      }
+    },
+    "fields": {
+      "severity": "Severity",
+      "category": "Category",
+      "status": "Status",
+      "action": "Action",
+      "subject_name": "Subject name",
+      "subject_type": "Subject type",
+      "resource_type": "Resource type",
+      "source_service": "Source service",
+      "correlation_id": "Correlation ID",
+      "siem_sent": "Sent to SIEM",
+      "created": "Time"
+    },
+    "severity": {
+      "info": "Info",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "category": {
+      "authentication": "Authentication",
+      "authorization": "Authorization",
+      "configuration": "Configuration",
+      "data_access": "Data access",
+      "system": "System",
+      "lifecycle": "Lifecycle"
+    },
+    "status": {
+      "success": "Success",
+      "failure": "Failure",
+      "denied": "Denied",
+      "blocked": "Blocked"
+    },
+    "subject-type": {
+      "user": "User",
+      "service": "Service",
+      "system": "System"
+    },
+    "resource-type": {
+      "api_endpoint": "API endpoint",
+      "user": "User",
+      "minion": "Minion",
+      "collection": "Collection",
+      "opa_policy": "OPA policy",
+      "task": "Task",
+      "job": "Job",
+      "schedule": "Schedule",
+      "unknown": "Unknown"
+    }
   }
 }
