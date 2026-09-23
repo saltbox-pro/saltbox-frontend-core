@@ -54,10 +54,27 @@ export class DashboardStore {
   setCollection(collectionSlug: string | null, tabNames: DashboardTabNames) {
     this.tabNames = tabNames;
     if (this.collectionSlug === collectionSlug) {
+      this.syncDefaultTabName();
       return;
     }
     this.collectionSlug = collectionSlug;
     this.reload();
+  }
+
+  private syncDefaultTabName() {
+    if (!this.tabNames) {
+      return;
+    }
+    const tab = this.tabs.find((item) => item.primary);
+    if (!tab || tab.nameCustomized) {
+      return;
+    }
+    const name = createUniqueTabName(this.tabNames.firstTab, this.tabs, tab.id);
+    if (name === tab.name) {
+      return;
+    }
+    tab.name = name;
+    this.saveToLocalStorage();
   }
 
   private reload() {
@@ -77,6 +94,7 @@ export class DashboardStore {
     }));
     this.activeTabId = stored.activeTabId;
     this.fullScreenCardId = null;
+    this.syncDefaultTabName();
   }
 
   get activeTab(): DashboardTab {
@@ -183,7 +201,12 @@ export class DashboardStore {
     if (error) {
       return error;
     }
-    tab.name = normalizeTabName(name);
+    const normalized = normalizeTabName(name);
+    if (normalized === tab.name) {
+      return null;
+    }
+    tab.name = normalized;
+    tab.nameCustomized = true;
     this.saveToLocalStorage();
     return null;
   }

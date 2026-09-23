@@ -7,6 +7,7 @@ import {
   cloneElement,
   ComponentProps,
   HTMLAttributes,
+  MouseEvent,
   ReactElement,
   useLayoutEffect,
   useRef,
@@ -23,33 +24,34 @@ import styles from "./dashboard-tabs.module.css";
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type TabNameEditorProps = {
-  initialName: string;
-  onCommit: (name: string) => TabNameError | null;
+  value: string;
+  error: TabNameError | null;
+  onChange: (value: string) => void;
+  onCommit: () => void;
+  onBlur: () => void;
   onCancel: () => void;
 };
 
-const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) => {
+const TabNameEditor = ({
+  value,
+  error,
+  onChange,
+  onCommit,
+  onBlur,
+  onCancel,
+}: TabNameEditorProps) => {
   const { t } = useTranslation();
   const inputRef = useRef<InputRef>(null);
-  const [value, setValue] = useState(initialName);
-  const [error, setError] = useState<TabNameError | null>(null);
 
   useLayoutEffect(() => {
     inputRef.current?.focus({ preventScroll: true });
   }, []);
 
-  const commit = (keepFocusOnError: boolean) => {
-    const nextError = onCommit(value);
-    if (!nextError) {
-      return;
+  useLayoutEffect(() => {
+    if (error) {
+      inputRef.current?.focus({ preventScroll: true });
     }
-    if (!keepFocusOnError) {
-      onCancel();
-      return;
-    }
-    setError(nextError);
-    inputRef.current?.focus({ preventScroll: true });
-  };
+  }, [error]);
 
   return (
     <Tooltip open={error !== null} title={error ? t(`dashboard.tab-name-${error}`) : ""}>
@@ -59,12 +61,9 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
         value={value}
         status={error ? "error" : undefined}
         className={styles.tabNameInput}
-        onChange={(event) => {
-          setValue(event.target.value);
-          setError(null);
-        }}
-        onPressEnter={() => commit(true)}
-        onBlur={() => commit(false)}
+        onChange={(event) => onChange(event.target.value)}
+        onPressEnter={onCommit}
+        onBlur={onBlur}
         onKeyDown={(event) => {
           event.stopPropagation();
           if (event.key === "Escape") {
@@ -80,9 +79,44 @@ const TabNameEditor = ({ initialName, onCommit, onCancel }: TabNameEditorProps) 
 export const DashboardTabs = observer(() => {
   const { t } = useTranslation();
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [nameError, setNameError] = useState<TabNameError | null>(null);
   const { draggedTabId, getDropSide, getDragProps, containerDragProps } = useDashboardTabDrag(
     dashboardStore.tabs.map((tab) => tab.id)
   );
+
+  const startEditing = (tabId: string, name: string) => {
+    setEditingTabId(tabId);
+    setEditingName(name);
+    setNameError(null);
+  };
+
+  const stopEditing = () => {
+    setEditingTabId(null);
+    setNameError(null);
+  };
+
+  const commitName = (keepFocusOnError: boolean) => {
+    if (!editingTabId) {
+      return;
+    }
+    const error = dashboardStore.renameTab(editingTabId, editingName);
+    if (error && keepFocusOnError) {
+      setNameError(error);
+      return;
+    }
+    stopEditing();
+  };
+
+  const keepEditorFocus = (event: MouseEvent<HTMLDivElement>) => {
+    if (!editingTabId) {
+      return;
+    }
+    if ((event.target as HTMLElement).closest(`.${styles.tabNameInput}`)) {
+      return;
+    }
+    event.preventDefault();
+  };
 
   const renderDraggableTab = (node: ReactElement) => {
     const element = node as ReactElement<HTMLAttributes<HTMLElement>>;
@@ -103,7 +137,7 @@ export const DashboardTabs = observer(() => {
       key: "rename",
       icon: <EditOutlined />,
       label: t("dashboard.rename-tab"),
-      onClick: () => setEditingTabId(tab.id),
+      onClick: () => startEditing(tab.id, tab.name),
     },
     {
       key: "remove",
@@ -127,15 +161,15 @@ export const DashboardTabs = observer(() => {
         >
           {isEditing ? (
             <TabNameEditor
-              initialName={tab.name}
-              onCancel={() => setEditingTabId(null)}
-              onCommit={(name) => {
-                const error = dashboardStore.renameTab(tab.id, name);
-                if (!error) {
-                  setEditingTabId(null);
-                }
-                return error;
+              value={editingName}
+              error={nameError}
+              onChange={(name) => {
+                setEditingName(name);
+                setNameError(null);
               }}
+              onCommit={() => commitName(true)}
+              onBlur={() => commitName(false)}
+              onCancel={stopEditing}
             />
           ) : (
             <>
@@ -158,7 +192,11 @@ export const DashboardTabs = observer(() => {
   });
 
   return (
-    <div className={styles.dashboardTabs} {...containerDragProps}>
+    <div
+      className={styles.dashboardTabs}
+      onMouseDownCapture={keepEditorFocus}
+      {...containerDragProps}
+    >
       <Tabs
         type="editable-card"
         size="small"
@@ -168,10 +206,18 @@ export const DashboardTabs = observer(() => {
         renderTabBar={(tabBarProps, DefaultTabBar) => (
           <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
         )}
-        onChange={(tabId) => dashboardStore.setActiveTab(tabId)}
+        onChange={(tabId) => {
+          commitName(false);
+          dashboardStore.setActiveTab(tabId);
+        }}
         onEdit={(_, action) => {
-          if (action === "add") {
-            setEditingTabId(dashboardStore.addTab());
+          if (action !== "add") {
+            return;
+          }
+          commitName(false);
+          const tabId = dashboardStore.addTab();
+          if (tabId) {
+            startEditing(tabId, dashboardStore.activeTab.name);
           }
         }}
       />

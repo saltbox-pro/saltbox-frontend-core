@@ -52,6 +52,7 @@ export type DashboardTab = {
   id: string;
   name: string;
   primary: boolean;
+  nameCustomized: boolean;
   cards: DashboardCardConfig[];
   layout: DashboardLayoutItem[];
 };
@@ -64,6 +65,7 @@ export type DashboardStorageConfig = {
 export type DashboardTabNames = {
   firstTab: string;
   newTab: string;
+  firstTabAliases: string[];
 };
 
 export type TabNameError = "empty" | "duplicate";
@@ -293,6 +295,7 @@ export const createDashboardTab = (name: string): DashboardTab => {
     id: createTabId(),
     name,
     primary: false,
+    nameCustomized: false,
     cards: [],
     layout: [],
   };
@@ -304,6 +307,7 @@ export const createFirstDashboardTab = (name: string): DashboardTab => {
     id,
     name,
     primary: true,
+    nameCustomized: false,
     cards: createDefaultTabCards(id),
     layout: [],
   };
@@ -325,6 +329,10 @@ const normalizeTabs = (
       id: typeof rawTab?.id === "string" && rawTab.id ? rawTab.id : createTabId(),
       name: createUniqueTabName(baseName, tabs),
       primary,
+      nameCustomized:
+        typeof rawTab?.nameCustomized === "boolean"
+          ? rawTab.nameCustomized
+          : Boolean(storedName) && !names.firstTabAliases.includes(storedName),
       cards: Array.isArray(rawTab?.cards)
         ? rawTab.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard)
         : [],
