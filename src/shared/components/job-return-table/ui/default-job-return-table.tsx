@@ -26,7 +26,10 @@ import {
   JobReturnStatusTag,
 } from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
-import { resolveEffectiveTtl } from "saltbox-core/shared/utils/job-ttl-utils";
+import {
+  isJobReturnTtlEditable,
+  resolveEffectiveTtl,
+} from "saltbox-core/shared/utils/job-ttl-utils";
 import type { JobStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -187,7 +190,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 value={seconds}
                 isInherited={isInherited}
                 allowInherit
-                disabled={!jobStore.isJobTtlEditable}
+                disabled={!isJobReturnTtlEditable(row.original)}
                 onSubmit={(ttlSeconds) => handleMinionTtlSubmit(row.original.minion_id, ttlSeconds)}
               />
             );
@@ -195,14 +198,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           meta: { width: 200 },
         }),
       ],
-      [
-        handleMinionTtlSubmit,
-        jobReturns,
-        jobStartTimestamp,
-        jobStore.isJobTtlEditable,
-        jobStore.job?.ttl,
-        t,
-      ]
+      [handleMinionTtlSubmit, jobReturns, jobStartTimestamp, jobStore.job?.ttl, t]
     );
 
     const handleRowClick = useCallback(

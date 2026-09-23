@@ -1,4 +1,4 @@
-import { JobModel, JobStatus } from "@saltbox/saltbox-core-api-client";
+import { JobModel, JobReturnStatus, JobStatus } from "@saltbox/saltbox-core-api-client";
 
 import { formatExecutionTime } from "./execution-time-utils";
 
@@ -35,6 +35,10 @@ export const resolveEffectiveTtl = (
 
 export const isJobTtlEditable = (job: JobModel | null | undefined): boolean =>
   job != null && job.status !== JobStatus.Finished && job.status !== JobStatus.LaunchError;
+
+export const isJobReturnTtlEditable = (
+  jobReturn: { status?: JobReturnStatus | null } | null | undefined
+): boolean => jobReturn?.status === JobReturnStatus.Waiting;
 
 export const formatTtlValue = (seconds: number | null | undefined, t: TranslateFn): string => {
   if (seconds == null) {

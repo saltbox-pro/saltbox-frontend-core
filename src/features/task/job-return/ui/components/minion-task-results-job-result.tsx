@@ -1,4 +1,4 @@
-import type { JobReturnModel } from "@saltbox/saltbox-core-api-client";
+import { JobReturnStatus, type JobReturnModel } from "@saltbox/saltbox-core-api-client";
 import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Tag } from "antd";
 import { useMemo } from "react";
@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import {
   getAttemptStatus,
   getShortJobReturnOutput,
+  JobReturnStatusTag,
   JobReturnSteps,
   parseSaltStates,
 } from "saltbox-core/shared/components/job-return";
@@ -14,40 +15,63 @@ import {
 import { sortJobReturnsChronologically } from "../../utils/chronological-job-return-sort";
 
 import styles from "./minion-task-results-job-result.module.css";
+import { MinionTaskResultsTtl, type MinionTaskResultsTtlProps } from "./minion-task-results-ttl";
 
 interface MinionTaskResultsJobResultProps {
   jobReturns: JobReturnModel[];
   isJobReturnsLoading: boolean;
+  onTtlApplied: MinionTaskResultsTtlProps["onTtlApplied"];
 }
 
 type AttemptStatus = "success" | "failed" | "unknown";
 
-function resolveAttemptStatus(jobReturn: JobReturnModel, isLoading: boolean): AttemptStatus {
-  if (isLoading) {
-    return "unknown";
-  }
+const NO_RESULT_STATUSES: ReadonlySet<string> = new Set([
+  JobReturnStatus.Waiting,
+  JobReturnStatus.Timeout,
+  JobReturnStatus.Ignored,
+]);
 
+function resolveAttemptStatus(jobReturn: JobReturnModel): AttemptStatus {
   const states = parseSaltStates(getShortJobReturnOutput(jobReturn));
   if (states) {
     return getAttemptStatus(states);
   }
 
-  const { success, status } = (jobReturn ?? {}) as { success?: boolean; status?: string };
-
-  if (status === "waiting") {
-    return "unknown";
-  }
+  const { success, status } = jobReturn;
 
   if (typeof success === "boolean") {
     return success ? "success" : "failed";
   }
 
+  if (status === JobReturnStatus.Success) {
+    return "success";
+  }
+
+  if (status === JobReturnStatus.Failed) {
+    return "failed";
+  }
+
   return "unknown";
 }
 
-function AttemptStatusTag({ status }: { status: AttemptStatus }) {
+function AttemptStatusTag({
+  jobReturn,
+  isLoading,
+}: {
+  jobReturn: JobReturnModel;
+  isLoading: boolean;
+}) {
   const { t } = useTranslation();
 
+  if (isLoading) {
+    return null;
+  }
+
+  if (jobReturn.status && NO_RESULT_STATUSES.has(jobReturn.status)) {
+    return <JobReturnStatusTag status={jobReturn.status} />;
+  }
+
+  const status = resolveAttemptStatus(jobReturn);
   if (status === "unknown") {
     return null;
   }
@@ -62,6 +86,7 @@ function AttemptStatusTag({ status }: { status: AttemptStatus }) {
 export function MinionTaskResultsJobResult({
   jobReturns,
   isJobReturnsLoading,
+  onTtlApplied,
 }: MinionTaskResultsJobResultProps) {
   const { t } = useTranslation();
 
@@ -89,13 +114,14 @@ export function MinionTaskResultsJobResult({
                 title={t("job-return.copy-job-data-to-clipboard")}
                 text={jobResult?.data == null ? "" : JSON.stringify(jobResult.data, null, 2)}
               />
-              <AttemptStatusTag status={resolveAttemptStatus(jobResult, inProcess)} />
+              <AttemptStatusTag jobReturn={jobResult} isLoading={inProcess} />
             </Flex>
           ),
+          extra: <MinionTaskResultsTtl jobReturn={jobResult} onTtlApplied={onTtlApplied} />,
           children: <JobReturnSteps jobReturn={jobResult} inProcess={inProcess} />,
         };
       }),
-    [orderedReturns, isJobReturnsLoading, t]
+    [orderedReturns, isJobReturnsLoading, onTtlApplied, t]
   );
 
   const defaultActiveKey = useMemo(
