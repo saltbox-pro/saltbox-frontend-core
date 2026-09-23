@@ -1,5 +1,5 @@
 import { PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { FastTable, PageHeader } from "@saltbox/saltbox-frontend-common";
+import { FastTable, PageHeader, RefreshButton } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -62,7 +62,14 @@ function PillarsPage() {
             targetType={PillarTgtType.Root}
             loadPillars={pillarsStore.reloadFromFirstPage}
           />
-          <FastTable.Toolbar />
+          <div className="page-actions-buttons-right">
+            <RefreshButton
+              loading={pillarsStore.isLoading}
+              disabled={pillarsStore.isLoading}
+              onClick={() => pillarsStore.loadPillars()}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <PillarsTable store={pillarsStore} tableId="core-pillars" />

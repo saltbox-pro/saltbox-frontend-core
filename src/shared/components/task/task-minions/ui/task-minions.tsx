@@ -1,6 +1,11 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTable, formatTimeByUserTZ, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTable,
+  RefreshButton,
+  formatTimeByUserTZ,
+  useInfoDrawer,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -35,6 +40,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
 
   const slug = taskStore.task?.target_collection?.slug ?? null;
   const collectionSlug = taskStore.task?.target_collection?.slug ?? "";
+  const taskId = taskStore.task?.id;
 
   const handleRestartFailedMinionClick = useRestartFailedMinionHandler(
     taskStore.handleRestartFailedMinion,
@@ -111,7 +117,14 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     <>
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <FastTable.Toolbar />
+          <div className="page-actions-buttons-right">
+            <RefreshButton
+              loading={taskStore.isMinionsLoading}
+              disabled={taskStore.isMinionsLoading || !taskId}
+              onClick={() => taskId && taskStore.loadMinions(taskId)}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <TaskMinionsTable

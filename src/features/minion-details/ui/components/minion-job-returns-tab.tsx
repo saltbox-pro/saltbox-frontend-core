@@ -69,6 +69,7 @@ interface MinionJobReturnsTabViewProps {
   jobReturnsConfig: JobReturnsConfig;
   isFullView?: boolean;
   jobReturnsTabActions?: React.ReactNode;
+  jobReturnsRefreshButton?: React.ReactNode;
   jobReturnsFilter?: React.ReactNode;
 }
 
@@ -200,6 +201,7 @@ function MinionJobReturnsTabView({
   jobReturnsConfig,
   isFullView = false,
   jobReturnsTabActions,
+  jobReturnsRefreshButton,
   jobReturnsFilter,
 }: MinionJobReturnsTabViewProps) {
   return (
@@ -209,7 +211,10 @@ function MinionJobReturnsTabView({
         {isFullView && !!jobReturnsTabActions && (
           <div className="page-actions-buttons">
             {jobReturnsTabActions}
-            <FastTable.Toolbar />
+            <div className="page-actions-buttons-right">
+              {jobReturnsRefreshButton}
+              <FastTable.Toolbar />
+            </div>
           </div>
         )}
         <MinionJobReturnsTable
@@ -369,24 +374,26 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   }, [jobStore]);
 
   const jobReturnsTabActions = isFullView ? (
-    <Flex justify="flex-end">
-      <AcceptedMastersActionButton
-        type="primary"
-        icon={<PlusOutlined />}
-        messageApi={messageApi}
-        navigate={navigate}
-        checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
-        warningActionText={t("job-modal.warning-action.create-job")}
-        onAction={handleOpenCreateJob}
-      >
-        {t("job-modal.create-job")}
-      </AcceptedMastersActionButton>
-      <RefreshButton
-        loading={isManualRefreshLoading}
-        onClick={handleRefreshJobReturns}
-        title={t("minions.refresh")}
-      />
-    </Flex>
+    <AcceptedMastersActionButton
+      type="primary"
+      icon={<PlusOutlined />}
+      messageApi={messageApi}
+      navigate={navigate}
+      checkHasAcceptedMasters={() => mastersStore.hasAcceptedMasters()}
+      warningActionText={t("job-modal.warning-action.create-job")}
+      onAction={handleOpenCreateJob}
+    >
+      {t("job-modal.create-job")}
+    </AcceptedMastersActionButton>
+  ) : null;
+
+  const jobReturnsRefreshButton = isFullView ? (
+    <RefreshButton
+      loading={isManualRefreshLoading}
+      disabled={isManualRefreshLoading}
+      onClick={handleRefreshJobReturns}
+      title={t("minions.refresh")}
+    />
   ) : null;
 
   return (
@@ -408,6 +415,7 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
         }}
         isFullView={isFullView}
         jobReturnsTabActions={jobReturnsTabActions}
+        jobReturnsRefreshButton={jobReturnsRefreshButton}
         jobReturnsFilter={jobReturnsFilter}
       />
 

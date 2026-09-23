@@ -1,5 +1,10 @@
 import { PillarTgtType } from "@saltbox/saltbox-core-api-client";
-import { FastTable, FilterToggleButton, useFiltersToggle } from "@saltbox/saltbox-frontend-common";
+import {
+  FastTable,
+  FilterToggleButton,
+  RefreshButton,
+  useFiltersToggle,
+} from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -105,7 +110,14 @@ export const MinionPillarsTab = observer(function MinionPillarsTab({
             targetName={displayName}
             loadPillars={pillarsStore.reloadFromFirstPage}
           />
-          <FastTable.Toolbar />
+          <div className="page-actions-buttons-right">
+            <RefreshButton
+              loading={pillarsStore.isLoading}
+              disabled={pillarsStore.isLoading}
+              onClick={() => pillarsStore.loadPillars()}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <PillarsTable

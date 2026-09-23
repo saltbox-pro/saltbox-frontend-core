@@ -2,6 +2,7 @@ import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-clie
 import {
   FastTable,
   PageHeader,
+  RefreshButton,
   WebSocketMessage,
   WebSocketService,
   formatTimeByUserTZ,
@@ -211,7 +212,14 @@ export default observer(function TasksPage() {
       />
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <FastTable.Toolbar />
+          <div className="page-actions-buttons-right">
+            <RefreshButton
+              loading={tasksStore.isTasksLoading}
+              disabled={tasksStore.isTasksLoading}
+              onClick={() => tasksStore.loadTasks()}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
         <TasksTable
           tableId="core-tasks"
