@@ -1252,5 +1252,81 @@
   },
   "errors": {
     "form-validation": "Ошибка валидации формы"
+  },
+  "audit": {
+    "events": {
+      "title": "События аудита",
+      "empty": "Событий не найдено",
+      "service-unavailable": "Сервис аудита недоступен",
+      "pager": {
+        "previous": "Назад",
+        "next": "Вперёд",
+        "page-size": "{{size}} / стр."
+      },
+      "columns": {
+        "created": "Время",
+        "severity": "Важность",
+        "category": "Категория",
+        "action": "Действие",
+        "status": "Статус",
+        "subject": "Субъект",
+        "resource": "Ресурс",
+        "source-service": "Сервис",
+        "source-ip": "IP-адрес",
+        "correlation-id": "Correlation ID",
+        "details": "Детали",
+        "siem-sent": "SIEM"
+      }
+    },
+    "fields": {
+      "severity": "Важность",
+      "category": "Категория",
+      "status": "Статус",
+      "action": "Действие",
+      "subject_name": "Имя субъекта",
+      "subject_type": "Тип субъекта",
+      "resource_type": "Тип ресурса",
+      "source_service": "Сервис-источник",
+      "correlation_id": "Correlation ID",
+      "siem_sent": "Отправлено в SIEM",
+      "created": "Время"
+    },
+    "severity": {
+      "info": "Информация",
+      "low": "Низкая",
+      "medium": "Средняя",
+      "high": "Высокая",
+      "critical": "Критическая"
+    },
+    "category": {
+      "authentication": "Аутентификация",
+      "authorization": "Авторизация",
+      "configuration": "Конфигурация",
+      "data_access": "Доступ к данным",
+      "system": "Система",
+      "lifecycle": "Жизненный цикл"
+    },
+    "status": {
+      "success": "Успешно",
+      "failure": "Ошибка",
+      "denied": "Отказано",
+      "blocked": "Заблокировано"
+    },
+    "subject-type": {
+      "user": "Пользователь",
+      "service": "Сервис",
+      "system": "Система"
+    },
+    "resource-type": {
+      "api_endpoint": "API-эндпоинт",
+      "user": "Пользователь",
+      "minion": "Клиент",
+      "collection": "Коллекция",
+      "opa_policy": "Политика OPA",
+      "task": "Задача",
+      "job": "Команда",
+      "schedule": "Расписание",
+      "unknown": "Неизвестно"
+    }
   }
 }

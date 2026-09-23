@@ -1,8 +1,4 @@
-import {
-  type JobReturnModel,
-  type TaskMinionListResponse,
-  TaskMinionStatus,
-} from "@saltbox/saltbox-core-api-client";
+import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
 import {
   InfoDescriptions,
   type InfoDescriptionsProps,
@@ -19,7 +15,6 @@ import {
 } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
 import styles from "./minion-task-results-short-info.module.css";
-import { MinionTaskResultsTtl, type MinionTaskResultsTtlProps } from "./minion-task-results-ttl";
 
 interface MinionTaskResultsShortInfoProps {
   status: TaskMinionListResponse["status"];
@@ -27,9 +22,7 @@ interface MinionTaskResultsShortInfoProps {
   finishedDt: TaskMinionListResponse["finished_dt"];
   minionId: TaskMinionListResponse["minion_id"];
   minionInnerId: TaskMinionListResponse["minion_inner_id"];
-  latestJobReturn: JobReturnModel | null;
   onRestartFailedMinion: MinionTaskRestartFailedButtonProps["onRestartFailedMinion"];
-  onTtlApplied: MinionTaskResultsTtlProps["onTtlApplied"];
 }
 
 export function MinionTaskResultsShortInfo({
@@ -38,9 +31,7 @@ export function MinionTaskResultsShortInfo({
   finishedDt,
   minionId,
   minionInnerId,
-  latestJobReturn,
   onRestartFailedMinion,
-  onTtlApplied,
 }: MinionTaskResultsShortInfoProps) {
   const { t } = useTranslation();
 
@@ -78,28 +69,8 @@ export function MinionTaskResultsShortInfo({
           <>{t("task.minions.table-not-started")}</>
         ),
       },
-      ...(latestJobReturn
-        ? [
-            {
-              label: t("jobs.ttl-label"),
-              children: (
-                <MinionTaskResultsTtl jobReturn={latestJobReturn} onTtlApplied={onTtlApplied} />
-              ),
-            },
-          ]
-        : []),
     ],
-    [
-      finishedDt,
-      latestJobReturn,
-      minionId,
-      minionInnerId,
-      onRestartFailedMinion,
-      onTtlApplied,
-      startLastDt,
-      status,
-      t,
-    ]
+    [finishedDt, minionId, minionInnerId, onRestartFailedMinion, startLastDt, status, t]
   );
 
   return <InfoDescriptions title={t("task.minion.results")} items={items} />;

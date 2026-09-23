@@ -201,31 +201,46 @@ export const saltboxModule = {
       },
     ],
   },
-  settingsConfig: {
-    priority: 20,
-    key: "core",
-    label: "Core",
-    children: [
-      {
-        key: "collections",
-        label: { en: "Collections", ru: "Коллекции" },
-        icon: "account_tree",
-        path: "/core/collections",
-      },
-      {
-        key: "masters",
-        label: { en: "Masters", ru: "Контроллеры" },
-        icon: "dns",
-        path: "/core/masters",
-      },
-      {
-        key: "configuration-templates",
-        label: { en: "Configuration Templates", ru: "Шаблоны конфигураций" },
-        icon: "assignment_globe",
-        path: "/core/configuration-templates",
-      },
-    ],
-  },
+  settingsConfig: [
+    {
+      priority: 20,
+      key: "core",
+      label: "Core",
+      children: [
+        {
+          key: "collections",
+          label: { en: "Collections", ru: "Коллекции" },
+          icon: "account_tree",
+          path: "/core/collections",
+        },
+        {
+          key: "masters",
+          label: { en: "Masters", ru: "Контроллеры" },
+          icon: "dns",
+          path: "/core/masters",
+        },
+        {
+          key: "configuration-templates",
+          label: { en: "Configuration Templates", ru: "Шаблоны конфигураций" },
+          icon: "assignment_globe",
+          path: "/core/configuration-templates",
+        },
+      ],
+    },
+    {
+      priority: 30,
+      key: "audit",
+      label: { en: "Audit", ru: "Аудит" },
+      children: [
+        {
+          key: "audit-events",
+          label: { en: "Audit events", ru: "События аудита" },
+          icon: "manage_search",
+          path: "/core/audit/events",
+        },
+      ],
+    },
+  ],
   init: (authStore, services, localeStore, pluginsStore) => {
     appStore.init(authStore, pluginsStore);
     disposeWebSocketAccessTokenSync?.();
