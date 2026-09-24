@@ -30,9 +30,6 @@ export function MinionTaskResults({
     minion_inner_id: minionInnerId,
   } = selectedMinion ?? {};
 
-  // Список уже отсортирован от новых к старым, поэтому актуальный Job — первый.
-  const latestJobReturn = jobReturns?.[0] ?? null;
-
   return (
     <Flex vertical gap="large">
       <MinionTaskResultsShortInfo
@@ -41,14 +38,13 @@ export function MinionTaskResults({
         finishedDt={finishedDt}
         minionId={minionId}
         minionInnerId={minionInnerId}
-        latestJobReturn={latestJobReturn}
         onRestartFailedMinion={onRestartFailedMinion}
-        onTtlApplied={onTtlApplied}
       />
 
       <MinionTaskResultsJobResult
         jobReturns={jobReturns}
         isJobReturnsLoading={isJobReturnsLoading}
+        onTtlApplied={onTtlApplied}
       />
     </Flex>
   );

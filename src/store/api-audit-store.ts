@@ -1,0 +1,40 @@
+import { AuditEventsApi, Configuration } from "@saltbox/saltbox-audit-api-client";
+import { computed, makeObservable, observable } from "mobx";
+
+import { appStore, envStore } from "saltbox-core/store";
+
+class ApiAuditStore {
+  @observable public serviceName: string;
+
+  private get apiConfig() {
+    if (!this.env || !appStore.authStore?.user?.access_token) {
+      return undefined;
+    }
+    return new Configuration({
+      basePath: this.env?.api_base_path,
+      headers: {
+        Authorization: `Bearer ${appStore.authStore.user.access_token}`,
+      },
+    });
+  }
+
+  constructor(serviceName: string) {
+    makeObservable(this);
+
+    this.serviceName = serviceName;
+  }
+
+  @computed get env() {
+    return envStore?.services?.get(this.serviceName);
+  }
+
+  @computed get isAvailable() {
+    return !!this.env;
+  }
+
+  @computed get auditEventsApi() {
+    return this.apiConfig && new AuditEventsApi(this.apiConfig);
+  }
+}
+
+export const apiAuditStore = new ApiAuditStore("audit");
