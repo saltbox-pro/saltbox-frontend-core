@@ -1,4 +1,4 @@
-import { ErrorZone, FastTable, PageHeader, RefreshButton } from "@saltbox/saltbox-frontend-common";
+import { ErrorZone, FastTable, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { Alert } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
@@ -13,8 +13,6 @@ import {
   localizeAuditFilterSchema,
 } from "saltbox-core/features/audit-events";
 import { apiAuditStore } from "saltbox-core/store";
-
-import styles from "./index.module.css";
 
 const AuditEventsPage = observer(() => {
   const { t } = useTranslation();
@@ -70,14 +68,7 @@ const AuditEventsPage = observer(() => {
 
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <div className={styles.tableActions}>
-            <RefreshButton
-              loading={eventsStore.isLoading}
-              disabled={eventsStore.isLoading}
-              onClick={eventsStore.reload}
-            />
-            <FastTable.Toolbar />
-          </div>
+          <FastTable.Toolbar />
         </div>
 
         <AuditEventsTable store={eventsStore} />

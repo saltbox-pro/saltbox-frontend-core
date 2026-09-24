@@ -136,6 +136,8 @@ export const AuditEventsTable = observer(({ store }: AuditEventsTableProps) => {
           data={store.events}
           getRowId={(row) => row.id}
           isEmpty={!store.isLoading && store.events.length === 0}
+          isLoading={store.isLoading}
+          onRefresh={store.reload}
           loader={store.eventsLoad}
           locale={{ empty: t("audit.events.empty") }}
           hideFooter
