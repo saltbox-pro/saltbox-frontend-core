@@ -3,7 +3,6 @@ import { MasterViewSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
   PageHeader,
-  RefreshButton,
   formatTimeByUserTZ,
   notify,
   runMutation,
@@ -182,14 +181,7 @@ function MastersPage() {
           >
             {t("masters.check-availability")}
           </Button>
-          <div className="page-actions-buttons-right">
-            <RefreshButton
-              loading={mastersStore.isLoading}
-              disabled={mastersStore.isLoading}
-              onClick={() => mastersStore.loadMasters()}
-            />
-            <FastTable.Toolbar />
-          </div>
+          <FastTable.Toolbar />
         </div>
 
         <MastersTable
@@ -197,6 +189,7 @@ function MastersPage() {
           columns={columns}
           data={toJS(masters)}
           isLoading={mastersStore.isLoading}
+          onRefresh={() => mastersStore.loadMasters()}
           loader={mastersStore.mastersLoad}
           pagination={pagination}
           sorting={sorting}

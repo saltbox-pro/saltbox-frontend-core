@@ -1,7 +1,6 @@
 import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
-  RefreshButton,
   WebSocketMessage,
   WebSocketService,
   formatTimeByUserTZ,
@@ -214,14 +213,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
       />
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <div className="page-actions-buttons-right">
-            <RefreshButton
-              loading={tasksStore.isTasksLoading}
-              disabled={tasksStore.isTasksLoading}
-              onClick={() => tasksStore.loadTasks()}
-            />
-            <FastTable.Toolbar />
-          </div>
+          <FastTable.Toolbar />
         </div>
         <TasksTable
           tableId={
@@ -232,6 +224,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
           data={tasksStore.tasks}
           total={tasksStore.total}
           isLoading={tasksStore.isTasksLoading}
+          onRefresh={() => tasksStore.loadTasks()}
           loader={tasksStore.tasksLoad}
           pagination={tasksStore.pagination}
           sorting={tasksStore.sorting}

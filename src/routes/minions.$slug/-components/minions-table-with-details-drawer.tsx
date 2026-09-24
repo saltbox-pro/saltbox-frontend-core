@@ -36,6 +36,7 @@ export type MinionsTableWithDetailsDrawerProps = {
   filterStore: MinionFilterStore;
   onAddFilter: () => void;
   onFiltersApplied?: () => void;
+  onRefresh: () => void;
   toolbar: ReactNode;
 };
 
@@ -190,6 +191,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           data={props.minionsStore.minions}
           total={props.minionsStore.totalMinions}
           isLoading={props.minionsStore.isLoading}
+          onRefresh={props.onRefresh}
           loader={props.minionsStore.minionsLoad}
           pagination={props.minionsStore.pagination}
           sorting={props.minionsStore.sorting}

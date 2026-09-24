@@ -3,7 +3,7 @@ import type {
   CollectionExtraDataListItemSchema,
   ExtraDataCategoryModel,
 } from "@saltbox/saltbox-core-api-client";
-import { FastTable, RefreshButton, type CellAction } from "@saltbox/saltbox-frontend-common";
+import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
@@ -159,15 +159,8 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
     <FastTable.Provider>
       <Flex vertical className={styles.root}>
         <div className="page-actions-buttons">
-          <div className="page-actions-buttons-right">
-            <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
-            <RefreshButton
-              loading={store.isLoading}
-              disabled={store.isLoading}
-              onClick={() => store.loadRecords()}
-            />
-            <FastTable.Toolbar />
-          </div>
+          <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+          <FastTable.Toolbar />
         </div>
 
         <ExtraDataRecordsTable
@@ -176,6 +169,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
           data={store.recordsSnapshot}
           total={store.totalRecords}
           isLoading={store.isLoading}
+          onRefresh={() => store.loadRecords()}
           loader={store.recordsLoad}
           pagination={store.pagination}
           sorting={store.sorting}

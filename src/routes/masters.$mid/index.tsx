@@ -337,10 +337,6 @@ const MasterPage = observer(() => {
                       setSelection({});
                       saltKeysStore.setStatusFilter(status);
                     }}
-                    onRefresh={() => {
-                      setSelection({});
-                      saltKeysStore.refresh();
-                    }}
                   />
                 </div>
 
@@ -350,6 +346,10 @@ const MasterPage = observer(() => {
                   data={saltKeysStore.pagedKeys}
                   total={saltKeysStore.totalFiltred}
                   isLoading={saltKeysStore.isLoading}
+                  onRefresh={() => {
+                    setSelection({});
+                    saltKeysStore.refresh();
+                  }}
                   loader={saltKeysStore.saltKeysLoad}
                   pagination={saltKeysStore.pagination}
                   sorting={saltKeysStore.sorting}

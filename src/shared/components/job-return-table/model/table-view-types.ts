@@ -11,6 +11,7 @@ export type BackendTableViewProps = {
   isLoading: boolean;
   loader?: LoadSource;
   onLazyLoad: (pagination: PaginationState) => void;
+  onRefresh?: () => void;
   isInfoAlertVisible?: boolean;
   onInfoAlertClose?: () => void;
 };

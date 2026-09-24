@@ -21,6 +21,7 @@ export const TableView = observer<BackendTableViewProps>(function TableView({
   isLoading,
   loader,
   onLazyLoad,
+  onRefresh,
   isInfoAlertVisible = true,
   onInfoAlertClose,
 }) {
@@ -49,6 +50,7 @@ export const TableView = observer<BackendTableViewProps>(function TableView({
         loader={loader}
         pagination={pagination}
         onLazyLoad={onLazyLoad}
+        onRefresh={onRefresh}
         getRowId={getTableRowId}
         getRowGroupKey={getMinionIdGroupKey}
         useVirtualScroll

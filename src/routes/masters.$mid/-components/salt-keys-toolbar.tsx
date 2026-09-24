@@ -1,5 +1,5 @@
 import { SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
-import { FastTable, RefreshButton } from "@saltbox/saltbox-frontend-common";
+import { FastTable } from "@saltbox/saltbox-frontend-common";
 import { Flex, Select } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -12,10 +12,9 @@ type SaltKeysToolbarProps = {
   value: SaltKeyFilterType;
   isLoading?: boolean;
   onChange: (status: SaltKeyFilterType) => void;
-  onRefresh: () => void;
 };
 
-export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltKeysToolbarProps) {
+export function SaltKeysToolbar({ value, isLoading, onChange }: SaltKeysToolbarProps) {
   const { t } = useTranslation();
 
   const options = useMemo(
@@ -47,13 +46,6 @@ export function SaltKeysToolbar({ value, isLoading, onChange, onRefresh }: SaltK
             },
           },
         }}
-      />
-      <RefreshButton
-        className={styles.saltKeysToolbarRefreshButton}
-        loading={isLoading}
-        onClick={onRefresh}
-        title={t("master.refresh")}
-        disabled={isLoading}
       />
       <FastTable.Toolbar />
     </Flex>

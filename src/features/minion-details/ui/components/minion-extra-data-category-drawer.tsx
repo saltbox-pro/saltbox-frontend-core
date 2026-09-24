@@ -3,7 +3,6 @@ import {
   FastTable,
   ErrorZone,
   InfoDrawer,
-  RefreshButton,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
 import { Skeleton } from "antd";
@@ -114,15 +113,8 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
             <FastTable.Provider>
               {isLoaded && !singleRecord && (
                 <div className="page-actions-buttons">
-                  <div className="page-actions-buttons-right">
-                    <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-                    <RefreshButton
-                      loading={extraDataRecordsStore.isLoading}
-                      disabled={extraDataRecordsStore.isLoading}
-                      onClick={() => extraDataRecordsStore.loadRecords()}
-                    />
-                    <FastTable.Toolbar />
-                  </div>
+                  <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+                  <FastTable.Toolbar />
                 </div>
               )}
 

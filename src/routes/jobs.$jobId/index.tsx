@@ -13,7 +13,6 @@ import {
   WebSocketService,
   AcceptedMastersActionButton,
   ErrorZone,
-  RefreshButton,
   formatTimeByUserTZ,
   runMutation,
   useWithAcceptedMastersCheck,
@@ -74,7 +73,6 @@ const JobPage = observer(() => {
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isTableExportLoading, setIsTableExportLoading] = useState(false);
-  const [isManualRefreshLoading, setIsManualRefreshLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -183,18 +181,13 @@ const JobPage = observer(() => {
     jobStore.loadJobReturns();
   }, []);
 
-  const handleJobReturnsRefresh = useCallback(async () => {
-    setIsManualRefreshLoading(true);
-    try {
-      if (isTableViewMode) {
-        await jobStore.loadJobReturnsTable();
-        return;
-      }
-
-      await jobStore.loadJobReturns();
-    } finally {
-      setIsManualRefreshLoading(false);
+  const handleJobReturnsRefresh = useCallback(() => {
+    if (isTableViewMode) {
+      jobStore.loadJobReturnsTable();
+      return;
     }
+
+    jobStore.loadJobReturns();
   }, [isTableViewMode]);
 
   const handleJobTtlSubmit = useCallback(
@@ -512,6 +505,7 @@ const JobPage = observer(() => {
                     isTableLoading={jobStore.isJobReturnTableLoading}
                     tableLoader={jobStore.jobReturnsTableLoad}
                     onTableLazyLoad={jobStore.handleTableLazyLoad}
+                    onRefresh={handleJobReturnsRefresh}
                     toolbar={
                       showJobReturnsToolbar ? (
                         <Flex
@@ -576,11 +570,6 @@ const JobPage = observer(() => {
                                 <QuestionCircleOutlined className={styles.helpIcon} />
                               </Tooltip>
                             )}
-                            <RefreshButton
-                              title={t("common.refresh")}
-                              loading={isManualRefreshLoading}
-                              onClick={handleJobReturnsRefresh}
-                            />
                             <FastTable.Toolbar />
                           </Flex>
                         </Flex>

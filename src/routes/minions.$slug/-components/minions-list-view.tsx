@@ -2,7 +2,6 @@ import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
   AcceptedMastersActionButton,
-  RefreshButton,
   SelectedItemsCounter,
 } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState } from "@tanstack/react-table";
@@ -165,6 +164,7 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
           filterStore={props.filterStore}
           onAddFilter={props.onAddFilter}
           onFiltersApplied={applySearchFilters}
+          onRefresh={reloadMinions}
           toolbar={
             <div className={`page-actions-buttons ${styles.actionsRow}`}>
               <div className={styles.leftGroup}>
@@ -211,11 +211,6 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
               </div>
 
               <div className={styles.rightGroup}>
-                <RefreshButton
-                  loading={minionsStore.isLoading}
-                  onClick={reloadMinions}
-                  title={t("minions.refresh")}
-                />
                 <FastTable.Toolbar />
               </div>
             </div>

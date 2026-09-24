@@ -10,7 +10,6 @@ import {
   formatTimeByUserTZ,
   CellAction,
   AcceptedMastersActionButton,
-  RefreshButton,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Tag, message } from "antd";
@@ -341,12 +340,6 @@ const JobsPage = observer(() => {
                 jobsStore.handleDateRangeChange(createdSince, preset);
               }}
             />
-            <RefreshButton
-              loading={jobsStore.isJobsLoading}
-              onClick={() => jobsStore.refreshJobs()}
-              title={t("jobs.refresh")}
-              disabled={jobsStore.isJobsLoading}
-            />
             <FastTable.Toolbar />
           </div>
         </div>
@@ -358,6 +351,7 @@ const JobsPage = observer(() => {
           data={jobsStore.jobs}
           total={jobsStore.total}
           isLoading={jobsStore.isJobsLoading}
+          onRefresh={() => jobsStore.refreshJobs()}
           loader={jobsStore.jobsLoad}
           pagination={jobsStore.pagination}
           sorting={jobsStore.sorting}

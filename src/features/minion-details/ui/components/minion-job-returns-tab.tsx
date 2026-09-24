@@ -9,7 +9,6 @@ import {
   createExpanderColumn,
   FilterToggleButton,
   formatTimeByUserTZ,
-  RefreshButton,
   useFiltersToggle,
   AcceptedMastersActionButton,
   type LoadSource,
@@ -58,6 +57,7 @@ interface JobReturnsConfig {
   sorting: SortingState;
   total: number;
   onLazyLoad: (pagination: PaginationState, sorting: SortingState) => void;
+  onRefresh?: () => void;
   onReplayJob: (row: JobReturnModel) => void;
 }
 
@@ -69,7 +69,6 @@ interface MinionJobReturnsTabViewProps {
   jobReturnsConfig: JobReturnsConfig;
   isFullView?: boolean;
   jobReturnsTabActions?: React.ReactNode;
-  jobReturnsRefreshButton?: React.ReactNode;
   jobReturnsFilter?: React.ReactNode;
 }
 
@@ -82,6 +81,7 @@ const MinionJobReturnsTable = ({
   loader,
   total,
   pagination,
+  onRefresh,
   onReplayJob,
   tableId,
 }: MinionJobReturnsTableProps) => {
@@ -187,6 +187,7 @@ const MinionJobReturnsTable = ({
         pagination={pagination}
         sorting={sorting}
         onLazyLoad={onLazyLoad}
+        onRefresh={onRefresh}
         getRowId={(row) => row.id}
         onRowClick={(jobReturn) => handleNavigateToJob(jobReturn.job_id)}
         useVirtualScroll={false}
@@ -201,7 +202,6 @@ function MinionJobReturnsTabView({
   jobReturnsConfig,
   isFullView = false,
   jobReturnsTabActions,
-  jobReturnsRefreshButton,
   jobReturnsFilter,
 }: MinionJobReturnsTabViewProps) {
   return (
@@ -211,10 +211,7 @@ function MinionJobReturnsTabView({
         {isFullView && !!jobReturnsTabActions && (
           <div className="page-actions-buttons">
             {jobReturnsTabActions}
-            <div className="page-actions-buttons-right">
-              {jobReturnsRefreshButton}
-              <FastTable.Toolbar />
-            </div>
+            <FastTable.Toolbar />
           </div>
         )}
         <MinionJobReturnsTable
@@ -238,7 +235,6 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
   const navigate = useNavigate();
   const { isOpen: shownFilters, toggle: toggleShownFilters } = useFiltersToggle(false);
   const [filtersExtraContainer, setFiltersExtraContainer] = useState<HTMLElement | null>(null);
-  const [isManualRefreshLoading, setIsManualRefreshLoading] = useState(false);
 
   const jobStore = useMemo(() => new JobStore(minionJobReturnsSorting), []);
   const lastLoadedMinionIdRef = useRef<string | null>(null);
@@ -364,13 +360,8 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     />
   ) : null;
 
-  const handleRefreshJobReturns = useCallback(async () => {
-    setIsManualRefreshLoading(true);
-    try {
-      await jobStore.loadJobReturns();
-    } finally {
-      setIsManualRefreshLoading(false);
-    }
+  const handleRefreshJobReturns = useCallback(() => {
+    jobStore.loadJobReturns();
   }, [jobStore]);
 
   const jobReturnsTabActions = isFullView ? (
@@ -385,15 +376,6 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
     >
       {t("job-modal.create-job")}
     </AcceptedMastersActionButton>
-  ) : null;
-
-  const jobReturnsRefreshButton = isFullView ? (
-    <RefreshButton
-      loading={isManualRefreshLoading}
-      disabled={isManualRefreshLoading}
-      onClick={handleRefreshJobReturns}
-      title={t("minions.refresh")}
-    />
   ) : null;
 
   return (
@@ -411,11 +393,11 @@ export const MinionJobReturnsTab = observer(function MinionJobReturnsTab({
           sorting: jobStore.sorting,
           total: jobStore.total,
           onLazyLoad: jobStore.handleLazyLoad,
+          onRefresh: handleRefreshJobReturns,
           onReplayJob: handleReplayJob,
         }}
         isFullView={isFullView}
         jobReturnsTabActions={jobReturnsTabActions}
-        jobReturnsRefreshButton={jobReturnsRefreshButton}
         jobReturnsFilter={jobReturnsFilter}
       />
 

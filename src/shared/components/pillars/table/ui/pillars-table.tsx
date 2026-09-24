@@ -150,6 +150,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
         data={toJS(store.pillars)}
         total={store.totalPillars}
         isLoading={store.isLoading}
+        onRefresh={() => store.loadPillars()}
         loader={store.pillarsLoad}
         pagination={store.pagination}
         sorting={store.sorting}

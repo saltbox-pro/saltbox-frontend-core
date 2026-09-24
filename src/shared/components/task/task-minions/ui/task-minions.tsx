@@ -1,11 +1,6 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import {
-  FastTable,
-  RefreshButton,
-  formatTimeByUserTZ,
-  useInfoDrawer,
-} from "@saltbox/saltbox-frontend-common";
+import { FastTable, formatTimeByUserTZ, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -117,14 +112,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     <>
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <div className="page-actions-buttons-right">
-            <RefreshButton
-              loading={taskStore.isMinionsLoading}
-              disabled={taskStore.isMinionsLoading || !taskId}
-              onClick={() => taskId && taskStore.loadMinions(taskId)}
-            />
-            <FastTable.Toolbar />
-          </div>
+          <FastTable.Toolbar />
         </div>
 
         <TaskMinionsTable
@@ -134,6 +122,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
           data={taskStore.minions}
           total={taskStore.totalMinions}
           isLoading={taskStore.isMinionsLoading}
+          onRefresh={taskId ? () => taskStore.loadMinions(taskId) : undefined}
           loader={taskStore.taskMinionsLoad}
           pagination={taskStore.minionsPagination}
           sorting={taskStore.minionsSorting}

@@ -62,6 +62,7 @@ interface DefaultJobReturnTableProps {
   tableLoader?: LoadSource;
   loader?: LoadSource;
   onTableLazyLoad?: (pagination: PaginationState) => void;
+  onRefresh?: () => void;
   toolbar?: ReactNode;
 }
 
@@ -85,6 +86,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     tableLoader,
     loader,
     onTableLazyLoad,
+    onRefresh,
     toolbar,
   }) => {
     const { t } = useTranslation();
@@ -243,6 +245,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 isLoading={isTableLoading}
                 loader={tableLoader}
                 onLazyLoad={onTableLazyLoad}
+                onRefresh={onRefresh}
                 isInfoAlertVisible={isTableInfoAlertVisible}
                 onInfoAlertClose={() => setIsTableInfoAlertVisible(false)}
               />
@@ -258,6 +261,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
                 pagination={pagination}
                 sorting={sorting}
                 onLazyLoad={onLazyLoad}
+                onRefresh={onRefresh}
                 useVirtualScroll
                 forceExpandAll={forceExpand}
                 getRowCanExpand={() => true}

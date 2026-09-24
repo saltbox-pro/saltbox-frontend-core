@@ -72,6 +72,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
         data={toJS(store.records)}
         total={store.totalRecords}
         isLoading={store.isLoading}
+        onRefresh={() => store.loadRecords()}
         loader={store.recordsLoad}
         pagination={store.pagination}
         sorting={store.sorting}
