@@ -29,7 +29,7 @@ export class TaskCreationService {
       max_retries: formData.max_retries,
       retry_delay: formData.retry_delay,
       max_jobs_count_at_same_time: formData.max_jobs_count_at_same_time,
-      ttl: formData.ttl,
+      ttl_jobs: formData.ttl,
       save_pillars_as_default: formData.save_pillars_as_default,
       data: this.filterTaskData(formData.data, taskTemplate),
     };

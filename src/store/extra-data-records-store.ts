@@ -11,6 +11,7 @@ export type ExtraDataRecord = Record<string, unknown>;
 export interface ExtraDataRecordsStoreOptions {
   minionId: string;
   categoryId: string;
+  collectionSlug: string;
 }
 
 export class ExtraDataRecordsStore {
@@ -23,12 +24,13 @@ export class ExtraDataRecordsStore {
 
   readonly minionId: string;
   readonly categoryId: string;
+  readonly collectionSlug: string;
 
   private loadAbortController: AbortController | null = null;
 
   readonly recordsLoad = createLoader({
     run: () => {
-      const api = apiCoreStore.minionsApi;
+      const api = apiCoreStore.extraDataApi;
       if (!api) {
         return undefined;
       }
@@ -37,11 +39,12 @@ export class ExtraDataRecordsStore {
       const abortController = new AbortController();
       this.loadAbortController = abortController;
 
-      return api.minionsExtraDataList(
+      return api.extraDataItemsByMinion(
         {
           ExtraDataListBody: {
             minion_id: this.minionId,
             category_id: this.categoryId,
+            collection_slug: this.collectionSlug,
             limit: this.pagination.pageSize,
             skip: this.pagination.pageIndex * this.pagination.pageSize,
             sort: toBackendSorting(this.sorting),
@@ -64,6 +67,7 @@ export class ExtraDataRecordsStore {
   constructor(options: ExtraDataRecordsStoreOptions) {
     this.minionId = options.minionId;
     this.categoryId = options.categoryId;
+    this.collectionSlug = options.collectionSlug;
 
     this.records = [];
     this.totalRecords = 0;

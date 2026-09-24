@@ -21,12 +21,14 @@ const ExtraDataCategoriesTable = FastTable.Paginated<ExtraDataCategoryModel>;
 
 interface MinionExtraDataTabProps {
   minionId: string;
+  collectionSlug: string;
   isInDrawer?: boolean;
   onFilterButton?: OnFilterButtonHandler;
 }
 
 export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   minionId,
+  collectionSlug,
   isInDrawer = false,
   onFilterButton,
 }: MinionExtraDataTabProps) {
@@ -85,6 +87,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
         open={categoryDrawer.isOpened}
         category={categoryDrawer.openedArg}
         minionId={minionId}
+        collectionSlug={collectionSlug}
         width={960}
         onClose={categoryDrawer.close}
         onFilterButton={onFilterButton}

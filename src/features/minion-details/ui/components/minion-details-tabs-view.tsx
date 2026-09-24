@@ -51,6 +51,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   isMinionRefreshing = false,
   isFullView,
   actionsMenu,
+  collectionSlug,
   onFilterButton,
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
@@ -139,9 +140,10 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       "extra-data": {
         key: "extra-data",
         label: t("minions.extra-data.tab"),
-        children: !!minion?.id && (
+        children: !!minion?.id && !!collectionSlug && (
           <MinionExtraDataTab
             minionId={minion.id}
+            collectionSlug={collectionSlug}
             isInDrawer={isInDrawer}
             onFilterButton={onFilterButton}
           />
@@ -182,6 +184,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     return [...builtInTabs, ...pluginTabItems];
   }, [
     availableTabKeys,
+    collectionSlug,
     isFullView,
     isMinionRefreshing,
     isInDrawer,

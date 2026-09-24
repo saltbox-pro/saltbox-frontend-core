@@ -30,6 +30,7 @@ export type MinionExtraDataCategoryDrawerProps = Omit<
 > & {
   category: ExtraDataCategoryModel | null;
   minionId: string;
+  collectionSlug: string;
   onFilterButton?: OnFilterButtonHandler;
 };
 
@@ -37,6 +38,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
   function MinionExtraDataCategoryDrawer({
     category,
     minionId,
+    collectionSlug,
     open,
     onFilterButton,
     ...restProps
@@ -53,8 +55,9 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       return new ExtraDataRecordsStore({
         minionId,
         categoryId,
+        collectionSlug,
       });
-    }, [categoryId, minionId]);
+    }, [categoryId, minionId, collectionSlug]);
 
     useEffect(() => {
       if (!extraDataRecordsStore) return;

@@ -1,5 +1,6 @@
 import {
   Configuration,
+  ExtraDataApi,
   FiltersApi,
   JobsApi,
   MastersApi,
@@ -41,6 +42,10 @@ class ApiCoreStore {
 
   @computed get env() {
     return envStore?.services?.get(this.serviceName);
+  }
+
+  @computed get extraDataApi() {
+    return this.apiConfig && new ExtraDataApi(this.apiConfig);
   }
 
   @computed get filtersApi() {

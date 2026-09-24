@@ -5,8 +5,6 @@ import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
-const EXTRA_DATA_SOURCE = "static.inventory";
-
 const DEFAULT_SORTING: SortingState = [{ id: "name", desc: false }];
 const PAGE_SIZE = 50;
 
@@ -24,7 +22,7 @@ export class ExtraDataCategoriesStore {
 
   readonly categoriesLoad = createLoader({
     run: () => {
-      const api = apiCoreStore.minionsApi;
+      const api = apiCoreStore.extraDataApi;
       if (!api) {
         return undefined;
       }
@@ -33,10 +31,9 @@ export class ExtraDataCategoriesStore {
       const abortController = new AbortController();
       this.loadAbortController = abortController;
 
-      return api.minionsExtraCategoryList(
+      return api.extraDataCategoriesList(
         {
           ExtraDataCategoryListBody: {
-            source: EXTRA_DATA_SOURCE,
             limit: this.pagination.pageSize,
             skip: this.pagination.pageIndex * this.pagination.pageSize,
             sort: toBackendSorting(this.sorting),

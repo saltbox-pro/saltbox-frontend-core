@@ -13,6 +13,7 @@ export interface MinionDetailsCommonProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   isMinionRefreshing?: boolean;
+  collectionSlug: string;
   onFilterButton?: OnFilterButtonHandler;
   isFullView?: boolean;
   actionsMenu?: ReactNode;

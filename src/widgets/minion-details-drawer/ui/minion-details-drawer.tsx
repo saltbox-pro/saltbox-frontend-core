@@ -69,6 +69,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
         minion={minion}
         isMinionLoading={false}
         isMinionRefreshing={isMinionRefreshing}
+        collectionSlug={slug ?? ""}
         onFilterButton={onFilterButton}
       />
     </BaseMinionDrawer>

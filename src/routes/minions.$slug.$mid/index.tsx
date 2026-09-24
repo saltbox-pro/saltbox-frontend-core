@@ -40,6 +40,7 @@ const MinionPage = observer(() => {
           minion={minionStore.minion}
           isMinionLoading={minionStore.isMinionLoading}
           isMinionRefreshing={minionStore.isMinionRefreshing}
+          collectionSlug={slug ?? ""}
           actionsMenu={
             <MinionDetailActionsMenu
               minion={minionStore.minion}

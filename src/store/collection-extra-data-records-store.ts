@@ -27,7 +27,7 @@ export class CollectionExtraDataRecordsStore {
 
   readonly recordsLoad = createLoader({
     run: () => {
-      const api = apiCoreStore.minionCollectionsApi;
+      const api = apiCoreStore.extraDataApi;
       if (!api) {
         return undefined;
       }
@@ -36,7 +36,7 @@ export class CollectionExtraDataRecordsStore {
       const abortController = new AbortController();
       this.loadAbortController = abortController;
 
-      return api.minionCollectionsExtraDataList(
+      return api.extraDataItemsByCollection(
         {
           CollectionExtraDataListBody: {
             collection_slug: this.collectionSlug,
