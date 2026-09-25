@@ -1,8 +1,10 @@
 import { createLoader, PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
-import { makeObservable, observable, runInAction } from "mobx";
-import type { OptionList } from "react-querybuilder";
+import { action, computed, makeObservable, observable, runInAction } from "mobx";
+import { generateID, type Option, type OptionList } from "react-querybuilder";
 
 import { apiAuditStore } from "saltbox-core/store";
+
+import { withValueRule } from "../helpers/with-value-rule";
 
 export class AuditEventsFilterStore extends PersistentFilterStore {
   @observable.ref rawFilterSchema: OptionList = [];
@@ -20,6 +22,14 @@ export class AuditEventsFilterStore extends PersistentFilterStore {
     makeObservable(this);
   }
 
+  @computed get valueFilterFields(): ReadonlySet<string> {
+    const fields = (this.rawFilterSchema as Option[]).filter((field) => {
+      const operators = field.operators as Option[] | undefined;
+      return !operators || operators.some((operator) => operator.name === "=");
+    });
+    return new Set(fields.map((field) => field.name));
+  }
+
   loadFilterSchema = () => {
     runInAction(() => {
       this.isLoading = true;
@@ -29,5 +39,18 @@ export class AuditEventsFilterStore extends PersistentFilterStore {
         this.isLoading = false;
       });
     });
+  };
+
+  @action
+  applyValueFilter = (field: string, value: string | boolean) => {
+    this.currentFilters = withValueRule(this.currentFilters, {
+      id: generateID(),
+      field,
+      operator: "=",
+      valueSource: "value",
+      value,
+    });
+    this.filtersRevision += 1;
+    this.handleSearch();
   };
 }

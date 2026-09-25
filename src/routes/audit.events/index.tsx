@@ -1,7 +1,7 @@
 import { ErrorZone, FastTable, PageHeader } from "@saltbox/saltbox-frontend-common";
 import { Alert } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
@@ -45,6 +45,14 @@ const AuditEventsPage = observer(() => {
     eventsStore.applyQuery(filterStore.searchMongoDBQuery);
   };
 
+  const handleFilterByValue = useCallback(
+    (field: string, value: string | boolean) => {
+      filterStore.applyValueFilter(field, value);
+      eventsStore.applyQuery(filterStore.searchMongoDBQuery);
+    },
+    [eventsStore, filterStore]
+  );
+
   if (!apiAuditStore.isAvailable) {
     return (
       <>
@@ -71,7 +79,11 @@ const AuditEventsPage = observer(() => {
           <FastTable.Toolbar />
         </div>
 
-        <AuditEventsTable store={eventsStore} />
+        <AuditEventsTable
+          store={eventsStore}
+          filterableFields={filterStore.valueFilterFields}
+          onFilterByValue={handleFilterByValue}
+        />
       </FastTable.Provider>
     </>
   );

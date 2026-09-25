@@ -1,4 +1,5 @@
 import { Tag } from "antd";
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -22,6 +23,7 @@ export interface JsonPreviewProps {
   popoverMaxWidth?: JsonPopoverProps["maxWidth"];
   popoverPlacement?: JsonPopoverProps["placement"];
   popoverContentStyle?: JsonPopoverProps["contentStyle"];
+  singleLine?: boolean;
 }
 
 const DEFAULT_POPOVER_CONTENT_STYLE: JsonPopoverProps["contentStyle"] = {
@@ -37,6 +39,7 @@ export function JsonPreview({
   popoverMaxWidth = "500px",
   popoverPlacement = "bottom",
   popoverContentStyle,
+  singleLine = false,
 }: JsonPreviewProps) {
   const { t } = useTranslation();
   const empty = isEmpty(value);
@@ -47,18 +50,19 @@ export function JsonPreview({
   ) : (
     <PreviewContent value={value} maxEntries={maxPreviewEntries} />
   );
+  const tagClassName = clsx(styles.tagClickable, singleLine && styles.tagSingleLine);
 
   return (
-    <div className={styles.jsonPreview}>
+    <div className={clsx(styles.jsonPreview, singleLine && styles.jsonPreviewSingleLine)}>
       {empty ? (
-        <Tag className={styles.tag}>{tagContent}</Tag>
+        <Tag className={clsx(styles.tag, singleLine && styles.tagSingleLine)}>{tagContent}</Tag>
       ) : isPrimitive(value) ? (
         <PrimitivePopover
           value={value}
           title={title}
           maxWidth={popoverMaxWidth}
           placement={popoverPlacement}
-          tagClassName={styles.tagClickable}
+          tagClassName={tagClassName}
         >
           {tagContent}
         </PrimitivePopover>
@@ -69,7 +73,7 @@ export function JsonPreview({
           maxHeight={popoverMaxHeight}
           maxWidth={popoverMaxWidth}
           placement={popoverPlacement}
-          tagClassName={styles.tagClickable}
+          tagClassName={tagClassName}
           contentStyle={popoverContentStyle ?? DEFAULT_POPOVER_CONTENT_STYLE}
         >
           {tagContent}

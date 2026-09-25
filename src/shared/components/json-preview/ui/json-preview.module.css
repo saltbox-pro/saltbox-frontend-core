@@ -32,6 +32,19 @@
   border-color: #91caff !important;
 }
 
+.jsonPreviewSingleLine {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 0;
+  min-width: 100%;
+}
+
+.tagSingleLine {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .brace {
   color: #1677ff;
   font-weight: 500;
