@@ -38,6 +38,7 @@ import {
   useDashboardCollection,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
+import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
@@ -51,7 +52,6 @@ import {
 import { CollectionInfoPopover } from "./-components/collection-info-popover";
 import { MinionsDashboardView } from "./-components/minions-dashboard-view";
 import { MinionsListView } from "./-components/minions-list-view";
-import { MinionsQueryBuilder } from "./-components/minions-query-builder";
 import { MinionsTaskView } from "./-components/minions-task-view";
 import styles from "./index.module.css";
 
@@ -161,7 +161,7 @@ const MinionsPage = observer(() => {
   };
 
   const handleEditCollection = () => {
-    navigate(`/core/minions/${slug}/edit`);
+    navigate(`/core/collections?slug=${encodeURIComponent(slug ?? "")}`);
   };
 
   const handleSaveAsNew = () => {

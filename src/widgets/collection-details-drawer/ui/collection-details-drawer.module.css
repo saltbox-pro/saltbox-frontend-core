@@ -1,20 +1,51 @@
 .body {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  flex: 1;
+  min-height: 0;
 }
 
 .filterSection {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 8px;
 }
 
 .filterHeading {
   font-size: 16px;
   font-weight: 600;
+}
+
+.clientsSection {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.clientsSection :global(.fast-table) {
+  flex: 1;
+  min-height: 0;
+}
+
+.clientsToolbar {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.noMargin {
+  margin-bottom: 0 !important;
 }

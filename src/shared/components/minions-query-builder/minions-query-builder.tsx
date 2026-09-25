@@ -15,6 +15,7 @@ export const MinionsQueryBuilder = observer(
     filterStore: MinionFilterStore;
     onSearch?: () => void;
     onReset?: () => void;
+    enableFreeTextMode?: boolean;
   }) => {
     return (
       <SaltBoxQueryBuilderContainer
@@ -23,6 +24,7 @@ export const MinionsQueryBuilder = observer(
         onSearchButtonClick={props.onSearch}
         onResetButtonClick={props.onReset}
         showCopyFilterButton
+        enableFreeTextMode={props.enableFreeTextMode}
         controlElements={{
           valueEditor: CoreMinionValueEditor(props.slug),
           valueSelector: SaltBoxMinionValueSelector,
