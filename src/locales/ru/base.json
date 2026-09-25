@@ -674,7 +674,6 @@
   "collection": {
     "collections": "Коллекции",
     "collection": "Коллекция",
-    "editing-collection": "Редактирование коллекции",
     "edit-collection": "Редактировать коллекцию",
     "edit-collection-name": "Название коллекции",
     "enter-collection-name": "Введите название коллекции",
@@ -683,6 +682,12 @@
     "description-max": "Описание не должно превышать {{max}} символов",
     "no-description": "Описание для данной коллекции отсутствует",
     "create-subcollection": "Создать подколлекцию",
+    "reset-changes": "Сбросить",
+    "tooltip-no-changes": "Необходимо внести изменения в коллекцию",
+    "tooltip-create-subcollection-blocked": "Необходимо сохранить изменения в коллекции для создания подколлекции",
+    "unsaved-title": "Несохранённые изменения",
+    "unsaved-content": "Изменения не сохранены и будут потеряны. Закрыть редактирование?",
+    "unsaved-leave": "Закрыть",
     "edit-structure": "Редактировать структуру",
     "edit-structure-hint": "Перетаскивайте коллекции, чтобы изменить их родителя и порядок",
     "error-moving-collection": "Не удалось переместить коллекцию",
@@ -705,16 +710,11 @@
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
-    "apply-search-before-save": "Пожалуйста, примените поиск для подтверждения фильтров перед сохранением",
-    "filter-schema-unavailable": "Схема фильтров не загружена, сохранение фильтра недоступно. Обновите страницу",
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
     "parent-collection-required": "Укажите родительскую коллекцию",
     "select-parent-collection": "Выберите родительскую коллекцию",
-    "edit-filter": "Редактировать фильтр",
-    "invalid-filter-json": "Запрос фильтра — некорректный JSON",
-    "filter-updated-successfully": "Фильтр обновлён",
-    "error-updating-filter": "Ошибка при обновлении фильтра"
+    "invalid-filter-json": "Запрос фильтра — некорректный JSON"
   },
   "dashboard": {
     "minions-total": "Клиентов в выборке",

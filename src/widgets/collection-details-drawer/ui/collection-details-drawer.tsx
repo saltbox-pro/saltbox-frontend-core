@@ -1,16 +1,16 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   type AppError,
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
+  Modal,
   MutationErrorAlert,
   notify,
   runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Form, Input, TreeSelect, Typography } from "antd";
+import { Flex, Form, Input, TreeSelect, Typography } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -18,42 +18,60 @@ import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
 import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
-import { type CollectionStore, collectionsTreeStore } from "saltbox-core/store";
+import {
+  MinionFilterStore,
+  MinionsStore,
+  collectionsTreeStore,
+  type CollectionStore,
+} from "saltbox-core/store";
 
-import type { CollectionDetailsDrawerOpenParams } from "../types";
+import { COLLECTION_DETAILS_DRAWER_WIDTH, ROOT_SLUG } from "../constants";
+import { getFilterStateKey } from "../helpers/get-filter-state-key";
+import type {
+  CollectionDetailsDrawerCloseGuard,
+  CollectionDetailsDrawerOpenParams,
+  CollectionEditFormType,
+} from "../types";
 
+import { CollectionClientsPreview } from "./collection-clients-preview";
+import { CollectionCreateSubcollectionButton } from "./collection-create-subcollection-button";
 import styles from "./collection-details-drawer.module.css";
+import { CollectionEditActions } from "./collection-edit-actions";
 import { CollectionFilterSection } from "./collection-filter-section";
 
-const ROOT_SLUG = "root";
-
-interface CollectionEditFormType {
-  title: string;
-  description?: string;
-  query: string;
-  parent_slug: string;
-}
-
-interface CollectionDetailsDrawerProps {
+type CollectionDetailsDrawerProps = {
   drawer: {
     isOpened: boolean;
     openedArg: CollectionDetailsDrawerOpenParams | null;
-    close: () => void;
+    close: () => void | Promise<void>;
   };
   collectionStore: CollectionStore;
+  closeGuardRef: RefObject<CollectionDetailsDrawerCloseGuard | null>;
   onCreateSubcollection?: (parentSlug: string) => void;
-}
+};
 
 export const CollectionDetailsDrawer = observer(
-  ({ drawer, collectionStore, onCreateSubcollection }: CollectionDetailsDrawerProps) => {
+  ({
+    drawer,
+    collectionStore,
+    closeGuardRef,
+    onCreateSubcollection,
+  }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
     const [form] = Form.useForm<CollectionEditFormType>();
+    const [modalApi, modalContextHolder] = Modal.useModal();
 
-    const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<AppError | null>(null);
+    const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
+    const [filterStore] = useState(() => new MinionFilterStore());
+    const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     const { isOpened, openedArg } = drawer;
+
+    const watchedTitle = Form.useWatch("title", form);
+    const watchedDescription = Form.useWatch("description", form);
+    const watchedParentSlug = Form.useWatch("parent_slug", form);
 
     useEffect(() => {
       if (isOpened && openedArg) {
@@ -64,25 +82,151 @@ export const CollectionDetailsDrawer = observer(
     const collection = collectionStore.collection;
     const currentSlug = collectionStore.collectionSlug ?? openedArg?.slug;
     const isRoot = currentSlug === ROOT_SLUG;
+    const parentSlug = collection?.parent_slug || currentSlug || "";
+    const searchQueryKey = JSON.stringify(filterStore.searchMongoDBQuery);
+    const isInitialLoading = collectionStore.collectionLoad.isLoading;
+    const isCollectionLoaded = Boolean(collection) && !isInitialLoading;
+    const isEditable = isCollectionLoaded && !isRoot;
+
+    const syncFromCollection = useCallback(() => {
+      const current = collectionStore.collection;
+      if (!current) {
+        return;
+      }
+
+      form.setFieldsValue({
+        title: current.title,
+        description: current.description,
+        parent_slug: current.parent_slug ?? ROOT_SLUG,
+      });
+      filterStore.resetInputMode();
+      filterStore.initializeByQuery(current.query ?? {});
+      setFiltersBaselineKey(getFilterStateKey(filterStore));
+    }, [collectionStore, form, filterStore]);
 
     useEffect(() => {
-      setIsEditing(false);
-    }, [collectionStore.collectionSlug]);
+      setSaveError(null);
+      setFiltersBaselineKey("");
+      filterStore.resetInputMode();
+    }, [collectionStore.collectionSlug, filterStore]);
+
+    useEffect(() => {
+      filterStore.loadFiltersScheme();
+    }, [filterStore]);
+
+    useLayoutEffect(() => {
+      if (!isOpened || !isCollectionLoaded) {
+        return;
+      }
+
+      syncFromCollection();
+      if (!isRoot) {
+        collectionsTreeStore.loadTree();
+      }
+    }, [isOpened, isCollectionLoaded, currentSlug, isRoot, syncFromCollection]);
+
+    const applyMinionsPreview = useCallback(() => {
+      if (!parentSlug || isRoot) {
+        return;
+      }
+      minionsStore.syncAndLoad(parentSlug, filterStore.searchMongoDBQuery);
+    }, [parentSlug, isRoot, filterStore, minionsStore]);
+
+    useLayoutEffect(() => {
+      if (!isCollectionLoaded || !parentSlug || isRoot) {
+        return;
+      }
+      if (filterStore.activeFiltersCount > 0 && filterStore.isLoading) {
+        return;
+      }
+      applyMinionsPreview();
+    }, [
+      isCollectionLoaded,
+      parentSlug,
+      isRoot,
+      searchQueryKey,
+      filterStore.activeFiltersCount,
+      filterStore.isLoading,
+      applyMinionsPreview,
+    ]);
 
     const parentTreeData = useMemo(
       () => (currentSlug ? excludeSubtreeBySlug(collectionsTreeStore.treeNodes, currentSlug) : []),
       [collectionsTreeStore.treeNodes, currentSlug]
     );
 
+    const isFormDirty =
+      isEditable &&
+      ((watchedTitle ?? "") !== (collection?.title ?? "") ||
+        (watchedDescription ?? "").trim() !== (collection?.description ?? "").trim() ||
+        (watchedParentSlug ?? ROOT_SLUG) !== (collection?.parent_slug ?? ROOT_SLUG));
+
+    const isFiltersDirty =
+      isEditable &&
+      Boolean(filtersBaselineKey) &&
+      getFilterStateKey(filterStore) !== filtersBaselineKey;
+
+    const hasUnsavedChanges = isFormDirty || isFiltersDirty;
+    const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
+
+    useEffect(() => {
+      closeGuardRef.current = async () => {
+        if (!hasUnsavedChanges) {
+          return true;
+        }
+
+        return new Promise<boolean>((resolve) => {
+          modalApi.confirm({
+            title: t("collection.unsaved-title"),
+            content: t("collection.unsaved-content"),
+            icon: null,
+            okText: t("collection.unsaved-leave"),
+            cancelText: t("common.cancel"),
+            okButtonProps: { danger: true },
+            onOk: () => {
+              syncFromCollection();
+              resolve(true);
+            },
+            onCancel: () => resolve(false),
+          });
+        });
+      };
+
+      return () => {
+        closeGuardRef.current = null;
+      };
+    }, [closeGuardRef, hasUnsavedChanges, modalApi, syncFromCollection, t]);
+
     const descriptionItems = useMemo<InfoDescriptionsProps["items"]>(() => {
+      if (!isEditable) {
+        return [
+          {
+            key: "title",
+            label: t("collection.edit-collection-name"),
+            children: collection?.title,
+          },
+          {
+            key: "description",
+            label: t("collection.description"),
+            children: collection?.description ? (
+              collection.description
+            ) : (
+              <Typography.Text type="secondary" italic>
+                {t("collection.no-description")}
+              </Typography.Text>
+            ),
+          },
+        ];
+      }
+
       const items: NonNullable<InfoDescriptionsProps["items"]> = [
         {
           key: "title",
           label: t("collection.edit-collection-name"),
-          children: isEditing ? (
+          children: (
             <Form.Item<CollectionEditFormType>
               name="title"
-              style={{ marginBottom: 0 }}
+              className={styles.noMargin}
               rules={[
                 {
                   required: true,
@@ -96,17 +240,15 @@ export const CollectionDetailsDrawer = observer(
             >
               <Input placeholder={t("collection.enter-collection-name")} />
             </Form.Item>
-          ) : (
-            collection?.title
           ),
         },
         {
           key: "description",
           label: t("collection.description"),
-          children: isEditing ? (
+          children: (
             <Form.Item<CollectionEditFormType>
               name="description"
-              style={{ marginBottom: 0 }}
+              className={styles.noMargin}
               rules={[
                 {
                   max: COLLECTION_DESCRIPTION_MAX_LENGTH,
@@ -116,26 +258,17 @@ export const CollectionDetailsDrawer = observer(
                 },
               ]}
             >
-              <Input.TextArea rows={3} placeholder={t("collection.description-placeholder")} />
+              <Input.TextArea rows={2} placeholder={t("collection.description-placeholder")} />
             </Form.Item>
-          ) : collection?.description ? (
-            collection.description
-          ) : (
-            <Typography.Text type="secondary" italic>
-              {t("collection.no-description")}
-            </Typography.Text>
           ),
         },
-      ];
-
-      if (!isRoot && (isEditing || collection?.parent_slug)) {
-        items.push({
+        {
           key: "parent",
           label: t("collection.parent-collection"),
-          children: isEditing ? (
+          children: (
             <Form.Item<CollectionEditFormType>
               name="parent_slug"
-              style={{ marginBottom: 0 }}
+              className={styles.noMargin}
               rules={[
                 {
                   required: true,
@@ -153,47 +286,38 @@ export const CollectionDetailsDrawer = observer(
                 style={{ width: "100%" }}
               />
             </Form.Item>
-          ) : (
-            <Link to={`/core/minions/${collection!.parent_slug}`}>
-              {collection!.parent_title ?? collection!.parent_slug}
-            </Link>
           ),
-        });
-      }
+        },
+      ];
 
       return items;
-    }, [collection, isRoot, isEditing, parentTreeData, t]);
+    }, [collection, isEditable, parentTreeData, t]);
 
-    const handleEdit = () => {
+    const handleReset = () => {
       setSaveError(null);
-      collectionsTreeStore.loadTree();
-      form.setFieldsValue({
-        title: collection?.title,
-        description: collection?.description,
-        query: JSON.stringify(collection?.query ?? {}, null, 2),
-        parent_slug: collection?.parent_slug ?? ROOT_SLUG,
-      });
-      setIsEditing(true);
+      syncFromCollection();
+      applyMinionsPreview();
     };
 
-    const handleCancel = () => {
-      setSaveError(null);
-      setIsEditing(false);
+    const resolveQueryForSave = (): object | null => {
+      if (!filterStore.commitPendingInput()) {
+        notify.error(t("collection.invalid-filter-json"));
+        return null;
+      }
+      filterStore.handleSearch();
+      return filterStore.searchMongoDBQuery;
     };
 
     const handleSave = async () => {
       let values: CollectionEditFormType;
       try {
-        values = await form.validateFields();
+        values = await form.validateFields(["title", "description", "parent_slug"]);
       } catch {
         return;
       }
 
-      let parsedQuery: object;
-      try {
-        parsedQuery = JSON.parse(values.query);
-      } catch {
-        notify.error(t("collection.invalid-filter-json"));
+      const parsedQuery = resolveQueryForSave();
+      if (!parsedQuery) {
         return;
       }
 
@@ -241,55 +365,60 @@ export const CollectionDetailsDrawer = observer(
       if (!result.ok) return;
 
       notify.success(t("collection.collection-has-been-changed"));
-      setIsEditing(false);
+      filterStore.resetInputMode();
+      setFiltersBaselineKey(getFilterStateKey(filterStore));
     };
 
-    const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
-    const extra =
-      canCreateSubcollection || !isRoot ? (
-        <Flex gap="small">
-          {onCreateSubcollection && currentSlug && (
-            <Button
-              icon={<PlusOutlined />}
-              onClick={() => onCreateSubcollection(currentSlug)}
-              disabled={isEditing}
-            >
-              {t("collection.create-subcollection")}
-            </Button>
-          )}
-          {!isRoot && (
-            <Button icon={<EditOutlined />} onClick={handleEdit} disabled={isEditing}>
-              {t("common.edit")}
-            </Button>
-          )}
-        </Flex>
+    const createSubcollectionButton =
+      canCreateSubcollection && currentSlug ? (
+        <CollectionCreateSubcollectionButton
+          hasUnsavedChanges={hasUnsavedChanges}
+          isSaving={isSaving}
+          onClick={() => onCreateSubcollection?.(currentSlug)}
+        />
       ) : undefined;
 
     return (
       <>
+        {modalContextHolder}
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
+          width={COLLECTION_DETAILS_DRAWER_WIDTH}
+          fillHeight
           titleName={collection?.title}
           titleLabel={t("collection.collection")}
           linkTo={currentSlug ? `/core/minions/${currentSlug}` : undefined}
           linkTitle={t("collection.open-collection-page")}
           linkComponent={Link}
-          loading={collectionStore.isLoading}
-          hasData={!!collection && !isSaving}
+          loading={isInitialLoading}
+          hasData={!!collection}
           loaders={[collectionStore.collectionLoad]}
           transitionKey={collection?.slug}
           onClose={drawer.close}
         >
           <Form form={form} component={false}>
-            <Flex vertical gap="large" className={styles.body}>
+            <Flex vertical gap="middle" className={styles.body}>
               <MutationErrorAlert
                 error={saveError}
                 fallback={t("collection.error-updating-collection")}
                 onClose={() => setSaveError(null)}
               />
 
-              <InfoDescriptions items={descriptionItems} extra={extra} />
+              <InfoDescriptions
+                title={createSubcollectionButton}
+                items={descriptionItems}
+                extra={
+                  isEditable ? (
+                    <CollectionEditActions
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      isSaving={isSaving}
+                      onReset={handleReset}
+                      onSave={handleSave}
+                    />
+                  ) : undefined
+                }
+              />
 
               <section className={styles.section}>
                 {isRoot ? (
@@ -297,24 +426,23 @@ export const CollectionDetailsDrawer = observer(
                     {t("minions.root-collection-info")}
                   </Typography.Text>
                 ) : (
-                  <CollectionFilterSection
-                    collectionStore={collectionStore}
-                    isEditing={isEditing}
-                    form={form}
-                  />
+                  <>
+                    <CollectionFilterSection
+                      filterStore={filterStore}
+                      parentSlug={parentSlug}
+                      onFiltersApplied={applyMinionsPreview}
+                    />
+                    {currentSlug && (
+                      <CollectionClientsPreview
+                        slug={currentSlug}
+                        filterStore={filterStore}
+                        minionsStore={minionsStore}
+                        onFiltersApplied={applyMinionsPreview}
+                      />
+                    )}
+                  </>
                 )}
               </section>
-
-              {isEditing && (
-                <Flex gap="small" justify="end">
-                  <Button onClick={handleCancel} disabled={isSaving}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="primary" onClick={handleSave} loading={isSaving}>
-                    {t("common.save")}
-                  </Button>
-                </Flex>
-              )}
             </Flex>
           </Form>
         </InfoDrawer>

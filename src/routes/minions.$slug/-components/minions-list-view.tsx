@@ -18,6 +18,8 @@ import {
   useTaskWorkflow,
 } from "saltbox-core/features/task-workflow";
 import { AddTaskIcon } from "saltbox-core/shared/components/icons";
+import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
+import { MinionsTableWithDetailsDrawer } from "saltbox-core/shared/components/minions-table-with-details-drawer";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
@@ -29,8 +31,6 @@ import {
 
 import { MinionsActionsDropdown } from "./minions-actions-dropdown";
 import styles from "./minions-list-view.module.css";
-import { MinionsQueryBuilder } from "./minions-query-builder";
-import { MinionsTableWithDetailsDrawer } from "./minions-table-with-details-drawer";
 
 type MinionListViewProps = {
   slug: string;

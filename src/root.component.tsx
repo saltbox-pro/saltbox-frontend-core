@@ -13,7 +13,6 @@ import { i18nStore } from "saltbox-core/store";
 
 import { coreResources } from "./i18n-resources";
 import AuditEventsPage from "./routes/audit.events";
-import CollectionEditPage from "./routes/collection.$slug";
 import CollectionsPage from "./routes/collections";
 import ConfigurationTemplatesPage from "./routes/configuration-templates";
 import TemplateSourceDetailPage from "./routes/configuration-templates.$sourceId";
@@ -47,7 +46,6 @@ const { createRoutes } = createModuleErrorBoundaryKit({
 
 const coreRoutes = createRoutes(Route, [
   { path: MAIN_PATH, element: <DefaultMinionsPage /> },
-  { path: `${MAIN_PATH}/:slug/edit`, element: <CollectionEditPage /> },
   { path: `${MAIN_PATH}/:slug/tasks/:taskid`, element: <TaskPage /> },
   { path: `${MAIN_PATH}/:slug/:mid`, element: <MinionPage /> },
   { path: `${MAIN_PATH}/:slug`, element: <MinionsPage /> },

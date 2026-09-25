@@ -18,6 +18,7 @@ import {
   type OnFilterButtonParams,
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -30,11 +31,11 @@ const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
 export type MinionsTableWithDetailsDrawerProps = {
   slug: string;
   minionsStore: MinionsStore;
-  rowSelection: RowSelectionState;
-  onRowSelectionChange: (updater: RowSelectionState) => void;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (updater: RowSelectionState) => void;
 
   filterStore: MinionFilterStore;
-  onAddFilter: () => void;
+  onAddFilter?: () => void;
   onFiltersApplied?: () => void;
   onRefresh: () => void;
   toolbar: ReactNode;
@@ -46,11 +47,15 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   const { t } = useTranslation();
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
+    drawerId: DRAWER_IDS.minionDetails,
+    outsideClickIgnoreSelectors: [`#sbx-drawer-${DRAWER_IDS.extraDataCategoryDetails}`],
   });
+  const enableRowSelection =
+    props.rowSelection !== undefined && props.onRowSelectionChange !== undefined;
 
   const columns = useMemo(
     () => [
-      createSelectColumn<MinionShortSchema>(),
+      ...(enableRowSelection ? [createSelectColumn<MinionShortSchema>()] : []),
       minionsColumnHelper.accessor("minion_id", {
         header: t("minions.table-minion-id"),
         cell: (data) => data.row.original.minion_id ?? data.getValue(),
@@ -138,7 +143,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         meta: { width: "10%" },
       }),
     ],
-    [props.slug, t]
+    [enableRowSelection, props.slug, t]
   );
 
   const handleDrawerFilterButtonClick = useCallback(
@@ -157,7 +162,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       });
       props.filterStore.handleSearch();
       props.onFiltersApplied?.();
-      props.onAddFilter();
+      props.onAddFilter?.();
       message.success(t("minions.filter-applied"));
 
       if (!params.keepDrawerOpen) {
