@@ -195,7 +195,9 @@
     "create-button": "Create Policy",
     "create-with-function": "Create policy with function \"{{name}}\"",
     "policy-created-successfully": "Policy created successfully",
-    "error-creating-policy": "Error creating policy"
+    "error-creating-policy": "Error creating policy",
+    "ttl-task": "Policy lifetime",
+    "ttl-task-tooltip": "How long the policy may run after it is started, including waiting for new minions. When the time is up, the policy is stopped. Unlimited if empty"
   },
   "task-create": {
     "configure-task-title": "Task Configuration",
@@ -227,6 +229,9 @@
     "max-jobs-count-at-same-time-error-required": "Max jobs count at same time is required",
     "ttl": "Command response timeout",
     "ttl-tooltip": "Maximum time to wait for the task's commands to respond. Service default is used if empty",
+    "ttl-task": "Task lifetime",
+    "ttl-task-tooltip": "How long the task may run after it is started. When the time is up, the task is stopped. Unlimited if empty",
+    "ttl-task-placeholder": "Unlimited",
     "next-to-overview": "Next to overview",
     "return-to-template-picker": "Return to template selection",
     "template-not-loaded": "Template not loaded",
@@ -268,7 +273,7 @@
       "max-retries": "Max retries",
       "retry-delay": "Retry delay",
       "retry-delay-seconds": "{{count}} sec",
-      "ttl": "Command response timeout",
+      "ttl-jobs": "Command response timeout",
       "target-info": "Target info",
       "collection": "Collection",
       "target-minions": "Target minions",
@@ -304,6 +309,8 @@
     "unknown": "Unknown",
     "finished": "Finished",
     "stopped": "Stopped",
+    "stopping-by-ttl": "Stopping by TTL",
+    "stopped-by-ttl": "Stopped by TTL",
     "job-tgt-count": "{{count}} minions",
     "type": "Type",
     "type-classic": "Task",
@@ -385,7 +392,10 @@
       "job-returns-missing-context": "Task or minion identifier is missing",
       "attempt-status-success": "Success",
       "attempt-status-failed": "Failed"
-    }
+    },
+    "ttl-task-label": "Lifetime (TTL)",
+    "ttl-task-unlimited": "Unlimited",
+    "ttl-task-update-error": "Failed to change the lifetime"
   },
   "policy": {
     "show-details": "Policy Parameters",

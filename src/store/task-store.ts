@@ -224,6 +224,26 @@ export class TaskStore {
     }
   };
 
+  updateTaskTtl = async (ttlTask: number | null) => {
+    if (!this.task) {
+      return Promise.reject(new Error("Task is not loaded"));
+    }
+
+    const promise = apiCoreStore.tasksApi?.taskUpdate({
+      tid: this.task.id,
+      TaskSafeUpdateSchema: { ttl_task: ttlTask },
+    });
+
+    if (!promise) {
+      return Promise.reject(new Error("Tasks API is not available"));
+    }
+
+    const task = await promise;
+    runInAction(() => {
+      this.task = task;
+    });
+  };
+
   @action
   handleRestartFailed = async () => {
     if (!this.task) {

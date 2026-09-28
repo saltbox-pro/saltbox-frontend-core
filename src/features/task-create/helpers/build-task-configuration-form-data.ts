@@ -28,7 +28,8 @@ export function buildTaskConfigurationFormData({
     retry_delay: settings.retry_delay ?? defaults.retry_delay,
     max_jobs_count_at_same_time:
       settings.max_jobs_count_at_same_time ?? defaults.max_jobs_count_at_same_time,
-    ttl: settings.ttl,
+    ttl_jobs: settings.ttl_jobs,
+    ttl_task: settings.ttl_task,
     data: deepOmitUndefined(data),
     save_pillars_as_default: settings.save_pillars_as_default ?? true,
   };

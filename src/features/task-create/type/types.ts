@@ -27,7 +27,8 @@ export type TaskConfigurationFormData = {
   max_retries: number;
   retry_delay: number;
   max_jobs_count_at_same_time: number;
-  ttl?: number;
+  ttl_jobs?: number;
+  ttl_task?: number;
   save_pillars_as_default: boolean;
   data: TaskData;
 };
@@ -35,7 +36,8 @@ export type TaskConfigurationFormData = {
 export type TaskTemplateDraft = {
   configuration: TaskConfigurationFormData;
   showAdvanced: boolean;
-  ttlUnit?: TtlUnit;
+  ttlJobsUnit?: TtlUnit;
+  ttlTaskUnit?: TtlUnit;
 };
 
 export type TaskCreationContext = {

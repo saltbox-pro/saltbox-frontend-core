@@ -1,3 +1,4 @@
+import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { InfoDescriptions, type InfoDescriptionsProps } from "@saltbox/saltbox-frontend-common";
 import { Flex, Typography } from "antd";
 import { useMemo } from "react";
@@ -5,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
 import { CollectionAppliedFilterPopover } from "saltbox-core/shared/components/collection-applied-filter-popover";
+import { formatTtlValue } from "saltbox-core/shared/utils/job-ttl-utils";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
 import type { TaskDetailsData } from "../type/task-details-data";
@@ -86,16 +88,32 @@ export function TaskDetails({
         label: t("task.details.retry-delay"),
         children: t("task.details.retry-delay-seconds", { count: system.retryDelay }),
       },
-      ...(system.ttl != null
+      ...(system.ttlJobs != null
         ? [
             {
-              label: t("task.details.ttl"),
-              children: t("task.details.retry-delay-seconds", { count: system.ttl }),
+              label: t("task.details.ttl-jobs"),
+              children: formatTtlValue(system.ttlJobs, t),
             },
           ]
         : []),
+      {
+        label: t(
+          system.taskType === TaskType.Policy ? "policy-create.ttl-task" : "task-create.ttl-task"
+        ),
+        children:
+          system.ttlTask != null ? formatTtlValue(system.ttlTask, t) : t("task.ttl-task-unlimited"),
+      },
     ],
-    [system.batchSize, system.maxParallelJobs, system.maxRetries, system.retryDelay, system.ttl, t]
+    [
+      system.batchSize,
+      system.maxParallelJobs,
+      system.maxRetries,
+      system.retryDelay,
+      system.taskType,
+      system.ttlJobs,
+      system.ttlTask,
+      t,
+    ]
   );
 
   const pillarsInfo = useMemo<InfoDescriptionsProps["items"]>(() => {

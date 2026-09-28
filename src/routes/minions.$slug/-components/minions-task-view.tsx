@@ -106,7 +106,12 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         id: "status.type",
         header: t("minions.table-status"),
         cell: (data) => {
-          return <TaskStatusIndicator status={data.row.original?.status.type} />;
+          return (
+            <TaskStatusIndicator
+              status={data.row.original?.status.type}
+              reason={data.row.original?.status.data?.reason}
+            />
+          );
         },
         meta: {
           width: "9%",

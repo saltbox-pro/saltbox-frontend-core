@@ -1,8 +1,11 @@
-import { formatTimeByUserTZ } from "@saltbox/saltbox-frontend-common";
+import { TaskStatus } from "@saltbox/saltbox-core-api-client";
+import { formatTimeByUserTZ, runMutation } from "@saltbox/saltbox-frontend-common";
 import { Divider, Flex, Skeleton } from "antd";
 import { observer } from "mobx-react-lite";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
+import { EditableTtl } from "saltbox-core/features/job-ttl";
 import { OpenRelatedJobsButton } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import type { TaskStore } from "saltbox-core/store";
@@ -16,9 +19,33 @@ type TaskRunDetailsProps = {
   taskStore: TaskStore;
 };
 
+const getTaskTtlExpiresAt = (task: TaskStore["task"]): Date | null => {
+  if (
+    !task?.last_started_dt ||
+    task.ttl_task == null ||
+    (task.status?.type !== TaskStatus.Running && task.status?.type !== TaskStatus.WaitMinions)
+  ) {
+    return null;
+  }
+
+  const expiresAt = new Date(new Date(task.last_started_dt).getTime() + task.ttl_task * 1000);
+  return Number.isNaN(expiresAt.getTime()) ? null : expiresAt;
+};
+
 export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: TaskRunDetailsProps) {
   const { t } = useTranslation();
   const taskId = taskStore.task?.id;
+
+  const handleTaskTtlSubmit = useCallback(
+    async (ttlSeconds: number | null) => {
+      const result = await runMutation({
+        run: () => taskStore.updateTaskTtl(ttlSeconds),
+        errorMessage: t("task.ttl-task-update-error"),
+      });
+      return result.ok;
+    },
+    [taskStore, t]
+  );
 
   return (
     <Flex className={styles.taskDetailsContainer} align="center" wrap gap="middle">
@@ -51,7 +78,10 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
           </TaskDetailItem>
           <Divider type="vertical" />
           <TaskDetailItem label={t("task.status")}>
-            <TaskStatusIndicator status={taskStore.task?.status?.type ?? "none"} />
+            <TaskStatusIndicator
+              status={taskStore.task?.status?.type ?? "none"}
+              reason={taskStore.task?.status?.data?.reason}
+            />
           </TaskDetailItem>
           <Divider type="vertical" />
           <TaskDetailItem label={t("task.created")}>
@@ -64,6 +94,17 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
           <Divider type="vertical" />
           <TaskDetailItem label={t("task.user")}>
             {taskStore.task.user?.name ?? <Skeleton.Input size="small" />}
+          </TaskDetailItem>
+          <Divider type="vertical" />
+          <TaskDetailItem label={t("task.ttl-task-label")}>
+            <EditableTtl
+              value={taskStore.task.ttl_task ?? null}
+              emptyLabel={t("task.ttl-task-unlimited")}
+              clearOptionLabel={t("task.ttl-task-unlimited")}
+              expiresAt={getTaskTtlExpiresAt(taskStore.task)}
+              editButtonAlwaysVisible
+              onSubmit={handleTaskTtlSubmit}
+            />
           </TaskDetailItem>
         </Flex>
       ) : (

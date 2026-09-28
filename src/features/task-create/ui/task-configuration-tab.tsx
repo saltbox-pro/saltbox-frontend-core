@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 
 import { TtlInput } from "saltbox-core/shared/components/ttl-input";
 import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
-import { ttlPartsToTotalSeconds, type TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
+import { type TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getJobParamsSchemaLayout,
   type JsonSchemaRecord,
@@ -29,6 +29,7 @@ import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 
 import { buildTaskConfigurationFormData } from "../helpers/build-task-configuration-form-data";
+import { useTtlParts } from "../hooks/use-ttl-parts";
 import { taskCreationService } from "../service";
 import type { TaskConfigurationFormData, TaskTemplateDraft } from "../type/types";
 
@@ -40,7 +41,9 @@ export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
   initialData?: Partial<TaskConfigurationFormData>;
   initialShowAdvanced?: boolean;
-  initialTtlUnit?: TtlUnit;
+  initialTtlJobsUnit?: TtlUnit;
+  initialTtlTaskUnit?: TtlUnit;
+  isPolicy?: boolean;
   topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;
   onReturnToTemplatePicker: (draft: TaskTemplateDraft) => void;
@@ -48,23 +51,13 @@ export type TaskConfigurationTabProps = {
 
 const memoize = createObjectMemoizer({ deep: true });
 
-const TTL_UNIT_SECONDS: Record<TtlUnit, number> = { seconds: 1, minutes: 60, hours: 3600 };
-
-const totalSecondsToUnit = (
-  totalSeconds: number,
-  unit: TtlUnit
-): { value: number; unit: TtlUnit } => {
-  const divisor = TTL_UNIT_SECONDS[unit];
-  return totalSeconds % divisor === 0
-    ? { value: totalSeconds / divisor, unit }
-    : { value: totalSeconds, unit: "seconds" };
-};
-
 export function TaskConfigurationTab({
   template,
   initialData,
   initialShowAdvanced,
-  initialTtlUnit,
+  initialTtlJobsUnit,
+  initialTtlTaskUnit,
+  isPolicy = false,
   topContent,
   onSubmit,
   onReturnToTemplatePicker,
@@ -74,10 +67,10 @@ export function TaskConfigurationTab({
   const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
 
   const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced ?? false);
-  const [ttlValue, setTtlValue] = useState<number | null>(null);
-  const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
-  const ttlPartsRef = useRef({ value: ttlValue, unit: ttlUnit });
-  ttlPartsRef.current = { value: ttlValue, unit: ttlUnit };
+  const ttlJobs = useTtlParts();
+  const ttlTask = useTtlParts();
+  const { syncFrom: syncTtlJobs } = ttlJobs;
+  const { syncFrom: syncTtlTask } = ttlTask;
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
@@ -119,22 +112,17 @@ export function TaskConfigurationTab({
       save_pillars_as_default: initialData.save_pillars_as_default ?? true,
     });
 
-    const initialTtl = initialData.ttl;
-    if (initialTtl == null || !Number.isFinite(initialTtl) || initialTtl < 0) {
-      setTtlValue(null);
-      setTtlUnit("seconds");
-      return;
-    }
-
-    const currentParts = ttlPartsRef.current;
-    if (ttlPartsToTotalSeconds(currentParts.value, currentParts.unit) === initialTtl) {
-      return;
-    }
-
-    const ttlParts = totalSecondsToUnit(initialTtl, initialTtlUnit ?? "seconds");
-    setTtlValue(ttlParts.value);
-    setTtlUnit(ttlParts.unit);
-  }, [settingsForm, initialData, initialTtlUnit, template]);
+    syncTtlJobs(initialData.ttl_jobs, initialTtlJobsUnit);
+    syncTtlTask(initialData.ttl_task, initialTtlTaskUnit);
+  }, [
+    settingsForm,
+    initialData,
+    initialTtlJobsUnit,
+    initialTtlTaskUnit,
+    syncTtlJobs,
+    syncTtlTask,
+    template,
+  ]);
 
   const buildConfigurationFromSettings = (
     settings: Partial<Omit<TaskConfigurationFormData, "data" | "task_template_id">>,
@@ -146,7 +134,7 @@ export function TaskConfigurationTab({
 
     return buildTaskConfigurationFormData({
       templateId: template.id,
-      settings: { ...settings, ttl: ttlPartsToTotalSeconds(ttlValue, ttlUnit) },
+      settings: { ...settings, ttl_jobs: ttlJobs.totalSeconds, ttl_task: ttlTask.totalSeconds },
       data,
       defaults: taskCreationService.getDefaultConfiguration(),
     });
@@ -160,7 +148,12 @@ export function TaskConfigurationTab({
     if (!configuration) {
       return;
     }
-    onReturnToTemplatePicker({ configuration, showAdvanced, ttlUnit });
+    onReturnToTemplatePicker({
+      configuration,
+      showAdvanced,
+      ttlJobsUnit: ttlJobs.unit,
+      ttlTaskUnit: ttlTask.unit,
+    });
   };
 
   const showValidationError = () => {
@@ -324,10 +317,27 @@ export function TaskConfigurationTab({
                 <Col span={12}>
                   <Form.Item label={t("task-create.ttl")} tooltip={t("task-create.ttl-tooltip")}>
                     <TtlInput
-                      value={ttlValue}
-                      unit={ttlUnit}
-                      onValueChange={setTtlValue}
-                      onUnitChange={setTtlUnit}
+                      value={ttlJobs.value}
+                      unit={ttlJobs.unit}
+                      onValueChange={ttlJobs.setValue}
+                      onUnitChange={ttlJobs.setUnit}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label={t(isPolicy ? "policy-create.ttl-task" : "task-create.ttl-task")}
+                    tooltip={t(
+                      isPolicy ? "policy-create.ttl-task-tooltip" : "task-create.ttl-task-tooltip"
+                    )}
+                  >
+                    <TtlInput
+                      value={ttlTask.value}
+                      unit={ttlTask.unit}
+                      min={1}
+                      placeholder={t("task-create.ttl-task-placeholder")}
+                      onValueChange={ttlTask.setValue}
+                      onUnitChange={ttlTask.setUnit}
                     />
                   </Form.Item>
                 </Col>
