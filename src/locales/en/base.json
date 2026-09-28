@@ -56,6 +56,11 @@
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
+      "download-to-csv": "Download to CSV",
+      "export-to-csv-title": "Export to CSV",
+      "export-to-csv-warning-minion": "The CSV file will include all records of the \"{{category}}\" category for this client that match the current search. It is generated on the server at export time and may differ from what is currently shown in the table",
+      "export-to-csv-warning-collection": "The CSV file will include all records of the \"{{category}}\" category for all clients in the collection that match the current search. It is generated on the server at export time and may differ from what is currently shown in the table",
+      "export-error": "Failed to export extra data to CSV",
       "categories": {
         "local_groups": "Local Groups",
         "storages": "Physical disks",

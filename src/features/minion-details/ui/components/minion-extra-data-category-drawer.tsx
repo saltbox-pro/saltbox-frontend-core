@@ -11,6 +11,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExtraDataExportButton } from "saltbox-core/features/extra-data-export";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import {
@@ -114,10 +115,18 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
             <FastTable.Provider>
-              {isLoaded && !singleRecord && (
+              {isLoaded && category && (
                 <div className="page-actions-buttons">
-                  <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-                  <FastTable.Toolbar />
+                  {!singleRecord && (
+                    <ExtraDataSearchField key={category.name} onSearch={handleSearch} />
+                  )}
+                  <ExtraDataExportButton
+                    category={category}
+                    minionId={minionId}
+                    collectionSlug={collectionSlug}
+                    search={extraDataRecordsStore.search}
+                  />
+                  {!singleRecord && <FastTable.Toolbar />}
                 </div>
               )}
 
