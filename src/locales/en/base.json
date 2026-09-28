@@ -401,6 +401,26 @@
     "show-details": "Policy Parameters",
     "details-title": "Policy Details"
   },
+  "extra-data-categories": {
+    "title": "Extra data categories",
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "origin": "Origin",
+      "manual-data-allowed": "Manual entry",
+      "fields-count": "Fields",
+      "created": "Created",
+      "empty": "No extra data categories"
+    },
+    "category-types": {
+      "static": "Static",
+      "aggregated": "Aggregated"
+    },
+    "origins": {
+      "system": "System",
+      "user": "User"
+    }
+  },
   "masters": {
     "title": "Masters",
     "table-master-id": "Master ID",

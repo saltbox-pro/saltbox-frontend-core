@@ -5,7 +5,7 @@ import { action, computed, makeObservable, observable } from "mobx";
 
 import { apiCoreStore } from "./api-core-store";
 
-const DEFAULT_SORTING: SortingState = [{ id: "name", desc: false }];
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 const PAGE_SIZE = 50;
 
 export type ExtraDataCategoriesStoreOptions = {

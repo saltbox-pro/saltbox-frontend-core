@@ -401,6 +401,26 @@
     "show-details": "Параметры политики",
     "details-title": "Детали политики"
   },
+  "extra-data-categories": {
+    "title": "Категории расширенных данных",
+    "table": {
+      "name": "Название",
+      "type": "Тип",
+      "origin": "Происхождение",
+      "manual-data-allowed": "Ручное добавление",
+      "fields-count": "Поля",
+      "created": "Создана",
+      "empty": "Нет категорий расширенных данных"
+    },
+    "category-types": {
+      "static": "Статическая",
+      "aggregated": "Агрегированная"
+    },
+    "origins": {
+      "system": "Система",
+      "user": "Пользователь"
+    }
+  },
   "masters": {
     "title": "Контроллеры",
     "table-master-id": "ID контроллера",
