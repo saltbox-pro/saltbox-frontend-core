@@ -61,7 +61,8 @@ export function TaskOverviewTab({
         maxParallelJobs: configuration.max_jobs_count_at_same_time,
         maxRetries: configuration.max_retries,
         retryDelay: configuration.retry_delay,
-        ttl: configuration.ttl,
+        ttlJobs: configuration.ttl_jobs,
+        ttlTask: configuration.ttl_task,
       },
       target: {
         collection: context.collection?.title ?? context.collection?.slug,

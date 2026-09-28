@@ -62,13 +62,13 @@ export const parseManualTtlSeconds = (searchText: string | undefined): number | 
 interface BuildTtlOptionsParams {
   t: TranslateFn;
   searchText?: string;
-  allowInherit?: boolean;
+  clearOptionLabel?: string;
 }
 
 export const buildTtlOptions = ({
   t,
   searchText,
-  allowInherit = false,
+  clearOptionLabel,
 }: BuildTtlOptionsParams): TtlOption[] => {
   const options: TtlOption[] = [];
 
@@ -83,8 +83,8 @@ export const buildTtlOptions = ({
     });
   }
 
-  if (allowInherit) {
-    options.push({ value: TTL_INHERIT_OPTION_VALUE, label: t("jobs.ttl-inherit-option") });
+  if (clearOptionLabel) {
+    options.push({ value: TTL_INHERIT_OPTION_VALUE, label: clearOptionLabel });
   }
 
   TTL_PRESETS.forEach((preset) => {

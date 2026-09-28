@@ -1,6 +1,7 @@
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
+  FieldTimeOutlined,
   QuestionCircleOutlined,
   StopOutlined,
   LoadingOutlined,
@@ -12,6 +13,7 @@ import { useTranslation } from "react-i18next";
 
 interface TaskStatusIndicatorProps {
   status?: TaskStatus | "none";
+  reason?: string;
 }
 
 interface StatusConfig {
@@ -21,7 +23,20 @@ interface StatusConfig {
 
 const spinningIcon = <Spin indicator={<LoadingOutlined spin />} size="small" />;
 
-export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
+const TTL_STOP_REASON = "timeout";
+
+const ttlStopStatusConfig: Partial<Record<TaskStatus, StatusConfig>> = {
+  [TaskStatus.Stopping]: {
+    icon: spinningIcon,
+    translationKey: "task.stopping-by-ttl",
+  },
+  [TaskStatus.Stopped]: {
+    icon: <FieldTimeOutlined />,
+    translationKey: "task.stopped-by-ttl",
+  },
+};
+
+export const TaskStatusIndicator = ({ status, reason }: TaskStatusIndicatorProps) => {
   const { t } = useTranslation();
 
   if (!status) {
@@ -59,7 +74,9 @@ export const TaskStatusIndicator = ({ status }: TaskStatusIndicatorProps) => {
     },
   };
 
-  const config = statusConfig[status];
+  const config =
+    (reason === TTL_STOP_REASON && status !== "none" ? ttlStopStatusConfig[status] : undefined) ??
+    statusConfig[status];
 
   if (!config) {
     return <Skeleton.Input size="small" />;

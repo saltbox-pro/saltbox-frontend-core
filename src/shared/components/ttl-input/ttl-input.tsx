@@ -14,6 +14,8 @@ export type TtlInputProps = {
   unit: TtlUnit;
   onValueChange: (value: number | null) => void;
   onUnitChange: (unit: TtlUnit) => void;
+  min?: number;
+  placeholder?: string;
   disabled?: boolean;
   className?: string;
 };
@@ -23,6 +25,8 @@ export function TtlInput({
   unit,
   onValueChange,
   onUnitChange,
+  min = 0,
+  placeholder = String(DEFAULT_JOB_TIMEOUT_SECONDS),
   disabled,
   className,
 }: TtlInputProps) {
@@ -44,11 +48,11 @@ export function TtlInput({
   return (
     <Flex gap={8} align="center" wrap>
       <InputNumber
-        min={0}
+        min={min}
         precision={0}
         value={value ?? undefined}
         onChange={(nextValue) => onValueChange(nextValue ?? null)}
-        placeholder={String(DEFAULT_JOB_TIMEOUT_SECONDS)}
+        placeholder={placeholder}
         inputMode="numeric"
         pattern="[0-9]*"
         onKeyDown={handleKeyDown}

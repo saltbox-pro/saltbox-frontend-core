@@ -108,7 +108,12 @@ export default observer(function TasksPage() {
       columnHelper.accessor("status.type", {
         id: "status.type",
         header: t("minions.table-status"),
-        cell: (data) => <TaskStatusIndicator status={data.row.original?.status.type} />,
+        cell: (data) => (
+          <TaskStatusIndicator
+            status={data.row.original?.status.type}
+            reason={data.row.original?.status.data?.reason}
+          />
+        ),
         meta: {
           width: "9%",
           minWidth: 150,

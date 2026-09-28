@@ -142,7 +142,7 @@ export const TaskModal = observer(function TaskModal({
           typeof templateDefaults?.max_jobs_count_at_same_time === "number"
             ? templateDefaults.max_jobs_count_at_same_time
             : defaultConfig.max_jobs_count_at_same_time,
-        ttl: parseTtlValue(templateDefaults?.ttl) ?? undefined,
+        ttl_jobs: parseTtlValue(templateDefaults?.ttl) ?? undefined,
         data: {},
       });
     };
@@ -382,7 +382,9 @@ export const TaskModal = observer(function TaskModal({
             template={template}
             initialData={configuration}
             initialShowAdvanced={initialDraft?.showAdvanced}
-            initialTtlUnit={initialDraft?.ttlUnit}
+            initialTtlJobsUnit={initialDraft?.ttlJobsUnit}
+            initialTtlTaskUnit={initialDraft?.ttlTaskUnit}
+            isPolicy={isPolicy}
             topContent={configurationTopContent}
             onSubmit={handleConfigurationSubmit}
             onReturnToTemplatePicker={handleReturnToTemplatePicker}
@@ -415,8 +417,10 @@ export const TaskModal = observer(function TaskModal({
     handleCreateTask,
     handleReturnToTemplatePicker,
     initialDraft?.showAdvanced,
-    initialDraft?.ttlUnit,
+    initialDraft?.ttlJobsUnit,
+    initialDraft?.ttlTaskUnit,
     isCreating,
+    isPolicy,
     overviewData,
     pluginButtons,
     schemaError,

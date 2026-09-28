@@ -13,7 +13,8 @@ export type TaskDetailsData = {
     maxParallelJobs: number;
     maxRetries: number;
     retryDelay: number;
-    ttl?: number;
+    ttlJobs?: number | null;
+    ttlTask?: number | null;
   };
   target: {
     collection?: string;

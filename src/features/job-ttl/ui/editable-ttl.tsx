@@ -17,6 +17,8 @@ export interface EditableTtlProps {
   value: number | null;
   isInherited?: boolean;
   allowInherit?: boolean;
+  emptyLabel?: string;
+  clearOptionLabel?: string;
   disabled?: boolean;
   expiresAt?: Date | null;
   editButtonAlwaysVisible?: boolean;
@@ -27,6 +29,8 @@ export function EditableTtl({
   value,
   isInherited = false,
   allowInherit = false,
+  emptyLabel,
+  clearOptionLabel,
   disabled = false,
   expiresAt,
   editButtonAlwaysVisible = false,
@@ -38,10 +42,16 @@ export function EditableTtl({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
+  const canClear = allowInherit ? !isInherited : value != null;
+  const clearLabel = allowInherit ? t("jobs.ttl-inherit-option") : clearOptionLabel;
+  const resolvedClearOptionLabel = canClear ? clearLabel : undefined;
+
   const options = useMemo(
-    () => buildTtlOptions({ t, searchText, allowInherit: allowInherit && !isInherited }),
-    [allowInherit, isInherited, searchText, t]
+    () => buildTtlOptions({ t, searchText, clearOptionLabel: resolvedClearOptionLabel }),
+    [resolvedClearOptionLabel, searchText, t]
   );
+
+  const displayValue = value == null && emptyLabel ? emptyLabel : formatTtlValue(value, t);
 
   const closeEditor = useCallback(() => {
     setIsEditing(false);
@@ -111,7 +121,7 @@ export function EditableTtl({
         onKeyDown={stopKeyPropagation}
       >
         <Typography.Text type={isInherited ? "secondary" : undefined} title={hint || undefined}>
-          {formatTtlValue(value, t)}
+          {displayValue}
         </Typography.Text>
 
         {!disabled && (
@@ -144,7 +154,7 @@ export function EditableTtl({
         filterOption={false}
         loading={isSubmitting}
         value={undefined}
-        placeholder={formatTtlValue(value, t)}
+        placeholder={displayValue}
         searchValue={searchText}
         onSearch={handleSearch}
         options={options}
