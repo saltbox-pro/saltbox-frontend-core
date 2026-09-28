@@ -79,6 +79,12 @@ export class ExtraDataCategoriesStore {
     };
   };
 
+  @action
+  reloadFromFirstPage = (): void => {
+    this.pagination = { ...this.pagination, pageIndex: 0 };
+    this.loadCategories();
+  };
+
   loadCategories = (): void => {
     this.categoriesLoad.run().catch(() => undefined);
   };

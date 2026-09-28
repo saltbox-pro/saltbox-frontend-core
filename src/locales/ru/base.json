@@ -403,6 +403,41 @@
   },
   "extra-data-categories": {
     "title": "Категории расширенных данных",
+    "add-category": "Добавить категорию",
+    "add-field": "Добавить поле",
+    "fields-title": "Поля категории",
+    "fields-empty": "Нет полей",
+    "name-forbidden-characters": "Название не может содержать символы «.», «$» и «/»",
+    "create": {
+      "modal-title": "Добавление категории",
+      "field-name": "Название категории",
+      "field-name-placeholder": "Введите название",
+      "field-name-required": "Укажите название категории",
+      "field-name-unique": "Категория с таким названием уже существует",
+      "submit": "Создать",
+      "success": "Категория \"{{name}}\" успешно создана",
+      "error": "Не удалось создать категорию"
+    },
+    "field-form": {
+      "field-name": "Название",
+      "field-name-placeholder": "Введите название поля",
+      "field-name-required": "Укажите название поля",
+      "field-name-unique": "Поле с таким названием уже есть в категории",
+      "field-types": "Типы",
+      "field-type-placeholder": "Выберите типы",
+      "field-type-required": "Укажите хотя бы один тип"
+    },
+    "field-types": {
+      "str": "Текст",
+      "int": "Число",
+      "float": "Число (дробное)",
+      "bool": "Булево значение",
+      "none": "Пустое значение",
+      "list": "Список",
+      "dict": "Объект",
+      "bytes": "Байты",
+      "datetime": "Дата и время"
+    },
     "table": {
       "name": "Название",
       "type": "Тип",
