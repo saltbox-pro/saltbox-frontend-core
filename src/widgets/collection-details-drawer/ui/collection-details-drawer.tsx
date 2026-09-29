@@ -17,6 +17,7 @@ import { Link } from "react-router";
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
+import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import {
   MinionFilterStore,
@@ -66,6 +67,8 @@ export const CollectionDetailsDrawer = observer(
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
     const [filterStore] = useState(() => new MinionFilterStore());
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
+
+    useMinionFilterSchemaLocalization(filterStore);
 
     const { isOpened, openedArg } = drawer;
 
