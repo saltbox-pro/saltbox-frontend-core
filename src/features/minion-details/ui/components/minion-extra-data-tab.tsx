@@ -109,6 +109,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
           open={isCreateItemOpen}
           minionId={minionId}
           onCancel={() => setIsCreateItemOpen(false)}
+          onCategoryCreated={store.loadCategories}
         />
       </FastTable.Provider>
     </Flex>

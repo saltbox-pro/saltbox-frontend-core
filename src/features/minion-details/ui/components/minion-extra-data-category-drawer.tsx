@@ -18,6 +18,7 @@ import {
 } from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   collectExtraDataFieldNamesFromRecords,
   getDeclaredExtraDataFieldNames,
@@ -108,13 +109,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       <InfoDrawer
         open={open}
         drawerId={DRAWER_IDS.extraDataCategoryDetails}
-        titleName={
-          category
-            ? t(`minions.extra-data.categories.${category.name}`, {
-                defaultValue: category.name,
-              })
-            : undefined
-        }
+        titleName={category ? getExtraDataCategoryDisplayName(t, category.name) : undefined}
         transitionKey={open ? (category?.id ?? "opened") : "closed"}
         {...restProps}
         titleCopyable={false}

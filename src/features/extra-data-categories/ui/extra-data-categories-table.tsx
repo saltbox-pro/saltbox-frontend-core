@@ -103,7 +103,7 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
         pagination={store.pagination}
         sorting={store.sorting}
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
-        onRefresh={() => store.loadCategories()}
+        onRefresh={store.loadCategories}
         getRowId={(row) => row.id}
         activeRowId={categoryDrawer.activeRowId}
         bodyRef={categoryDrawer.mainContentRef}

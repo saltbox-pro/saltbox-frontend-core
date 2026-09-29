@@ -7,6 +7,7 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
   canFilterExtraDataValue,
@@ -79,9 +80,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
         locale={{
           empty: t("minions.extra-data.empty-category", {
-            category: t(`minions.extra-data.categories.${category.name}`, {
-              defaultValue: category.name,
-            }),
+            category: getExtraDataCategoryDisplayName(t, category.name),
           }),
         }}
       />

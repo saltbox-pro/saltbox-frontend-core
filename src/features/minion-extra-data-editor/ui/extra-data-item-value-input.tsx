@@ -3,6 +3,8 @@ import { DatePicker, Input, InputNumber, Select } from "antd";
 import type { Dayjs } from "dayjs";
 import { useTranslation } from "react-i18next";
 
+import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
+
 import styles from "./extra-data-item-field-input.module.css";
 
 type ExtraDataItemValueInputProps = {
@@ -39,7 +41,7 @@ export function ExtraDataItemValueInput({ type, value, onChange }: ExtraDataItem
           allowClear
           value={value as boolean | undefined}
           onChange={onChange}
-          getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+          getPopupContainer={getParentPopupContainer}
           options={[
             { value: true, label: t("common.yes") },
             { value: false, label: t("common.no") },
@@ -53,7 +55,7 @@ export function ExtraDataItemValueInput({ type, value, onChange }: ExtraDataItem
           showTime
           value={value as Dayjs | undefined}
           onChange={onChange}
-          getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+          getPopupContainer={getParentPopupContainer}
         />
       );
     case MinionExtraDataCategoryFieldType.None:

@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 
 import { ExtraDataCategoryActionsMenu } from "./extra-data-category-actions-menu";
@@ -31,9 +32,7 @@ export function ExtraDataCategoryDrawer({
 }: ExtraDataCategoryDrawerProps) {
   const { t } = useTranslation();
 
-  const titleName = category
-    ? t(`minions.extra-data.categories.${category.name}`, { defaultValue: category.name })
-    : undefined;
+  const titleName = category ? getExtraDataCategoryDisplayName(t, category.name) : undefined;
 
   return (
     <InfoDrawer

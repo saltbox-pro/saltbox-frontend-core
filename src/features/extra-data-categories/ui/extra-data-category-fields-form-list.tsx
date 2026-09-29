@@ -3,6 +3,8 @@ import { Button, Flex, Form, Input, Select, Tooltip, Typography } from "antd";
 import { type ReactNode, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
+
 import { EXTRA_DATA_FIELD_TYPE_OPTIONS } from "../constants/field-types";
 import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
 import { EXTRA_DATA_NAME_PATTERN } from "../constants/name-pattern";
@@ -207,7 +209,7 @@ export function ExtraDataCategoryFieldsFormList({
                         suffixIcon={readOnly ? null : undefined}
                         removeIcon={readOnly ? null : undefined}
                         className={readOnly ? styles.readOnlyControl : undefined}
-                        getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+                        getPopupContainer={getParentPopupContainer}
                       />
                     </Form.Item>
 

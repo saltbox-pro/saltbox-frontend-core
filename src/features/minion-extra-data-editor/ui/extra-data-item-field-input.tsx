@@ -7,6 +7,8 @@ import { Flex, Form, Input, Select, Typography } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
+
 import {
   getDefaultFieldInputType,
   getFieldInputTypes,
@@ -63,7 +65,7 @@ export function ExtraDataItemFieldInput({ field }: ExtraDataItemFieldInputProps)
             <Select
               className={styles.typeSelect}
               options={typeOptions}
-              getPopupContainer={(trigger) => trigger.parentElement ?? document.body}
+              getPopupContainer={getParentPopupContainer}
               onChange={() => form.setFieldValue(valuePath, undefined)}
             />
           )}
@@ -77,7 +79,7 @@ export function ExtraDataItemFieldInput({ field }: ExtraDataItemFieldInputProps)
               rules={[
                 {
                   validator: async (_, value: string | undefined) => {
-                    if (value === undefined || isEmptyFormFieldValue(value)) return;
+                    if (isEmptyFormFieldValue(value)) return;
                     if (!isJsonOfFieldType(selectedType, value)) {
                       throw new Error(
                         t(`minions.extra-data.item-form.invalid-json.${selectedType}`)
