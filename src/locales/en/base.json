@@ -61,6 +61,7 @@
         "button": "Delete extra data",
         "modal-title": "Delete extra data",
         "modal-text": "Are you sure you want to delete the record from category \"{{name}}\"?",
+        "more-fields": "More fields: {{count}}",
         "success": "Record deleted from category \"{{name}}\"",
         "error": "Failed to delete record"
       },

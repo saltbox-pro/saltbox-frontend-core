@@ -84,12 +84,6 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       extraDataRecordsStore?.reloadAfterRecordDeleted();
     }, [extraDataRecordsStore]);
 
-    const itemDeletion = useDeleteExtraDataItemConfirm({
-      category,
-      minionId,
-      onDeleted: handleItemDeleted,
-    });
-
     const records = extraDataRecordsStore?.records;
 
     const declaredFields = useMemo(
@@ -104,6 +98,13 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
 
       return collectExtraDataFieldNamesFromRecords(records ?? []);
     }, [declaredFields, records]);
+
+    const itemDeletion = useDeleteExtraDataItemConfirm({
+      category,
+      fields,
+      minionId,
+      onDeleted: handleItemDeleted,
+    });
 
     const handleSearch = (value: string) => {
       extraDataRecordsStore?.setSearch(value);
