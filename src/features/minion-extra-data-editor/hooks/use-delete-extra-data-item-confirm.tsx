@@ -7,8 +7,9 @@ import { CONFIRM_MODAL_WIDTH } from "saltbox-core/shared/constants/confirm-modal
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 
 import { deleteMinionExtraDataItem } from "../api/delete-minion-extra-data-item";
-import { getExtraDataRecordSummary } from "../helpers/extra-data-record-summary";
+import { getExtraDataRecordSummaryEntries } from "../helpers/extra-data-record-summary";
 import { canAddExtraDataManually, getManualExtraDataRecordId } from "../helpers/manual-extra-data";
+import { DeleteExtraDataItemConfirmContent } from "../ui/delete-extra-data-item-confirm-content";
 
 type UseDeleteExtraDataItemConfirmParams = {
   category: ExtraDataCategoryModel | null;
@@ -38,9 +39,6 @@ export function useDeleteExtraDataItemConfirm({
       if (!category || !itemId) return;
 
       const name = getExtraDataCategoryDisplayName(t, category.name);
-      const summary = getExtraDataRecordSummary(category, record);
-      const question = t("minions.extra-data.delete-item.modal-text", { name });
-
       const deleteItem = async () => {
         const result = await runMutation({
           run: () => deleteMinionExtraDataItem({ category, minionId, itemId }),
@@ -55,13 +53,17 @@ export function useDeleteExtraDataItemConfirm({
 
       modalApi.confirm({
         title: t("minions.extra-data.delete-item.modal-title"),
-        content: summary ? `${question}\n\n${summary}` : question,
+        content: (
+          <DeleteExtraDataItemConfirmContent
+            question={t("minions.extra-data.delete-item.modal-text", { name })}
+            entries={getExtraDataRecordSummaryEntries(category, record)}
+          />
+        ),
         icon: null,
         width: CONFIRM_MODAL_WIDTH,
         okText: t("common.delete"),
         cancelText: t("common.cancel"),
         okButtonProps: { danger: true },
-        styles: { body: { whiteSpace: "pre-line", wordBreak: "break-word" } },
         onOk: deleteItem,
       });
     },
