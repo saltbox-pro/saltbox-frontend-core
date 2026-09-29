@@ -48,6 +48,12 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
     [categoryDrawer.openedId, store.categories]
   );
 
+  const handleCategoryDeleted = async () => {
+    closeGuardRef.current = null;
+    await categoryDrawer.close();
+    store.reloadAfterCategoryDeleted();
+  };
+
   const columns = useMemo(
     () => [
       columnHelper.accessor("name", {
@@ -111,6 +117,7 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
         closeGuardRef={closeGuardRef}
         onClose={categoryDrawer.close}
         onCategoryUpdated={store.replaceCategory}
+        onCategoryDeleted={handleCategoryDeleted}
       />
     </>
   );

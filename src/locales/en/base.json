@@ -417,6 +417,12 @@
       "modal-title": "Deleting field",
       "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category after saving"
     },
+    "delete": {
+      "modal-title": "Deleting category",
+      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related client data will be deleted",
+      "success": "Category \"{{name}}\" deleted",
+      "error": "Failed to delete category \"{{name}}\""
+    },
     "details": {
       "extra-fields-policy": "Extra fields policy",
       "created": "Created",

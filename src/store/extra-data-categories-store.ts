@@ -92,6 +92,18 @@ export class ExtraDataCategoriesStore {
     );
   };
 
+  @action
+  reloadAfterCategoryDeleted = (): void => {
+    const { pageIndex } = this.pagination;
+    const wasLastOnPage = this.categories.length === 1 && pageIndex > 0;
+
+    if (wasLastOnPage) {
+      this.pagination = { ...this.pagination, pageIndex: pageIndex - 1 };
+    }
+
+    this.loadCategories();
+  };
+
   loadCategories = (): void => {
     this.categoriesLoad.run().catch(() => undefined);
   };

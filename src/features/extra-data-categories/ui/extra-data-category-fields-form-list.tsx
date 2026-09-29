@@ -1,6 +1,6 @@
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { Button, Flex, Form, Input, Select, Tooltip, Typography } from "antd";
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { EXTRA_DATA_FIELD_TYPE_OPTIONS } from "../constants/field-types";
@@ -11,19 +11,14 @@ import {
   createEmptyExtraDataCategoryField,
   isDuplicateExtraDataCategoryFieldName,
 } from "../helpers/extra-data-category-field-form";
+import { useDeleteExtraDataCategoryFieldConfirm } from "../hooks/use-delete-extra-data-category-field-confirm";
 
-import { DeleteExtraDataCategoryFieldModal } from "./delete-extra-data-category-field-modal";
 import styles from "./extra-data-category-fields-form-list.module.css";
 
 type ExtraDataCategoryFieldsFormListProps = {
   readOnly?: boolean;
   readOnlyTooltip?: string;
   actions?: ReactNode;
-};
-
-type PendingFieldRemoval = {
-  fieldName: string;
-  remove: () => void;
 };
 
 export function ExtraDataCategoryFieldsFormList({
@@ -33,7 +28,7 @@ export function ExtraDataCategoryFieldsFormList({
 }: ExtraDataCategoryFieldsFormListProps) {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
-  const [pendingRemoval, setPendingRemoval] = useState<PendingFieldRemoval | null>(null);
+  const deleteFieldConfirm = useDeleteExtraDataCategoryFieldConfirm();
   const fieldValues = Form.useWatch<ExtraDataCategoryFieldFormValue[] | undefined>(
     EXTRA_DATA_CATEGORY_FIELDS_NAME,
     form
@@ -82,12 +77,7 @@ export function ExtraDataCategoryFieldsFormList({
       return;
     }
 
-    setPendingRemoval({ fieldName: field.name.trim(), remove });
-  };
-
-  const confirmRemove = () => {
-    pendingRemoval?.remove();
-    setPendingRemoval(null);
+    deleteFieldConfirm.openConfirm(field.name.trim(), remove);
   };
 
   return (
@@ -238,12 +228,7 @@ export function ExtraDataCategoryFieldsFormList({
         }}
       </Form.List>
 
-      <DeleteExtraDataCategoryFieldModal
-        open={pendingRemoval !== null}
-        fieldName={pendingRemoval?.fieldName ?? null}
-        onCancel={() => setPendingRemoval(null)}
-        onConfirm={confirmRemove}
-      />
+      {deleteFieldConfirm.modalContextHolder}
     </>
   );
 }

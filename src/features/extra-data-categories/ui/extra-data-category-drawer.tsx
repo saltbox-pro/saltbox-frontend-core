@@ -7,16 +7,18 @@ import { useTranslation } from "react-i18next";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 
+import { ExtraDataCategoryActionsMenu } from "./extra-data-category-actions-menu";
 import { ExtraDataCategoryDetails } from "./extra-data-category-details";
 import { ExtraDataCategoryFieldsEditor } from "./extra-data-category-fields-editor";
 
 type ExtraDataCategoryDrawerProps = Omit<
   InfoDrawerProps,
-  "drawerId" | "titleName" | "titleLabel" | "children" | "hasData"
+  "drawerId" | "titleName" | "titleLabel" | "extra" | "children" | "hasData"
 > & {
   category: ExtraDataCategoryModel | null;
   closeGuardRef?: RefObject<DrawerCloseGuard | null>;
   onCategoryUpdated?: (category: ExtraDataCategoryModel) => void;
+  onCategoryDeleted?: (category: ExtraDataCategoryModel) => void;
 };
 
 export function ExtraDataCategoryDrawer({
@@ -24,6 +26,7 @@ export function ExtraDataCategoryDrawer({
   category,
   closeGuardRef,
   onCategoryUpdated,
+  onCategoryDeleted,
   ...restProps
 }: ExtraDataCategoryDrawerProps) {
   const { t } = useTranslation();
@@ -39,6 +42,13 @@ export function ExtraDataCategoryDrawer({
       titleName={titleName}
       hasData={!!category}
       transitionKey={category?.id}
+      extra={
+        <ExtraDataCategoryActionsMenu
+          category={category}
+          displayName={titleName}
+          onDeleted={onCategoryDeleted}
+        />
+      }
       {...restProps}
     >
       {category ? (
