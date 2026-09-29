@@ -1,4 +1,5 @@
 import { observer } from "mobx-react-lite";
+import type { ReactNode } from "react";
 
 import {
   MinionDetailActionsMenu,
@@ -19,15 +20,20 @@ interface MinionDetailsDrawerProps {
   };
   mask?: boolean;
   onFilterButton?: OnFilterButtonHandler;
+  allowMissingMinion?: boolean;
+  topContent?: ReactNode;
 }
 
 export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
   drawer,
   onFilterButton,
   mask,
+  allowMissingMinion,
+  topContent,
 }: MinionDetailsDrawerProps) {
   const {
     minion,
+    isMinionMissing,
     isMinionLoading,
     isMinionRefreshing,
     minionLoad,
@@ -35,7 +41,11 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
     slug,
     resolvedDisplayId,
     resolvedInnerId,
-  } = useMinionDetailsDrawer({ isOpened: drawer.isOpened, openedArg: drawer.openedArg });
+  } = useMinionDetailsDrawer({
+    isOpened: drawer.isOpened,
+    openedArg: drawer.openedArg,
+    allowMissingMinion,
+  });
 
   const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
 
@@ -54,24 +64,29 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
       linkPlacement="title"
       extra={
-        <MinionDetailActionsMenu
-          minion={minion}
-          collectionSlug={slug}
-          minionMongoId={resolvedInnerId}
-          onDeleted={drawer.close}
-        />
+        isMinionMissing ? null : (
+          <MinionDetailActionsMenu
+            minion={minion}
+            collectionSlug={slug}
+            minionMongoId={resolvedInnerId}
+            onDeleted={drawer.close}
+          />
+        )
       }
       onClose={drawer.close}
     >
-      <MinionDetailsInDrawer
-        activeTab={tabKey}
-        onActiveTabChange={onTabChange}
-        minion={minion}
-        isMinionLoading={false}
-        isMinionRefreshing={isMinionRefreshing}
-        collectionSlug={slug ?? ""}
-        onFilterButton={onFilterButton}
-      />
+      {topContent}
+      {minion && (
+        <MinionDetailsInDrawer
+          activeTab={tabKey}
+          onActiveTabChange={onTabChange}
+          minion={minion}
+          isMinionLoading={false}
+          isMinionRefreshing={isMinionRefreshing}
+          collectionSlug={slug ?? ""}
+          onFilterButton={onFilterButton}
+        />
+      )}
     </BaseMinionDrawer>
   );
 });

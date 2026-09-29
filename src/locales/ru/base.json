@@ -482,6 +482,11 @@
     "accept-mixed-success": "Выбранные ключи успешно приняты: {{accepted}}. Заменено ключей: {{replaced}}",
     "accept-cancelled": "Принятие ключей отменено",
     "accept-per-key-result": "Операция завершена. Принято ключей: {{accepted}}. Заменено ключей: {{replaced}}. Пропущено ключей: {{skipped}}",
+    "drawer-key-status": "Статус ключа",
+    "drawer-key-accept": "Принять ключ",
+    "drawer-key-reject": "Отклонить ключ",
+    "drawer-key-delete": "Удалить ключ",
+    "delete-key-accepted-warning": "Будут удалены все ключи клиента \"{{minionId}}\", включая принятый.",
     "filter-by-status": "Фильтрация по статусу ключа",
     "refresh": "Обновить"
   },

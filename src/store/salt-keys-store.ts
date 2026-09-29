@@ -36,9 +36,9 @@ export class SaltKeysStore {
         },
       }),
     onSuccess: (response) => {
-      this.allSaltKeys = (response?.data ?? []).map((item, index) => ({
+      this.allSaltKeys = (response?.data ?? []).map((item) => ({
         ...item,
-        _index: String(index),
+        _index: `${item.salt_master}::${item.minion_id}::${item.status}`,
       }));
 
       if (!this.initialFilterApplied) {
@@ -175,6 +175,19 @@ export class SaltKeysStore {
 
     return { conflictMinions, nonConflictMinions };
   };
+
+  findSaltKey = (id: string | null, masterId: string, minionId: string): SaltKeyWithId | null =>
+    this.allSaltKeys.find((key) => key._index === id) ??
+    this.allSaltKeys.find((key) => key.salt_master === masterId && key.minion_id === minionId) ??
+    null;
+
+  hasAcceptedKey = (minion: SaltKeyMinion): boolean =>
+    this.allSaltKeys.some(
+      (key) =>
+        key.status === SaltKeyStatusType.Accepted &&
+        key.salt_master === minion.salt_master &&
+        key.minion_id === minion.minion_id
+    );
 
   private getSortableValue = (saltKey: SaltKeyWithId, id: string): string => {
     if (id === "status") {
