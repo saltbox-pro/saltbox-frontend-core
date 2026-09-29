@@ -58,7 +58,6 @@
       "search-placeholder": "Search records",
       "add-data": "Add extra data",
       "delete-item": {
-        "button": "Delete extra data",
         "modal-title": "Delete extra data",
         "modal-text": "Are you sure you want to delete the record from category \"{{name}}\"?",
         "more-fields": "More fields: {{count}}",
@@ -67,6 +66,7 @@
       },
       "item-form": {
         "create-title": "Adding extra data",
+        "edit-title": "Editing extra data",
         "category-placeholder": "Select category",
         "category-required": "Select a category",
         "categories-error": "Failed to load categories",
@@ -84,6 +84,7 @@
           "dict": "Enter a valid JSON object"
         },
         "create-success": "Extra data successfully added to category \"{{name}}\"",
+        "update-success": "Extra data in category \"{{name}}\" successfully saved",
         "scope-selected": "Extra data will be added to selected minions: {{count}}",
         "bulk-success": "Extra data successfully added to category \"{{name}}\" for selected minions: {{count}}",
         "bulk-partial": "Extra data was added to category \"{{name}}\" only partially. Failed for {{failed}} of {{total}} minions",

@@ -1,7 +1,8 @@
-import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, FilterOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton, FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
+import { Flex } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
@@ -27,7 +28,8 @@ export interface MinionExtraDataRecordTableProps {
   fields: string[];
   category: ExtraDataCategoryModel;
   onFilterButton?: OnFilterButtonHandler;
-  canDeleteRecord?: (record: ExtraDataRecord) => boolean;
+  canChangeRecord?: (record: ExtraDataRecord) => boolean;
+  onEditRecord?: (record: ExtraDataRecord) => void;
   onDeleteRecord?: (record: ExtraDataRecord) => void;
 }
 
@@ -37,12 +39,13 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
     fields,
     category,
     onFilterButton,
-    canDeleteRecord,
+    canChangeRecord,
+    onEditRecord,
     onDeleteRecord,
   }) {
     const { t } = useTranslation();
 
-    const hasDeletableRecords = !!canDeleteRecord && store.records.some(canDeleteRecord);
+    const hasChangeableRecords = !!canChangeRecord && store.records.some(canChangeRecord);
 
     const columns = useMemo(() => {
       const columnWidth = getEqualExtraDataColumnWidth(fields.length);
@@ -76,29 +79,45 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
         });
       });
 
-      if (!hasDeletableRecords || !canDeleteRecord || !onDeleteRecord) {
+      if (!hasChangeableRecords || !canChangeRecord || !onEditRecord || !onDeleteRecord) {
         return fieldColumns;
       }
 
       return [
         ...fieldColumns,
         columnHelper.display({
-          id: "delete",
+          id: "actions",
           header: "",
           enableSorting: false,
           cell: ({ row }) =>
-            canDeleteRecord(row.original) ? (
-              <BaseActionButton
-                color="danger"
-                icon={<DeleteOutlined />}
-                title={t("common.delete")}
-                onClick={() => onDeleteRecord(row.original)}
-              />
+            canChangeRecord(row.original) ? (
+              <Flex align="center" gap={4}>
+                <BaseActionButton
+                  icon={<EditOutlined />}
+                  title={t("common.edit")}
+                  onClick={() => onEditRecord(row.original)}
+                />
+                <BaseActionButton
+                  color="danger"
+                  icon={<DeleteOutlined />}
+                  title={t("common.delete")}
+                  onClick={() => onDeleteRecord(row.original)}
+                />
+              </Flex>
             ) : null,
-          meta: { ellipsis: false, width: 40, minWidth: 40 },
+          meta: { ellipsis: false, width: 76, minWidth: 76 },
         }),
       ];
-    }, [fields, onFilterButton, category, t, hasDeletableRecords, canDeleteRecord, onDeleteRecord]);
+    }, [
+      fields,
+      onFilterButton,
+      category,
+      t,
+      hasChangeableRecords,
+      canChangeRecord,
+      onEditRecord,
+      onDeleteRecord,
+    ]);
 
     return (
       <ExtraDataRecordsTable

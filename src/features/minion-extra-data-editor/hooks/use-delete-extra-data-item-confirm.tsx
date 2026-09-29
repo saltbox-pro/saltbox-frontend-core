@@ -8,7 +8,7 @@ import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/ext
 
 import { deleteMinionExtraDataItem } from "../api/delete-minion-extra-data-item";
 import { getExtraDataRecordSummary } from "../helpers/extra-data-record-summary";
-import { canAddExtraDataManually, getManualExtraDataRecordId } from "../helpers/manual-extra-data";
+import { canChangeExtraDataRecord, getManualExtraDataRecordId } from "../helpers/manual-extra-data";
 import { DeleteExtraDataItemConfirmContent } from "../ui/delete-extra-data-item-confirm-content";
 
 type UseDeleteExtraDataItemConfirmParams = {
@@ -27,18 +27,10 @@ export function useDeleteExtraDataItemConfirm({
   const { t } = useTranslation();
   const [modalApi, modalContextHolder] = Modal.useModal();
 
-  const isManualCategory = !!category && canAddExtraDataManually(category);
-
-  const canDelete = useCallback(
-    (record: Record<string, unknown>) =>
-      isManualCategory && getManualExtraDataRecordId(record) !== null,
-    [isManualCategory]
-  );
-
   const openConfirm = useCallback(
     (record: Record<string, unknown>) => {
       const itemId = getManualExtraDataRecordId(record);
-      if (!category || !itemId) return;
+      if (!category || !itemId || !canChangeExtraDataRecord(category, record)) return;
 
       const name = getExtraDataCategoryDisplayName(t, category.name);
       const deleteItem = async () => {
@@ -72,5 +64,5 @@ export function useDeleteExtraDataItemConfirm({
     [category, fields, minionId, modalApi, onDeleted, t]
   );
 
-  return { canDelete, openConfirm, modalContextHolder };
+  return { openConfirm, modalContextHolder };
 }

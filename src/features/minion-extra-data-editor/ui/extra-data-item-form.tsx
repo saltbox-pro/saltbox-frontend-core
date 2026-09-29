@@ -25,6 +25,8 @@ import styles from "./extra-data-item-form.module.css";
 
 export type ExtraDataItemFormProps = {
   category?: ExtraDataCategoryModel | null;
+  initialFieldValues?: ExtraDataItemFormValues["values"];
+  submitText?: string;
   submission: ExtraDataItemSubmission;
   onClose: () => void;
   onSubmittingChange?: (isSubmitting: boolean) => void;
@@ -33,6 +35,8 @@ export type ExtraDataItemFormProps = {
 
 export function ExtraDataItemForm({
   category: fixedCategory,
+  initialFieldValues,
+  submitText,
   submission,
   onClose,
   onSubmittingChange,
@@ -57,8 +61,11 @@ export function ExtraDataItemForm({
   }, [onSubmittingChange, submission.isSubmitting]);
 
   const initialValues = useMemo<ExtraDataItemFormValues>(
-    () => ({ values: fixedCategory ? toEmptyExtraDataItemFormValues(fixedCategory) : {} }),
-    [fixedCategory]
+    () => ({
+      values:
+        initialFieldValues ?? (fixedCategory ? toEmptyExtraDataItemFormValues(fixedCategory) : {}),
+    }),
+    [fixedCategory, initialFieldValues]
   );
 
   const categoryOptions = useMemo(
@@ -198,7 +205,7 @@ export function ExtraDataItemForm({
             loading={submission.isSubmitting}
             disabled={!category || fields.length === 0}
           >
-            {t("common.add")}
+            {submitText ?? t("common.add")}
           </Button>
         </Flex>
       </Form>

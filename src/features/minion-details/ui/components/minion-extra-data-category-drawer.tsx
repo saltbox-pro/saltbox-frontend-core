@@ -1,4 +1,4 @@
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
@@ -14,8 +14,10 @@ import { useTranslation } from "react-i18next";
 
 import {
   AddExtraDataButton,
+  EditExtraDataItemModal,
   ExtraDataItemModal,
   canAddExtraDataManually,
+  canChangeExtraDataRecord,
   useDeleteExtraDataItemConfirm,
 } from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
@@ -25,7 +27,7 @@ import {
   collectExtraDataFieldNamesFromRecords,
   getDeclaredExtraDataFieldNames,
 } from "saltbox-core/shared/helpers/extra-data-value";
-import { ExtraDataRecordsStore } from "saltbox-core/store";
+import { type ExtraDataRecord, ExtraDataRecordsStore } from "saltbox-core/store";
 
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
@@ -54,9 +56,16 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
   }) {
     const { t } = useTranslation();
     const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
+    const [editingRecord, setEditingRecord] = useState<ExtraDataRecord | null>(null);
+    const [isEditItemOpen, setIsEditItemOpen] = useState(false);
 
     const categoryId = category?.id;
     const canAddItem = !!category && canAddExtraDataManually(category);
+
+    const canChangeRecord = useCallback(
+      (record: ExtraDataRecord) => !!category && canChangeExtraDataRecord(category, record),
+      [category]
+    );
 
     const extraDataRecordsStore = useMemo(() => {
       if (!categoryId) {
@@ -79,6 +88,11 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         extraDataRecordsStore.abortLoading();
       };
     }, [extraDataRecordsStore]);
+
+    const openEditItem = useCallback((record: ExtraDataRecord) => {
+      setEditingRecord(record);
+      setIsEditItemOpen(true);
+    }, []);
 
     const handleItemDeleted = useCallback(() => {
       extraDataRecordsStore?.reloadAfterRecordDeleted();
@@ -118,7 +132,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       isLoaded && extraDataRecordsStore?.isSingleRecord && records && records.length > 0
         ? toJS(records[0])
         : null;
-    const canDeleteSingleRecord = !!singleRecord && itemDeletion.canDelete(singleRecord);
+    const canChangeSingleRecord = !!singleRecord && canChangeRecord(singleRecord);
 
     return (
       <InfoDrawer
@@ -132,17 +146,20 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
             <FastTable.Provider>
-              {isLoaded && (!singleRecord || canAddItem || canDeleteSingleRecord) && (
+              {isLoaded && (!singleRecord || canAddItem || canChangeSingleRecord) && (
                 <div className="page-actions-buttons">
                   {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
-                  {canDeleteSingleRecord && (
+                  {canChangeSingleRecord && (
                     <div className={styles.trailingActions}>
+                      <Button icon={<EditOutlined />} onClick={() => openEditItem(singleRecord)}>
+                        {t("common.edit")}
+                      </Button>
                       <Button
                         danger
                         icon={<DeleteOutlined />}
                         onClick={() => itemDeletion.openConfirm(singleRecord)}
                       >
-                        {t("minions.extra-data.delete-item.button")}
+                        {t("common.delete")}
                       </Button>
                     </div>
                   )}
@@ -172,7 +189,8 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                   fields={fields}
                   category={category}
                   onFilterButton={onFilterButton}
-                  canDeleteRecord={itemDeletion.canDelete}
+                  canChangeRecord={canChangeRecord}
+                  onEditRecord={openEditItem}
                   onDeleteRecord={itemDeletion.openConfirm}
                 />
               )}
@@ -188,6 +206,17 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
             minionId={minionId}
             category={category}
             onCancel={() => setIsCreateItemOpen(false)}
+            onSuccess={() => extraDataRecordsStore?.loadRecords()}
+          />
+        )}
+
+        {canAddItem && (
+          <EditExtraDataItemModal
+            open={isEditItemOpen}
+            record={editingRecord}
+            minionId={minionId}
+            category={category}
+            onCancel={() => setIsEditItemOpen(false)}
             onSuccess={() => extraDataRecordsStore?.loadRecords()}
           />
         )}

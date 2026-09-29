@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 type ExtraDataItemModalFrameProps = {
   open: boolean;
+  title?: string;
   isSubmitting: boolean;
   onCancel: () => void;
   children: ReactNode;
@@ -11,6 +12,7 @@ type ExtraDataItemModalFrameProps = {
 
 export function ExtraDataItemModalFrame({
   open,
+  title,
   isSubmitting,
   onCancel,
   children,
@@ -20,7 +22,7 @@ export function ExtraDataItemModalFrame({
   return (
     <Modal
       open={open}
-      title={t("minions.extra-data.item-form.create-title")}
+      title={title ?? t("minions.extra-data.item-form.create-title")}
       onCancel={onCancel}
       footer={null}
       destroyOnHidden
