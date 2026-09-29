@@ -92,20 +92,9 @@ export class ExtraDataRecordsStore {
     return !this.recordsLoad.isInitialLoad && this.totalRecordsUnfiltered === 1;
   }
 
-  @action
-  reset = (): void => {
+  abortLoading = (): void => {
     this.loadAbortController?.abort();
     this.loadAbortController = null;
-
-    this.records = [];
-    this.totalRecords = 0;
-    this.totalRecordsUnfiltered = 0;
-    this.search = "";
-    this.sorting = [];
-    this.pagination = {
-      pageIndex: 0,
-      pageSize: PAGE_SIZE,
-    };
   };
 
   loadRecords = (): void => {

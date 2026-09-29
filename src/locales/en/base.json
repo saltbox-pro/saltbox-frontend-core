@@ -56,6 +56,28 @@
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
+      "add-data": "Add data",
+      "item-form": {
+        "create-title": "Adding data",
+        "category-placeholder": "Select category",
+        "category-required": "Select a category",
+        "categories-error": "Failed to load categories",
+        "no-categories": "No categories allow manual data entry",
+        "no-fields": "The category has no fields. Add them in the category settings",
+        "unsupported-type": "This field type is not supported for manual input",
+        "empty-error": "Fill in at least one field",
+        "change-category": {
+          "title": "Changing category",
+          "content": "Filled field values will be reset. Change the category?",
+          "ok": "Change"
+        },
+        "invalid-json": {
+          "list": "Enter a valid JSON array",
+          "dict": "Enter a valid JSON object"
+        },
+        "create-success": "Data successfully added to category \"{{name}}\"",
+        "error": "Failed to save data"
+      },
       "categories": {
         "local_groups": "Local Groups",
         "storages": "Physical disks",

@@ -8,9 +8,14 @@ import {
 import { Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  AddExtraDataButton,
+  ExtraDataItemModal,
+  canAddExtraDataManually,
+} from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import {
@@ -44,8 +49,10 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
     ...restProps
   }) {
     const { t } = useTranslation();
+    const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
 
     const categoryId = category?.id;
+    const canAddItem = !!category && canAddExtraDataManually(category);
 
     const extraDataRecordsStore = useMemo(() => {
       if (!categoryId) {
@@ -65,7 +72,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       extraDataRecordsStore.loadRecords();
 
       return () => {
-        extraDataRecordsStore.reset();
+        extraDataRecordsStore.abortLoading();
       };
     }, [extraDataRecordsStore]);
 
@@ -88,9 +95,10 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       extraDataRecordsStore?.setSearch(value);
     };
 
-    const loadStatus = extraDataRecordsStore?.recordsLoad.status;
-    const isLoaded = loadStatus === "success";
-    const showSkeleton = !!extraDataRecordsStore && !isLoaded && loadStatus !== "error";
+    const recordsLoad = extraDataRecordsStore?.recordsLoad;
+    const loadStatus = recordsLoad?.status;
+    const isLoaded = !!recordsLoad && !recordsLoad.isInitialLoad;
+    const showSkeleton = !!recordsLoad && recordsLoad.isInitialLoad && loadStatus !== "error";
     const singleRecord =
       isLoaded && extraDataRecordsStore?.isSingleRecord && records && records.length > 0
         ? toJS(records[0])
@@ -114,10 +122,15 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
             <FastTable.Provider>
-              {isLoaded && !singleRecord && (
+              {isLoaded && (!singleRecord || canAddItem) && (
                 <div className="page-actions-buttons">
-                  <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-                  <FastTable.Toolbar />
+                  {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
+                  {!singleRecord && (
+                    <>
+                      <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
+                      <FastTable.Toolbar />
+                    </>
+                  )}
                 </div>
               )}
 
@@ -142,6 +155,16 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
               )}
             </FastTable.Provider>
           </ErrorZone>
+        )}
+
+        {canAddItem && (
+          <ExtraDataItemModal
+            open={isCreateItemOpen}
+            minionId={minionId}
+            category={category}
+            onCancel={() => setIsCreateItemOpen(false)}
+            onSuccess={() => extraDataRecordsStore?.loadRecords()}
+          />
         )}
       </InfoDrawer>
     );

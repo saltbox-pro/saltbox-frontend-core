@@ -3,7 +3,8 @@ export function isExtraDataPrimitive(value: unknown): value is string | number |
 }
 
 export function toExtraDataCopyValue(value: unknown): string {
-  if (value == null) return "";
+  if (value === undefined) return "";
+  if (value === null) return "null";
   if (isExtraDataPrimitive(value)) return String(value);
   return JSON.stringify(value);
 }

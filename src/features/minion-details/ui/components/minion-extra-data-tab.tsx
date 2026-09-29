@@ -7,6 +7,10 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import {
+  AddExtraDataButton,
+  ExtraDataItemModal,
+} from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataCategoryLabel } from "saltbox-core/shared/components/extra-data-category-label";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { ExtraDataCategoriesStore } from "saltbox-core/store";
@@ -35,6 +39,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   const { t } = useTranslation();
 
   const [store] = useState(() => new ExtraDataCategoriesStore());
+  const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
 
   const categoryDrawer = useInfoDrawer<ExtraDataCategoryModel, string, HTMLTableSectionElement>({
     getId: (category) => category.id,
@@ -60,38 +65,52 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   );
 
   return (
-    <Flex vertical gap="small" flex={1}>
-      <ExtraDataCategoriesTable
-        tableId={
-          isInDrawer
-            ? "core-minion-extra-data-categories-drawer"
-            : "core-minion-extra-data-categories"
-        }
-        columns={columns}
-        enableColumnSettings={false}
-        data={toJS(store.categories)}
-        total={store.total}
-        isLoading={store.isLoading}
-        loader={store.categoriesLoad}
-        pagination={store.pagination}
-        sorting={store.sorting}
-        onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
-        getRowId={(row) => row.id}
-        activeRowId={categoryDrawer.activeRowId}
-        bodyRef={categoryDrawer.mainContentRef}
-        onRowClick={categoryDrawer.toggle}
-        locale={{ empty: t("minions.extra-data.empty") }}
-      />
+    <Flex vertical flex={1}>
+      <FastTable.Provider>
+        <div className="page-actions-buttons">
+          <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />
+          <FastTable.Toolbar />
+        </div>
 
-      <MinionExtraDataCategoryDrawer
-        open={categoryDrawer.isOpened}
-        category={categoryDrawer.openedArg}
-        minionId={minionId}
-        collectionSlug={collectionSlug}
-        width={960}
-        onClose={categoryDrawer.close}
-        onFilterButton={onFilterButton}
-      />
+        <ExtraDataCategoriesTable
+          tableId={
+            isInDrawer
+              ? "core-minion-extra-data-categories-drawer"
+              : "core-minion-extra-data-categories"
+          }
+          columns={columns}
+          enableColumnSettings={false}
+          data={toJS(store.categories)}
+          total={store.total}
+          isLoading={store.isLoading}
+          loader={store.categoriesLoad}
+          pagination={store.pagination}
+          sorting={store.sorting}
+          onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
+          onRefresh={store.loadCategories}
+          getRowId={(row) => row.id}
+          activeRowId={categoryDrawer.activeRowId}
+          bodyRef={categoryDrawer.mainContentRef}
+          onRowClick={categoryDrawer.toggle}
+          locale={{ empty: t("minions.extra-data.empty") }}
+        />
+
+        <MinionExtraDataCategoryDrawer
+          open={categoryDrawer.isOpened}
+          category={categoryDrawer.openedArg}
+          minionId={minionId}
+          collectionSlug={collectionSlug}
+          width={960}
+          onClose={categoryDrawer.close}
+          onFilterButton={onFilterButton}
+        />
+
+        <ExtraDataItemModal
+          open={isCreateItemOpen}
+          minionId={minionId}
+          onCancel={() => setIsCreateItemOpen(false)}
+        />
+      </FastTable.Provider>
     </Flex>
   );
 });
