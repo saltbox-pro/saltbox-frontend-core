@@ -57,6 +57,13 @@
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
       "add-data": "Add extra data",
+      "delete-item": {
+        "button": "Delete extra data",
+        "modal-title": "Delete extra data",
+        "modal-text": "Are you sure you want to delete the record from category \"{{name}}\"?",
+        "success": "Record deleted from category \"{{name}}\"",
+        "error": "Failed to delete record"
+      },
       "item-form": {
         "create-title": "Adding extra data",
         "category-placeholder": "Select category",

@@ -2,6 +2,8 @@ import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common
 import type { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable } from "mobx";
 
+import { getPageIndexAfterDelete } from "saltbox-core/shared/helpers/get-page-index-after-delete";
+
 import { apiCoreStore } from "./api-core-store";
 
 const PAGE_SIZE = 50;
@@ -99,6 +101,15 @@ export class ExtraDataRecordsStore {
 
   loadRecords = (): void => {
     this.recordsLoad.run().catch(() => undefined);
+  };
+
+  @action
+  reloadAfterRecordDeleted = (): void => {
+    this.pagination = {
+      ...this.pagination,
+      pageIndex: getPageIndexAfterDelete(this.pagination.pageIndex, this.records.length),
+    };
+    this.loadRecords();
   };
 
   @action

@@ -1,6 +1,6 @@
-import { FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, FilterOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
+import { BaseActionButton, FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
@@ -27,16 +27,27 @@ export interface MinionExtraDataRecordTableProps {
   fields: string[];
   category: ExtraDataCategoryModel;
   onFilterButton?: OnFilterButtonHandler;
+  canDeleteRecord?: (record: ExtraDataRecord) => boolean;
+  onDeleteRecord?: (record: ExtraDataRecord) => void;
 }
 
 export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTableProps>(
-  function MinionExtraDataRecordTable({ store, fields, category, onFilterButton }) {
+  function MinionExtraDataRecordTable({
+    store,
+    fields,
+    category,
+    onFilterButton,
+    canDeleteRecord,
+    onDeleteRecord,
+  }) {
     const { t } = useTranslation();
+
+    const hasDeletableRecords = !!canDeleteRecord && store.records.some(canDeleteRecord);
 
     const columns = useMemo(() => {
       const columnWidth = getEqualExtraDataColumnWidth(fields.length);
 
-      return fields.map((field) => {
+      const fieldColumns = fields.map((field) => {
         const filterAction: CellAction<ExtraDataRecord> | null = onFilterButton
           ? {
               icon: <FilterOutlined />,
@@ -64,7 +75,30 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
           },
         });
       });
-    }, [fields, onFilterButton, category, t]);
+
+      if (!hasDeletableRecords || !canDeleteRecord || !onDeleteRecord) {
+        return fieldColumns;
+      }
+
+      return [
+        ...fieldColumns,
+        columnHelper.display({
+          id: "delete",
+          header: "",
+          enableSorting: false,
+          cell: ({ row }) =>
+            canDeleteRecord(row.original) ? (
+              <BaseActionButton
+                color="danger"
+                icon={<DeleteOutlined />}
+                title={t("common.delete")}
+                onClick={() => onDeleteRecord(row.original)}
+              />
+            ) : null,
+          meta: { ellipsis: false, width: 40, minWidth: 40 },
+        }),
+      ];
+    }, [fields, onFilterButton, category, t, hasDeletableRecords, canDeleteRecord, onDeleteRecord]);
 
     return (
       <ExtraDataRecordsTable

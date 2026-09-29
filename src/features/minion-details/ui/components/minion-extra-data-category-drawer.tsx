@@ -1,3 +1,4 @@
+import { DeleteOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
@@ -5,16 +6,17 @@ import {
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
-import { Skeleton } from "antd";
+import { Button, Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
   AddExtraDataButton,
   ExtraDataItemModal,
   canAddExtraDataManually,
+  useDeleteExtraDataItemConfirm,
 } from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
@@ -27,6 +29,7 @@ import { ExtraDataRecordsStore } from "saltbox-core/store";
 
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
+import styles from "./minion-extra-data-category-drawer.module.css";
 import { MinionExtraDataRecordList } from "./minion-extra-data-record-list";
 import { MinionExtraDataRecordTable } from "./minion-extra-data-record-table";
 
@@ -77,6 +80,16 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       };
     }, [extraDataRecordsStore]);
 
+    const handleItemDeleted = useCallback(() => {
+      extraDataRecordsStore?.reloadAfterRecordDeleted();
+    }, [extraDataRecordsStore]);
+
+    const itemDeletion = useDeleteExtraDataItemConfirm({
+      category,
+      minionId,
+      onDeleted: handleItemDeleted,
+    });
+
     const records = extraDataRecordsStore?.records;
 
     const declaredFields = useMemo(
@@ -104,6 +117,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       isLoaded && extraDataRecordsStore?.isSingleRecord && records && records.length > 0
         ? toJS(records[0])
         : null;
+    const canDeleteSingleRecord = !!singleRecord && itemDeletion.canDelete(singleRecord);
 
     return (
       <InfoDrawer
@@ -117,9 +131,20 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
             <FastTable.Provider>
-              {isLoaded && (!singleRecord || canAddItem) && (
+              {isLoaded && (!singleRecord || canAddItem || canDeleteSingleRecord) && (
                 <div className="page-actions-buttons">
                   {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
+                  {canDeleteSingleRecord && (
+                    <div className={styles.trailingActions}>
+                      <Button
+                        danger
+                        icon={<DeleteOutlined />}
+                        onClick={() => itemDeletion.openConfirm(singleRecord)}
+                      >
+                        {t("minions.extra-data.delete-item.button")}
+                      </Button>
+                    </div>
+                  )}
                   {!singleRecord && (
                     <>
                       <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
@@ -146,11 +171,15 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                   fields={fields}
                   category={category}
                   onFilterButton={onFilterButton}
+                  canDeleteRecord={itemDeletion.canDelete}
+                  onDeleteRecord={itemDeletion.openConfirm}
                 />
               )}
             </FastTable.Provider>
           </ErrorZone>
         )}
+
+        {itemDeletion.modalContextHolder}
 
         {canAddItem && (
           <ExtraDataItemModal

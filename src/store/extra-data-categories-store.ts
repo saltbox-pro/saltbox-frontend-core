@@ -3,6 +3,8 @@ import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common
 import type { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable } from "mobx";
 
+import { getPageIndexAfterDelete } from "saltbox-core/shared/helpers/get-page-index-after-delete";
+
 import { apiCoreStore } from "./api-core-store";
 
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
@@ -94,13 +96,10 @@ export class ExtraDataCategoriesStore {
 
   @action
   reloadAfterCategoryDeleted = (): void => {
-    const { pageIndex } = this.pagination;
-    const wasLastOnPage = this.categories.length === 1 && pageIndex > 0;
-
-    if (wasLastOnPage) {
-      this.pagination = { ...this.pagination, pageIndex: pageIndex - 1 };
-    }
-
+    this.pagination = {
+      ...this.pagination,
+      pageIndex: getPageIndexAfterDelete(this.pagination.pageIndex, this.categories.length),
+    };
     this.loadCategories();
   };
 
