@@ -3,6 +3,7 @@ import { MutationErrorAlert } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 
+import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
 import { EXTRA_DATA_NAME_PATTERN } from "../constants/name-pattern";
 import { createEmptyExtraDataCategoryField } from "../helpers/extra-data-category-field-form";
 import {
@@ -36,7 +37,7 @@ export function CreateExtraDataCategoryForm({
     <Form
       form={form}
       layout="vertical"
-      initialValues={{ fields: [createEmptyExtraDataCategoryField()] }}
+      initialValues={{ [EXTRA_DATA_CATEGORY_FIELDS_NAME]: [createEmptyExtraDataCategoryField()] }}
       onFinish={handleSubmit}
       onValuesChange={resetMutationError}
       autoComplete="off"

@@ -23,6 +23,14 @@
   align-items: start;
 }
 
+.gridReadOnly {
+  grid-template-columns: minmax(0, 2fr) minmax(140px, 3fr);
+}
+
+.readOnlyControl {
+  pointer-events: none;
+}
+
 .columnsHeader {
   margin-bottom: var(--ant-margin-xxs, 4px);
 }

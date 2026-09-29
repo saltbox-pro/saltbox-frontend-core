@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { createExtraDataCategory } from "../api/create-extra-data-category";
 import { DEFAULT_EXTRA_DATA_CATEGORY_TYPE } from "../constants/category-types";
 import { DEFAULT_EXTRA_FIELDS_POLICY } from "../constants/extra-fields-policies";
+import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
 import {
   type ExtraDataCategoryFieldFormValue,
   toExtraDataCategoryFieldsPayload,
@@ -15,7 +16,7 @@ import { isDuplicateCategoryNameError } from "../helpers/is-duplicate-category-n
 
 export type CreateExtraDataCategoryFormValues = {
   name: string;
-  fields?: ExtraDataCategoryFieldFormValue[];
+  [EXTRA_DATA_CATEGORY_FIELDS_NAME]?: ExtraDataCategoryFieldFormValue[];
 };
 
 type UseCreateExtraDataCategoryFormParams = {
@@ -51,7 +52,7 @@ export function useCreateExtraDataCategoryForm({
             name,
             type: DEFAULT_EXTRA_DATA_CATEGORY_TYPE,
             extra_fields_policy: DEFAULT_EXTRA_FIELDS_POLICY,
-            fields: toExtraDataCategoryFieldsPayload(values.fields),
+            fields: toExtraDataCategoryFieldsPayload(values[EXTRA_DATA_CATEGORY_FIELDS_NAME]),
           }),
         successMessage: t("extra-data-categories.create.success", { name }),
         onError: (error) => {

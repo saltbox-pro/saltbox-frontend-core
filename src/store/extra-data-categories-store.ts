@@ -85,6 +85,13 @@ export class ExtraDataCategoriesStore {
     this.loadCategories();
   };
 
+  @action
+  replaceCategory = (updated: ExtraDataCategoryModel): void => {
+    this.categories = this.categories.map((category) =>
+      category.id === updated.id ? updated : category
+    );
+  };
+
   loadCategories = (): void => {
     this.categoriesLoad.run().catch(() => undefined);
   };

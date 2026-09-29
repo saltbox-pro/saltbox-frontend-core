@@ -8,11 +8,11 @@ import { useSearchParams } from "react-router";
 
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 import { findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { CollectionStore, collectionsTreeStore } from "saltbox-core/store";
 import {
   CollectionDetailsDrawer,
-  type CollectionDetailsDrawerCloseGuard,
   type CollectionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/collection-details-drawer";
 import { CollectionsTree } from "saltbox-core/widgets/minions/tree-menu";
@@ -26,7 +26,7 @@ const CollectionsPage = observer(() => {
   const [createParentSlug, setCreateParentSlug] = useState<string | null>(null);
   const [isStructureEditMode, setIsStructureEditMode] = useState(false);
   const deepLinkHandledRef = useRef<string | null>(null);
-  const closeGuardRef = useRef<CollectionDetailsDrawerCloseGuard | null>(null);
+  const closeGuardRef = useRef<DrawerCloseGuard | null>(null);
 
   const drawer = useInfoDrawer<CollectionDetailsDrawerOpenParams, string, HTMLDivElement>({
     getId: (params) => params.id,

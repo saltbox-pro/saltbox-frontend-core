@@ -408,6 +408,25 @@
     "fields-title": "Category fields",
     "fields-empty": "No fields",
     "name-forbidden-characters": "Name must not contain \".\", \"$\" or \"/\"",
+    "system-category-readonly": "System categories are read-only",
+    "fields-editor": {
+      "success": "Category changes saved",
+      "error": "Failed to save category changes"
+    },
+    "delete-field": {
+      "modal-title": "Deleting field",
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category after saving"
+    },
+    "details": {
+      "extra-fields-policy": "Extra fields policy",
+      "created": "Created",
+      "modified": "Modified"
+    },
+    "extra-fields-policies": {
+      "ignore": "Ignore",
+      "save_to_category": "Save to category",
+      "save_to_minion": "Save to client"
+    },
     "create": {
       "modal-title": "Adding category",
       "field-name": "Category name",
@@ -747,12 +766,7 @@
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
     "create-subcollection": "Create subcollection",
-    "reset-changes": "Reset",
-    "tooltip-no-changes": "Make changes to the collection first",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
-    "unsaved-title": "Unsaved changes",
-    "unsaved-content": "Changes have not been saved and will be lost. Close editing?",
-    "unsaved-leave": "Close",
     "edit-structure": "Edit structure",
     "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
@@ -1007,6 +1021,13 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
+    "reset": "Reset",
+    "no-changes-to-save": "No changes to save",
+    "unsaved-changes": {
+      "title": "Unsaved changes",
+      "content": "Changes have not been saved and will be lost. Close editing?",
+      "leave": "Close"
+    },
     "no-data": "No data",
     "export": "Export",
     "refresh": "Refresh",
