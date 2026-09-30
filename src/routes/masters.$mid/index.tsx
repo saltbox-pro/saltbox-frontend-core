@@ -9,7 +9,7 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
-import { Flex, Modal, Tabs, Tag } from "antd";
+import { Flex, Modal, Tabs, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -34,6 +34,8 @@ import {
   rejectAllSaltKeys,
   rejectSaltKeys,
 } from "./-api/salt-keys-actions";
+import { SaltKeyDrawerSection } from "./-components/salt-key-drawer-section";
+import { SaltKeyStatusTag } from "./-components/salt-key-status-tag";
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
 import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
 import { SaltKeysDeleteConfirmModal } from "./-components/salt-keys-delete-confirm-modal";
@@ -44,19 +46,16 @@ import styles from "./index.module.css";
 
 const saltKeysColumnHelper = createColumnHelper<SaltKeyWithId>();
 
-function getSelectedSaltKeyMinions(
-  allSaltKeys: Array<SaltKeyWithId>,
-  selection: RowSelectionState,
+function toSaltKeyMinions(
+  keys: Array<SaltKeyWithId>,
   masterId: string | undefined
 ): SaltKeyMinion[] {
   return [
     ...new Map(
-      allSaltKeys
-        .filter((k) => selection[k._index])
-        .map((k) => [
-          k.minion_id,
-          { minion_id: k.minion_id, salt_master: masterId } as SaltKeyMinion,
-        ])
+      keys.map((k) => [
+        k.minion_id,
+        { minion_id: k.minion_id, salt_master: masterId } as SaltKeyMinion,
+      ])
     ).values(),
   ];
 }
@@ -87,6 +86,29 @@ const MasterPage = observer(() => {
     }
   }, [masterId, saltKeysStore]);
 
+  const drawerArg = drawer.openedArg;
+  const drawerKey =
+    drawer.isOpened && drawerArg && "masterId" in drawerArg
+      ? saltKeysStore.findSaltKey(drawer.openedId, drawerArg.masterId, drawerArg.minionId)
+      : null;
+
+  useEffect(() => {
+    if (!drawer.isOpened) return;
+
+    if (!drawerKey) {
+      drawer.close();
+      return;
+    }
+
+    if (drawerKey._index !== drawer.openedId) {
+      drawer.open({
+        masterId: drawerKey.salt_master,
+        minionId: drawerKey.minion_id,
+        drawerId: drawerKey._index,
+      });
+    }
+  }, [drawer, drawerKey]);
+
   const saltKeysColumns = useMemo(
     () => [
       createSelectColumn<SaltKeyWithId>(),
@@ -110,20 +132,7 @@ const MasterPage = observer(() => {
       }),
       saltKeysColumnHelper.accessor("status", {
         header: t("master.table-status"),
-        cell: (data) => {
-          switch (data.getValue()) {
-            case SaltKeyStatusType.Unaccepted:
-              return <Tag color="blue">{t("master.table-status-unaccepted")}</Tag>;
-            case SaltKeyStatusType.Accepted:
-              return <Tag color="green">{t("master.table-status-accepted")}</Tag>;
-            case SaltKeyStatusType.Rejected:
-              return <Tag color="default">{t("master.table-status-rejected")}</Tag>;
-            case SaltKeyStatusType.Denied:
-              return <Tag color="red">{t("master.table-status-denied")}</Tag>;
-            default:
-              return <Tag>{`${t("master.table-status-unknown")}: ${data.getValue()}`}</Tag>;
-          }
-        },
+        cell: (data) => <SaltKeyStatusTag status={data.getValue()} />,
         enableSorting: false,
         meta: {
           tdClassName: "fast-table-column-nowrap",
@@ -151,83 +160,100 @@ const MasterPage = observer(() => {
     });
   }, [saltKeysStore.statusFilter, t]);
 
-  const { handleAcceptSelected, conflictModalProps, perKeyModalProps } = useAcceptSelectedFlow({
+  const { handleAcceptKeys, conflictModalProps, perKeyModalProps } = useAcceptSelectedFlow({
     saltKeysStore,
-    selection,
     modalApi,
     setSelection,
     isSendingAction,
     setIsSendingAction,
   });
 
-  const handleRejectSelected = useCallback(() => {
-    if (Object.keys(selection).length === 0) return;
+  const getSelectedKeys = useCallback(
+    () => saltKeysStore.allSaltKeys.filter((key) => selection[key._index]),
+    [saltKeysStore, selection]
+  );
 
-    modalApi.confirm({
-      title: t("master.reject-selected-confirm-title"),
-      content: t("master.reject-selected-confirm-description", {
-        count: Object.keys(selection).length,
-      }),
-      icon: null,
-      okText: t("common.yes"),
-      cancelText: t("common.no"),
-      okButtonProps: { loading: isSendingAction },
-      onOk: async () => {
-        setIsSendingAction(true);
-        const selectedMinions = getSelectedSaltKeyMinions(
-          saltKeysStore.allSaltKeys,
-          selection,
-          masterId
-        );
-        const result = await runMutation({
-          run: () => rejectSaltKeys(selectedMinions),
-          errorMessage: t("master.reject-selected-failed"),
-        });
-        if (result.ok) {
-          notify.success(
-            t("master.reject-selected-success", { count: result.data?.minions?.length ?? 0 })
-          );
-        }
-        setIsSendingAction(false);
-        setSelection({});
-        saltKeysStore.refresh();
-      },
-    });
-  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
+  const handleRejectKeys = useCallback(
+    (keys: Array<SaltKeyWithId>) => {
+      if (keys.length === 0) return;
 
-  const handleDeleteSelected = useCallback(() => {
-    if (Object.keys(selection).length === 0) return;
+      modalApi.confirm({
+        title: t("master.reject-selected-confirm-title"),
+        content: t("master.reject-selected-confirm-description", {
+          count: keys.length,
+        }),
+        icon: null,
+        okText: t("common.yes"),
+        cancelText: t("common.no"),
+        okButtonProps: { loading: isSendingAction },
+        onOk: async () => {
+          setIsSendingAction(true);
+          const result = await runMutation({
+            run: () => rejectSaltKeys(toSaltKeyMinions(keys, masterId)),
+            errorMessage: t("master.reject-selected-failed"),
+          });
+          if (result.ok) {
+            notify.success(
+              t("master.reject-selected-success", { count: result.data?.minions?.length ?? 0 })
+            );
+          }
+          setIsSendingAction(false);
+          setSelection({});
+          saltKeysStore.refresh();
+        },
+      });
+    },
+    [isSendingAction, masterId, modalApi, saltKeysStore, t]
+  );
 
-    modalApi.confirm({
-      title: t("master.delete-selected-confirm-title"),
-      content: t("master.delete-selected-confirm-description", {
-        count: Object.keys(selection).length,
-        master: masterId,
-      }),
-      icon: null,
-      okText: t("common.delete"),
-      cancelText: t("common.cancel"),
-      okButtonProps: { danger: true, loading: isSendingAction },
-      onOk: async () => {
-        setIsSendingAction(true);
-        const selectedMinions = getSelectedSaltKeyMinions(
-          saltKeysStore.allSaltKeys,
-          selection,
-          masterId
-        );
-        const result = await runMutation({
-          run: () => deleteSaltKeys(selectedMinions),
-          errorMessage: t("master.delete-selected-failed"),
-        });
-        if (result.ok) {
-          notify.success(t("master.delete-selected-success", { count: selectedMinions.length }));
-        }
-        setIsSendingAction(false);
-        setSelection({});
-        saltKeysStore.refresh();
-      },
-    });
-  }, [isSendingAction, masterId, modalApi, saltKeysStore, selection, t]);
+  const handleDeleteKeys = useCallback(
+    (keys: Array<SaltKeyWithId>, warning?: string) => {
+      if (keys.length === 0) return;
+
+      modalApi.confirm({
+        title: t("master.delete-selected-confirm-title"),
+        content: (
+          <Flex vertical gap="small">
+            {t("master.delete-selected-confirm-description", {
+              count: keys.length,
+              master: masterId,
+            })}
+            {warning && <Typography.Text type="danger">{warning}</Typography.Text>}
+          </Flex>
+        ),
+        icon: null,
+        okText: t("common.delete"),
+        cancelText: t("common.cancel"),
+        okButtonProps: { danger: true, loading: isSendingAction },
+        onOk: async () => {
+          setIsSendingAction(true);
+          const minions = toSaltKeyMinions(keys, masterId);
+          const result = await runMutation({
+            run: () => deleteSaltKeys(minions),
+            errorMessage: t("master.delete-selected-failed"),
+          });
+          if (result.ok) {
+            notify.success(t("master.delete-selected-success", { count: minions.length }));
+          }
+          setIsSendingAction(false);
+          setSelection({});
+          saltKeysStore.refresh();
+        },
+      });
+    },
+    [isSendingAction, masterId, modalApi, saltKeysStore, t]
+  );
+
+  const handleDeleteDrawerKey = useCallback(
+    (saltKey: SaltKeyWithId) => {
+      const warning =
+        saltKey.status !== SaltKeyStatusType.Accepted && saltKeysStore.hasAcceptedKey(saltKey)
+          ? t("master.delete-key-accepted-warning", { minionId: saltKey.minion_id })
+          : undefined;
+      handleDeleteKeys([saltKey], warning);
+    },
+    [handleDeleteKeys, saltKeysStore, t]
+  );
 
   const handleAcceptAll = useCallback(() => {
     if (Object.keys(selection).length !== 0) return;
@@ -322,9 +348,9 @@ const MasterPage = observer(() => {
                     selectedSaltKeys={selection}
                     isSendingAction={isSendingAction}
                     unacceptedCount={saltKeysStore.unacceptedCount}
-                    onAcceptSelected={handleAcceptSelected}
-                    onRejectSelected={handleRejectSelected}
-                    onDeleteSelected={handleDeleteSelected}
+                    onAcceptSelected={() => handleAcceptKeys(getSelectedKeys())}
+                    onRejectSelected={() => handleRejectKeys(getSelectedKeys())}
+                    onDeleteSelected={() => handleDeleteKeys(getSelectedKeys())}
                     onAcceptAll={handleAcceptAll}
                     onRejectAll={handleRejectAll}
                     onDeleteAll={handleDeleteAll}
@@ -385,9 +411,10 @@ const MasterPage = observer(() => {
       saltKeysEmptyText,
       isSendingAction,
       selection,
-      handleAcceptSelected,
-      handleRejectSelected,
-      handleDeleteSelected,
+      getSelectedKeys,
+      handleAcceptKeys,
+      handleRejectKeys,
+      handleDeleteKeys,
       handleAcceptAll,
       handleRejectAll,
       handleDeleteAll,
@@ -409,7 +436,21 @@ const MasterPage = observer(() => {
         className={styles.masterTabs}
       />
 
-      <MinionDetailsDrawer drawer={drawer} />
+      <MinionDetailsDrawer
+        drawer={drawer}
+        allowMissingMinion
+        topContent={
+          drawerKey && (
+            <SaltKeyDrawerSection
+              saltKey={drawerKey}
+              disabled={isSendingAction || saltKeysStore.isLoading}
+              onAccept={() => handleAcceptKeys([drawerKey])}
+              onReject={() => handleRejectKeys([drawerKey])}
+              onDelete={() => handleDeleteDrawerKey(drawerKey)}
+            />
+          )
+        }
+      />
 
       <SaltKeysAcceptConflictModal {...conflictModalProps} />
 

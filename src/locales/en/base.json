@@ -487,6 +487,11 @@
     "accept-mixed-success": "Selected keys were accepted successfully: {{accepted}}. Replaced keys: {{replaced}}",
     "accept-cancelled": "Accepting keys was cancelled",
     "accept-per-key-result": "Operation completed. Accepted keys: {{accepted}}. Replaced keys: {{replaced}}. Skipped keys: {{skipped}}",
+    "drawer-key-status": "Key status",
+    "drawer-key-accept": "Accept key",
+    "drawer-key-reject": "Reject key",
+    "drawer-key-delete": "Delete key",
+    "delete-key-accepted-warning": "All keys of minion \"{{minionId}}\" will be deleted, including the accepted one.",
     "filter-by-status": "Filter by key status",
     "refresh": "Refresh"
   },

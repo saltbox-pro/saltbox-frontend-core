@@ -2,8 +2,9 @@ import { SourceOperation, type SourceListWithExtrasSchema } from "@saltbox/saltb
 import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction } from "mobx";
 
+import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
+
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
-import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import { resolveConnectedLocalSourceAvailabilityRefresh } from "../../shared/helpers/is-connected-local-template-source";
 import {
   mergeSourceListItemUpdate,
