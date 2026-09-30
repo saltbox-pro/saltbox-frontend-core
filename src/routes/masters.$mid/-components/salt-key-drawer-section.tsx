@@ -3,10 +3,10 @@ import { SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
 import { Alert, type AlertProps, Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
+import { SaltKeyStatusTag } from "saltbox-core/features/masters";
 import type { SaltKeyWithId } from "saltbox-core/store";
 
 import styles from "./salt-key-drawer-section.module.css";
-import { SaltKeyStatusTag } from "./salt-key-status-tag";
 
 type SaltKeyAction = "accept" | "reject" | "delete";
 

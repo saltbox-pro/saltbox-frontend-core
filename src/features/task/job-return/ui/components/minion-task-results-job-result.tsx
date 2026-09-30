@@ -1,6 +1,7 @@
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { JobReturnStatus, type JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import { CopyToClipboardButton } from "@saltbox/saltbox-frontend-common";
-import { Collapse, type CollapseProps, Flex, Tag } from "antd";
+import { CopyToClipboardButton, StatusBadge } from "@saltbox/saltbox-frontend-common";
+import { Collapse, type CollapseProps, Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -77,9 +78,12 @@ function AttemptStatusTag({
   }
 
   return (
-    <Tag color={status === "success" ? "success" : "error"}>
+    <StatusBadge
+      tone={status === "success" ? "success" : "danger"}
+      icon={status === "success" ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+    >
       {t(`task.minion.attempt-status-${status}`)}
-    </Tag>
+    </StatusBadge>
   );
 }
 

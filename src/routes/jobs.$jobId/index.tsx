@@ -15,6 +15,7 @@ import {
   ErrorZone,
   formatTimeByUserTZ,
   runMutation,
+  StatusBadge,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -25,7 +26,6 @@ import {
   Skeleton,
   Spin,
   Statistic,
-  Tag,
   Tooltip,
   Typography,
   message,
@@ -42,10 +42,16 @@ import {
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
 import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
+import { LaunchErrorPopover } from "saltbox-core/routes/jobs/-components/launch-error-popover";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
+import {
+  JOB_RETURN_STATUS_COUNT_ORDER,
+  JOB_RETURN_STATUS_VIEW,
+} from "saltbox-core/shared/components/job-return";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge/job-status-badge";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
@@ -306,6 +312,17 @@ const JobPage = observer(() => {
         <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
           <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
             <div className={styles.jobDetailItem}>
+              {jobStore.job?.status === JobStatus.LaunchError && jobStore.job.launch_error_type ? (
+                <LaunchErrorPopover
+                  errorTypeText={jobStore.job.launch_error_type}
+                  size="prominent"
+                />
+              ) : (
+                <JobStatusBadge status={jobStore.job?.status} size="prominent" />
+              )}
+            </div>
+
+            <div className={styles.jobDetailItem}>
               <AcceptedMastersActionButton
                 shape="default"
                 icon={<ReloadOutlined />}
@@ -516,21 +533,15 @@ const JobPage = observer(() => {
                           wrap
                         >
                           <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-                            <Tag color="green">
-                              {t("task.job-returns-table.status-success")}: {statusCounts.success}
-                            </Tag>
-                            <Tag color="red">
-                              {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-                            </Tag>
-                            <Tag color="orange">
-                              {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-                            </Tag>
-                            <Tag color="default">
-                              {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-                            </Tag>
-                            <Tag color="blue">
-                              {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-                            </Tag>
+                            {JOB_RETURN_STATUS_COUNT_ORDER.map((status) => {
+                              const view = JOB_RETURN_STATUS_VIEW[status];
+
+                              return (
+                                <StatusBadge key={status} tone={view.tone}>
+                                  {t(view.translationKey)}: {statusCounts[status]}
+                                </StatusBadge>
+                              );
+                            })}
                           </Flex>
                           <Flex align="center" className={styles.toolbarActions}>
                             {showExportButton && (

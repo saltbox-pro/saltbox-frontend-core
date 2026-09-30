@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
 
+import { SaltKeyStatusTag } from "saltbox-core/features/masters";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
   ALL_FILTER,
@@ -35,7 +36,6 @@ import {
   rejectSaltKeys,
 } from "./-api/salt-keys-actions";
 import { SaltKeyDrawerSection } from "./-components/salt-key-drawer-section";
-import { SaltKeyStatusTag } from "./-components/salt-key-status-tag";
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
 import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
 import { SaltKeysDeleteConfirmModal } from "./-components/salt-keys-delete-confirm-modal";

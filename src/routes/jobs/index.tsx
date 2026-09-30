@@ -12,7 +12,7 @@ import {
   AcceptedMastersActionButton,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Tag, message } from "antd";
+import { message } from "antd";
 import type { TFunction } from "i18next";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -23,6 +23,7 @@ import Parcel from "single-spa-react/parcel";
 
 import { JobModalShell, type JobModalTargeting } from "saltbox-core/features/job-modal";
 import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge/job-status-badge";
 import { useSaltTargetTypes } from "saltbox-core/shared/conf/salt-target-types";
 import { getJobsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import {
@@ -215,23 +216,13 @@ const JobsPage = observer(() => {
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
         cell: (data) => {
-          switch (data.getValue()) {
-            case JobStatus.Starting:
-              return <Tag color="yellow">{t("jobs.table-status-starting")}</Tag>;
-            case JobStatus.Running:
-              return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
-            case JobStatus.Finished:
-              return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            case JobStatus.LaunchError:
-              return (
-                <LaunchErrorPopover
-                  errorTypeText={data.row.original.launch_error_type ?? ""}
-                  tagText={t("jobs.table-status-launch-error")}
-                />
-              );
-            default:
-              return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
+          const status = data.getValue();
+
+          if (status === JobStatus.LaunchError) {
+            return <LaunchErrorPopover errorTypeText={data.row.original.launch_error_type ?? ""} />;
           }
+
+          return <JobStatusBadge status={status} />;
         },
         meta: {
           width: "11%",

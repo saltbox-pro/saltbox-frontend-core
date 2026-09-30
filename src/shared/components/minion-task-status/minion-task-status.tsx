@@ -1,17 +1,17 @@
 import { TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { Tag } from "antd";
+import { StatusBadge } from "@saltbox/saltbox-frontend-common";
 import { useTranslation } from "react-i18next";
 
 import {
   getTaskMinionStatusLabelKey,
-  getTaskMinionStatusTagColor,
   getTaskMinionStatusTitleKey,
+  getTaskMinionStatusTone,
   isKnownTaskMinionStatus,
 } from "./helpers/task-minion-status-meta";
 
-export interface MinionTaskStatusProps {
+type MinionTaskStatusProps = {
   status: TaskMinionStatus | null | undefined;
-}
+};
 
 export function MinionTaskStatus({ status }: MinionTaskStatusProps) {
   const { t } = useTranslation();
@@ -21,14 +21,18 @@ export function MinionTaskStatus({ status }: MinionTaskStatusProps) {
   }
 
   if (!isKnownTaskMinionStatus(status)) {
-    return <Tag color="orange">{`${t("task.minions.table-unknown-code")}: ${status}`}</Tag>;
+    return (
+      <StatusBadge tone="warning">
+        {`${t("task.minions.table-unknown-code")}: ${status}`}
+      </StatusBadge>
+    );
   }
 
   const titleKey = getTaskMinionStatusTitleKey(status);
 
   return (
-    <Tag color={getTaskMinionStatusTagColor(status)} title={titleKey ? t(titleKey) : undefined}>
+    <StatusBadge tone={getTaskMinionStatusTone(status)} title={titleKey ? t(titleKey) : undefined}>
       {t(getTaskMinionStatusLabelKey(status))}
-    </Tag>
+    </StatusBadge>
   );
 }

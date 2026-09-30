@@ -490,6 +490,7 @@
     "table-new": "Новый",
     "table-rejected": "Отклонен",
     "table-accepted": "Принят",
+    "table-keys-stale": "Ключи устарели",
     "table-unknown-status": "Неизвестный статус",
     "table-created": "Создан",
     "table-modified": "Изменен",

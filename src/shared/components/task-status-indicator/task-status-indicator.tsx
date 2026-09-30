@@ -1,90 +1,106 @@
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
-  FieldTimeOutlined,
+  LoadingOutlined,
   QuestionCircleOutlined,
   StopOutlined,
-  LoadingOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import { TaskStatus } from "@saltbox/saltbox-core-api-client";
-import { Flex, Skeleton, Spin } from "antd";
+import {
+  StatusBadge,
+  type StatusBadgeSize,
+  type StatusTone,
+} from "@saltbox/saltbox-frontend-common";
+import { Skeleton, Spin } from "antd";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-interface TaskStatusIndicatorProps {
+export interface TaskStatusIndicatorProps {
   status?: TaskStatus | "none";
   reason?: string;
+  size?: StatusBadgeSize;
 }
 
-interface StatusConfig {
+type StatusView = {
+  tone: StatusTone;
   icon: ReactNode;
   translationKey: string;
-}
+};
 
 const spinningIcon = <Spin indicator={<LoadingOutlined spin />} size="small" />;
 
 const TTL_STOP_REASON = "timeout";
 
-const ttlStopStatusConfig: Partial<Record<TaskStatus, StatusConfig>> = {
+const TASK_STATUS_VIEW: Record<TaskStatus | "none", StatusView> = {
+  [TaskStatus.Created]: {
+    tone: "pending",
+    icon: <ClockCircleOutlined />,
+    translationKey: "task.created",
+  },
+  [TaskStatus.Finished]: {
+    tone: "success",
+    icon: <CheckCircleOutlined />,
+    translationKey: "task.finished",
+  },
+  [TaskStatus.Running]: {
+    tone: "active",
+    icon: spinningIcon,
+    translationKey: "task.running",
+  },
   [TaskStatus.Stopping]: {
+    tone: "active",
+    icon: spinningIcon,
+    translationKey: "task.stopping",
+  },
+  [TaskStatus.Stopped]: {
+    tone: "warning",
+    icon: <StopOutlined />,
+    translationKey: "task.stopped",
+  },
+  [TaskStatus.WaitMinions]: {
+    tone: "active",
+    icon: spinningIcon,
+    translationKey: "task.wait-minions",
+  },
+  none: {
+    tone: "pending",
+    icon: <QuestionCircleOutlined />,
+    translationKey: "task.unknown",
+  },
+};
+
+const TTL_STOP_STATUS_VIEW: Partial<Record<TaskStatus, StatusView>> = {
+  [TaskStatus.Stopping]: {
+    tone: "active",
     icon: spinningIcon,
     translationKey: "task.stopping-by-ttl",
   },
   [TaskStatus.Stopped]: {
-    icon: <FieldTimeOutlined />,
+    tone: "warning",
+    icon: <WarningOutlined />,
     translationKey: "task.stopped-by-ttl",
   },
 };
 
-export const TaskStatusIndicator = ({ status, reason }: TaskStatusIndicatorProps) => {
+export const TaskStatusIndicator = ({ status, reason, size }: TaskStatusIndicatorProps) => {
   const { t } = useTranslation();
 
   if (!status) {
     return <Skeleton.Input size="small" />;
   }
 
-  const statusConfig: Record<TaskStatus | "none", StatusConfig> = {
-    [TaskStatus.Created]: {
-      icon: <ClockCircleOutlined />,
-      translationKey: "task.created",
-    },
-    [TaskStatus.Finished]: {
-      icon: <CheckCircleOutlined />,
-      translationKey: "task.finished",
-    },
-    [TaskStatus.Running]: {
-      icon: spinningIcon,
-      translationKey: "task.running",
-    },
-    [TaskStatus.Stopping]: {
-      icon: spinningIcon,
-      translationKey: "task.stopping",
-    },
-    [TaskStatus.Stopped]: {
-      icon: <StopOutlined />,
-      translationKey: "task.stopped",
-    },
-    [TaskStatus.WaitMinions]: {
-      icon: spinningIcon,
-      translationKey: "task.wait-minions",
-    },
-    none: {
-      icon: <QuestionCircleOutlined />,
-      translationKey: "task.unknown",
-    },
-  };
+  const view =
+    (reason === TTL_STOP_REASON && status !== "none" ? TTL_STOP_STATUS_VIEW[status] : undefined) ??
+    TASK_STATUS_VIEW[status];
 
-  const config =
-    (reason === TTL_STOP_REASON && status !== "none" ? ttlStopStatusConfig[status] : undefined) ??
-    statusConfig[status];
-
-  if (!config) {
+  if (!view) {
     return <Skeleton.Input size="small" />;
   }
 
   return (
-    <Flex component="span" align="center" gap={6}>
-      {config.icon} {t(config.translationKey)}
-    </Flex>
+    <StatusBadge tone={view.tone} size={size} icon={view.icon}>
+      {t(view.translationKey)}
+    </StatusBadge>
   );
 };

@@ -1,21 +1,29 @@
 import { CloseOutlined, InfoCircleOutlined } from "@ant-design/icons";
-import { BaseActionButton, CopyToClipboardButton, Popover } from "@saltbox/saltbox-frontend-common";
-import { Flex, Tag } from "antd";
+import { JobStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  BaseActionButton,
+  CopyToClipboardButton,
+  Popover,
+  type StatusBadgeSize,
+} from "@saltbox/saltbox-frontend-common";
+import { Flex } from "antd";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge/job-status-badge";
+
 import styles from "./launch-error-popover.module.css";
 
-interface LaunchErrorPopoverProps {
+type LaunchErrorPopoverProps = {
   errorTypeText: string;
-  tagText: string;
   maxWidth?: string;
-}
+  size?: StatusBadgeSize;
+};
 
 export function LaunchErrorPopover({
   errorTypeText,
-  tagText,
   maxWidth = "300px",
+  size,
 }: LaunchErrorPopoverProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const { t } = useTranslation();
@@ -64,9 +72,11 @@ export function LaunchErrorPopover({
       zIndex={500}
     >
       <Flex className={styles.launchErrorPreview} onClick={handleOpen}>
-        <Tag className={styles.launchErrorTag} color="red">
-          {tagText}
-        </Tag>
+        <JobStatusBadge
+          className={styles.launchErrorTag}
+          status={JobStatus.LaunchError}
+          size={size}
+        />
         <InfoCircleOutlined className={styles.launchErrorIcon} />
       </Flex>
     </Popover>
