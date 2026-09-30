@@ -247,20 +247,6 @@
         "zfs_feature_flags": "Флаги функций ZFS",
         "lvm": "LVM"
       }
-    },
-    "filter-operators": {
-      "contains": "содержит",
-      "beginsWith": "начинается с",
-      "endsWith": "заканчивается на",
-      "doesNotContain": "не содержит",
-      "doesNotBeginWith": "не начинается с",
-      "doesNotEndWith": "не заканчивается на",
-      "in": "в списке",
-      "notIn": "не в списке",
-      "null": "пусто",
-      "notNull": "не пусто",
-      "between": "между",
-      "notBetween": "не между"
     }
   },
   "mainmenu": {
