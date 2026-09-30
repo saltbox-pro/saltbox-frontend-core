@@ -35,34 +35,34 @@ export function ExtraDataCategoryDetails({ category }: ExtraDataCategoryDetailsP
     return [
       {
         key: "type",
-        label: t("extra-data-categories.table.type"),
+        label: t("extra-data-categories.attributes.type"),
         children: <ExtraDataCategoryTypeTag type={type} />,
       },
       {
         key: "origin",
-        label: t("extra-data-categories.table.origin"),
+        label: t("extra-data-categories.attributes.origin"),
         children: <ExtraDataCategoryOriginTag isSystem={isSystem} />,
       },
       {
         key: "manual-data-allowed",
-        label: t("extra-data-categories.table.manual-data-allowed"),
+        label: t("extra-data-categories.attributes.manual-data-allowed"),
         children: <BooleanDisplay value={isManualDataAllowed} />,
       },
       {
         key: "extra-fields-policy",
-        label: t("extra-data-categories.details.extra-fields-policy"),
+        label: t("extra-data-categories.attributes.extra-fields-policy"),
         children: t(`extra-data-categories.extra-fields-policies.${policy}`, {
           defaultValue: policy,
         }),
       },
       {
         key: "created",
-        label: t("extra-data-categories.details.created"),
+        label: t("extra-data-categories.attributes.created"),
         children: created ? formatTimeByUserTZ(created) : null,
       },
       {
         key: "modified",
-        label: t("extra-data-categories.details.modified"),
+        label: t("extra-data-categories.attributes.modified"),
         children: modified ? formatTimeByUserTZ(modified) : null,
       },
     ];

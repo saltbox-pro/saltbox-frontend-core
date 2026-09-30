@@ -457,7 +457,12 @@
       "success": "Category \"{{name}}\" deleted",
       "error": "Failed to delete category \"{{name}}\""
     },
-    "details": {
+    "attributes": {
+      "name": "Name",
+      "type": "Type",
+      "origin": "Origin",
+      "manual-data-allowed": "Manual entry",
+      "fields-count": "Fields",
       "extra-fields-policy": "Extra fields policy",
       "created": "Created",
       "modified": "Modified"
@@ -498,12 +503,6 @@
       "datetime": "Date and time"
     },
     "table": {
-      "name": "Name",
-      "type": "Type",
-      "origin": "Origin",
-      "manual-data-allowed": "Manual entry",
-      "fields-count": "Fields",
-      "created": "Created",
       "empty": "No extra data categories"
     },
     "category-types": {

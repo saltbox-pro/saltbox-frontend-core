@@ -457,7 +457,12 @@
       "success": "Категория \"{{name}}\" удалена",
       "error": "Не удалось удалить категорию \"{{name}}\""
     },
-    "details": {
+    "attributes": {
+      "name": "Название",
+      "type": "Тип",
+      "origin": "Происхождение",
+      "manual-data-allowed": "Ручное добавление",
+      "fields-count": "Поля",
       "extra-fields-policy": "Политика лишних полей",
       "created": "Создана",
       "modified": "Изменена"
@@ -498,12 +503,6 @@
       "datetime": "Дата и время"
     },
     "table": {
-      "name": "Название",
-      "type": "Тип",
-      "origin": "Происхождение",
-      "manual-data-allowed": "Ручное добавление",
-      "fields-count": "Поля",
-      "created": "Создана",
       "empty": "Нет категорий расширенных данных"
     },
     "category-types": {

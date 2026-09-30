@@ -57,33 +57,38 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
   const columns = useMemo(
     () => [
       columnHelper.accessor("name", {
-        header: t("extra-data-categories.table.name"),
+        header: t("extra-data-categories.attributes.name"),
         cell: (info) => <ExtraDataCategoryLabel name={info.getValue()} />,
-        meta: { minWidth: 300, width: "33%" },
+        meta: { minWidth: 300, width: "26%" },
       }),
       columnHelper.accessor("type", {
-        header: t("extra-data-categories.table.type"),
+        header: t("extra-data-categories.attributes.type"),
         cell: (info) => <ExtraDataCategoryTypeTag type={info.getValue()} />,
-        meta: { minWidth: 140, width: "12%", ellipsis: false },
+        meta: { minWidth: 140, width: "11%", ellipsis: false },
       }),
       columnHelper.accessor("is_system", {
-        header: t("extra-data-categories.table.origin"),
+        header: t("extra-data-categories.attributes.origin"),
         cell: (info) => <ExtraDataCategoryOriginTag isSystem={info.getValue()} />,
-        meta: { minWidth: 160, width: "17%", ellipsis: false },
+        meta: { minWidth: 160, width: "14%", ellipsis: false },
       }),
       columnHelper.accessor("is_manual_data_allowed", {
-        header: t("extra-data-categories.table.manual-data-allowed"),
+        header: t("extra-data-categories.attributes.manual-data-allowed"),
         cell: (info) => <BooleanDisplay value={info.getValue()} />,
-        meta: { minWidth: 140, width: "14%", ellipsis: false },
+        meta: { minWidth: 140, width: "12%", ellipsis: false },
       }),
       columnHelper.accessor((row) => row.fields?.length ?? 0, {
         id: "fields_count",
-        header: t("extra-data-categories.table.fields-count"),
+        header: t("extra-data-categories.attributes.fields-count"),
         enableSorting: false,
-        meta: { minWidth: 100, width: "10%" },
+        meta: { minWidth: 100, width: "9%" },
       }),
       columnHelper.accessor("created", {
-        header: t("extra-data-categories.table.created"),
+        header: t("extra-data-categories.attributes.created"),
+        cell: (info) => formatTimeByUserTZ(info.getValue()),
+        meta: { minWidth: 170, width: "14%" },
+      }),
+      columnHelper.accessor("modified", {
+        header: t("extra-data-categories.attributes.modified"),
         cell: (info) => formatTimeByUserTZ(info.getValue()),
         meta: { minWidth: 170, width: "14%" },
       }),
