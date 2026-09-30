@@ -1,7 +1,7 @@
-import { DeleteOutlined, SettingOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { Dropdown, type ActionDropdownItem } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex } from "antd";
+import { type ActionDropdownItem, SettingsDropdown } from "@saltbox/saltbox-frontend-common";
+import { Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
 import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-button-with-tooltip";
@@ -9,7 +9,7 @@ import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-b
 import { useDeleteExtraDataCategoryConfirm } from "../hooks/use-delete-extra-data-category-confirm";
 
 type ExtraDataCategoryActionsMenuProps = {
-  category: ExtraDataCategoryModel | null;
+  category: ExtraDataCategoryModel;
   displayName?: string;
   onDeleted?: (category: ExtraDataCategoryModel) => void;
 };
@@ -23,7 +23,7 @@ export function ExtraDataCategoryActionsMenu({
 
   const deleteConfirm = useDeleteExtraDataCategoryConfirm({ category, displayName, onDeleted });
 
-  const canManage = !!category && !category.is_system;
+  const canManage = !category.is_system;
 
   const items: ActionDropdownItem[] = [
     {
@@ -42,17 +42,13 @@ export function ExtraDataCategoryActionsMenu({
   return (
     <>
       {canManage ? (
-        <Dropdown menu={{ items }} trigger={["click"]}>
-          <Button icon={<SettingOutlined />} />
-        </Dropdown>
+        <SettingsDropdown menu={{ items }} />
       ) : (
         <ActionButtonWithTooltip
           disabled
-          title={
-            category?.is_system ? t("extra-data-categories.system-category-readonly") : undefined
-          }
+          title={t("extra-data-categories.system-category-readonly")}
         >
-          <Button icon={<SettingOutlined />} disabled />
+          <SettingsDropdown disabled />
         </ActionButtonWithTooltip>
       )}
       {deleteConfirm.modalContextHolder}

@@ -40,13 +40,15 @@ export function ExtraDataCategoryDrawer({
       drawerId={DRAWER_IDS.extraDataCategorySettings}
       titleName={titleName}
       hasData={!!category}
-      transitionKey={category?.id}
+      transitionKey={open ? (category?.id ?? "opened") : "closed"}
       extra={
-        <ExtraDataCategoryActionsMenu
-          category={category}
-          displayName={titleName}
-          onDeleted={onCategoryDeleted}
-        />
+        category ? (
+          <ExtraDataCategoryActionsMenu
+            category={category}
+            displayName={titleName}
+            onDeleted={onCategoryDeleted}
+          />
+        ) : undefined
       }
       {...restProps}
     >
