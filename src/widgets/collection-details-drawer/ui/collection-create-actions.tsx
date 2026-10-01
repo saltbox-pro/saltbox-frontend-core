@@ -17,13 +17,13 @@ export function CollectionCreateActions({
   onCreate,
 }: CollectionCreateActionsProps) {
   const { t } = useTranslation();
-  const noChangesTooltip = t("collection.tooltip-no-changes");
+  const noChangesTooltip = t("common.no-changes-to-save");
 
   return (
     <Flex gap="small">
       <ActionButtonWithTooltip disabled={!hasUnsavedChanges} title={noChangesTooltip}>
         <Button onClick={onReset} disabled={!hasUnsavedChanges || isCreating}>
-          {t("collection.reset-changes")}
+          {t("common.reset")}
         </Button>
       </ActionButtonWithTooltip>
       <Button type="primary" onClick={onCreate} loading={isCreating}>
