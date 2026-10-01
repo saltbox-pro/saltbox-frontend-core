@@ -1,3 +1,12 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 .toolbarActions {
   display: inline-flex;
   align-items: center;
@@ -8,4 +17,8 @@
 .toolbarActions :global(.fast-table-toolbar) {
   margin-left: 0;
   padding-left: 0;
+}
+
+.table {
+  min-height: 0;
 }
