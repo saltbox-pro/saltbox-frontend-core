@@ -1,12 +1,13 @@
-import { FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, FilterOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
+import { BaseActionButton, FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { toJS } from "mobx";
+import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
   canFilterExtraDataValue,
@@ -26,16 +27,29 @@ export interface MinionExtraDataRecordTableProps {
   fields: string[];
   category: ExtraDataCategoryModel;
   onFilterButton?: OnFilterButtonHandler;
+  canChangeRecord?: (record: ExtraDataRecord) => boolean;
+  onEditRecord?: (record: ExtraDataRecord) => void;
+  onDeleteRecord?: (record: ExtraDataRecord) => void;
 }
 
 export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTableProps>(
-  function MinionExtraDataRecordTable({ store, fields, category, onFilterButton }) {
+  function MinionExtraDataRecordTable({
+    store,
+    fields,
+    category,
+    onFilterButton,
+    canChangeRecord,
+    onEditRecord,
+    onDeleteRecord,
+  }) {
     const { t } = useTranslation();
+
+    const hasChangeableRecords = !!canChangeRecord && store.records.some(canChangeRecord);
 
     const columns = useMemo(() => {
       const columnWidth = getEqualExtraDataColumnWidth(fields.length);
 
-      return fields.map((field) => {
+      const fieldColumns = fields.map((field) => {
         const filterAction: CellAction<ExtraDataRecord> | null = onFilterButton
           ? {
               icon: <FilterOutlined />,
@@ -63,13 +77,52 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
           },
         });
       });
-    }, [fields, onFilterButton, category, t]);
+
+      if (!hasChangeableRecords || !canChangeRecord || !onEditRecord || !onDeleteRecord) {
+        return fieldColumns;
+      }
+
+      return [
+        ...fieldColumns,
+        columnHelper.display({
+          id: "actions",
+          header: "",
+          enableSorting: false,
+          cell: ({ row }) =>
+            canChangeRecord(row.original) ? (
+              <Flex align="center" gap={4}>
+                <BaseActionButton
+                  icon={<EditOutlined />}
+                  title={t("common.edit")}
+                  onClick={() => onEditRecord(row.original)}
+                />
+                <BaseActionButton
+                  color="danger"
+                  icon={<DeleteOutlined />}
+                  title={t("common.delete")}
+                  onClick={() => onDeleteRecord(row.original)}
+                />
+              </Flex>
+            ) : null,
+          meta: { ellipsis: false, width: 76, minWidth: 76 },
+        }),
+      ];
+    }, [
+      fields,
+      onFilterButton,
+      category,
+      t,
+      hasChangeableRecords,
+      canChangeRecord,
+      onEditRecord,
+      onDeleteRecord,
+    ]);
 
     return (
       <ExtraDataRecordsTable
         tableId="core-minion-extra-data-records"
         columns={columns}
-        data={toJS(store.records)}
+        data={store.records}
         total={store.totalRecords}
         isLoading={store.isLoading}
         onRefresh={() => store.loadRecords()}
@@ -79,9 +132,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
         locale={{
           empty: t("minions.extra-data.empty-category", {
-            category: t(`minions.extra-data.categories.${category.name}`, {
-              defaultValue: category.name,
-            }),
+            category: getExtraDataCategoryDisplayName(t, category.name),
           }),
         }}
       />

@@ -3,7 +3,6 @@ import {
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
-  Modal,
   MutationErrorAlert,
   notify,
   runMutation,
@@ -18,6 +17,10 @@ import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
 import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
+import {
+  type DrawerCloseGuard,
+  useUnsavedChangesCloseGuard,
+} from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import {
   MinionFilterStore,
@@ -28,11 +31,7 @@ import {
 
 import { COLLECTION_DETAILS_DRAWER_WIDTH, ROOT_SLUG } from "../constants";
 import { getFilterStateKey } from "../helpers/get-filter-state-key";
-import type {
-  CollectionDetailsDrawerCloseGuard,
-  CollectionDetailsDrawerOpenParams,
-  CollectionEditFormType,
-} from "../types";
+import type { CollectionDetailsDrawerOpenParams, CollectionEditFormType } from "../types";
 
 import { CollectionClientsPreview } from "./collection-clients-preview";
 import { CollectionCreateSubcollectionButton } from "./collection-create-subcollection-button";
@@ -47,7 +46,7 @@ type CollectionDetailsDrawerProps = {
     close: () => void | Promise<void>;
   };
   collectionStore: CollectionStore;
-  closeGuardRef: RefObject<CollectionDetailsDrawerCloseGuard | null>;
+  closeGuardRef: RefObject<DrawerCloseGuard | null>;
   onCreateSubcollection?: (parentSlug: string) => void;
 };
 
@@ -60,8 +59,6 @@ export const CollectionDetailsDrawer = observer(
   }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
     const [form] = Form.useForm<CollectionEditFormType>();
-    const [modalApi, modalContextHolder] = Modal.useModal();
-
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<AppError | null>(null);
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
@@ -172,33 +169,11 @@ export const CollectionDetailsDrawer = observer(
     const hasUnsavedChanges = isFormDirty || isFiltersDirty;
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
 
-    useEffect(() => {
-      closeGuardRef.current = async () => {
-        if (!hasUnsavedChanges) {
-          return true;
-        }
-
-        return new Promise<boolean>((resolve) => {
-          modalApi.confirm({
-            title: t("collection.unsaved-title"),
-            content: t("collection.unsaved-content"),
-            icon: null,
-            okText: t("collection.unsaved-leave"),
-            cancelText: t("common.cancel"),
-            okButtonProps: { danger: true },
-            onOk: () => {
-              syncFromCollection();
-              resolve(true);
-            },
-            onCancel: () => resolve(false),
-          });
-        });
-      };
-
-      return () => {
-        closeGuardRef.current = null;
-      };
-    }, [closeGuardRef, hasUnsavedChanges, modalApi, syncFromCollection, t]);
+    const modalContextHolder = useUnsavedChangesCloseGuard({
+      closeGuardRef,
+      hasUnsavedChanges,
+      onDiscard: syncFromCollection,
+    });
 
     const descriptionItems = useMemo<InfoDescriptionsProps["items"]>(() => {
       if (!isEditable) {

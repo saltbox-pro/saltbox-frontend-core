@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import type { OptionList, RuleGroupType } from "react-querybuilder";
 
 import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
+import { useAddExtraDataDropdownItem } from "saltbox-core/features/minion-extra-data-editor";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
 import {
   buildMinionsActionPluginItems,
@@ -46,9 +47,16 @@ export function MinionsActionsDropdown({
     selectedMinions,
   });
 
+  const selectedMinionMongoIds = useMemo(
+    () => selectedMinions.map((minion) => minion.mid),
+    [selectedMinions]
+  );
+
+  const addExtraDataAction = useAddExtraDataDropdownItem({ minionIds: selectedMinionMongoIds });
+
   const removeAction = useRemoveMinionsDropdownItem({
     collectionSlug: slug,
-    minionMongoIds: selectedMinions.map((minion) => minion.mid),
+    minionMongoIds: selectedMinionMongoIds,
     onDeleted: () => {
       reloadMinions();
       clearSelection();
@@ -70,7 +78,11 @@ export function MinionsActionsDropdown({
 
   const pluginItems = buildMinionsActionPluginItems(pluginActionContext, actionPluginClickGuard);
 
-  const items: ActionDropdownItem[] = [...pluginItems, exportAction.item];
+  const items: ActionDropdownItem[] = [...pluginItems];
+  if (addExtraDataAction.item) {
+    items.push(addExtraDataAction.item);
+  }
+  items.push(exportAction.item);
   if (selectedMinions.length > 0) {
     const deleteItem = removeAction.item;
     if (deleteItem) {
@@ -83,6 +95,7 @@ export function MinionsActionsDropdown({
     <>
       {messageContextHolder}
       {removeAction.modalContextHolder}
+      {addExtraDataAction.modal}
 
       <ActionDropdown menu={{ items }} />
     </>

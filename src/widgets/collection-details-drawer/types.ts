@@ -8,5 +8,3 @@ export type CollectionEditFormType = {
   description?: string;
   parent_slug: string;
 };
-
-export type CollectionDetailsDrawerCloseGuard = () => Promise<boolean>;

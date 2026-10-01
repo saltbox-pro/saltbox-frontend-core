@@ -16,6 +16,7 @@ import AuditEventsPage from "./routes/audit.events";
 import CollectionsPage from "./routes/collections";
 import ConfigurationTemplatesPage from "./routes/configuration-templates";
 import TemplateSourceDetailPage from "./routes/configuration-templates.$sourceId";
+import ExtraDataCategoriesPage from "./routes/extra-data-categories";
 import JobsPage from "./routes/jobs";
 import JobPage from "./routes/jobs.$jobId";
 import MastersPage from "./routes/masters";
@@ -74,6 +75,7 @@ const coreRoutes = createRoutes(Route, [
     element: <DuplicateTemplatePage />,
   },
   { path: "/core/audit/events", element: <AuditEventsPage /> },
+  { path: "/core/extra-data-categories", element: <ExtraDataCategoriesPage /> },
   { path: "/not-found", element: <NotFound /> },
   { path: "*", element: <NotFound /> },
 ]);
