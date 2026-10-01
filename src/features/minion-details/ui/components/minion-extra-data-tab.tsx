@@ -2,7 +2,6 @@ import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { FastTable, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -80,7 +79,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
           }
           columns={columns}
           enableColumnSettings={false}
-          data={toJS(store.categories)}
+          data={store.categories}
           total={store.total}
           isLoading={store.isLoading}
           loader={store.categoriesLoad}

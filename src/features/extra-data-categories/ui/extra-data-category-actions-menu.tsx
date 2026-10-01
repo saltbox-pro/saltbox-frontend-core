@@ -9,7 +9,7 @@ import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-b
 import { useDeleteExtraDataCategoryConfirm } from "../hooks/use-delete-extra-data-category-confirm";
 
 type ExtraDataCategoryActionsMenuProps = {
-  category: ExtraDataCategoryModel;
+  category: ExtraDataCategoryModel | null;
   displayName?: string;
   onDeleted?: (category: ExtraDataCategoryModel) => void;
 };
@@ -23,7 +23,7 @@ export function ExtraDataCategoryActionsMenu({
 
   const deleteConfirm = useDeleteExtraDataCategoryConfirm({ category, displayName, onDeleted });
 
-  const canManage = !category.is_system;
+  const isSystem = !!category?.is_system;
 
   const items: ActionDropdownItem[] = [
     {
@@ -35,21 +35,22 @@ export function ExtraDataCategoryActionsMenu({
         </Flex>
       ),
       danger: true,
+      disabled: !category,
       onClick: deleteConfirm.openConfirm,
     },
   ];
 
   return (
     <>
-      {canManage ? (
-        <SettingsDropdown menu={{ items }} />
-      ) : (
+      {isSystem ? (
         <ActionButtonWithTooltip
           disabled
           title={t("extra-data-categories.system-category-readonly")}
         >
           <SettingsDropdown disabled />
         </ActionButtonWithTooltip>
+      ) : (
+        <SettingsDropdown menu={{ items }} disabled={!category} />
       )}
       {deleteConfirm.modalContextHolder}
     </>

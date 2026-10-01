@@ -42,17 +42,15 @@ export function ExtraDataCategoryDrawer({
       hasData={!!category}
       transitionKey={open ? (category?.id ?? "opened") : "closed"}
       extra={
-        category ? (
-          <ExtraDataCategoryActionsMenu
-            category={category}
-            displayName={titleName}
-            onDeleted={onCategoryDeleted}
-          />
-        ) : undefined
+        <ExtraDataCategoryActionsMenu
+          category={category}
+          displayName={titleName}
+          onDeleted={onCategoryDeleted}
+        />
       }
       {...restProps}
     >
-      {category ? (
+      {!!category && (
         <Flex vertical gap="large">
           <ExtraDataCategoryDetails category={category} />
           <ExtraDataCategoryFieldsEditor
@@ -66,7 +64,7 @@ export function ExtraDataCategoryDrawer({
             onSuccess={onCategoryUpdated}
           />
         </Flex>
-      ) : null}
+      )}
     </InfoDrawer>
   );
 }

@@ -3,7 +3,6 @@ import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { BaseActionButton, FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -123,7 +122,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
       <ExtraDataRecordsTable
         tableId="core-minion-extra-data-records"
         columns={columns}
-        data={toJS(store.records)}
+        data={store.records}
         total={store.totalRecords}
         isLoading={store.isLoading}
         onRefresh={() => store.loadRecords()}

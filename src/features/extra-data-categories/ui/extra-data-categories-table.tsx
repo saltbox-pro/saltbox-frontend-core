@@ -6,7 +6,6 @@ import {
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -101,7 +100,7 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
       <CategoriesTable
         tableId="core-extra-data-categories"
         columns={columns}
-        data={toJS(store.categories)}
+        data={store.categories}
         total={store.total}
         isLoading={store.isLoading}
         loader={store.categoriesLoad}
