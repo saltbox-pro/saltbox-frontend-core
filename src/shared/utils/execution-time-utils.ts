@@ -1,8 +1,4 @@
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-
-dayjs.extend(duration);
 
 export const formatExecutionTime = (
   executionTimeSeconds: number,
@@ -117,38 +113,20 @@ export const getExecutionTimeColor = (
   }
 };
 
-export const calculateExecutionTime = (
-  jobStartTime: number | null,
-  jobReturnStamp: string | null
-): number | null => {
-  if (!jobReturnStamp || !jobStartTime) return null;
+const getExecutionTimeSeconds = (jobReturn: JobReturnModel | null): number | null => {
+  const durationMs = jobReturn?.duration_ms;
+  if (durationMs == null) return null;
 
-  const jobReturnTime = dayjs(jobReturnStamp);
-  if (!jobReturnTime.isValid()) return null;
-
-  const executionTimeMs = jobReturnTime.valueOf() - jobStartTime;
-  const executionTimeSeconds = executionTimeMs / 1000;
-
-  if (!isFinite(executionTimeSeconds) || executionTimeSeconds < 0) {
-    return null;
-  }
-
-  return executionTimeSeconds;
+  return durationMs / 1000;
 };
 
-export const getMaxExecutionTime = (
-  jobReturns: JobReturnModel[],
-  jobStartTime: number | null
-): number | null => {
-  if (!jobReturns?.length || !jobStartTime) {
+export const getMaxExecutionTime = (jobReturns: JobReturnModel[]): number | null => {
+  if (!jobReturns?.length) {
     return null;
   }
 
   const executionTimes = jobReturns
-    .map((returnItem) => {
-      const startTime = returnItem.stamp_job ? dayjs(returnItem.stamp_job).valueOf() : jobStartTime;
-      return calculateExecutionTime(startTime, returnItem.stamp);
-    })
+    .map(getExecutionTimeSeconds)
     .filter((time): time is number => time !== null);
 
   return executionTimes.length > 0 ? Math.max(...executionTimes) : null;
@@ -165,7 +143,6 @@ const isPendingExecutionTime = (
 };
 
 export const useFormatAndGetExecutionTimeColor = (
-  jobStartTimestamp: string | null,
   stamp: string | null,
   jobReturn: JobReturnModel | null,
   allJobReturns: JobReturnModel[],
@@ -192,20 +169,7 @@ export const useFormatAndGetExecutionTimeColor = (
     };
   }
 
-  const startTime = jobReturn?.stamp_job
-    ? dayjs(jobReturn.stamp_job).valueOf()
-    : jobStartTimestamp
-      ? dayjs(jobStartTimestamp).valueOf()
-      : null;
-
-  if (!startTime) {
-    return {
-      formattedTime: t("task.job-returns-table.invalid-execution-time"),
-      color: "#000000",
-    };
-  }
-
-  const executionTimeSeconds = calculateExecutionTime(startTime, stamp);
+  const executionTimeSeconds = getExecutionTimeSeconds(jobReturn);
 
   if (executionTimeSeconds === null || executionTimeSeconds <= 0) {
     return {
@@ -217,14 +181,7 @@ export const useFormatAndGetExecutionTimeColor = (
   const formattedTime = formatExecutionTime(executionTimeSeconds, t);
 
   const allExecutionTimes = allJobReturns
-    .map((returnItem) => {
-      const itemStartTime = returnItem.stamp_job
-        ? dayjs(returnItem.stamp_job).valueOf()
-        : jobStartTimestamp
-          ? dayjs(jobStartTimestamp).valueOf()
-          : null;
-      return calculateExecutionTime(itemStartTime, returnItem.stamp);
-    })
+    .map(getExecutionTimeSeconds)
     .filter((time): time is number => time !== null && time > 0);
 
   const statistics = calculateStatistics(allExecutionTimes);

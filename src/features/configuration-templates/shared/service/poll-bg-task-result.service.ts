@@ -1,4 +1,4 @@
-import { TaskState, type TaskiqTaskResult } from "@saltbox/saltbox-core-api-client";
+import { TaskState, type TaskiqTaskResultAny } from "@saltbox/saltbox-core-api-client";
 
 import {
   BgTaskPollAbortedError,
@@ -39,16 +39,16 @@ const sleep = (ms: number, signal?: AbortSignal): Promise<void> => {
   });
 };
 
-export const isBgTaskFailed = (result: TaskiqTaskResult): boolean =>
+export const isBgTaskFailed = (result: TaskiqTaskResultAny): boolean =>
   result.is_err || result.progress === TaskState.Failure;
 
-export const isBgTaskSettled = (result: TaskiqTaskResult): boolean =>
+export const isBgTaskSettled = (result: TaskiqTaskResultAny): boolean =>
   isBgTaskFailed(result) || result.progress === TaskState.Success;
 
 const readBgTaskResult = async (
   taskId: string,
   signal?: AbortSignal
-): Promise<TaskiqTaskResult> => {
+): Promise<TaskiqTaskResultAny> => {
   const api = apiCoreStore.utilsApi;
   if (!api) {
     throw new Error("API is not configured");
@@ -65,7 +65,7 @@ const readBgTaskResult = async (
 export async function pollBgTaskResult(
   taskId: string,
   signal?: AbortSignal
-): Promise<TaskiqTaskResult> {
+): Promise<TaskiqTaskResultAny> {
   while (true) {
     throwIfPollAborted(signal);
 

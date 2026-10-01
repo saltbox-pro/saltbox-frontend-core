@@ -391,11 +391,6 @@ export class JobStore {
   }
 
   @computed
-  get jobStartTime() {
-    return this.jobStartTimestamp ? this.jobStartTimestamp.getTime() : null;
-  }
-
-  @computed
   get totalMinions() {
     return this.job?.minions_count?.total ?? 0;
   }
@@ -425,7 +420,7 @@ export class JobStore {
 
   @computed
   get actualJobDuration() {
-    return getMaxExecutionTime(this.jobReturns, this.jobStartTime);
+    return getMaxExecutionTime(this.jobReturns);
   }
 
   @computed

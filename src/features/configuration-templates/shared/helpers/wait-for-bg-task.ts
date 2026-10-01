@@ -1,4 +1,4 @@
-import type { TaskiqTaskResult } from "@saltbox/saltbox-core-api-client";
+import type { TaskiqTaskResultAny } from "@saltbox/saltbox-core-api-client";
 
 import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 
@@ -11,7 +11,7 @@ export async function waitForBgTask(taskId: string, signal?: AbortSignal): Promi
 export async function waitForBgTaskWithResult(
   taskId: string,
   signal?: AbortSignal
-): Promise<TaskiqTaskResult> {
+): Promise<TaskiqTaskResultAny> {
   const result = await pollBgTaskResult(taskId, signal);
 
   if (isBgTaskFailed(result)) {

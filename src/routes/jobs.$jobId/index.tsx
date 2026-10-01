@@ -492,7 +492,6 @@ const JobPage = observer(() => {
                     isFullOutput={isFullOutput}
                     isStepsView={isStepsViewMode}
                     isTableViewMode={isTableViewMode}
-                    jobStartTimestamp={jobStore.jobStartTimestamp}
                     pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
                     sorting={jobStore.sorting}
                     total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
