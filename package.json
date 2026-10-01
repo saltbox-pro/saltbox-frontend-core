@@ -74,7 +74,7 @@
     "@saltbox/react-jsonschema-form-generator": "^0.1.16",
     "@saltbox/saltbox-audit-api-client": "^0.3.0-f9534d71d72b848cba2cf014824e0ea235036977",
     "@saltbox/saltbox-core-api-client": "0.3.0-9a4e45965cae0ab88a16454264d4ecc56f84454b",
-    "@saltbox/saltbox-frontend-common": "^0.6.0",
+    "@saltbox/saltbox-frontend-common": "^0.6.2",
     "antd": "5.26.0",
     "clsx": "^2.1.1",
     "i18next": "^25.2.1",
