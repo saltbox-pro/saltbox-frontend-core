@@ -1,4 +1,4 @@
-import { DownloadOutlined, ReloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -8,6 +8,7 @@ import {
 import {
   FastTable,
   CopyToClipboardButton,
+  ExportToCsv,
   PageHeader,
   WebSocketMessage,
   WebSocketService,
@@ -17,19 +18,7 @@ import {
   runMutation,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
-import {
-  Button,
-  Flex,
-  Modal,
-  Radio,
-  Skeleton,
-  Spin,
-  Statistic,
-  Tag,
-  Tooltip,
-  Typography,
-  message,
-} from "antd";
+import { Flex, Radio, Skeleton, Spin, Statistic, Tag, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -63,6 +52,7 @@ type JobWebSocketMessage = JobModel | JobReturnModel;
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
+  const { t: tCommon } = useTranslation("common");
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -71,8 +61,6 @@ const JobPage = observer(() => {
   const [webSocketService] = useState(() => new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isTableExportLoading, setIsTableExportLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -92,13 +80,11 @@ const JobPage = observer(() => {
     setRepeatConfigureFun(null);
     setRepeatPickerOpen(false);
     setRepeatBaseline(null);
-    setIsExportModalOpen(false);
   }, [jobId]);
 
   const effectiveJobReturns = jobId && jobStore.jobId === jobId ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const isTableViewAvailable = statusCounts.success > 0;
-  const showExportButton = isTableViewAvailable;
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -220,10 +206,8 @@ const JobPage = observer(() => {
 
   const handleExportToCsv = useCallback(async () => {
     if (!jobId) {
-      return;
+      return false;
     }
-
-    setIsTableExportLoading(true);
 
     const result = await runMutation({
       run: () =>
@@ -234,14 +218,13 @@ const JobPage = observer(() => {
           },
           `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
         ),
-      errorMessage: t("jobs.table-view-export-error"),
+      errorMessage: tCommon("export-to-csv.error", {
+        subject: t("jobs.export-subject"),
+      }),
     });
 
-    setIsTableExportLoading(false);
-    if (result.ok) {
-      setIsExportModalOpen(false);
-    }
-  }, [jobId, t]);
+    return result.ok;
+  }, [jobId, t, tCommon]);
 
   useEffect(() => {
     if (!jobId) {
@@ -533,15 +516,12 @@ const JobPage = observer(() => {
                             </Tag>
                           </Flex>
                           <Flex align="center" className={styles.toolbarActions}>
-                            {showExportButton && (
-                              <Tooltip title={t("jobs.download-to-csv")}>
-                                <Button
-                                  type="primary"
-                                  icon={<DownloadOutlined />}
-                                  loading={isTableExportLoading}
-                                  onClick={() => setIsExportModalOpen(true)}
-                                />
-                              </Tooltip>
+                            {isTableViewAvailable && (
+                              <ExportToCsv
+                                key={jobId}
+                                scope={t("jobs.export-scope")}
+                                onExport={handleExportToCsv}
+                              />
                             )}
                             <Radio.Group
                               value={viewMode}
@@ -584,18 +564,6 @@ const JobPage = observer(() => {
           )}
         </Flex>
       </ErrorZone>
-
-      <Modal
-        title={t("jobs.export-to-csv-title")}
-        open={isExportModalOpen}
-        onOk={handleExportToCsv}
-        onCancel={() => setIsExportModalOpen(false)}
-        okText={t("common.export")}
-        cancelText={t("common.cancel")}
-        confirmLoading={isTableExportLoading}
-      >
-        <span>{t("jobs.export-to-csv-warning")}</span>
-      </Modal>
     </>
   );
 });

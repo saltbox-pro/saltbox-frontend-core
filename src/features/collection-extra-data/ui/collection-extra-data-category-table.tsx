@@ -159,13 +159,15 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
     <FastTable.Provider>
       <Flex vertical className={styles.root}>
         <div className="page-actions-buttons">
-          <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
-          <ExtraDataExportButton
-            category={category}
-            collectionSlug={collectionSlug}
-            search={store.search}
-          />
-          <FastTable.Toolbar />
+          <div className={styles.toolbarActions}>
+            <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+            <ExtraDataExportButton
+              category={category}
+              collectionSlug={collectionSlug}
+              search={store.search}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <ExtraDataRecordsTable

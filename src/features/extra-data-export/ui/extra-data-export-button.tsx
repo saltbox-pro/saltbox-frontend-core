@@ -1,12 +1,12 @@
-import { DownloadOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { Button, Tooltip } from "antd";
+import { ExportToCsv, runMutation } from "@saltbox/saltbox-frontend-common";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useExtraDataExport } from "../hooks/use-extra-data-export";
+import { fileDownloader } from "saltbox-core/features/file-download";
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 
-import styles from "./extra-data-export-button.module.css";
-import { ExtraDataExportModal } from "./extra-data-export-modal";
+import { exportExtraData } from "../api/export-extra-data";
 
 export interface ExtraDataExportButtonProps {
   category: ExtraDataCategoryModel;
@@ -22,28 +22,35 @@ export function ExtraDataExportButton({
   search,
 }: ExtraDataExportButtonProps) {
   const { t } = useTranslation();
+  const { t: tCommon } = useTranslation("common");
 
-  const exportState = useExtraDataExport({ category, collectionSlug, minionId, search });
+  const categoryLabel = getExtraDataCategoryDisplayName(t, category.name);
+  const scope = minionId
+    ? t("minions.extra-data.export-scope-client", { category: categoryLabel })
+    : t("minions.extra-data.export-scope-collection", { category: categoryLabel });
 
-  return (
-    <>
-      <Tooltip title={t("minions.extra-data.download-to-csv")}>
-        <span className={styles.anchor}>
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            loading={exportState.isExporting}
-            onClick={exportState.openModal}
-          />
-        </span>
-      </Tooltip>
+  const handleExport = useCallback(async () => {
+    const result = await runMutation({
+      run: async () => {
+        const response = await exportExtraData({
+          minionId,
+          collectionSlug,
+          categoryId: category.id,
+          search,
+        });
 
-      <ExtraDataExportModal
-        open={exportState.isOpen}
-        warning={exportState.warning}
-        onCancel={exportState.closeModal}
-        onConfirm={exportState.handleExport}
-      />
-    </>
-  );
+        await fileDownloader.downloadByResponse(
+          response,
+          `extra-data-${category.name}-${Date.now()}.csv`
+        );
+      },
+      errorMessage: tCommon("export-to-csv.error", {
+        subject: t("minions.extra-data.export-subject"),
+      }),
+    });
+
+    return result.ok;
+  }, [category.id, category.name, collectionSlug, minionId, search, t, tCommon]);
+
+  return <ExportToCsv scope={scope} onExport={handleExport} />;
 }

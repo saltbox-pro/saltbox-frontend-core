@@ -1,58 +1,44 @@
 import { apiCoreStore } from "saltbox-core/store";
 
-export interface ExportMinionExtraDataParams {
-  minionId: string;
+export interface ExportExtraDataParams {
   collectionSlug: string;
   categoryId: string;
   search: string;
+  minionId?: string;
 }
 
-export interface ExportCollectionExtraDataParams {
-  collectionSlug: string;
-  categoryId: string;
-  search: string;
-}
-
-export async function exportMinionExtraData({
-  minionId,
+export async function exportExtraData({
   collectionSlug,
   categoryId,
   search,
-}: ExportMinionExtraDataParams): Promise<Response> {
+  minionId,
+}: ExportExtraDataParams): Promise<Response> {
   const api = apiCoreStore.extraDataApi;
 
   if (!api) {
-    throw new Error("minions.extra-data.export-error");
+    throw new Error("Extra data API is not available");
   }
 
-  const response = await api.extraDataItemsByMinionExportRaw({
-    MinionExtraDataQueryBody: {
-      minion_id: minionId,
-      collection_slug: collectionSlug,
-      category_id: categoryId,
-      search: search || undefined,
-    },
-  });
+  const searchParam = search || undefined;
 
-  return response.raw;
-}
+  if (minionId) {
+    const response = await api.extraDataItemsByMinionExportRaw({
+      MinionExtraDataQueryBody: {
+        minion_id: minionId,
+        collection_slug: collectionSlug,
+        category_id: categoryId,
+        search: searchParam,
+      },
+    });
 
-export async function exportCollectionExtraData({
-  collectionSlug,
-  categoryId,
-  search,
-}: ExportCollectionExtraDataParams): Promise<Response> {
-  const api = apiCoreStore.extraDataApi;
-
-  if (!api) {
-    throw new Error("minions.extra-data.export-error");
+    return response.raw;
   }
 
   const response = await api.extraDataItemsByCollectionExportRaw({
     CollectionExtraDataQueryBody: {
       collection_slug: collectionSlug,
       category_id: categoryId,
-      search: search || undefined,
+      search: searchParam,
     },
   });
 

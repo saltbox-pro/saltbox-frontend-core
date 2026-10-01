@@ -4,7 +4,7 @@ import { message } from "antd";
 import { useMemo } from "react";
 import type { OptionList, RuleGroupType } from "react-querybuilder";
 
-import { useCsvDownloadDropdownItem } from "saltbox-core/features/csv-download";
+import { useMinionsExportDropdownItem } from "saltbox-core/features/minions-export";
 import { useAddExtraDataDropdownItem } from "saltbox-core/features/minion-extra-data-editor";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
 import {
@@ -40,7 +40,7 @@ export function MinionsActionsDropdown({
   const actionPluginClickGuard = useActionPluginClickGuard(messageApi);
   usePluginActionsTick(UiEvent.MinionsActionsChanged);
 
-  const exportAction = useCsvDownloadDropdownItem({
+  const exportAction = useMinionsExportDropdownItem({
     slug,
     searchFilters,
     filterSchema,
@@ -95,6 +95,7 @@ export function MinionsActionsDropdown({
     <>
       {messageContextHolder}
       {removeAction.modalContextHolder}
+      {exportAction.modalContextHolder}
       {addExtraDataAction.modal}
 
       <ActionDropdown menu={{ items }} />

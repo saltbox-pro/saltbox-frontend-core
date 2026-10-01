@@ -135,6 +135,15 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         : null;
     const canChangeSingleRecord = !!singleRecord && canChangeRecord(singleRecord);
 
+    const exportButton = category ? (
+      <ExtraDataExportButton
+        category={category}
+        minionId={minionId}
+        collectionSlug={collectionSlug}
+        search={extraDataRecordsStore?.search ?? ""}
+      />
+    ) : null;
+
     return (
       <InfoDrawer
         open={open}
@@ -150,30 +159,36 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
               {isLoaded && category && (
                 <div className="page-actions-buttons">
                   {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
-                  {canChangeSingleRecord && (
-                    <div className={styles.trailingActions}>
-                      <Button icon={<EditOutlined />} onClick={() => openEditItem(singleRecord)}>
-                        {t("common.edit")}
-                      </Button>
-                      <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => itemDeletion.openConfirm(singleRecord)}
-                      >
-                        {t("common.delete")}
-                      </Button>
-                    </div>
-                  )}
-                  {!singleRecord && (
-                    <ExtraDataSearchField key={category.name} onSearch={handleSearch} />
-                  )}
-                  <ExtraDataExportButton
-                    category={category}
-                    minionId={minionId}
-                    collectionSlug={collectionSlug}
-                    search={extraDataRecordsStore.search}
-                  />
-                  {!singleRecord && <FastTable.Toolbar />}
+                  <div className={styles.toolbarActions}>
+                    {singleRecord ? (
+                      <>
+                        {exportButton}
+                        {canChangeSingleRecord && (
+                          <>
+                            <Button
+                              icon={<EditOutlined />}
+                              onClick={() => openEditItem(singleRecord)}
+                            >
+                              {t("common.edit")}
+                            </Button>
+                            <Button
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => itemDeletion.openConfirm(singleRecord)}
+                            >
+                              {t("common.delete")}
+                            </Button>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <ExtraDataSearchField key={category.name} onSearch={handleSearch} />
+                        {exportButton}
+                        <FastTable.Toolbar />
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
 
