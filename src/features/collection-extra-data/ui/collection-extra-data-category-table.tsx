@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
   collectCollectionExtraDataFieldNamesFromRecords,
@@ -149,9 +150,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
   const emptyMessage =
     store.recordsLoad.status === "success"
       ? t("minions.extra-data.empty-category", {
-          category: t(`minions.extra-data.categories.${category.name}`, {
-            defaultValue: category.name,
-          }),
+          category: getExtraDataCategoryDisplayName(t, category.name),
         })
       : "";
 

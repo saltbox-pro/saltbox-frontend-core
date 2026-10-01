@@ -3,5 +3,6 @@ export const DRAWER_IDS = {
   collectionDetails: "collection-details-drawer",
   pillarDetails: "pillar-details-drawer",
   extraDataCategoryDetails: "extra-data-category-details-drawer",
+  extraDataCategorySettings: "extra-data-category-settings-drawer",
   templatePreview: "template-preview-drawer",
 } as const;

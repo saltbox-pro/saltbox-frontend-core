@@ -6,6 +6,5 @@ include:
   - project: "saltbox/ci-lib"
     file: "def-branch-merge-guard.yml"
 
-
 Build Frontend Core image:
   extends: .build-image

@@ -1,7 +1,11 @@
-import { DeleteOutlined, SettingOutlined } from "@ant-design/icons";
+import { DeleteOutlined } from "@ant-design/icons";
 import type { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
-import { Dropdown, type ActionDropdownItem, UiEvent } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, message } from "antd";
+import {
+  type ActionDropdownItem,
+  SettingsDropdown,
+  UiEvent,
+} from "@saltbox/saltbox-frontend-common";
+import { Flex, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -76,13 +80,7 @@ export const MinionDetailActionsMenu = observer(function MinionDetailActionsMenu
 
   return (
     <>
-      <Dropdown menu={{ items }} trigger={["click"]}>
-        <Button>
-          <Flex gap={8} align="center">
-            <SettingOutlined />
-          </Flex>
-        </Button>
-      </Dropdown>
+      <SettingsDropdown menu={{ items }} />
       {removeMinion.modalContextHolder}
       {messageContextHolder}
     </>

@@ -56,6 +56,40 @@
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
+      "add-data": "Add extra data",
+      "delete-item": {
+        "modal-title": "Delete extra data",
+        "modal-text": "Are you sure you want to delete the record from category \"{{name}}\"?",
+        "more-fields": "More fields: {{count}}",
+        "success": "Record deleted from category \"{{name}}\"",
+        "error": "Failed to delete record"
+      },
+      "item-form": {
+        "create-title": "Adding extra data",
+        "edit-title": "Editing extra data",
+        "category-placeholder": "Select category",
+        "category-required": "Select a category",
+        "categories-error": "Failed to load categories",
+        "no-categories": "No categories allow manual extra data entry",
+        "no-fields": "The category has no fields. Add them in the category settings",
+        "unsupported-type": "This field type is not supported for manual input",
+        "empty-error": "Fill in at least one field",
+        "change-category": {
+          "title": "Changing category",
+          "content": "Filled field values will be reset. Change the category?",
+          "ok": "Change"
+        },
+        "invalid-json": {
+          "list": "Enter a valid JSON array",
+          "dict": "Enter a valid JSON object"
+        },
+        "create-success": "Extra data successfully added to category \"{{name}}\"",
+        "update-success": "Extra data in category \"{{name}}\" successfully saved",
+        "scope-selected": "Extra data will be added to selected minions: {{count}}",
+        "bulk-success": "Extra data successfully added to category \"{{name}}\" for selected minions: {{count}}",
+        "bulk-partial": "Extra data was added to category \"{{name}}\" only partially. Failed for {{failed}} of {{total}} minions",
+        "error": "Failed to add extra data"
+      },
       "categories": {
         "local_groups": "Local Groups",
         "storages": "Physical disks",
@@ -482,6 +516,85 @@
     "show-details": "Policy Parameters",
     "details-title": "Policy Details"
   },
+  "extra-data-categories": {
+    "title": "Extra data categories",
+    "add-category": "Add category",
+    "add-field": "Add field",
+    "fields-title": "Category fields",
+    "fields-empty": "No fields",
+    "name-forbidden-characters": "Name must not contain \".\", \"$\" or \"/\"",
+    "system-category-readonly": "System categories are read-only",
+    "fields-editor": {
+      "success": "Category changes saved",
+      "error": "Failed to save category changes"
+    },
+    "delete-field": {
+      "modal-title": "Deleting field",
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category after saving"
+    },
+    "delete": {
+      "modal-title": "Deleting category",
+      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related client data will be deleted",
+      "success": "Category \"{{name}}\" deleted",
+      "error": "Failed to delete category \"{{name}}\""
+    },
+    "attributes": {
+      "name": "Name",
+      "type": "Type",
+      "origin": "Origin",
+      "manual-data-allowed": "Manual entry",
+      "fields-count": "Fields",
+      "extra-fields-policy": "Extra fields policy",
+      "created": "Created",
+      "modified": "Modified"
+    },
+    "extra-fields-policies": {
+      "ignore": "Ignore",
+      "save_to_category": "Save to category",
+      "save_to_minion": "Save to client"
+    },
+    "create": {
+      "modal-title": "Adding category",
+      "field-name": "Category name",
+      "field-name-placeholder": "Enter name",
+      "field-name-required": "Category name is required",
+      "field-name-unique": "A category with this name already exists",
+      "submit": "Create",
+      "success": "Category \"{{name}}\" created successfully",
+      "error": "Failed to create category"
+    },
+    "field-form": {
+      "field-name": "Name",
+      "field-name-placeholder": "Enter field name",
+      "field-name-required": "Field name is required",
+      "field-name-unique": "A field with this name already exists in the category",
+      "field-types": "Types",
+      "field-type-placeholder": "Select types",
+      "field-type-required": "Select at least one type"
+    },
+    "field-types": {
+      "str": "Text",
+      "int": "Number",
+      "float": "Number (float)",
+      "bool": "Boolean",
+      "none": "None",
+      "list": "List",
+      "dict": "Object",
+      "bytes": "Bytes",
+      "datetime": "Date and time"
+    },
+    "table": {
+      "empty": "No extra data categories"
+    },
+    "category-types": {
+      "static": "Static",
+      "aggregated": "Aggregated"
+    },
+    "origins": {
+      "system": "System",
+      "user": "User"
+    }
+  },
   "masters": {
     "title": "Masters",
     "table-master-id": "Master ID",
@@ -778,12 +891,7 @@
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
     "create-subcollection": "Create subcollection",
-    "reset-changes": "Reset",
-    "tooltip-no-changes": "Make changes to the collection first",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
-    "unsaved-title": "Unsaved changes",
-    "unsaved-content": "Changes have not been saved and will be lost. Close editing?",
-    "unsaved-leave": "Close",
     "edit-structure": "Edit structure",
     "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
@@ -1038,6 +1146,13 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
+    "reset": "Reset",
+    "no-changes-to-save": "No changes to save",
+    "unsaved-changes": {
+      "title": "Unsaved changes",
+      "content": "Changes have not been saved and will be lost. Close editing?",
+      "leave": "Close"
+    },
     "no-data": "No data",
     "export": "Export",
     "refresh": "Refresh",

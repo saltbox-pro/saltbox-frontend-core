@@ -1,0 +1,41 @@
+.root {
+  min-width: 0;
+}
+
+.list {
+  min-width: 0;
+}
+
+.row {
+  width: 100%;
+  flex-shrink: 0;
+  min-height: var(--ant-control-height, 32px);
+}
+
+.empty {
+  min-height: calc(var(--ant-control-height, 32px) + var(--app-layout-gap, 16px));
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(140px, 3fr) var(--ant-control-height, 32px);
+  column-gap: var(--ant-margin-xs, 8px);
+  align-items: start;
+}
+
+.gridReadOnly {
+  grid-template-columns: minmax(0, 2fr) minmax(140px, 3fr);
+}
+
+.readOnlyControl {
+  pointer-events: none;
+}
+
+.columnsHeader {
+  margin-bottom: var(--ant-margin-xxs, 4px);
+}
+
+.item {
+  min-width: 0;
+  margin-bottom: 0;
+}

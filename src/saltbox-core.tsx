@@ -225,6 +225,15 @@ export const saltboxModule = {
           icon: "assignment_globe",
           path: "/core/configuration-templates",
         },
+        {
+          key: "extra-data-categories",
+          label: {
+            en: "Extra data categories",
+            ru: "Категории расширенных данных",
+          },
+          icon: "dashboard_2",
+          path: "/core/extra-data-categories",
+        },
       ],
     },
     {

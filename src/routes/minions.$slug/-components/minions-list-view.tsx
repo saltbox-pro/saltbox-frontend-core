@@ -206,11 +206,10 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
                   clearSelection={clearSelection}
                   reloadMinions={reloadMinions}
                 />
-
-                <SelectedItemsCounter count={selectedMinionsCount} />
               </div>
 
               <div className={styles.rightGroup}>
+                <SelectedItemsCounter count={selectedMinionsCount} />
                 <FastTable.Toolbar />
               </div>
             </div>
