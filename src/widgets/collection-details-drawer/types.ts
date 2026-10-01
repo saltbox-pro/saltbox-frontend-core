@@ -1,6 +1,7 @@
 export type CollectionDetailsDrawerOpenParams = {
   id: string;
   slug: string;
+  isCreate?: boolean;
 };
 
 export type CollectionEditFormType = {

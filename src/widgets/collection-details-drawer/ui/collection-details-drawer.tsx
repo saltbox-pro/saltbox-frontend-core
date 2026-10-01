@@ -8,9 +8,17 @@ import {
   notify,
   runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { Flex, Form, Input, TreeSelect, Typography } from "antd";
+import { Flex, Form, Input, type InputRef, TreeSelect, Typography } from "antd";
 import { observer } from "mobx-react-lite";
-import { type RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  type RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -27,7 +35,8 @@ import {
 } from "saltbox-core/store";
 
 import { COLLECTION_DETAILS_DRAWER_WIDTH, ROOT_SLUG } from "../constants";
-import { getFilterStateKey } from "../helpers/get-filter-state-key";
+import { EMPTY_FILTER_STATE_KEY, getFilterStateKey } from "../helpers/get-filter-state-key";
+import { useCollectionCreate } from "../hooks/use-collection-create";
 import type {
   CollectionDetailsDrawerCloseGuard,
   CollectionDetailsDrawerOpenParams,
@@ -35,6 +44,7 @@ import type {
 } from "../types";
 
 import { CollectionClientsPreview } from "./collection-clients-preview";
+import { CollectionCreateActions } from "./collection-create-actions";
 import { CollectionCreateSubcollectionButton } from "./collection-create-subcollection-button";
 import styles from "./collection-details-drawer.module.css";
 import { CollectionEditActions } from "./collection-edit-actions";
@@ -44,6 +54,7 @@ type CollectionDetailsDrawerProps = {
   drawer: {
     isOpened: boolean;
     openedArg: CollectionDetailsDrawerOpenParams | null;
+    open: (arg: CollectionDetailsDrawerOpenParams) => void | Promise<void>;
     close: () => void | Promise<void>;
   };
   collectionStore: CollectionStore;
@@ -61,35 +72,46 @@ export const CollectionDetailsDrawer = observer(
     const { t } = useTranslation();
     const [form] = Form.useForm<CollectionEditFormType>();
     const [modalApi, modalContextHolder] = Modal.useModal();
+    const titleInputRef = useRef<InputRef>(null);
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<AppError | null>(null);
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
+    const [createFormInitializedId, setCreateFormInitializedId] = useState<string | null>(null);
     const [filterStore] = useState(() => new MinionFilterStore());
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     useMinionFilterSchemaLocalization(filterStore);
 
     const { isOpened, openedArg } = drawer;
+    const isCreateMode = Boolean(openedArg?.isCreate);
+    const createParentSlug = isCreateMode ? openedArg?.slug : undefined;
+    const isCreateFormReady = isCreateMode && createFormInitializedId === openedArg?.id;
 
     const watchedTitle = Form.useWatch("title", form);
     const watchedDescription = Form.useWatch("description", form);
     const watchedParentSlug = Form.useWatch("parent_slug", form);
 
     useEffect(() => {
-      if (isOpened && openedArg) {
+      if (isOpened && openedArg && !openedArg.isCreate) {
         collectionStore.setCollectionSlug(openedArg.slug);
       }
     }, [isOpened, openedArg, collectionStore]);
 
-    const collection = collectionStore.collection;
-    const currentSlug = collectionStore.collectionSlug ?? openedArg?.slug;
+    const collection = isCreateMode ? undefined : collectionStore.collection;
+    const currentSlug = isCreateMode
+      ? undefined
+      : (collectionStore.collectionSlug ?? openedArg?.slug);
     const isRoot = currentSlug === ROOT_SLUG;
-    const parentSlug = collection?.parent_slug || currentSlug || "";
+    const parentSlug = isCreateMode
+      ? ((isCreateFormReady ? watchedParentSlug : createParentSlug) ?? "")
+      : collection?.parent_slug || currentSlug || "";
+    const clientsSlug = isCreateMode ? parentSlug : currentSlug;
     const searchQueryKey = JSON.stringify(filterStore.searchMongoDBQuery);
     const isInitialLoading = collectionStore.collectionLoad.isLoading;
     const isCollectionLoaded = Boolean(collection) && !isInitialLoading;
-    const isEditable = isCollectionLoaded && !isRoot;
+    const isReady = isCreateMode || isCollectionLoaded;
+    const isEditable = isReady && !isRoot;
 
     const syncFromCollection = useCallback(() => {
       const current = collectionStore.collection;
@@ -106,6 +128,20 @@ export const CollectionDetailsDrawer = observer(
       filterStore.initializeByQuery(current.query ?? {});
       setFiltersBaselineKey(getFilterStateKey(filterStore));
     }, [collectionStore, form, filterStore]);
+
+    const focusTitleInput = useCallback(() => {
+      requestAnimationFrame(() => titleInputRef.current?.focus({ preventScroll: true }));
+    }, []);
+
+    const resetCreateForm = useCallback(() => {
+      form.setFields([
+        { name: "title", value: "", errors: [] },
+        { name: "description", value: "", errors: [] },
+        { name: "parent_slug", value: createParentSlug, errors: [] },
+      ]);
+      filterStore.resetInputMode();
+      filterStore.initializeByQuery({});
+    }, [createParentSlug, form, filterStore]);
 
     useEffect(() => {
       setSaveError(null);
@@ -128,6 +164,28 @@ export const CollectionDetailsDrawer = observer(
       }
     }, [isOpened, isCollectionLoaded, currentSlug, isRoot, syncFromCollection]);
 
+    useLayoutEffect(() => {
+      if (!isCreateMode) {
+        setCreateFormInitializedId(null);
+        return;
+      }
+
+      collectionStore.reset();
+      setSaveError(null);
+      resetCreateForm();
+      focusTitleInput();
+      setCreateFormInitializedId(openedArg?.id ?? null);
+    }, [isCreateMode, openedArg, collectionStore, resetCreateForm, focusTitleInput]);
+
+    useEffect(() => {
+      if (isOpened) {
+        return;
+      }
+
+      filterStore.resetInputMode();
+      filterStore.handleResetFiltersSilent();
+    }, [isOpened, filterStore]);
+
     const applyMinionsPreview = useCallback(() => {
       if (!parentSlug || isRoot) {
         return;
@@ -136,7 +194,7 @@ export const CollectionDetailsDrawer = observer(
     }, [parentSlug, isRoot, filterStore, minionsStore]);
 
     useLayoutEffect(() => {
-      if (!isCollectionLoaded || !parentSlug || isRoot) {
+      if (!isOpened || !isReady || !parentSlug || isRoot) {
         return;
       }
       if (filterStore.activeFiltersCount > 0 && filterStore.isLoading) {
@@ -144,7 +202,8 @@ export const CollectionDetailsDrawer = observer(
       }
       applyMinionsPreview();
     }, [
-      isCollectionLoaded,
+      isOpened,
+      isReady,
       parentSlug,
       isRoot,
       searchQueryKey,
@@ -153,21 +212,26 @@ export const CollectionDetailsDrawer = observer(
       applyMinionsPreview,
     ]);
 
-    const parentTreeData = useMemo(
-      () => (currentSlug ? excludeSubtreeBySlug(collectionsTreeStore.treeNodes, currentSlug) : []),
-      [collectionsTreeStore.treeNodes, currentSlug]
-    );
+    const parentTreeData = useMemo(() => {
+      if (isCreateMode) {
+        return collectionsTreeStore.treeNodes;
+      }
+      return currentSlug ? excludeSubtreeBySlug(collectionsTreeStore.treeNodes, currentSlug) : [];
+    }, [collectionsTreeStore.treeNodes, currentSlug, isCreateMode]);
+
+    const initialParentSlug = isCreateMode ? createParentSlug : collection?.parent_slug;
+    const initialFiltersKey = isCreateMode ? EMPTY_FILTER_STATE_KEY : filtersBaselineKey;
 
     const isFormDirty =
       isEditable &&
       ((watchedTitle ?? "") !== (collection?.title ?? "") ||
         (watchedDescription ?? "").trim() !== (collection?.description ?? "").trim() ||
-        (watchedParentSlug ?? ROOT_SLUG) !== (collection?.parent_slug ?? ROOT_SLUG));
+        (watchedParentSlug ?? ROOT_SLUG) !== (initialParentSlug ?? ROOT_SLUG));
 
     const isFiltersDirty =
       isEditable &&
-      Boolean(filtersBaselineKey) &&
-      getFilterStateKey(filterStore) !== filtersBaselineKey;
+      Boolean(initialFiltersKey) &&
+      getFilterStateKey(filterStore) !== initialFiltersKey;
 
     const hasUnsavedChanges = isFormDirty || isFiltersDirty;
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
@@ -241,7 +305,7 @@ export const CollectionDetailsDrawer = observer(
                 },
               ]}
             >
-              <Input placeholder={t("collection.enter-collection-name")} />
+              <Input ref={titleInputRef} placeholder={t("collection.enter-collection-name")} />
             </Form.Item>
           ),
         },
@@ -298,6 +362,10 @@ export const CollectionDetailsDrawer = observer(
 
     const handleReset = () => {
       setSaveError(null);
+      if (isCreateMode) {
+        resetCreateForm();
+        return;
+      }
       syncFromCollection();
       applyMinionsPreview();
     };
@@ -310,6 +378,13 @@ export const CollectionDetailsDrawer = observer(
       filterStore.handleSearch();
       return filterStore.searchMongoDBQuery;
     };
+
+    const { handleCreate, isCreating } = useCollectionCreate({
+      form,
+      resolveQuery: resolveQueryForSave,
+      onError: setSaveError,
+      onCreated: (created) => drawer.open({ id: created.id, slug: created.slug }),
+    });
 
     const handleSave = async () => {
       let values: CollectionEditFormType;
@@ -390,21 +465,32 @@ export const CollectionDetailsDrawer = observer(
           width={COLLECTION_DETAILS_DRAWER_WIDTH}
           fillHeight
           titleName={collection?.title}
-          titleLabel={t("collection.collection")}
+          titleLabel={t(
+            isCreateMode ? "collection-create-modal.dialog-title" : "collection.collection"
+          )}
           linkTo={currentSlug ? `/core/minions/${currentSlug}` : undefined}
           linkTitle={t("collection.open-collection-page")}
           linkComponent={Link}
           loading={isInitialLoading}
-          hasData={!!collection}
+          hasData={isCreateMode || !!collection}
           loaders={[collectionStore.collectionLoad]}
-          transitionKey={collection?.slug}
+          transitionKey={isCreateMode ? openedArg?.id : collection?.slug}
+          afterOpenChange={(open) => {
+            if (open && isCreateMode) {
+              focusTitleInput();
+            }
+          }}
           onClose={drawer.close}
         >
           <Form form={form} component={false}>
             <Flex vertical gap="middle" className={styles.body}>
               <MutationErrorAlert
                 error={saveError}
-                fallback={t("collection.error-updating-collection")}
+                fallback={t(
+                  isCreateMode
+                    ? "collection-create-modal.error"
+                    : "collection.error-updating-collection"
+                )}
                 onClose={() => setSaveError(null)}
               />
 
@@ -412,7 +498,14 @@ export const CollectionDetailsDrawer = observer(
                 title={createSubcollectionButton}
                 items={descriptionItems}
                 extra={
-                  isEditable ? (
+                  isCreateMode ? (
+                    <CollectionCreateActions
+                      hasUnsavedChanges={hasUnsavedChanges}
+                      isCreating={isCreating}
+                      onReset={handleReset}
+                      onCreate={handleCreate}
+                    />
+                  ) : isEditable ? (
                     <CollectionEditActions
                       hasUnsavedChanges={hasUnsavedChanges}
                       isSaving={isSaving}
@@ -435,9 +528,9 @@ export const CollectionDetailsDrawer = observer(
                       parentSlug={parentSlug}
                       onFiltersApplied={applyMinionsPreview}
                     />
-                    {currentSlug && (
+                    {clientsSlug && (
                       <CollectionClientsPreview
-                        slug={currentSlug}
+                        slug={clientsSlug}
                         filterStore={filterStore}
                         minionsStore={minionsStore}
                         onFiltersApplied={applyMinionsPreview}

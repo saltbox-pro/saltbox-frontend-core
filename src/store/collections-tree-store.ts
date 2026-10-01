@@ -1,4 +1,8 @@
-import type { CollectionModel, CollectionTreeNodeSchema } from "@saltbox/saltbox-core-api-client";
+import type {
+  CollectionCreateRequestSchema,
+  CollectionModel,
+  CollectionTreeNodeSchema,
+} from "@saltbox/saltbox-core-api-client";
 import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable, runInAction, toJS } from "mobx";
 
@@ -195,6 +199,17 @@ export class CollectionsTreeStore {
         this.isMoving = false;
       });
     }
+  };
+
+  createCollection = async (payload: CollectionCreateRequestSchema): Promise<CollectionModel> => {
+    const api = apiCoreStore.minionCollectionsApi;
+    if (!api) return Promise.reject(new Error("Minion collections API is not available"));
+
+    const created = await api.minionCollectionCreate({ CollectionCreateRequestSchema: payload });
+
+    this.addNode(created);
+
+    return created;
   };
 
   deleteCollection = async (slug: string): Promise<void> => {
