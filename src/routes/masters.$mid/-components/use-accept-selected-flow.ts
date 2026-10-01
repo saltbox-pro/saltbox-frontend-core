@@ -6,13 +6,12 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { acceptSaltKeys } from "saltbox-core/routes/masters.$mid/-api/salt-keys-actions";
-import { SaltKeysStore } from "saltbox-core/store";
+import { SaltKeysStore, type SaltKeyWithId } from "saltbox-core/store";
 
 type ModalApi = ReturnType<typeof Modal.useModal>[0];
 
 type UseAcceptSelectedFlowParams = {
   saltKeysStore: SaltKeysStore;
-  selection: RowSelectionState;
   modalApi: ModalApi;
   setSelection: (selection: RowSelectionState) => void;
   isSendingAction: boolean;
@@ -21,7 +20,6 @@ type UseAcceptSelectedFlowParams = {
 
 export function useAcceptSelectedFlow({
   saltKeysStore,
-  selection,
   modalApi,
   setSelection,
   isSendingAction,
@@ -60,36 +58,38 @@ export function useAcceptSelectedFlow({
     [closeModals, saltKeysStore, setIsSendingAction, setSelection, t]
   );
 
-  const handleAcceptSelected = useCallback(() => {
-    if (Object.keys(selection).length === 0) return;
+  const handleAcceptKeys = useCallback(
+    (keys: SaltKeyWithId[]) => {
+      if (keys.length === 0) return;
 
-    modalApi.confirm({
-      title: t("master.accept-selected-confirm-title"),
-      content: t("master.accept-selected-confirm-description", {
-        count: Object.keys(selection).length,
-      }),
-      icon: null,
-      okText: t("common.yes"),
-      cancelText: t("common.no"),
-      okButtonProps: { loading: isSendingAction },
-      onOk: async () => {
-        const selectedKeys = saltKeysStore.allSaltKeys.filter((key) => selection[key._index]);
-        const { conflictMinions: conflicts, nonConflictMinions: nonConflicts } =
-          saltKeysStore.getAcceptConflicts(selectedKeys);
+      modalApi.confirm({
+        title: t("master.accept-selected-confirm-title"),
+        content: t("master.accept-selected-confirm-description", {
+          count: keys.length,
+        }),
+        icon: null,
+        okText: t("common.yes"),
+        cancelText: t("common.no"),
+        okButtonProps: { loading: isSendingAction },
+        onOk: async () => {
+          const { conflictMinions: conflicts, nonConflictMinions: nonConflicts } =
+            saltKeysStore.getAcceptConflicts(keys);
 
-        if (conflicts.length === 0) {
-          await runAccept(nonConflicts, (acceptedCount) => {
-            notify.success(t("master.accept-selected-success", { count: acceptedCount }));
-          });
-          return;
-        }
+          if (conflicts.length === 0) {
+            await runAccept(nonConflicts, (acceptedCount) => {
+              notify.success(t("master.accept-selected-success", { count: acceptedCount }));
+            });
+            return;
+          }
 
-        setConflictMinions(conflicts);
-        setNonConflictMinions(nonConflicts);
-        setConflictModalOpen(true);
-      },
-    });
-  }, [isSendingAction, modalApi, runAccept, saltKeysStore, selection, t]);
+          setConflictMinions(conflicts);
+          setNonConflictMinions(nonConflicts);
+          setConflictModalOpen(true);
+        },
+      });
+    },
+    [isSendingAction, modalApi, runAccept, saltKeysStore, t]
+  );
 
   const handleReplaceAll = useCallback(() => {
     runAccept([...nonConflictMinions, ...conflictMinions], () => {
@@ -145,7 +145,7 @@ export function useAcceptSelectedFlow({
   );
 
   return {
-    handleAcceptSelected,
+    handleAcceptKeys,
     conflictModalProps: {
       open: conflictModalOpen,
       conflictCount: conflictMinions.length,

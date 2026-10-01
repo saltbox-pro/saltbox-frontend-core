@@ -39,6 +39,7 @@ import {
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
+import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
@@ -91,6 +92,7 @@ const MinionsPage = observer(() => {
   const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
 
   const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
+  useMinionFilterSchemaLocalization(minionFilterStore);
   const tasksFilterStore = useMemo(
     () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
     []

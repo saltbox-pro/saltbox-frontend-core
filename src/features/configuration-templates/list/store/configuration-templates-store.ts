@@ -4,11 +4,11 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { rethrowIfAborted } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
+import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 import { apiCoreStore } from "saltbox-core/store";
 
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
-import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import { hasConnectedLocalTemplateSource } from "../../shared/helpers/is-connected-local-template-source";
 import {
   mergeSourceListItemUpdate,

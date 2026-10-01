@@ -1,14 +1,17 @@
 import { createLoader, FilterStore } from "@saltbox/saltbox-frontend-common";
-import { makeObservable, runInAction } from "mobx";
+import { makeObservable, observable, runInAction } from "mobx";
 import type { OptionList } from "react-querybuilder";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 export class CollectionPopoverFilterStore extends FilterStore {
+  @observable.ref rawFilterSchema: OptionList = [];
+
   readonly filterSchemaLoad = createLoader({
     run: () => apiCoreStore.filtersApi?.filterSchema(),
     onSuccess: (schema) => {
-      this.filterSchema = schema as unknown as OptionList;
+      this.rawFilterSchema = schema as unknown as OptionList;
+      this.filterSchema = this.rawFilterSchema;
     },
   });
 

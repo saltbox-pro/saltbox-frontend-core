@@ -1,6 +1,6 @@
+import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 import { apiCoreStore } from "saltbox-core/store";
 
-import { isApiNotFoundError } from "../../shared/helpers/is-api-not-found-error";
 import type { ResourceDeleteResult } from "../../shared/types/resource-delete-result";
 import type { AddSourceFilePayload } from "../types/source-file-payload";
 

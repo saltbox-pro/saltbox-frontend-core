@@ -3,6 +3,7 @@ import type { SourceOperation } from "@saltbox/saltbox-core-api-client";
 import { BgTaskFailedError } from "saltbox-core/shared/errors/bg-task-failed.error";
 import { BgTaskPollAbortedError } from "saltbox-core/shared/errors/bg-task-poll-aborted.error";
 import { extractTaskId } from "saltbox-core/shared/helpers/extract-task-id";
+import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 import { apiCoreStore } from "saltbox-core/store";
 
 import {
@@ -11,7 +12,6 @@ import {
   SYNC_OPTIMISTIC_OPERATION,
   UNPLUG_OPTIMISTIC_OPERATION,
 } from "../constants/source-operations";
-import { isApiNotFoundError } from "../helpers/is-api-not-found-error";
 import type { SourceBgTaskOutcome } from "../helpers/source-bg-task";
 import { isBgTaskPollFailed } from "../types/bg-task-poll-result";
 import type { ResourceDeleteResult } from "../types/resource-delete-result";

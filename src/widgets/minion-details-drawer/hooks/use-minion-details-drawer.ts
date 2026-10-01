@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useOnMinionDataRefreshed } from "saltbox-core/features/minion-details/hooks/use-on-minion-data-refreshed";
 import { isAbortError } from "saltbox-core/shared/helpers/is-abort-error";
+import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 import { apiCoreStore } from "saltbox-core/store";
 
 import type { MinionDetailsDrawerOpenParams } from "../types";
 
 export type UseMinionDetailsDrawerResult = {
   minion: MinionDetailSchema | null;
+  isMinionMissing: boolean;
   isMinionLoading: boolean;
   isMinionRefreshing: boolean;
   minionLoad: LoadSource;
@@ -22,6 +24,7 @@ export type UseMinionDetailsDrawerResult = {
 export type UseMinionDetailsDrawerArgs = {
   isOpened: boolean;
   openedArg: MinionDetailsDrawerOpenParams | null;
+  allowMissingMinion?: boolean;
 };
 
 const fetchMinion = (params: MinionDetailsDrawerOpenParams, signal: AbortSignal) =>
@@ -38,8 +41,10 @@ const fetchMinion = (params: MinionDetailsDrawerOpenParams, signal: AbortSignal)
 export function useMinionDetailsDrawer({
   isOpened,
   openedArg,
+  allowMissingMinion = false,
 }: UseMinionDetailsDrawerArgs): UseMinionDetailsDrawerResult {
   const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
+  const [isMinionMissing, setIsMinionMissing] = useState(false);
   const [isMinionRefreshing, setIsMinionRefreshing] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -47,9 +52,17 @@ export function useMinionDetailsDrawer({
 
   const [minionLoad] = useState(() =>
     createLoader({
-      run: (params: MinionDetailsDrawerOpenParams, signal: AbortSignal) =>
-        fetchMinion(params, signal),
-      onSuccess: (loadedMinion) => setMinion(loadedMinion ?? null),
+      run: (params: MinionDetailsDrawerOpenParams, signal: AbortSignal, allowMissing: boolean) =>
+        fetchMinion(params, signal)?.catch((error: unknown) => {
+          if (allowMissing && isApiNotFoundError(error)) {
+            return null;
+          }
+          throw error;
+        }),
+      onSuccess: (loadedMinion) => {
+        setMinion(loadedMinion ?? null);
+        setIsMinionMissing(loadedMinion === null);
+      },
     })
   );
 
@@ -74,7 +87,7 @@ export function useMinionDetailsDrawer({
     };
   }, [minion?.id, openedArg]);
 
-  const hasData = Boolean(minion?.id);
+  const hasData = Boolean(minion?.id) || isMinionMissing;
 
   useEffect(() => {
     if (!isOpened) {
@@ -83,6 +96,7 @@ export function useMinionDetailsDrawer({
       refreshAbortControllerRef.current?.abort();
       refreshAbortControllerRef.current = null;
       setMinion(null);
+      setIsMinionMissing(false);
       setIsMinionRefreshing(false);
       return;
     }
@@ -97,14 +111,16 @@ export function useMinionDetailsDrawer({
     abortControllerRef.current = abortController;
 
     setMinion(null);
+    setIsMinionMissing(false);
     setIsMinionRefreshing(false);
 
-    minionLoad.run(params, abortController.signal).catch(() => undefined);
+    minionLoad.resetInitial();
+    minionLoad.run(params, abortController.signal, allowMissingMinion).catch(() => undefined);
 
     return () => {
       abortController.abort();
     };
-  }, [isOpened, minionLoad, openedArg]);
+  }, [allowMissingMinion, isOpened, minionLoad, openedArg]);
 
   // Refresh grains и другие действия toolkit доступны из drawer; здесь soft-sync данных.
   useOnMinionDataRefreshed(isOpened ? openedArg?.minionId : null, () => {
@@ -126,6 +142,7 @@ export function useMinionDetailsDrawer({
           return;
         }
         setMinion(loadedMinion);
+        setIsMinionMissing(false);
       } catch (error) {
         if (!isAbortError(error)) {
           console.error("Error refreshing minion grains:", error);
@@ -146,6 +163,7 @@ export function useMinionDetailsDrawer({
 
   return {
     minion,
+    isMinionMissing,
     isMinionLoading: minionLoad.isLoading,
     isMinionRefreshing,
     minionLoad,
