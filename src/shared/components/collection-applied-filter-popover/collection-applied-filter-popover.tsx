@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { OptionList } from "react-querybuilder";
 
 import { CollectionFilterQueryBlock } from "saltbox-core/shared/components/collection-filter-query-block";
+import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { CollectionPopoverFilterStore } from "saltbox-core/store";
 
 import styles from "./collection-applied-filter-popover.module.css";
@@ -22,6 +23,8 @@ export const CollectionAppliedFilterPopover = observer(function AppliedUserFilte
   const { t } = useTranslation();
 
   const [filterStore] = useState(() => new CollectionPopoverFilterStore());
+
+  useMinionFilterSchemaLocalization(filterStore);
 
   const isEmptyQuery = !query || isMongoQueryEmpty(query);
 

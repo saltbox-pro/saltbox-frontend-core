@@ -7,7 +7,6 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -147,7 +146,7 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
       <Table
         tableId={tableId}
         columns={columns}
-        data={toJS(store.pillars)}
+        data={store.pillars}
         total={store.totalPillars}
         isLoading={store.isLoading}
         onRefresh={() => store.loadPillars()}

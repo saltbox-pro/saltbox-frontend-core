@@ -1,7 +1,6 @@
-import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
+import { EditOutlined, SaveOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
-  Dropdown,
   ErrorZone,
   FilterToggleButton,
   generateIdsForQuery,
@@ -10,9 +9,10 @@ import {
   PageHeader,
   resolvePluginLocalizedLabel,
   runMutation,
+  SettingsDropdown,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Tabs } from "antd";
+import { Flex, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import {
   ComponentProps,
@@ -39,6 +39,7 @@ import {
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
+import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
@@ -91,6 +92,7 @@ const MinionsPage = observer(() => {
   const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
 
   const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
+  useMinionFilterSchemaLocalization(minionFilterStore);
   const tasksFilterStore = useMemo(
     () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
     []
@@ -399,13 +401,7 @@ const MinionsPage = observer(() => {
                           onToggle={toggleShownMinionsFilters}
                         />
 
-                        <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
-                          <Button>
-                            <Flex gap={8}>
-                              <SettingOutlined />
-                            </Flex>
-                          </Button>
-                        </Dropdown>
+                        <SettingsDropdown menu={{ items: collectionMenuItems }} />
                       </>
                     )}
                   </Flex>

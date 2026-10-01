@@ -2,7 +2,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { ActionButtonWithTooltip } from "./action-button-with-tooltip";
+import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-button-with-tooltip";
 
 interface CollectionCreateSubcollectionButtonProps {
   hasUnsavedChanges: boolean;

@@ -1,7 +1,7 @@
 import { Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { ActionButtonWithTooltip } from "./action-button-with-tooltip";
+import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-button-with-tooltip";
 
 interface CollectionEditActionsProps {
   hasUnsavedChanges: boolean;
@@ -17,16 +17,13 @@ export function CollectionEditActions({
   onSave,
 }: CollectionEditActionsProps) {
   const { t } = useTranslation();
-  const noChangesTooltip = t("collection.tooltip-no-changes");
 
   return (
     <Flex gap="small">
-      <ActionButtonWithTooltip disabled={!hasUnsavedChanges} title={noChangesTooltip}>
-        <Button onClick={onReset} disabled={!hasUnsavedChanges || isSaving}>
-          {t("collection.reset-changes")}
-        </Button>
-      </ActionButtonWithTooltip>
-      <ActionButtonWithTooltip disabled={!hasUnsavedChanges} title={noChangesTooltip}>
+      <Button onClick={onReset} disabled={!hasUnsavedChanges || isSaving}>
+        {t("common.reset")}
+      </Button>
+      <ActionButtonWithTooltip disabled={!hasUnsavedChanges} title={t("common.no-changes-to-save")}>
         <Button type="primary" onClick={onSave} loading={isSaving} disabled={!hasUnsavedChanges}>
           {t("common.save")}
         </Button>

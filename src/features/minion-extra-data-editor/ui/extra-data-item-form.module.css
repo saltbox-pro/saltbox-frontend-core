@@ -1,0 +1,8 @@
+.alert {
+  margin-bottom: var(--app-layout-gap, 16px);
+}
+
+.categorySelect {
+  flex: 1;
+  min-width: 0;
+}
