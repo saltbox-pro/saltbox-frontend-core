@@ -297,10 +297,11 @@ export class JobStore {
 
   @action
   addJobReturn = (jobReturn: JobReturnModel) => {
-    const index = this.jobReturns.findIndex((jb) => jb.id === jobReturn.id);
-    if (index > -1) {
-      this.jobReturns[index] = jobReturn;
-      this.jobReturns = [...this.jobReturns];
+    const exists = this.jobReturns.some((jb) => jb.id === jobReturn.id);
+    if (exists) {
+      this.jobReturns = this.jobReturns.map((item) =>
+        item.id === jobReturn.id ? jobReturn : item
+      );
     } else if (this.pagination.pageIndex === 0 && jobReturn.job_id === this.jobId) {
       let newJobReturns = [jobReturn, ...this.jobReturns];
       if (newJobReturns.length > this.pagination.pageSize) {

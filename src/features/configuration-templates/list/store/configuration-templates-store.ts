@@ -116,12 +116,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       patchOptimisticTask: (sourceId, operation, taskId) =>
         this.patchOptimisticTask(sourceId, operation, taskId),
       applySourceMetadataUpdate: (sourceId, updated) => {
-        const index = this.sources.findIndex((item) => item.id === sourceId);
-        if (index === -1) {
-          return;
-        }
-
-        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
+        this.sources = this.sources.map((item) =>
+          item.id === sourceId ? mergeSourceListItemUpdate(item, updated) : item
+        );
       },
       removeSource: (sourceId) => this.removeSourceFromList(sourceId),
       reloadSource: (sourceId) => this.reloadSource(sourceId),
@@ -216,10 +213,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     if (refreshResult.status !== "found") return;
 
     runInAction(() => {
-      const index = this.sources.findIndex((item) => item.id === sourceId);
-      if (index === -1) return;
-
-      this.sources[index] = mergeSourceListItemUpdate(this.sources[index], refreshResult.source);
+      this.sources = this.sources.map((item) =>
+        item.id === sourceId ? mergeSourceListItemUpdate(item, refreshResult.source) : item
+      );
     });
   };
 
@@ -335,15 +331,16 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   };
 
   private patchOptimisticTask = (sourceId: string, operation: SourceOperation, taskId: string) => {
-    const index = this.sources.findIndex((item) => item.id === sourceId);
-    if (index === -1) return;
-
-    this.sources[index] = {
-      ...this.sources[index],
-      current_operation: operation,
-      current_task_id: taskId,
-      last_error: null,
-    };
+    this.sources = this.sources.map((item) =>
+      item.id === sourceId
+        ? {
+            ...item,
+            current_operation: operation,
+            current_task_id: taskId,
+            last_error: null,
+          }
+        : item
+    );
   };
 
   addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> =>

@@ -1,29 +1,27 @@
-import { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
+import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
 import { createRuleGroup, formatToMongoDB, runMutation } from "@saltbox/saltbox-frontend-common";
 import { toJS } from "mobx";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { OptionList, RuleGroupType, RuleType } from "react-querybuilder";
+import type { OptionList, RuleGroupType, RuleType } from "react-querybuilder";
 
 import { fileDownloader } from "saltbox-core/features/file-download";
 
-import { csvDownloader } from "../service/csv-downloader.service";
+import { minionsCsvExporter } from "../service/minions-csv-exporter.service";
 
-export const useCsvDownloader = ({
+export function useMinionsExport({
   slug,
   searchFilters,
   filterSchema,
   selectedMinions,
-  onError,
 }: {
   slug: string;
   searchFilters: RuleGroupType;
   filterSchema?: OptionList;
   selectedMinions?: TaskTargetMinion[];
-  onError?: () => void;
-}) => {
+}) {
   const { t } = useTranslation();
-  const [isCSVLoading, setIsCSVLoading] = useState(false);
+  const { t: tCommon } = useTranslation("common");
 
   const createMinionIdsRuleGroup = useCallback(
     (selectedMinions: TaskTargetMinion[]): RuleGroupType => {
@@ -44,9 +42,7 @@ export const useCsvDownloader = ({
     []
   );
 
-  const handleCSVDownload = useCallback(async () => {
-    setIsCSVLoading(true);
-
+  const handleExport = useCallback(async () => {
     const result = await runMutation({
       run: async () => {
         const hasSelectedMinions = Boolean(selectedMinions?.length);
@@ -58,20 +54,18 @@ export const useCsvDownloader = ({
           ? formatToMongoDB(filters, fields, { caseInsensitive: false })
           : formatToMongoDB(filters, fields);
 
-        const response = await csvDownloader.createCsv("/minions/export", slug, query);
+        const response = await minionsCsvExporter.createCsv(slug, query);
         const filename =
           "export_minions_" + new Date().toISOString().replace(/[-:]/g, "_").split(".")[0] + ".csv";
         await fileDownloader.downloadByResponse(response, filename);
       },
-      errorMessage: t("minions.error-on-csv-download"),
+      errorMessage: tCommon("export-to-csv.error", {
+        subject: t("minions.export-subject"),
+      }),
     });
 
-    setIsCSVLoading(false);
-    if (!result.ok) onError?.();
-  }, [createMinionIdsRuleGroup, filterSchema, onError, searchFilters, selectedMinions, slug, t]);
+    return result.ok;
+  }, [createMinionIdsRuleGroup, filterSchema, searchFilters, selectedMinions, slug, t, tCommon]);
 
-  return {
-    isCSVLoading,
-    handleCSVDownload,
-  };
-};
+  return { handleExport };
+}

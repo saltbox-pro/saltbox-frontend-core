@@ -6,12 +6,13 @@ import {
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Skeleton } from "antd";
+import { Button, Flex, Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExtraDataExportButton } from "saltbox-core/features/extra-data-export";
 import {
   AddExtraDataButton,
   EditExtraDataItemModal,
@@ -134,67 +135,91 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         : null;
     const canChangeSingleRecord = !!singleRecord && canChangeRecord(singleRecord);
 
+    const exportButton = category ? (
+      <ExtraDataExportButton
+        category={category}
+        minionId={minionId}
+        collectionSlug={collectionSlug}
+        search={extraDataRecordsStore?.search ?? ""}
+      />
+    ) : null;
+
     return (
       <InfoDrawer
         open={open}
         drawerId={DRAWER_IDS.extraDataCategoryDetails}
         titleName={category ? getExtraDataCategoryDisplayName(t, category.name) : undefined}
         transitionKey={open ? (category?.id ?? "opened") : "closed"}
+        fillHeight
         {...restProps}
         titleCopyable={false}
       >
         {!!extraDataRecordsStore && (
           <ErrorZone level="block" loaders={[extraDataRecordsStore.recordsLoad]}>
-            <FastTable.Provider>
-              {isLoaded && (!singleRecord || canAddItem || canChangeSingleRecord) && (
-                <div className="page-actions-buttons">
-                  {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
-                  {canChangeSingleRecord && (
-                    <div className={styles.trailingActions}>
-                      <Button icon={<EditOutlined />} onClick={() => openEditItem(singleRecord)}>
-                        {t("common.edit")}
-                      </Button>
-                      <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => itemDeletion.openConfirm(singleRecord)}
-                      >
-                        {t("common.delete")}
-                      </Button>
+            <Flex vertical flex={1} className={styles.body}>
+              <FastTable.Provider>
+                {isLoaded && category && (
+                  <div className="page-actions-buttons">
+                    {canAddItem && <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />}
+                    <div className={styles.toolbarActions}>
+                      {singleRecord ? (
+                        <>
+                          {exportButton}
+                          {canChangeSingleRecord && (
+                            <>
+                              <Button
+                                icon={<EditOutlined />}
+                                onClick={() => openEditItem(singleRecord)}
+                              >
+                                {t("common.edit")}
+                              </Button>
+                              <Button
+                                danger
+                                icon={<DeleteOutlined />}
+                                onClick={() => itemDeletion.openConfirm(singleRecord)}
+                              >
+                                {t("common.delete")}
+                              </Button>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <ExtraDataSearchField key={category.name} onSearch={handleSearch} />
+                          {exportButton}
+                          <FastTable.Toolbar />
+                        </>
+                      )}
                     </div>
-                  )}
-                  {!singleRecord && (
-                    <>
-                      <ExtraDataSearchField key={category?.name} onSearch={handleSearch} />
-                      <FastTable.Toolbar />
-                    </>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
 
-              {showSkeleton && <Skeleton active />}
+                {showSkeleton && <Skeleton active />}
 
-              {isLoaded && singleRecord && category && (
-                <MinionExtraDataRecordList
-                  record={singleRecord}
-                  fields={fields}
-                  category={category}
-                  onFilterButton={onFilterButton}
-                />
-              )}
+                {isLoaded && singleRecord && category && (
+                  <MinionExtraDataRecordList
+                    record={singleRecord}
+                    fields={fields}
+                    category={category}
+                    onFilterButton={onFilterButton}
+                  />
+                )}
 
-              {isLoaded && !singleRecord && category && (
-                <MinionExtraDataRecordTable
-                  store={extraDataRecordsStore}
-                  fields={fields}
-                  category={category}
-                  onFilterButton={onFilterButton}
-                  canChangeRecord={canChangeRecord}
-                  onEditRecord={openEditItem}
-                  onDeleteRecord={itemDeletion.openConfirm}
-                />
-              )}
-            </FastTable.Provider>
+                {isLoaded && !singleRecord && category && (
+                  <Flex vertical flex={1} className={styles.table}>
+                    <MinionExtraDataRecordTable
+                      store={extraDataRecordsStore}
+                      fields={fields}
+                      category={category}
+                      onFilterButton={onFilterButton}
+                      canChangeRecord={canChangeRecord}
+                      onEditRecord={openEditItem}
+                      onDeleteRecord={itemDeletion.openConfirm}
+                    />
+                  </Flex>
+                )}
+              </FastTable.Provider>
+            </Flex>
           </ErrorZone>
         )}
 

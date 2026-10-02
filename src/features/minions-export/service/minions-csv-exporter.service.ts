@@ -2,9 +2,9 @@ import { ResponseError } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore, appStore } from "saltbox-core/store";
 
-class CsvDownloader {
-  async createCsv(endpoint: string, slug: string, query: object) {
-    const response = await fetch(`${apiCoreStore.env?.api_base_path}${endpoint}`, {
+class MinionsCsvExporter {
+  async createCsv(slug: string, query: object) {
+    const response = await fetch(`${apiCoreStore.env?.api_base_path}/minions/export`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -22,4 +22,4 @@ class CsvDownloader {
   }
 }
 
-export const csvDownloader = new CsvDownloader();
+export const minionsCsvExporter = new MinionsCsvExporter();

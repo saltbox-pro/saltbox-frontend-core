@@ -42,6 +42,12 @@ export class CollectionStore {
     this.loadCollection();
   };
 
+  reset = (): void => {
+    this.collectionLoad.resetInitial();
+    this.collection = undefined;
+    this.collectionSlug = undefined;
+  };
+
   updateCollection = async (payload: { title?: string; description?: string; query?: object }) => {
     if (!this.collectionSlug || !this.collection) return;
 

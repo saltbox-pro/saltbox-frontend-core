@@ -204,10 +204,7 @@ export class MastersStore {
 
   @action
   updateMaster = (master: MasterViewSchema) => {
-    const index = this.masters.findIndex((m) => m.id === master.id);
-    if (index !== -1) {
-      this.masters[index] = master;
-    }
+    this.masters = this.masters.map((item) => (item.id === master.id ? master : item));
   };
 
   @action

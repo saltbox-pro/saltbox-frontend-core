@@ -10,6 +10,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ExtraDataExportButton } from "saltbox-core/features/extra-data-export";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
@@ -158,8 +159,15 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
     <FastTable.Provider>
       <Flex vertical className={styles.root}>
         <div className="page-actions-buttons">
-          <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
-          <FastTable.Toolbar />
+          <div className={styles.toolbarActions}>
+            <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+            <ExtraDataExportButton
+              category={category}
+              collectionSlug={collectionSlug}
+              search={store.search}
+            />
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <ExtraDataRecordsTable

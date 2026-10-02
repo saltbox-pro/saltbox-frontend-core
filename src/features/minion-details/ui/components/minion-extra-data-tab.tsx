@@ -17,6 +17,7 @@ import { ExtraDataCategoriesStore } from "saltbox-core/store";
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
 import { MinionExtraDataCategoryDrawer } from "./minion-extra-data-category-drawer";
+import styles from "./minion-extra-data-tab.module.css";
 
 const columnHelper = createColumnHelper<ExtraDataCategoryModel>();
 
@@ -64,7 +65,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
   );
 
   return (
-    <Flex vertical flex={1}>
+    <Flex vertical flex={1} className={styles.extraDataTabContent}>
       <FastTable.Provider>
         <div className="page-actions-buttons">
           <AddExtraDataButton onClick={() => setIsCreateItemOpen(true)} />
