@@ -81,6 +81,7 @@ interface JobModalProps {
   arg?: unknown[];
   kwarg?: Record<string, unknown>;
   defaultMaster?: string;
+  fixedMaster?: string;
   initialTtlSeconds?: number;
   openOnMount?: boolean;
   onAfterClose?: () => void;
@@ -109,6 +110,7 @@ export const JobModal = observer(function JobModal({
   arg,
   kwarg,
   defaultMaster,
+  fixedMaster,
   initialTtlSeconds,
   openOnMount,
   onAfterClose,
@@ -169,7 +171,7 @@ export const JobModal = observer(function JobModal({
     kwarg,
     target,
     targetType,
-    defaultMaster,
+    defaultMaster: fixedMaster ?? defaultMaster,
     initialTtlSeconds,
     form,
     messageApi,
@@ -629,6 +631,7 @@ export const JobModal = observer(function JobModal({
                       message: t("job-modal.salt-master-error-required"),
                     },
                   ]}
+                  hidden={!!fixedMaster}
                 >
                   <Select allowClear options={masterList} />
                 </Form.Item>

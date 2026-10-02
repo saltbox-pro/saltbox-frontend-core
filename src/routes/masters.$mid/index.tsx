@@ -13,7 +13,7 @@ import { Flex, Modal, Tabs, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
@@ -34,6 +34,7 @@ import {
   rejectAllSaltKeys,
   rejectSaltKeys,
 } from "./-api/salt-keys-actions";
+import { MasterJobsTab } from "./-components/master-jobs-tab";
 import { SaltKeyDrawerSection } from "./-components/salt-key-drawer-section";
 import { SaltKeyStatusTag } from "./-components/salt-key-status-tag";
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
@@ -65,8 +66,9 @@ const MasterPage = observer(() => {
   const [modalApi, modalContextHolder] = Modal.useModal();
 
   const { mid: masterId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState("salt-keys");
+  const activeTab = useMemo(() => searchParams.get("tab") || "jobs", [searchParams]);
   const [saltKeysStore] = useState(() => new SaltKeysStore());
 
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
@@ -333,8 +335,25 @@ const MasterPage = observer(() => {
     setDeleteConfirmOpen(true);
   }, [masterId, saltKeysStore, selection, t]);
 
+  const handleTabChange = useCallback(
+    (tabKey: string) => {
+      setSearchParams((prev) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set("tab", tabKey);
+        return newParams;
+      });
+    },
+    [setSearchParams]
+  );
+
   const tabItems = useMemo(
     () => [
+      {
+        key: "jobs",
+        label: t("master.tab-jobs-title"),
+        className: styles.flexTab,
+        children: masterId ? <MasterJobsTab key={masterId} masterId={masterId} /> : null,
+      },
       {
         key: "salt-keys",
         label: t("master.tab-salt-keys-title"),
@@ -431,7 +450,7 @@ const MasterPage = observer(() => {
 
       <Tabs
         activeKey={activeTab}
-        onChange={setActiveTab}
+        onChange={handleTabChange}
         items={tabItems}
         className={styles.masterTabs}
       />

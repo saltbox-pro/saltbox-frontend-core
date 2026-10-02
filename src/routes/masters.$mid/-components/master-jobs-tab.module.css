@@ -1,0 +1,24 @@
+.tabWrapper {
+  flex: 1;
+  min-height: 0;
+}
+
+.leftGroup,
+.rightGroup {
+  display: flex;
+  align-items: center;
+}
+
+.rightGroup {
+  gap: calc(var(--app-layout-gap, 16px) / 2);
+  margin-left: auto;
+}
+
+.rightGroup :global(button) {
+  margin-right: 0;
+}
+
+.rightGroup :global(.fast-table-toolbar) {
+  margin-left: 0;
+  padding-left: 0;
+}

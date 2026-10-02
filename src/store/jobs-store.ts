@@ -4,7 +4,7 @@ import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
 import { action, computed, makeObservable, observable } from "mobx";
-import { jsonLogicAdditionalOperators } from "react-querybuilder";
+import { jsonLogicAdditionalOperators, type RuleType } from "react-querybuilder";
 
 import {
   DEFAULT_JOB_DATE_RANGE_PRESET,
@@ -26,6 +26,10 @@ export type JobStoreItem = JobsListResponse & {
   created?: string;
 };
 
+export interface JobsStoreOptions {
+  saltMaster?: string;
+}
+
 const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 
 export class JobsStore {
@@ -38,6 +42,7 @@ export class JobsStore {
   @observable dateRangePreset: JobDateRangePreset;
   @observable jobFilterStore: JobFilterStore;
   @observable appliedFiltersHadCreated: boolean;
+  readonly saltMaster: string | undefined;
 
   readonly jobsLoad = createLoader({
     run: () =>
@@ -46,7 +51,10 @@ export class JobsStore {
           limit: this.pagination.pageSize,
           skip: this.pagination.pageIndex * this.pagination.pageSize,
           sort: toBackendSorting(this.sorting),
-          query: buildJobsListQuery(this.createdSince, this.mongoDBQuery),
+          query: {
+            ...buildJobsListQuery(this.createdSince, this.mongoDBQuery),
+            ...(this.saltMaster ? { salt_master: this.saltMaster } : {}),
+          },
         },
       }),
     onSuccess: (response) => {
@@ -55,8 +63,9 @@ export class JobsStore {
     },
   });
 
-  constructor(jobFilterStore: JobFilterStore) {
+  constructor(jobFilterStore: JobFilterStore, options?: JobsStoreOptions) {
     this.jobFilterStore = jobFilterStore;
+    this.saltMaster = options?.saltMaster;
     this.jobs = [];
     this.createdSince = getJobDateRangeForPreset(DEFAULT_JOB_DATE_RANGE_PRESET);
     this.dateRangePreset = DEFAULT_JOB_DATE_RANGE_PRESET;
@@ -152,5 +161,33 @@ export class JobsStore {
     this.jobFilterStore.handleResetFilters();
     this.pagination.pageIndex = 0;
     this.loadJobs();
+  };
+
+  @action
+  applyCellFilter = (fieldName: string, value: unknown) => {
+    const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
+      ? ["in", value.join(",")]
+      : ["=", String(value ?? "")];
+
+    const newRule: RuleType = {
+      field: fieldName,
+      operator,
+      value: ruleValue,
+    };
+
+    this.jobFilterStore.handleFiltersChange({
+      combinator: "and",
+      rules: [
+        ...this.jobFilterStore.currentFilters.rules.filter(
+          (r) => "field" in r && r.field !== fieldName
+        ),
+        newRule,
+      ],
+    });
+
+    this.jobFilterStore.handleSearch();
+    this.syncDateRangeWithAppliedFilters();
+    this.mongoDBQuery = this.jobFilterStore.searchMongoDBQuery;
+    this.handleSearch();
   };
 }

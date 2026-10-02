@@ -624,7 +624,8 @@
     "error-on-change-master-status": "Ошибка при изменении статуса контроллера"
   },
   "master": {
-    "tab-salt-keys-title": "Клиенты контроллера",
+    "tab-jobs-title": "Команды",
+    "tab-salt-keys-title": "Ключи клиентов",
     "table-minion-id": "ID клиента",
     "table-status": "Статус",
     "table-status-unaccepted": "Не принят",

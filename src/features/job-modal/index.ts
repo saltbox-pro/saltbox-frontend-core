@@ -1,5 +1,6 @@
 export { JobModal } from "./ui/job-modal";
 export { JobModalShell } from "./ui/job-modal-shell";
+export { CreateJobButton } from "./ui/create-job-button";
 export {
   useJobModalFlowState,
   createDefaultJobModalTargeting,

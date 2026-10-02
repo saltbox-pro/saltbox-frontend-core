@@ -165,6 +165,12 @@ export const saltboxModule = {
     label: "Core",
     children: [
       {
+        key: "masters",
+        label: { en: "Masters", ru: "Контроллеры" },
+        icon: "dns",
+        path: "/core/masters",
+      },
+      {
         key: "minions",
         label: { en: "Minions", ru: "Клиенты" },
         icon: "computer",
@@ -212,12 +218,6 @@ export const saltboxModule = {
           label: { en: "Collections", ru: "Коллекции" },
           icon: "account_tree",
           path: "/core/collections",
-        },
-        {
-          key: "masters",
-          label: { en: "Masters", ru: "Контроллеры" },
-          icon: "dns",
-          path: "/core/masters",
         },
         {
           key: "configuration-templates",

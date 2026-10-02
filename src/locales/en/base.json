@@ -624,7 +624,8 @@
     "error-on-change-master-status": "Error on change master status"
   },
   "master": {
-    "tab-salt-keys-title": "Master Minions",
+    "tab-jobs-title": "Jobs",
+    "tab-salt-keys-title": "Client keys",
     "table-minion-id": "Minion ID",
     "table-status": "Status",
     "table-status-unaccepted": "Unaccepted",

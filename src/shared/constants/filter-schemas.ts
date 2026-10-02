@@ -112,22 +112,33 @@ const jobStatusSelectOptions = (t: TFunction) => [
   { label: t("jobs.table-status-launch-error"), value: JobStatus.LaunchError },
 ];
 
+export type JobsFilterSchemaOptions = {
+  includeSaltMaster?: boolean;
+};
+
 export const getJobsFilterSchema = (
   t: TFunction,
-  saltTargetTypes: SelectProps["options"]
-): OptionList =>
-  [
+  saltTargetTypes: SelectProps["options"],
+  options: JobsFilterSchemaOptions = {}
+): OptionList => {
+  const { includeSaltMaster = true } = options;
+
+  return [
     {
       name: "jid",
       label: t("jobs.table-jid"),
       operators: defaultStringOperators,
       caseSensitive: true,
     },
-    {
-      name: "salt_master",
-      label: t("jobs.table-master"),
-      operators: defaultStringOperators,
-    },
+    ...(includeSaltMaster
+      ? [
+          {
+            name: "salt_master",
+            label: t("jobs.table-master"),
+            operators: defaultStringOperators,
+          },
+        ]
+      : []),
     {
       name: "fun",
       label: t("jobs.table-function"),
@@ -179,6 +190,7 @@ export const getJobsFilterSchema = (
       valueEditorType: "datetime-local",
     },
   ] as OptionList;
+};
 
 const jobReturnStatusSelectOptions = (t: TFunction) => [
   { label: t("task.job-returns-table.status-waiting"), value: JobReturnStatus.Waiting },
