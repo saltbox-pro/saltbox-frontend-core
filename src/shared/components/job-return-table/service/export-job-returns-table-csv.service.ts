@@ -3,7 +3,7 @@ import { ResponseError } from "@saltbox/saltbox-core-api-client";
 import { fileDownloader } from "saltbox-core/features/file-download";
 import { apiCoreStore } from "saltbox-core/store";
 
-export async function downloadJobReturnsTableCsv(
+export async function exportJobReturnsTableCsv(
   query: Record<string, unknown>,
   fallbackFilename: string
 ): Promise<void> {

@@ -2209,10 +2209,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-2ab4158453f3406f9acc40737c4e47060e4c2910.tgz#f9396b4c364cba8144d769fa4713d121ca795ed8"
   integrity sha1-+TlrTDZMuoFE12n6RxPRIcp5Xtg=
 
-"@saltbox/saltbox-frontend-common@^0.6.2":
-  version "0.6.2"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.2.tgz#b2c1e35e5ac1d34cbf377a02ecc9297a5841f665"
-  integrity sha1-ssHjXlrB00y/N3oC7MkpelhB9mU=
+"@saltbox/saltbox-frontend-common@^0.6.3":
+  version "0.6.3"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.3.tgz#0abd432d6ec339006e63ceae4a7833a65c574d92"
+  integrity sha1-Cr1DLW7DOQBuY86uSngzplxXTZI=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"

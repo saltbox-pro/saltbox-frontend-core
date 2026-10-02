@@ -18,6 +18,10 @@
   margin-left: auto;
 }
 
+.selectedCounter {
+  margin-left: var(--app-layout-gap, 16px);
+}
+
 .rightGroup :global(button) {
   margin-right: 0;
 }

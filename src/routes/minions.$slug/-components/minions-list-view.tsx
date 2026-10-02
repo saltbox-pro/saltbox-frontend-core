@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import Parcel from "single-spa-react/parcel";
 
+import { MinionsExportButton } from "saltbox-core/features/minions-export";
 import {
   PolicyCreateModal,
   TaskCreateModal,
@@ -199,17 +200,26 @@ export const MinionsListView = observer((props: MinionListViewProps) => {
                 <MinionsActionsDropdown
                   slug={props.slug}
                   collectionTitle={props.collectionStore.collection?.title}
-                  searchFilters={props.filterStore.searchFilters}
                   filterSchema={props.filterStore.filterSchema}
                   query={(props.filterStore.searchMongoDBQuery ?? {}) as Record<string, unknown>}
                   selectedMinions={selectedMinions}
                   clearSelection={clearSelection}
                   reloadMinions={reloadMinions}
                 />
+
+                <SelectedItemsCounter
+                  count={selectedMinionsCount}
+                  align="start"
+                  className={styles.selectedCounter}
+                />
               </div>
 
               <div className={styles.rightGroup}>
-                <SelectedItemsCounter count={selectedMinionsCount} />
+                <MinionsExportButton
+                  slug={props.slug}
+                  searchFilters={props.filterStore.searchFilters}
+                  filterSchema={props.filterStore.filterSchema}
+                />
                 <FastTable.Toolbar />
               </div>
             </div>
