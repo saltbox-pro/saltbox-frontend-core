@@ -1,10 +1,10 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
+import { getLocalizedText } from "@saltbox/saltbox-frontend-common";
 import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import type { ConfirmDeleteTemplate } from "saltbox-core/features/template-source-ui";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 
 import type { SourceTemplateActionsPermissions } from "../helpers/source-template-actions";
 import {
@@ -50,7 +50,7 @@ export function useTemplateItemActions({
   const [isDeletingInternal, setIsDeletingInternal] = useState(false);
   const isDeletingRef = useRef(false);
   const isDeleting = isDeletingControlled ?? isDeletingInternal;
-  const templateTitle = getTemplateTitleText(template.title, i18n.language) || template.name;
+  const templateTitle = getLocalizedText(template.title, i18n.language) || template.name;
 
   const handleEdit = useCallback(() => {
     navigateToEditTemplate(template, permissions, navigate, onAfterNavigate);

@@ -4,6 +4,7 @@ import {
   WebSocketMessage,
   WebSocketService,
   formatTimeByUserTZ,
+  getLocalizedText,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
@@ -16,7 +17,6 @@ import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
 import { TaskMinionsCountProgress } from "saltbox-core/shared/components/task/task-minions-count-progress";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
 import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { apiCoreStore, appStore, TasksStore, TasksFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-task-view.module.css";
@@ -64,7 +64,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
         id: "task_template.title",
         header: t("minions.table-task-template-title"),
         cell: (data) =>
-          getTemplateTitleText(data.getValue(), i18n.language) ||
+          getLocalizedText(data.getValue(), i18n.language) ||
           data.row.original?.task_template?.name,
         meta: {
           width: "10%",

@@ -2209,10 +2209,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-2ab4158453f3406f9acc40737c4e47060e4c2910.tgz#f9396b4c364cba8144d769fa4713d121ca795ed8"
   integrity sha1-+TlrTDZMuoFE12n6RxPRIcp5Xtg=
 
-"@saltbox/saltbox-frontend-common@^0.6.4":
-  version "0.6.4"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.4.tgz#43688aa5c598b5d29c253bfa202efcd163a131a0"
-  integrity sha1-Q2iKpcWYtdKcJTv6IC780WOhMaA=
+"@saltbox/saltbox-frontend-common@^0.6.5":
+  version "0.6.5"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.5.tgz#aba6be57711b2d646144278821076da31ee95868"
+  integrity sha1-q6a+V3EbLWRhRCeIIQdtox7pWGg=
   dependencies:
     "@material-symbols/font-300" "^0.38.0"
     "@monaco-editor/react" "^4.7.0"
@@ -2226,6 +2226,7 @@
     "@tanstack/react-virtual" "^3.13.12"
     ajv "^8.17.1"
     ajv-formats "^3.0.1"
+    clsx "^2.1.1"
     i18next "^25.2.1"
     monaco-editor "^0.55.1"
     react-dnd "^16.0.1"
