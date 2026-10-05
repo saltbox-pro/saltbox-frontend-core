@@ -5,9 +5,9 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { OptionList } from "react-querybuilder";
 
-import { MinionsExportDropdownContribution } from "saltbox-core/features/minions-export";
 import { useAddExtraDataDropdownItem } from "saltbox-core/features/minion-extra-data-editor";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
+import { MinionsExportDropdownContribution } from "saltbox-core/features/minions-export";
 import {
   buildMinionsActionPluginItems,
   useActionPluginClickGuard,
