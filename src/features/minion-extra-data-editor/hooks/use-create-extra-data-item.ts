@@ -17,7 +17,7 @@ export function useCreateExtraDataItem({
   minionId,
   onSuccess,
 }: UseCreateExtraDataItemParams): ExtraDataItemSubmission {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
@@ -32,9 +32,9 @@ export function useCreateExtraDataItem({
       setError(null);
 
       const result = await runMutation({
-        run: () => createMinionExtraDataItem({ category, minionId, data }),
+        run: () => createMinionExtraDataItem({ category, minionIds: [minionId], data }),
         successMessage: t("minions.extra-data.item-form.create-success", {
-          name: getExtraDataCategoryDisplayName(t, category.name),
+          name: getExtraDataCategoryDisplayName(category, i18n.language),
         }),
         onError: setError,
       });
@@ -44,7 +44,7 @@ export function useCreateExtraDataItem({
 
       onSuccess?.();
     },
-    [minionId, onSuccess, t]
+    [i18n.language, minionId, onSuccess, t]
   );
 
   return { submit, isSubmitting, error, resetError };

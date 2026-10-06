@@ -57,7 +57,7 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
     () => [
       columnHelper.accessor("name", {
         header: t("extra-data-categories.attributes.name"),
-        cell: (info) => <ExtraDataCategoryLabel name={info.getValue()} />,
+        cell: (info) => <ExtraDataCategoryLabel category={info.row.original} />,
         meta: { minWidth: 300, width: "26%" },
       }),
       columnHelper.accessor("type", {
@@ -74,6 +74,11 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
         accessorKey: "is_manual_data_allowed",
         header: t("extra-data-categories.attributes.manual-data-allowed"),
         meta: { minWidth: 140, width: "12%" },
+      }),
+      createBooleanColumn({
+        accessorKey: "is_single_item",
+        header: t("extra-data-categories.attributes.single-item"),
+        meta: { minWidth: 180, width: "12%" },
       }),
       columnHelper.accessor((row) => row.fields?.length ?? 0, {
         id: "fields_count",

@@ -4,6 +4,10 @@ import type { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable } from "mobx";
 
 import { getPageIndexAfterDelete } from "saltbox-core/shared/helpers/get-page-index-after-delete";
+import {
+  type ExtraDataCategoryUpdatePatch,
+  mergeExtraDataCategoryUpdate,
+} from "saltbox-core/shared/helpers/merge-extra-data-category-update";
 
 import { apiCoreStore } from "./api-core-store";
 
@@ -88,9 +92,12 @@ export class ExtraDataCategoriesStore {
   };
 
   @action
-  replaceCategory = (updated: ExtraDataCategoryModel): void => {
+  replaceCategory = (
+    updated: ExtraDataCategoryModel,
+    patch: ExtraDataCategoryUpdatePatch = "all"
+  ): void => {
     this.categories = this.categories.map((category) =>
-      category.id === updated.id ? updated : category
+      category.id === updated.id ? mergeExtraDataCategoryUpdate(category, updated, patch) : category
     );
   };
 

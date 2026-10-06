@@ -1,42 +1,65 @@
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Select, Tooltip, Typography } from "antd";
-import { type ReactNode, useEffect, useMemo } from "react";
+import { Button, Flex, Form, Input, Select, Typography } from "antd";
+import type { FormListFieldData, FormListOperation } from "antd/es/form/FormList";
+import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
 
-import { EXTRA_DATA_FIELD_TYPE_OPTIONS } from "../constants/field-types";
-import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
-import { EXTRA_DATA_NAME_PATTERN } from "../constants/name-pattern";
+import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/form-field-names";
 import {
   type ExtraDataCategoryFieldFormValue,
   createEmptyExtraDataCategoryField,
   isDuplicateExtraDataCategoryFieldName,
 } from "../helpers/extra-data-category-field-form";
-import { useDeleteExtraDataCategoryFieldConfirm } from "../hooks/use-delete-extra-data-category-field-confirm";
+import { useExtraDataCategoryFieldTypeOptions } from "../hooks/use-extra-data-category-field-type-options";
+import { useExtraDataCategoryFieldsDrag } from "../hooks/use-extra-data-category-fields-drag";
 
-import styles from "./extra-data-category-fields-form-list.module.css";
+import {
+  getExtraDataCategoryFieldNameRules,
+  getExtraDataCategoryFieldTypesRules,
+} from "./extra-data-category-field-form-rules";
+import styles from "./extra-data-category-fields-list.module.css";
+import {
+  ExtraDataCategoryFieldSortHandle,
+  ExtraDataCategoryFieldsRow,
+} from "./extra-data-category-fields-shared";
 
-type ExtraDataCategoryFieldsFormListProps = {
-  readOnly?: boolean;
-  readOnlyTooltip?: string;
-  actions?: ReactNode;
+type FormListItemsProps = {
+  fields: FormListFieldData[];
+  add: FormListOperation["add"];
+  remove: FormListOperation["remove"];
+  move: FormListOperation["move"];
 };
 
-export function ExtraDataCategoryFieldsFormList({
-  readOnly = false,
-  readOnlyTooltip,
-  actions,
-}: ExtraDataCategoryFieldsFormListProps) {
+function ExtraDataCategoryFieldsFormListItems({ fields, add, remove, move }: FormListItemsProps) {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
-  const deleteFieldConfirm = useDeleteExtraDataCategoryFieldConfirm();
+  const typeOptions = useExtraDataCategoryFieldTypeOptions();
   const fieldValues = Form.useWatch<ExtraDataCategoryFieldFormValue[] | undefined>(
     EXTRA_DATA_CATEGORY_FIELDS_NAME,
     form
   );
-
   const fieldNamesKey = (fieldValues ?? []).map((field) => field?.name ?? "").join("\n");
+  const itemIds = useMemo(() => fields.map((field) => String(field.key)), [fields]);
+  const canSort = fields.length > 1;
+
+  const handleReorder = useCallback(
+    (fromId: string, toId: string) => {
+      const fromIndex = fields.findIndex((field) => String(field.key) === fromId);
+      const toIndex = fields.findIndex((field) => String(field.key) === toId);
+      if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return;
+      move(fromIndex, toIndex);
+    },
+    [fields, move]
+  );
+
+  const { draggedFieldName, getDropSide, getHandleDragProps, getItemDropProps } =
+    useExtraDataCategoryFieldsDrag({
+      fieldNames: itemIds,
+      enabled: canSort,
+      onReorder: handleReorder,
+    });
 
   useEffect(() => {
     const revalidateInvalidFieldNames = async () => {
@@ -58,179 +81,105 @@ export function ExtraDataCategoryFieldsFormList({
     revalidateInvalidFieldNames();
   }, [fieldNamesKey, form]);
 
-  const typeOptions = useMemo(
-    () =>
-      EXTRA_DATA_FIELD_TYPE_OPTIONS.map((type) => ({
-        value: type,
-        label: t(`extra-data-categories.field-types.${type}`),
-      })),
-    [t]
-  );
-
-  const gridClassName = `${styles.grid} ${readOnly ? styles.gridReadOnly : ""}`;
-
-  const requestRemove = (index: number, remove: () => void) => {
-    const field = form.getFieldValue([EXTRA_DATA_CATEGORY_FIELDS_NAME, index]) as
-      | ExtraDataCategoryFieldFormValue
-      | undefined;
-
-    if (!field?.isSaved) {
-      remove();
-      return;
-    }
-
-    deleteFieldConfirm.openConfirm(field.name.trim(), remove);
-  };
-
   return (
-    <>
-      <Form.List name={EXTRA_DATA_CATEGORY_FIELDS_NAME}>
-        {(fields, { add, remove }) => {
-          const addFieldButton = (
-            <Button
-              type="dashed"
-              icon={<PlusOutlined />}
-              disabled={readOnly}
-              onClick={() => add(createEmptyExtraDataCategoryField())}
-            >
-              {t("extra-data-categories.add-field")}
-            </Button>
-          );
+    <Flex vertical gap="small" className={styles.formList}>
+      <div className={styles.header}>
+        <Typography.Text strong>{t("extra-data-categories.fields-title")}</Typography.Text>
+        <Button
+          type="dashed"
+          icon={<PlusOutlined />}
+          onClick={() => add(createEmptyExtraDataCategoryField())}
+        >
+          {t("extra-data-categories.add-field")}
+        </Button>
+      </div>
 
-          return (
-            <Flex vertical gap="small" className={styles.root}>
-              <Flex align="center" justify="space-between" gap="small" wrap="wrap">
-                <Typography.Text strong>{t("extra-data-categories.fields-title")}</Typography.Text>
-                <Flex align="center" gap="small" wrap="wrap">
-                  {readOnly && readOnlyTooltip ? (
-                    <Tooltip title={readOnlyTooltip}>
-                      <span>{addFieldButton}</span>
-                    </Tooltip>
-                  ) : (
-                    addFieldButton
-                  )}
-                  {actions}
-                </Flex>
-              </Flex>
+      <ul className={styles.list}>
+        {fields.length === 0 ? (
+          <li className={styles.empty}>{t("extra-data-categories.fields-empty")}</li>
+        ) : (
+          fields.map(({ key, name: fieldName, ...restField }) => {
+            const itemId = String(key);
+            const dropSide = getDropSide(itemId);
 
-              <Flex vertical className={styles.list}>
-                {fields.length === 0 ? (
-                  <Flex align="center" justify="center" className={`${styles.row} ${styles.empty}`}>
-                    <Typography.Text type="secondary">
-                      {t("extra-data-categories.fields-empty")}
-                    </Typography.Text>
-                  </Flex>
-                ) : (
-                  <div className={`${gridClassName} ${styles.columnsHeader}`}>
-                    <Typography.Text type="secondary">
-                      {t("extra-data-categories.field-form.field-name")}
-                    </Typography.Text>
-                    <Typography.Text type="secondary">
-                      {t("extra-data-categories.field-form.field-types")}
-                    </Typography.Text>
-                  </div>
-                )}
+            return (
+              <ExtraDataCategoryFieldsRow
+                key={key}
+                className={styles.rowEditable}
+                isDragging={draggedFieldName === itemId}
+                dropSide={dropSide}
+                dropProps={canSort ? getItemDropProps(itemId) : undefined}
+                sortHandle={
+                  <ExtraDataCategoryFieldSortHandle
+                    disabled={!canSort}
+                    dragProps={getHandleDragProps(itemId)}
+                  />
+                }
+              >
+                <Form.Item
+                  {...restField}
+                  name={[fieldName, "name"]}
+                  className={styles.nameField}
+                  rules={getExtraDataCategoryFieldNameRules(t, (trimmed) => {
+                    const listValues = form.getFieldValue(EXTRA_DATA_CATEGORY_FIELDS_NAME) as
+                      | ExtraDataCategoryFieldFormValue[]
+                      | undefined;
+                    return isDuplicateExtraDataCategoryFieldName(listValues, fieldName, trimmed);
+                  })}
+                >
+                  <Input
+                    placeholder={t("extra-data-categories.field-form.field-name-placeholder")}
+                  />
+                </Form.Item>
 
-                {fields.map(({ key, name: fieldName, ...restField }) => (
-                  <div key={key} className={`${gridClassName} ${styles.row}`}>
-                    <Form.Item
-                      {...restField}
-                      name={[fieldName, "name"]}
-                      className={styles.item}
-                      rules={
-                        readOnly
-                          ? undefined
-                          : [
-                              {
-                                required: true,
-                                whitespace: true,
-                                message: t("extra-data-categories.field-form.field-name-required"),
-                              },
-                              {
-                                pattern: EXTRA_DATA_NAME_PATTERN,
-                                message: t("extra-data-categories.name-forbidden-characters"),
-                              },
-                              {
-                                validator: async (_, value: string | undefined) => {
-                                  const trimmed = value?.trim();
-                                  if (!trimmed) return;
+                <Form.Item
+                  {...restField}
+                  name={[fieldName, "types"]}
+                  className={styles.typesField}
+                  rules={getExtraDataCategoryFieldTypesRules(t)}
+                >
+                  <Select
+                    mode="multiple"
+                    maxTagCount="responsive"
+                    options={typeOptions}
+                    optionFilterProp="label"
+                    notFoundContent={t("common.no-data")}
+                    placeholder={t("extra-data-categories.field-form.field-type-placeholder")}
+                    getPopupContainer={getParentPopupContainer}
+                  />
+                </Form.Item>
 
-                                  const listValues = form.getFieldValue(
-                                    EXTRA_DATA_CATEGORY_FIELDS_NAME
-                                  ) as ExtraDataCategoryFieldFormValue[] | undefined;
+                <div className={styles.actions}>
+                  <Button
+                    type="text"
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => remove(fieldName)}
+                    title={t("common.delete")}
+                    aria-label={t("common.delete")}
+                  />
+                </div>
+              </ExtraDataCategoryFieldsRow>
+            );
+          })
+        )}
+      </ul>
+    </Flex>
+  );
+}
 
-                                  if (
-                                    isDuplicateExtraDataCategoryFieldName(
-                                      listValues,
-                                      fieldName,
-                                      trimmed
-                                    )
-                                  ) {
-                                    throw new Error(
-                                      t("extra-data-categories.field-form.field-name-unique")
-                                    );
-                                  }
-                                },
-                              },
-                            ]
-                      }
-                    >
-                      <Input
-                        readOnly={readOnly}
-                        placeholder={t("extra-data-categories.field-form.field-name-placeholder")}
-                      />
-                    </Form.Item>
-
-                    <Form.Item
-                      {...restField}
-                      name={[fieldName, "types"]}
-                      className={styles.item}
-                      rules={
-                        readOnly
-                          ? undefined
-                          : [
-                              {
-                                required: true,
-                                type: "array",
-                                min: 1,
-                                message: t("extra-data-categories.field-form.field-type-required"),
-                              },
-                            ]
-                      }
-                    >
-                      <Select
-                        mode="multiple"
-                        maxTagCount="responsive"
-                        options={typeOptions}
-                        optionFilterProp="label"
-                        notFoundContent={t("common.no-data")}
-                        placeholder={t("extra-data-categories.field-form.field-type-placeholder")}
-                        open={readOnly ? false : undefined}
-                        suffixIcon={readOnly ? null : undefined}
-                        removeIcon={readOnly ? null : undefined}
-                        className={readOnly ? styles.readOnlyControl : undefined}
-                        getPopupContainer={getParentPopupContainer}
-                      />
-                    </Form.Item>
-
-                    {readOnly ? null : (
-                      <Button
-                        type="text"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => requestRemove(fieldName, () => remove(fieldName))}
-                        aria-label={t("common.delete")}
-                      />
-                    )}
-                  </div>
-                ))}
-              </Flex>
-            </Flex>
-          );
-        }}
-      </Form.List>
-
-      {deleteFieldConfirm.modalContextHolder}
-    </>
+export function ExtraDataCategoryFieldsFormList() {
+  return (
+    <Form.List name={EXTRA_DATA_CATEGORY_FIELDS_NAME}>
+      {(fields, { add, remove, move }) => (
+        <ExtraDataCategoryFieldsFormListItems
+          fields={fields}
+          add={add}
+          remove={remove}
+          move={move}
+        />
+      )}
+    </Form.List>
   );
 }

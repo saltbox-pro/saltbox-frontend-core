@@ -6,7 +6,7 @@ import {
   InfoDrawer,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Skeleton } from "antd";
+import { Alert, Button, Flex, Skeleton } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -55,12 +55,13 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
     onFilterButton,
     ...restProps
   }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [isCreateItemOpen, setIsCreateItemOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState<ExtraDataRecord | null>(null);
     const [isEditItemOpen, setIsEditItemOpen] = useState(false);
 
     const categoryId = category?.id;
+    const isSingleItemCategory = !!category?.is_single_item;
     const canAddItem = !!category && canAddExtraDataManually(category);
 
     const canChangeRecord = useCallback(
@@ -90,6 +91,9 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       };
     }, [extraDataRecordsStore]);
 
+    const records = extraDataRecordsStore?.records;
+    const totalRecordsUnfiltered = extraDataRecordsStore?.totalRecordsUnfiltered ?? 0;
+
     const openEditItem = useCallback((record: ExtraDataRecord) => {
       setEditingRecord(record);
       setIsEditItemOpen(true);
@@ -98,8 +102,6 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
     const handleItemDeleted = useCallback(() => {
       extraDataRecordsStore?.reloadAfterRecordDeleted();
     }, [extraDataRecordsStore]);
-
-    const records = extraDataRecordsStore?.records;
 
     const declaredFields = useMemo(
       () => (category ? getDeclaredExtraDataFieldNames(category) : []),
@@ -129,6 +131,8 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
     const loadStatus = recordsLoad?.status;
     const isLoaded = !!recordsLoad && !recordsLoad.isInitialLoad;
     const showSkeleton = !!recordsLoad && recordsLoad.isInitialLoad && loadStatus !== "error";
+    const hasInconsistentSingleItemRecords =
+      isLoaded && isSingleItemCategory && totalRecordsUnfiltered > 1;
     const singleRecord =
       isLoaded && extraDataRecordsStore?.isSingleRecord && records && records.length > 0
         ? toJS(records[0])
@@ -148,7 +152,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
       <InfoDrawer
         open={open}
         drawerId={DRAWER_IDS.extraDataCategoryDetails}
-        titleName={category ? getExtraDataCategoryDisplayName(t, category.name) : undefined}
+        titleName={category ? getExtraDataCategoryDisplayName(category, i18n.language) : undefined}
         transitionKey={open ? (category?.id ?? "opened") : "closed"}
         fillHeight
         {...restProps}
@@ -185,7 +189,11 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                         </>
                       ) : (
                         <>
-                          <ExtraDataSearchField key={category.name} onSearch={handleSearch} />
+                          <ExtraDataSearchField
+                            key={category.name}
+                            value={extraDataRecordsStore.search}
+                            onSearch={handleSearch}
+                          />
                           {exportButton}
                           <FastTable.Toolbar />
                         </>
@@ -195,6 +203,14 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                 )}
 
                 {showSkeleton && <Skeleton active />}
+
+                {isLoaded && hasInconsistentSingleItemRecords && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    message={t("minions.extra-data.single-item-inconsistent")}
+                  />
+                )}
 
                 {isLoaded && singleRecord && category && (
                   <MinionExtraDataRecordList

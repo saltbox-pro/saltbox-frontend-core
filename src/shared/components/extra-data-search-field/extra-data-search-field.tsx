@@ -1,5 +1,5 @@
 import { Input } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import styles from "./extra-data-search-field.module.css";
@@ -7,18 +7,29 @@ import styles from "./extra-data-search-field.module.css";
 const { Search } = Input;
 
 type ExtraDataSearchFieldProps = {
+  value?: string;
   onSearch: (value: string) => void;
 };
 
-export function ExtraDataSearchField(props: ExtraDataSearchFieldProps) {
+export function ExtraDataSearchField({ value, onSearch }: ExtraDataSearchFieldProps) {
   const { t } = useTranslation();
-  const [value, setValue] = useState("");
+  const [draft, setDraft] = useState(value ?? "");
+
+  useEffect(() => {
+    setDraft(value ?? "");
+  }, [value]);
 
   return (
     <Search
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onSearch={props.onSearch}
+      value={draft}
+      onChange={(e) => {
+        const nextValue = e.target.value;
+        setDraft(nextValue);
+        if (!nextValue) {
+          onSearch("");
+        }
+      }}
+      onSearch={onSearch}
       allowClear
       enterButton
       placeholder={t("minions.extra-data.search-placeholder")}

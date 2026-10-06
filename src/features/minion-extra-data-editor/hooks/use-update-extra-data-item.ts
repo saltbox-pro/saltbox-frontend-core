@@ -23,7 +23,7 @@ export function useUpdateExtraDataItem({
   record,
   onSuccess,
 }: UseUpdateExtraDataItemParams): ExtraDataItemSubmission {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
@@ -49,7 +49,7 @@ export function useUpdateExtraDataItem({
             data: { ...getUndeclaredExtraDataRecordData(category, record), ...data },
           }),
         successMessage: t("minions.extra-data.item-form.update-success", {
-          name: getExtraDataCategoryDisplayName(t, category.name),
+          name: getExtraDataCategoryDisplayName(category, i18n.language),
         }),
         onError: setError,
       });
@@ -59,7 +59,7 @@ export function useUpdateExtraDataItem({
 
       onSuccess?.();
     },
-    [minionId, onSuccess, record, t]
+    [i18n.language, minionId, onSuccess, record, t]
   );
 
   return { submit, isSubmitting, error, resetError };

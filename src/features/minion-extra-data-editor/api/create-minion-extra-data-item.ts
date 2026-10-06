@@ -1,21 +1,21 @@
 import type {
   ExtraDataCategoryModel,
-  StaticExtraDataItemSchema,
+  ExtraDataItemsCreateResponseSchema,
 } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
 type CreateMinionExtraDataItemParams = {
   category: ExtraDataCategoryModel;
-  minionId: string;
+  minionIds: readonly string[];
   data: Record<string, unknown>;
 };
 
 export async function createMinionExtraDataItem({
   category,
-  minionId,
+  minionIds,
   data,
-}: CreateMinionExtraDataItemParams): Promise<StaticExtraDataItemSchema> {
+}: CreateMinionExtraDataItemParams): Promise<ExtraDataItemsCreateResponseSchema> {
   const api = apiCoreStore.extraDataApi;
 
   if (!api) {
@@ -23,10 +23,10 @@ export async function createMinionExtraDataItem({
   }
 
   return api.extraDataItemCreate({
-    StaticExtraDataItemRequestSchema: {
+    ExtraDataItemCreateRequestSchema: {
       category_source: category.source,
       category_name: category.name,
-      minion_id: minionId,
+      minion_ids: [...minionIds],
       data,
     },
   });

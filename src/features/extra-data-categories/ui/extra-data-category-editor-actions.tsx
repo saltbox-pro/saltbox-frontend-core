@@ -3,17 +3,17 @@ import { useTranslation } from "react-i18next";
 
 import { ActionButtonWithTooltip } from "saltbox-core/shared/components/action-button-with-tooltip";
 
-type ExtraDataCategoryFieldsEditorActionsProps = {
+type ExtraDataCategoryEditorActionsProps = {
   hasChanges: boolean;
   isSaving: boolean;
   onReset: () => void;
 };
 
-export function ExtraDataCategoryFieldsEditorActions({
+export function ExtraDataCategoryEditorActions({
   hasChanges,
   isSaving,
   onReset,
-}: ExtraDataCategoryFieldsEditorActionsProps) {
+}: ExtraDataCategoryEditorActionsProps) {
   const { t } = useTranslation();
 
   return (

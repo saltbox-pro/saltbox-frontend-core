@@ -1,7 +1,4 @@
-import type {
-  ExtraDataCategoryModel,
-  StaticExtraDataItemSchema,
-} from "@saltbox/saltbox-core-api-client";
+import type { ExtraDataCategoryModel, ExtraDataItemSchema } from "@saltbox/saltbox-core-api-client";
 
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -17,7 +14,7 @@ export async function updateMinionExtraDataItem({
   minionId,
   itemId,
   data,
-}: UpdateMinionExtraDataItemParams): Promise<StaticExtraDataItemSchema> {
+}: UpdateMinionExtraDataItemParams): Promise<ExtraDataItemSchema> {
   const api = apiCoreStore.extraDataApi;
 
   if (!api) {
@@ -26,7 +23,7 @@ export async function updateMinionExtraDataItem({
 
   return api.extraDataItemUpdate({
     item_id: itemId,
-    StaticExtraDataItemRequestSchema: {
+    ExtraDataItemUpdateRequestSchema: {
       category_source: category.source,
       category_name: category.name,
       minion_id: minionId,

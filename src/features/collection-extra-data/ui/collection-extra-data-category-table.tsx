@@ -47,7 +47,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
   filterStore,
   onFilterAdded,
 }: CollectionExtraDataCategoryTableProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [store] = useState(
     () =>
@@ -151,7 +151,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
   const emptyMessage =
     store.recordsLoad.status === "success"
       ? t("minions.extra-data.empty-category", {
-          category: getExtraDataCategoryDisplayName(t, category.name),
+          category: getExtraDataCategoryDisplayName(category, i18n.language),
         })
       : "";
 
@@ -160,7 +160,11 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
       <Flex vertical className={styles.root}>
         <div className="page-actions-buttons">
           <div className={styles.toolbarActions}>
-            <ExtraDataSearchField key={category.name} onSearch={store.setSearch} />
+            <ExtraDataSearchField
+              key={category.name}
+              value={store.search}
+              onSearch={store.setSearch}
+            />
             <ExtraDataExportButton
               category={category}
               collectionSlug={collectionSlug}

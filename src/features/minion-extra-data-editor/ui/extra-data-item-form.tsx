@@ -42,7 +42,7 @@ export function ExtraDataItemForm({
   onSubmittingChange,
   onCategoryCreated,
 }: ExtraDataItemFormProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [form] = Form.useForm<ExtraDataItemFormValues>();
   const [isEmptyError, setIsEmptyError] = useState(false);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
@@ -70,11 +70,11 @@ export function ExtraDataItemForm({
 
   const categoryOptions = useMemo(
     () =>
-      manualCategories.categories.map(({ id, name }) => ({
-        value: id,
-        label: getExtraDataCategoryDisplayName(t, name),
+      manualCategories.categories.map((item) => ({
+        value: item.id,
+        label: getExtraDataCategoryDisplayName(item, i18n.language),
       })),
-    [manualCategories.categories, t]
+    [i18n.language, manualCategories.categories]
   );
 
   const applyCategory = (categoryId: string) => {
@@ -142,7 +142,7 @@ export function ExtraDataItemForm({
         {fixedCategory ? (
           <Form.Item label={t("minions.extra-data.category-column")}>
             <Typography.Text strong>
-              {getExtraDataCategoryDisplayName(t, fixedCategory.name)}
+              {getExtraDataCategoryDisplayName(fixedCategory, i18n.language)}
             </Typography.Text>
           </Form.Item>
         ) : (
