@@ -1,11 +1,11 @@
 import { TaskType, type TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
+import { getLocalizedText } from "@saltbox/saltbox-frontend-common";
 import { Alert, Checkbox, Collapse, type CollapseProps, Flex, Tag, Typography } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceTemplatesList } from "saltbox-core/features/template-source-ui";
 import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 
 import { CollapsePanelLabel } from "../../shared/ui/collapse-panel-label";
 import collapseStyles from "../../shared/ui/template-source-extras-collapse.module.css";
@@ -29,7 +29,7 @@ type ContentUpdateReviewProps = {
 function DependantTaskRow({ task }: { task: TaskListResponseSchema }) {
   const { t, i18n } = useTranslation();
   const title =
-    getTemplateTitleText(task.task_template?.title, i18n.language) ||
+    getLocalizedText(task.task_template?.title, i18n.language) ||
     task.task_template?.name ||
     task.fun;
 
