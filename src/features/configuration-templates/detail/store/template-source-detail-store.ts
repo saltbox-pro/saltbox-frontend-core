@@ -4,6 +4,12 @@ import { makeAutoObservable, runInAction } from "mobx";
 
 import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 
+import type {
+  ContentUpdateApplyRequest,
+  ContentUpdateApplyResult,
+  ContentUpdateCheckRequest,
+  ContentUpdateCheckResult,
+} from "../../content-update/types/content-update";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { resolveConnectedLocalSourceAvailabilityRefresh } from "../../shared/helpers/is-connected-local-template-source";
 import {
@@ -164,6 +170,18 @@ export class TemplateSourceDetailStore implements SourceActionsPort {
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  checkSourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateCheckRequest,
+    signal?: AbortSignal
+  ): Promise<ContentUpdateCheckResult> =>
+    this.runtime.checkSourceContentUpdate(sourceId, request, signal);
+
+  applySourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateApplyRequest
+  ): Promise<ContentUpdateApplyResult> => this.runtime.applySourceContentUpdate(sourceId, request);
 
   deleteSourceTemplate = (templateId: string): Promise<void> =>
     this.runtime.deleteSourceTemplate(this.sourceId, templateId);

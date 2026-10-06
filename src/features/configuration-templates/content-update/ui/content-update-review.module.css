@@ -1,0 +1,17 @@
+.list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.row {
+  min-width: 0;
+  padding-block: 4px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--ant-color-split, rgba(5, 5, 5, 0.06));
+}
+
+.taskInfo {
+  min-width: 0;
+}

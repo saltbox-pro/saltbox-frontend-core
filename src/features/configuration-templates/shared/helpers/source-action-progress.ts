@@ -43,7 +43,9 @@ export function isPlugInProgress({ actionKind, source }: IsPlugInProgressParams)
     actionKind === "sync" ||
     actionKind === "unplug" ||
     actionKind === "delete_template" ||
-    actionKind === "update"
+    actionKind === "update" ||
+    actionKind === "content_update_check" ||
+    actionKind === "content_update_apply"
   ) {
     return false;
   }
@@ -110,6 +112,10 @@ export function isUnplugInProgress({ actionKind, source }: IsUnplugInProgressPar
 
 export function isUpdateInProgress({ actionKind }: SourceActionContext): boolean {
   return actionKind === "update";
+}
+
+export function isContentUpdateInProgress({ actionKind }: SourceActionContext): boolean {
+  return actionKind === "content_update_check" || actionKind === "content_update_apply";
 }
 
 export function isPlugSourceOperation(operation: SourceOperation | null): boolean {

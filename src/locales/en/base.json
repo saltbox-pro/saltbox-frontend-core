@@ -1276,7 +1276,8 @@
     },
     "warning-action": {
       "connect-source": "connect a source",
-      "sync-source": "sync a source"
+      "sync-source": "sync a source",
+      "update-source": "update a source"
     },
     "sync-gitlab-sources-error": "Failed to get network sources",
     "sync-gitlab-sources-success": "Network sources have been retrieved",
@@ -1458,6 +1459,42 @@
       "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
       "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?\n\nThe source will be removed from the system. Related templates and files will become unavailable. This action cannot be undone"
+    },
+    "source-update": {
+      "button": "Update",
+      "title": "Update source \"{{name}}\"",
+      "archive-file": "Archive with the new source version",
+      "check": "Check",
+      "checking": "Checking for changes…",
+      "check-retry": "Check again",
+      "check-error": "Failed to check source changes",
+      "up-to-date-title": "Source is up to date",
+      "up-to-date-description": "There are no new changes",
+      "files-title": "Changed files",
+      "templates-title": "Affected templates",
+      "templates-empty": "Changes do not affect templates",
+      "tasks-title": "Tasks",
+      "policies-title": "Policies",
+      "scheduler-tag": "Scheduler",
+      "stop-dependents": "Stop related tasks and policies ({{count}})",
+      "dependents-warning": "The list of related tasks and policies reflects the moment of the check. It will be recalculated during the update, and the current tasks and policies will be stopped.",
+      "apply": "Update",
+      "recheck": "Check again",
+      "close": "Close",
+      "apply-error": "Failed to update source",
+      "apply-success": "Source \"{{name}}\" has been updated",
+      "apply-success-stopped": "Source \"{{name}}\" has been updated. Tasks and policies stopped: {{count}}",
+      "error-conflict": "The source has changed since the check. Check the changes again.",
+      "error-locked": "Another operation is already running for this source. Try again later.",
+      "change-type": {
+        "A": "Added",
+        "D": "Deleted",
+        "M": "Modified",
+        "R": "Renamed",
+        "C": "Copied",
+        "T": "Type changed",
+        "U": "Unmerged"
+      }
     }
   },
   "aggregated-tasks": {

@@ -8,6 +8,12 @@ import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 import { apiCoreStore } from "saltbox-core/store";
 
+import type {
+  ContentUpdateApplyRequest,
+  ContentUpdateApplyResult,
+  ContentUpdateCheckRequest,
+  ContentUpdateCheckResult,
+} from "../../content-update/types/content-update";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { hasConnectedLocalTemplateSource } from "../../shared/helpers/is-connected-local-template-source";
 import {
@@ -360,6 +366,18 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  checkSourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateCheckRequest,
+    signal?: AbortSignal
+  ): Promise<ContentUpdateCheckResult> =>
+    this.runtime.checkSourceContentUpdate(sourceId, request, signal);
+
+  applySourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateApplyRequest
+  ): Promise<ContentUpdateApplyResult> => this.runtime.applySourceContentUpdate(sourceId, request);
 
   deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> =>
     this.runtime.deleteSourceTemplate(sourceId, templateId);

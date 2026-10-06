@@ -1,6 +1,16 @@
 import type { SourceListWithExtrasSchema } from "@saltbox/saltbox-core-api-client";
 import { runInAction } from "mobx";
 
+import {
+  requestContentUpdateApply,
+  requestContentUpdateCheck,
+} from "../../content-update/service/content-update.service";
+import type {
+  ContentUpdateApplyRequest,
+  ContentUpdateApplyResult,
+  ContentUpdateCheckRequest,
+  ContentUpdateCheckResult,
+} from "../../content-update/types/content-update";
 import { canAddSourceFiles, canDeleteSourceFiles } from "../../files/helpers/can-add-source-files";
 import {
   deleteSourceFileApi,
@@ -86,6 +96,42 @@ export class TemplateSourceRuntime {
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.sourceActions.deleteSource(sourceId);
+
+  checkSourceContentUpdate = async (
+    sourceId: string,
+    request: ContentUpdateCheckRequest,
+    signal?: AbortSignal
+  ): Promise<ContentUpdateCheckResult> => {
+    runInAction(() => {
+      this.port.actionBySourceId.set(sourceId, "content_update_check");
+    });
+
+    try {
+      return await requestContentUpdateCheck(sourceId, request, signal);
+    } finally {
+      runInAction(() => {
+        this.port.actionBySourceId.delete(sourceId);
+      });
+    }
+  };
+
+  applySourceContentUpdate = async (
+    sourceId: string,
+    request: ContentUpdateApplyRequest
+  ): Promise<ContentUpdateApplyResult> => {
+    runInAction(() => {
+      this.port.actionBySourceId.set(sourceId, "content_update_apply");
+    });
+
+    try {
+      return await requestContentUpdateApply(sourceId, request);
+    } finally {
+      await this.port.reloadSource(sourceId);
+      runInAction(() => {
+        this.port.actionBySourceId.delete(sourceId);
+      });
+    }
+  };
 
   addSourceFile = async (sourceId: string, payload: AddSourceFilePayload): Promise<void> => {
     const source = this.port.getSource(sourceId);
