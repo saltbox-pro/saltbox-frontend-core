@@ -1,12 +1,21 @@
 import type { FormContextType, RJSFSchema, UiSchema } from "@rjsf/utils";
 import { resolveLocalizedText, type UISchema } from "@saltbox/react-jsonschema-form-generator";
-
-import type { LocalizedTextValue } from "./template-localized-text";
+import type { LocalizedTextValue } from "@saltbox/saltbox-frontend-common";
 
 export type TemplateSchemaSource = {
   description?: LocalizedTextValue;
   json_schema?: unknown;
 };
+
+export function toTemplateSchemaSource(source: {
+  description?: unknown;
+  json_schema?: unknown;
+}): TemplateSchemaSource {
+  return {
+    description: source.description as LocalizedTextValue | undefined,
+    json_schema: source.json_schema,
+  };
+}
 
 const TYPE_HINT_KEYWORDS = [
   "type",

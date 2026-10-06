@@ -1,10 +1,13 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { isMongoQueryEmpty, maskPasswordFields } from "@saltbox/saltbox-frontend-common";
+import {
+  isMongoQueryEmpty,
+  maskPasswordFields,
+  getLocalizedText,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
 import type { TaskOverviewData } from "../type/types";
@@ -47,7 +50,7 @@ export function TaskOverviewTab({
   const detailsData = useMemo<TaskDetailsData>(
     () => ({
       template: {
-        title: getTemplateTitleText(template.title, i18n.language) || template.name,
+        title: getLocalizedText(template.title, i18n.language) || template.name,
         saltFunction: template.fun,
       },
       parameters: maskPasswordFields(

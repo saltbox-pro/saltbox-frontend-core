@@ -1,24 +1,26 @@
 import type { TaskTargetMinion } from "@saltbox/saltbox-core-api-client";
-import { ActionDropdown, type ActionDropdownItem, UiEvent } from "@saltbox/saltbox-frontend-common";
+import { ActionDropdown, UiEvent } from "@saltbox/saltbox-frontend-common";
 import { message } from "antd";
 import { useMemo } from "react";
-import type { OptionList, RuleGroupType } from "react-querybuilder";
+import { useTranslation } from "react-i18next";
+import type { OptionList } from "react-querybuilder";
 
-import { useMinionsExportDropdownItem } from "saltbox-core/features/minions-export";
 import { useAddExtraDataDropdownItem } from "saltbox-core/features/minion-extra-data-editor";
 import { useRemoveMinionsDropdownItem } from "saltbox-core/features/minions/remove-minions";
+import { MinionsExportDropdownContribution } from "saltbox-core/features/minions-export";
 import {
   buildMinionsActionPluginItems,
   useActionPluginClickGuard,
   usePluginActionsTick,
 } from "saltbox-core/features/plugins";
 
+import { buildMinionsActionItems } from "./helpers/build-minions-action-items";
+
 type SelectedMinion = TaskTargetMinion & { mid: string };
 
 export type MinionsActionsDropdownProps = {
   slug: string;
   collectionTitle?: string;
-  searchFilters: RuleGroupType;
   filterSchema?: OptionList;
   query: Record<string, unknown>;
   selectedMinions: SelectedMinion[];
@@ -30,22 +32,15 @@ export function MinionsActionsDropdown({
   slug,
   collectionTitle,
   selectedMinions,
-  searchFilters,
   filterSchema,
   query,
   clearSelection,
   reloadMinions,
 }: MinionsActionsDropdownProps) {
+  const { t } = useTranslation();
   const [messageApi, messageContextHolder] = message.useMessage();
   const actionPluginClickGuard = useActionPluginClickGuard(messageApi);
   usePluginActionsTick(UiEvent.MinionsActionsChanged);
-
-  const exportAction = useMinionsExportDropdownItem({
-    slug,
-    searchFilters,
-    filterSchema,
-    selectedMinions,
-  });
 
   const selectedMinionMongoIds = useMemo(
     () => selectedMinions.map((minion) => minion.mid),
@@ -78,27 +73,37 @@ export function MinionsActionsDropdown({
 
   const pluginItems = buildMinionsActionPluginItems(pluginActionContext, actionPluginClickGuard);
 
-  const items: ActionDropdownItem[] = [...pluginItems];
-  if (addExtraDataAction.item) {
-    items.push(addExtraDataAction.item);
-  }
-  items.push(exportAction.item);
-  if (selectedMinions.length > 0) {
-    const deleteItem = removeAction.item;
-    if (deleteItem) {
-      items.push({ type: "divider" });
-      items.push(deleteItem);
-    }
-  }
-
   return (
-    <>
-      {messageContextHolder}
-      {removeAction.modalContextHolder}
-      {exportAction.modalContextHolder}
-      {addExtraDataAction.modal}
+    <MinionsExportDropdownContribution
+      enabled={selectedMinions.length > 0}
+      slug={slug}
+      filterSchema={filterSchema}
+      selectedMinions={selectedMinions}
+    >
+      {({ item: exportItem, modalContextHolder: exportModalContextHolder }) => {
+        const items = buildMinionsActionItems({
+          pluginItems,
+          addExtraDataItem: addExtraDataAction.item,
+          exportItem,
+          deleteItem: selectedMinions.length > 0 ? removeAction.item : null,
+        });
+        const hasActions = items.some((item) => !!item && item.type !== "divider");
 
-      <ActionDropdown menu={{ items }} />
-    </>
+        return (
+          <>
+            {messageContextHolder}
+            {removeAction.modalContextHolder}
+            {exportModalContextHolder}
+            {addExtraDataAction.modal}
+
+            <ActionDropdown
+              menu={{ items }}
+              disabled={!hasActions}
+              disabledTooltip={t("minions.actions-select-items")}
+            />
+          </>
+        );
+      }}
+    </MinionsExportDropdownContribution>
   );
 }

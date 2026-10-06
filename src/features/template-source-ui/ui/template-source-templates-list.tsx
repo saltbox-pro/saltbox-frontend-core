@@ -1,15 +1,11 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
+import { SearchHighlightText, getLocalizedText } from "@saltbox/saltbox-frontend-common";
 import { Flex, List, Tag } from "antd";
 import clsx from "clsx";
 import { type CSSProperties, type ReactNode, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getTemplateHighlightDurationCssValue } from "saltbox-core/shared/constants/template-highlight-duration";
-import {
-  getTemplateDescriptionText,
-  getTemplateTitleText,
-} from "saltbox-core/shared/utils/template-localized-text";
 
 import { TemplateSourceSectionEmpty } from "./template-source-section-empty";
 import styles from "./template-source-templates-list.module.css";
@@ -79,8 +75,8 @@ export function TemplateSourceTemplatesList<
       }}
       renderItem={(template) => {
         const { title, description, fun, name } = template;
-        const resolvedTitle = getTemplateTitleText(title, i18n.language) || name;
-        const resolvedDescription = getTemplateDescriptionText(description, i18n.language);
+        const resolvedTitle = getLocalizedText(title, i18n.language) || name;
+        const resolvedDescription = getLocalizedText(description, i18n.language);
         const accessibility = getTemplateAccessibility?.(template);
         const isAccessible = accessibility?.isAccessible ?? true;
         const isClickable = Boolean(onTemplateClick && isAccessible);

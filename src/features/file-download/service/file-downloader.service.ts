@@ -1,6 +1,6 @@
 class FileDownloader {
-  async downloadByResponse(response: Response, fallBackFilename: string) {
-    const filename = this.getFilenameFromHeaders(response.headers) || fallBackFilename;
+  async downloadByResponse(response: Response, fallbackFilename: string) {
+    const filename = this.getFilenameFromHeaders(response.headers) || fallbackFilename;
     const blob = await response.blob();
     this.downloadBlob(blob, filename);
   }

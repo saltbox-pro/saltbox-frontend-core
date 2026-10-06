@@ -14,6 +14,7 @@ import {
   WebSocketService,
   AcceptedMastersActionButton,
   ErrorZone,
+  buildCsvExportFilename,
   formatTimeByUserTZ,
   runMutation,
   useWithAcceptedMastersCheck,
@@ -34,7 +35,7 @@ import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
-import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
+import { exportJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/export-job-returns-table-csv.service";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
@@ -211,12 +212,12 @@ const JobPage = observer(() => {
 
     const result = await runMutation({
       run: () =>
-        downloadJobReturnsTableCsv(
+        exportJobReturnsTableCsv(
           {
             ...jobStore.mongoDBQuery,
             job_id: jobId,
           },
-          `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
+          buildCsvExportFilename(`export_job_returns_${jobStore.job?.jid ?? jobId}`)
         ),
       errorMessage: tCommon("export-to-csv.error", {
         subject: t("jobs.export-subject"),

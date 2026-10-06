@@ -1,5 +1,5 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { ExportToCsv, runMutation } from "@saltbox/saltbox-frontend-common";
+import { ExportToCsv, buildCsvExportFilename, runMutation } from "@saltbox/saltbox-frontend-common";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -41,7 +41,7 @@ export function ExtraDataExportButton({
 
         await fileDownloader.downloadByResponse(
           response,
-          `extra-data-${category.name}-${Date.now()}.csv`
+          buildCsvExportFilename(`export_extra_data_${category.name}`)
         );
       },
       errorMessage: tCommon("export-to-csv.error", {

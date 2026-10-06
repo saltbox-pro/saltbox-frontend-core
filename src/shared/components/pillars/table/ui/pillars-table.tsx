@@ -1,7 +1,7 @@
 import { type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
-  BooleanDisplay,
+  createBooleanColumn,
   formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
@@ -77,9 +77,9 @@ export const PillarsTable = observer<PillarsTableProps>(function PillarsTable({
       hideSecretColumn
         ? []
         : [
-            columnHelper.accessor("is_secret", {
+            createBooleanColumn({
+              accessorKey: "is_secret",
               header: t("pillar.details.secret"),
-              cell: (data) => <BooleanDisplay value={data.getValue()} />,
               meta: {
                 width: "10%",
               },
