@@ -3,9 +3,7 @@ import { StatusBadge } from "@saltbox/saltbox-frontend-common";
 import { useTranslation } from "react-i18next";
 
 import {
-  getTaskMinionStatusLabelKey,
-  getTaskMinionStatusTitleKey,
-  getTaskMinionStatusTone,
+  getTaskMinionStatusMeta,
   isKnownTaskMinionStatus,
 } from "./helpers/task-minion-status-meta";
 
@@ -20,7 +18,9 @@ export function MinionTaskStatus({ status }: MinionTaskStatusProps) {
     return null;
   }
 
-  if (!isKnownTaskMinionStatus(status)) {
+  const meta = isKnownTaskMinionStatus(status) ? getTaskMinionStatusMeta(status) : undefined;
+
+  if (!meta) {
     return (
       <StatusBadge tone="warning">
         {`${t("task.minions.table-unknown-code")}: ${status}`}
@@ -28,11 +28,9 @@ export function MinionTaskStatus({ status }: MinionTaskStatusProps) {
     );
   }
 
-  const titleKey = getTaskMinionStatusTitleKey(status);
-
   return (
-    <StatusBadge tone={getTaskMinionStatusTone(status)} title={titleKey ? t(titleKey) : undefined}>
-      {t(getTaskMinionStatusLabelKey(status))}
+    <StatusBadge tone={meta.tone} title={meta.titleKey ? t(meta.titleKey) : undefined}>
+      {t(meta.labelKey)}
     </StatusBadge>
   );
 }

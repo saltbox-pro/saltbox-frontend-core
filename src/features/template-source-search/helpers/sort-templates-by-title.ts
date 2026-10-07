@@ -1,6 +1,5 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
+import { getLocalizedText } from "@saltbox/saltbox-frontend-common";
 
 export type TemplateTitleSortable = Pick<TaskTemplatePublicSchema, "title" | "name">;
 
@@ -8,7 +7,7 @@ export function getTemplateSortableTitle(
   template: TemplateTitleSortable,
   language: string
 ): string {
-  return getTemplateTitleText(template.title, language) || template.name;
+  return getLocalizedText(template.title, language) || template.name;
 }
 
 export function compareTemplatesByTitle(

@@ -113,6 +113,7 @@ export const TemplateSourceDetail = observer(function TemplateSourceDetail({
               canConnect={view.canConnect}
               canSync={view.canSync}
               canUnplug={view.canUnplug}
+              canUpdateContent={view.canUpdateContent}
               showDelete={view.showDelete}
               messageApi={messageApi}
             />

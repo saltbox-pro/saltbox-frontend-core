@@ -73,12 +73,12 @@ export function readTaskMinionsCount(
   };
 }
 
-export function getTaskMinionStatusTone(status: TaskMinionStatus): StatusTone {
-  return TASK_MINION_STATUS_META[status].tone;
+export function getTaskMinionStatusMeta(status: TaskMinionStatus): TaskMinionStatusMeta {
+  return TASK_MINION_STATUS_META[status];
 }
 
 export function getTaskMinionStatusColor(status: TaskMinionStatus): string {
-  return STATUS_TONE_COLORS[getTaskMinionStatusTone(status)];
+  return STATUS_TONE_COLORS[getTaskMinionStatusMeta(status).tone];
 }
 
 export function getTaskMinionStatusProgressColor(status: TaskMinionStatus): string {
@@ -90,11 +90,7 @@ export function getTaskMinionStatusProgressColor(status: TaskMinionStatus): stri
 }
 
 export function getTaskMinionStatusLabelKey(status: TaskMinionStatus): string {
-  return TASK_MINION_STATUS_META[status].labelKey;
-}
-
-export function getTaskMinionStatusTitleKey(status: TaskMinionStatus): string | undefined {
-  return TASK_MINION_STATUS_META[status].titleKey;
+  return getTaskMinionStatusMeta(status).labelKey;
 }
 
 export function isKnownTaskMinionStatus(status: string): status is TaskMinionStatus {

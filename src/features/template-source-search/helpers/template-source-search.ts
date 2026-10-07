@@ -3,11 +3,7 @@ import type {
   SshfsFilePublicSchema,
   TaskTemplatePublicSchema,
 } from "@saltbox/saltbox-core-api-client";
-
-import {
-  getTemplateDescriptionText,
-  getTemplateTitleText,
-} from "saltbox-core/shared/utils/template-localized-text";
+import { getLocalizedText } from "@saltbox/saltbox-frontend-common";
 
 import { sortTemplatesByTitle } from "./sort-templates-by-title";
 
@@ -40,10 +36,10 @@ export function templateMatchesQuery(
   language: string
 ): boolean {
   return (
-    textIncludesQuery(getTemplateTitleText(template.title, language), query) ||
+    textIncludesQuery(getLocalizedText(template.title, language), query) ||
     textIncludesQuery(template.fun, query) ||
     textIncludesQuery(template.name, query) ||
-    textIncludesQuery(getTemplateDescriptionText(template.description, language), query)
+    textIncludesQuery(getLocalizedText(template.description, language), query)
   );
 }
 

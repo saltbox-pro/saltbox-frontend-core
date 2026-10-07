@@ -108,6 +108,7 @@ export const TemplateSourceListEntry = observer(
               canConnect={view.canConnect}
               canSync={view.canSync}
               canUnplug={view.canUnplug}
+              canUpdateContent={view.canUpdateContent}
               showDelete={view.showDelete}
               messageApi={messageApi}
             />

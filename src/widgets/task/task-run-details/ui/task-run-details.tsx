@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { EditableTtl } from "saltbox-core/features/job-ttl";
 import { OpenRelatedJobsButton } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator";
 import type { TaskStore } from "saltbox-core/store";
 
 import { TaskDetailItem } from "./task-detail-item";
@@ -51,7 +51,7 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
     <Flex className={styles.taskDetailsContainer} align="center" wrap gap="middle">
       {taskStore.task ? (
         <TaskStatusIndicator
-          status={taskStore.task.status?.type ?? "none"}
+          status={taskStore.task.status?.type}
           reason={taskStore.task.status?.data?.reason}
           size="prominent"
         />

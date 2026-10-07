@@ -1,11 +1,10 @@
 import type { TaskTemplatePublicSchema } from "@saltbox/saltbox-core-api-client";
-import { InfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { InfoDrawer, getLocalizedText } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
 import { useConfirmDeleteTemplate } from "saltbox-core/features/template-source-ui";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 
 import type { SourceTemplateActionsPermissions } from "../helpers/source-template-actions";
 import type { TemplatePreviewStore } from "../store/template-preview-store";
@@ -39,7 +38,7 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
     <InfoDrawer
       open={open}
       drawerId={DRAWER_IDS.templatePreview}
-      titleName={getTemplateTitleText(template?.title, i18n.language) || template?.name}
+      titleName={getLocalizedText(template?.title, i18n.language) || template?.name}
       titleLabel={t("configuration-templates.source.preview-drawer-title")}
       loading={open && store.isLoading}
       loaders={[store.previewLoad]}

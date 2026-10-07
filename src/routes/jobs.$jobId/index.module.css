@@ -117,6 +117,10 @@
   gap: calc(var(--app-layout-gap, 16px) / 2);
 }
 
+.toolbarActions :global(button) {
+  margin-right: 0;
+}
+
 .switchWrapper {
   align-items: center;
   gap: 8px;

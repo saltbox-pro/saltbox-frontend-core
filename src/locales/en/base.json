@@ -21,7 +21,6 @@
     "table-total-memory": "Total Memory",
     "table-created": "Created",
     "table-last-activity": "Last Activity",
-    "export": "Export",
     "table-running": "Running",
     "table-stopped": "Stopped",
     "table-finished": "Finished",
@@ -56,27 +55,43 @@
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
-      "categories": {
-        "local_groups": "Local Groups",
-        "storages": "Physical disks",
-        "softwares": "Software",
-        "bios": "BIOS",
-        "cpus": "CPUs",
-        "hardware": "Hardware",
-        "inputs": "Inputs",
-        "drives": "Logical disks",
-        "networks": "Networks",
-        "local_users": "Local Users",
-        "batteries": "Batteries",
-        "controllers": "Controllers",
-        "memories": "Memories",
-        "slots": "Slots",
-        "sounds": "Sounds",
-        "usbdevices": "USB Devices",
-        "videos": "Video Adapters",
-        "virtualmachines": "Virtual Machines",
-        "monitors": "Monitors",
-        "printers": "Printers"
+      "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
+      "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
+      "export-scope-collection": "all extra data records of the \"{{category}}\" category for all clients in the collection that match the current search",
+      "export-subject": "extra data",
+      "add-data": "Add extra data",
+      "delete-item": {
+        "modal-title": "Delete extra data",
+        "modal-text": "Are you sure you want to delete the record from category \"{{name}}\"?",
+        "more-fields": "More fields: {{count}}",
+        "success": "Record deleted from category \"{{name}}\"",
+        "error": "Failed to delete record"
+      },
+      "item-form": {
+        "create-title": "Adding extra data",
+        "edit-title": "Editing extra data",
+        "category-placeholder": "Select category",
+        "category-required": "Select a category",
+        "categories-error": "Failed to load categories",
+        "no-categories": "No categories allow manual extra data entry",
+        "no-fields": "The category has no fields. Add them in the category settings",
+        "unsupported-type": "This field type is not supported for manual input",
+        "empty-error": "Fill in at least one field",
+        "change-category": {
+          "title": "Changing category",
+          "content": "Filled field values will be reset. Change the category?",
+          "ok": "Change"
+        },
+        "invalid-json": {
+          "list": "Enter a valid JSON array",
+          "dict": "Enter a valid JSON object"
+        },
+        "create-success": "Extra data successfully added to category \"{{name}}\"",
+        "update-success": "Extra data in category \"{{name}}\" successfully saved",
+        "scope-selected": "Extra data will be added to selected minions: {{count}}",
+        "bulk-success": "Extra data successfully added to category \"{{name}}\" for selected minions: {{count}}",
+        "bulk-partial": "Extra data was added to category \"{{name}}\" only partially. Failed for {{failed}} of {{total}} minions",
+        "error": "Failed to add extra data"
       }
     },
     "minion-id": "Minion ID",
@@ -135,7 +150,10 @@
     "network-interfaces": "Network Interfaces",
     "network": "Network",
     "value": "Value",
-    "error-on-csv-download": "Error on CSV download",
+    "export-subject": "minions",
+    "export-scope": "all minions that match the current filters",
+    "export-scope-selected": "all selected minions",
+    "actions-select-items": "Select minions",
     "never-synced": "never",
     "efi-yes": "Yes",
     "efi-no": "No",
@@ -482,6 +500,106 @@
     "show-details": "Policy Parameters",
     "details-title": "Policy Details"
   },
+  "extra-data-categories": {
+    "title": "Extra data categories",
+    "add-category": "Add category",
+    "add-field": "Add field",
+    "fields-title": "Category fields",
+    "fields-empty": "No fields",
+    "name-forbidden-characters": "Field name must not contain \".\" or start with \"$\"",
+    "system-category-readonly": "System categories are read-only",
+    "category-editor": {
+      "success": "Category changes saved",
+      "error": "Failed to save category changes"
+    },
+    "fields-manager": {
+      "error": "Failed to update category fields"
+    },
+    "create-field": {
+      "success": "Field \"{{name}}\" created",
+      "error": "Failed to create field \"{{name}}\""
+    },
+    "order-fields": {
+      "success": "Field order updated",
+      "error": "Failed to update field order",
+      "drag": "Drag to reorder"
+    },
+    "delete-field": {
+      "modal-title": "Deleting field",
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in client extra data will be permanently deleted",
+      "success": "Field \"{{name}}\" deleted",
+      "error": "Failed to delete field \"{{name}}\""
+    },
+    "delete": {
+      "modal-title": "Deleting category",
+      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related client data will be deleted",
+      "success": "Category \"{{name}}\" deleted",
+      "error": "Failed to delete category \"{{name}}\""
+    },
+    "attributes": {
+      "name": "Name",
+      "description": "Description",
+      "type": "Type",
+      "origin": "Origin",
+      "manual-data-allowed": "Manual entry",
+      "single-item": "Single record",
+      "fields-count": "Fields",
+      "extra-fields-policy": "Extra fields policy",
+      "created": "Created",
+      "modified": "Modified"
+    },
+    "extra-fields-policies": {
+      "ignore": "Ignore",
+      "save_to_category": "Save to category",
+      "save_to_minion": "Save to client"
+    },
+    "create": {
+      "modal-title": "Adding category",
+      "field-title": "Name",
+      "field-title-placeholder": "Enter name",
+      "field-title-required": "Category name is required",
+      "field-name": "System name",
+      "field-name-placeholder": "Enter system name",
+      "field-name-required": "System name is required",
+      "field-name-unique": "A category with this system name already exists",
+      "field-description": "Description",
+      "field-description-placeholder": "Enter description",
+      "field-single-item": "Single record",
+      "field-single-item-tooltip": "A client will have only one record in this category. Adding data again will overwrite the existing record",
+      "submit": "Create",
+      "success": "Category \"{{name}}\" created successfully",
+      "error": "Failed to create category"
+    },
+    "field-form": {
+      "field-name-placeholder": "Enter field name",
+      "field-name-required": "Field name is required",
+      "field-name-unique": "A field with this name already exists in the category",
+      "field-type-placeholder": "Select types",
+      "field-type-required": "Select at least one type"
+    },
+    "field-types": {
+      "str": "Text",
+      "int": "Number",
+      "float": "Number (float)",
+      "bool": "Boolean",
+      "none": "None",
+      "list": "List",
+      "dict": "Object",
+      "bytes": "Bytes",
+      "datetime": "Date and time"
+    },
+    "table": {
+      "empty": "No extra data categories"
+    },
+    "category-types": {
+      "static": "Static",
+      "aggregated": "Aggregated"
+    },
+    "origins": {
+      "system": "System",
+      "user": "User"
+    }
+  },
   "masters": {
     "title": "Masters",
     "table-master-id": "Master ID",
@@ -507,7 +625,8 @@
     "error-on-change-master-status": "Error on change master status"
   },
   "master": {
-    "tab-salt-keys-title": "Master Minions",
+    "tab-jobs-title": "Jobs",
+    "tab-salt-keys-title": "Client keys",
     "table-minion-id": "Minion ID",
     "table-status": "Status",
     "table-status-unaccepted": "Unaccepted",
@@ -676,11 +795,9 @@
     "table-view": "Table",
     "table-view-info-total": "Showing {{count}} Job Return.",
     "table-view-info-success-only": "Only successfully completed Job Return are shown in the table",
-    "table-view-export-error": "Failed to export Job Return table to CSV",
     "table-view-pagination-total-label": "Total successful Job Return:",
-    "export-to-csv-title": "Export to CSV",
-    "export-to-csv-warning": "The CSV file will include all successfully completed Job Return for this command. It is generated on the server at export time and may differ from what is currently shown in the table",
-    "download-to-csv": "Download to CSV",
+    "export-scope": "all successfully completed Job Return for this command",
+    "export-subject": "Job Return table",
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-empty": "No data available",
     "empty-for-period": "No data for {{period}}",
@@ -779,12 +896,7 @@
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
     "create-subcollection": "Create subcollection",
-    "reset-changes": "Reset",
-    "tooltip-no-changes": "Make changes to the collection first",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
-    "unsaved-title": "Unsaved changes",
-    "unsaved-content": "Changes have not been saved and will be lost. Close editing?",
-    "unsaved-leave": "Close",
     "edit-structure": "Edit structure",
     "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
@@ -1039,6 +1151,13 @@
     "delete": "Delete",
     "edit": "Edit",
     "save": "Save",
+    "reset": "Reset",
+    "no-changes-to-save": "No changes to save",
+    "unsaved-changes": {
+      "title": "Unsaved changes",
+      "content": "Changes have not been saved and will be lost. Close editing?",
+      "leave": "Close"
+    },
     "no-data": "No data",
     "export": "Export",
     "refresh": "Refresh",
@@ -1160,7 +1279,8 @@
     },
     "warning-action": {
       "connect-source": "connect a source",
-      "sync-source": "sync a source"
+      "sync-source": "sync a source",
+      "update-source": "update a source"
     },
     "sync-gitlab-sources-error": "Failed to get network sources",
     "sync-gitlab-sources-success": "Network sources have been retrieved",
@@ -1342,6 +1462,42 @@
       "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
       "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?\n\nThe source will be removed from the system. Related templates and files will become unavailable. This action cannot be undone"
+    },
+    "source-update": {
+      "button": "Update",
+      "title": "Update source \"{{name}}\"",
+      "archive-file": "Archive with the new source version",
+      "check": "Check",
+      "checking": "Checking for changes…",
+      "check-retry": "Check again",
+      "check-error": "Failed to check source changes",
+      "up-to-date-title": "Source is up to date",
+      "up-to-date-description": "There are no new changes",
+      "files-title": "Changed files",
+      "templates-title": "Affected templates",
+      "templates-empty": "Changes do not affect templates",
+      "tasks-title": "Tasks",
+      "policies-title": "Policies",
+      "scheduler-tag": "Scheduler",
+      "stop-dependents": "Stop related tasks and policies ({{count}})",
+      "dependents-warning": "The list of related tasks and policies reflects the moment of the check. It will be recalculated during the update, and the current tasks and policies will be stopped.",
+      "apply": "Update",
+      "recheck": "Check again",
+      "close": "Close",
+      "apply-error": "Failed to update source",
+      "apply-success": "Source \"{{name}}\" has been updated",
+      "apply-success-stopped": "Source \"{{name}}\" has been updated. Tasks and policies stopped: {{count}}",
+      "error-conflict": "The source has changed since the check. Check the changes again.",
+      "error-locked": "Another operation is already running for this source. Try again later.",
+      "change-type": {
+        "A": "Added",
+        "D": "Deleted",
+        "M": "Modified",
+        "R": "Renamed",
+        "C": "Copied",
+        "T": "Type changed",
+        "U": "Unmerged"
+      }
     }
   },
   "aggregated-tasks": {

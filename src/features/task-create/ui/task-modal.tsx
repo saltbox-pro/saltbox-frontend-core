@@ -8,6 +8,7 @@ import {
   notify,
   runMutation,
   TemplateSchemaErrorView,
+  getLocalizedText,
   subscribe,
   unsubscribe,
 } from "@saltbox/saltbox-frontend-common";
@@ -19,10 +20,6 @@ import { useTranslation } from "react-i18next";
 import { taskTemplateService } from "saltbox-core/shared/services/task-template.service";
 import { buildDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
 import { parseTtlValue } from "saltbox-core/shared/utils/job-modal-utils";
-import {
-  getTemplateDescriptionText,
-  getTemplateTitleText,
-} from "saltbox-core/shared/utils/template-localized-text";
 import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
@@ -215,7 +212,7 @@ export const TaskModal = observer(function TaskModal({
   }, [i18n.language, template]);
 
   const templateTitle =
-    getTemplateTitleText(template?.title, i18n.language) || template?.name || template?.fun || "";
+    getLocalizedText(template?.title, i18n.language) || template?.name || template?.fun || "";
 
   const sourceName = selection.kind === "template" ? selection.sourceName : undefined;
 
@@ -336,8 +333,8 @@ export const TaskModal = observer(function TaskModal({
         template
       ),
       templateDescription:
-        getTemplateDescriptionText(template.description ?? null, i18n.language) ||
-        getTemplateTitleText(template.title, i18n.language) ||
+        getLocalizedText(template.description ?? null, i18n.language) ||
+        getLocalizedText(template.title, i18n.language) ||
         template.name ||
         "",
       collectionName,

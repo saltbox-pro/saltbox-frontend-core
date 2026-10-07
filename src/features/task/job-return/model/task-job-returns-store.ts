@@ -223,12 +223,9 @@ export class TaskJobReturnsStore {
 
   @action
   applyJobReturnTtl = (jobReturnId: string, ttl: number | null) => {
-    const index = this.taskJobReturns.findIndex((jobReturn) => jobReturn.id === jobReturnId);
-    if (index === -1) return;
-
-    const next = [...this.taskJobReturns];
-    next[index] = { ...next[index], ttl };
-    this.taskJobReturns = next;
+    this.taskJobReturns = this.taskJobReturns.map((jobReturn) =>
+      jobReturn.id === jobReturnId ? { ...jobReturn, ttl } : jobReturn
+    );
   };
 
   @action

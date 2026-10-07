@@ -1,22 +1,12 @@
-import { SettingOutlined } from "@ant-design/icons";
 import {
+  type ActionDropdownItem,
   ErrorZone,
   RefreshButton,
   SearchInput,
   runMutation,
+  SettingsDropdown,
 } from "@saltbox/saltbox-frontend-common";
-import {
-  type MenuProps,
-  Alert,
-  Button,
-  Dropdown,
-  Empty,
-  Flex,
-  message,
-  Skeleton,
-  Space,
-  Spin,
-} from "antd";
+import { Alert, Empty, Flex, message, Skeleton, Space, Spin } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -90,7 +80,7 @@ export const ConfigurationTemplates = observer(() => {
     return sorted.filter((source) => sourceMatchesQuery(source, query, i18n.language));
   }, [i18n.language, search, store.sortedSources]);
 
-  const settingsMenuItems: MenuProps["items"] = useMemo(
+  const settingsMenuItems: ActionDropdownItem[] = useMemo(
     () => [
       {
         key: "sync-gitlab-sources",
@@ -166,13 +156,7 @@ export const ConfigurationTemplates = observer(() => {
               title={t("configuration-templates.actions.refresh")}
             />
 
-            <Dropdown menu={{ items: settingsMenuItems }} trigger={["click"]}>
-              <Button>
-                <Flex gap={8} align="center">
-                  <SettingOutlined />
-                </Flex>
-              </Button>
-            </Dropdown>
+            <SettingsDropdown menu={{ items: settingsMenuItems }} />
           </Space>
         </Flex>
 

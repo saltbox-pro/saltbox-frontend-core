@@ -1,5 +1,6 @@
 import type { TemplateSourcePublicSchema } from "@saltbox/saltbox-core-api-client";
 
+import { canUpdateSourceContent } from "../../content-update/helpers/can-update-source-content";
 import type { SourceActionState } from "../types/source-action";
 
 import {
@@ -37,6 +38,7 @@ export function getTemplateSourceViewState(
     canConnect,
     canSync: canSync || syncInProgress,
     canUnplug: canUnplug || unplugInProgress,
+    canUpdateContent: canUpdateSourceContent(source),
     showDelete,
     plugInProgress: isActuallyPlugging,
     unplugInProgress,

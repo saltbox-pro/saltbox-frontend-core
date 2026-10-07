@@ -9,7 +9,6 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Button, Flex } from "antd";
-import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
 import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -176,7 +175,7 @@ function MastersPage() {
         <MastersTable
           tableId="core-masters"
           columns={columns}
-          data={toJS(masters)}
+          data={masters}
           isLoading={mastersStore.isLoading}
           onRefresh={() => mastersStore.loadMasters()}
           loader={mastersStore.mastersLoad}

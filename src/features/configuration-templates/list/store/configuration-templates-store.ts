@@ -8,6 +8,12 @@ import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found
 import { sortSources } from "saltbox-core/shared/helpers/sort-sources";
 import { apiCoreStore } from "saltbox-core/store";
 
+import type {
+  ContentUpdateApplyRequest,
+  ContentUpdateApplyResult,
+  ContentUpdateCheckRequest,
+  ContentUpdateCheckResult,
+} from "../../content-update/types/content-update";
 import type { AddSourceFilePayload } from "../../files/types/source-file-payload";
 import { hasConnectedLocalTemplateSource } from "../../shared/helpers/is-connected-local-template-source";
 import {
@@ -116,12 +122,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
       patchOptimisticTask: (sourceId, operation, taskId) =>
         this.patchOptimisticTask(sourceId, operation, taskId),
       applySourceMetadataUpdate: (sourceId, updated) => {
-        const index = this.sources.findIndex((item) => item.id === sourceId);
-        if (index === -1) {
-          return;
-        }
-
-        this.sources[index] = mergeSourceListItemUpdate(this.sources[index], updated);
+        this.sources = this.sources.map((item) =>
+          item.id === sourceId ? mergeSourceListItemUpdate(item, updated) : item
+        );
       },
       removeSource: (sourceId) => this.removeSourceFromList(sourceId),
       reloadSource: (sourceId) => this.reloadSource(sourceId),
@@ -216,10 +219,9 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
     if (refreshResult.status !== "found") return;
 
     runInAction(() => {
-      const index = this.sources.findIndex((item) => item.id === sourceId);
-      if (index === -1) return;
-
-      this.sources[index] = mergeSourceListItemUpdate(this.sources[index], refreshResult.source);
+      this.sources = this.sources.map((item) =>
+        item.id === sourceId ? mergeSourceListItemUpdate(item, refreshResult.source) : item
+      );
     });
   };
 
@@ -335,15 +337,16 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
   };
 
   private patchOptimisticTask = (sourceId: string, operation: SourceOperation, taskId: string) => {
-    const index = this.sources.findIndex((item) => item.id === sourceId);
-    if (index === -1) return;
-
-    this.sources[index] = {
-      ...this.sources[index],
-      current_operation: operation,
-      current_task_id: taskId,
-      last_error: null,
-    };
+    this.sources = this.sources.map((item) =>
+      item.id === sourceId
+        ? {
+            ...item,
+            current_operation: operation,
+            current_task_id: taskId,
+            last_error: null,
+          }
+        : item
+    );
   };
 
   addSourceFile = (sourceId: string, payload: AddSourceFilePayload): Promise<void> =>
@@ -363,6 +366,18 @@ export class ConfigurationTemplatesStore implements ConfigurationTemplatesListSt
 
   deleteSource = (sourceId: string): Promise<ResourceDeleteResult> =>
     this.runtime.deleteSource(sourceId);
+
+  checkSourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateCheckRequest,
+    signal?: AbortSignal
+  ): Promise<ContentUpdateCheckResult> =>
+    this.runtime.checkSourceContentUpdate(sourceId, request, signal);
+
+  applySourceContentUpdate = (
+    sourceId: string,
+    request: ContentUpdateApplyRequest
+  ): Promise<ContentUpdateApplyResult> => this.runtime.applySourceContentUpdate(sourceId, request);
 
   deleteSourceTemplate = (sourceId: string, templateId: string): Promise<void> =>
     this.runtime.deleteSourceTemplate(sourceId, templateId);

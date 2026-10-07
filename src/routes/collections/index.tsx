@@ -1,4 +1,4 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { PageLayout, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { Button, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
@@ -6,13 +6,12 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
-import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 import { findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { CollectionStore, collectionsTreeStore } from "saltbox-core/store";
 import {
   CollectionDetailsDrawer,
-  type CollectionDetailsDrawerCloseGuard,
   type CollectionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/collection-details-drawer";
 import { CollectionsTree } from "saltbox-core/widgets/minions/tree-menu";
@@ -23,10 +22,9 @@ const CollectionsPage = observer(() => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [collectionStore] = useState(() => new CollectionStore());
-  const [createParentSlug, setCreateParentSlug] = useState<string | null>(null);
   const [isStructureEditMode, setIsStructureEditMode] = useState(false);
   const deepLinkHandledRef = useRef<string | null>(null);
-  const closeGuardRef = useRef<CollectionDetailsDrawerCloseGuard | null>(null);
+  const closeGuardRef = useRef<DrawerCloseGuard | null>(null);
 
   const drawer = useInfoDrawer<CollectionDetailsDrawerOpenParams, string, HTMLDivElement>({
     getId: (params) => params.id,
@@ -89,6 +87,16 @@ const CollectionsPage = observer(() => {
     });
   };
 
+  const openCreateDrawer = (parentSlug: string) => {
+    const id = `create:${parentSlug}`;
+    if (drawer.openedId === id) {
+      return;
+    }
+
+    deepLinkHandledRef.current = null;
+    drawer.toggle({ id, slug: parentSlug, isCreate: true });
+  };
+
   return (
     <PageLayout title={t("collection.collections")} className={styles.pageLayout}>
       <div className={styles.treeWrapper}>
@@ -110,10 +118,10 @@ const CollectionsPage = observer(() => {
                     <Button
                       type="text"
                       size="small"
-                      icon={<PlusOutlined />}
+                      icon={<PlusCircleOutlined />}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCreateParentSlug(node.slug);
+                        openCreateDrawer(node.slug);
                       }}
                     />
                   </Tooltip>
@@ -122,7 +130,7 @@ const CollectionsPage = observer(() => {
           showDescription
           className={styles.collectionsTree}
           selectedSlug={
-            !isStructureEditMode && drawer.isOpened
+            !isStructureEditMode && drawer.isOpened && !drawer.openedArg?.isCreate
               ? (collectionStore.collectionSlug ?? drawer.openedArg?.slug ?? null)
               : null
           }
@@ -133,16 +141,7 @@ const CollectionsPage = observer(() => {
         drawer={drawer}
         collectionStore={collectionStore}
         closeGuardRef={closeGuardRef}
-        onCreateSubcollection={setCreateParentSlug}
-      />
-
-      <CollectionCreateModal
-        isOpen={createParentSlug !== null}
-        parentSlug={createParentSlug ?? ""}
-        query={{}}
-        editableFilter
-        navigateAfterCreate={false}
-        onClose={() => setCreateParentSlug(null)}
+        onCreateSubcollection={openCreateDrawer}
       />
     </PageLayout>
   );

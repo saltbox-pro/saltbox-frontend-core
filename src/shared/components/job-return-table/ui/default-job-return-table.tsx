@@ -54,7 +54,6 @@ interface DefaultJobReturnTableProps {
   isTableViewMode?: boolean;
   isLoading?: boolean;
   forceExpand?: boolean;
-  jobStartTimestamp?: Date | null;
   pagination: PaginationState;
   sorting: SortingState;
   total: number;
@@ -78,7 +77,6 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
     isTableViewMode = false,
     isLoading = false,
     forceExpand,
-    jobStartTimestamp,
     pagination,
     sorting,
     total,
@@ -164,12 +162,11 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           ),
           meta: { width: "15%", minWidth: 170 },
         }),
-        columnHelper.display({
+        columnHelper.accessor("duration_ms", {
           header: t("task.job-returns-table.table-execution-duration"),
           cell: ({ row }) => {
             return (
               <ExecutionDuration
-                jobStartTimestamp={jobStartTimestamp?.toISOString()}
                 stamp={row.original.stamp}
                 jobReturn={row.original}
                 jobReturns={jobReturns}
@@ -200,7 +197,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           meta: { width: 200 },
         }),
       ],
-      [handleMinionTtlSubmit, jobReturns, jobStartTimestamp, jobStore.job?.ttl, t]
+      [handleMinionTtlSubmit, jobReturns, jobStore.job?.ttl, t]
     );
 
     const handleRowClick = useCallback(

@@ -52,17 +52,9 @@ export function MasterStatusBadge({ status }: MasterStatusBadgeProps) {
 
   const view = MASTER_STATUS_VIEW[status];
 
-  if (!view) {
-    return (
-      <StatusBadge tone="pending" icon={<QuestionCircleOutlined />}>
-        {`${t("masters.table-unknown-status")}: ${status}`}
-      </StatusBadge>
-    );
-  }
-
   return (
-    <StatusBadge tone={view.tone} icon={view.icon}>
-      {t(view.translationKey)}
+    <StatusBadge tone={view?.tone ?? "pending"} icon={view?.icon ?? <QuestionCircleOutlined />}>
+      {view ? t(view.translationKey) : `${t("masters.table-unknown-status")}: ${status}`}
     </StatusBadge>
   );
 }

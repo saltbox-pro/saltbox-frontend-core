@@ -84,17 +84,9 @@ export function JobReturnStatusTag({ status, retcode }: JobReturnStatusTagProps)
   const { t } = useTranslation();
   const view = resolveJobReturnStatusView(status, retcode);
 
-  if (view) {
-    return (
-      <StatusBadge tone={view.tone} icon={view.icon}>
-        {t(view.translationKey)}
-      </StatusBadge>
-    );
-  }
-
   return (
-    <StatusBadge tone="pending" icon={<QuestionCircleOutlined />}>
-      {status ?? t("task.job-returns-table.status-unknown")}
+    <StatusBadge tone={view?.tone ?? "pending"} icon={view?.icon ?? <QuestionCircleOutlined />}>
+      {view ? t(view.translationKey) : (status ?? t("task.job-returns-table.status-unknown"))}
     </StatusBadge>
   );
 }

@@ -47,17 +47,9 @@ export function SaltKeyStatusTag({ status }: SaltKeyStatusTagProps) {
   const { t } = useTranslation();
   const view = SALT_KEY_STATUS_VIEW[status];
 
-  if (!view) {
-    return (
-      <StatusBadge tone="pending" icon={<QuestionCircleOutlined />}>
-        {`${t("master.table-status-unknown")}: ${status}`}
-      </StatusBadge>
-    );
-  }
-
   return (
-    <StatusBadge tone={view.tone} icon={view.icon}>
-      {t(view.translationKey)}
+    <StatusBadge tone={view?.tone ?? "pending"} icon={view?.icon ?? <QuestionCircleOutlined />}>
+      {view ? t(view.translationKey) : `${t("master.table-status-unknown")}: ${status}`}
     </StatusBadge>
   );
 }

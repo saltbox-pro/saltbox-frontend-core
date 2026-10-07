@@ -89,12 +89,6 @@
 
 .nodeActions {
   flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s ease-in-out;
-}
-
-.collectionsTree :global(.ant-tree-treenode):hover .nodeActions {
-  opacity: 1;
 }
 
 .compact {

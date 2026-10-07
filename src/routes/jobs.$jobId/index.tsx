@@ -1,4 +1,4 @@
-import { DownloadOutlined, ReloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import {
   CreateJobRequestTgtTypeEnum,
   JobModel,
@@ -8,28 +8,19 @@ import {
 import {
   FastTable,
   CopyToClipboardButton,
+  ExportToCsv,
   PageHeader,
   WebSocketMessage,
   WebSocketService,
   AcceptedMastersActionButton,
   ErrorZone,
+  buildCsvExportFilename,
   formatTimeByUserTZ,
   runMutation,
   StatusBadge,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
-import {
-  Button,
-  Flex,
-  Modal,
-  Radio,
-  Skeleton,
-  Spin,
-  Statistic,
-  Tooltip,
-  Typography,
-  message,
-} from "antd";
+import { Flex, Radio, Skeleton, Spin, Statistic, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,7 +33,6 @@ import {
   type JobReplayBaseline,
 } from "saltbox-core/features/job-modal";
 import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
-import { LaunchErrorPopover } from "saltbox-core/routes/jobs/-components/launch-error-popover";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
 import {
@@ -50,8 +40,8 @@ import {
   JOB_RETURN_STATUS_VIEW,
 } from "saltbox-core/shared/components/job-return";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
-import { downloadJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/download-job-returns-table-csv.service";
-import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge/job-status-badge";
+import { exportJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/export-job-returns-table-csv.service";
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge";
 import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
@@ -69,6 +59,7 @@ type JobWebSocketMessage = JobModel | JobReturnModel;
 
 const JobPage = observer(() => {
   const { t } = useTranslation();
+  const { t: tCommon } = useTranslation("common");
   const { jobId } = useParams();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
@@ -77,8 +68,6 @@ const JobPage = observer(() => {
   const [webSocketService] = useState(() => new WebSocketService<JobWebSocketMessage>());
   const [isWebSocketConnecting, setIsWebSocketConnecting] = useState(false);
   const [viewMode, setViewMode] = useState<JobViewMode>("standard");
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isTableExportLoading, setIsTableExportLoading] = useState(false);
 
   const isFullOutput = viewMode === "detailed";
   const isTableViewMode = viewMode === "table";
@@ -98,13 +87,11 @@ const JobPage = observer(() => {
     setRepeatConfigureFun(null);
     setRepeatPickerOpen(false);
     setRepeatBaseline(null);
-    setIsExportModalOpen(false);
   }, [jobId]);
 
   const effectiveJobReturns = jobId && jobStore.jobId === jobId ? jobStore.jobReturns : [];
   const statusCounts = jobStore.jobReturnStatusCounts;
   const isTableViewAvailable = statusCounts.success > 0;
-  const showExportButton = isTableViewAvailable;
 
   const formatJobDuration = (seconds: number): string => {
     return formatExecutionTime(seconds, t);
@@ -226,28 +213,25 @@ const JobPage = observer(() => {
 
   const handleExportToCsv = useCallback(async () => {
     if (!jobId) {
-      return;
+      return false;
     }
-
-    setIsTableExportLoading(true);
 
     const result = await runMutation({
       run: () =>
-        downloadJobReturnsTableCsv(
+        exportJobReturnsTableCsv(
           {
             ...jobStore.mongoDBQuery,
             job_id: jobId,
           },
-          `job-returns-${jobStore.job?.jid ?? jobId}-${Date.now()}.csv`
+          buildCsvExportFilename(`export_job_returns_${jobStore.job?.jid ?? jobId}`)
         ),
-      errorMessage: t("jobs.table-view-export-error"),
+      errorMessage: tCommon("export-to-csv.error", {
+        subject: t("jobs.export-subject"),
+      }),
     });
 
-    setIsTableExportLoading(false);
-    if (result.ok) {
-      setIsExportModalOpen(false);
-    }
-  }, [jobId, t]);
+    return result.ok;
+  }, [jobId, t, tCommon]);
 
   useEffect(() => {
     if (!jobId) {
@@ -312,14 +296,11 @@ const JobPage = observer(() => {
         <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
           <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
             <div className={styles.jobDetailItem}>
-              {jobStore.job?.status === JobStatus.LaunchError && jobStore.job.launch_error_type ? (
-                <LaunchErrorPopover
-                  errorTypeText={jobStore.job.launch_error_type}
-                  size="prominent"
-                />
-              ) : (
-                <JobStatusBadge status={jobStore.job?.status} size="prominent" />
-              )}
+              <JobStatusBadge
+                status={jobStore.job?.status}
+                size="prominent"
+                launchErrorType={jobStore.job?.launch_error_type}
+              />
             </div>
 
             <div className={styles.jobDetailItem}>
@@ -509,7 +490,6 @@ const JobPage = observer(() => {
                     isFullOutput={isFullOutput}
                     isStepsView={isStepsViewMode}
                     isTableViewMode={isTableViewMode}
-                    jobStartTimestamp={jobStore.jobStartTimestamp}
                     pagination={isTableViewMode ? jobStore.tablePagination : jobStore.pagination}
                     sorting={jobStore.sorting}
                     total={isTableViewMode ? jobStore.jobReturnTableTotal : jobStore.total}
@@ -544,15 +524,12 @@ const JobPage = observer(() => {
                             })}
                           </Flex>
                           <Flex align="center" className={styles.toolbarActions}>
-                            {showExportButton && (
-                              <Tooltip title={t("jobs.download-to-csv")}>
-                                <Button
-                                  type="primary"
-                                  icon={<DownloadOutlined />}
-                                  loading={isTableExportLoading}
-                                  onClick={() => setIsExportModalOpen(true)}
-                                />
-                              </Tooltip>
+                            {isTableViewAvailable && (
+                              <ExportToCsv
+                                key={jobId}
+                                scope={t("jobs.export-scope")}
+                                onExport={handleExportToCsv}
+                              />
                             )}
                             <Radio.Group
                               value={viewMode}
@@ -595,18 +572,6 @@ const JobPage = observer(() => {
           )}
         </Flex>
       </ErrorZone>
-
-      <Modal
-        title={t("jobs.export-to-csv-title")}
-        open={isExportModalOpen}
-        onOk={handleExportToCsv}
-        onCancel={() => setIsExportModalOpen(false)}
-        okText={t("common.export")}
-        cancelText={t("common.cancel")}
-        confirmLoading={isTableExportLoading}
-      >
-        <span>{t("jobs.export-to-csv-warning")}</span>
-      </Modal>
     </>
   );
 });

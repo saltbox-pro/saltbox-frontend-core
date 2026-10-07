@@ -299,15 +299,14 @@ export class TaskStore {
       const task = await promise;
       runInAction(() => {
         this.task = task;
-        const index = this.minions.findIndex((m) => m.minion_inner_id === minionInnerId);
-        if (index > -1) {
-          const minion = this.minions[index];
-          this.minions[index] = {
-            ...minion,
-            status: TaskMinionStatus.Pending,
-          };
-          this.minions = [...this.minions];
-        }
+        this.minions = this.minions.map((item) =>
+          item.minion_inner_id === minionInnerId
+            ? {
+                ...item,
+                status: TaskMinionStatus.Pending,
+              }
+            : item
+        );
       });
     } finally {
       runInAction(() => {
@@ -381,11 +380,9 @@ export class TaskStore {
 
   @action
   updateMinion = (minion: TaskMinionListResponse) => {
-    const index = this.minions.findIndex((item) => item.minion_inner_id === minion.minion_inner_id);
-    if (index > -1) {
-      this.minions[index] = minion;
-      this.minions = [...this.minions];
-    }
+    this.minions = this.minions.map((item) =>
+      item.minion_inner_id === minion.minion_inner_id ? minion : item
+    );
     this.taskJobReturnsStore.syncDrawerMinionFromTaskMinion(minion);
   };
 

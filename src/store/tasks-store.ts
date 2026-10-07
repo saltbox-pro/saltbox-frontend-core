@@ -87,10 +87,9 @@ export class TasksStore {
   }
 
   @action updateTask = (task: TaskModel) => {
-    const index = this.tasks.findIndex((item) => item.id === task.id);
-    if (index > -1) {
-      this.tasks[index] = task;
-      this.tasks = [...this.tasks];
+    const exists = this.tasks.some((item) => item.id === task.id);
+    if (exists) {
+      this.tasks = this.tasks.map((item) => (item.id === task.id ? task : item));
     } else if (this.pagination.pageIndex === 0 && !this.hasActiveFilters) {
       let newTasks = [task, ...this.tasks];
       if (newTasks.length > this.pagination.pageSize) {

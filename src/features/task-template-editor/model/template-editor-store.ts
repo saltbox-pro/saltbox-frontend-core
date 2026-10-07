@@ -5,7 +5,7 @@ import {
   type VisualEditorCompatibilityResult,
 } from "@saltbox/react-jsonschema-form-generator";
 import type {
-  TaskTemplateMetaSchemaInput,
+  TaskTemplateMetaSchema,
   TaskTemplatePublicWithContentSchema,
 } from "@saltbox/saltbox-core-api-client";
 import { createLoader } from "@saltbox/saltbox-frontend-common";
@@ -472,7 +472,7 @@ export class TemplateEditorStore {
     const payloadMeta = {
       ...meta,
       fun: normalizedFun,
-    } as unknown as TaskTemplateMetaSchemaInput;
+    } as unknown as TaskTemplateMetaSchema;
 
     runInAction(() => {
       this.isSaving = true;

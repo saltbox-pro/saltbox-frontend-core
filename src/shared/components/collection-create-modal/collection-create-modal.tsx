@@ -12,12 +12,8 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
+import { isDuplicateTitleError } from "saltbox-core/shared/helpers/is-duplicate-title-error";
 import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
-
-const isDuplicateTitleError = (error: AppError): boolean =>
-  error.status === 409 ||
-  ((error.status === 400 || error.status === 422) &&
-    Boolean(error.serverMessage?.includes("Duplicate key")));
 
 type collectionCreateFormType = {
   title: string;

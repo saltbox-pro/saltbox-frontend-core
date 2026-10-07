@@ -2,7 +2,6 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   LoadingOutlined,
-  QuestionCircleOutlined,
   StopOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
@@ -17,7 +16,7 @@ import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 export interface TaskStatusIndicatorProps {
-  status?: TaskStatus | "none";
+  status?: TaskStatus;
   reason?: string;
   size?: StatusBadgeSize;
 }
@@ -29,10 +28,9 @@ type StatusView = {
 };
 
 const spinningIcon = <Spin indicator={<LoadingOutlined spin />} size="small" />;
-
 const TTL_STOP_REASON = "timeout";
 
-const TASK_STATUS_VIEW: Record<TaskStatus | "none", StatusView> = {
+const TASK_STATUS_VIEW: Record<TaskStatus, StatusView> = {
   [TaskStatus.Created]: {
     tone: "pending",
     icon: <ClockCircleOutlined />,
@@ -63,44 +61,37 @@ const TASK_STATUS_VIEW: Record<TaskStatus | "none", StatusView> = {
     icon: spinningIcon,
     translationKey: "task.wait-minions",
   },
-  none: {
-    tone: "pending",
-    icon: <QuestionCircleOutlined />,
-    translationKey: "task.unknown",
-  },
 };
 
-const TTL_STOP_STATUS_VIEW: Partial<Record<TaskStatus, StatusView>> = {
+const TTL_STOP_VIEW: Partial<Record<TaskStatus, Pick<StatusView, "icon" | "translationKey">>> = {
   [TaskStatus.Stopping]: {
-    tone: "active",
     icon: spinningIcon,
     translationKey: "task.stopping-by-ttl",
   },
   [TaskStatus.Stopped]: {
-    tone: "warning",
     icon: <WarningOutlined />,
     translationKey: "task.stopped-by-ttl",
   },
 };
 
-export const TaskStatusIndicator = ({ status, reason, size }: TaskStatusIndicatorProps) => {
+export function TaskStatusIndicator({ status, reason, size }: TaskStatusIndicatorProps) {
   const { t } = useTranslation();
 
   if (!status) {
     return <Skeleton.Input size="small" />;
   }
 
-  const view =
-    (reason === TTL_STOP_REASON && status !== "none" ? TTL_STOP_STATUS_VIEW[status] : undefined) ??
-    TASK_STATUS_VIEW[status];
+  const view = TASK_STATUS_VIEW[status];
 
   if (!view) {
     return <Skeleton.Input size="small" />;
   }
 
+  const ttlView = reason === TTL_STOP_REASON ? TTL_STOP_VIEW[status] : undefined;
+
   return (
-    <StatusBadge tone={view.tone} size={size} icon={view.icon}>
-      {t(view.translationKey)}
+    <StatusBadge tone={view.tone} size={size} icon={ttlView?.icon ?? view.icon}>
+      {t(ttlView?.translationKey ?? view.translationKey)}
     </StatusBadge>
   );
-};
+}

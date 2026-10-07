@@ -1,7 +1,6 @@
-import { EditOutlined, SaveOutlined, SettingOutlined } from "@ant-design/icons";
+import { EditOutlined, SaveOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import {
-  Dropdown,
   ErrorZone,
   FilterToggleButton,
   generateIdsForQuery,
@@ -10,9 +9,10 @@ import {
   PageHeader,
   resolvePluginLocalizedLabel,
   runMutation,
+  SettingsDropdown,
   useFiltersToggle,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Flex, Tabs } from "antd";
+import { Flex, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import {
   ComponentProps,
@@ -401,13 +401,7 @@ const MinionsPage = observer(() => {
                           onToggle={toggleShownMinionsFilters}
                         />
 
-                        <Dropdown menu={{ items: collectionMenuItems }} trigger={["click"]}>
-                          <Button>
-                            <Flex gap={8}>
-                              <SettingOutlined />
-                            </Flex>
-                          </Button>
-                        </Dropdown>
+                        <SettingsDropdown menu={{ items: collectionMenuItems }} />
                       </>
                     )}
                   </Flex>

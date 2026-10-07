@@ -8,6 +8,7 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  getLocalizedText,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { observer } from "mobx-react";
@@ -16,7 +17,6 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 
 import { TaskMinions } from "saltbox-core/shared/components/task/task-minions";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { apiCoreStore, appStore, TaskStore } from "saltbox-core/store";
 import { TaskMinionStatusFilter } from "saltbox-core/widgets/task/task-minions-status-filter";
 import { TaskRunDetails } from "saltbox-core/widgets/task/task-run-details";
@@ -80,7 +80,7 @@ const TaskPage = observer(() => {
       <PageHeader
         title={t("task.page-title", {
           templateName:
-            getTemplateTitleText(taskStore.task?.task_template?.title, i18n.language) ||
+            getLocalizedText(taskStore.task?.task_template?.title, i18n.language) ||
             taskStore.task?.task_template?.name ||
             "...",
           taskId: taskId ?? "...",

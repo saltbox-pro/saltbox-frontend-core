@@ -31,6 +31,7 @@ type JobModalShellProps = {
   onTargetingChange: (next: JobModalTargeting) => void;
   repeatBaseline?: JobReplayBaseline | null;
   onAfterConfigureClose?: () => void;
+  fixedMaster?: string;
 };
 
 export const JobModalShell = ({
@@ -42,6 +43,7 @@ export const JobModalShell = ({
   onTargetingChange,
   repeatBaseline,
   onAfterConfigureClose,
+  fixedMaster,
 }: JobModalShellProps) => {
   const jsonFormByKeyRef = useRef<Record<string, unknown>>({});
   const appliedRepeatTemplateRef = useRef<string | null>(null);
@@ -186,6 +188,7 @@ export const JobModalShell = ({
           target={targeting.target}
           targetType={targeting.targetType}
           defaultMaster={targeting.defaultMaster}
+          fixedMaster={fixedMaster}
           initialTtlSeconds={targeting.ttlSeconds}
           fun={jobModalFun}
           sourceId={pickedTemplate?.sourceId}

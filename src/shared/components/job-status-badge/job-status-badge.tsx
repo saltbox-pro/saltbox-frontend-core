@@ -15,10 +15,12 @@ import { Skeleton, Spin } from "antd";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { LaunchErrorPopover } from "./launch-error-popover";
+
 type JobStatusBadgeProps = {
   status?: JobStatus | null;
   size?: StatusBadgeSize;
-  className?: string;
+  launchErrorType?: string | null;
 };
 
 type JobStatusView = {
@@ -52,7 +54,7 @@ const JOB_STATUS_VIEW: Record<JobStatus, JobStatusView> = {
   },
 };
 
-export function JobStatusBadge({ status, size, className }: JobStatusBadgeProps) {
+export function JobStatusBadge({ status, size, launchErrorType }: JobStatusBadgeProps) {
   const { t } = useTranslation();
 
   if (!status) {
@@ -60,23 +62,19 @@ export function JobStatusBadge({ status, size, className }: JobStatusBadgeProps)
   }
 
   const view = JOB_STATUS_VIEW[status];
-
-  if (!view) {
-    return (
-      <StatusBadge
-        className={className}
-        tone="pending"
-        size={size}
-        icon={<QuestionCircleOutlined />}
-      >
-        {`${t("jobs.table-status-unknown")}: ${status}`}
-      </StatusBadge>
-    );
-  }
-
-  return (
-    <StatusBadge className={className} tone={view.tone} size={size} icon={view.icon}>
-      {t(view.translationKey)}
+  const badge = (
+    <StatusBadge
+      tone={view?.tone ?? "pending"}
+      size={size}
+      icon={view?.icon ?? <QuestionCircleOutlined />}
+    >
+      {view ? t(view.translationKey) : `${t("jobs.table-status-unknown")}: ${status}`}
     </StatusBadge>
   );
+
+  if (status === JobStatus.LaunchError && launchErrorType) {
+    return <LaunchErrorPopover errorTypeText={launchErrorType}>{badge}</LaunchErrorPopover>;
+  }
+
+  return badge;
 }

@@ -3,9 +3,15 @@ import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common
 import type { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable } from "mobx";
 
+import { getPageIndexAfterDelete } from "saltbox-core/shared/helpers/get-page-index-after-delete";
+import {
+  type ExtraDataCategoryUpdatePatch,
+  mergeExtraDataCategoryUpdate,
+} from "saltbox-core/shared/helpers/merge-extra-data-category-update";
+
 import { apiCoreStore } from "./api-core-store";
 
-const DEFAULT_SORTING: SortingState = [{ id: "name", desc: false }];
+const DEFAULT_SORTING: SortingState = [{ id: "created", desc: true }];
 const PAGE_SIZE = 50;
 
 export type ExtraDataCategoriesStoreOptions = {
@@ -77,6 +83,31 @@ export class ExtraDataCategoriesStore {
       pageIndex: 0,
       pageSize: this.pagination.pageSize,
     };
+  };
+
+  @action
+  reloadFromFirstPage = (): void => {
+    this.pagination = { ...this.pagination, pageIndex: 0 };
+    this.loadCategories();
+  };
+
+  @action
+  replaceCategory = (
+    updated: ExtraDataCategoryModel,
+    patch: ExtraDataCategoryUpdatePatch = "all"
+  ): void => {
+    this.categories = this.categories.map((category) =>
+      category.id === updated.id ? mergeExtraDataCategoryUpdate(category, updated, patch) : category
+    );
+  };
+
+  @action
+  reloadAfterCategoryDeleted = (): void => {
+    this.pagination = {
+      ...this.pagination,
+      pageIndex: getPageIndexAfterDelete(this.pagination.pageIndex, this.categories.length),
+    };
+    this.loadCategories();
   };
 
   loadCategories = (): void => {
