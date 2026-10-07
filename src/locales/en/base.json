@@ -192,6 +192,7 @@
       "master": "Master",
       "last_activity": "Last Activity",
       "last_activity_seconds": "Seconds From Last Activity",
+      "extra": "Extra aggregated data",
       "grains": {
         "host": "Host",
         "fqdn": "FQDN",
@@ -204,9 +205,9 @@
         "mem_total": "Total Memory",
         "swap_total": "Total Swap",
         "num_gpus": "Number of GPUs",
-        "os": "OS",
+        "os": "OS Name",
         "osfullname": "OS Full Name",
-        "osfinger": "OS Fingerprint",
+        "osfinger": "OS",
         "osrelease": "OS Release",
         "osrelease_info": "OS Release Info",
         "oscodename": "OS Codename",
@@ -250,12 +251,12 @@
         "pythonexecutable": "Python Executable",
         "pythonpath": "Python Path",
         "saltpath": "Salt Path",
-        "saltversion": "Salt Version",
+        "saltversion": "Minion Version",
         "zmqversion": "ZeroMQ Version",
         "shell": "Shell",
         "transactional": "Transactional",
         "efi": "EFI",
-        "efi_secure_boot": "EFI Secure Boot",
+        "efi_secure_boot": "Secure boot",
         "username": "Username",
         "groupname": "Group Name",
         "pid": "PID",
@@ -265,7 +266,8 @@
         "zfs_feature_flags": "ZFS Feature Flags",
         "lvm": "LVM"
       }
-    }
+    },
+    "filter-extra-data-field": "Extra data field \"{{path}}\""
   },
   "mainmenu": {
     "popover-language-title": "Change Language",
