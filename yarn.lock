@@ -1600,10 +1600,15 @@
   resolved "https://registry.yarnpkg.com/@leichtgewicht/ip-codec/-/ip-codec-2.0.5.tgz#4fc56c15c580b9adb7dc3c333a134e540b44bfb1"
   integrity sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==
 
-"@material-symbols/font-300@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@material-symbols/font-300/-/font-300-0.38.0.tgz#5557e990ed47a2bdb80c50dd9fd48e3c9b3b7d48"
-  integrity sha512-/3+SwFB5sAjKQNXsjAUIZJu8Y/AveMgj8UiicjsXkegQKeEL5A2eSrqimPNO6ouDBY+Apa2yaqDbxoIaAsAJyg==
+"@material-symbols-svg/metadata@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@material-symbols-svg/metadata/-/metadata-0.14.0.tgz#87f500b83be235059fa2ebafe1acc541a5921cb0"
+  integrity sha512-tWKCKGu16hAh/oNfvLnOepf54zIgGiM9/i6THFOOPwMMGWtC1N4L/8UfC7USYtK/KflJf5Juts4YYBsMMamONQ==
+
+"@material-symbols/font-300@^0.47.6":
+  version "0.47.6"
+  resolved "https://registry.yarnpkg.com/@material-symbols/font-300/-/font-300-0.47.6.tgz#9ecbb34f9038f64a90eb81ad042772c7ba8f6820"
+  integrity sha512-LcLNOIeO7gNWQMxnL3U645lSxQDKRSG94jqedzC90345xNJpVF/EncIyqb+uskARA3jodMBpbLa+zx9LFnzZFg==
 
 "@monaco-editor/loader@^1.5.0":
   version "1.7.0"
@@ -2204,17 +2209,18 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/113/packages/npm/@saltbox/saltbox-audit-api-client/-/@saltbox/saltbox-audit-api-client-0.3.0-f9534d71d72b848cba2cf014824e0ea235036977.tgz#09ff23f7a8fd32578668b8dc8caa0c49eda14086"
   integrity sha1-Cf8j96j9MleGaLjcjKoMSe2hQIY=
 
-"@saltbox/saltbox-core-api-client@^0.3.0-2ab4158453f3406f9acc40737c4e47060e4c2910":
-  version "0.3.0-2ab4158453f3406f9acc40737c4e47060e4c2910"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-2ab4158453f3406f9acc40737c4e47060e4c2910.tgz#f9396b4c364cba8144d769fa4713d121ca795ed8"
-  integrity sha1-+TlrTDZMuoFE12n6RxPRIcp5Xtg=
+"@saltbox/saltbox-core-api-client@^0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84":
+  version "0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84.tgz#5c7aa2f1096fa5022ffc5925de33727693d0336a"
+  integrity sha1-XHqi8QlvpQIv/Fkl3jNydpPQM2o=
 
-"@saltbox/saltbox-frontend-common@^0.6.3":
-  version "0.6.3"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.3.tgz#0abd432d6ec339006e63ceae4a7833a65c574d92"
-  integrity sha1-Cr1DLW7DOQBuY86uSngzplxXTZI=
+"@saltbox/saltbox-frontend-common@^0.6.6":
+  version "0.6.6"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.6.tgz#c88e933f7a3c6fb67cc0e7b0e2049b0023ef42a2"
+  integrity sha1-yI6TP3o8b7Z8wOew4gSbACPvQqI=
   dependencies:
-    "@material-symbols/font-300" "^0.38.0"
+    "@material-symbols-svg/metadata" "^0.14.0"
+    "@material-symbols/font-300" "^0.47.6"
     "@monaco-editor/react" "^4.7.0"
     "@react-querybuilder/antd" "^8.11.1"
     "@react-querybuilder/dnd" "^8.11.1"
@@ -2226,6 +2232,7 @@
     "@tanstack/react-virtual" "^3.13.12"
     ajv "^8.17.1"
     ajv-formats "^3.0.1"
+    clsx "^2.1.1"
     i18next "^25.2.1"
     monaco-editor "^0.55.1"
     react-dnd "^16.0.1"

@@ -1,7 +1,7 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import {
-  BooleanDisplay,
   FastTable,
+  createBooleanColumn,
   formatTimeByUserTZ,
   useInfoDrawer,
 } from "@saltbox/saltbox-frontend-common";
@@ -57,7 +57,7 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
     () => [
       columnHelper.accessor("name", {
         header: t("extra-data-categories.attributes.name"),
-        cell: (info) => <ExtraDataCategoryLabel name={info.getValue()} />,
+        cell: (info) => <ExtraDataCategoryLabel category={info.row.original} />,
         meta: { minWidth: 300, width: "26%" },
       }),
       columnHelper.accessor("type", {
@@ -70,10 +70,15 @@ export const ExtraDataCategoriesTable = observer(function ExtraDataCategoriesTab
         cell: (info) => <ExtraDataCategoryOriginTag isSystem={info.getValue()} />,
         meta: { minWidth: 160, width: "14%", ellipsis: false },
       }),
-      columnHelper.accessor("is_manual_data_allowed", {
+      createBooleanColumn({
+        accessorKey: "is_manual_data_allowed",
         header: t("extra-data-categories.attributes.manual-data-allowed"),
-        cell: (info) => <BooleanDisplay value={info.getValue()} />,
-        meta: { minWidth: 140, width: "12%", ellipsis: false },
+        meta: { minWidth: 140, width: "12%" },
+      }),
+      createBooleanColumn({
+        accessorKey: "is_single_item",
+        header: t("extra-data-categories.attributes.single-item"),
+        meta: { minWidth: 180, width: "12%" },
       }),
       columnHelper.accessor((row) => row.fields?.length ?? 0, {
         id: "fields_count",

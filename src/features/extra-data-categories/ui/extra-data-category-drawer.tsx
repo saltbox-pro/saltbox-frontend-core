@@ -1,16 +1,15 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { InfoDrawer, type InfoDrawerProps } from "@saltbox/saltbox-frontend-common";
-import { Flex } from "antd";
 import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
+import type { ExtraDataCategoryUpdatePatch } from "saltbox-core/shared/helpers/merge-extra-data-category-update";
 import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 
 import { ExtraDataCategoryActionsMenu } from "./extra-data-category-actions-menu";
-import { ExtraDataCategoryDetails } from "./extra-data-category-details";
-import { ExtraDataCategoryFieldsEditor } from "./extra-data-category-fields-editor";
+import { ExtraDataCategoryEditor } from "./extra-data-category-editor";
 
 type ExtraDataCategoryDrawerProps = Omit<
   InfoDrawerProps,
@@ -18,7 +17,10 @@ type ExtraDataCategoryDrawerProps = Omit<
 > & {
   category: ExtraDataCategoryModel | null;
   closeGuardRef?: RefObject<DrawerCloseGuard | null>;
-  onCategoryUpdated?: (category: ExtraDataCategoryModel) => void;
+  onCategoryUpdated?: (
+    category: ExtraDataCategoryModel,
+    patch: ExtraDataCategoryUpdatePatch
+  ) => void;
   onCategoryDeleted?: (category: ExtraDataCategoryModel) => void;
 };
 
@@ -30,40 +32,36 @@ export function ExtraDataCategoryDrawer({
   onCategoryDeleted,
   ...restProps
 }: ExtraDataCategoryDrawerProps) {
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
 
-  const titleName = category ? getExtraDataCategoryDisplayName(t, category.name) : undefined;
+  const displayName = category
+    ? getExtraDataCategoryDisplayName(category, i18n.language)
+    : undefined;
 
   return (
     <InfoDrawer
       open={open}
       drawerId={DRAWER_IDS.extraDataCategorySettings}
-      titleName={titleName}
+      titleName={category?.name}
       hasData={!!category}
       transitionKey={open ? (category?.id ?? "opened") : "closed"}
       extra={
         <ExtraDataCategoryActionsMenu
           category={category}
-          displayName={titleName}
+          displayName={displayName}
           onDeleted={onCategoryDeleted}
         />
       }
       {...restProps}
     >
       {!!category && (
-        <Flex vertical gap="large">
-          <ExtraDataCategoryDetails category={category} />
-          <ExtraDataCategoryFieldsEditor
-            key={category.id}
-            category={category}
-            readOnly={category.is_system}
-            readOnlyTooltip={
-              category.is_system ? t("extra-data-categories.system-category-readonly") : undefined
-            }
-            closeGuardRef={closeGuardRef}
-            onSuccess={onCategoryUpdated}
-          />
-        </Flex>
+        <ExtraDataCategoryEditor
+          key={category.id}
+          category={category}
+          readOnly={category.is_system}
+          closeGuardRef={closeGuardRef}
+          onSuccess={onCategoryUpdated}
+        />
       )}
     </InfoDrawer>
   );

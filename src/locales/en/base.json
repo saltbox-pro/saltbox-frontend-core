@@ -55,6 +55,7 @@
       "add-to-client-filters": "Add this value to minion filters",
       "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
+      "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
       "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
       "export-scope-collection": "all extra data records of the \"{{category}}\" category for all clients in the collection that match the current search",
       "export-subject": "extra data",
@@ -91,28 +92,6 @@
         "bulk-success": "Extra data successfully added to category \"{{name}}\" for selected minions: {{count}}",
         "bulk-partial": "Extra data was added to category \"{{name}}\" only partially. Failed for {{failed}} of {{total}} minions",
         "error": "Failed to add extra data"
-      },
-      "categories": {
-        "local_groups": "Local Groups",
-        "storages": "Physical disks",
-        "softwares": "Software",
-        "bios": "BIOS",
-        "cpus": "CPUs",
-        "hardware": "Hardware",
-        "inputs": "Inputs",
-        "drives": "Logical disks",
-        "networks": "Networks",
-        "local_users": "Local Users",
-        "batteries": "Batteries",
-        "controllers": "Controllers",
-        "memories": "Memories",
-        "slots": "Slots",
-        "sounds": "Sounds",
-        "usbdevices": "USB Devices",
-        "videos": "Video Adapters",
-        "virtualmachines": "Virtual Machines",
-        "monitors": "Monitors",
-        "printers": "Printers"
       }
     },
     "minion-id": "Minion ID",
@@ -527,15 +506,29 @@
     "add-field": "Add field",
     "fields-title": "Category fields",
     "fields-empty": "No fields",
-    "name-forbidden-characters": "Name must not contain \".\", \"$\" or \"/\"",
+    "name-forbidden-characters": "Field name must not contain \".\" or start with \"$\"",
     "system-category-readonly": "System categories are read-only",
-    "fields-editor": {
+    "category-editor": {
       "success": "Category changes saved",
       "error": "Failed to save category changes"
     },
+    "fields-manager": {
+      "error": "Failed to update category fields"
+    },
+    "create-field": {
+      "success": "Field \"{{name}}\" created",
+      "error": "Failed to create field \"{{name}}\""
+    },
+    "order-fields": {
+      "success": "Field order updated",
+      "error": "Failed to update field order",
+      "drag": "Drag to reorder"
+    },
     "delete-field": {
       "modal-title": "Deleting field",
-      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category after saving"
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in client extra data will be permanently deleted",
+      "success": "Field \"{{name}}\" deleted",
+      "error": "Failed to delete field \"{{name}}\""
     },
     "delete": {
       "modal-title": "Deleting category",
@@ -545,9 +538,11 @@
     },
     "attributes": {
       "name": "Name",
+      "description": "Description",
       "type": "Type",
       "origin": "Origin",
       "manual-data-allowed": "Manual entry",
+      "single-item": "Single record",
       "fields-count": "Fields",
       "extra-fields-policy": "Extra fields policy",
       "created": "Created",
@@ -560,20 +555,25 @@
     },
     "create": {
       "modal-title": "Adding category",
-      "field-name": "Category name",
-      "field-name-placeholder": "Enter name",
-      "field-name-required": "Category name is required",
-      "field-name-unique": "A category with this name already exists",
+      "field-title": "Name",
+      "field-title-placeholder": "Enter name",
+      "field-title-required": "Category name is required",
+      "field-name": "System name",
+      "field-name-placeholder": "Enter system name",
+      "field-name-required": "System name is required",
+      "field-name-unique": "A category with this system name already exists",
+      "field-description": "Description",
+      "field-description-placeholder": "Enter description",
+      "field-single-item": "Single record",
+      "field-single-item-tooltip": "A client will have only one record in this category. Adding data again will overwrite the existing record",
       "submit": "Create",
       "success": "Category \"{{name}}\" created successfully",
       "error": "Failed to create category"
     },
     "field-form": {
-      "field-name": "Name",
       "field-name-placeholder": "Enter field name",
       "field-name-required": "Field name is required",
       "field-name-unique": "A field with this name already exists in the category",
-      "field-types": "Types",
       "field-type-placeholder": "Select types",
       "field-type-required": "Select at least one type"
     },
@@ -1278,7 +1278,8 @@
     },
     "warning-action": {
       "connect-source": "connect a source",
-      "sync-source": "sync a source"
+      "sync-source": "sync a source",
+      "update-source": "update a source"
     },
     "sync-gitlab-sources-error": "Failed to get network sources",
     "sync-gitlab-sources-success": "Network sources have been retrieved",
@@ -1460,6 +1461,42 @@
       "files-delete-error": "Failed to delete file",
       "delete-confirm-title": "Delete source",
       "delete-confirm-content": "Are you sure you want to delete source \"{{name}}\"?\n\nThe source will be removed from the system. Related templates and files will become unavailable. This action cannot be undone"
+    },
+    "source-update": {
+      "button": "Update",
+      "title": "Update source \"{{name}}\"",
+      "archive-file": "Archive with the new source version",
+      "check": "Check",
+      "checking": "Checking for changes…",
+      "check-retry": "Check again",
+      "check-error": "Failed to check source changes",
+      "up-to-date-title": "Source is up to date",
+      "up-to-date-description": "There are no new changes",
+      "files-title": "Changed files",
+      "templates-title": "Affected templates",
+      "templates-empty": "Changes do not affect templates",
+      "tasks-title": "Tasks",
+      "policies-title": "Policies",
+      "scheduler-tag": "Scheduler",
+      "stop-dependents": "Stop related tasks and policies ({{count}})",
+      "dependents-warning": "The list of related tasks and policies reflects the moment of the check. It will be recalculated during the update, and the current tasks and policies will be stopped.",
+      "apply": "Update",
+      "recheck": "Check again",
+      "close": "Close",
+      "apply-error": "Failed to update source",
+      "apply-success": "Source \"{{name}}\" has been updated",
+      "apply-success-stopped": "Source \"{{name}}\" has been updated. Tasks and policies stopped: {{count}}",
+      "error-conflict": "The source has changed since the check. Check the changes again.",
+      "error-locked": "Another operation is already running for this source. Try again later.",
+      "change-type": {
+        "A": "Added",
+        "D": "Deleted",
+        "M": "Modified",
+        "R": "Renamed",
+        "C": "Copied",
+        "T": "Type changed",
+        "U": "Unmerged"
+      }
     }
   },
   "aggregated-tasks": {

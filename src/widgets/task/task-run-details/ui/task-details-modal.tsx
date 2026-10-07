@@ -1,12 +1,11 @@
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { Modal } from "@saltbox/saltbox-frontend-common";
+import { Modal, getLocalizedText } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import type { TaskStore } from "saltbox-core/store";
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
@@ -45,7 +44,7 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
     return {
       template: {
         title:
-          getTemplateTitleText(task?.task_template?.title, i18n.language) ||
+          getLocalizedText(task?.task_template?.title, i18n.language) ||
           task?.task_template?.name ||
           "",
         saltFunction: task.fun,

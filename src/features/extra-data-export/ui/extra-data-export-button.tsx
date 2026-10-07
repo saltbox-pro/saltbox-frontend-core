@@ -21,10 +21,10 @@ export function ExtraDataExportButton({
   minionId,
   search,
 }: ExtraDataExportButtonProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation("common");
 
-  const categoryLabel = getExtraDataCategoryDisplayName(t, category.name);
+  const categoryLabel = getExtraDataCategoryDisplayName(category, i18n.language);
   const scope = minionId
     ? t("minions.extra-data.export-scope-client", { category: categoryLabel })
     : t("minions.extra-data.export-scope-collection", { category: categoryLabel });

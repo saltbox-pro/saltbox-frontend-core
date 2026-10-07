@@ -42,7 +42,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
     onEditRecord,
     onDeleteRecord,
   }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
 
     const hasChangeableRecords = !!canChangeRecord && store.records.some(canChangeRecord);
 
@@ -132,7 +132,7 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
         onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
         locale={{
           empty: t("minions.extra-data.empty-category", {
-            category: getExtraDataCategoryDisplayName(t, category.name),
+            category: getExtraDataCategoryDisplayName(category, i18n.language),
           }),
         }}
       />

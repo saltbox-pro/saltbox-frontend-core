@@ -19,7 +19,7 @@ export async function updateExtraDataCategory({
   const api = apiCoreStore.extraDataApi;
 
   if (!api) {
-    throw new Error("extra-data-categories.fields-editor.error");
+    throw new Error("extra-data-categories.category-editor.error");
   }
 
   return api.extraDataCategoryUpdate({

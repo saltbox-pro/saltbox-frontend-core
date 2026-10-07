@@ -3,36 +3,13 @@ import type {
   MinionExtraDataCategoryFieldType,
 } from "@saltbox/saltbox-core-api-client";
 
-import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
-
 export type ExtraDataCategoryFieldFormValue = {
   name: string;
   types: MinionExtraDataCategoryFieldType[];
-  isSaved?: boolean;
-};
-
-export type ExtraDataCategoryFieldsFormValues = {
-  [EXTRA_DATA_CATEGORY_FIELDS_NAME]: ExtraDataCategoryFieldFormValue[];
 };
 
 export function createEmptyExtraDataCategoryField(): ExtraDataCategoryFieldFormValue {
   return { name: "", types: [] };
-}
-
-export function toExtraDataCategoryFieldFormValues(
-  fields: readonly MinionExtraDataCategoryField[] | undefined
-): ExtraDataCategoryFieldFormValue[] {
-  return (fields ?? []).map((field) => ({
-    name: field.name,
-    types: [...(field.types ?? [])],
-    isSaved: true,
-  }));
-}
-
-export function toExtraDataCategoryFieldsFormValues(
-  fields: readonly MinionExtraDataCategoryField[] | undefined
-): ExtraDataCategoryFieldsFormValues {
-  return { [EXTRA_DATA_CATEGORY_FIELDS_NAME]: toExtraDataCategoryFieldFormValues(fields) };
 }
 
 export function isDuplicateExtraDataCategoryFieldName(
@@ -53,26 +30,64 @@ export function toExtraDataCategoryFieldsPayload(
     .filter((value) => value.name.length > 0);
 }
 
-export function getRetainedMinionFields(
-  minionFields: readonly string[] | undefined,
-  savedFields: readonly MinionExtraDataCategoryField[] | undefined,
-  nextFields: readonly MinionExtraDataCategoryField[]
-): string[] {
-  const savedNames = new Set((savedFields ?? []).map((field) => field.name));
-  const nextNames = new Set(nextFields.map((field) => field.name));
+function reorderExtraDataCategoryField(
+  fields: readonly MinionExtraDataCategoryField[],
+  fromIndex: number,
+  toIndex: number
+): MinionExtraDataCategoryField[] | null {
+  if (
+    fromIndex === toIndex ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= fields.length ||
+    toIndex >= fields.length
+  ) {
+    return null;
+  }
 
-  return (minionFields ?? []).filter((name) => !savedNames.has(name) || nextNames.has(name));
+  const next = [...fields];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
+  return next;
 }
 
-export function areExtraDataCategoryFieldFormValuesEqual(
-  left: readonly ExtraDataCategoryFieldFormValue[] | undefined,
-  right: readonly ExtraDataCategoryFieldFormValue[] | undefined
-): boolean {
-  const normalize = (fields: readonly ExtraDataCategoryFieldFormValue[] | undefined) =>
-    (fields ?? []).map((field) => ({
-      name: field?.name?.trim() ?? "",
-      types: [...(field?.types ?? [])].sort(),
-    }));
+export function reorderExtraDataCategoryFieldByName(
+  fields: readonly MinionExtraDataCategoryField[],
+  fromName: string,
+  toName: string
+): MinionExtraDataCategoryField[] | null {
+  const fromIndex = fields.findIndex((field) => field.name === fromName);
+  const toIndex = fields.findIndex((field) => field.name === toName);
+  return reorderExtraDataCategoryField(fields, fromIndex, toIndex);
+}
 
-  return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+export function applyExtraDataCategoryFieldOrder(
+  fields: readonly MinionExtraDataCategoryField[] | undefined,
+  orderedNames: readonly string[]
+): MinionExtraDataCategoryField[] {
+  const list = fields ?? [];
+  const byName = new Map(list.map((field) => [field.name, field]));
+  const ordered = orderedNames
+    .map((name) => byName.get(name))
+    .filter((field): field is MinionExtraDataCategoryField => field != null);
+  const orderedSet = new Set(ordered.map((field) => field.name));
+  const rest = list.filter((field) => !orderedSet.has(field.name));
+  return [...ordered, ...rest];
+}
+
+export function mergeExtraDataCategoryFieldsPreferringCurrentOrder(
+  currentFields: readonly MinionExtraDataCategoryField[] | undefined,
+  serverFields: readonly MinionExtraDataCategoryField[] | undefined
+): MinionExtraDataCategoryField[] {
+  const current = currentFields ?? [];
+  const server = serverFields ?? [];
+  const serverByName = new Map(server.map((field) => [field.name, field]));
+  const currentNames = new Set(current.map((field) => field.name));
+
+  const kept = current
+    .map((field) => serverByName.get(field.name))
+    .filter((field): field is MinionExtraDataCategoryField => field != null);
+  const added = server.filter((field) => !currentNames.has(field.name));
+
+  return [...kept, ...added];
 }

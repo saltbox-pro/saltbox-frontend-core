@@ -66,7 +66,7 @@ export const CollectionExtraDataTab = observer(function CollectionExtraDataTab({
               onChange={setActiveCategory}
               items={orderedCategories.map((category) => ({
                 key: category.name,
-                label: <ExtraDataCategoryLabel name={category.name} />,
+                label: <ExtraDataCategoryLabel category={category} />,
               }))}
             />
 

@@ -24,7 +24,7 @@ export function useDeleteExtraDataItemConfirm({
   minionId,
   onDeleted,
 }: UseDeleteExtraDataItemConfirmParams) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [modalApi, modalContextHolder] = Modal.useModal();
 
   const openConfirm = useCallback(
@@ -32,7 +32,7 @@ export function useDeleteExtraDataItemConfirm({
       const itemId = getManualExtraDataRecordId(record);
       if (!category || !itemId || !canChangeExtraDataRecord(category, record)) return;
 
-      const name = getExtraDataCategoryDisplayName(t, category.name);
+      const name = getExtraDataCategoryDisplayName(category, i18n.language);
       const deleteItem = async () => {
         const result = await runMutation({
           run: () => deleteMinionExtraDataItem({ category, minionId, itemId }),
@@ -61,7 +61,7 @@ export function useDeleteExtraDataItemConfirm({
         onOk: deleteItem,
       });
     },
-    [category, fields, minionId, modalApi, onDeleted, t]
+    [category, fields, i18n.language, minionId, modalApi, onDeleted, t]
   );
 
   return { openConfirm, modalContextHolder };

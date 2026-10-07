@@ -1,5 +1,11 @@
-import type { TFunction } from "i18next";
+import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
+import { getLocalizedText } from "@saltbox/saltbox-frontend-common";
 
-export function getExtraDataCategoryDisplayName(t: TFunction, name: string): string {
-  return t(`minions.extra-data.categories.${name}`, { defaultValue: name });
+export type ExtraDataCategoryDisplaySource = Pick<ExtraDataCategoryModel, "name" | "title">;
+
+export function getExtraDataCategoryDisplayName(
+  category: ExtraDataCategoryDisplaySource,
+  language: string
+): string {
+  return getLocalizedText(category.title, language) || category.name;
 }

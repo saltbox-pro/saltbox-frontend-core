@@ -1,0 +1,179 @@
+.formList,
+.list {
+  --row-padding-block: 6px;
+  --row-padding-inline: 8px;
+  --row-gap: 8px;
+  --handle-size: 20px;
+  --name-width: 240px;
+  --control-height: 32px;
+  --name-with-handle-width: calc(var(--handle-size) + var(--row-gap) + var(--name-width));
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+  border-radius: var(--ant-border-radius-lg, 8px);
+  background: var(--ant-color-bg-container, #fff);
+}
+
+.formList {
+  margin-bottom: 24px;
+}
+
+.list :global(.ant-form-item) {
+  margin: 0 !important;
+}
+
+.list :global(.ant-form-item-explain),
+.list :global(.ant-form-item-extra) {
+  min-height: 0;
+}
+
+.row {
+  position: relative;
+  display: grid;
+  column-gap: var(--row-gap);
+  align-items: center;
+  padding: var(--row-padding-block) var(--row-padding-inline);
+  grid-template-columns: var(--name-width) minmax(0, 1fr) auto;
+}
+
+.rowView:has(.handle),
+.rowEditable:not(.rowCreate) {
+  grid-template-columns: var(--handle-size) var(--name-width) minmax(0, 1fr) auto;
+}
+
+.rowCreate {
+  grid-template-columns: var(--name-with-handle-width) minmax(0, 1fr) auto;
+}
+
+.rowEditable {
+  align-items: start;
+}
+
+.rowEditable .handle {
+  height: var(--control-height);
+}
+
+.rowEditable .actions {
+  min-height: var(--control-height);
+}
+
+.row + .row {
+  border-top: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+}
+
+.rowDragging {
+  opacity: 0.45;
+}
+
+.rowDropBefore::before,
+.rowDropAfter::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: 2px;
+  background: var(--ant-color-primary, #1677ff);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.rowDropBefore::before {
+  top: 0;
+}
+
+.rowDropAfter::after {
+  bottom: 0;
+}
+
+.handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--handle-size);
+  height: var(--handle-size);
+  color: var(--ant-color-text-quaternary, rgba(0, 0, 0, 0.25));
+  cursor: grab;
+  user-select: none;
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+.handleDisabled {
+  cursor: default;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.name,
+.nameField {
+  min-width: 0;
+}
+
+.rowView .name {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-block: calc(-1 * var(--row-padding-block));
+  padding-block: var(--row-padding-block);
+  padding-inline-end: var(--row-gap);
+  border-inline-end: 1px solid var(--ant-color-border-secondary, #f0f0f0);
+}
+
+.name {
+  font-weight: 500;
+  line-height: 22px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.types,
+.typesField {
+  min-width: 0;
+}
+
+.types {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.typeTag {
+  margin-inline-end: 0;
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: var(--row-padding-block) var(--row-padding-inline);
+  color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.45));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--row-gap);
+}

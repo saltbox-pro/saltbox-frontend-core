@@ -2,7 +2,7 @@ import type { RJSFSchema } from "@rjsf/utils";
 import type { TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
 import { localizeTemplateUiSchema } from "@saltbox/saltbox-frontend-common";
 
-import { isFieldlessSchema, toRjsfSchema } from "./template-rjsf-schema";
+import { isFieldlessSchema, toRjsfSchema, toTemplateSchemaSource } from "./template-rjsf-schema";
 
 export type TemplateParamsSchema = {
   jsonSchema: RJSFSchema | undefined;
@@ -18,7 +18,7 @@ export function getTemplateParamsSchema(
     return { jsonSchema: undefined, uiSchema: undefined, isFieldless: true };
   }
 
-  const jsonSchema = toRjsfSchema(template, language);
+  const jsonSchema = toRjsfSchema(toTemplateSchemaSource(template), language);
 
   return {
     jsonSchema,

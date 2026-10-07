@@ -3,16 +3,21 @@ import { MutationErrorAlert } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex, Form, Input } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/fields-name";
-import { EXTRA_DATA_NAME_PATTERN } from "../constants/name-pattern";
+import {
+  EXTRA_DATA_CATEGORY_FIELDS_NAME,
+  EXTRA_DATA_CATEGORY_IS_SINGLE_ITEM_NAME,
+} from "../constants/form-field-names";
 import { createEmptyExtraDataCategoryField } from "../helpers/extra-data-category-field-form";
 import {
   type CreateExtraDataCategoryFormValues,
   useCreateExtraDataCategoryForm,
 } from "../hooks/use-create-extra-data-category-form";
 
-import styles from "./create-extra-data-category-form.module.css";
+import { ExtraDataCategoryDescriptionFormItem } from "./extra-data-category-description-form-item";
 import { ExtraDataCategoryFieldsFormList } from "./extra-data-category-fields-form-list";
+import { ExtraDataCategoryIconFormItem } from "./extra-data-category-icon-form-item";
+import { ExtraDataCategorySingleItemFormItem } from "./extra-data-category-single-item-form-item";
+import { ExtraDataCategoryTitleFormItem } from "./extra-data-category-title-form-item";
 
 type CreateExtraDataCategoryFormProps = {
   onSuccess?: (category: ExtraDataCategoryModel) => void;
@@ -37,7 +42,10 @@ export function CreateExtraDataCategoryForm({
     <Form
       form={form}
       layout="vertical"
-      initialValues={{ [EXTRA_DATA_CATEGORY_FIELDS_NAME]: [createEmptyExtraDataCategoryField()] }}
+      initialValues={{
+        [EXTRA_DATA_CATEGORY_FIELDS_NAME]: [createEmptyExtraDataCategoryField()],
+        [EXTRA_DATA_CATEGORY_IS_SINGLE_ITEM_NAME]: false,
+      }}
       onFinish={handleSubmit}
       onValuesChange={resetMutationError}
       autoComplete="off"
@@ -57,18 +65,18 @@ export function CreateExtraDataCategoryForm({
             whitespace: true,
             message: t("extra-data-categories.create.field-name-required"),
           },
-          {
-            pattern: EXTRA_DATA_NAME_PATTERN,
-            message: t("extra-data-categories.name-forbidden-characters"),
-          },
         ]}
       >
         <Input placeholder={t("extra-data-categories.create.field-name-placeholder")} />
       </Form.Item>
 
-      <div className={styles.fields}>
-        <ExtraDataCategoryFieldsFormList />
-      </div>
+      <ExtraDataCategoryTitleFormItem required addonAfter={<ExtraDataCategoryIconFormItem />} />
+
+      <ExtraDataCategoryDescriptionFormItem />
+
+      <ExtraDataCategorySingleItemFormItem />
+
+      <ExtraDataCategoryFieldsFormList />
 
       <Flex justify="end" gap="small">
         <Button onClick={onClose}>{t("common.cancel")}</Button>

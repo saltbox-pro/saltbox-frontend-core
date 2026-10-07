@@ -58,7 +58,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
     () => [
       columnHelper.accessor("name", {
         header: t("minions.extra-data.category-column"),
-        cell: (info) => <ExtraDataCategoryLabel name={info.getValue()} />,
+        cell: (info) => <ExtraDataCategoryLabel category={info.row.original} />,
       }),
     ],
     [t]

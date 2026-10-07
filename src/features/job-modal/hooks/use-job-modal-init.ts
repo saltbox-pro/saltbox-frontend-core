@@ -6,6 +6,7 @@ import type {
 } from "@saltbox/saltbox-core-api-client";
 import {
   createLoader,
+  getLocalizedText,
   useAcceptedMastersWarningMessage,
   type LoadSource,
   type TemplateSchemaError,
@@ -28,7 +29,6 @@ import {
   totalSecondsToTtlParts,
   type TtlUnit,
 } from "saltbox-core/shared/utils/job-modal-utils";
-import { getTemplateTitleText } from "saltbox-core/shared/utils/template-localized-text";
 import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -149,7 +149,7 @@ const getBaselineKwarg = (
   kwarg ? pruneKwargsBySchema(cleanNullsFromKwargs(kwarg), getParamsJsonSchema(source)) : undefined;
 
 const getTemplateTitle = (template: TaskTemplateModel, language: string): string =>
-  getTemplateTitleText(template.title, language) || template.name || template.fun || "";
+  getLocalizedText(template.title, language) || template.name || template.fun || "";
 
 const resolveSourceDisplayName = async (
   sourceId: string | undefined,

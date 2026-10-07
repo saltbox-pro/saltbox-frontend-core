@@ -1,9 +1,9 @@
 import { FilterOutlined } from "@ant-design/icons";
 import type { AuditEventModel } from "@saltbox/saltbox-audit-api-client";
 import {
-  BooleanDisplay,
   type CellAction,
   FastTable,
+  createBooleanColumn,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -178,12 +178,11 @@ export const AuditEventsTable = observer(
           ),
           meta: { width: 260, ellipsis: false },
         }),
-        columnHelper.accessor("siem_sent", {
+        createBooleanColumn({
+          accessorKey: "siem_sent",
           header: t("audit.events.columns.siem-sent"),
-          cell: (data) => <BooleanDisplay value={data.getValue()} />,
           meta: {
             minWidth: 90,
-            ellipsis: false,
             actions: [createFilterAction("siem_sent", (row) => row.siem_sent)],
           },
         }),
