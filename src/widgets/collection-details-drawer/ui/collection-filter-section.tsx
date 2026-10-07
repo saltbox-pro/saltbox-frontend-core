@@ -28,7 +28,6 @@ export const CollectionFilterSection = observer(
           filterStore={filterStore}
           onSearch={onFiltersApplied}
           onReset={onFiltersApplied}
-          enableFreeTextMode
         />
       </div>
     );
