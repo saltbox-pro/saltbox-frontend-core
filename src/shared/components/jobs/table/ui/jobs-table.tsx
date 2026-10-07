@@ -36,7 +36,7 @@ export interface JobsTableProps {
   store: JobsStore;
   tableId: string;
   hideMasterColumn?: boolean;
-  onCellFilterClick?: () => void;
+  onCellFilterClick: () => void;
 }
 
 export const JobsTable = observer<JobsTableProps>(function JobsTable({
@@ -53,22 +53,12 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
     return t("jobs.empty-for-period", { period });
   }, [store.dateRangePreset, t]);
 
-  const handleNavigateToJob = useCallback(
-    (jobId: string | null | undefined) => {
-      if (!jobId) {
-        return;
-      }
-      navigate(`/core/jobs/${jobId}`);
-    },
-    [navigate]
-  );
-
   const createFilterAction = useCallback(
     (fieldName: string): CellAction<JobsListResponse> => ({
       icon: <FilterOutlined />,
       title: t("dashboard.apply-value-to-filters"),
       onClick: (value) => {
-        onCellFilterClick?.();
+        onCellFilterClick();
         store.applyCellFilter(fieldName, value);
       },
     }),
@@ -193,7 +183,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       pagination={store.pagination}
       sorting={store.sorting}
       onLazyLoad={(pagination, sorting) => store.handleLazyLoad(pagination, sorting)}
-      onRowClick={(job) => handleNavigateToJob(job.id)}
+      onRowClick={(job) => navigate(`/core/jobs/${job.id}`)}
       useVirtualScroll={false}
       locale={{ empty: jobsEmptyText }}
     />

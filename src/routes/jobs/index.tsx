@@ -114,9 +114,7 @@ const JobsPage = observer(() => {
               label={t("jobs.date-range-label")}
               value={jobsStore.dateRangePreset}
               disabled={jobsStore.isJobsLoading}
-              onChange={(createdSince, preset) => {
-                jobsStore.handleDateRangeChange(createdSince, preset);
-              }}
+              onChange={jobsStore.handleDateRangeChange}
             />
             <FastTable.Toolbar />
           </div>

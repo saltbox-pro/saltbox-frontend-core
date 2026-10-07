@@ -48,9 +48,7 @@ export const MasterJobsTab = observer(function MasterJobsTab({ masterId }: Maste
               label={t("jobs.date-range-label")}
               value={jobsStore.dateRangePreset}
               disabled={jobsStore.isJobsLoading}
-              onChange={(createdSince, preset) => {
-                jobsStore.handleDateRangeChange(createdSince, preset);
-              }}
+              onChange={jobsStore.handleDateRangeChange}
             />
             <FastTable.Toolbar />
           </div>
