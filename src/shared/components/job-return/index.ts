@@ -4,12 +4,12 @@ export {
   type JobReturnExecutionTimeProps,
 } from "./ui/job-return-execution-time";
 export {
-  JobReturnStatusTag,
+  JobReturnStatusBadge,
   getJobReturnStatusColor,
   JOB_RETURN_STATUS_COUNT_ORDER,
   JOB_RETURN_STATUS_VIEW,
-  type JobReturnStatusTagProps,
-} from "./ui/job-return-status-tag";
+  type JobReturnStatusBadgeProps,
+} from "./ui/job-return-status-badge";
 export { JobReturnSteps, type JobReturnStepsProps } from "./ui/job-return-steps";
 export {
   getAttemptStatus,

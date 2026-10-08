@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next";
 import {
   getAttemptStatus,
   getShortJobReturnOutput,
-  JobReturnStatusTag,
+  JobReturnStatusBadge,
   JobReturnSteps,
   parseSaltStates,
 } from "saltbox-core/shared/components/job-return";
@@ -69,7 +69,7 @@ function AttemptStatusTag({
   }
 
   if (jobReturn.status && NO_RESULT_STATUSES.has(jobReturn.status)) {
-    return <JobReturnStatusTag status={jobReturn.status} />;
+    return <JobReturnStatusBadge status={jobReturn.status} />;
   }
 
   const status = resolveAttemptStatus(jobReturn);

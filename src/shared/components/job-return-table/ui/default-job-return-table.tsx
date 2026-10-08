@@ -23,7 +23,7 @@ import { EditableTtl, setMinionsTtl } from "saltbox-core/features/job-ttl";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
   JobReturnExecutionTime,
-  JobReturnStatusTag,
+  JobReturnStatusBadge,
 } from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
 import {
@@ -146,7 +146,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
           id: "status",
           header: t("task.job-returns-table.table-status"),
           cell: (data) => (
-            <JobReturnStatusTag status={data.getValue()} retcode={data.row.original.retcode} />
+            <JobReturnStatusBadge status={data.getValue()} retcode={data.row.original.retcode} />
           ),
           meta: { width: 140 },
         }),

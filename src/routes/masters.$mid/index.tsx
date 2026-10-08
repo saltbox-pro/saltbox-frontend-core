@@ -15,7 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams, useSearchParams } from "react-router";
 
-import { SaltKeyStatusTag } from "saltbox-core/features/masters";
+import { SaltKeyStatusBadge } from "saltbox-core/features/masters";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
   ALL_FILTER,
@@ -134,7 +134,7 @@ const MasterPage = observer(() => {
       }),
       saltKeysColumnHelper.accessor("status", {
         header: t("master.table-status"),
-        cell: (data) => <SaltKeyStatusTag status={data.getValue()} />,
+        cell: (data) => <SaltKeyStatusBadge status={data.getValue()} />,
         enableSorting: false,
         meta: {
           tdClassName: "fast-table-column-nowrap",

@@ -3,7 +3,7 @@ import { SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
 import { Alert, type AlertProps, Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { SaltKeyStatusTag } from "saltbox-core/features/masters";
+import { SaltKeyStatusBadge } from "saltbox-core/features/masters";
 import type { SaltKeyWithId } from "saltbox-core/store";
 
 import styles from "./salt-key-drawer-section.module.css";
@@ -51,7 +51,7 @@ export function SaltKeyDrawerSection({
       message={
         <Flex gap="small" align="center" wrap>
           {t("master.drawer-key-status")}
-          <SaltKeyStatusTag status={saltKey.status} />
+          <SaltKeyStatusBadge status={saltKey.status} />
         </Flex>
       }
       action={

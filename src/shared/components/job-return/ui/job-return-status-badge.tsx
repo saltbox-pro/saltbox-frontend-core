@@ -11,7 +11,7 @@ import { STATUS_TONE_COLORS, StatusBadge, type StatusTone } from "@saltbox/saltb
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-export type JobReturnStatusTagProps = {
+export type JobReturnStatusBadgeProps = {
   status?: JobReturnStatus | null;
   retcode?: number | null;
 };
@@ -80,7 +80,7 @@ const resolveJobReturnStatusView = (
   return undefined;
 };
 
-export function JobReturnStatusTag({ status, retcode }: JobReturnStatusTagProps) {
+export function JobReturnStatusBadge({ status, retcode }: JobReturnStatusBadgeProps) {
   const { t } = useTranslation();
   const view = resolveJobReturnStatusView(status, retcode);
 

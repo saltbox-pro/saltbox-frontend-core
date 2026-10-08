@@ -10,7 +10,7 @@ import { StatusBadge, type StatusTone } from "@saltbox/saltbox-frontend-common";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-type SaltKeyStatusTagProps = {
+type SaltKeyStatusBadgeProps = {
   status: SaltKeyStatusType;
 };
 
@@ -43,7 +43,7 @@ const SALT_KEY_STATUS_VIEW: Record<SaltKeyStatusType, SaltKeyStatusView> = {
   },
 };
 
-export function SaltKeyStatusTag({ status }: SaltKeyStatusTagProps) {
+export function SaltKeyStatusBadge({ status }: SaltKeyStatusBadgeProps) {
   const { t } = useTranslation();
   const view = SALT_KEY_STATUS_VIEW[status];
 

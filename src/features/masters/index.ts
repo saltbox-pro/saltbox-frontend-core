@@ -6,4 +6,4 @@ export {
 } from "./helpers/map-master-ping-result";
 export { MasterAvailabilityCell } from "./ui/master-availability-cell";
 export { MasterStatusBadge } from "./ui/master-status-badge";
-export { SaltKeyStatusTag } from "./ui/salt-key-status-tag";
+export { SaltKeyStatusBadge } from "./ui/salt-key-status-badge";

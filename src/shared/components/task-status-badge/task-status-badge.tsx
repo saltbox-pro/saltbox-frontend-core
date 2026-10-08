@@ -15,7 +15,7 @@ import { Skeleton, Spin } from "antd";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-export interface TaskStatusIndicatorProps {
+export interface TaskStatusBadgeProps {
   status?: TaskStatus;
   reason?: string;
   size?: StatusBadgeSize;
@@ -74,7 +74,7 @@ const TTL_STOP_VIEW: Partial<Record<TaskStatus, Pick<StatusView, "icon" | "trans
   },
 };
 
-export function TaskStatusIndicator({ status, reason, size }: TaskStatusIndicatorProps) {
+export function TaskStatusBadge({ status, reason, size }: TaskStatusBadgeProps) {
   const { t } = useTranslation();
 
   if (!status) {

@@ -16,7 +16,7 @@ import { useNavigate } from "react-router";
 import { CollectionLink } from "saltbox-core/shared/components/collection-link";
 import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
 import { TaskMinionsCountProgress } from "saltbox-core/shared/components/task/task-minions-count-progress";
-import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator";
+import { TaskStatusBadge } from "saltbox-core/shared/components/task-status-badge";
 import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 
@@ -109,7 +109,7 @@ export default observer(function TasksPage() {
         id: "status.type",
         header: t("minions.table-status"),
         cell: (data) => (
-          <TaskStatusIndicator
+          <TaskStatusBadge
             status={data.row.original?.status.type}
             reason={data.row.original?.status.data?.reason}
           />
