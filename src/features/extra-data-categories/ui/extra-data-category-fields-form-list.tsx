@@ -1,10 +1,8 @@
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Button, Flex, Form, Input, Select, Typography } from "antd";
+import { Button, Flex, Form, Typography } from "antd";
 import type { FormListFieldData, FormListOperation } from "antd/es/form/FormList";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-
-import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
 
 import { EXTRA_DATA_CATEGORY_FIELDS_NAME } from "../constants/form-field-names";
 import {
@@ -12,13 +10,9 @@ import {
   createEmptyExtraDataCategoryField,
   isDuplicateExtraDataCategoryFieldName,
 } from "../helpers/extra-data-category-field-form";
-import { useExtraDataCategoryFieldTypeOptions } from "../hooks/use-extra-data-category-field-type-options";
 import { useExtraDataCategoryFieldsDrag } from "../hooks/use-extra-data-category-fields-drag";
 
-import {
-  getExtraDataCategoryFieldNameRules,
-  getExtraDataCategoryFieldTypesRules,
-} from "./extra-data-category-field-form-rules";
+import { ExtraDataCategoryFieldFormFields } from "./extra-data-category-field-form-fields";
 import styles from "./extra-data-category-fields-list.module.css";
 import {
   ExtraDataCategoryFieldSortHandle,
@@ -35,7 +29,6 @@ type FormListItemsProps = {
 function ExtraDataCategoryFieldsFormListItems({ fields, add, remove, move }: FormListItemsProps) {
   const { t } = useTranslation();
   const form = Form.useFormInstance();
-  const typeOptions = useExtraDataCategoryFieldTypeOptions();
   const fieldValues = Form.useWatch<ExtraDataCategoryFieldFormValue[] | undefined>(
     EXTRA_DATA_CATEGORY_FIELDS_NAME,
     form
@@ -116,38 +109,16 @@ function ExtraDataCategoryFieldsFormListItems({ fields, add, remove, move }: For
                   />
                 }
               >
-                <Form.Item
-                  {...restField}
-                  name={[fieldName, "name"]}
-                  className={styles.nameField}
-                  rules={getExtraDataCategoryFieldNameRules(t, (trimmed) => {
+                <ExtraDataCategoryFieldFormFields
+                  listFieldName={fieldName}
+                  listFieldRest={restField}
+                  isDuplicateName={(trimmed) => {
                     const listValues = form.getFieldValue(EXTRA_DATA_CATEGORY_FIELDS_NAME) as
                       | ExtraDataCategoryFieldFormValue[]
                       | undefined;
                     return isDuplicateExtraDataCategoryFieldName(listValues, fieldName, trimmed);
-                  })}
-                >
-                  <Input
-                    placeholder={t("extra-data-categories.field-form.field-name-placeholder")}
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  {...restField}
-                  name={[fieldName, "types"]}
-                  className={styles.typesField}
-                  rules={getExtraDataCategoryFieldTypesRules(t)}
-                >
-                  <Select
-                    mode="multiple"
-                    maxTagCount="responsive"
-                    options={typeOptions}
-                    optionFilterProp="label"
-                    notFoundContent={t("common.no-data")}
-                    placeholder={t("extra-data-categories.field-form.field-type-placeholder")}
-                    getPopupContainer={getParentPopupContainer}
-                  />
-                </Form.Item>
+                  }}
+                />
 
                 <div className={styles.actions}>
                   <Button

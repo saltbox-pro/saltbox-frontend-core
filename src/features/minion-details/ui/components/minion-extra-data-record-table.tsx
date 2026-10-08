@@ -1,16 +1,21 @@
-import { DeleteOutlined, EditOutlined, FilterOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
-import { BaseActionButton, FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
+import {
+  BaseActionButton,
+  FastTable,
+  FilterActionButton,
+  type CellAction,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
-  canFilterExtraDataValue,
   getEqualExtraDataColumnWidth,
   toExtraDataCopyValue,
 } from "saltbox-core/shared/helpers/extra-data-value";
@@ -50,16 +55,22 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
       const columnWidth = getEqualExtraDataColumnWidth(fields.length);
 
       const fieldColumns = fields.map((field) => {
+        const filterFieldName = buildExtraDataFilterField(category.source, category.name, field);
         const filterAction: CellAction<ExtraDataRecord> | null = onFilterButton
           ? {
-              icon: <FilterOutlined />,
-              title: t("minions.extra-data.apply-to-filters"),
-              visible: (value) => canFilterExtraDataValue(value),
+              icon: FilterActionButton.getIcon(),
+              visible: (value) => onFilterButton.canApply(filterFieldName, value),
+              getPresentation: (value) => {
+                const active = onFilterButton.isActive(filterFieldName, value);
+                return FilterActionButton.getPresentation(
+                  active,
+                  getClientFilterActionTitle(active, t)
+                );
+              },
               onClick: (value) =>
                 onFilterButton({
-                  name: buildExtraDataFilterField(category.source, category.name, field),
+                  name: filterFieldName,
                   value,
-                  keepDrawerOpen: true,
                 }),
             }
           : null;

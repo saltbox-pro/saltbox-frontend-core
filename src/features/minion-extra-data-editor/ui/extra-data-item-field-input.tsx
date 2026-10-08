@@ -1,18 +1,14 @@
-import type {
-  MinionExtraDataCategoryField,
-  MinionExtraDataCategoryFieldType,
-} from "@saltbox/saltbox-core-api-client";
+import type { MinionExtraDataCategoryField } from "@saltbox/saltbox-core-api-client";
 import { JsonEditorField } from "@saltbox/saltbox-frontend-common";
-import { Flex, Form, Input, Select, Typography } from "antd";
+import { Form, Typography } from "antd";
+import type { Rule } from "antd/es/form";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
-
 import {
-  getDefaultFieldInputType,
-  getFieldInputTypes,
+  getFieldInputType,
   isEmptyFormFieldValue,
+  isExtraDataFieldRequired,
   isJsonFieldType,
   isJsonOfFieldType,
 } from "../helpers/extra-data-item-form";
@@ -28,22 +24,38 @@ export function ExtraDataItemFieldInput({ field }: ExtraDataItemFieldInputProps)
   const { t } = useTranslation();
   const form = Form.useFormInstance();
 
-  const typePath = ["values", field.name, "type"];
-  const valuePath = ["values", field.name, "value"];
+  const valuePath = ["values", field.name];
+  const selectedType = getFieldInputType(field);
+  const isRequired = isExtraDataFieldRequired(field);
 
-  const inputTypes = useMemo(() => getFieldInputTypes(field), [field]);
-  const selectedType =
-    (Form.useWatch(typePath, form) as MinionExtraDataCategoryFieldType | undefined) ??
-    getDefaultFieldInputType(inputTypes);
+  const valueRules = useMemo<Rule[]>(() => {
+    if (!selectedType) return [];
 
-  const typeOptions = useMemo(
-    () =>
-      inputTypes.map((type) => ({
-        value: type,
-        label: t(`extra-data-categories.field-types.${type}`),
-      })),
-    [inputTypes, t]
-  );
+    const rules: Rule[] = [];
+
+    if (isRequired) {
+      rules.push({
+        validator: async (_, value: unknown) => {
+          if (isEmptyFormFieldValue(value)) {
+            throw new Error(t("minions.extra-data.item-form.field-required"));
+          }
+        },
+      });
+    }
+
+    if (isJsonFieldType(selectedType)) {
+      rules.push({
+        validator: async (_, value: string | undefined) => {
+          if (isEmptyFormFieldValue(value)) return;
+          if (!isJsonOfFieldType(selectedType, value)) {
+            throw new Error(t(`minions.extra-data.item-form.invalid-json.${selectedType}`));
+          }
+        },
+      });
+    }
+
+    return rules;
+  }, [isRequired, selectedType, t]);
 
   if (!selectedType) {
     return (
@@ -56,48 +68,18 @@ export function ExtraDataItemFieldInput({ field }: ExtraDataItemFieldInputProps)
   }
 
   return (
-    <Form.Item label={field.name}>
-      <Flex gap="small" align="flex-start">
-        <Form.Item name={typePath} noStyle hidden={inputTypes.length < 2}>
-          {inputTypes.length < 2 ? (
-            <Input />
-          ) : (
-            <Select
-              className={styles.typeSelect}
-              options={typeOptions}
-              getPopupContainer={getParentPopupContainer}
-              onChange={() => form.setFieldValue(valuePath, undefined)}
-            />
-          )}
-        </Form.Item>
-
-        {isJsonFieldType(selectedType) ? (
-          <div className={styles.value}>
-            <Form.Item
-              name={valuePath}
-              noStyle
-              rules={[
-                {
-                  validator: async (_, value: string | undefined) => {
-                    if (isEmptyFormFieldValue(value)) return;
-                    if (!isJsonOfFieldType(selectedType, value)) {
-                      throw new Error(
-                        t(`minions.extra-data.item-form.invalid-json.${selectedType}`)
-                      );
-                    }
-                  },
-                },
-              ]}
-            >
-              <JsonEditorField form={form} fieldName={valuePath} height={160} />
-            </Form.Item>
-          </div>
-        ) : (
-          <Form.Item name={valuePath} noStyle>
-            <ExtraDataItemValueInput type={selectedType} />
+    <Form.Item label={field.name} required={isRequired}>
+      {isJsonFieldType(selectedType) ? (
+        <div className={styles.value}>
+          <Form.Item name={valuePath} noStyle rules={valueRules}>
+            <JsonEditorField form={form} fieldName={valuePath} height={160} />
           </Form.Item>
-        )}
-      </Flex>
+        </div>
+      ) : (
+        <Form.Item name={valuePath} noStyle rules={valueRules}>
+          <ExtraDataItemValueInput type={selectedType} />
+        </Form.Item>
+      )}
     </Form.Item>
   );
 }

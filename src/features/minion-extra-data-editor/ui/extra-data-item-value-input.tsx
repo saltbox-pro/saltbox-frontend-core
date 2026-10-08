@@ -1,4 +1,5 @@
 import { MinionExtraDataCategoryFieldType } from "@saltbox/saltbox-core-api-client";
+import { DATETIME_FORMAT_FULL } from "@saltbox/saltbox-frontend-common";
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import type { Dayjs } from "dayjs";
 import { useTranslation } from "react-i18next";
@@ -53,17 +54,18 @@ export function ExtraDataItemValueInput({ type, value, onChange }: ExtraDataItem
         <DatePicker
           className={styles.value}
           showTime
+          allowClear
+          format={DATETIME_FORMAT_FULL}
           value={value as Dayjs | undefined}
           onChange={onChange}
           getPopupContainer={getParentPopupContainer}
         />
       );
-    case MinionExtraDataCategoryFieldType.None:
-      return <Input className={styles.value} disabled placeholder="null" />;
     default:
       return (
         <Input
           className={styles.value}
+          autoComplete="extra-data-field-value"
           value={value as string | undefined}
           onChange={(event) => onChange?.(event.target.value)}
         />

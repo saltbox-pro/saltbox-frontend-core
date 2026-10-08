@@ -28,12 +28,10 @@ export function getExtraDataCategoryFieldNameRules(
   ];
 }
 
-export function getExtraDataCategoryFieldTypesRules(t: TFunction): Rule[] {
+export function getExtraDataCategoryFieldTypeRules(t: TFunction): Rule[] {
   return [
     {
       required: true,
-      type: "array",
-      min: 1,
       message: t("extra-data-categories.field-form.field-type-required"),
     },
   ];

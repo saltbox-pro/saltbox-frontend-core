@@ -14,7 +14,7 @@ import { ExtraDataCategoryLabel } from "saltbox-core/shared/components/extra-dat
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { ExtraDataCategoriesStore } from "saltbox-core/store";
 
-import type { OnFilterButtonHandler } from "../../types/minion-details-props";
+import type { OnFilterButtonHandler, OnFilterButtonParams } from "../../types/minion-details-props";
 
 import { MinionExtraDataCategoryDrawer } from "./minion-extra-data-category-drawer";
 import styles from "./minion-extra-data-tab.module.css";
@@ -64,6 +64,25 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
     [t]
   );
 
+  const categoryFilterButton = useMemo((): OnFilterButtonHandler | undefined => {
+    if (!onFilterButton) {
+      return undefined;
+    }
+
+    const apply = (params: OnFilterButtonParams) => {
+      const willAdd = !onFilterButton.isActive(params.name, params.value);
+      if (willAdd && isInDrawer && categoryDrawer.isOpened) {
+        categoryDrawer.close();
+      }
+      onFilterButton(params);
+    };
+
+    apply.canApply = onFilterButton.canApply;
+    apply.isActive = onFilterButton.isActive;
+
+    return apply;
+  }, [categoryDrawer.close, categoryDrawer.isOpened, isInDrawer, onFilterButton]);
+
   return (
     <Flex vertical flex={1} className={styles.extraDataTabContent}>
       <FastTable.Provider>
@@ -102,7 +121,7 @@ export const MinionExtraDataTab = observer(function MinionExtraDataTab({
           collectionSlug={collectionSlug}
           width={960}
           onClose={categoryDrawer.close}
-          onFilterButton={onFilterButton}
+          onFilterButton={categoryFilterButton}
         />
 
         <ExtraDataItemModal

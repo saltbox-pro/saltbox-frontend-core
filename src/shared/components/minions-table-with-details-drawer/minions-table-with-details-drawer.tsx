@@ -4,7 +4,9 @@ import {
   FastTable,
   createSelectColumn,
   formatTimeByUserTZ,
+  getFilterFieldOptions,
   useInfoDrawer,
+  type FilterFieldOptions,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
 import { message, Tag } from "antd";
@@ -19,6 +21,11 @@ import {
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import {
+  applyClientFilter,
+  canApplyClientFilter,
+  hasClientFilter,
+} from "saltbox-core/shared/helpers/apply-client-filter";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -146,31 +153,54 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
     [enableRowSelection, props.slug, t]
   );
 
-  const handleDrawerFilterButtonClick = useCallback(
-    (params: OnFilterButtonParams) => {
-      const field = params.name;
-      const value = params.value;
-      const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
-        ? ["in", value.map((item) => String(item)).join(",")]
-        : ["=", String(value ?? "")];
+  const { currentFilters, filterSchema } = props.filterStore;
 
-      props.filterStore.addFilter({
-        field,
-        operator,
-        valueSource: "value",
-        value: ruleValue,
+  const drawerFilterButton = useMemo(() => {
+    const fieldOptionsCache = new Map<string, FilterFieldOptions>();
+    const getFieldOptions = (field: string) => {
+      const cached = fieldOptionsCache.get(field);
+      if (cached) {
+        return cached;
+      }
+
+      const options = getFilterFieldOptions(filterSchema, field);
+      fieldOptionsCache.set(field, options);
+      return options;
+    };
+
+    const apply = (params: OnFilterButtonParams) => {
+      const next = applyClientFilter(props.filterStore, params.name, params.value, {
+        search: true,
+        fieldOptions: getFieldOptions(params.name),
       });
-      props.filterStore.handleSearch();
-      props.onFiltersApplied?.();
-      props.onAddFilter?.();
-      message.success(t("minions.filter-applied"));
+      if (!next.ok) {
+        message.warning(t("minions.filter-value-unsupported"));
+        return;
+      }
 
-      if (!params.keepDrawerOpen) {
+      props.onFiltersApplied?.();
+      if (next.result === "added") {
+        props.onAddFilter?.();
+        message.success(t("minions.filter-applied"));
         drawer.close();
       }
-    },
-    [drawer.close, props.filterStore, props.onAddFilter, props.onFiltersApplied, t]
-  );
+    };
+
+    apply.canApply = (field: string, value: unknown) =>
+      canApplyClientFilter(props.filterStore, field, value, getFieldOptions(field));
+    apply.isActive = (field: string, value: unknown) =>
+      hasClientFilter(props.filterStore, field, value, getFieldOptions(field));
+
+    return apply;
+  }, [
+    currentFilters,
+    drawer.close,
+    filterSchema,
+    props.filterStore,
+    props.onAddFilter,
+    props.onFiltersApplied,
+    t,
+  ]);
 
   const handleRowClick = useCallback(
     (minion: MinionShortSchema) => {
@@ -213,7 +243,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         />
       </FastTable.Provider>
 
-      <MinionDetailsDrawer drawer={drawer} onFilterButton={handleDrawerFilterButtonClick} />
+      <MinionDetailsDrawer drawer={drawer} onFilterButton={drawerFilterButton} />
     </>
   );
 });

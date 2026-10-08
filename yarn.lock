@@ -2209,15 +2209,15 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/113/packages/npm/@saltbox/saltbox-audit-api-client/-/@saltbox/saltbox-audit-api-client-0.3.0-f9534d71d72b848cba2cf014824e0ea235036977.tgz#09ff23f7a8fd32578668b8dc8caa0c49eda14086"
   integrity sha1-Cf8j96j9MleGaLjcjKoMSe2hQIY=
 
-"@saltbox/saltbox-core-api-client@^0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84":
-  version "0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84.tgz#5c7aa2f1096fa5022ffc5925de33727693d0336a"
-  integrity sha1-XHqi8QlvpQIv/Fkl3jNydpPQM2o=
+"@saltbox/saltbox-core-api-client@^0.3.0-75e8046fbecef4538facb38454dc938c14aba3a0":
+  version "0.3.0-75e8046fbecef4538facb38454dc938c14aba3a0"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-75e8046fbecef4538facb38454dc938c14aba3a0.tgz#75edab40248bffa505d816d40f8e0f501c6a6847"
+  integrity sha1-de2rQCSL/6UF2BbUD44PUBxqaEc=
 
-"@saltbox/saltbox-frontend-common@^0.6.8":
-  version "0.6.8"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.8.tgz#355781444db4eb573482fe96f809d3686daa8a22"
-  integrity sha1-NVeBRE2061c0gv6W+AnTaG2qiiI=
+"@saltbox/saltbox-frontend-common@^0.6.9":
+  version "0.6.9"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.9.tgz#bd765bcfbfc94677037a007b8c2b08c31b218249"
+  integrity sha1-vXZbz7/JRncDegB7jCsIwxshgkk=
   dependencies:
     "@material-symbols-svg/metadata" "^0.14.0"
     "@material-symbols/font-300" "^0.47.6"

@@ -14,10 +14,11 @@ import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
+import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
-import { OnFilterButtonParams } from "../../types/minion-details-props";
+import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
 import styles from "./minion-dashboard-tab.module.css";
 
@@ -55,7 +56,7 @@ interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   isInDrawer?: boolean;
-  onFilterButton?: (params: OnFilterButtonParams) => void;
+  onFilterButton?: OnFilterButtonHandler;
 }
 
 const transformValueToString = (value: unknown): string => {
@@ -76,7 +77,7 @@ const minionDetailsViewsToDescriptionItems = (
   t: TFunction,
   minionDetailViews: MinionDetailView[],
   schema: MinionDetailSchema,
-  onFilterButton?: (params: OnFilterButtonParams) => void
+  onFilterButton?: OnFilterButtonHandler
 ): InfoDescriptionsProps["items"] => {
   const grainNameClassName = `minion-details-grain-name ${styles.minionDetailsGrainName}`;
 
@@ -109,6 +110,9 @@ const minionDetailsViewsToDescriptionItems = (
     const grainValueString = isGrainValueArray
       ? grainValue.map((item) => transformValueToString(item)).join("\n")
       : transformValueToString(grainValue);
+    const filterFieldName = `grains.${String(minionDetailView.key)}`;
+    const canFilter = !!onFilterButton?.canApply(filterFieldName, grainValue);
+    const isActive = !!onFilterButton?.isActive(filterFieldName, grainValue);
 
     return {
       key: minionDetailView.key,
@@ -122,12 +126,13 @@ const minionDetailsViewsToDescriptionItems = (
           </Flex>
           <Flex gap={2} className={styles.minionDetailsGrainButtons}>
             <CopyToClipboardButton text={grainValueString} />
-            {onFilterButton && (
+            {canFilter && onFilterButton && (
               <FilterActionButton
-                title={t("dashboard.apply-value-to-filters")}
+                active={isActive}
+                title={getClientFilterActionTitle(isActive, t)}
                 onClick={() =>
                   onFilterButton({
-                    name: `grains.${String(minionDetailView.key)}`,
+                    name: filterFieldName,
                     value: grainValue,
                   })
                 }
@@ -147,7 +152,7 @@ const minionDetailViewGroupsToCollapseItems = (
   t: TFunction,
   minionDetailViewGroups: MinionDetailViewGroup[],
   schema: MinionDetailSchema,
-  onFilterButton?: (params: OnFilterButtonParams) => void
+  onFilterButton?: OnFilterButtonHandler
 ): CollapseProps["items"] => {
   return minionDetailViewGroups.map((minionDetailViewGroup) => {
     return {

@@ -1,5 +1,9 @@
 {
   "minions": {
+    "action-button": {
+      "add-filter": "Add this value to minion filters",
+      "remove-filter": "Remove this value from minion filters"
+    },
     "title": "Collection",
     "tab-list": "List",
     "tab-tasks": "Tasks",
@@ -51,9 +55,6 @@
       "category-column": "Category",
       "empty": "No extra data available",
       "empty-category": "No extra data in the \"{{category}}\" category",
-      "apply-to-filters": "Apply value to filters",
-      "add-to-client-filters": "Add this value to minion filters",
-      "remove-from-client-filters": "Remove this value from minion filters",
       "search-placeholder": "Search records",
       "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
       "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
@@ -76,6 +77,7 @@
         "no-categories": "No categories allow manual extra data entry",
         "no-fields": "The category has no fields. Add them in the category settings",
         "unsupported-type": "This field type is not supported for manual input",
+        "field-required": "Fill in the field",
         "empty-error": "Fill in at least one field",
         "change-category": {
           "title": "Changing category",
@@ -158,6 +160,7 @@
     "efi-yes": "Yes",
     "efi-no": "No",
     "filter-applied": "Filter applied",
+    "filter-value-unsupported": "This value cannot be used in a filter",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
     "subcollection-info": "This collection is a subcollection of",
     "collection-query": "Collection filter",
@@ -576,15 +579,14 @@
       "field-name-placeholder": "Enter field name",
       "field-name-required": "Field name is required",
       "field-name-unique": "A field with this name already exists in the category",
-      "field-type-placeholder": "Select types",
-      "field-type-required": "Select at least one type"
+      "field-type-placeholder": "Select type",
+      "field-type-required": "Select a type"
     },
     "field-types": {
       "str": "Text",
       "int": "Number",
       "float": "Number (float)",
       "bool": "Boolean",
-      "none": "None",
       "list": "List",
       "dict": "Object",
       "bytes": "Bytes",
