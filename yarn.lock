@@ -2214,10 +2214,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-c56b38f492ad8bebec6cbcf74ae2c0e552c0dc84.tgz#5c7aa2f1096fa5022ffc5925de33727693d0336a"
   integrity sha1-XHqi8QlvpQIv/Fkl3jNydpPQM2o=
 
-"@saltbox/saltbox-frontend-common@^0.6.7":
-  version "0.6.7"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.7.tgz#7378b9ff582da00a040caa55447f1c2ab97f2445"
-  integrity sha1-c3i5/1gtoAoEDKpVRH8cKrl/JEU=
+"@saltbox/saltbox-frontend-common@^0.6.8":
+  version "0.6.8"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.8.tgz#355781444db4eb573482fe96f809d3686daa8a22"
+  integrity sha1-NVeBRE2061c0gv6W+AnTaG2qiiI=
   dependencies:
     "@material-symbols-svg/metadata" "^0.14.0"
     "@material-symbols/font-300" "^0.47.6"
@@ -2232,6 +2232,7 @@
     "@tanstack/react-virtual" "^3.13.12"
     ajv "^8.17.1"
     ajv-formats "^3.0.1"
+    ajv-i18n "^4.2.0"
     clsx "^2.1.1"
     i18next "^25.2.1"
     monaco-editor "^0.55.1"
@@ -3209,6 +3210,11 @@ ajv-formats@^3.0.1:
   integrity sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ==
   dependencies:
     ajv "^8.0.0"
+
+ajv-i18n@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/ajv-i18n/-/ajv-i18n-4.2.0.tgz#d48750ba60e283b3dee31e3c22c8c9f7410e326f"
+  integrity sha512-v/ei2UkCEeuKNXh8RToiFsUclmU+G57LO1Oo22OagNMENIw+Yb8eMwvHu7Vn9fmkjJyv6XclhJ8TbuigSglPkg==
 
 ajv-keywords@^3.5.2:
   version "3.5.2"

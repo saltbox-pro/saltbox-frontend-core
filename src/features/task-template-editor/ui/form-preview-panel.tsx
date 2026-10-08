@@ -1,12 +1,13 @@
 import { GlobalOutlined } from "@ant-design/icons";
 import { getDefaultFormState } from "@rjsf/utils";
 import {
+  AppLanguage,
+  createRjsfValidator,
   Dropdown,
   JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS,
   JsonForm,
   localizeTemplateUiSchema,
   notify,
-  rjsfValidator,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react-lite";
@@ -68,6 +69,14 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
   const uiSchema = meta?.ui_schema;
   const locales = store.translationLocales;
   const language = pickPreviewLanguage(locales, store.previewLanguage, i18n.language);
+  const validatorLanguage =
+    language === AppLanguage.RU || language.startsWith(`${AppLanguage.RU}-`)
+      ? AppLanguage.RU
+      : AppLanguage.EN;
+  const previewValidator = useMemo(
+    () => createRjsfValidator(validatorLanguage),
+    [validatorLanguage]
+  );
 
   const [formData, setFormData] = useState<unknown>({});
   const [isDataModalOpen, setDataModalOpen] = useState(false);
@@ -105,12 +114,12 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       return false;
     }
     try {
-      rjsfValidator.ajv.compile(toRjsfSchema(previewMeta, language));
+      previewValidator.ajv.compile(toRjsfSchema(previewMeta, language));
       return true;
     } catch {
       return false;
     }
-  }, [previewMeta, jsonSchema, isEmpty, language]);
+  }, [previewMeta, jsonSchema, isEmpty, language, previewValidator]);
 
   useEffect(() => {
     if (!previewMeta || !jsonSchema || typeof jsonSchema === "boolean" || isEmpty) {
@@ -120,7 +129,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
 
     const rjsfSchema = toRjsfSchema(previewMeta, language);
     const next = getDefaultFormState(
-      rjsfValidator,
+      previewValidator,
       rjsfSchema,
       undefined,
       rjsfSchema,
@@ -128,7 +137,7 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
       JSON_FORM_DEFAULT_STATE_BEHAVIOR_SETTINGS
     );
     setFormData(next ?? {});
-  }, [resetKey, previewMeta, jsonSchema, isEmpty, language]);
+  }, [resetKey, previewMeta, jsonSchema, isEmpty, language, previewValidator]);
 
   if (store.hasMetaError) {
     return (
@@ -190,11 +199,12 @@ export const FormPreviewPanel = observer(({ store }: FormPreviewPanelProps) => {
           message={t("task-template-editor.preview-render-error")}
         >
           <JsonForm
-            key={resetKey}
+            key={`${resetKey}:${language}`}
             id={formId}
             schema={toRjsfSchema(previewMeta!, language)}
             uiSchema={toRjsfUiSchema(localizedUiSchema!)}
             formData={formData}
+            validator={previewValidator}
             onChange={(event) => setFormData(event.formData)}
             onSubmit={() => notify.success(t("task-template-editor.form-valid"))}
           >
