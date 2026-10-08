@@ -1,48 +1,19 @@
-import { TaskStatus } from "@saltbox/saltbox-core-api-client";
 import { useMemo } from "react";
 
-export type TaskRunControlInput = {
-  taskStatus: TaskStatus | undefined;
-  failedCount: number | undefined;
-  pendingCount: number | undefined;
-};
+import {
+  getTaskPermissions,
+  type TaskPermissions,
+  type TaskPermissionsInput,
+} from "saltbox-core/shared/utils/task-permissions";
+
+export type TaskRunControlInput = TaskPermissionsInput;
 
 export const useTaskPermissions = ({
   taskStatus,
   failedCount,
   pendingCount,
-}: TaskRunControlInput) => {
-  const loadingOrNoStatus = taskStatus === undefined;
-
-  const canRun = useMemo(
-    () =>
-      !loadingOrNoStatus &&
-      taskStatus !== TaskStatus.Finished &&
-      taskStatus !== TaskStatus.WaitMinions &&
-      taskStatus !== TaskStatus.Running &&
-      taskStatus !== TaskStatus.Stopping,
-    [loadingOrNoStatus, taskStatus]
+}: TaskRunControlInput): TaskPermissions =>
+  useMemo(
+    () => getTaskPermissions({ taskStatus, failedCount, pendingCount }),
+    [taskStatus, failedCount, pendingCount]
   );
-
-  const canStop = useMemo(
-    () =>
-      !loadingOrNoStatus &&
-      taskStatus !== TaskStatus.Created &&
-      taskStatus !== TaskStatus.Finished &&
-      taskStatus !== TaskStatus.Stopping &&
-      taskStatus !== TaskStatus.Stopped,
-    [loadingOrNoStatus, taskStatus]
-  );
-
-  const canRestartFailed = useMemo(
-    () =>
-      (!loadingOrNoStatus &&
-        taskStatus !== TaskStatus.Stopping &&
-        taskStatus !== TaskStatus.Created &&
-        failedCount > 0) ||
-      (pendingCount > 0 && taskStatus === TaskStatus.Finished),
-    [failedCount, loadingOrNoStatus, pendingCount, taskStatus]
-  );
-
-  return { canRun, canStop, canRestartFailed };
-};

@@ -1,0 +1,22 @@
+.leftGroup {
+  min-height: 32px;
+}
+
+.rightGroup {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.rightGroup :global(.fast-table-toolbar) {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.bulkModeSwitch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}

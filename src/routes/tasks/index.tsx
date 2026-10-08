@@ -4,15 +4,26 @@ import {
   PageHeader,
   WebSocketMessage,
   WebSocketService,
+  createSelectColumn,
   formatTimeByUserTZ,
   getLocalizedText,
 } from "@saltbox/saltbox-frontend-common";
-import { createColumnHelper } from "@tanstack/react-table";
+import {
+  createColumnHelper,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+} from "@tanstack/react-table";
+import { Flex, Switch } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import {
+  TaskBulkActionsToolbar,
+  useTaskBulkActions,
+} from "saltbox-core/features/task-bulk-actions";
 import { CollectionLink } from "saltbox-core/shared/components/collection-link";
 import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
 import { TaskMinionsCountProgress } from "saltbox-core/shared/components/task/task-minions-count-progress";
@@ -21,6 +32,8 @@ import { getTasksFilterSchema } from "saltbox-core/shared/constants/filter-schem
 import { apiCoreStore, appStore, TasksFilterStore, TasksStore } from "saltbox-core/store";
 
 import { TasksQueryBuilder } from "../minions.$slug/-components/tasks-query-builder";
+
+import styles from "./index.module.css";
 
 const TasksTable = FastTable.Paginated<TaskListResponseSchema>;
 const columnHelper = createColumnHelper<TaskListResponseSchema>();
@@ -32,6 +45,34 @@ export default observer(function TasksPage() {
   const [tasksStore] = useState(() => new TasksStore(TaskType.Classic));
   const [filterStore] = useState(() => new TasksFilterStore([], "tasksFilter"));
   const [webSocketService] = useState(() => new WebSocketService<TaskListResponseSchema>());
+  const [isBulkMode, setIsBulkMode] = useState(false);
+  const [selection, setSelection] = useState<RowSelectionState>({});
+
+  const clearSelection = useCallback(() => {
+    setSelection({});
+  }, []);
+
+  const getSelectedTasks = useCallback(
+    () => tasksStore.tasks.filter((task) => selection[task.id]),
+    [selection, tasksStore]
+  );
+
+  const selectedTasks = getSelectedTasks();
+
+  const { modalContextHolder, runningAction, isRunning, handleBulkActionClick } =
+    useTaskBulkActions({
+      getSelectedTasks,
+      onTaskUpdated: tasksStore.updateTask,
+      onCompleted: () => {
+        clearSelection();
+        tasksStore.loadTasks();
+      },
+    });
+
+  const handleBulkModeChange = (checked: boolean) => {
+    setIsBulkMode(checked);
+    clearSelection();
+  };
 
   const filterSchema = useMemo(
     () =>
@@ -45,6 +86,7 @@ export default observer(function TasksPage() {
 
   const columns = useMemo(
     () => [
+      ...(isBulkMode ? [createSelectColumn<TaskListResponseSchema>()] : []),
       columnHelper.accessor("id", {
         header: "ID",
         meta: {
@@ -160,7 +202,7 @@ export default observer(function TasksPage() {
         },
       }),
     ],
-    [t, i18n.language]
+    [isBulkMode, t, i18n.language]
   );
 
   useEffect(() => {
@@ -196,18 +238,26 @@ export default observer(function TasksPage() {
   }, []);
 
   const handleSearchButtonClick = () => {
+    clearSelection();
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(undefined);
   };
 
   const handleResetButtonClick = () => {
+    clearSelection();
     filterStore.handleResetFilters();
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(undefined);
   };
 
+  const handleLazyLoad = (pagination: PaginationState, sorting: SortingState) => {
+    clearSelection();
+    tasksStore.handleLazyLoad(pagination, sorting);
+  };
+
   return (
     <>
+      {modalContextHolder}
       <PageHeader title={t("aggregated-tasks.title")} />
       <TasksQueryBuilder
         filterStore={filterStore}
@@ -216,7 +266,22 @@ export default observer(function TasksPage() {
       />
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <FastTable.Toolbar />
+          <Flex align="center" gap="middle" className={styles.leftGroup}>
+            <label className={styles.bulkModeSwitch}>
+              <Switch checked={isBulkMode} disabled={isRunning} onChange={handleBulkModeChange} />
+              {t("tasks-bulk.mode")}
+            </label>
+            {isBulkMode && (
+              <TaskBulkActionsToolbar
+                selectedTasks={selectedTasks}
+                runningAction={runningAction}
+                onActionClick={handleBulkActionClick}
+              />
+            )}
+          </Flex>
+          <div className={styles.rightGroup}>
+            <FastTable.Toolbar />
+          </div>
         </div>
         <TasksTable
           tableId="core-tasks"
@@ -229,7 +294,9 @@ export default observer(function TasksPage() {
           loader={tasksStore.tasksLoad}
           pagination={tasksStore.pagination}
           sorting={tasksStore.sorting}
-          onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
+          rowSelection={isBulkMode ? selection : undefined}
+          onRowSelectionChange={isBulkMode ? setSelection : undefined}
+          onLazyLoad={handleLazyLoad}
           onRowClick={(task) =>
             navigate(`/core/minions/${task.target_collection.slug}/tasks/${task.id}`)
           }

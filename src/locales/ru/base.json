@@ -1502,6 +1502,18 @@
     "title": "Задачи",
     "policies-title": "Политики"
   },
+  "tasks-bulk": {
+    "mode": "Массовые действия",
+    "run-confirm-title": "Запустить выбранные задачи: {{count}}?",
+    "stop-confirm-title": "Остановить выбранные задачи: {{count}}?",
+    "restart-failed-confirm-title": "Перезапустить выполнение задач на завершенных с ошибкой клиентах: {{count}}?",
+    "skipped-description": "Пропущено (действие недоступно): {{count}}",
+    "run-ok": "Запустить",
+    "stop-ok": "Остановить",
+    "restart-failed-ok": "Перезапустить",
+    "result": "Выполнено: {{succeeded}}, ошибок: {{failed}}, пропущено: {{skipped}}",
+    "failed-tasks": "Задачи с ошибкой: {{ids}}"
+  },
   "errors": {
     "form-validation": "Ошибка валидации формы"
   },
