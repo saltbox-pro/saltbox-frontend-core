@@ -2,9 +2,21 @@ import type { TFunction } from "i18next";
 import type { Option, OptionList } from "react-querybuilder";
 
 const EXTRA_DATA_FIELD = "extra";
+const EXTRA_DATA_FIELD_PREFIX = `${EXTRA_DATA_FIELD}.`;
 
 function isExtraDataField(name: string): boolean {
-  return name === EXTRA_DATA_FIELD || name.startsWith(`${EXTRA_DATA_FIELD}.`);
+  return name === EXTRA_DATA_FIELD || name.startsWith(EXTRA_DATA_FIELD_PREFIX);
+}
+
+function getFieldLabel(field: Option, t: TFunction): string {
+  if (field.name.startsWith(EXTRA_DATA_FIELD_PREFIX)) {
+    return t("minions.filter-extra-data-field", {
+      path: field.name.slice(EXTRA_DATA_FIELD_PREFIX.length),
+      defaultValue: field.label,
+    });
+  }
+
+  return t(`minions.filter-fields.${field.name}`, { defaultValue: field.label });
 }
 
 export function localizeMinionFilterSchema(
@@ -14,9 +26,7 @@ export function localizeMinionFilterSchema(
 ): OptionList {
   const fields: Option[] = (schema as Option[]).map((field) => ({
     ...field,
-    label: isExtraDataField(field.name)
-      ? field.label
-      : t(`minions.filter-fields.${field.name}`, { defaultValue: field.label }),
+    label: getFieldLabel(field, t),
   }));
 
   const staticFields = fields

@@ -192,6 +192,7 @@
       "master": "Контроллер",
       "last_activity": "Последняя активность",
       "last_activity_seconds": "Секунд с последней активности",
+      "extra": "Расширенные данные (агрегированные)",
       "grains": {
         "host": "Хост",
         "fqdn": "FQDN",
@@ -204,9 +205,9 @@
         "mem_total": "Объем памяти",
         "swap_total": "Объем подкачки",
         "num_gpus": "Количество GPU",
-        "os": "ОС",
+        "os": "Название ОС",
         "osfullname": "Полное имя ОС",
-        "osfinger": "Идентификатор ОС",
+        "osfinger": "ОС",
         "osrelease": "Версия ОС",
         "osrelease_info": "Сведения о версии ОС",
         "oscodename": "Кодовое имя ОС",
@@ -250,12 +251,12 @@
         "pythonexecutable": "Python Executable",
         "pythonpath": "Путь к Python",
         "saltpath": "Путь к Salt",
-        "saltversion": "Версия Salt",
+        "saltversion": "Версия клиента",
         "zmqversion": "Версия ZeroMQ",
         "shell": "Shell",
         "transactional": "Транзакционная система",
         "efi": "EFI",
-        "efi_secure_boot": "EFI Secure Boot",
+        "efi_secure_boot": "Secure boot",
         "username": "Имя пользователя",
         "groupname": "Имя группы",
         "pid": "PID",
@@ -265,7 +266,8 @@
         "zfs_feature_flags": "Флаги функций ZFS",
         "lvm": "LVM"
       }
-    }
+    },
+    "filter-extra-data-field": "Поле расширенных данных \"{{path}}\""
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
