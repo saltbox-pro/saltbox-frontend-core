@@ -7,7 +7,7 @@ import {
   HolderOutlined,
 } from "@ant-design/icons";
 import { CopyToClipboardButton, Dropdown, ErrorZone } from "@saltbox/saltbox-frontend-common";
-import { Button, Card, Empty, Flex, Modal, Spin, Typography } from "antd";
+import { Button, Card, Empty, Flex, message, Modal, Spin, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ComponentProps, useEffect, useRef, useState } from "react";
@@ -114,7 +114,9 @@ export const MinionDashboardCard = observer(
       if (item.isOther) {
         return;
       }
-      applyFieldValueFilter(filterStore, card.fieldSource, item.value);
+      if (!applyFieldValueFilter(filterStore, card.fieldSource, item.value)) {
+        message.warning(t("minions.filter-value-unsupported"));
+      }
     };
 
     const copyDataText = dashboardCardStore.grainValues

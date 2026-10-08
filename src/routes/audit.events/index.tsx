@@ -81,7 +81,7 @@ const AuditEventsPage = observer(() => {
 
         <AuditEventsTable
           store={eventsStore}
-          filterableFields={filterStore.valueFilterFields}
+          filterStore={filterStore}
           onFilterByValue={handleFilterByValue}
         />
       </FastTable.Provider>

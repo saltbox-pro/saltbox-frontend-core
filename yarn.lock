@@ -2214,10 +2214,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-75e8046fbecef4538facb38454dc938c14aba3a0.tgz#75edab40248bffa505d816d40f8e0f501c6a6847"
   integrity sha1-de2rQCSL/6UF2BbUD44PUBxqaEc=
 
-"@saltbox/saltbox-frontend-common@^0.6.9":
-  version "0.6.9"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.9.tgz#bd765bcfbfc94677037a007b8c2b08c31b218249"
-  integrity sha1-vXZbz7/JRncDegB7jCsIwxshgkk=
+"@saltbox/saltbox-frontend-common@^0.6.10":
+  version "0.6.10"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.6.10.tgz#cf710599acdf7fd93df3d2e25afa21bf7d17b9a9"
+  integrity sha1-z3EFmazff9k989LiWvohv30Xuak=
   dependencies:
     "@material-symbols-svg/metadata" "^0.14.0"
     "@material-symbols/font-300" "^0.47.6"

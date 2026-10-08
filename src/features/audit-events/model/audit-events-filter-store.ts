@@ -1,10 +1,9 @@
 import { createLoader, PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
-import { generateID, type Option, type OptionList } from "react-querybuilder";
+import { type Option, type OptionList } from "react-querybuilder";
 
+import { hasFilterRule, toggleFilterRule } from "saltbox-core/shared/helpers/toggle-filter-rule";
 import { apiAuditStore } from "saltbox-core/store";
-
-import { withValueRule } from "../helpers/with-value-rule";
 
 export class AuditEventsFilterStore extends PersistentFilterStore {
   @observable.ref rawFilterSchema: OptionList = [];
@@ -41,15 +40,22 @@ export class AuditEventsFilterStore extends PersistentFilterStore {
     });
   };
 
-  @action
-  applyValueFilter = (field: string, value: string | boolean) => {
-    this.currentFilters = withValueRule(this.currentFilters, {
-      id: generateID(),
+  hasValueFilter = (field: string, value: string | boolean): boolean => {
+    return hasFilterRule(this.currentFilters, {
       field,
       operator: "=",
-      valueSource: "value",
       value,
     });
+  };
+
+  @action
+  applyValueFilter = (field: string, value: string | boolean) => {
+    const { group } = toggleFilterRule(
+      this.currentFilters,
+      { field, operator: "=", value },
+      "replace-field"
+    );
+    this.handleFiltersChange(group);
     this.filtersRevision += 1;
     this.handleSearch();
   };

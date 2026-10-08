@@ -1,14 +1,20 @@
 import { getFilterFieldOptions, type FilterFieldOptions } from "@saltbox/saltbox-frontend-common";
-import { generateID, type OptionList, type RuleGroupType, type RuleType } from "react-querybuilder";
+import { type OptionList, type RuleGroupType } from "react-querybuilder";
 
 import {
   buildClientFilterRule,
   type ClientFilterRule,
 } from "saltbox-core/shared/helpers/client-filter-rule";
+import {
+  hasFilterRule,
+  toggleFilterRule,
+  type ToggleFilterRuleMode,
+} from "saltbox-core/shared/helpers/toggle-filter-rule";
 
 type ClientFilterStore = {
   filterSchema: OptionList;
   currentFilters: RuleGroupType;
+  filtersRevision: number;
   handleFiltersChange: (filters: RuleGroupType) => void;
   handleSearch: () => void;
 };
@@ -16,6 +22,7 @@ type ClientFilterStore = {
 export type ApplyClientFilterOptions = {
   search?: boolean;
   fieldOptions?: FilterFieldOptions;
+  mode?: ToggleFilterRuleMode;
 };
 
 export type ApplyClientFilterResult =
@@ -39,82 +46,6 @@ function buildRule(
   return buildClientFilterRule(field, value, resolveFieldOptions(filterStore, field, fieldOptions));
 }
 
-function isRuleGroup(rule: RuleGroupType["rules"][number]): rule is RuleGroupType {
-  return typeof rule === "object" && rule != null && "rules" in rule;
-}
-
-function valuesMatch(left: unknown, right: ClientFilterRule["value"]): boolean {
-  if (left === right) {
-    return true;
-  }
-  // localStorage / older filters may store checkbox values as "true"/"false"
-  return String(left ?? "") === String(right);
-}
-
-function matchesRule(rule: RuleType, identity: ClientFilterRule): boolean {
-  return (
-    rule.field === identity.field &&
-    rule.operator === identity.operator &&
-    valuesMatch(rule.value, identity.value)
-  );
-}
-
-function hasMatchingRule(group: RuleGroupType, identity: ClientFilterRule): boolean {
-  return group.rules.some((rule) => {
-    if (isRuleGroup(rule)) {
-      return hasMatchingRule(rule, identity);
-    }
-
-    return matchesRule(rule, identity);
-  });
-}
-
-function removeFirstMatch(
-  group: RuleGroupType,
-  identity: ClientFilterRule
-): { group: RuleGroupType; removed: boolean } {
-  let removed = false;
-  const rules: RuleGroupType["rules"] = [];
-
-  for (const rule of group.rules) {
-    if (removed) {
-      rules.push(rule);
-      continue;
-    }
-
-    if (isRuleGroup(rule)) {
-      const nested = removeFirstMatch(rule, identity);
-      removed = nested.removed;
-      if (nested.group.rules.length > 0) {
-        rules.push(nested.group);
-      }
-      continue;
-    }
-
-    if (matchesRule(rule, identity)) {
-      removed = true;
-      continue;
-    }
-
-    rules.push(rule);
-  }
-
-  return {
-    group: { ...group, rules },
-    removed,
-  };
-}
-
-function toFilterRule(identity: ClientFilterRule): RuleType {
-  return {
-    id: generateID(),
-    field: identity.field,
-    operator: identity.operator,
-    valueSource: "value",
-    value: identity.value,
-  };
-}
-
 export function canApplyClientFilter(
   filterStore: ClientFilterStore,
   field: string,
@@ -135,7 +66,7 @@ export function hasClientFilter(
     return false;
   }
 
-  return hasMatchingRule(filterStore.currentFilters, identity);
+  return hasFilterRule(filterStore.currentFilters, identity);
 }
 
 export function applyClientFilter(
@@ -149,21 +80,17 @@ export function applyClientFilter(
     return { ok: false, reason: "unsupported" };
   }
 
-  const search = options.search ?? false;
-  const isActive = hasMatchingRule(filterStore.currentFilters, identity);
-
-  filterStore.handleFiltersChange(
-    isActive
-      ? removeFirstMatch(filterStore.currentFilters, identity).group
-      : {
-          ...filterStore.currentFilters,
-          rules: [...filterStore.currentFilters.rules, toFilterRule(identity)],
-        }
+  const { group, result } = toggleFilterRule(
+    filterStore.currentFilters,
+    identity,
+    options.mode ?? "append"
   );
+  filterStore.handleFiltersChange(group);
+  filterStore.filtersRevision += 1;
 
-  if (search) {
+  if (options.search ?? false) {
     filterStore.handleSearch();
   }
 
-  return { ok: true, result: isActive ? "removed" : "added" };
+  return { ok: true, result };
 }

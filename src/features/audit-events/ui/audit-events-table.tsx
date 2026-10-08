@@ -1,8 +1,8 @@
-import { FilterOutlined } from "@ant-design/icons";
 import type { AuditEventModel } from "@saltbox/saltbox-audit-api-client";
 import {
   type CellAction,
   FastTable,
+  FilterActionButton,
   createBooleanColumn,
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
@@ -16,6 +16,7 @@ import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 
 import { AUDIT_SEVERITY_TAG_COLOR, AUDIT_STATUS_TAG_COLOR } from "../constants/audit-events";
 import { getAuditEnumLabel } from "../helpers/audit-enum-label";
+import type { AuditEventsFilterStore } from "../model/audit-events-filter-store";
 import type { AuditEventsStore } from "../model/audit-events-store";
 
 import { AuditEventsPager } from "./audit-events-pager";
@@ -43,25 +44,31 @@ type FilterValue = string | boolean;
 
 type AuditEventsTableProps = {
   store: AuditEventsStore;
-  filterableFields: ReadonlySet<string>;
+  filterStore: AuditEventsFilterStore;
   onFilterByValue: (field: string, value: FilterValue) => void;
 };
 
 export const AuditEventsTable = observer(
-  ({ store, filterableFields, onFilterByValue }: AuditEventsTableProps) => {
+  ({ store, filterStore, onFilterByValue }: AuditEventsTableProps) => {
     const { t } = useTranslation();
+    const { currentFilters, valueFilterFields } = filterStore;
 
     const columns = useMemo(() => {
       const createFilterAction = (
         field: string,
         getValue: (row: AuditEventModel) => FilterValue | null | undefined
       ): CellAction<AuditEventModel> => ({
-        icon: <FilterOutlined />,
-        title: t("dashboard.apply-value-to-filters"),
+        icon: FilterActionButton.getIcon(),
         visible: (_, row) => {
           const value = getValue(row);
           return (
-            filterableFields.has(field) && value !== null && value !== undefined && value !== ""
+            valueFilterFields.has(field) && value !== null && value !== undefined && value !== ""
+          );
+        },
+        getPresentation: (_, row) => {
+          const value = getValue(row);
+          return FilterActionButton.getPresentation(
+            value != null && filterStore.hasValueFilter(field, value)
           );
         },
         onClick: (_, row) => {
@@ -187,7 +194,7 @@ export const AuditEventsTable = observer(
           },
         }),
       ];
-    }, [filterableFields, onFilterByValue, t]);
+    }, [currentFilters, filterStore, onFilterByValue, t, valueFilterFields]);
 
     return (
       <div className={styles.layout}>

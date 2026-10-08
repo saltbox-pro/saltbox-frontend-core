@@ -4,7 +4,7 @@ import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
 import { action, computed, makeObservable, observable } from "mobx";
-import { jsonLogicAdditionalOperators, type RuleType } from "react-querybuilder";
+import { jsonLogicAdditionalOperators } from "react-querybuilder";
 
 import {
   DEFAULT_JOB_DATE_RANGE_PRESET,
@@ -12,6 +12,11 @@ import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
+import {
+  hasFilterRule,
+  toggleFilterRule,
+  type FilterRuleIdentity,
+} from "saltbox-core/shared/helpers/toggle-filter-rule";
 import { buildJobsListQuery } from "saltbox-core/shared/utils/build-jobs-list-query";
 import { hasJobCreatedFilterField } from "saltbox-core/shared/utils/job-filter-fields";
 import { apiCoreStore, JobFilterStore } from "saltbox-core/store";
@@ -163,31 +168,43 @@ export class JobsStore {
     this.loadJobs();
   };
 
+  hasCellFilter = (fieldName: string, value: unknown): boolean => {
+    return hasFilterRule(
+      this.jobFilterStore.currentFilters,
+      toJobCellFilterIdentity(fieldName, value)
+    );
+  };
+
   @action
-  applyCellFilter = (fieldName: string, value: unknown) => {
-    const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
-      ? ["in", value.join(",")]
-      : ["=", String(value ?? "")];
+  applyCellFilter = (fieldName: string, value: unknown): "added" | "removed" => {
+    const { group, result } = toggleFilterRule(
+      this.jobFilterStore.currentFilters,
+      toJobCellFilterIdentity(fieldName, value),
+      "flatten-field"
+    );
 
-    const newRule: RuleType = {
-      field: fieldName,
-      operator,
-      value: ruleValue,
-    };
-
-    this.jobFilterStore.handleFiltersChange({
-      combinator: "and",
-      rules: [
-        ...this.jobFilterStore.currentFilters.rules.filter(
-          (r) => "field" in r && r.field !== fieldName
-        ),
-        newRule,
-      ],
-    });
-
+    this.jobFilterStore.handleFiltersChange(group);
     this.jobFilterStore.handleSearch();
     this.syncDateRangeWithAppliedFilters();
     this.mongoDBQuery = this.jobFilterStore.searchMongoDBQuery;
     this.handleSearch();
+
+    return result;
+  };
+}
+
+function toJobCellFilterIdentity(fieldName: string, value: unknown): FilterRuleIdentity {
+  if (Array.isArray(value)) {
+    return {
+      field: fieldName,
+      operator: "in",
+      value: value.join(","),
+    };
+  }
+
+  return {
+    field: fieldName,
+    operator: "=",
+    value: String(value ?? ""),
   };
 }

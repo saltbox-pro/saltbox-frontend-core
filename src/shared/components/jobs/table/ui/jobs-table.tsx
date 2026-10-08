@@ -1,6 +1,10 @@
-import { FilterOutlined } from "@ant-design/icons";
 import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTable, formatTimeByUserTZ, CellAction } from "@saltbox/saltbox-frontend-common";
+import {
+  CellAction,
+  FastTable,
+  FilterActionButton,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Tag } from "antd";
 import { observer } from "mobx-react-lite";
@@ -47,6 +51,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { currentFilters } = store.jobFilterStore;
 
   const jobsEmptyText = useMemo(() => {
     const period = t(PRESET_TO_PERIOD_KEY[store.dateRangePreset]);
@@ -55,14 +60,16 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
 
   const createFilterAction = useCallback(
     (fieldName: string): CellAction<JobsListResponse> => ({
-      icon: <FilterOutlined />,
-      title: t("dashboard.apply-value-to-filters"),
+      icon: FilterActionButton.getIcon(),
+      getPresentation: (value) =>
+        FilterActionButton.getPresentation(store.hasCellFilter(fieldName, value)),
       onClick: (value) => {
-        onCellFilterClick();
-        store.applyCellFilter(fieldName, value);
+        if (store.applyCellFilter(fieldName, value) === "added") {
+          onCellFilterClick();
+        }
       },
     }),
-    [onCellFilterClick, store, t]
+    [currentFilters, onCellFilterClick, store]
   );
 
   const masterColumn = useMemo(
@@ -111,7 +118,10 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       }),
       columnHelper.accessor("tgt_type", {
         header: t("jobs.table-target-type"),
-        meta: { width: "8%" },
+        meta: {
+          width: "8%",
+          actions: [createFilterAction("tgt_type")],
+        },
       }),
       columnHelper.accessor((row) => row.source?.type, {
         id: "source.type",
