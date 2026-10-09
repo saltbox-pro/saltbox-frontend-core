@@ -3,20 +3,14 @@ import type {
   MinionExtraDataCategoryField,
   MinionExtraDataCategoryFieldType,
 } from "@saltbox/saltbox-core-api-client";
-import { Button, Flex, Form, Input, Select, Tag, Typography, theme } from "antd";
+import { Button, Flex, Form, Tag, Typography, theme } from "antd";
 import clsx from "clsx";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getParentPopupContainer } from "saltbox-core/shared/helpers/get-parent-popup-container";
-
-import { useExtraDataCategoryFieldTypeOptions } from "../hooks/use-extra-data-category-field-type-options";
 import { useExtraDataCategoryFieldsDrag } from "../hooks/use-extra-data-category-fields-drag";
 
-import {
-  getExtraDataCategoryFieldNameRules,
-  getExtraDataCategoryFieldTypesRules,
-} from "./extra-data-category-field-form-rules";
+import { ExtraDataCategoryFieldFormFields } from "./extra-data-category-field-form-fields";
 import styles from "./extra-data-category-fields-list.module.css";
 import {
   ExtraDataCategoryFieldSortHandle,
@@ -25,7 +19,7 @@ import {
 
 type CreateFieldValues = {
   name: string;
-  types: MinionExtraDataCategoryFieldType[];
+  type: MinionExtraDataCategoryFieldType;
 };
 
 type ExtraDataCategoryFieldsListProps = {
@@ -40,25 +34,22 @@ type ExtraDataCategoryFieldsListProps = {
   deleteDisabled?: boolean;
 };
 
-function FieldTypes({ types }: { types: MinionExtraDataCategoryField["types"] }) {
+function FieldType({ type }: { type: MinionExtraDataCategoryField["type"] }) {
   const { t } = useTranslation();
   const { token } = theme.useToken();
 
   return (
-    <div className={styles.types}>
-      {(types ?? []).map((type) => (
-        <Tag
-          key={type}
-          bordered={false}
-          className={styles.typeTag}
-          style={{
-            fontSize: token.fontSize,
-            background: token.colorFillSecondary,
-          }}
-        >
-          {t(`extra-data-categories.field-types.${type}`, { defaultValue: type })}
-        </Tag>
-      ))}
+    <div className={styles.type}>
+      <Tag
+        bordered={false}
+        className={styles.typeTag}
+        style={{
+          fontSize: token.fontSize,
+          background: token.colorFillSecondary,
+        }}
+      >
+        {t(`extra-data-categories.field-types.${type}`, { defaultValue: type })}
+      </Tag>
     </div>
   );
 }
@@ -76,14 +67,13 @@ function CreateFieldRow({
 }) {
   const { t } = useTranslation();
   const [form] = Form.useForm<CreateFieldValues>();
-  const typeOptions = useExtraDataCategoryFieldTypeOptions();
   const isDisabled = disabled || loading;
 
   return (
     <Form
       form={form}
       component={false}
-      initialValues={{ name: "", types: [] }}
+      initialValues={{ name: "" }}
       onFinish={async (values) => {
         const ok = await onCreate(values);
         if (ok) form.resetFields();
@@ -91,29 +81,7 @@ function CreateFieldRow({
       autoComplete="off"
       disabled={isDisabled}
     >
-      <Form.Item
-        name="name"
-        className={styles.nameField}
-        rules={getExtraDataCategoryFieldNameRules(t, (trimmed) => existingNames.has(trimmed))}
-      >
-        <Input placeholder={t("extra-data-categories.field-form.field-name-placeholder")} />
-      </Form.Item>
-
-      <Form.Item
-        name="types"
-        className={styles.typesField}
-        rules={getExtraDataCategoryFieldTypesRules(t)}
-      >
-        <Select
-          mode="multiple"
-          maxTagCount="responsive"
-          options={typeOptions}
-          optionFilterProp="label"
-          notFoundContent={t("common.no-data")}
-          placeholder={t("extra-data-categories.field-form.field-type-placeholder")}
-          getPopupContainer={getParentPopupContainer}
-        />
-      </Form.Item>
+      <ExtraDataCategoryFieldFormFields isDuplicateName={(trimmed) => existingNames.has(trimmed)} />
 
       <div className={styles.actions}>
         <Button
@@ -184,7 +152,7 @@ export function ExtraDataCategoryFieldsList({
                 }
               >
                 <div className={styles.name}>{field.name}</div>
-                <FieldTypes types={field.types} />
+                <FieldType type={field.type} />
 
                 <div className={styles.actions}>
                   {onDelete ? (

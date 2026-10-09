@@ -69,6 +69,11 @@ function MastersPage() {
       ),
       meta: { minWidth: 150 },
     }),
+    columnHelper.accessor("minions_count", {
+      header: t("masters.table-minions-count"),
+      cell: (data) => data.getValue() ?? 0,
+      meta: { minWidth: 120 },
+    }),
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
       cell: (data) => formatTimeByUserTZ(data.getValue()),

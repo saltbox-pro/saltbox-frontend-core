@@ -53,7 +53,7 @@ export function useExtraDataCategoryFieldsManager({
   }, []);
 
   const createField = useCallback(
-    async (params: { name: string; types: MinionExtraDataCategoryFieldType[] }) => {
+    async (params: { name: string; type: MinionExtraDataCategoryFieldType }) => {
       if (isStructuralMutatingRef.current) return false;
       isStructuralMutatingRef.current = true;
       setIsCreating(true);
@@ -72,7 +72,7 @@ export function useExtraDataCategoryFieldsManager({
                 name: currentCategory.name,
                 field: {
                   name: fieldName,
-                  types: params.types,
+                  type: params.type,
                   is_minion_field: false,
                 },
               }),
@@ -91,7 +91,6 @@ export function useExtraDataCategoryFieldsManager({
               latest.fields,
               result.data.fields
             ),
-            minion_fields: result.data.minion_fields ?? latest.minion_fields,
           });
           return true;
         });
@@ -134,7 +133,6 @@ export function useExtraDataCategoryFieldsManager({
               latest.fields,
               result.data.fields
             ),
-            minion_fields: result.data.minion_fields ?? latest.minion_fields,
           });
         });
       } finally {
@@ -200,7 +198,6 @@ export function useExtraDataCategoryFieldsManager({
           onSuccess?.({
             ...latest,
             fields: applyExtraDataCategoryFieldOrder(latest.fields, serverNames),
-            minion_fields: result.data.minion_fields ?? latest.minion_fields,
             modified: result.data.modified ?? latest.modified,
           });
         });

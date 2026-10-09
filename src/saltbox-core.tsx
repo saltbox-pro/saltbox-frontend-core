@@ -236,19 +236,6 @@ export const saltboxModule = {
         },
       ],
     },
-    {
-      priority: 30,
-      key: "audit",
-      label: { en: "Audit", ru: "Аудит" },
-      children: [
-        {
-          key: "audit-events",
-          label: { en: "Audit events", ru: "События аудита" },
-          icon: "manage_search",
-          path: "/core/audit/events",
-        },
-      ],
-    },
   ],
   init: (authStore, services, localeStore, pluginsStore) => {
     appStore.init(authStore, pluginsStore);

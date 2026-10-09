@@ -3,21 +3,13 @@ import {
   type ExtraDataCategoryModel,
   type MinionExtraDataCategoryField,
 } from "@saltbox/saltbox-core-api-client";
-import dayjs, { type Dayjs } from "dayjs";
-
-export type ExtraDataItemFieldFormValue = {
-  type: MinionExtraDataCategoryFieldType;
-  value?: unknown;
-};
+import { parseApiDatetime, toApiDatetime } from "@saltbox/saltbox-frontend-common";
+import dayjs from "dayjs";
 
 export type ExtraDataItemFormValues = {
   categoryId?: string;
-  values: Record<string, ExtraDataItemFieldFormValue>;
+  values: Record<string, unknown>;
 };
-
-const INPUT_FIELD_TYPES: readonly MinionExtraDataCategoryFieldType[] = Object.values(
-  MinionExtraDataCategoryFieldType
-).filter((type) => type !== MinionExtraDataCategoryFieldType.Bytes);
 
 const JSON_FIELD_TYPES: ReadonlySet<MinionExtraDataCategoryFieldType> = new Set([
   MinionExtraDataCategoryFieldType.List,
@@ -28,18 +20,15 @@ export function isJsonFieldType(type: MinionExtraDataCategoryFieldType): boolean
   return JSON_FIELD_TYPES.has(type);
 }
 
-export function getFieldInputTypes(
+export function getFieldInputType(
   field: MinionExtraDataCategoryField
-): MinionExtraDataCategoryFieldType[] {
-  const types = field.types ?? [];
-  if (types.length === 0) return [...INPUT_FIELD_TYPES];
-  return types.filter((type) => INPUT_FIELD_TYPES.includes(type));
+): MinionExtraDataCategoryFieldType | undefined {
+  if (field.type === MinionExtraDataCategoryFieldType.Bytes) return undefined;
+  return field.type;
 }
 
-export function getDefaultFieldInputType(
-  inputTypes: readonly MinionExtraDataCategoryFieldType[]
-): MinionExtraDataCategoryFieldType | undefined {
-  return inputTypes.find((type) => type !== MinionExtraDataCategoryFieldType.None) ?? inputTypes[0];
+export function isExtraDataFieldRequired(field: MinionExtraDataCategoryField): boolean {
+  return field.is_empty_allowed === false;
 }
 
 const ISO_DATETIME_PATTERN =
@@ -60,90 +49,28 @@ function matchesFieldType(type: MinionExtraDataCategoryFieldType, value: unknown
     case MinionExtraDataCategoryFieldType.List:
     case MinionExtraDataCategoryFieldType.Dict:
       return matchesJsonFieldType(type, value);
-    case MinionExtraDataCategoryFieldType.None:
-      return value === null;
     default:
       return false;
   }
 }
 
-const FIELD_TYPE_DETECTION_ORDER: readonly MinionExtraDataCategoryFieldType[] = [
-  MinionExtraDataCategoryFieldType.None,
-  MinionExtraDataCategoryFieldType.Bool,
-  MinionExtraDataCategoryFieldType.Int,
-  MinionExtraDataCategoryFieldType.Float,
-  MinionExtraDataCategoryFieldType.Datetime,
-  MinionExtraDataCategoryFieldType.List,
-  MinionExtraDataCategoryFieldType.Dict,
-  MinionExtraDataCategoryFieldType.Str,
-];
-
-// The backend keeps a date string as str when str goes first in field types or types are empty,
-// so such a string is treated as a date only in the exact format the form sends.
-function isDatetimeBeforeStr(field: MinionExtraDataCategoryField): boolean {
-  const types = field.types ?? [];
-  const strIndex = types.indexOf(MinionExtraDataCategoryFieldType.Str);
-  const datetimeIndex = types.indexOf(MinionExtraDataCategoryFieldType.Datetime);
-
-  if (types.length === 0) return false;
-  return strIndex === -1 || (datetimeIndex !== -1 && datetimeIndex < strIndex);
-}
-
-function isFormDatetimeString(value: unknown): boolean {
-  if (typeof value !== "string") return false;
-  const date = dayjs(value);
-  return date.isValid() && date.toISOString() === value;
-}
-
-function matchesFieldValueType(
-  field: MinionExtraDataCategoryField,
-  type: MinionExtraDataCategoryFieldType,
-  value: unknown
-): boolean {
-  if (!matchesFieldType(type, value)) return false;
-  if (type !== MinionExtraDataCategoryFieldType.Datetime) return true;
-  return isDatetimeBeforeStr(field) || isFormDatetimeString(value);
-}
-
-function detectFieldValueType(
-  field: MinionExtraDataCategoryField,
-  value: unknown
-): MinionExtraDataCategoryFieldType | undefined {
-  const inputTypes = getFieldInputTypes(field);
-
-  return FIELD_TYPE_DETECTION_ORDER.find(
-    (type) => inputTypes.includes(type) && matchesFieldValueType(field, type, value)
-  );
-}
-
-const ISO_TIMEZONE_PATTERN = /(?:Z|[+-]\d{2}:?\d{2})$/;
-
-// The backend returns stored datetimes in UTC without a timezone suffix.
-function parseBackendDatetime(value: string): Dayjs {
-  return dayjs(ISO_TIMEZONE_PATTERN.test(value) ? value : `${value}Z`);
-}
-
 function toFormFieldValue(type: MinionExtraDataCategoryFieldType, value: unknown): unknown {
   if (type === MinionExtraDataCategoryFieldType.Datetime) {
-    return parseBackendDatetime(value as string);
+    return parseApiDatetime(value as string);
   }
   if (isJsonFieldType(type)) return JSON.stringify(value, null, 2);
-  if (type === MinionExtraDataCategoryFieldType.None) return undefined;
   return value;
 }
 
-function toFieldFormValue(
-  field: MinionExtraDataCategoryField,
-  value: unknown
-): ExtraDataItemFieldFormValue | null {
-  const valueType = value === undefined ? undefined : detectFieldValueType(field, value);
+function toFieldFormValue(field: MinionExtraDataCategoryField, value: unknown): unknown {
+  const type = getFieldInputType(field);
+  if (!type) return undefined;
 
-  if (valueType) {
-    return { type: valueType, value: toFormFieldValue(valueType, value) };
+  if (value === undefined || value === null || !matchesFieldType(type, value)) {
+    return undefined;
   }
 
-  const defaultType = getDefaultFieldInputType(getFieldInputTypes(field));
-  return defaultType ? { type: defaultType } : null;
+  return toFormFieldValue(type, value);
 }
 
 export function toExtraDataItemFormValues(
@@ -152,8 +79,8 @@ export function toExtraDataItemFormValues(
 ): ExtraDataItemFormValues["values"] {
   return Object.fromEntries(
     (category.fields ?? []).flatMap((field) => {
-      const fieldValue = toFieldFormValue(field, record[field.name]);
-      return fieldValue ? [[field.name, fieldValue]] : [];
+      if (!getFieldInputType(field)) return [];
+      return [[field.name, toFieldFormValue(field, record[field.name])]];
     })
   );
 }
@@ -171,13 +98,16 @@ export function isEmptyFormFieldValue(value: unknown): boolean {
 export function hasFilledExtraDataItemFormValues(
   values: ExtraDataItemFormValues["values"] | undefined
 ): boolean {
-  return Object.values(values ?? {}).some(
-    (fieldValue) => !isEmptyFormFieldValue(fieldValue?.value)
-  );
+  return Object.values(values ?? {}).some((value) => !isEmptyFormFieldValue(value));
 }
 
 function fromFormFieldValue(type: MinionExtraDataCategoryFieldType, value: unknown): unknown {
-  if (type === MinionExtraDataCategoryFieldType.Datetime) return (value as Dayjs).toISOString();
+  if (type === MinionExtraDataCategoryFieldType.Datetime) {
+    if (!dayjs.isDayjs(value) || !value.isValid()) {
+      return undefined;
+    }
+    return toApiDatetime(value);
+  }
   if (isJsonFieldType(type)) return JSON.parse(value as string);
   return value;
 }
@@ -188,17 +118,19 @@ export function toExtraDataItemData(
 ): Record<string, unknown> {
   return Object.fromEntries(
     (category.fields ?? []).flatMap((field) => {
+      const type = getFieldInputType(field);
       const fieldValue = values?.[field.name];
 
-      if (fieldValue?.type === MinionExtraDataCategoryFieldType.None) {
-        return [[field.name, null]];
-      }
-
-      if (!fieldValue || isEmptyFormFieldValue(fieldValue.value)) {
+      if (!type || isEmptyFormFieldValue(fieldValue)) {
         return [];
       }
 
-      return [[field.name, fromFormFieldValue(fieldValue.type, fieldValue.value)]];
+      const nextValue = fromFormFieldValue(type, fieldValue);
+      if (nextValue === undefined) {
+        return [];
+      }
+
+      return [[field.name, nextValue]];
     })
   );
 }

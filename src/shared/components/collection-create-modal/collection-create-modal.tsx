@@ -1,5 +1,6 @@
 import {
   type AppError,
+  freeTextErrorI18nKey,
   JsonEditorField,
   Modal,
   MutationErrorAlert,
@@ -44,6 +45,7 @@ function CollectionCreateModal({
 
   const [form] = Form.useForm<collectionCreateFormType>();
   const { t } = useTranslation();
+  const { t: tCommon } = useTranslation("common");
   const [createError, setCreateError] = useState<AppError | null>(null);
 
   useEffect(() => {
@@ -73,7 +75,7 @@ function CollectionCreateModal({
       try {
         filterQuery = JSON.parse(formValue.query || "{}");
       } catch {
-        notify.error(t("collection.invalid-filter-json"));
+        notify.error(tCommon(freeTextErrorI18nKey("invalid-json")));
         return;
       }
     }

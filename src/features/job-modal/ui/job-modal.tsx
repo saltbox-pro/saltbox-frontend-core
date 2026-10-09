@@ -16,6 +16,7 @@ import {
   unsubscribe,
   Modal,
   JsonForm,
+  notify,
   type JsonFormRef,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -426,7 +427,7 @@ export const JobModal = observer(function JobModal({
 
     if (!validateJsonForm()) {
       isSubmittingRef.current = false;
-      messageApi.error(t("errors.form-validation"));
+      notify.error(t("errors.form-validation"));
       return;
     }
 
@@ -477,7 +478,7 @@ export const JobModal = observer(function JobModal({
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
 
-    messageApi.error(t("errors.form-validation"));
+    notify.error(t("errors.form-validation"));
 
     form.scrollToField(errorInfo.errorFields[0].name, {
       focus: true,

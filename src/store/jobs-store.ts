@@ -1,10 +1,15 @@
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  createLoader,
+  hasFilterByValue,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
 import { action, computed, makeObservable, observable } from "mobx";
-import { jsonLogicAdditionalOperators, type RuleType } from "react-querybuilder";
+import { jsonLogicAdditionalOperators } from "react-querybuilder";
 
 import {
   DEFAULT_JOB_DATE_RANGE_PRESET,
@@ -163,31 +168,36 @@ export class JobsStore {
     this.loadJobs();
   };
 
+  hasCellFilter = (fieldName: string, value: unknown): boolean => {
+    return hasFilterByValue(this.jobFilterStore, fieldName, toJobCellFilterValue(value));
+  };
+
   @action
-  applyCellFilter = (fieldName: string, value: unknown) => {
-    const [operator, ruleValue]: ["=" | "in", string] = Array.isArray(value)
-      ? ["in", value.join(",")]
-      : ["=", String(value ?? "")];
-
-    const newRule: RuleType = {
-      field: fieldName,
-      operator,
-      value: ruleValue,
-    };
-
-    this.jobFilterStore.handleFiltersChange({
-      combinator: "and",
-      rules: [
-        ...this.jobFilterStore.currentFilters.rules.filter(
-          (r) => "field" in r && r.field !== fieldName
-        ),
-        newRule,
-      ],
+  applyCellFilter = (fieldName: string, value: unknown): "added" | "removed" | "unsupported" => {
+    const next = applyFilterByValue(this.jobFilterStore, fieldName, toJobCellFilterValue(value), {
+      search: true,
+      mode: "flatten-field",
     });
+    if (!next.ok) {
+      return "unsupported";
+    }
 
-    this.jobFilterStore.handleSearch();
     this.syncDateRangeWithAppliedFilters();
     this.mongoDBQuery = this.jobFilterStore.searchMongoDBQuery;
     this.handleSearch();
+
+    return next.result;
   };
+}
+
+function toJobCellFilterValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item ?? ""));
+  }
+
+  if (value == null) {
+    return "";
+  }
+
+  return String(value);
 }

@@ -5,11 +5,11 @@ import type {
 
 export type ExtraDataCategoryFieldFormValue = {
   name: string;
-  types: MinionExtraDataCategoryFieldType[];
+  type?: MinionExtraDataCategoryFieldType;
 };
 
 export function createEmptyExtraDataCategoryField(): ExtraDataCategoryFieldFormValue {
-  return { name: "", types: [] };
+  return { name: "" };
 }
 
 export function isDuplicateExtraDataCategoryFieldName(
@@ -25,9 +25,14 @@ export function isDuplicateExtraDataCategoryFieldName(
 export function toExtraDataCategoryFieldsPayload(
   values: readonly ExtraDataCategoryFieldFormValue[] | undefined
 ): MinionExtraDataCategoryField[] {
-  return (values ?? [])
-    .map((value) => ({ name: value.name.trim(), types: [...(value.types ?? [])] }))
-    .filter((value) => value.name.length > 0);
+  return (values ?? []).flatMap((value) => {
+    const name = value.name.trim();
+    const type = value.type;
+    if (!name || type == null) {
+      return [];
+    }
+    return [{ name, type }];
+  });
 }
 
 function reorderExtraDataCategoryField(

@@ -1,5 +1,6 @@
 import {
   type AppError,
+  freeTextErrorI18nKey,
   InfoDescriptions,
   type InfoDescriptionsProps,
   InfoDrawer,
@@ -69,6 +70,7 @@ export const CollectionDetailsDrawer = observer(
     onCreateSubcollection,
   }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
+    const { t: tCommon } = useTranslation("common");
     const [form] = Form.useForm<CollectionEditFormType>();
     const titleInputRef = useRef<InputRef>(null);
 
@@ -347,8 +349,9 @@ export const CollectionDetailsDrawer = observer(
     };
 
     const resolveQueryForSave = (): object | null => {
-      if (!filterStore.commitPendingInput()) {
-        notify.error(t("collection.invalid-filter-json"));
+      const committed = filterStore.commitPendingInput();
+      if (committed.ok === false) {
+        notify.error(tCommon(freeTextErrorI18nKey(committed.reason)));
         return null;
       }
       filterStore.handleSearch();

@@ -26,6 +26,7 @@ export type UseTemplatePickerResult = {
   functionNamesLower: Set<string>;
   searchQuery: string | undefined;
   getSourceLabel: (sourceName: string) => string;
+  getAccessibilityLoad: (sourceId: string) => LoadSource;
 };
 
 export function useTemplatePicker({ isOpen }: UseTemplatePickerParams): UseTemplatePickerResult {
@@ -47,7 +48,7 @@ export function useTemplatePicker({ isOpen }: UseTemplatePickerParams): UseTempl
     language: i18n.language,
   });
 
-  useTemplateAccessibilityLoader({
+  const { getAccessibilityLoad } = useTemplateAccessibilityLoader({
     isOpen,
     activeKeys,
     sourceRows,
@@ -80,5 +81,6 @@ export function useTemplatePicker({ isOpen }: UseTemplatePickerParams): UseTempl
     functionNamesLower,
     searchQuery,
     getSourceLabel,
+    getAccessibilityLoad,
   };
 }

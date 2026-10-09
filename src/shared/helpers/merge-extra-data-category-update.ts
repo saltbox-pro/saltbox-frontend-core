@@ -24,7 +24,6 @@ export function mergeExtraDataCategoryUpdate(
   return {
     ...current,
     fields: updated.fields,
-    minion_fields: updated.minion_fields,
     modified: updated.modified,
   };
 }

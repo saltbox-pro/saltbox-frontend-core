@@ -1,9 +1,16 @@
-import { FilterOutlined } from "@ant-design/icons";
 import type {
   CollectionExtraDataListItemSchema,
   ExtraDataCategoryModel,
 } from "@saltbox/saltbox-core-api-client";
-import { FastTable, type CellAction } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  canApplyFilterByValue,
+  FastTable,
+  FilterActionButton,
+  getFilterFieldOptions,
+  hasFilterByValue,
+  type CellAction,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
@@ -21,13 +28,6 @@ import {
   toExtraDataCopyValue,
 } from "saltbox-core/shared/helpers/extra-data-value";
 import { CollectionExtraDataRecordsStore, type MinionFilterStore } from "saltbox-core/store";
-
-import {
-  canBuildClientFilter,
-  fieldSupportsNullOperator,
-  hasClientFilter,
-  toggleClientFilter,
-} from "../model/toggle-client-filter";
 
 import styles from "./collection-extra-data-category-table.module.css";
 
@@ -78,55 +78,30 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
     return collectCollectionExtraDataFieldNamesFromRecords(store.records);
   }, [declaredFields, store.records]);
 
-  const nullOperatorFields = useMemo(() => {
-    const supported = new Set<string>();
-
-    for (const field of fields) {
-      if (field === "minions_count") {
-        continue;
-      }
-
-      const fieldName = buildExtraDataFilterField(category.source, category.name, field);
-      if (fieldSupportsNullOperator(filterStore.filterSchema, fieldName)) {
-        supported.add(field);
-      }
-    }
-
-    return supported;
-  }, [category, fields, filterStore.filterSchema]);
+  const { filterSchema, filtersRevision } = filterStore;
 
   const columns = useMemo(() => {
     const columnWidth = getEqualExtraDataColumnWidth(fields.length);
 
     return fields.map((field) => {
       const canFilterField = field !== "minions_count";
-      const supportsNull = nullOperatorFields.has(field);
-
-      const createCellFilter = (value: unknown) => ({
-        categorySource: category.source,
-        categoryName: category.name,
-        field,
-        value,
-        supportsNull,
-      });
+      const filterFieldName = buildExtraDataFilterField(category.source, category.name, field);
+      const fieldOptions = getFilterFieldOptions(filterSchema, filterFieldName);
 
       const filterAction: CellAction<CollectionExtraDataListItemSchema> | null = canFilterField
         ? {
-            icon: <FilterOutlined />,
-            visible: (value) => canBuildClientFilter(createCellFilter(value)),
-            getPresentation: (value) => ({
-              title: hasClientFilter(filterStore.currentFilters, createCellFilter(value))
-                ? t("minions.extra-data.remove-from-client-filters")
-                : t("minions.extra-data.add-to-client-filters"),
-            }),
+            icon: FilterActionButton.getIcon(),
+            visible: (value) =>
+              canApplyFilterByValue(filterStore, filterFieldName, value, fieldOptions),
+            getPresentation: (value) =>
+              FilterActionButton.getPresentation(
+                hasFilterByValue(filterStore, filterFieldName, value, fieldOptions)
+              ),
             onClick: (value) => {
-              const next = toggleClientFilter(filterStore.currentFilters, createCellFilter(value));
-              if (!next) {
-                return;
-              }
-
-              filterStore.handleFiltersChange(next.filters);
-              if (next.result === "added") {
+              const next = applyFilterByValue(filterStore, filterFieldName, value, {
+                fieldOptions,
+              });
+              if (next.ok && next.result === "added") {
                 onFilterAdded?.();
               }
             },
@@ -146,7 +121,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
         },
       });
     });
-  }, [fields, filterStore, nullOperatorFields, onFilterAdded, category, t]);
+  }, [fields, filterStore, filterSchema, filtersRevision, onFilterAdded, category]);
 
   const emptyMessage =
     store.recordsLoad.status === "success"

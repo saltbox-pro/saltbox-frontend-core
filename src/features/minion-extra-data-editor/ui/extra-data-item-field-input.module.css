@@ -1,9 +1,4 @@
-.typeSelect {
-  flex: 0 0 180px;
-}
-
 .value {
-  flex: 1 1 auto;
   min-width: 0;
   width: 100%;
 }

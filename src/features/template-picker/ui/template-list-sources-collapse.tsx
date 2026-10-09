@@ -1,3 +1,4 @@
+import type { LoadSource } from "@saltbox/saltbox-frontend-common";
 import { type CollapseProps, Collapse } from "antd";
 import { useMemo } from "react";
 
@@ -17,6 +18,7 @@ export type TemplateListSourcesCollapseProps = {
   searchQuery?: string;
   isSearchReset: boolean;
   getSourceLabel: (sourceName: string) => string;
+  getAccessibilityLoad: (sourceId: string) => LoadSource;
   onCollapseChange: CollapseProps["onChange"];
   onSelectTemplate: (template: PickedTemplate) => void;
 };
@@ -27,6 +29,7 @@ export function TemplateListSourcesCollapse({
   searchQuery,
   isSearchReset,
   getSourceLabel,
+  getAccessibilityLoad,
   onCollapseChange,
   onSelectTemplate,
 }: TemplateListSourcesCollapseProps) {
@@ -45,11 +48,12 @@ export function TemplateListSourcesCollapse({
           <TemplateListSourcePanel
             sourceRow={sourceRow}
             searchQuery={searchQuery}
+            getAccessibilityLoad={getAccessibilityLoad}
             onSelectTemplate={onSelectTemplate}
           />
         ),
       })),
-    [filteredRows, getSourceLabel, onSelectTemplate, searchQuery]
+    [filteredRows, getAccessibilityLoad, getSourceLabel, onSelectTemplate, searchQuery]
   );
 
   return (

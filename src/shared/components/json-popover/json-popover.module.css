@@ -1,7 +1,0 @@
-.content {
-  overflow: auto;
-}
-
-.content :global(.node-ellipsis) {
-  font-size: inherit !important;
-}

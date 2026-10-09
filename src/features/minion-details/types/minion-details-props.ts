@@ -4,10 +4,12 @@ import type { ReactNode } from "react";
 export interface OnFilterButtonParams {
   name: string;
   value: unknown;
-  keepDrawerOpen?: boolean;
 }
 
-export type OnFilterButtonHandler = (params: OnFilterButtonParams) => void;
+export type OnFilterButtonHandler = ((params: OnFilterButtonParams) => void) & {
+  canApply: (field: string, value: unknown) => boolean;
+  isActive: (field: string, value: unknown) => boolean;
+};
 
 export interface MinionDetailsCommonProps {
   minion: MinionDetailSchema | null;
