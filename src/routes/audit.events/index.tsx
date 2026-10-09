@@ -46,7 +46,7 @@ const AuditEventsPage = observer(() => {
   };
 
   const handleFilterByValue = useCallback(
-    (field: string, value: string | boolean) => {
+    (field: string, value: unknown) => {
       filterStore.applyValueFilter(field, value);
       eventsStore.applyQuery(filterStore.searchMongoDBQuery);
     },

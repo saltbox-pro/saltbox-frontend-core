@@ -1,5 +1,10 @@
 import { JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  createLoader,
+  hasFilterByValue,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { add_operation } from "json-logic-js";
@@ -12,11 +17,6 @@ import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
-import {
-  hasFilterRule,
-  toggleFilterRule,
-  type FilterRuleIdentity,
-} from "saltbox-core/shared/helpers/toggle-filter-rule";
 import { buildJobsListQuery } from "saltbox-core/shared/utils/build-jobs-list-query";
 import { hasJobCreatedFilterField } from "saltbox-core/shared/utils/job-filter-fields";
 import { apiCoreStore, JobFilterStore } from "saltbox-core/store";
@@ -169,42 +169,35 @@ export class JobsStore {
   };
 
   hasCellFilter = (fieldName: string, value: unknown): boolean => {
-    return hasFilterRule(
-      this.jobFilterStore.currentFilters,
-      toJobCellFilterIdentity(fieldName, value)
-    );
+    return hasFilterByValue(this.jobFilterStore, fieldName, toJobCellFilterValue(value));
   };
 
   @action
-  applyCellFilter = (fieldName: string, value: unknown): "added" | "removed" => {
-    const { group, result } = toggleFilterRule(
-      this.jobFilterStore.currentFilters,
-      toJobCellFilterIdentity(fieldName, value),
-      "flatten-field"
-    );
+  applyCellFilter = (fieldName: string, value: unknown): "added" | "removed" | "unsupported" => {
+    const next = applyFilterByValue(this.jobFilterStore, fieldName, toJobCellFilterValue(value), {
+      search: true,
+      mode: "flatten-field",
+    });
+    if (!next.ok) {
+      return "unsupported";
+    }
 
-    this.jobFilterStore.handleFiltersChange(group);
-    this.jobFilterStore.handleSearch();
     this.syncDateRangeWithAppliedFilters();
     this.mongoDBQuery = this.jobFilterStore.searchMongoDBQuery;
     this.handleSearch();
 
-    return result;
+    return next.result;
   };
 }
 
-function toJobCellFilterIdentity(fieldName: string, value: unknown): FilterRuleIdentity {
+function toJobCellFilterValue(value: unknown): unknown {
   if (Array.isArray(value)) {
-    return {
-      field: fieldName,
-      operator: "in",
-      value: value.join(","),
-    };
+    return value.map((item) => String(item ?? ""));
   }
 
-  return {
-    field: fieldName,
-    operator: "=",
-    value: String(value ?? ""),
-  };
+  if (value == null) {
+    return "";
+  }
+
+  return String(value);
 }

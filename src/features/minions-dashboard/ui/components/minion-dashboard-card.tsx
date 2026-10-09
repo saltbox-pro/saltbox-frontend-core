@@ -6,7 +6,12 @@ import {
   FullscreenOutlined,
   HolderOutlined,
 } from "@ant-design/icons";
-import { CopyToClipboardButton, Dropdown, ErrorZone } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  CopyToClipboardButton,
+  Dropdown,
+  ErrorZone,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, Card, Empty, Flex, message, Modal, Spin, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
@@ -17,7 +22,6 @@ import { useTranslation } from "react-i18next";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
-import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
 import { getChartTotal } from "../../helpers/get-chart-total";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
@@ -114,7 +118,11 @@ export const MinionDashboardCard = observer(
       if (item.isOther) {
         return;
       }
-      if (!applyFieldValueFilter(filterStore, card.fieldSource, item.value)) {
+      const next = applyFilterByValue(filterStore, card.fieldSource, item.value, {
+        search: true,
+        mode: "append",
+      });
+      if (!next.ok) {
         message.warning(t("minions.filter-value-unsupported"));
       }
     };

@@ -1,8 +1,12 @@
-import { createLoader, PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  createLoader,
+  hasFilterByValue,
+  PersistentFilterStore,
+} from "@saltbox/saltbox-frontend-common";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import { type Option, type OptionList } from "react-querybuilder";
 
-import { hasFilterRule, toggleFilterRule } from "saltbox-core/shared/helpers/toggle-filter-rule";
 import { apiAuditStore } from "saltbox-core/store";
 
 export class AuditEventsFilterStore extends PersistentFilterStore {
@@ -40,23 +44,15 @@ export class AuditEventsFilterStore extends PersistentFilterStore {
     });
   };
 
-  hasValueFilter = (field: string, value: string | boolean): boolean => {
-    return hasFilterRule(this.currentFilters, {
-      field,
-      operator: "=",
-      value,
-    });
+  hasValueFilter = (field: string, value: unknown): boolean => {
+    return hasFilterByValue(this, field, value);
   };
 
   @action
-  applyValueFilter = (field: string, value: string | boolean) => {
-    const { group } = toggleFilterRule(
-      this.currentFilters,
-      { field, operator: "=", value },
-      "replace-field"
-    );
-    this.handleFiltersChange(group);
-    this.filtersRevision += 1;
-    this.handleSearch();
+  applyValueFilter = (field: string, value: unknown) => {
+    applyFilterByValue(this, field, value, {
+      search: true,
+      mode: "replace-field",
+    });
   };
 }

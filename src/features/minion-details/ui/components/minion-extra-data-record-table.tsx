@@ -12,7 +12,6 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
@@ -60,13 +59,8 @@ export const MinionExtraDataRecordTable = observer<MinionExtraDataRecordTablePro
           ? {
               icon: FilterActionButton.getIcon(),
               visible: (value) => onFilterButton.canApply(filterFieldName, value),
-              getPresentation: (value) => {
-                const active = onFilterButton.isActive(filterFieldName, value);
-                return FilterActionButton.getPresentation(
-                  active,
-                  getClientFilterActionTitle(active, t)
-                );
-              },
+              getPresentation: (value) =>
+                FilterActionButton.getPresentation(onFilterButton.isActive(filterFieldName, value)),
               onClick: (value) =>
                 onFilterButton({
                   name: filterFieldName,

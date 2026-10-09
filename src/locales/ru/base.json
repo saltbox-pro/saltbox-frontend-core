@@ -1,9 +1,5 @@
 {
   "minions": {
-    "action-button": {
-      "add-filter": "Добавить это значение в фильтр клиентов",
-      "remove-filter": "Убрать это значение из фильтра клиентов"
-    },
     "title": "Коллекция",
     "tab-list": "Список",
     "tab-tasks": "Задачи",
@@ -804,6 +800,7 @@
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-empty": "Нет данных",
     "empty-for-period": "Нет данных за {{period}}",
+    "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "period-today": "сегодня",
     "period-10-minutes": "последние 10 минут",
     "period-30-minutes": "последние 30 минут",
@@ -925,8 +922,7 @@
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
     "parent-collection-required": "Укажите родительскую коллекцию",
-    "select-parent-collection": "Выберите родительскую коллекцию",
-    "invalid-filter-json": "Запрос фильтра — некорректный JSON"
+    "select-parent-collection": "Выберите родительскую коллекцию"
   },
   "dashboard": {
     "minions-total": "Клиентов в выборке",

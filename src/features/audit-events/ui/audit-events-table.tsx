@@ -40,23 +40,21 @@ function TwoLineCell({ primary, secondary }: TwoLineCellProps) {
   );
 }
 
-type FilterValue = string | boolean;
-
 type AuditEventsTableProps = {
   store: AuditEventsStore;
   filterStore: AuditEventsFilterStore;
-  onFilterByValue: (field: string, value: FilterValue) => void;
+  onFilterByValue: (field: string, value: unknown) => void;
 };
 
 export const AuditEventsTable = observer(
   ({ store, filterStore, onFilterByValue }: AuditEventsTableProps) => {
     const { t } = useTranslation();
-    const { currentFilters, valueFilterFields } = filterStore;
+    const { valueFilterFields, filtersRevision } = filterStore;
 
     const columns = useMemo(() => {
       const createFilterAction = (
         field: string,
-        getValue: (row: AuditEventModel) => FilterValue | null | undefined
+        getValue: (row: AuditEventModel) => unknown
       ): CellAction<AuditEventModel> => ({
         icon: FilterActionButton.getIcon(),
         visible: (_, row) => {
@@ -194,7 +192,7 @@ export const AuditEventsTable = observer(
           },
         }),
       ];
-    }, [currentFilters, filterStore, onFilterByValue, t, valueFilterFields]);
+    }, [filterStore, filtersRevision, onFilterByValue, t, valueFilterFields]);
 
     return (
       <div className={styles.layout}>

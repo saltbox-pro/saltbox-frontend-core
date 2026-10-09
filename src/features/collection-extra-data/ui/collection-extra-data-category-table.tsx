@@ -3,9 +3,12 @@ import type {
   ExtraDataCategoryModel,
 } from "@saltbox/saltbox-core-api-client";
 import {
+  applyFilterByValue,
+  canApplyFilterByValue,
   FastTable,
   FilterActionButton,
   getFilterFieldOptions,
+  hasFilterByValue,
   type CellAction,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
@@ -16,12 +19,6 @@ import { useTranslation } from "react-i18next";
 
 import { ExtraDataExportButton } from "saltbox-core/features/extra-data-export";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
-import {
-  applyClientFilter,
-  canApplyClientFilter,
-  hasClientFilter,
-} from "saltbox-core/shared/helpers/apply-client-filter";
-import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
   buildExtraDataFilterField,
@@ -81,7 +78,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
     return collectCollectionExtraDataFieldNamesFromRecords(store.records);
   }, [declaredFields, store.records]);
 
-  const { currentFilters, filterSchema } = filterStore;
+  const { filterSchema, filtersRevision } = filterStore;
 
   const columns = useMemo(() => {
     const columnWidth = getEqualExtraDataColumnWidth(fields.length);
@@ -95,16 +92,13 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
         ? {
             icon: FilterActionButton.getIcon(),
             visible: (value) =>
-              canApplyClientFilter(filterStore, filterFieldName, value, fieldOptions),
-            getPresentation: (value) => {
-              const active = hasClientFilter(filterStore, filterFieldName, value, fieldOptions);
-              return FilterActionButton.getPresentation(
-                active,
-                getClientFilterActionTitle(active, t)
-              );
-            },
+              canApplyFilterByValue(filterStore, filterFieldName, value, fieldOptions),
+            getPresentation: (value) =>
+              FilterActionButton.getPresentation(
+                hasFilterByValue(filterStore, filterFieldName, value, fieldOptions)
+              ),
             onClick: (value) => {
-              const next = applyClientFilter(filterStore, filterFieldName, value, {
+              const next = applyFilterByValue(filterStore, filterFieldName, value, {
                 fieldOptions,
               });
               if (next.ok && next.result === "added") {
@@ -127,7 +121,7 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
         },
       });
     });
-  }, [fields, filterStore, currentFilters, filterSchema, onFilterAdded, category, t]);
+  }, [fields, filterStore, filterSchema, filtersRevision, onFilterAdded, category]);
 
   const emptyMessage =
     store.recordsLoad.status === "success"
