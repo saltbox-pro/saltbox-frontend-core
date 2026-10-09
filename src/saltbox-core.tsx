@@ -2,6 +2,8 @@ import {
   SaltboxLocaleProvider,
   bindWebSocketAccessTokenSync,
   createSingleSpaErrorBoundary,
+  createUserSettingsTransport,
+  initUserSettings,
   withParcelBoundary,
   type AuthStoreWithAccessToken,
 } from "@saltbox/saltbox-frontend-common";
@@ -22,7 +24,7 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { appStore, envStore, i18nStore } from "saltbox-core/store";
+import { apiGatewayStore, appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
 import {
@@ -261,6 +263,7 @@ export const saltboxModule = {
         envStore.services.set(service.service_name, service.env);
       }
     });
+    initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
     });

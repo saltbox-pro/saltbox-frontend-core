@@ -2240,6 +2240,11 @@
     react-querybuilder "^8.11.1"
     react-transition-group "^4.4.5"
 
+"@saltbox/saltbox-gateway-api-client@^0.3.0-d3c301a2a90cc9569087bba31fd36a02410fc34b":
+  version "0.3.0-d3c301a2a90cc9569087bba31fd36a02410fc34b"
+  resolved "https://dev.saltbox.pro/api/v4/projects/44/packages/npm/@saltbox/saltbox-gateway-api-client/-/@saltbox/saltbox-gateway-api-client-0.3.0-d3c301a2a90cc9569087bba31fd36a02410fc34b.tgz#08bfcabdf2a35504b3baa631bbc99bb0fb5db1cc"
+  integrity sha1-CL/KvfKjVQSzuqYxu8mbsPtdscw=
+
 "@sinclair/typebox@^0.34.0":
   version "0.34.41"
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.34.41.tgz#aa51a6c1946df2c5a11494a2cdb9318e026db16c"
