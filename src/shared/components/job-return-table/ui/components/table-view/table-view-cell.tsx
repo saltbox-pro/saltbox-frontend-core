@@ -1,4 +1,4 @@
-import { JsonPreview } from "saltbox-core/shared/components/json-preview";
+import { JsonPreview } from "@saltbox/saltbox-frontend-common";
 
 import { JSON_PREVIEW_MAX_ENTRIES } from "../../../constants/table-view-layout";
 import {

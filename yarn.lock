@@ -2204,11 +2204,6 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-audit-api-client@^0.3.0-f9534d71d72b848cba2cf014824e0ea235036977":
-  version "0.3.0-f9534d71d72b848cba2cf014824e0ea235036977"
-  resolved "https://dev.saltbox.pro/api/v4/projects/113/packages/npm/@saltbox/saltbox-audit-api-client/-/@saltbox/saltbox-audit-api-client-0.3.0-f9534d71d72b848cba2cf014824e0ea235036977.tgz#09ff23f7a8fd32578668b8dc8caa0c49eda14086"
-  integrity sha1-Cf8j96j9MleGaLjcjKoMSe2hQIY=
-
 "@saltbox/saltbox-core-api-client@^0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44":
   version "0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44"
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44.tgz#6dc708b548e9305b4ed35f2148795ee27f6674f3"
