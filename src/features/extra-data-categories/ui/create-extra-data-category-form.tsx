@@ -67,7 +67,10 @@ export function CreateExtraDataCategoryForm({
           },
         ]}
       >
-        <Input placeholder={t("extra-data-categories.create.field-name-placeholder")} />
+        <Input
+          autoComplete="extra-data-category-name"
+          placeholder={t("extra-data-categories.create.field-name-placeholder")}
+        />
       </Form.Item>
 
       <ExtraDataCategoryTitleFormItem required addonAfter={<ExtraDataCategoryIconFormItem />} />

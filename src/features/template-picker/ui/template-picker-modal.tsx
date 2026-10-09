@@ -58,6 +58,7 @@ export function TemplatePickerModal({
     functionNamesLower,
     searchQuery,
     getSourceLabel,
+    getAccessibilityLoad,
   } = useTemplatePicker({ isOpen });
 
   const isEmptyState = hasNoData || hasNoResults;
@@ -157,6 +158,7 @@ export function TemplatePickerModal({
             filteredRows={filteredRows}
             searchQuery={searchQuery}
             getSourceLabel={getSourceLabel}
+            getAccessibilityLoad={getAccessibilityLoad}
             onCollapseChange={handleCollapseChange}
             onSelectTemplate={onSelectTemplate}
             onGoToConfigurationTemplates={handleGoToConfigurationTemplates}

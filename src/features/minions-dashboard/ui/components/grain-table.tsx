@@ -1,13 +1,18 @@
-import { FilterOutlined } from "@ant-design/icons";
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { FastTable } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  canApplyFilterByValue,
+  FastTable,
+  FilterActionButton,
+  hasFilterByValue,
+} from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
+import { observer } from "mobx-react-lite";
 import { CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
-import { applyFieldValueFilter } from "../../helpers/apply-filter";
 import { formatPercent } from "../../helpers/format-percent";
 import { getChartTotal } from "../../helpers/get-chart-total";
 import { valueToText } from "../../model/dashboard-chart-data";
@@ -22,9 +27,14 @@ type GrainTableProps = {
   filterStore: MinionFilterStore;
 };
 
-export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps) => {
+export const GrainTable = observer(function GrainTable({
+  values,
+  fieldSource,
+  filterStore,
+}: GrainTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([{ id: "count", desc: true }]);
+  const { filtersRevision } = filterStore;
 
   const maxCount = useMemo(
     () => values.reduce((max, item) => Math.max(max, item.count), 0),
@@ -42,9 +52,17 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
           showCopy: true,
           actions: [
             {
-              icon: <FilterOutlined />,
-              title: t("dashboard.apply-value-to-filters"),
-              onClick: (value) => applyFieldValueFilter(filterStore, fieldSource, value),
+              icon: FilterActionButton.getIcon(),
+              visible: (value) => canApplyFilterByValue(filterStore, fieldSource, value),
+              getPresentation: (value) =>
+                FilterActionButton.getPresentation(
+                  hasFilterByValue(filterStore, fieldSource, value)
+                ),
+              onClick: (value) =>
+                applyFilterByValue(filterStore, fieldSource, value, {
+                  search: true,
+                  mode: "replace-field",
+                }),
             },
           ],
           tdClassName: styles.grainValueCol,
@@ -72,7 +90,7 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
         },
       }),
     ],
-    [t, fieldSource, filterStore, maxCount, total]
+    [t, fieldSource, filterStore, filtersRevision, maxCount, total]
   );
 
   if (values.length === 0) {
@@ -91,4 +109,4 @@ export const GrainTable = ({ values, fieldSource, filterStore }: GrainTableProps
       hideFooter
     />
   );
-};
+});

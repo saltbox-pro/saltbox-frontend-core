@@ -11,6 +11,7 @@ import {
   formatTimeByUserTZ,
   useFiltersToggle,
   AcceptedMastersActionButton,
+  JsonPreview,
   type LoadSource,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -37,7 +38,6 @@ import {
   JobReturnStatusTag,
 } from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
-import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { getMinionJobReturnsFilterSchema } from "saltbox-core/shared/constants/filter-schemas";
 import { JobFilterStore, JobStore, mastersStore } from "saltbox-core/store";
 

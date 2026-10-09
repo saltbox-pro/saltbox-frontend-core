@@ -1,6 +1,7 @@
 import { type PillarWithTgtInfoSchema } from "@saltbox/saltbox-core-api-client";
 import {
   FastTable,
+  JsonPreview,
   createBooleanColumn,
   formatTimeByUserTZ,
   useInfoDrawer,
@@ -11,7 +12,6 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { PillarDetailsDrawer } from "saltbox-core/shared/components/pillars/pillar-details-drawer";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { PillarsStore } from "saltbox-core/store";
