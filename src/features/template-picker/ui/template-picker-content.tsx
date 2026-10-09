@@ -21,6 +21,7 @@ export type TemplatePickerContentProps = {
   searchQuery?: string;
   customFunctionAction?: ReactNode;
   getSourceLabel: (sourceName: string) => string;
+  getAccessibilityLoad: (sourceId: string) => LoadSource;
   onCollapseChange: (keys: string | string[]) => void;
   onSelectTemplate: (template: PickedTemplate) => void;
   onGoToConfigurationTemplates: () => void;
@@ -37,6 +38,7 @@ export const TemplatePickerContent = observer(function TemplatePickerContent({
   searchQuery,
   customFunctionAction,
   getSourceLabel,
+  getAccessibilityLoad,
   onCollapseChange,
   onSelectTemplate,
   onGoToConfigurationTemplates,
@@ -85,6 +87,7 @@ export const TemplatePickerContent = observer(function TemplatePickerContent({
             searchQuery={searchQuery}
             isSearchReset={isSearchReset}
             getSourceLabel={getSourceLabel}
+            getAccessibilityLoad={getAccessibilityLoad}
             onCollapseChange={onCollapseChange}
             onSelectTemplate={onSelectTemplate}
           />

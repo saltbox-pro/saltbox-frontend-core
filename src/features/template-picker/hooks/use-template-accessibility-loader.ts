@@ -1,12 +1,16 @@
-import { type Dispatch, type SetStateAction, useCallback, useEffect, useRef } from "react";
+import { createKeyedLoader, type LoadSource } from "@saltbox/saltbox-frontend-common";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { i18nStore } from "saltbox-core/store";
 
-import {
-  applySourceAccessibility,
-  markSourceAccessibilityError,
-  type TemplateSourceRow,
-} from "../helpers/template-picker-rows";
+import { applySourceAccessibility, type TemplateSourceRow } from "../helpers/template-picker-rows";
 import { templatePickerService } from "../service";
 
 type UseTemplateAccessibilityLoaderParams = {
@@ -22,90 +26,52 @@ export function useTemplateAccessibilityLoader({
   sourceRows,
   setSourceRows,
 }: UseTemplateAccessibilityLoaderParams) {
-  const loadingSourceIdsRef = useRef(new Set<string>());
   const sourceRowsRef = useRef(sourceRows);
   const activeKeysRef = useRef(activeKeys);
-  const isMountedRef = useRef(true);
 
   sourceRowsRef.current = sourceRows;
   activeKeysRef.current = activeKeys;
 
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const loadAccessibilityForSources = useCallback(
-    async (sourceIds: string[]) => {
-      const sourceIdsToLoad = sourceIds.filter((sourceId) => {
-        const sourceRow = sourceRowsRef.current.find((row) => row.key === sourceId);
-
-        return (
-          sourceRow &&
-          !sourceRow.isAccessibilityLoaded &&
-          !sourceRow.isAccessibilityError &&
-          !loadingSourceIdsRef.current.has(sourceId)
+  const [accessibilityLoad] = useState(() =>
+    createKeyedLoader({
+      run: (sourceId: string) => templatePickerService.loadAccessibleTemplateIds(sourceId),
+      onSuccess: (accessibleTemplateIds, sourceId) => {
+        setSourceRows((currentRows) =>
+          currentRows.map((sourceRow) =>
+            sourceRow.key === sourceId
+              ? applySourceAccessibility(
+                  sourceRow,
+                  accessibleTemplateIds,
+                  i18nStore.currentLanguage
+                )
+              : sourceRow
+          )
         );
-      });
-
-      if (sourceIdsToLoad.length === 0) {
-        return;
-      }
-
-      sourceIdsToLoad.forEach((sourceId) => loadingSourceIdsRef.current.add(sourceId));
-
-      await Promise.all(
-        sourceIdsToLoad.map(async (sourceId) => {
-          try {
-            const accessibleTemplateIds =
-              await templatePickerService.loadAccessibleTemplateIds(sourceId);
-
-            if (!isMountedRef.current) {
-              return;
-            }
-
-            setSourceRows((currentRows) =>
-              currentRows.map((sourceRow) =>
-                sourceRow.key === sourceId
-                  ? applySourceAccessibility(
-                      sourceRow,
-                      accessibleTemplateIds,
-                      i18nStore.currentLanguage
-                    )
-                  : sourceRow
-              )
-            );
-          } catch {
-            if (!isMountedRef.current) {
-              return;
-            }
-
-            setSourceRows((currentRows) =>
-              currentRows.map((sourceRow) =>
-                sourceRow.key === sourceId ? markSourceAccessibilityError(sourceRow) : sourceRow
-              )
-            );
-          } finally {
-            loadingSourceIdsRef.current.delete(sourceId);
-          }
-        })
-      );
-    },
-    [setSourceRows]
+      },
+    })
   );
 
   const activeKeysSignature = activeKeys.join("|");
 
   useEffect(() => {
-    const sourceIds = activeKeysRef.current;
-
-    if (!isOpen || sourceIds.length === 0) {
+    if (!isOpen) {
       return;
     }
 
-    loadAccessibilityForSources(sourceIds);
-  }, [activeKeysSignature, isOpen, loadAccessibilityForSources]);
+    activeKeysRef.current.forEach((sourceId) => {
+      const sourceRow = sourceRowsRef.current.find((row) => row.key === sourceId);
+      const state = accessibilityLoad.state(sourceId);
+
+      if (sourceRow && !sourceRow.isAccessibilityLoaded && !state.isLoading && !state.error) {
+        accessibilityLoad.run(sourceId).catch(() => undefined);
+      }
+    });
+  }, [accessibilityLoad, activeKeysSignature, isOpen]);
+
+  const getAccessibilityLoad = useCallback(
+    (sourceId: string): LoadSource => accessibilityLoad.state(sourceId),
+    [accessibilityLoad]
+  );
+
+  return { getAccessibilityLoad };
 }

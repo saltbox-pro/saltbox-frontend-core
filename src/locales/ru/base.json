@@ -310,7 +310,6 @@
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
     "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
-    "error-loading-template-accessibility": "Ошибка загрузки доступности шаблонов",
     "template-accessible": "Доступен",
     "template-inaccessible": "Нет доступа",
     "template-inaccessible-tooltip": "У вас нет прав на использование этого шаблона",

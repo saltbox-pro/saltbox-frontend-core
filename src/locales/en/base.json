@@ -310,7 +310,6 @@
     "unknown-repository": "Without source",
     "no-sources-available": "No sources available",
     "go-to-configuration-templates": "Go to configuration templates",
-    "error-loading-template-accessibility": "Error loading template accessibility",
     "template-accessible": "Available",
     "template-inaccessible": "No access",
     "template-inaccessible-tooltip": "You do not have permission to use this template",

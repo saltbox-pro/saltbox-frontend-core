@@ -22,7 +22,6 @@ export type TemplateSourceRow = {
   sourceType: SourceType;
   description?: string;
   isAccessibilityLoaded: boolean;
-  isAccessibilityError: boolean;
   templates: TaskTemplatePickerItem[];
 };
 
@@ -44,7 +43,6 @@ export const buildSourceRowsFromSources = (
       sourceType: source.source_type,
       description: source.description ?? undefined,
       isAccessibilityLoaded: false,
-      isAccessibilityError: false,
       templates: sortTemplatesByTitle(
         (source.templates ?? []).map((template) => ({
           ...template,
@@ -78,7 +76,6 @@ export const applySourceAccessibility = (
 ): TemplateSourceRow => ({
   ...sourceRow,
   isAccessibilityLoaded: true,
-  isAccessibilityError: false,
   templates: sortTemplatesByAccessibilityThenTitle(
     sourceRow.templates.map((template) => ({
       ...template,
@@ -86,11 +83,6 @@ export const applySourceAccessibility = (
     })),
     language
   ),
-});
-
-export const markSourceAccessibilityError = (sourceRow: TemplateSourceRow): TemplateSourceRow => ({
-  ...sourceRow,
-  isAccessibilityError: true,
 });
 
 export const filterSourceRows = (
