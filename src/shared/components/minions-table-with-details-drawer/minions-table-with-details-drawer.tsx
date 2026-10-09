@@ -1,10 +1,13 @@
 import { ExportOutlined } from "@ant-design/icons";
 import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  applyFilterByValue,
+  canApplyFilterByValue,
   FastTable,
   createSelectColumn,
   formatTimeByUserTZ,
   getFilterFieldOptions,
+  hasFilterByValue,
   useInfoDrawer,
   type FilterFieldOptions,
 } from "@saltbox/saltbox-frontend-common";
@@ -17,15 +20,11 @@ import { Link } from "react-router";
 
 import {
   buildMinionDetailsPagePath,
+  type OnFilterButtonHandler,
   type OnFilterButtonParams,
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import {
-  applyClientFilter,
-  canApplyClientFilter,
-  hasClientFilter,
-} from "saltbox-core/shared/helpers/apply-client-filter";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -168,8 +167,10 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       return options;
     };
 
-    const apply = (params: OnFilterButtonParams) => {
-      const next = applyClientFilter(props.filterStore, params.name, params.value, {
+    const filterView = { filterSchema, currentFilters };
+
+    const apply = ((params: OnFilterButtonParams) => {
+      const next = applyFilterByValue(props.filterStore, params.name, params.value, {
         search: true,
         fieldOptions: getFieldOptions(params.name),
       });
@@ -184,12 +185,12 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         message.success(t("minions.filter-applied"));
         drawer.close();
       }
-    };
+    }) as OnFilterButtonHandler;
 
     apply.canApply = (field: string, value: unknown) =>
-      canApplyClientFilter(props.filterStore, field, value, getFieldOptions(field));
+      canApplyFilterByValue(filterView, field, value, getFieldOptions(field));
     apply.isActive = (field: string, value: unknown) =>
-      hasClientFilter(props.filterStore, field, value, getFieldOptions(field));
+      hasFilterByValue(filterView, field, value, getFieldOptions(field));
 
     return apply;
   }, [

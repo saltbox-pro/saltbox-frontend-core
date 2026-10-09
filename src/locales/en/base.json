@@ -1,9 +1,5 @@
 {
   "minions": {
-    "action-button": {
-      "add-filter": "Add this value to minion filters",
-      "remove-filter": "Remove this value from minion filters"
-    },
     "title": "Collection",
     "tab-list": "List",
     "tab-tasks": "Tasks",
@@ -805,6 +801,7 @@
     "table-conversion-not-possible": "Table view is not available for current data",
     "table-empty": "No data available",
     "empty-for-period": "No data for {{period}}",
+    "filter-value-unsupported": "This value cannot be used in a filter",
     "period-today": "today",
     "period-10-minutes": "the last 10 minutes",
     "period-30-minutes": "the last 30 minutes",
@@ -926,8 +923,7 @@
     "open-collection-page": "Open collection page",
     "parent-collection": "Parent collection",
     "parent-collection-required": "Parent collection is required",
-    "select-parent-collection": "Select parent collection",
-    "invalid-filter-json": "Filter query is not valid JSON"
+    "select-parent-collection": "Select parent collection"
   },
   "dashboard": {
     "minions-total": "Minions in Selection",

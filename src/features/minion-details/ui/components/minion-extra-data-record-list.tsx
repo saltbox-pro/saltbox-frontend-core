@@ -7,9 +7,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
-import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import {
   buildExtraDataFilterField,
   toExtraDataCopyValue,
@@ -33,8 +31,6 @@ export function MinionExtraDataRecordList({
   category,
   onFilterButton,
 }: MinionExtraDataRecordListProps) {
-  const { t } = useTranslation();
-
   const items = useMemo<InfoDescriptionsProps["items"]>(
     () =>
       fields.map((field) => {
@@ -55,7 +51,6 @@ export function MinionExtraDataRecordList({
                 {canFilter && onFilterButton && (
                   <FilterActionButton
                     active={isActive}
-                    title={getClientFilterActionTitle(isActive, t)}
                     onClick={() =>
                       onFilterButton({
                         name: filterFieldName,
@@ -69,7 +64,7 @@ export function MinionExtraDataRecordList({
           ),
         };
       }),
-    [fields, record, category, onFilterButton, t]
+    [fields, record, category, onFilterButton]
   );
 
   return <InfoDescriptions items={items} />;

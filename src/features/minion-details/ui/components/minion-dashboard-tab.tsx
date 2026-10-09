@@ -9,12 +9,10 @@ import {
   type InfoDescriptionsProps,
 } from "@saltbox/saltbox-frontend-common";
 import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
-import type { TFunction } from "i18next";
 import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
-import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
@@ -74,7 +72,6 @@ const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
 };
 
 const minionDetailsViewsToDescriptionItems = (
-  t: TFunction,
   minionDetailViews: MinionDetailView[],
   schema: MinionDetailSchema,
   onFilterButton?: OnFilterButtonHandler
@@ -129,7 +126,6 @@ const minionDetailsViewsToDescriptionItems = (
             {canFilter && onFilterButton && (
               <FilterActionButton
                 active={isActive}
-                title={getClientFilterActionTitle(isActive, t)}
                 onClick={() =>
                   onFilterButton({
                     name: filterFieldName,
@@ -149,7 +145,6 @@ const minionDetailsViewsToDescriptionItems = (
 };
 
 const minionDetailViewGroupsToCollapseItems = (
-  t: TFunction,
   minionDetailViewGroups: MinionDetailViewGroup[],
   schema: MinionDetailSchema,
   onFilterButton?: OnFilterButtonHandler
@@ -161,7 +156,6 @@ const minionDetailViewGroupsToCollapseItems = (
       children: (
         <InfoDescriptions
           items={minionDetailsViewsToDescriptionItems(
-            t,
             minionDetailViewGroup.details,
             schema,
             onFilterButton
@@ -408,7 +402,6 @@ export function MinionDashboardTab({
 
       <InfoDescriptions
         items={minionDetailsViewsToDescriptionItems(
-          t,
           minionGeneralDetailViews,
           minion,
           onFilterButton
@@ -417,7 +410,6 @@ export function MinionDashboardTab({
 
       <Collapse
         items={minionDetailViewGroupsToCollapseItems(
-          t,
           minionGroupDetailsViews,
           minion,
           onFilterButton

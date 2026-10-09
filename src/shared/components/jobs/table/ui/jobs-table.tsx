@@ -6,7 +6,7 @@ import {
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Tag } from "antd";
+import { message, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -51,8 +51,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { currentFilters } = store.jobFilterStore;
-
+  const { filtersRevision } = store.jobFilterStore;
   const jobsEmptyText = useMemo(() => {
     const period = t(PRESET_TO_PERIOD_KEY[store.dateRangePreset]);
     return t("jobs.empty-for-period", { period });
@@ -64,12 +63,17 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       getPresentation: (value) =>
         FilterActionButton.getPresentation(store.hasCellFilter(fieldName, value)),
       onClick: (value) => {
-        if (store.applyCellFilter(fieldName, value) === "added") {
+        const result = store.applyCellFilter(fieldName, value);
+        if (result === "unsupported") {
+          message.warning(t("jobs.filter-value-unsupported"));
+          return;
+        }
+        if (result === "added") {
           onCellFilterClick();
         }
       },
     }),
-    [currentFilters, onCellFilterClick, store]
+    [filtersRevision, onCellFilterClick, store, t]
   );
 
   const masterColumn = useMemo(

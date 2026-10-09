@@ -1,16 +1,16 @@
 import { GrainValue } from "@saltbox/saltbox-core-api-client";
-import { FastTable, FilterActionButton } from "@saltbox/saltbox-frontend-common";
+import {
+  applyFilterByValue,
+  canApplyFilterByValue,
+  FastTable,
+  FilterActionButton,
+  hasFilterByValue,
+} from "@saltbox/saltbox-frontend-common";
 import { SortingState, createColumnHelper } from "@tanstack/react-table";
 import { observer } from "mobx-react-lite";
 import { CSSProperties, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  applyClientFilter,
-  canApplyClientFilter,
-  hasClientFilter,
-} from "saltbox-core/shared/helpers/apply-client-filter";
-import { getClientFilterActionTitle } from "saltbox-core/shared/helpers/client-filter-rule";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import { formatPercent } from "../../helpers/format-percent";
@@ -34,7 +34,7 @@ export const GrainTable = observer(function GrainTable({
 }: GrainTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([{ id: "count", desc: true }]);
-  const { currentFilters } = filterStore;
+  const { filtersRevision } = filterStore;
 
   const maxCount = useMemo(
     () => values.reduce((max, item) => Math.max(max, item.count), 0),
@@ -53,16 +53,13 @@ export const GrainTable = observer(function GrainTable({
           actions: [
             {
               icon: FilterActionButton.getIcon(),
-              visible: (value) => canApplyClientFilter(filterStore, fieldSource, value),
-              getPresentation: (value) => {
-                const active = hasClientFilter(filterStore, fieldSource, value);
-                return FilterActionButton.getPresentation(
-                  active,
-                  getClientFilterActionTitle(active, t)
-                );
-              },
+              visible: (value) => canApplyFilterByValue(filterStore, fieldSource, value),
+              getPresentation: (value) =>
+                FilterActionButton.getPresentation(
+                  hasFilterByValue(filterStore, fieldSource, value)
+                ),
               onClick: (value) =>
-                applyClientFilter(filterStore, fieldSource, value, {
+                applyFilterByValue(filterStore, fieldSource, value, {
                   search: true,
                   mode: "replace-field",
                 }),
@@ -93,7 +90,7 @@ export const GrainTable = observer(function GrainTable({
         },
       }),
     ],
-    [t, fieldSource, filterStore, currentFilters, maxCount, total]
+    [t, fieldSource, filterStore, filtersRevision, maxCount, total]
   );
 
   if (values.length === 0) {
