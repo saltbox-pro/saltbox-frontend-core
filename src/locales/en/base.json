@@ -609,6 +609,7 @@
     "table-master-id": "Master ID",
     "table-status": "Status",
     "table-availability": "Availability",
+    "table-minions-count": "Minions",
     "table-new": "New",
     "table-rejected": "Rejected",
     "table-accepted": "Accepted",

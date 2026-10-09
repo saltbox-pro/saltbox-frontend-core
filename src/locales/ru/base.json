@@ -609,6 +609,7 @@
     "table-master-id": "ID контроллера",
     "table-status": "Статус",
     "table-availability": "Доступность",
+    "table-minions-count": "Клиенты",
     "table-new": "Новый",
     "table-rejected": "Отклонен",
     "table-accepted": "Принят",
