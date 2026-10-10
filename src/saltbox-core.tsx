@@ -30,10 +30,10 @@ import {
   type MinionDetailsDrawerWrapperProps,
 } from "./features/minion-details-drawer";
 import { dashboardStore } from "./features/minions-dashboard";
-
-let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
+
+let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 
 const coreLifecycles = singleSpaReact({
   React,

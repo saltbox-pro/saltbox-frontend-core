@@ -1,5 +1,4 @@
 import { SearchOutlined } from "@ant-design/icons";
-import type { ErrorSchema } from "@rjsf/utils";
 import type {
   CreateJobRequest,
   CreateJobRequestTgtTypeEnum,
@@ -17,6 +16,7 @@ import {
   Modal,
   JsonForm,
   notify,
+  revalidateJsonFormAfterAdvancedOpen,
   type JsonFormRef,
 } from "@saltbox/saltbox-frontend-common";
 import {
@@ -96,8 +96,6 @@ type JobModalCloseReason = "return-to-picker" | "dismiss" | "scheduler-handoff";
 
 const JSON_FORM_INPUT_SELECTOR =
   "#job-params-form input, #job-params-form textarea, #job-params-form select";
-const JSON_FORM_ERROR_INPUT_SELECTOR =
-  "#job-params-form .ant-form-item-has-error input, #job-params-form .ant-form-item-has-error textarea, #job-params-form .ant-form-item-has-error select";
 
 export const JobModal = observer(function JobModal({
   target,
@@ -126,7 +124,6 @@ export const JobModal = observer(function JobModal({
   const [messageApi, contextHolder] = message.useMessage();
   const [createError, setCreateError] = useState<AppError | null>(null);
   const [isAdvancedSettingsEnabled, setIsAdvancedSettingsEnabled] = useState(false);
-  const [jsonFormExtraErrors, setJsonFormExtraErrors] = useState<ErrorSchema>();
 
   const [form] = Form.useForm<JobFormData>();
   const refJobParamsForm = useRef<JsonFormRef>(null);
@@ -134,7 +131,7 @@ export const JobModal = observer(function JobModal({
   const isSubmittingRef = useRef(false);
   const handleFormFinishInProgressRef = useRef(false);
   const closeReasonRef = useRef<JobModalCloseReason | null>(null);
-  const shouldFocusJsonFormAfterAdvancedOpenRef = useRef(false);
+  const shouldRevalidateJsonFormAfterAdvancedOpenRef = useRef(false);
 
   const handleLoadFailed = useCallback(() => {
     setIsModalOpen(false);
@@ -273,14 +270,29 @@ export const JobModal = observer(function JobModal({
     };
   }, [cancelInit]);
 
+  const notifyJsonFormValidationError = useCallback(() => {
+    notify.error(t("errors.form-validation"));
+  }, [t]);
+
   useLayoutEffect(() => {
     if (!isModalOpen || !isFormReady || schemaError) {
       return;
     }
 
-    if (shouldFocusJsonFormAfterAdvancedOpenRef.current && isAdvancedSettingsEnabled) {
-      shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
-      refJobParamsForm.current?.validateForm();
+    if (!isAdvancedSettingsEnabled) {
+      shouldRevalidateJsonFormAfterAdvancedOpenRef.current = false;
+    }
+
+    const shouldRevalidateAfterAdvancedOpen = shouldRevalidateJsonFormAfterAdvancedOpenRef.current;
+
+    revalidateJsonFormAfterAdvancedOpen({
+      shouldRevalidateRef: shouldRevalidateJsonFormAfterAdvancedOpenRef,
+      isAdvanced: isAdvancedSettingsEnabled,
+      formRef: refJobParamsForm,
+      onMissingForm: notifyJsonFormValidationError,
+    });
+
+    if (shouldRevalidateAfterAdvancedOpen && isAdvancedSettingsEnabled) {
       return;
     }
 
@@ -298,25 +310,21 @@ export const JobModal = observer(function JobModal({
     jobParamsSchemaLayout.displaySchema,
     form,
     schemaError,
+    notifyJsonFormValidationError,
   ]);
 
   const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
-
-  const clearJsonFormValidation = useCallback(() => {
-    setJsonFormExtraErrors(undefined);
-  }, []);
 
   const resetModalState = useCallback(() => {
     cancelInit();
     form.resetFields();
     refJobParamsForm.current?.reset();
     resetLoadedData();
-    clearJsonFormValidation();
     setIsAdvancedSettingsEnabled(false);
-    shouldFocusJsonFormAfterAdvancedOpenRef.current = false;
+    shouldRevalidateJsonFormAfterAdvancedOpenRef.current = false;
     isSubmittingRef.current = false;
     handleFormFinishInProgressRef.current = false;
-  }, [cancelInit, form, resetLoadedData, clearJsonFormValidation]);
+  }, [cancelInit, form, resetLoadedData]);
 
   useEffect(() => {
     const handleSchedulerReturn = () => {
@@ -373,11 +381,6 @@ export const JobModal = observer(function JobModal({
     closeModal("return-to-picker");
   };
 
-  const focusFirstVisibleJsonFormError = () => {
-    const firstInvalidField = document.querySelector<HTMLElement>(JSON_FORM_ERROR_INPUT_SELECTOR);
-    firstInvalidField?.focus({ preventScroll: true });
-  };
-
   const getRequestArgAndKwarg = () =>
     getArgAndKwargForRequest({
       jsonFormValue,
@@ -385,7 +388,7 @@ export const JobModal = observer(function JobModal({
       kwarg: baselineKwarg,
     });
 
-  const validateJsonForm = (): boolean => {
+  const validateJsonForm = (): "ok" | "open-advanced" | "invalid" => {
     const formStateData = refJobParamsForm.current?.state?.formData;
     const formData =
       formStateData && typeof formStateData === "object" && !Array.isArray(formStateData)
@@ -402,32 +405,39 @@ export const JobModal = observer(function JobModal({
     );
 
     if (result.ok) {
-      clearJsonFormValidation();
-      return true;
+      return "ok";
     }
+
     if ("openAdvanced" in result) {
-      clearJsonFormValidation();
-      shouldFocusJsonFormAfterAdvancedOpenRef.current = true;
+      shouldRevalidateJsonFormAfterAdvancedOpenRef.current = true;
       setIsAdvancedSettingsEnabled(true);
-      return false;
+      return "open-advanced";
     }
+
     if ("useFormRef" in result) {
-      clearJsonFormValidation();
-      return refJobParamsForm.current?.validateForm() === true;
+      const form = refJobParamsForm.current;
+      if (!form) {
+        return "invalid";
+      }
+      return form.validateForm() === true ? "ok" : "invalid";
     }
-    if ("errorSchema" in result) {
-      setJsonFormExtraErrors(result.errorSchema);
-      requestAnimationFrame(() => focusFirstVisibleJsonFormError());
-    }
-    return false;
+
+    return "invalid";
   };
 
   const handleFormFinish: FormProps<JobFormData>["onFinish"] = async (formValue) => {
     if (handleFormFinishInProgressRef.current || schemaError) return;
 
-    if (!validateJsonForm()) {
+    const jsonFormOutcome = validateJsonForm();
+    if (jsonFormOutcome === "open-advanced") {
       isSubmittingRef.current = false;
-      notify.error(t("errors.form-validation"));
+      return;
+    }
+    if (jsonFormOutcome !== "ok") {
+      isSubmittingRef.current = false;
+      if (!refJobParamsForm.current) {
+        notifyJsonFormValidationError();
+      }
       return;
     }
 
@@ -488,7 +498,7 @@ export const JobModal = observer(function JobModal({
   };
 
   const handleCreateJobPlugin = (pluginKey: string) => {
-    if (schemaError || !validateJsonForm()) {
+    if (schemaError || validateJsonForm() !== "ok") {
       return;
     }
     publish("jobs.jobmodal.create", {
@@ -595,10 +605,7 @@ export const JobModal = observer(function JobModal({
                 <Typography.Text>{t("job-modal.advanced-settings")}</Typography.Text>
                 <Switch
                   checked={isAdvancedSettingsEnabled}
-                  onChange={(checked) => {
-                    clearJsonFormValidation();
-                    setIsAdvancedSettingsEnabled(checked);
-                  }}
+                  onChange={setIsAdvancedSettingsEnabled}
                   disabled={isLoading}
                 />
               </Flex>
@@ -713,7 +720,6 @@ export const JobModal = observer(function JobModal({
                   schema={jobParamsSchemaLayout.displaySchema}
                   uiSchema={jobParamsSchemaLayout.displayUiSchema}
                   omitExtraData={false}
-                  extraErrors={jsonFormExtraErrors}
                   focusOnFirstError
                   id="job-params-form"
                   className={styles.jobParamsForm}
@@ -721,9 +727,9 @@ export const JobModal = observer(function JobModal({
                   idSeparator="-"
                   formData={jsonFormValue}
                   onChange={(d) => {
-                    clearJsonFormValidation();
                     setJsonFormValue((d?.formData ?? {}) as Record<string, unknown>);
                   }}
+                  onError={notifyJsonFormValidationError}
                 >
                   <Fragment />
                 </JsonForm>
