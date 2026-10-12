@@ -7,11 +7,11 @@ class ApiGatewayStore {
   @observable public serviceName: string;
 
   private get apiConfig() {
-    if (!appStore.authStore?.user?.access_token) {
+    if (!this.env || !appStore.authStore?.user?.access_token) {
       return undefined;
     }
     return new Configuration({
-      basePath: this.env?.api_base_path ?? "",
+      basePath: this.env?.api_base_path,
       headers: {
         Authorization: `Bearer ${appStore.authStore.user.access_token}`,
       },
