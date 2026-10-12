@@ -302,7 +302,6 @@ const MasterPage = observer(() => {
         className: styles.flexTab,
         children: (
           <SaltKeysTab
-            masterId={masterId}
             store={saltKeysStore}
             drawer={drawer}
             selection={selection}

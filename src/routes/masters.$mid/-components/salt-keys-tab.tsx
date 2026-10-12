@@ -1,4 +1,3 @@
-import { ExportOutlined } from "@ant-design/icons";
 import { SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
 import { FastTable, createSelectColumn, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
 import { RowSelectionState, createColumnHelper, type OnChangeFn } from "@tanstack/react-table";
@@ -6,9 +5,7 @@ import { Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router";
 
-import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
 import {
   ALL_FILTER,
   DUPLICATES_FILTER,
@@ -29,7 +26,6 @@ type SaltKeysDrawer = ReturnType<
 >;
 
 type SaltKeysTabProps = {
-  masterId: string | undefined;
   store: SaltKeysStore;
   drawer: SaltKeysDrawer;
   selection: RowSelectionState;
@@ -45,7 +41,6 @@ type SaltKeysTabProps = {
 };
 
 export const SaltKeysTab = observer(function SaltKeysTab({
-  masterId,
   store,
   drawer,
   selection,
@@ -68,14 +63,6 @@ export const SaltKeysTab = observer(function SaltKeysTab({
         header: t("master.table-minion-id"),
         meta: {
           showCopy: true,
-          actions: [
-            {
-              icon: <ExportOutlined />,
-              getHref: (value, row) =>
-                buildMasterMinionRedirectPath(row.salt_master ?? masterId ?? "", String(value)),
-              title: t("minions.open-minion-details-page"),
-            },
-          ],
           tdClassName: "fast-table-column-nowrap",
           color: "accent",
           width: "50%",
@@ -91,7 +78,7 @@ export const SaltKeysTab = observer(function SaltKeysTab({
         },
       }),
     ],
-    [masterId, t]
+    [t]
   );
 
   const emptyText = useMemo(() => {
@@ -163,7 +150,6 @@ export const SaltKeysTab = observer(function SaltKeysTab({
             onRowSelectionChange={onSelectionChange}
             onRowClick={onRowClick}
             locale={{ empty: emptyText }}
-            actionLinkComponent={Link}
           />
         </div>
       </FastTable.Provider>
