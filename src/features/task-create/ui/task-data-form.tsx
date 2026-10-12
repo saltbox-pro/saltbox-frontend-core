@@ -1,8 +1,12 @@
-import type { ErrorSchema, RJSFSchema } from "@rjsf/utils";
+import type { RJSFSchema } from "@rjsf/utils";
 import type { TaskData, TaskTemplateModel } from "@saltbox/saltbox-core-api-client";
-import { JsonForm, type JsonFormRef } from "@saltbox/saltbox-frontend-common";
+import {
+  JsonForm,
+  revalidateJsonFormAfterAdvancedOpen,
+  type JsonFormRef,
+} from "@saltbox/saltbox-frontend-common";
 import { Button } from "antd";
-import { type Ref, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { type Ref, useImperativeHandle, useLayoutEffect, useRef, useState } from "react";
 
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 import { getDefaultJsonFormValue } from "saltbox-core/shared/utils/job-modal-utils";
@@ -48,12 +52,22 @@ export function TaskDataForm({
     ...getDefaultJsonFormValue(jsonSchema),
     ...(initialData ?? {}),
   }));
-  const [extraErrors, setExtraErrors] = useState<ErrorSchema>();
   const jsonFormRef = useRef<JsonFormRef<TaskData>>(null);
+  const shouldRevalidateAfterAdvancedOpenRef = useRef(false);
 
-  useEffect(() => {
-    setExtraErrors(undefined);
-  }, [isAdvanced]);
+  useLayoutEffect(() => {
+    if (!isAdvanced) {
+      shouldRevalidateAfterAdvancedOpenRef.current = false;
+      return;
+    }
+
+    revalidateJsonFormAfterAdvancedOpen({
+      shouldRevalidateRef: shouldRevalidateAfterAdvancedOpenRef,
+      isAdvanced,
+      formRef: jsonFormRef,
+      onMissingForm: onError,
+    });
+  }, [isAdvanced, onError]);
 
   const validate = (): boolean => {
     if (!jsonSchema || isFieldless) {
@@ -70,26 +84,24 @@ export function TaskDataForm({
     );
 
     if (result.ok) {
-      setExtraErrors(undefined);
       return true;
     }
 
     if ("openAdvanced" in result) {
-      setExtraErrors(undefined);
+      shouldRevalidateAfterAdvancedOpenRef.current = true;
       onRequestAdvanced();
-      onError();
       return false;
     }
 
     if ("useFormRef" in result) {
-      setExtraErrors(undefined);
-      return jsonFormRef.current?.validateForm() === true;
+      const form = jsonFormRef.current;
+      if (!form) {
+        onError();
+        return false;
+      }
+      return form.validateForm() === true;
     }
 
-    if ("errorSchema" in result) {
-      setExtraErrors(result.errorSchema);
-    }
-    onError();
     return false;
   };
 
@@ -119,10 +131,8 @@ export function TaskDataForm({
       schema={displaySchema}
       uiSchema={displayUiSchema}
       omitExtraData={false}
-      extraErrors={extraErrors}
       formData={jsonData}
       onChange={(data) => {
-        setExtraErrors(undefined);
         setJsonData(data.formData);
       }}
       onSubmit={(event) => onSubmit(event.formData)}

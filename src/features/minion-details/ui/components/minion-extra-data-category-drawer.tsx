@@ -4,6 +4,8 @@ import {
   FastTable,
   ErrorZone,
   InfoDrawer,
+  RefreshButton,
+  SwitchTransitionLayout,
   type InfoDrawerProps,
 } from "@saltbox/saltbox-frontend-common";
 import { Alert, Button, Flex, Skeleton } from "antd";
@@ -169,6 +171,10 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                       {singleRecord ? (
                         <>
                           {exportButton}
+                          <RefreshButton
+                            loading={recordsLoad?.isLoading}
+                            onClick={extraDataRecordsStore.loadRecords}
+                          />
                           {canChangeSingleRecord && (
                             <>
                               <Button
@@ -213,12 +219,26 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
                 )}
 
                 {isLoaded && singleRecord && category && (
-                  <MinionExtraDataRecordList
-                    record={singleRecord}
-                    fields={fields}
-                    category={category}
-                    onFilterButton={onFilterButton}
-                  />
+                  <SwitchTransitionLayout
+                    activeKey={recordsLoad?.isLoading ? "skeleton" : "content"}
+                  >
+                    {(key) =>
+                      key === "skeleton" ? (
+                        <Skeleton
+                          active
+                          title={false}
+                          paragraph={{ rows: Math.max(fields.length, 4), width: "100%" }}
+                        />
+                      ) : (
+                        <MinionExtraDataRecordList
+                          record={singleRecord}
+                          fields={fields}
+                          category={category}
+                          onFilterButton={onFilterButton}
+                        />
+                      )
+                    }
+                  </SwitchTransitionLayout>
                 )}
 
                 {isLoaded && !singleRecord && category && (

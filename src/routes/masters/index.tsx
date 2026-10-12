@@ -28,8 +28,15 @@ const columnHelper = createColumnHelper<TableRowData>();
 function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { availabilityByMasterId, isManualPinging, isPinging, masters, pagination, sorting } =
-    mastersStore;
+  const {
+    availabilityByMasterId,
+    isManualPinging,
+    isPinging,
+    masters,
+    pagination,
+    sorting,
+    totalMasters,
+  } = mastersStore;
 
   const columns = [
     columnHelper.accessor("master_id", {
@@ -192,6 +199,7 @@ function MastersPage() {
           tableId="core-masters"
           columns={columns}
           data={masters}
+          total={totalMasters}
           isLoading={mastersStore.isLoading}
           onRefresh={() => mastersStore.loadMasters()}
           loader={mastersStore.mastersLoad}
