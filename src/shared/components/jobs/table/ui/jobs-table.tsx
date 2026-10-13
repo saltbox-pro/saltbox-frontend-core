@@ -13,13 +13,12 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
 import { EntitySourceType } from "saltbox-core/shared/components/entity-source";
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge";
 import {
   JOB_DATE_RANGE_PRESET,
   type JobDateRangePreset,
 } from "saltbox-core/shared/constants/job-date-range-presets";
 import type { JobsStore } from "saltbox-core/store";
-
-import { LaunchErrorPopover } from "./cells/launch-error-popover";
 
 const Table = FastTable.Paginated<JobsListResponse>;
 
@@ -150,25 +149,12 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       }),
       columnHelper.accessor("status", {
         header: t("jobs.table-status"),
-        cell: (data) => {
-          switch (data.getValue()) {
-            case JobStatus.Starting:
-              return <Tag color="yellow">{t("jobs.table-status-starting")}</Tag>;
-            case JobStatus.Running:
-              return <Tag color="blue">{t("jobs.table-status-running")}</Tag>;
-            case JobStatus.Finished:
-              return <Tag color="green">{t("jobs.table-status-finished")}</Tag>;
-            case JobStatus.LaunchError:
-              return (
-                <LaunchErrorPopover
-                  errorTypeText={data.row.original.launch_error_type ?? ""}
-                  tagText={t("jobs.table-status-launch-error")}
-                />
-              );
-            default:
-              return <Tag>{`${t("jobs.table-status-unknown")}: ${data.getValue()}`}</Tag>;
-          }
-        },
+        cell: (data) => (
+          <JobStatusBadge
+            status={data.getValue()}
+            launchErrorType={data.row.original.launch_error_type}
+          />
+        ),
         meta: {
           width: "11%",
           minWidth: 180,

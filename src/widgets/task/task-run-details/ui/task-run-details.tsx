@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { EditableTtl } from "saltbox-core/features/job-ttl";
 import { OpenRelatedJobsButton } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { TaskStatusBadge } from "saltbox-core/shared/components/task-status-badge";
 import type { TaskStore } from "saltbox-core/store";
 
 import { TaskDetailItem } from "./task-detail-item";
@@ -49,6 +49,16 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
 
   return (
     <Flex className={styles.taskDetailsContainer} align="center" wrap gap="middle">
+      {taskStore.task ? (
+        <TaskStatusBadge
+          status={taskStore.task.status?.type}
+          reason={taskStore.task.status?.data?.reason}
+          size="prominent"
+        />
+      ) : (
+        <Skeleton.Input size="small" />
+      )}
+
       <TaskRunControl
         isRunTaskLoading={taskStore.isRunTaskLoading}
         isStopTaskLoading={taskStore.isStopTaskLoading}
@@ -77,13 +87,6 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
               : t("task.type-policy")}
           </TaskDetailItem>
           <Divider type="vertical" />
-          <TaskDetailItem label={t("task.status")}>
-            <TaskStatusIndicator
-              status={taskStore.task?.status?.type ?? "none"}
-              reason={taskStore.task?.status?.data?.reason}
-            />
-          </TaskDetailItem>
-          <Divider type="vertical" />
           <TaskDetailItem label={t("task.created")}>
             {taskStore.task.created ? (
               formatTimeByUserTZ(taskStore.task.created)
@@ -107,9 +110,7 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
             />
           </TaskDetailItem>
         </Flex>
-      ) : (
-        <Skeleton.Input size="small" />
-      )}
+      ) : null}
     </Flex>
   );
 });
