@@ -1,7 +1,12 @@
-import { FilterOutlined } from "@ant-design/icons";
-import { type JobsListResponse } from "@saltbox/saltbox-core-api-client";
-import { FastTable, formatTimeByUserTZ, CellAction } from "@saltbox/saltbox-frontend-common";
+import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import {
+  CellAction,
+  FastTable,
+  FilterActionButton,
+  formatTimeByUserTZ,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
+import { message, Tag } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -45,7 +50,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
+  const { filtersRevision } = store.jobFilterStore;
   const jobsEmptyText = useMemo(() => {
     const period = t(PRESET_TO_PERIOD_KEY[store.dateRangePreset]);
     return t("jobs.empty-for-period", { period });
@@ -53,14 +58,21 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
 
   const createFilterAction = useCallback(
     (fieldName: string): CellAction<JobsListResponse> => ({
-      icon: <FilterOutlined />,
-      title: t("dashboard.apply-value-to-filters"),
+      icon: FilterActionButton.getIcon(),
+      getPresentation: (value) =>
+        FilterActionButton.getPresentation(store.hasCellFilter(fieldName, value)),
       onClick: (value) => {
-        onCellFilterClick();
-        store.applyCellFilter(fieldName, value);
+        const result = store.applyCellFilter(fieldName, value);
+        if (result === "unsupported") {
+          message.warning(t("jobs.filter-value-unsupported"));
+          return;
+        }
+        if (result === "added") {
+          onCellFilterClick();
+        }
       },
     }),
-    [onCellFilterClick, store, t]
+    [filtersRevision, onCellFilterClick, store, t]
   );
 
   const masterColumn = useMemo(
@@ -109,7 +121,10 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       }),
       columnHelper.accessor("tgt_type", {
         header: t("jobs.table-target-type"),
-        meta: { width: "8%" },
+        meta: {
+          width: "8%",
+          actions: [createFilterAction("tgt_type")],
+        },
       }),
       columnHelper.accessor((row) => row.source?.type, {
         id: "source.type",

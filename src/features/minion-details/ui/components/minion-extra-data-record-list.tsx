@@ -7,11 +7,9 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Flex } from "antd";
 import { useMemo } from "react";
-import { useTranslation } from "react-i18next";
 
 import {
   buildExtraDataFilterField,
-  canFilterExtraDataValue,
   toExtraDataCopyValue,
 } from "saltbox-core/shared/helpers/extra-data-value";
 import type { ExtraDataRecord } from "saltbox-core/store";
@@ -33,14 +31,14 @@ export function MinionExtraDataRecordList({
   category,
   onFilterButton,
 }: MinionExtraDataRecordListProps) {
-  const { t } = useTranslation();
-
   const items = useMemo<InfoDescriptionsProps["items"]>(
     () =>
       fields.map((field) => {
         const value = record[field];
         const displayValue = toExtraDataCopyValue(value);
-        const canFilter = !!onFilterButton && canFilterExtraDataValue(value);
+        const filterFieldName = buildExtraDataFilterField(category.source, category.name, field);
+        const canFilter = !!onFilterButton && onFilterButton.canApply(filterFieldName, value);
+        const isActive = !!onFilterButton && onFilterButton.isActive(filterFieldName, value);
 
         return {
           key: field,
@@ -50,14 +48,13 @@ export function MinionExtraDataRecordList({
               <Flex className={styles.value}>{displayValue}</Flex>
               <Flex gap={2} className={styles.actions}>
                 <CopyToClipboardButton text={displayValue} />
-                {canFilter && (
+                {canFilter && onFilterButton && (
                   <FilterActionButton
-                    title={t("minions.extra-data.apply-to-filters")}
+                    active={isActive}
                     onClick={() =>
                       onFilterButton({
-                        name: buildExtraDataFilterField(category.source, category.name, field),
+                        name: filterFieldName,
                         value,
-                        keepDrawerOpen: true,
                       })
                     }
                   />
@@ -67,7 +64,7 @@ export function MinionExtraDataRecordList({
           ),
         };
       }),
-    [fields, record, category, onFilterButton, t]
+    [fields, record, category, onFilterButton]
   );
 
   return <InfoDescriptions items={items} />;

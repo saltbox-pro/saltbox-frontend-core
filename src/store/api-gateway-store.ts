@@ -1,9 +1,9 @@
-import { AuditEventsApi, Configuration } from "@saltbox/saltbox-audit-api-client";
+import { Configuration, UserSettingsApi } from "@saltbox/saltbox-gateway-api-client";
 import { computed, makeObservable, observable } from "mobx";
 
 import { appStore, envStore } from "saltbox-core/store";
 
-class ApiAuditStore {
+class ApiGatewayStore {
   @observable public serviceName: string;
 
   private get apiConfig() {
@@ -28,13 +28,9 @@ class ApiAuditStore {
     return envStore?.services?.get(this.serviceName);
   }
 
-  @computed get isAvailable() {
-    return !!this.env;
-  }
-
-  @computed get auditEventsApi() {
-    return this.apiConfig && new AuditEventsApi(this.apiConfig);
+  @computed get userSettingsApi() {
+    return this.apiConfig && new UserSettingsApi(this.apiConfig);
   }
 }
 
-export const apiAuditStore = new ApiAuditStore("audit");
+export const apiGatewayStore = new ApiGatewayStore("gateway");

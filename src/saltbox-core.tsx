@@ -2,6 +2,8 @@ import {
   SaltboxLocaleProvider,
   bindWebSocketAccessTokenSync,
   createSingleSpaErrorBoundary,
+  createUserSettingsTransport,
+  initUserSettings,
   withParcelBoundary,
   type AuthStoreWithAccessToken,
 } from "@saltbox/saltbox-frontend-common";
@@ -22,7 +24,7 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { appStore, envStore, i18nStore } from "saltbox-core/store";
+import { apiGatewayStore, appStore, envStore, i18nStore } from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
 import {
@@ -30,10 +32,10 @@ import {
   type MinionDetailsDrawerWrapperProps,
 } from "./features/minion-details-drawer";
 import { dashboardStore } from "./features/minions-dashboard";
-
-let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
+
+let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -236,19 +238,6 @@ export const saltboxModule = {
         },
       ],
     },
-    {
-      priority: 30,
-      key: "audit",
-      label: { en: "Audit", ru: "Аудит" },
-      children: [
-        {
-          key: "audit-events",
-          label: { en: "Audit events", ru: "События аудита" },
-          icon: "manage_search",
-          path: "/core/audit/events",
-        },
-      ],
-    },
   ],
   init: (authStore, services, localeStore, pluginsStore) => {
     appStore.init(authStore, pluginsStore);
@@ -261,6 +250,7 @@ export const saltboxModule = {
         envStore.services.set(service.service_name, service.env);
       }
     });
+    initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
     });

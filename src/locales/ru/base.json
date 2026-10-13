@@ -51,9 +51,6 @@
       "category-column": "Категория",
       "empty": "Нет расширенных данных",
       "empty-category": "Нет расширенных данных в категории \"{{category}}\"",
-      "apply-to-filters": "Применить значение к фильтрам",
-      "add-to-client-filters": "Добавить это значение в фильтр клиентов",
-      "remove-from-client-filters": "Убрать это значение из фильтра клиентов",
       "search-placeholder": "Поиск по записям",
       "single-item-inconsistent": "В категории допускается только одна запись на клиента, но найдено несколько. Показан полный список.",
       "export-scope-client": "все расширенные данные категории \"{{category}}\" этого клиента, подходящие под текущий поиск",
@@ -76,6 +73,7 @@
         "no-categories": "Нет категорий с ручным добавлением расширенных данных",
         "no-fields": "У категории нет полей. Добавьте их в настройках категории",
         "unsupported-type": "Тип поля не поддерживается для ручного ввода",
+        "field-required": "Заполните поле",
         "empty-error": "Заполните хотя бы одно поле",
         "change-category": {
           "title": "Смена категории",
@@ -158,6 +156,7 @@
     "efi-yes": "Да",
     "efi-no": "Нет",
     "filter-applied": "Фильтр применён",
+    "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "root-collection-info": "Это корневая коллекция, которая содержит всех клиентов из всех подключенных контроллеров в системе",
     "subcollection-info": "Эта коллекция является подколлекцией",
     "collection-query": "Фильтр коллекции",
@@ -307,7 +306,6 @@
     "unknown-repository": "Без источника",
     "no-sources-available": "Нет доступных источников",
     "go-to-configuration-templates": "Перейти к шаблонам конфигураций",
-    "error-loading-template-accessibility": "Ошибка загрузки доступности шаблонов",
     "template-accessible": "Доступен",
     "template-inaccessible": "Нет доступа",
     "template-inaccessible-tooltip": "У вас нет прав на использование этого шаблона",
@@ -576,15 +574,14 @@
       "field-name-placeholder": "Введите название поля",
       "field-name-required": "Укажите название поля",
       "field-name-unique": "Поле с таким названием уже есть в категории",
-      "field-type-placeholder": "Выберите типы",
-      "field-type-required": "Укажите хотя бы один тип"
+      "field-type-placeholder": "Выберите тип",
+      "field-type-required": "Укажите тип"
     },
     "field-types": {
       "str": "Текст",
       "int": "Число",
       "float": "Число (дробное)",
       "bool": "Булево значение",
-      "none": "Пустое значение",
       "list": "Список",
       "dict": "Объект",
       "bytes": "Байты",
@@ -607,6 +604,7 @@
     "table-master-id": "ID контроллера",
     "table-status": "Статус",
     "table-availability": "Доступность",
+    "table-minions-count": "Клиенты",
     "table-new": "Новый",
     "table-rejected": "Отклонен",
     "table-accepted": "Принят",
@@ -803,6 +801,7 @@
     "table-conversion-not-possible": "Табличное отображение недоступно для текущих данных",
     "table-empty": "Нет данных",
     "empty-for-period": "Нет данных за {{period}}",
+    "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "period-today": "сегодня",
     "period-10-minutes": "последние 10 минут",
     "period-30-minutes": "последние 30 минут",
@@ -924,8 +923,7 @@
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
     "parent-collection-required": "Укажите родительскую коллекцию",
-    "select-parent-collection": "Выберите родительскую коллекцию",
-    "invalid-filter-json": "Запрос фильтра — некорректный JSON"
+    "select-parent-collection": "Выберите родительскую коллекцию"
   },
   "dashboard": {
     "minions-total": "Клиентов в выборке",
@@ -1507,81 +1505,5 @@
   },
   "errors": {
     "form-validation": "Ошибка валидации формы"
-  },
-  "audit": {
-    "events": {
-      "title": "События аудита",
-      "empty": "Событий не найдено",
-      "service-unavailable": "Сервис аудита недоступен",
-      "pager": {
-        "previous": "Назад",
-        "next": "Вперёд",
-        "page-size": "{{size}} / стр."
-      },
-      "columns": {
-        "created": "Время",
-        "severity": "Важность",
-        "category": "Категория",
-        "action": "Действие",
-        "status": "Статус",
-        "subject": "Субъект",
-        "resource": "Ресурс",
-        "source-service": "Сервис",
-        "source-ip": "IP-адрес",
-        "correlation-id": "Correlation ID",
-        "details": "Детали",
-        "siem-sent": "SIEM"
-      }
-    },
-    "fields": {
-      "severity": "Важность",
-      "category": "Категория",
-      "status": "Статус",
-      "action": "Действие",
-      "subject_name": "Имя субъекта",
-      "subject_type": "Тип субъекта",
-      "resource_type": "Тип ресурса",
-      "source_service": "Сервис-источник",
-      "correlation_id": "Correlation ID",
-      "siem_sent": "Отправлено в SIEM",
-      "created": "Время"
-    },
-    "severity": {
-      "info": "Информация",
-      "low": "Низкая",
-      "medium": "Средняя",
-      "high": "Высокая",
-      "critical": "Критическая"
-    },
-    "category": {
-      "authentication": "Аутентификация",
-      "authorization": "Авторизация",
-      "configuration": "Конфигурация",
-      "data_access": "Доступ к данным",
-      "system": "Система",
-      "lifecycle": "Жизненный цикл"
-    },
-    "status": {
-      "success": "Успешно",
-      "failure": "Ошибка",
-      "denied": "Отказано",
-      "blocked": "Заблокировано"
-    },
-    "subject-type": {
-      "user": "Пользователь",
-      "service": "Сервис",
-      "system": "Система"
-    },
-    "resource-type": {
-      "api_endpoint": "API-эндпоинт",
-      "user": "Пользователь",
-      "minion": "Клиент",
-      "collection": "Коллекция",
-      "opa_policy": "Политика OPA",
-      "task": "Задача",
-      "job": "Команда",
-      "schedule": "Расписание",
-      "unknown": "Неизвестно"
-    }
   }
 }

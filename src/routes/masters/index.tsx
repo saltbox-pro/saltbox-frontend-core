@@ -28,8 +28,15 @@ const columnHelper = createColumnHelper<TableRowData>();
 function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { availabilityByMasterId, isManualPinging, isPinging, masters, pagination, sorting } =
-    mastersStore;
+  const {
+    availabilityByMasterId,
+    isManualPinging,
+    isPinging,
+    masters,
+    pagination,
+    sorting,
+    totalMasters,
+  } = mastersStore;
 
   const columns = [
     columnHelper.accessor("master_id", {
@@ -57,6 +64,11 @@ function MastersPage() {
         />
       ),
       meta: { minWidth: 150 },
+    }),
+    columnHelper.accessor("minions_count", {
+      header: t("masters.table-minions-count"),
+      cell: (data) => data.getValue() ?? 0,
+      meta: { minWidth: 120 },
     }),
     columnHelper.accessor("created", {
       header: t("masters.table-created"),
@@ -176,6 +188,7 @@ function MastersPage() {
           tableId="core-masters"
           columns={columns}
           data={masters}
+          total={totalMasters}
           isLoading={mastersStore.isLoading}
           onRefresh={() => mastersStore.loadMasters()}
           loader={mastersStore.mastersLoad}

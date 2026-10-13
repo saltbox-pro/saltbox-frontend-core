@@ -2,7 +2,7 @@ export { envStore } from "./env-store";
 export { i18nStore } from "./i18n-store";
 export { appStore } from "./app-store";
 export { apiCoreStore } from "./api-core-store";
-export { apiAuditStore } from "./api-audit-store";
+export { apiGatewayStore } from "./api-gateway-store";
 export { jobStore } from "./job-store";
 export { mastersStore } from "./masters-store";
 

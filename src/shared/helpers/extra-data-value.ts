@@ -1,24 +1,12 @@
-export function isExtraDataPrimitive(value: unknown): value is string | number | boolean {
+export function isFilterPrimitive(value: unknown): value is string | number | boolean {
   return typeof value === "string" || typeof value === "number" || typeof value === "boolean";
 }
 
 export function toExtraDataCopyValue(value: unknown): string {
   if (value === undefined) return "";
   if (value === null) return "null";
-  if (isExtraDataPrimitive(value)) return String(value);
+  if (isFilterPrimitive(value)) return String(value);
   return JSON.stringify(value);
-}
-
-export function canFilterExtraDataValue(value: unknown): boolean {
-  if (value == null || value === "") {
-    return false;
-  }
-
-  if (Array.isArray(value)) {
-    return value.length > 0 && value.every(isExtraDataPrimitive);
-  }
-
-  return isExtraDataPrimitive(value);
 }
 
 const EQUAL_EXTRA_DATA_COLUMN_WIDTH_LIMIT = 11;
@@ -71,9 +59,11 @@ function withMinionsCount(fields: string[]): string[] {
 }
 
 export function getDeclaredCollectionExtraDataFieldNames(category: {
-  category_fields?: string[];
+  fields?: Array<{ name: string; is_minion_field?: boolean }>;
 }): string[] {
-  const fromCategory = (category.category_fields ?? []).filter(Boolean);
+  const fromCategory = (category.fields ?? [])
+    .filter((field) => field.name && !field.is_minion_field)
+    .map((field) => field.name);
 
   if (fromCategory.length === 0) {
     return [];

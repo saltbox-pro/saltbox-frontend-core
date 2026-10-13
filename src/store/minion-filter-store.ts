@@ -1,10 +1,8 @@
 import { createLoader, PersistentFilterStore } from "@saltbox/saltbox-frontend-common";
-import { action, makeObservable, observable, runInAction } from "mobx";
-import { generateID, OptionList, RuleGroupType } from "react-querybuilder";
+import { makeObservable, observable, runInAction } from "mobx";
+import { OptionList } from "react-querybuilder";
 
 import { apiCoreStore } from "saltbox-core/store";
-
-type RuleType = RuleGroupType["rules"][number];
 
 export class MinionFilterStore extends PersistentFilterStore {
   @observable.ref rawFilterSchema: OptionList = [];
@@ -31,19 +29,5 @@ export class MinionFilterStore extends PersistentFilterStore {
         this.isLoading = false;
       });
     });
-  };
-
-  @action
-  addFilter = (rule: RuleType) => {
-    this.currentFilters = {
-      ...this.currentFilters,
-      rules: [
-        ...this.currentFilters.rules,
-        {
-          ...rule,
-          id: rule.id || generateID(),
-        },
-      ],
-    };
   };
 }

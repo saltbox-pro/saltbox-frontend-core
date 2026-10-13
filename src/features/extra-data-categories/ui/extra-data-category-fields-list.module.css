@@ -132,18 +132,9 @@
   word-break: break-word;
 }
 
-.types,
-.typesField {
+.type,
+.typeField {
   min-width: 0;
-}
-
-.types {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .typeTag {

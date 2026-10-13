@@ -1,19 +1,11 @@
-import { ExportOutlined } from "@ant-design/icons";
 import { SaltKeyMinion, SaltKeyStatusType } from "@saltbox/saltbox-core-api-client";
-import {
-  FastTable,
-  createSelectColumn,
-  notify,
-  PageHeader,
-  runMutation,
-  useInfoDrawer,
-} from "@saltbox/saltbox-frontend-common";
-import { RowSelectionState, createColumnHelper } from "@tanstack/react-table";
+import { notify, PageHeader, runMutation, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import { RowSelectionState } from "@tanstack/react-table";
 import { Flex, Modal, Tabs, Typography } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams, useSearchParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 
 import { SaltKeyStatusBadge } from "saltbox-core/features/masters";
 import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
@@ -40,12 +32,9 @@ import { SaltKeyDrawerSection } from "./-components/salt-key-drawer-section";
 import { SaltKeysAcceptConflictModal } from "./-components/salt-keys-accept-conflict-modal";
 import { SaltKeysAcceptPerKeyModal } from "./-components/salt-keys-accept-per-key-modal";
 import { SaltKeysDeleteConfirmModal } from "./-components/salt-keys-delete-confirm-modal";
-import { SaltKeysToolbar } from "./-components/salt-keys-toolbar";
-import { SaltKeysActionsDropdown } from "./-components/saltkeys-actions-dropdown";
+import { SaltKeysTab } from "./-components/salt-keys-tab";
 import { useAcceptSelectedFlow } from "./-components/use-accept-selected-flow";
 import styles from "./index.module.css";
-
-const saltKeysColumnHelper = createColumnHelper<SaltKeyWithId>();
 
 function toSaltKeyMinions(
   keys: Array<SaltKeyWithId>,
@@ -335,6 +324,17 @@ const MasterPage = observer(() => {
     setDeleteConfirmOpen(true);
   }, [masterId, saltKeysStore, selection, t]);
 
+  const handleSaltKeyRowClick = useCallback(
+    (saltKey: SaltKeyWithId) => {
+      drawer.toggle({
+        masterId: saltKey.salt_master ?? masterId ?? "",
+        minionId: saltKey.minion_id,
+        drawerId: saltKey._index,
+      });
+    },
+    [drawer, masterId]
+  );
+
   const handleTabChange = useCallback(
     (tabKey: string) => {
       setSearchParams((prev) => {
@@ -359,78 +359,30 @@ const MasterPage = observer(() => {
         label: t("master.tab-salt-keys-title"),
         className: styles.flexTab,
         children: (
-          <Flex vertical gap="large" className={styles.tabWrapper}>
-            <FastTable.Provider>
-              <div className={styles.clientsTableContainer}>
-                <div className="page-actions-buttons">
-                  <SaltKeysActionsDropdown
-                    selectedSaltKeys={selection}
-                    isSendingAction={isSendingAction}
-                    unacceptedCount={saltKeysStore.unacceptedCount}
-                    onAcceptSelected={() => handleAcceptKeys(getSelectedKeys())}
-                    onRejectSelected={() => handleRejectKeys(getSelectedKeys())}
-                    onDeleteSelected={() => handleDeleteKeys(getSelectedKeys())}
-                    onAcceptAll={handleAcceptAll}
-                    onRejectAll={handleRejectAll}
-                    onDeleteAll={handleDeleteAll}
-                  />
-
-                  <SaltKeysToolbar
-                    value={saltKeysStore.statusFilter}
-                    isLoading={saltKeysStore.isLoading}
-                    onChange={(status) => {
-                      setSelection({});
-                      saltKeysStore.setStatusFilter(status);
-                    }}
-                  />
-                </div>
-
-                <FastTable.Paginated
-                  tableId="core-master-salt-keys"
-                  columns={saltKeysColumns}
-                  data={saltKeysStore.pagedKeys}
-                  total={saltKeysStore.totalFiltred}
-                  isLoading={saltKeysStore.isLoading}
-                  onRefresh={() => {
-                    setSelection({});
-                    saltKeysStore.refresh();
-                  }}
-                  loader={saltKeysStore.saltKeysLoad}
-                  pagination={saltKeysStore.pagination}
-                  sorting={saltKeysStore.sorting}
-                  onLazyLoad={(pagination, sorting) => {
-                    saltKeysStore.handleLazyLoad(pagination, sorting);
-                    setSelection({});
-                  }}
-                  getRowId={(row) => row._index}
-                  activeRowId={drawer.activeRowId}
-                  bodyRef={drawer.mainContentRef}
-                  rowSelection={selection}
-                  onRowSelectionChange={setSelection}
-                  onRowClick={(saltKey) => {
-                    drawer.toggle({
-                      masterId: saltKey.salt_master ?? masterId ?? "",
-                      minionId: saltKey.minion_id,
-                      drawerId: saltKey._index,
-                    });
-                  }}
-                  locale={{ empty: saltKeysEmptyText }}
-                  actionLinkComponent={Link}
-                />
-              </div>
-            </FastTable.Provider>
-          </Flex>
+          <SaltKeysTab
+            store={saltKeysStore}
+            drawer={drawer}
+            selection={selection}
+            onSelectionChange={setSelection}
+            isSendingAction={isSendingAction}
+            onRowClick={handleSaltKeyRowClick}
+            onAcceptSelected={() => handleAcceptKeys(getSelectedKeys())}
+            onRejectSelected={() => handleRejectKeys(getSelectedKeys())}
+            onDeleteSelected={() => handleDeleteKeys(getSelectedKeys())}
+            onAcceptAll={handleAcceptAll}
+            onRejectAll={handleRejectAll}
+            onDeleteAll={handleDeleteAll}
+          />
         ),
       },
     ],
     [
       drawer,
-      saltKeysColumns,
       saltKeysStore,
-      saltKeysEmptyText,
       isSendingAction,
       selection,
       getSelectedKeys,
+      handleSaltKeyRowClick,
       handleAcceptKeys,
       handleRejectKeys,
       handleDeleteKeys,
