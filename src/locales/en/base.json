@@ -395,6 +395,8 @@
     "stop-error": "Error while stopping task",
     "restart-failed-error": "Error while restarting failed minions",
     "restart-failed-minion-error": "Error while restarting minion {{minionId}}",
+    "export-scope": "all execution results for this task",
+    "export-subject": "task execution results",
     "job-returns": "Job Returns",
     "status": "Status",
     "pending-jobs": "Pending Jobs",
