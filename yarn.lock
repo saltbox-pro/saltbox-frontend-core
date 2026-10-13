@@ -2204,15 +2204,10 @@
     tailwind-merge "^3.3.1"
     zod "^4.0.17"
 
-"@saltbox/saltbox-audit-api-client@^0.3.0-f9534d71d72b848cba2cf014824e0ea235036977":
-  version "0.3.0"
-  resolved "https://dev.saltbox.pro/api/v4/projects/113/packages/npm/@saltbox/saltbox-audit-api-client/-/@saltbox/saltbox-audit-api-client-0.3.0.tgz#2dda1a1c3a1ff1ba17a118b7c48d0488fe4dcb58"
-  integrity sha1-LdoaHDof8boXoRi3xI0EiP5Ny1g=
-
-"@saltbox/saltbox-core-api-client@^0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44":
-  version "0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44.tgz#6dc708b548e9305b4ed35f2148795ee27f6674f3"
-  integrity sha1-bccItUjpMFtO018hSHle4n9mdPM=
+"@saltbox/saltbox-core-api-client@0.3.0-58544ce03426069509a004edcc535764f05e620a":
+  version "0.3.0-58544ce03426069509a004edcc535764f05e620a"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-58544ce03426069509a004edcc535764f05e620a.tgz#ff499b38856db76fb4e04f0d8e14725cb398ae31"
+  integrity sha1-/0mbOIVtt2+04E8NjhRyXLOYrjE=
 
 "@saltbox/saltbox-frontend-common@^0.6.15":
   version "0.6.15"

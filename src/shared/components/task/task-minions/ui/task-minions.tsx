@@ -1,18 +1,28 @@
 import { ExportOutlined, IssuesCloseOutlined } from "@ant-design/icons";
 import { type TaskMinionListResponse, TaskMinionStatus } from "@saltbox/saltbox-core-api-client";
-import { FastTable, formatTimeByUserTZ, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
+import {
+  ExportToCsv,
+  FastTable,
+  buildCsvExportFilename,
+  formatTimeByUserTZ,
+  runMutation,
+  useInfoDrawer,
+} from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
 import { toJS } from "mobx";
 import { observer } from "mobx-react-lite";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import { MinionTaskResultsDrawer } from "saltbox-core/features/task/job-return";
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status";
+import { exportTaskMinionsCsv } from "saltbox-core/shared/components/task/task-minions/service/export-task-minions-csv.service";
 import type { TaskStore } from "saltbox-core/store";
 import { useRestartFailedMinionHandler } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
+
+import styles from "./task-minions.module.css";
 
 const TaskMinionsTable = FastTable.Paginated<TaskMinionListResponse>;
 const columnHelper = createColumnHelper<TaskMinionListResponse>();
@@ -23,6 +33,7 @@ export interface TaskMinionsProps {
 
 export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMinionsProps) {
   const { t } = useTranslation();
+  const { t: tCommon } = useTranslation("common");
 
   const taskDrawer = useInfoDrawer<TaskMinionListResponse, string, HTMLTableSectionElement>({
     getId: (minion) => minion.id,
@@ -41,6 +52,21 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     taskStore.handleRestartFailedMinion,
     t
   );
+
+  const handleExportToCsv = useCallback(async () => {
+    if (!taskId) {
+      return false;
+    }
+
+    const result = await runMutation({
+      run: () => exportTaskMinionsCsv(taskId, buildCsvExportFilename(`task_results_${taskId}`)),
+      errorMessage: tCommon("export-to-csv.error", {
+        subject: t("task.export-subject"),
+      }),
+    });
+
+    return result.ok;
+  }, [t, tCommon, taskId]);
 
   const columns = useMemo(
     () => [
@@ -112,7 +138,16 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
     <>
       <FastTable.Provider>
         <div className="page-actions-buttons">
-          <FastTable.Toolbar />
+          <div className={styles.toolbarActions}>
+            {taskId ? (
+              <ExportToCsv
+                key={taskId}
+                scope={t("task.export-scope")}
+                onExport={handleExportToCsv}
+              />
+            ) : null}
+            <FastTable.Toolbar />
+          </div>
         </div>
 
         <TaskMinionsTable
