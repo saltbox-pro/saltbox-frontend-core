@@ -608,6 +608,7 @@
     "table-new": "New",
     "table-rejected": "Rejected",
     "table-accepted": "Accepted",
+    "table-keys-stale": "Stale keys",
     "table-unknown-status": "Unknown Status",
     "table-created": "Created",
     "table-modified": "Modified",

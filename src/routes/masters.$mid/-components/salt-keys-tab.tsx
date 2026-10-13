@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { SaltKeyStatusBadge } from "saltbox-core/features/masters";
 import {
   ALL_FILTER,
   DUPLICATES_FILTER,
@@ -14,7 +15,6 @@ import {
 } from "saltbox-core/store";
 import type { MinionDetailsDrawerOpenParams } from "saltbox-core/widgets/minion-details-drawer";
 
-import { SaltKeyStatusTag } from "./salt-key-status-tag";
 import styles from "./salt-keys-tab.module.css";
 import { SaltKeysToolbar } from "./salt-keys-toolbar";
 import { SaltKeysActionsDropdown } from "./saltkeys-actions-dropdown";
@@ -71,7 +71,7 @@ export const SaltKeysTab = observer(function SaltKeysTab({
       }),
       saltKeysColumnHelper.accessor("status", {
         header: t("master.table-status"),
-        cell: (data) => <SaltKeyStatusTag status={data.getValue()} />,
+        cell: (data) => <SaltKeyStatusBadge status={data.getValue()} />,
         enableSorting: false,
         meta: {
           tdClassName: "fast-table-column-nowrap",

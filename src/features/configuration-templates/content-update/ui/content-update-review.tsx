@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TemplateSourceTemplatesList } from "saltbox-core/features/template-source-ui";
-import { TaskStatusIndicator } from "saltbox-core/shared/components/task-status-indicator/task-status-indicator";
+import { TaskStatusBadge } from "saltbox-core/shared/components/task-status-badge";
 
 import { CollapsePanelLabel } from "../../shared/ui/collapse-panel-label";
 import collapseStyles from "../../shared/ui/template-source-extras-collapse.module.css";
@@ -48,7 +48,7 @@ function DependantTaskRow({ task }: { task: TaskListResponseSchema }) {
           <Text type="secondary">{task.target_collection.title}</Text>
         )}
       </Flex>
-      <TaskStatusIndicator status={task.status?.type} reason={task.status?.data?.reason} />
+      <TaskStatusBadge status={task.status?.type} reason={task.status?.data?.reason} />
     </Flex>
   );
 }

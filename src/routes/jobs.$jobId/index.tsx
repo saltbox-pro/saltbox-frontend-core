@@ -18,9 +18,10 @@ import {
   buildCsvExportFilename,
   formatTimeByUserTZ,
   runMutation,
+  StatusBadge,
   useWithAcceptedMastersCheck,
 } from "@saltbox/saltbox-frontend-common";
-import { Flex, Radio, Skeleton, Spin, Statistic, Tag, Tooltip, Typography, message } from "antd";
+import { Flex, Radio, Skeleton, Spin, Statistic, Tooltip, Typography, message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,8 +36,13 @@ import {
 import { EditableTtl, setJobTtlForAll } from "saltbox-core/features/job-ttl";
 import { JobLaunchError } from "saltbox-core/routes/jobs.$jobId/-components/job-launch-error";
 import { JobStatusProgress } from "saltbox-core/routes/jobs.$jobId/-components/job-status-progress";
+import {
+  JOB_RETURN_STATUS_COUNT_ORDER,
+  JOB_RETURN_STATUS_VIEW,
+} from "saltbox-core/shared/components/job-return";
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { exportJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/export-job-returns-table-csv.service";
+import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
@@ -290,6 +296,14 @@ const JobPage = observer(() => {
         <Flex vertical gap={10} flex={1} style={{ minHeight: 0 }}>
           <Flex align="center" gap={24} wrap className={styles.jobDetailsContainer}>
             <div className={styles.jobDetailItem}>
+              <JobStatusBadge
+                status={jobStore.job?.status}
+                size="prominent"
+                launchErrorType={jobStore.job?.launch_error_type}
+              />
+            </div>
+
+            <div className={styles.jobDetailItem}>
               <AcceptedMastersActionButton
                 shape="default"
                 icon={<ReloadOutlined />}
@@ -499,21 +513,15 @@ const JobPage = observer(() => {
                           wrap
                         >
                           <Flex className={styles.statsBadgesWrapper} gap={12} wrap>
-                            <Tag color="green">
-                              {t("task.job-returns-table.status-success")}: {statusCounts.success}
-                            </Tag>
-                            <Tag color="red">
-                              {t("task.job-returns-table.status-failed")}: {statusCounts.failed}
-                            </Tag>
-                            <Tag color="orange">
-                              {t("task.job-returns-table.status-timeout")}: {statusCounts.timeout}
-                            </Tag>
-                            <Tag color="default">
-                              {t("task.job-returns-table.status-ignored")}: {statusCounts.ignored}
-                            </Tag>
-                            <Tag color="blue">
-                              {t("task.job-returns-table.status-waiting")}: {statusCounts.waiting}
-                            </Tag>
+                            {JOB_RETURN_STATUS_COUNT_ORDER.map((status) => {
+                              const view = JOB_RETURN_STATUS_VIEW[status];
+
+                              return (
+                                <StatusBadge key={status} tone={view.tone}>
+                                  {t(view.translationKey)}: {statusCounts[status]}
+                                </StatusBadge>
+                              );
+                            })}
                           </Flex>
                           <Flex align="center" className={styles.toolbarActions}>
                             {isTableViewAvailable && (

@@ -8,7 +8,7 @@ import { Flex } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status/minion-task-status";
+import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status";
 import {
   MinionTaskRestartFailedButton,
   type MinionTaskRestartFailedButtonProps,
