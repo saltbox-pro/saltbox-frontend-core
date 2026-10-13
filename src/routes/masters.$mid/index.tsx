@@ -7,14 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
-import { SaltKeyStatusBadge } from "saltbox-core/features/masters";
-import { buildMasterMinionRedirectPath } from "saltbox-core/features/minion-details";
-import {
-  ALL_FILTER,
-  DUPLICATES_FILTER,
-  SaltKeysStore,
-  type SaltKeyWithId,
-} from "saltbox-core/store";
+import { SaltKeysStore, type SaltKeyWithId } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
@@ -99,57 +92,6 @@ const MasterPage = observer(() => {
       });
     }
   }, [drawer, drawerKey]);
-
-  const saltKeysColumns = useMemo(
-    () => [
-      createSelectColumn<SaltKeyWithId>(),
-      saltKeysColumnHelper.accessor("minion_id", {
-        header: t("master.table-minion-id"),
-        meta: {
-          showCopy: true,
-          actions: [
-            {
-              icon: <ExportOutlined />,
-              getHref: (value, row) =>
-                buildMasterMinionRedirectPath(row.salt_master ?? masterId ?? "", String(value)),
-              title: t("minions.open-minion-details-page"),
-            },
-          ],
-          tdClassName: "fast-table-column-nowrap",
-          color: "accent",
-          width: "50%",
-          minWidth: 300,
-        },
-      }),
-      saltKeysColumnHelper.accessor("status", {
-        header: t("master.table-status"),
-        cell: (data) => <SaltKeyStatusBadge status={data.getValue()} />,
-        enableSorting: false,
-        meta: {
-          tdClassName: "fast-table-column-nowrap",
-        },
-      }),
-    ],
-    [masterId, t]
-  );
-
-  const saltKeysEmptyText = useMemo(() => {
-    if (saltKeysStore.statusFilter === ALL_FILTER) {
-      return t("master.salt-keys-empty-all");
-    }
-    if (saltKeysStore.statusFilter === DUPLICATES_FILTER) {
-      return t("master.salt-keys-empty-duplicates");
-    }
-    const statusLabelKey: Record<SaltKeyStatusType, string> = {
-      [SaltKeyStatusType.Unaccepted]: "master.table-status-unaccepted",
-      [SaltKeyStatusType.Accepted]: "master.table-status-accepted",
-      [SaltKeyStatusType.Rejected]: "master.table-status-rejected",
-      [SaltKeyStatusType.Denied]: "master.table-status-denied",
-    };
-    return t("master.salt-keys-empty-with-status", {
-      status: t(statusLabelKey[saltKeysStore.statusFilter as SaltKeyStatusType]),
-    });
-  }, [saltKeysStore.statusFilter, t]);
 
   const { handleAcceptKeys, conflictModalProps, perKeyModalProps } = useAcceptSelectedFlow({
     saltKeysStore,

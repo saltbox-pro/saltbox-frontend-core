@@ -43,7 +43,6 @@ import {
 import { DefaultJobReturnTable } from "saltbox-core/shared/components/job-return-table";
 import { exportJobReturnsTableCsv } from "saltbox-core/shared/components/job-return-table/service/export-job-returns-table-csv.service";
 import { JobStatusBadge } from "saltbox-core/shared/components/job-status-badge";
-import { JsonPreview } from "saltbox-core/shared/components/json-preview";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { formatExecutionTime } from "saltbox-core/shared/utils/execution-time-utils";
