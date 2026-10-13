@@ -88,7 +88,7 @@ export const MinionsDashboardView = observer(
                 <Button
                   onClick={props.onAddCard}
                   type="default"
-                  disabled={!dashboardStore.canAddCard}
+                  disabled={!dashboardStore.isHydrated || !dashboardStore.canAddCard}
                   icon={<PlusOutlined />}
                 >
                   {t("minions.add-block-button")}
@@ -106,7 +106,7 @@ export const MinionsDashboardView = observer(
                     <QuestionCircleOutlined style={{ color: "#8c8c8c" }} />
                   </Popover>
                 )}
-                <DashboardResetButton />
+                <DashboardResetButton disabled={!dashboardStore.isHydrated} />
               </Flex>
             </div>
 

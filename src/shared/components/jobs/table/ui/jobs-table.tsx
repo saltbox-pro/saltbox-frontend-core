@@ -1,4 +1,4 @@
-import { type JobsListResponse, JobStatus } from "@saltbox/saltbox-core-api-client";
+import { type JobsListResponse } from "@saltbox/saltbox-core-api-client";
 import {
   CellAction,
   FastTable,
@@ -6,7 +6,7 @@ import {
   formatTimeByUserTZ,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { message, Tag } from "antd";
+import { message } from "antd";
 import { observer } from "mobx-react-lite";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
