@@ -32,6 +32,7 @@ export class DashboardStore {
   tabs: DashboardTab[];
   activeTabId: string;
   fullScreenCardId: string | null;
+  isHydrated = false;
   private userId: string | null = null;
   private collectionSlug: string | null = null;
   private tabNames: DashboardTabNames | null = null;
@@ -78,6 +79,7 @@ export class DashboardStore {
   }
 
   private reload() {
+    this.isHydrated = false;
     this.tabs = [];
     this.activeTabId = "";
     this.fullScreenCardId = null;
@@ -88,14 +90,18 @@ export class DashboardStore {
 
     const collectionSlug = this.collectionSlug;
 
-    ensureUserSettingsLoaded().then(() => {
-      if (this.collectionSlug !== collectionSlug) {
-        return;
-      }
-      runInAction(() => {
-        this.applySettings(collectionSlug);
+    ensureUserSettingsLoaded()
+      .catch((error: unknown) => {
+        console.error("Failed to load dashboard settings", error);
+      })
+      .then(() => {
+        if (this.collectionSlug !== collectionSlug) {
+          return;
+        }
+        runInAction(() => {
+          this.applySettings(collectionSlug);
+        });
       });
-    });
   }
 
   private applySettings(collectionSlug: string) {
@@ -110,6 +116,7 @@ export class DashboardStore {
     }));
     this.activeTabId = stored.activeTabId;
     this.fullScreenCardId = null;
+    this.isHydrated = true;
     this.syncDefaultTabName();
   }
 
@@ -156,7 +163,7 @@ export class DashboardStore {
   }
 
   private saveSettings() {
-    if (!this.collectionSlug) {
+    if (!this.isHydrated || !this.collectionSlug) {
       return;
     }
 
@@ -176,7 +183,7 @@ export class DashboardStore {
   }
 
   addTab(): string | null {
-    if (!this.tabNames) {
+    if (!this.isHydrated || !this.tabNames) {
       return null;
     }
     const tab = createDashboardTab(createUniqueTabName(this.tabNames.newTab, this.tabs));
