@@ -2209,10 +2209,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/113/packages/npm/@saltbox/saltbox-audit-api-client/-/@saltbox/saltbox-audit-api-client-0.3.0.tgz#2dda1a1c3a1ff1ba17a118b7c48d0488fe4dcb58"
   integrity sha1-LdoaHDof8boXoRi3xI0EiP5Ny1g=
 
-"@saltbox/saltbox-core-api-client@^0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44":
-  version "0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44"
-  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-bc2c39b94fbc8a7e4ca2273e85cd6162dfa26f44.tgz#6dc708b548e9305b4ed35f2148795ee27f6674f3"
-  integrity sha1-bccItUjpMFtO018hSHle4n9mdPM=
+"@saltbox/saltbox-core-api-client@^0.3.0-d69c8a922c6cf23a46905f6874fd18d1a7a43417":
+  version "0.3.0-d69c8a922c6cf23a46905f6874fd18d1a7a43417"
+  resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.3.0-d69c8a922c6cf23a46905f6874fd18d1a7a43417.tgz#55162d115a93f3c5e2ca7a5f804e917d9c18cf50"
+  integrity sha1-VRYtEVqT88XiynpfgE6RfZwYz1A=
 
 "@saltbox/saltbox-frontend-common@^0.6.15":
   version "0.6.15"

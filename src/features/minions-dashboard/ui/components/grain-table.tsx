@@ -1,4 +1,4 @@
-import { GrainValue } from "@saltbox/saltbox-core-api-client";
+import { UniqueValueSchema } from "@saltbox/saltbox-core-api-client";
 import {
   applyFilterByValue,
   canApplyFilterByValue,
@@ -19,18 +19,20 @@ import { valueToText } from "../../model/dashboard-chart-data";
 
 import styles from "./grain-table.module.css";
 
-const columnHelper = createColumnHelper<GrainValue>();
+const columnHelper = createColumnHelper<UniqueValueSchema>();
 
 type GrainTableProps = {
-  values: GrainValue[];
+  values: UniqueValueSchema[];
   fieldSource: string;
   filterStore: MinionFilterStore;
+  isFilterable?: boolean;
 };
 
 export const GrainTable = observer(function GrainTable({
   values,
   fieldSource,
   filterStore,
+  isFilterable = true,
 }: GrainTableProps) {
   const { t } = useTranslation();
   const [sorting, setSorting] = useState<SortingState>([{ id: "count", desc: true }]);
@@ -50,21 +52,23 @@ export const GrainTable = observer(function GrainTable({
         cell: (data) => <span>{valueToText(data.getValue(), t("dashboard.empty-name"))}</span>,
         meta: {
           showCopy: true,
-          actions: [
-            {
-              icon: FilterActionButton.getIcon(),
-              visible: (value) => canApplyFilterByValue(filterStore, fieldSource, value),
-              getPresentation: (value) =>
-                FilterActionButton.getPresentation(
-                  hasFilterByValue(filterStore, fieldSource, value)
-                ),
-              onClick: (value) =>
-                applyFilterByValue(filterStore, fieldSource, value, {
-                  search: true,
-                  mode: "replace-field",
-                }),
-            },
-          ],
+          actions: isFilterable
+            ? [
+                {
+                  icon: FilterActionButton.getIcon(),
+                  visible: (value) => canApplyFilterByValue(filterStore, fieldSource, value),
+                  getPresentation: (value) =>
+                    FilterActionButton.getPresentation(
+                      hasFilterByValue(filterStore, fieldSource, value)
+                    ),
+                  onClick: (value) =>
+                    applyFilterByValue(filterStore, fieldSource, value, {
+                      search: true,
+                      mode: "replace-field",
+                    }),
+                },
+              ]
+            : undefined,
           tdClassName: styles.grainValueCol,
         },
       }),
@@ -90,7 +94,7 @@ export const GrainTable = observer(function GrainTable({
         },
       }),
     ],
-    [t, fieldSource, filterStore, filtersRevision, maxCount, total]
+    [t, fieldSource, filterStore, filtersRevision, isFilterable, maxCount, total]
   );
 
   if (values.length === 0) {

@@ -1,4 +1,5 @@
 import { Button, Empty, Flex, Modal, Select, Typography } from "antd";
+import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -14,6 +15,41 @@ import {
 } from "../../model/dashboard-model";
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
+
+type FieldSelectOption = {
+  value: string;
+  label: string;
+  searchLabel: string;
+};
+
+type FieldSelectGroup = {
+  label: string;
+  options: FieldSelectOption[];
+};
+
+const getFieldSelectGroups = (
+  fieldOptions: DashboardFieldOption[],
+  t: TFunction
+): FieldSelectGroup[] => {
+  const groups = new Map<string, FieldSelectGroup>();
+
+  fieldOptions.forEach((option) => {
+    const { extraCategory } = option;
+    const groupKey = extraCategory ? `${extraCategory.source}.${extraCategory.name}` : "grains";
+    const groupLabel = extraCategory
+      ? (option.categoryLabel ?? t("dashboard.field-group-extra"))
+      : t("dashboard.field-group-grains");
+    const label = extraCategory
+      ? option.value
+      : `${t(`dashboard.field-${option.value}`, { defaultValue: option.label })} (${option.source})`;
+
+    const group = groups.get(groupKey) ?? { label: groupLabel, options: [] };
+    group.options.push({ value: option.source, label, searchLabel: `${groupLabel} ${label}` });
+    groups.set(groupKey, group);
+  });
+
+  return Array.from(groups.values());
+};
 
 type MinionsDashboardAddBlockModalProps = {
   open: boolean;
@@ -38,12 +74,12 @@ export const MinionsDashboardAddBlockModal = ({
     if (!open) {
       return;
     }
-    setSelectedField(initialCard?.field);
+    setSelectedField(initialCard?.fieldSource);
     setSelectedPreset(initialCard?.preset);
   }, [initialCard, open]);
 
   const fieldOption = useMemo(
-    () => fieldOptions.find((option) => option.value === selectedField),
+    () => fieldOptions.find((option) => option.source === selectedField),
     [fieldOptions, selectedField]
   );
 
@@ -52,8 +88,10 @@ export const MinionsDashboardAddBlockModal = ({
     [fieldOption]
   );
 
+  const fieldSelectGroups = useMemo(() => getFieldSelectGroups(fieldOptions, t), [fieldOptions, t]);
+
   const handleFieldChange = (value: string) => {
-    const nextField = fieldOptions.find((option) => option.value === value);
+    const nextField = fieldOptions.find((option) => option.source === value);
     setSelectedField(value);
     setSelectedPreset(
       nextField ? getPresetOptionsForFieldType(nextField.type)[0].value : undefined
@@ -90,12 +128,10 @@ export const MinionsDashboardAddBlockModal = ({
           <Select
             showSearch
             value={selectedField}
-            options={fieldOptions.map((option) => ({
-              value: option.value,
-              label: `${t(`dashboard.field-${option.value}`, { defaultValue: option.label })} (${option.source})`,
-            }))}
+            options={fieldSelectGroups}
             placeholder={t("dashboard.field-placeholder")}
-            optionFilterProp="label"
+            optionFilterProp="searchLabel"
+            popupClassName={styles.fieldSelectDropdown}
             onChange={handleFieldChange}
           />
         </Flex>

@@ -945,6 +945,8 @@
     "save-block": "Сохранить блок",
     "field-label": "Поле данных",
     "field-placeholder": "Выберите поле",
+    "field-group-grains": "Данные grains",
+    "field-group-extra": "Расширенные данные",
     "preset-label": "Вариант отображения",
     "select-field-first": "Сначала выберите поле",
     "kpi-total": "Всего значений",

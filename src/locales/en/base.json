@@ -945,6 +945,8 @@
     "save-block": "Save block",
     "field-label": "Data field",
     "field-placeholder": "Select field",
+    "field-group-grains": "Grains",
+    "field-group-extra": "Extra data",
     "preset-label": "Visualization preset",
     "select-field-first": "Select a field first",
     "kpi-total": "Total values",
