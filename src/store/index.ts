@@ -3,6 +3,7 @@ export { i18nStore } from "./i18n-store";
 export { appStore } from "./app-store";
 export { apiCoreStore } from "./api-core-store";
 export { apiGatewayStore } from "./api-gateway-store";
+export { bindLanguageSettings } from "./bind-language-settings";
 export { jobStore } from "./job-store";
 export { mastersStore } from "./masters-store";
 

@@ -24,7 +24,13 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { apiGatewayStore, appStore, envStore, i18nStore } from "saltbox-core/store";
+import {
+  apiGatewayStore,
+  appStore,
+  bindLanguageSettings,
+  envStore,
+  i18nStore,
+} from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
 import {
@@ -36,6 +42,7 @@ import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
 
 let disposeWebSocketAccessTokenSync: (() => void) | undefined;
+let disposeLanguageSettingsSync: (() => void) | undefined;
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -251,6 +258,11 @@ export const saltboxModule = {
       }
     });
     initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
+    disposeLanguageSettingsSync?.();
+    disposeLanguageSettingsSync = bindLanguageSettings(
+      authStore as AuthStoreWithAccessToken,
+      localeStore
+    );
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
     });
