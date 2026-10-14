@@ -126,7 +126,10 @@ const MinionsPage = observer(() => {
   }, [minionFilterStore]);
 
   const { options: dashboardFieldOptions, isLoading: isDashboardFieldsLoading } =
-    useDashboardFieldOptions(minionFilterStore.filterSchema);
+    useDashboardFieldOptions(minionFilterStore.filterSchema, {
+      isActive: tabKey === "statistics",
+      isModalOpen: isAddDashboardBlockModalOpen,
+    });
 
   const editingCard = useMemo(
     () => dashboardStore.cards.find((c) => c.id === editingDashboardCardId) ?? null,
