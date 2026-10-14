@@ -1,4 +1,4 @@
-import { GrainValue } from "@saltbox/saltbox-core-api-client";
+import { UniqueValueSchema } from "@saltbox/saltbox-core-api-client";
 import { Flex, Statistic } from "antd";
 import { useTranslation } from "react-i18next";
 
@@ -8,7 +8,7 @@ import { toKpiStats } from "../../model/dashboard-chart-data";
 import styles from "./kpi-panel.module.css";
 
 type KpiPanelProps = {
-  values: GrainValue[];
+  values: UniqueValueSchema[];
 };
 
 export const KpiPanel = ({ values }: KpiPanelProps) => {

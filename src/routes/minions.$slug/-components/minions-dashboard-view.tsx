@@ -14,6 +14,7 @@ import {
   DASHBOARD_GRID_COLS,
   DASHBOARD_MAX_CARDS,
   dashboardStore,
+  DashboardFieldOption,
   DashboardLayoutItem,
   DashboardResetButton,
   DashboardTabs,
@@ -67,6 +68,7 @@ export const MinionsDashboardView = observer(
   (props: {
     slug: string;
     filterStore: MinionFilterStore;
+    fieldOptions: DashboardFieldOption[];
     filterControls?: ReactNode;
     onEditCard: (cardId: string) => void;
     onAddCard: () => void;
@@ -162,6 +164,7 @@ export const MinionsDashboardView = observer(
                 <div key={card.id}>
                   <MinionDashboardCard
                     card={card}
+                    fieldOptions={props.fieldOptions}
                     onEdit={props.onEditCard}
                     slug={props.slug}
                     filterStore={props.filterStore}

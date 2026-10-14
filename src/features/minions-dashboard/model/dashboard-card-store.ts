@@ -1,43 +1,66 @@
-import { GrainValue } from "@saltbox/saltbox-core-api-client";
+import { UniqueValueSchema } from "@saltbox/saltbox-core-api-client";
 import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable } from "mobx";
 
 import { apiCoreStore } from "saltbox-core/store";
 
+import type { DashboardValuesTarget } from "./dashboard-model";
+
+const fetchUniqueValues = (
+  target: DashboardValuesTarget,
+  slug: string,
+  mongoDBQuery: object | undefined
+) => {
+  const filtersApi = apiCoreStore.filtersApi;
+
+  if (target.extraCategory) {
+    return filtersApi?.filterExtraValues({
+      ExtraFilterValuesBody: {
+        collection_slug: slug,
+        query: mongoDBQuery,
+        field: target.field,
+        category_source: target.extraCategory.source,
+        category_name: target.extraCategory.name,
+      },
+    });
+  }
+
+  return filtersApi?.filterValues({
+    MinionFilterValuesBody: {
+      collection_slug: slug,
+      query: mongoDBQuery,
+      field: target.fieldSource,
+    },
+  });
+};
+
 export class DashboardCardStore {
-  grainValues: Array<GrainValue>;
+  values: Array<UniqueValueSchema>;
   private lastRequestKey?: string;
 
-  readonly grainLoad = createLoader({
-    run: (fieldSource: string, slug: string, mongoDBQuery: object | undefined) =>
-      apiCoreStore.filtersApi?.filterValues({
-        MinionFilterValuesBody: {
-          collection_slug: slug,
-          query: mongoDBQuery,
-          field: fieldSource,
-        },
-      }),
+  readonly valuesLoad = createLoader({
+    run: fetchUniqueValues,
     onSuccess: (response) => {
-      this.grainValues = response.data;
+      this.values = response.data;
     },
   });
 
   constructor() {
-    makeAutoObservable(this, { grainLoad: false });
-    this.grainValues = [];
+    makeAutoObservable(this, { valuesLoad: false });
+    this.values = [];
   }
 
   get isFilterLoading(): boolean {
-    return this.grainLoad.isLoading;
+    return this.valuesLoad.isLoading;
   }
 
-  loadGrain = (fieldSource: string, slug: string, mongoDBQuery: object | undefined) => {
-    const requestKey = JSON.stringify({ fieldSource, slug, mongoDBQuery });
-    if (this.lastRequestKey === requestKey && !this.grainLoad.error) {
+  loadValues = (target: DashboardValuesTarget, slug: string, mongoDBQuery: object | undefined) => {
+    const requestKey = JSON.stringify({ fieldSource: target.fieldSource, slug, mongoDBQuery });
+    if (this.lastRequestKey === requestKey && !this.valuesLoad.error) {
       return;
     }
 
     this.lastRequestKey = requestKey;
-    this.grainLoad.run(fieldSource, slug, mongoDBQuery).catch(() => undefined);
+    this.valuesLoad.run(target, slug, mongoDBQuery).catch(() => undefined);
   };
 }

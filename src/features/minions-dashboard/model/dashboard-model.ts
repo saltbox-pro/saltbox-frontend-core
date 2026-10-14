@@ -1,3 +1,11 @@
+import {
+  type ExtraDataCategoryModel,
+  MinionExtraDataCategoryFieldType,
+} from "@saltbox/saltbox-core-api-client";
+
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
+import { buildExtraDataFilterField } from "saltbox-core/shared/helpers/extra-data-value";
+
 import { DASHBOARD_MAX_CARDS, DEFAULT_DASHBOARD_CARDS } from "../constants/dashboard-cards";
 import {
   ALLOWED_GRAIN_FIELDS,
@@ -31,14 +39,25 @@ export type DashboardPresetOption = {
   descriptionKey: string;
 };
 
+export type DashboardExtraCategoryRef = {
+  source: string;
+  name: string;
+};
+
 export type DashboardCardConfig = {
   id: string;
   field: string;
   fieldSource: string;
   fieldLabel: string;
   fieldType: DashboardFieldType;
+  extraCategory?: DashboardExtraCategoryRef;
   preset: DashboardPreset;
 };
+
+export type DashboardValuesTarget = Pick<
+  DashboardCardConfig,
+  "field" | "fieldSource" | "extraCategory"
+>;
 
 export type DashboardLayoutItem = {
   id: string;
@@ -75,6 +94,8 @@ export type DashboardFieldOption = {
   label: string;
   source: string;
   type: DashboardFieldType;
+  extraCategory?: DashboardExtraCategoryRef;
+  categoryLabel?: string;
 };
 
 type SchemaOption = {
@@ -183,19 +204,92 @@ export const getDashboardFieldOptions = (
     .filter((opt) => ALLOWED_GRAIN_FIELDS.has(opt.value));
 };
 
+const getExtraDataDashboardFieldType = (
+  type: MinionExtraDataCategoryFieldType
+): DashboardFieldType | undefined => {
+  switch (type) {
+    case MinionExtraDataCategoryFieldType.Str:
+    case MinionExtraDataCategoryFieldType.List:
+      return "categorical";
+    case MinionExtraDataCategoryFieldType.Int:
+    case MinionExtraDataCategoryFieldType.Float:
+      return "numeric";
+    case MinionExtraDataCategoryFieldType.Bool:
+      return "boolean";
+    case MinionExtraDataCategoryFieldType.Datetime:
+      return "date";
+    default:
+      return undefined;
+  }
+};
+
+export const getExtraDataDashboardFieldOptions = (
+  categories: ReadonlyArray<ExtraDataCategoryModel>,
+  language: string
+): DashboardFieldOption[] => {
+  return categories.flatMap((category) => {
+    const categoryLabel = getExtraDataCategoryDisplayName(category, language);
+    const extraCategory = { source: category.source, name: category.name };
+
+    return (category.fields ?? []).flatMap((field) => {
+      const type = getExtraDataDashboardFieldType(field.type);
+      if (!type) {
+        return [];
+      }
+
+      return [
+        {
+          value: field.name,
+          label: `${categoryLabel} / ${field.name}`,
+          source: buildExtraDataFilterField(category.source, category.name, field.name),
+          type,
+          extraCategory,
+          categoryLabel,
+        },
+      ];
+    });
+  });
+};
+
 const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {
   const isValid = PRESETS[fieldType].some((option) => option.value === preset);
   return isValid ? (preset as DashboardPreset) : getDefaultPresetForField(fieldType);
 };
 
 const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
+  const extraCategory =
+    card.extraCategory?.source && card.extraCategory?.name ? card.extraCategory : undefined;
+
   return {
     id: card.id,
     field: card.field,
     fieldSource: card.fieldSource,
     fieldLabel: card.fieldLabel,
     fieldType: card.fieldType,
+    extraCategory,
     preset: normalizePreset(card.preset, card.fieldType),
+  };
+};
+
+type DashboardCardFieldConfig = Omit<DashboardCardConfig, "id" | "preset">;
+
+const toCardFieldConfig = (fieldOption: DashboardFieldOption): DashboardCardFieldConfig => {
+  return {
+    field: fieldOption.value,
+    fieldSource: fieldOption.source,
+    fieldLabel: fieldOption.label,
+    fieldType: fieldOption.type,
+    extraCategory: fieldOption.extraCategory,
+  };
+};
+
+export const toDashboardFieldOption = (card: DashboardCardConfig): DashboardFieldOption => {
+  return {
+    value: card.field,
+    label: card.fieldLabel,
+    source: card.fieldSource,
+    type: card.fieldType,
+    extraCategory: card.extraCategory,
   };
 };
 
@@ -205,10 +299,7 @@ export const createDashboardCard = (
 ): DashboardCardConfig => {
   return {
     id: createCardId(fieldOption.value, Date.now()),
-    field: fieldOption.value,
-    fieldSource: fieldOption.source,
-    fieldLabel: fieldOption.label,
-    fieldType: fieldOption.type,
+    ...toCardFieldConfig(fieldOption),
     preset,
   };
 };
@@ -220,10 +311,7 @@ export const getUpdatedDashboardCard = (
 ): DashboardCardConfig => {
   return {
     ...card,
-    field: fieldOption.value,
-    fieldSource: fieldOption.source,
-    fieldLabel: fieldOption.label,
-    fieldType: fieldOption.type,
+    ...toCardFieldConfig(fieldOption),
     preset,
   };
 };

@@ -33,9 +33,10 @@ import {
 } from "saltbox-core/features/collection-extra-data";
 import {
   dashboardStore,
-  getDashboardFieldOptions,
   MinionsDashboardAddBlockModal,
+  toDashboardFieldOption,
   useDashboardCollection,
+  useDashboardFieldOptions,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
@@ -124,10 +125,8 @@ const MinionsPage = observer(() => {
     minionFilterStore.loadFiltersScheme();
   }, [minionFilterStore]);
 
-  const dashboardFieldOptions = useMemo(
-    () => getDashboardFieldOptions(minionFilterStore.filterSchema),
-    [minionFilterStore.filterSchema]
-  );
+  const { options: dashboardFieldOptions, isLoading: isDashboardFieldsLoading } =
+    useDashboardFieldOptions(minionFilterStore.filterSchema);
 
   const editingCard = useMemo(
     () => dashboardStore.cards.find((c) => c.id === editingDashboardCardId) ?? null,
@@ -138,18 +137,10 @@ const MinionsPage = observer(() => {
     if (!editingCard) {
       return dashboardFieldOptions;
     }
-    if (dashboardFieldOptions.some((o) => o.value === editingCard.field)) {
+    if (dashboardFieldOptions.some((o) => o.source === editingCard.fieldSource)) {
       return dashboardFieldOptions;
     }
-    return [
-      {
-        value: editingCard.field,
-        label: editingCard.fieldLabel,
-        source: editingCard.fieldSource,
-        type: editingCard.fieldType,
-      },
-      ...dashboardFieldOptions,
-    ];
+    return [toDashboardFieldOption(editingCard), ...dashboardFieldOptions];
   }, [dashboardFieldOptions, editingCard]);
 
   const addDashboardCard = () => {
@@ -262,6 +253,7 @@ const MinionsPage = observer(() => {
             <MinionsDashboardView
               slug={slug}
               filterStore={minionFilterStore}
+              fieldOptions={dashboardFieldOptions}
               filterControls={
                 showMinionsFilters && (
                   <MinionsQueryBuilder slug={slug} filterStore={minionFilterStore} />
@@ -475,6 +467,7 @@ const MinionsPage = observer(() => {
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
         fieldOptions={fieldOptionsForModal}
+        isLoading={isDashboardFieldsLoading}
         onClose={() => {
           setIsAddDashboardBlockModalOpen(false);
           setEditingDashboardCardId(null);

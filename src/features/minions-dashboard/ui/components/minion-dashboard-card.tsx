@@ -24,6 +24,7 @@ import { MinionFilterStore } from "saltbox-core/store";
 import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
 import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
 import { getChartTotal } from "../../helpers/get-chart-total";
+import { getDashboardCardTitle } from "../../helpers/get-dashboard-card-title";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -33,7 +34,7 @@ import {
   toHistogramData,
   valueToText,
 } from "../../model/dashboard-chart-data";
-import { DashboardCardConfig } from "../../model/dashboard-model";
+import { DashboardCardConfig, DashboardFieldOption } from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 import {
   DonutChart,
@@ -51,6 +52,7 @@ type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type MinionDashboardCardProps = {
   card: DashboardCardConfig;
+  fieldOptions: DashboardFieldOption[];
   onEdit: (cardId: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
@@ -58,7 +60,14 @@ type MinionDashboardCardProps = {
 };
 
 export const MinionDashboardCard = observer(
-  ({ card, onEdit, slug, filterStore, fullscreenContainer }: MinionDashboardCardProps) => {
+  ({
+    card,
+    fieldOptions,
+    onEdit,
+    slug,
+    filterStore,
+    fullscreenContainer,
+  }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
@@ -80,14 +89,15 @@ export const MinionDashboardCard = observer(
     }, [card.preset]);
 
     const emptyLabel = t("dashboard.empty-name");
-    const fieldTitle = t(`dashboard.field-${card.field}`, { defaultValue: card.fieldLabel });
+    const fieldTitle = getDashboardCardTitle(t, card, fieldOptions);
     const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
+    const isFilterable = !(card.extraCategory && card.fieldType === "date");
 
     useEffect(() => {
       if (slug) {
-        dashboardCardStore.loadGrain(card.fieldSource, slug, filterStore.searchMongoDBQuery);
+        dashboardCardStore.loadValues(card, slug, filterStore.searchMongoDBQuery);
       }
-    }, [card.fieldSource, dashboardCardStore, filterStore.searchMongoDBQuery, slug]);
+    }, [card, dashboardCardStore, filterStore.searchMongoDBQuery, slug]);
 
     isFullScreenRef.current = isFullScreen;
 
@@ -127,7 +137,9 @@ export const MinionDashboardCard = observer(
       }
     };
 
-    const copyDataText = dashboardCardStore.grainValues
+    const handleFilterByValue = isFilterable ? handleApplyFilter : undefined;
+
+    const copyDataText = dashboardCardStore.values
       .map((item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`)
       .join("\n");
 
@@ -167,15 +179,15 @@ export const MinionDashboardCard = observer(
     ];
 
     const getLimitedChartData = (limit: number): ChartDatum[] => {
-      const { grainValues } = dashboardCardStore;
-      if (grainValues.length <= limit) {
-        return toChartData(grainValues, limit, emptyLabel);
+      const { values } = dashboardCardStore;
+      if (values.length <= limit) {
+        return toChartData(values, limit, emptyLabel);
       }
 
-      const hiddenValues = grainValues.slice(limit);
+      const hiddenValues = values.slice(limit);
 
       return [
-        ...toChartData(grainValues, limit, emptyLabel),
+        ...toChartData(values, limit, emptyLabel),
         {
           name: t("dashboard.other-values", { count: hiddenValues.length }),
           count: getChartTotal(hiddenValues),
@@ -186,9 +198,9 @@ export const MinionDashboardCard = observer(
     };
 
     const renderChart = () => {
-      const { grainValues } = dashboardCardStore;
+      const { values } = dashboardCardStore;
 
-      if (!dashboardCardStore.isFilterLoading && grainValues.length === 0) {
+      if (!dashboardCardStore.isFilterLoading && values.length === 0) {
         return (
           <Empty
             className={styles.dashboardEmptyState}
@@ -203,7 +215,7 @@ export const MinionDashboardCard = observer(
           return (
             <DonutChart
               data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
-              onFilterByValue={handleApplyFilter}
+              onFilterByValue={handleFilterByValue}
               hideLegend={isMinimalCardSize}
             />
           );
@@ -211,28 +223,28 @@ export const MinionDashboardCard = observer(
           return (
             <HorizontalBarChart
               data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
-              onFilterByValue={handleApplyFilter}
+              onFilterByValue={handleFilterByValue}
             />
           );
         case "vertical-bar":
           return (
             <VerticalBarChart
               data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
-              onFilterByValue={handleApplyFilter}
+              onFilterByValue={handleFilterByValue}
             />
           );
         case "treemap":
           return (
             <TreemapChart
               data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
-              onFilterByValue={handleApplyFilter}
+              onFilterByValue={handleFilterByValue}
             />
           );
         case "histogram":
           return (
             <VerticalBarChart
               data={toHistogramData(
-                grainValues,
+                values,
                 emptyLabel,
                 getChartDataLimit(card.preset, chartLimitSize)
               )}
@@ -241,40 +253,41 @@ export const MinionDashboardCard = observer(
         case "boolean-donut":
           return (
             <DonutChart
-              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
-              onFilterByValue={handleApplyFilter}
+              data={toBooleanData(values, booleanLabels, emptyLabel)}
+              onFilterByValue={handleFilterByValue}
               hideLegend={isMinimalCardSize}
             />
           );
         case "boolean-bars":
           return (
             <HorizontalBarChart
-              data={toBooleanData(grainValues, booleanLabels, emptyLabel)}
-              onFilterByValue={handleApplyFilter}
+              data={toBooleanData(values, booleanLabels, emptyLabel)}
+              onFilterByValue={handleFilterByValue}
             />
           );
         case "kpi":
-          return <KpiPanel values={grainValues} />;
+          return <KpiPanel values={values} />;
         case "lollipop":
           return (
             <LollipopList
               data={getLimitedChartData(getChartDataLimit(card.preset, chartLimitSize))}
-              onFilterByValue={handleApplyFilter}
+              onFilterByValue={handleFilterByValue}
             />
           );
         case "table":
         default:
           return (
             <GrainTable
-              values={grainValues}
+              values={values}
               fieldSource={card.fieldSource}
               filterStore={filterStore}
+              isFilterable={isFilterable}
             />
           );
       }
     };
 
-    const showChartActions = card.preset !== "table" && dashboardCardStore.grainValues.length > 0;
+    const showChartActions = card.preset !== "table" && dashboardCardStore.values.length > 0;
 
     const cardElement = (
       <Card
@@ -283,7 +296,7 @@ export const MinionDashboardCard = observer(
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
         <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <ErrorZone level="block" loaders={[dashboardCardStore.grainLoad]}>
+          <ErrorZone level="block" loaders={[dashboardCardStore.valuesLoad]}>
             <div
               className={clsx(
                 styles.dashboardTableBlockHeader,
