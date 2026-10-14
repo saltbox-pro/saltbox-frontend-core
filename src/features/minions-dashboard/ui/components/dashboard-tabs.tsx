@@ -203,6 +203,7 @@ export const DashboardTabs = observer(() => {
         items={items}
         activeKey={dashboardStore.activeTabId}
         addIcon={<PlusOutlined />}
+        hideAdd={!dashboardStore.isHydrated}
         renderTabBar={(tabBarProps, DefaultTabBar) => (
           <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
         )}
