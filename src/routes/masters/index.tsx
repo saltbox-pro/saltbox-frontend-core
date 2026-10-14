@@ -8,13 +8,13 @@ import {
   runMutation,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Button, Flex, Tag } from "antd";
+import { Button, Flex } from "antd";
 import { observer } from "mobx-react-lite";
 import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { MasterAvailabilityCell } from "saltbox-core/features/masters";
+import { MasterAvailabilityCell, MasterStatusBadge } from "saltbox-core/features/masters";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -28,8 +28,15 @@ const columnHelper = createColumnHelper<TableRowData>();
 function MastersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { availabilityByMasterId, isManualPinging, isPinging, masters, pagination, sorting } =
-    mastersStore;
+  const {
+    availabilityByMasterId,
+    isManualPinging,
+    isPinging,
+    masters,
+    pagination,
+    sorting,
+    totalMasters,
+  } = mastersStore;
 
   const columns = [
     columnHelper.accessor("master_id", {
@@ -43,18 +50,7 @@ function MastersPage() {
     }),
     columnHelper.accessor("status", {
       header: t("masters.table-status"),
-      cell: (data) => {
-        switch (data.getValue()) {
-          case "new":
-            return <Tag color="yellow">{t("masters.table-new")}</Tag>;
-          case "rejected":
-            return <Tag color="red">{t("masters.table-rejected")}</Tag>;
-          case "accepted":
-            return <Tag color="green">{t("masters.table-accepted")}</Tag>;
-          default:
-            return <Tag>{`${t("masters.table-unknown-status")}: ${data.getValue()}`}</Tag>;
-        }
-      },
+      cell: (data) => <MasterStatusBadge status={data.getValue()} />,
       meta: { minWidth: 150 },
     }),
     columnHelper.display({
@@ -192,6 +188,7 @@ function MastersPage() {
           tableId="core-masters"
           columns={columns}
           data={masters}
+          total={totalMasters}
           isLoading={mastersStore.isLoading}
           onRefresh={() => mastersStore.loadMasters()}
           loader={mastersStore.mastersLoad}

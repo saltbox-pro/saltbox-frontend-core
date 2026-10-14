@@ -1,4 +1,6 @@
-import { Skeleton, Tag, Tooltip } from "antd";
+import { CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { StatusBadge } from "@saltbox/saltbox-frontend-common";
+import { Skeleton, Tooltip } from "antd";
 import { useTranslation } from "react-i18next";
 
 import type { MasterAvailability } from "../helpers/map-master-ping-result";
@@ -21,7 +23,7 @@ export function MasterAvailabilityCell({
   }
 
   if (isPinging) {
-    return <Skeleton.Button active size="small" style={{ width: 72, minWidth: 72 }} />;
+    return <Skeleton.Input size="small" active />;
   }
 
   if (!availability) {
@@ -29,14 +31,22 @@ export function MasterAvailabilityCell({
   }
 
   if (availability.status === "available") {
-    return <Tag color="green">{t("masters.availability-available")}</Tag>;
+    return (
+      <StatusBadge tone="success" icon={<CheckCircleOutlined />}>
+        {t("masters.availability-available")}
+      </StatusBadge>
+    );
   }
 
-  const tag = <Tag color="red">{t("masters.availability-unavailable")}</Tag>;
+  const badge = (
+    <StatusBadge tone="danger" icon={<CloseCircleOutlined />}>
+      {t("masters.availability-unavailable")}
+    </StatusBadge>
+  );
 
   if (!availability.error) {
-    return tag;
+    return badge;
   }
 
-  return <Tooltip title={availability.error}>{tag}</Tooltip>;
+  return <Tooltip title={availability.error}>{badge}</Tooltip>;
 }

@@ -348,7 +348,7 @@ const normalizeTabs = (
 };
 
 export const normalizeDashboardStorage = (
-  rawValue: string | null,
+  rawValue: unknown,
   names: DashboardTabNames
 ): DashboardStorageConfig => {
   const createDefaultConfig = (): DashboardStorageConfig => {
@@ -361,7 +361,7 @@ export const normalizeDashboardStorage = (
   }
 
   try {
-    const parsed = JSON.parse(rawValue);
+    const parsed = typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
 
     if (Array.isArray(parsed?.tabs) && parsed.tabs.length > 0) {
       const tabs = normalizeTabs(parsed.tabs, names);

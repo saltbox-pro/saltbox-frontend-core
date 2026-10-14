@@ -1,0 +1,18 @@
+.preview {
+  gap: 4px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.preview:hover {
+  opacity: 0.8;
+}
+
+.content {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.icon {
+  color: #ff4d4f;
+}

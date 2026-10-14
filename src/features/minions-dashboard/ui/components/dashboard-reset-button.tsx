@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { dashboardStore } from "../../model/dashboard-store";
 
-export const DashboardResetButton = () => {
+export const DashboardResetButton = ({ disabled }: { disabled?: boolean }) => {
   const { t } = useTranslation();
 
   const handleClick = () => {
@@ -25,7 +25,7 @@ export const DashboardResetButton = () => {
   };
 
   return (
-    <Button onClick={handleClick} type="default" icon={<ReloadOutlined />}>
+    <Button onClick={handleClick} type="default" disabled={disabled} icon={<ReloadOutlined />}>
       {t("dashboard.reset-button")}
     </Button>
   );

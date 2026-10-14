@@ -1,11 +1,11 @@
-import { makeAutoObservable } from "mobx";
+import { ensureUserSettingsLoaded } from "@saltbox/saltbox-frontend-common";
+import { makeAutoObservable, runInAction, toJS } from "mobx";
 
 import {
   DASHBOARD_GRID_COLS,
   DASHBOARD_MAX_CARDS,
   getDefaultCardSize,
 } from "../constants/dashboard-cards";
-import { DASHBOARD_STORAGE_KEY } from "../constants/dashboard-storage";
 
 import {
   canRemoveDashboardTab,
@@ -26,12 +26,13 @@ import {
   TabNameError,
   validateTabName,
 } from "./dashboard-model";
+import { getDashboardSettings, setDashboardSettings } from "./dashboard-settings";
 
 export class DashboardStore {
   tabs: DashboardTab[];
   activeTabId: string;
   fullScreenCardId: string | null;
-  private storageKey: string | null = null;
+  isHydrated = false;
   private userId: string | null = null;
   private collectionSlug: string | null = null;
   private tabNames: DashboardTabNames | null = null;
@@ -74,26 +75,48 @@ export class DashboardStore {
       return;
     }
     tab.name = name;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   private reload() {
+    this.isHydrated = false;
+    this.tabs = [];
+    this.activeTabId = "";
+    this.fullScreenCardId = null;
+
     if (!this.userId || !this.collectionSlug || !this.tabNames) {
-      this.storageKey = null;
-      this.tabs = [];
-      this.activeTabId = "";
-      this.fullScreenCardId = null;
       return;
     }
 
-    this.storageKey = `${DASHBOARD_STORAGE_KEY}:${this.userId}:${this.collectionSlug}`;
-    const stored = normalizeDashboardStorage(localStorage.getItem(this.storageKey), this.tabNames);
+    const collectionSlug = this.collectionSlug;
+
+    ensureUserSettingsLoaded()
+      .catch((error: unknown) => {
+        console.error("Failed to load dashboard settings", error);
+      })
+      .then(() => {
+        if (this.collectionSlug !== collectionSlug) {
+          return;
+        }
+        runInAction(() => {
+          this.applySettings(collectionSlug);
+        });
+      });
+  }
+
+  private applySettings(collectionSlug: string) {
+    if (!this.tabNames) {
+      return;
+    }
+
+    const stored = normalizeDashboardStorage(getDashboardSettings(collectionSlug), this.tabNames);
     this.tabs = stored.tabs.map((tab) => ({
       ...tab,
       layout: tab.layout.length > 0 ? tab.layout : this.buildDefaultLayout(tab.cards),
     }));
     this.activeTabId = stored.activeTabId;
     this.fullScreenCardId = null;
+    this.isHydrated = true;
     this.syncDefaultTabName();
   }
 
@@ -139,14 +162,15 @@ export class DashboardStore {
     return layout;
   }
 
-  saveToLocalStorage() {
-    if (!this.storageKey) {
+  private saveSettings() {
+    if (!this.isHydrated || !this.collectionSlug) {
       return;
     }
-    localStorage.setItem(
-      this.storageKey,
-      JSON.stringify({ tabs: this.tabs, activeTabId: this.activeTabId })
-    );
+
+    setDashboardSettings(this.collectionSlug, {
+      tabs: toJS(this.tabs),
+      activeTabId: this.activeTabId,
+    });
   }
 
   setActiveTab(tabId: string) {
@@ -155,18 +179,18 @@ export class DashboardStore {
     }
     this.activeTabId = tabId;
     this.fullScreenCardId = null;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   addTab(): string | null {
-    if (!this.tabNames) {
+    if (!this.isHydrated || !this.tabNames) {
       return null;
     }
     const tab = createDashboardTab(createUniqueTabName(this.tabNames.newTab, this.tabs));
     this.tabs.push(tab);
     this.activeTabId = tab.id;
     this.fullScreenCardId = null;
-    this.saveToLocalStorage();
+    this.saveSettings();
     return tab.id;
   }
 
@@ -180,7 +204,7 @@ export class DashboardStore {
       this.activeTabId = this.tabs[Math.min(tabIndex, this.tabs.length - 1)].id;
     }
     this.fullScreenCardId = null;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   moveTab(fromTabId: string, toTabId: string) {
@@ -189,7 +213,7 @@ export class DashboardStore {
       return;
     }
     this.tabs = tabs;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   renameTab(tabId: string, name: string): TabNameError | null {
@@ -207,7 +231,7 @@ export class DashboardStore {
     }
     tab.name = normalized;
     tab.nameCustomized = true;
-    this.saveToLocalStorage();
+    this.saveSettings();
     return null;
   }
 
@@ -216,7 +240,7 @@ export class DashboardStore {
       return;
     }
     this.activeTab.layout = layout;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   addCard(fieldOption: DashboardFieldOption, preset: DashboardPreset) {
@@ -237,7 +261,7 @@ export class DashboardStore {
       },
       ...this.layout,
     ];
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   private findFirstAvailablePosition(
@@ -280,7 +304,7 @@ export class DashboardStore {
         };
       })
     );
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   removeCard(cardId: string) {
@@ -290,7 +314,7 @@ export class DashboardStore {
     this.activeTab.cards = this.cards.filter((card) => card.id !== cardId);
     const remaining = this.layout.filter((item) => item.id !== cardId);
     this.activeTab.layout = this.compactCards(remaining);
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   resetToDefault() {
@@ -301,7 +325,7 @@ export class DashboardStore {
     tab.cards = tab.primary ? createDefaultTabCards(tab.id) : [];
     tab.layout = this.buildDefaultLayout(tab.cards);
     this.fullScreenCardId = null;
-    this.saveToLocalStorage();
+    this.saveSettings();
   }
 
   private isCardsOverlap(card: DashboardLayoutItem, placedCard: DashboardLayoutItem): boolean {

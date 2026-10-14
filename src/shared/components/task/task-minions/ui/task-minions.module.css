@@ -1,0 +1,16 @@
+.toolbarActions {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+  gap: calc(var(--app-layout-gap, 16px) / 2);
+}
+
+.toolbarActions :global(button) {
+  margin-right: 0;
+}
+
+.toolbarActions :global(.fast-table-toolbar) {
+  margin-left: 0;
+  padding-left: 0;
+}

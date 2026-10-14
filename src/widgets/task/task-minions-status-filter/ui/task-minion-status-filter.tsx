@@ -8,7 +8,7 @@ import {
   getTaskMinionStatusLabelKey,
   includesPolicyClientStatuses,
   readTaskMinionsCount,
-} from "saltbox-core/shared/components/minion-task-status/helpers/task-minion-status-meta";
+} from "saltbox-core/shared/components/minion-task-status";
 
 import styles from "./task-minion-status-filter.module.css";
 import { TaskMinionsStatusFiltersButton } from "./task-minions-status-filters-button";

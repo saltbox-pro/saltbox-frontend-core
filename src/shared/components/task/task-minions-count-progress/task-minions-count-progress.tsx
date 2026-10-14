@@ -9,7 +9,7 @@ import {
   includesPolicyClientStatuses,
   readTaskMinionsCount,
   TASK_MINION_COUNT_POPOVER_ROWS,
-} from "saltbox-core/shared/components/minion-task-status/helpers/task-minion-status-meta";
+} from "saltbox-core/shared/components/minion-task-status";
 
 import styles from "./task-minions-count-progress.module.css";
 

@@ -5,7 +5,7 @@ import {
   getTaskMinionStatusProgressColor,
   includesPolicyClientStatuses,
   readTaskMinionsCount,
-} from "saltbox-core/shared/components/minion-task-status/helpers/task-minion-status-meta";
+} from "saltbox-core/shared/components/minion-task-status";
 import {
   StatusSegmentsProgress,
   type StatusSegmentInput,
