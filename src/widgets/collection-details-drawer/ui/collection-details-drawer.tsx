@@ -88,9 +88,9 @@ export const CollectionDetailsDrawer = observer(
     const createParentSlug = isCreateMode ? openedArg?.slug : undefined;
     const isCreateFormReady = isCreateMode && createFormInitializedId === openedArg?.id;
 
-    const watchedTitle = Form.useWatch("title", form);
-    const watchedDescription = Form.useWatch("description", form);
-    const watchedParentSlug = Form.useWatch("parent_slug", form);
+    const watchedTitle = Form.useWatch("title", { form, preserve: true });
+    const watchedDescription = Form.useWatch("description", { form, preserve: true });
+    const watchedParentSlug = Form.useWatch("parent_slug", { form, preserve: true });
 
     useEffect(() => {
       if (isOpened && openedArg && !openedArg.isCreate) {
@@ -173,9 +173,8 @@ export const CollectionDetailsDrawer = observer(
       collectionStore.reset();
       setSaveError(null);
       resetCreateForm();
-      focusTitleInput();
       setCreateFormInitializedId(openedArg?.id ?? null);
-    }, [isCreateMode, openedArg, collectionStore, resetCreateForm, focusTitleInput]);
+    }, [isCreateMode, openedArg, collectionStore, resetCreateForm]);
 
     useEffect(() => {
       if (isOpened) {
@@ -283,7 +282,11 @@ export const CollectionDetailsDrawer = observer(
                 },
               ]}
             >
-              <Input ref={titleInputRef} placeholder={t("collection.enter-collection-name")} />
+              <Input
+                ref={titleInputRef}
+                autoFocus={isCreateMode}
+                placeholder={t("collection.enter-collection-name")}
+              />
             </Form.Item>
           ),
         },
@@ -336,7 +339,7 @@ export const CollectionDetailsDrawer = observer(
       ];
 
       return items;
-    }, [collection, isEditable, parentTreeData, t]);
+    }, [collection, isEditable, isCreateMode, parentTreeData, t]);
 
     const handleReset = () => {
       setSaveError(null);
