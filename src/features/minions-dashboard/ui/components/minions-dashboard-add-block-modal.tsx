@@ -1,4 +1,5 @@
-import { Button, Empty, Flex, Modal, Select, Typography } from "antd";
+import { Button, Cascader, ConfigProvider, Empty, Flex, Modal, Typography } from "antd";
+import type { DefaultOptionType } from "antd/es/cascader";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -16,26 +17,33 @@ import {
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
 
-type FieldSelectOption = {
+const GRAINS_GROUP_KEY = "grains";
+
+const FIELD_CASCADER_THEME = {
+  components: {
+    Cascader: {
+      optionSelectedFontWeight: 400,
+    },
+  },
+};
+
+type FieldCascaderOption = {
   value: string;
   label: string;
-  searchLabel: string;
+  children?: FieldCascaderOption[];
 };
 
-type FieldSelectGroup = {
-  label: string;
-  options: FieldSelectOption[];
-};
-
-const getFieldSelectGroups = (
+const getFieldCascaderOptions = (
   fieldOptions: DashboardFieldOption[],
   t: TFunction
-): FieldSelectGroup[] => {
-  const groups = new Map<string, FieldSelectGroup>();
+): FieldCascaderOption[] => {
+  const groups = new Map<string, FieldCascaderOption>();
 
   fieldOptions.forEach((option) => {
     const { extraCategory } = option;
-    const groupKey = extraCategory ? `${extraCategory.source}.${extraCategory.name}` : "grains";
+    const groupKey = extraCategory
+      ? `${extraCategory.source}.${extraCategory.name}`
+      : GRAINS_GROUP_KEY;
     const groupLabel = extraCategory
       ? (option.categoryLabel ?? t("dashboard.field-group-extra"))
       : t("dashboard.field-group-grains");
@@ -43,12 +51,43 @@ const getFieldSelectGroups = (
       ? option.value
       : `${t(`dashboard.field-${option.value}`, { defaultValue: option.label })} (${option.source})`;
 
-    const group = groups.get(groupKey) ?? { label: groupLabel, options: [] };
-    group.options.push({ value: option.source, label, searchLabel: `${groupLabel} ${label}` });
+    const group = groups.get(groupKey) ?? { value: groupKey, label: groupLabel, children: [] };
+    group.children?.push({ value: option.source, label });
     groups.set(groupKey, group);
   });
 
   return Array.from(groups.values());
+};
+
+const getFieldCascaderValue = (
+  fieldSource: string | undefined,
+  options: FieldCascaderOption[]
+): string[] | undefined => {
+  if (!fieldSource) {
+    return undefined;
+  }
+
+  const group = options.find((option) =>
+    option.children?.some((child) => child.value === fieldSource)
+  );
+  if (!group) {
+    return undefined;
+  }
+
+  return [group.value, fieldSource];
+};
+
+const filterFieldCascader = (inputValue: string, path: DefaultOptionType[]) => {
+  const query = inputValue.trim().toLowerCase();
+  if (!query) {
+    return true;
+  }
+
+  return path.some((item) =>
+    String(item.label ?? "")
+      .toLowerCase()
+      .includes(query)
+  );
 };
 
 type MinionsDashboardAddBlockModalProps = {
@@ -88,11 +127,22 @@ export const MinionsDashboardAddBlockModal = ({
     [fieldOption]
   );
 
-  const fieldSelectGroups = useMemo(() => getFieldSelectGroups(fieldOptions, t), [fieldOptions, t]);
+  const fieldCascaderOptions = useMemo(
+    () => getFieldCascaderOptions(fieldOptions, t),
+    [fieldOptions, t]
+  );
+  const fieldCascaderValue = useMemo(
+    () => getFieldCascaderValue(selectedField, fieldCascaderOptions),
+    [fieldCascaderOptions, selectedField]
+  );
 
-  const handleFieldChange = (value: string) => {
-    const nextField = fieldOptions.find((option) => option.source === value);
-    setSelectedField(value);
+  const handleFieldChange = (path?: (string | number)[]) => {
+    const fieldSource = path?.at(-1);
+    const nextField =
+      typeof fieldSource === "string"
+        ? fieldOptions.find((option) => option.source === fieldSource)
+        : undefined;
+    setSelectedField(nextField?.source);
     setSelectedPreset(
       nextField ? getPresetOptionsForFieldType(nextField.type)[0].value : undefined
     );
@@ -125,15 +175,19 @@ export const MinionsDashboardAddBlockModal = ({
       <Flex vertical gap={20}>
         <Flex vertical gap={8}>
           <Typography.Text strong>{t("dashboard.field-label")}</Typography.Text>
-          <Select
-            showSearch
-            value={selectedField}
-            options={fieldSelectGroups}
-            placeholder={t("dashboard.field-placeholder")}
-            optionFilterProp="searchLabel"
-            popupClassName={styles.fieldSelectDropdown}
-            onChange={handleFieldChange}
-          />
+          <ConfigProvider theme={FIELD_CASCADER_THEME}>
+            <Cascader
+              allowClear
+              showSearch={{ filter: filterFieldCascader }}
+              value={fieldCascaderValue}
+              options={fieldCascaderOptions}
+              placeholder={t("dashboard.field-placeholder")}
+              expandTrigger="hover"
+              displayRender={(labels) => labels.join(" / ")}
+              className={styles.fieldCascader}
+              onChange={handleFieldChange}
+            />
+          </ConfigProvider>
         </Flex>
 
         <Flex vertical gap={8}>

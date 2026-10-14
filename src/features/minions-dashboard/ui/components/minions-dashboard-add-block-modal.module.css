@@ -1,9 +1,5 @@
-.fieldSelectDropdown :global(.ant-select-item-group) {
-  min-height: 32px;
-  color: var(--ant-color-text, #1f1f1f);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 22px;
+.fieldCascader {
+  width: 100%;
 }
 
 .presetsGrid {
