@@ -125,7 +125,8 @@ const MinionsPage = observer(() => {
     minionFilterStore.loadFiltersScheme();
   }, [minionFilterStore]);
 
-  const dashboardFieldOptions = useDashboardFieldOptions(minionFilterStore.filterSchema);
+  const { options: dashboardFieldOptions, isLoading: isDashboardFieldsLoading } =
+    useDashboardFieldOptions(minionFilterStore.filterSchema);
 
   const editingCard = useMemo(
     () => dashboardStore.cards.find((c) => c.id === editingDashboardCardId) ?? null,
@@ -252,6 +253,7 @@ const MinionsPage = observer(() => {
             <MinionsDashboardView
               slug={slug}
               filterStore={minionFilterStore}
+              fieldOptions={dashboardFieldOptions}
               filterControls={
                 showMinionsFilters && (
                   <MinionsQueryBuilder slug={slug} filterStore={minionFilterStore} />
@@ -465,6 +467,7 @@ const MinionsPage = observer(() => {
           dashboardStore.cards.find((card) => card.id === editingDashboardCardId) ?? null
         }
         fieldOptions={fieldOptionsForModal}
+        isLoading={isDashboardFieldsLoading}
         onClose={() => {
           setIsAddDashboardBlockModalOpen(false);
           setEditingDashboardCardId(null);

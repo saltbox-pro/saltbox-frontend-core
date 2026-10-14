@@ -15,7 +15,7 @@ type DashboardFilterSchema = Parameters<typeof getDashboardFieldOptions>[0];
 
 export const useDashboardFieldOptions = (
   filterSchema: DashboardFilterSchema
-): DashboardFieldOption[] => {
+): { options: DashboardFieldOption[]; isLoading: boolean } => {
   const { i18n } = useTranslation();
   const [categoriesStore] = useState(
     () => new ExtraDataCategoriesStore({ pageSize: EXTRA_DATA_CATEGORIES_PAGE_SIZE })
@@ -29,13 +29,15 @@ export const useDashboardFieldOptions = (
     };
   }, [categoriesStore]);
 
-  const { categories } = categoriesStore;
+  const { categories, isLoading } = categoriesStore;
 
-  return useMemo(
+  const options = useMemo(
     () => [
       ...getDashboardFieldOptions(filterSchema),
       ...getExtraDataDashboardFieldOptions(categories, i18n.language),
     ],
     [filterSchema, categories, i18n.language]
   );
+
+  return { options, isLoading };
 };

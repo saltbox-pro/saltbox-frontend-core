@@ -1,4 +1,4 @@
-import { Button, Cascader, ConfigProvider, Empty, Flex, Modal, Typography } from "antd";
+import { Button, Cascader, ConfigProvider, Empty, Flex, Modal, Spin, Typography } from "antd";
 import type { DefaultOptionType } from "antd/es/cascader";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
@@ -94,6 +94,7 @@ type MinionsDashboardAddBlockModalProps = {
   open: boolean;
   initialCard?: DashboardCardConfig | null;
   fieldOptions: DashboardFieldOption[];
+  isLoading?: boolean;
   onClose: () => void;
   onSubmit: (fieldOption: DashboardFieldOption, preset: DashboardPreset) => void;
 };
@@ -102,6 +103,7 @@ export const MinionsDashboardAddBlockModal = ({
   open,
   initialCard,
   fieldOptions,
+  isLoading = false,
   onClose,
   onSubmit,
 }: MinionsDashboardAddBlockModalProps) => {
@@ -175,19 +177,20 @@ export const MinionsDashboardAddBlockModal = ({
       <Flex vertical gap={20}>
         <Flex vertical gap={8}>
           <Typography.Text strong>{t("dashboard.field-label")}</Typography.Text>
-          <ConfigProvider theme={FIELD_CASCADER_THEME}>
-            <Cascader
-              allowClear
-              showSearch={{ filter: filterFieldCascader }}
-              value={fieldCascaderValue}
-              options={fieldCascaderOptions}
-              placeholder={t("dashboard.field-placeholder")}
-              expandTrigger="hover"
-              displayRender={(labels) => labels.join(" / ")}
-              className={styles.fieldCascader}
-              onChange={handleFieldChange}
-            />
-          </ConfigProvider>
+          <Spin spinning={isLoading} className={styles.fieldCascader}>
+            <ConfigProvider theme={FIELD_CASCADER_THEME}>
+              <Cascader
+                allowClear
+                showSearch={{ filter: filterFieldCascader }}
+                value={fieldCascaderValue}
+                options={fieldCascaderOptions}
+                placeholder={t("dashboard.field-placeholder")}
+                displayRender={(labels) => labels.join(" / ")}
+                className={styles.fieldCascader}
+                onChange={handleFieldChange}
+              />
+            </ConfigProvider>
+          </Spin>
         </Flex>
 
         <Flex vertical gap={8}>

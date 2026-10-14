@@ -24,6 +24,7 @@ import { MinionFilterStore } from "saltbox-core/store";
 import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
 import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
 import { getChartTotal } from "../../helpers/get-chart-total";
+import { getDashboardCardTitle } from "../../helpers/get-dashboard-card-title";
 import { DashboardCardStore } from "../../model/dashboard-card-store";
 import {
   BooleanLabels,
@@ -33,7 +34,7 @@ import {
   toHistogramData,
   valueToText,
 } from "../../model/dashboard-chart-data";
-import { DashboardCardConfig } from "../../model/dashboard-model";
+import { DashboardCardConfig, DashboardFieldOption } from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 import {
   DonutChart,
@@ -51,6 +52,7 @@ type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type MinionDashboardCardProps = {
   card: DashboardCardConfig;
+  fieldOptions: DashboardFieldOption[];
   onEdit: (cardId: string) => void;
   slug: string | undefined;
   filterStore: MinionFilterStore;
@@ -58,7 +60,14 @@ type MinionDashboardCardProps = {
 };
 
 export const MinionDashboardCard = observer(
-  ({ card, onEdit, slug, filterStore, fullscreenContainer }: MinionDashboardCardProps) => {
+  ({
+    card,
+    fieldOptions,
+    onEdit,
+    slug,
+    filterStore,
+    fullscreenContainer,
+  }: MinionDashboardCardProps) => {
     const { t } = useTranslation();
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [dashboardCardStore] = useState(new DashboardCardStore());
@@ -80,9 +89,7 @@ export const MinionDashboardCard = observer(
     }, [card.preset]);
 
     const emptyLabel = t("dashboard.empty-name");
-    const fieldTitle = card.extraCategory
-      ? card.fieldLabel
-      : t(`dashboard.field-${card.field}`, { defaultValue: card.fieldLabel });
+    const fieldTitle = getDashboardCardTitle(t, card, fieldOptions);
     const booleanLabels: BooleanLabels = { yes: t("common.yes"), no: t("common.no") };
     const isFilterable = !(card.extraCategory && card.fieldType === "date");
 
