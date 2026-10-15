@@ -10,17 +10,26 @@ import { reaction } from "mobx";
 
 export type LocaleStoreWithPersister = {
   currentLocale: AppLanguage;
-  setPersister: (persist: (locale: AppLanguage) => Promise<void>) => void;
-  setLocale: (locale: AppLanguage) => void | Promise<void>;
+  setPersister: (persist: ((locale: AppLanguage) => Promise<void>) | null) => void;
+  applyLocale: (locale: AppLanguage) => void;
 };
 
 export function bindLanguageSettings(
   authStore: AuthStoreWithAccessToken,
   localeStore: LocaleStoreWithPersister
 ): () => void {
+  let isCancelled = false;
+
   localeStore.setPersister(async (locale) => {
+    const previousLanguage = getLanguageSetting();
     setLanguageSetting(locale);
-    await flushUserSettings();
+
+    try {
+      await flushUserSettings();
+    } catch (error) {
+      setLanguageSetting(previousLanguage);
+      throw error;
+    }
   });
 
   const disposer = reaction(
@@ -32,19 +41,27 @@ export function bindLanguageSettings(
 
       ensureUserSettingsLoaded()
         .then(() => {
+          if (isCancelled) {
+            return;
+          }
+
           const language = getLanguageSetting();
           if (!language) {
             return;
           }
 
-          localeStore.setLocale(language);
+          localeStore.applyLocale(language);
         })
-        .catch(() => undefined);
+        .catch((error: unknown) => {
+          console.error("Failed to apply the language from user settings", error);
+        });
     },
     { fireImmediately: true }
   );
 
   return () => {
+    isCancelled = true;
     disposer();
+    localeStore.setPersister(null);
   };
 }
