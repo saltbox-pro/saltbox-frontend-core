@@ -13,8 +13,14 @@ const EXTRA_DATA_CATEGORIES_PAGE_SIZE = 200;
 
 type DashboardFilterSchema = Parameters<typeof getDashboardFieldOptions>[0];
 
+type UseDashboardFieldOptionsParams = {
+  isActive?: boolean;
+  isModalOpen?: boolean;
+};
+
 export const useDashboardFieldOptions = (
-  filterSchema: DashboardFilterSchema
+  filterSchema: DashboardFilterSchema,
+  { isActive = true, isModalOpen = false }: UseDashboardFieldOptionsParams = {}
 ): { options: DashboardFieldOption[]; isLoading: boolean } => {
   const { i18n } = useTranslation();
   const [categoriesStore] = useState(
@@ -22,12 +28,26 @@ export const useDashboardFieldOptions = (
   );
 
   useEffect(() => {
-    categoriesStore.loadCategories();
-
     return () => {
       categoriesStore.reset();
     };
   }, [categoriesStore]);
+
+  useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    categoriesStore.loadCategories();
+  }, [categoriesStore, isActive]);
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      return;
+    }
+
+    categoriesStore.loadCategories();
+  }, [categoriesStore, isModalOpen]);
 
   const { categories, isLoading } = categoriesStore;
 
