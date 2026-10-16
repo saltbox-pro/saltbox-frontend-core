@@ -1,13 +1,20 @@
-import {
-  SaltBoxMinionValueSelector,
-  SaltBoxQueryBuilderContainer,
-} from "@saltbox/saltbox-frontend-common";
+import { SaltBoxQueryBuilderContainer } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
+import type { ComponentProps } from "react";
 
 import { CoreMinionValueEditor } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-editor";
+import { CoreMinionValueSelector } from "saltbox-core/shared/components/query-builder-salt-box/core-minion-value-selector";
 import { MinionFilterStore } from "saltbox-core/store";
 
 import styles from "./minions-query-builder.module.css";
+
+type QueryBuilderControlElements = NonNullable<
+  ComponentProps<typeof SaltBoxQueryBuilderContainer>["controlElements"]
+>;
+
+const minionValueSelector = CoreMinionValueSelector as unknown as NonNullable<
+  QueryBuilderControlElements["valueSelector"]
+>;
 
 export const MinionsQueryBuilder = observer(
   (props: {
@@ -26,7 +33,7 @@ export const MinionsQueryBuilder = observer(
         enableFreeTextMode
         controlElements={{
           valueEditor: CoreMinionValueEditor(props.slug),
-          valueSelector: SaltBoxMinionValueSelector,
+          valueSelector: minionValueSelector,
         }}
       />
     );
