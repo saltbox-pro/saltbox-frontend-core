@@ -40,12 +40,14 @@ import {
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
+import { ExtraDataCategoriesContext } from "saltbox-core/shared/contexts/extra-data-categories-context";
 import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
   CollectionStore,
   collectionsTreeStore,
+  ExtraDataCategoriesStore,
   i18nStore,
   MinionFilterStore,
   TasksFilterStore,
@@ -60,6 +62,7 @@ import styles from "./index.module.css";
 type TabItems = ComponentProps<typeof Tabs>["items"];
 
 const STORAGE_KEY_PREFIX = "minions";
+const EXTRA_DATA_CATEGORIES_PAGE_SIZE = 200;
 
 const createMinionFilterStore = () => {
   const store = new MinionFilterStore(`${STORAGE_KEY_PREFIX}ListFilter`);
@@ -93,6 +96,9 @@ const MinionsPage = observer(() => {
   const [editingDashboardCardId, setEditingDashboardCardId] = useState<string | null>(null);
 
   const minionFilterStore = useMemo(() => createMinionFilterStore(), []);
+  const [extraDataCategoriesStore] = useState(
+    () => new ExtraDataCategoriesStore({ pageSize: EXTRA_DATA_CATEGORIES_PAGE_SIZE })
+  );
   useMinionFilterSchemaLocalization(minionFilterStore);
   const tasksFilterStore = useMemo(
     () => new TasksFilterStore([], `${STORAGE_KEY_PREFIX}TasksFilter`),
@@ -123,13 +129,18 @@ const MinionsPage = observer(() => {
 
   useLayoutEffect(() => {
     minionFilterStore.loadFiltersScheme();
-  }, [minionFilterStore]);
+    extraDataCategoriesStore.loadCategories();
+  }, [minionFilterStore, extraDataCategoriesStore]);
+
+  useEffect(() => {
+    return () => {
+      extraDataCategoriesStore.reset();
+      extraDataCategoriesStore.categoriesLoad.resetInitial();
+    };
+  }, [extraDataCategoriesStore]);
 
   const { options: dashboardFieldOptions, isLoading: isDashboardFieldsLoading } =
-    useDashboardFieldOptions(minionFilterStore.filterSchema, {
-      isActive: tabKey === "statistics",
-      isModalOpen: isAddDashboardBlockModalOpen,
-    });
+    useDashboardFieldOptions(minionFilterStore.filterSchema, extraDataCategoriesStore);
 
   const editingCard = useMemo(
     () => dashboardStore.cards.find((c) => c.id === editingDashboardCardId) ?? null,
@@ -356,6 +367,7 @@ const MinionsPage = observer(() => {
     tabKey,
     t,
     minionFilterStore,
+    dashboardFieldOptions,
     tasksFilterStore,
     policiesFilterStore,
     openMinionsFilters,
@@ -374,49 +386,55 @@ const MinionsPage = observer(() => {
         onNavigateHome={() => navigate("/core/minions")}
       >
         {/* Схема фильтров не блокирует таблицу: ошибка показывается баннером сверху. */}
-        <ErrorZone level="block" keepContentOnError loaders={[minionFilterStore.filterSchemaLoad]}>
-          <Tabs
-            className={styles.minionsTabs}
-            tabBarExtraContent={{
-              right: (
-                <>
-                  <Flex gap={8}>
-                    {["list", "statistics", "extra-data"].includes(tabKey) && (
-                      <>
-                        <CollectionInfoPopover
-                          slug={slug}
-                          collectionStore={collectionStore}
-                          filterSchema={minionFilterStore.filterSchema}
-                        />
+        <ErrorZone
+          level="block"
+          keepContentOnError
+          loaders={[minionFilterStore.filterSchemaLoad, extraDataCategoriesStore.categoriesLoad]}
+        >
+          <ExtraDataCategoriesContext.Provider value={extraDataCategoriesStore}>
+            <Tabs
+              className={styles.minionsTabs}
+              tabBarExtraContent={{
+                right: (
+                  <>
+                    <Flex gap={8}>
+                      {["list", "statistics", "extra-data"].includes(tabKey) && (
+                        <>
+                          <CollectionInfoPopover
+                            slug={slug}
+                            collectionStore={collectionStore}
+                            filterSchema={minionFilterStore.filterSchema}
+                          />
 
-                        <FilterToggleButton
-                          label={t("minions.client-filters-button")}
-                          isOpen={shownMinionsFilters}
-                          activeFiltersCount={minionFilterStore.activeFiltersCount}
-                          onToggle={toggleShownMinionsFilters}
-                        />
+                          <FilterToggleButton
+                            label={t("minions.client-filters-button")}
+                            isOpen={shownMinionsFilters}
+                            activeFiltersCount={minionFilterStore.activeFiltersCount}
+                            onToggle={toggleShownMinionsFilters}
+                          />
 
-                        <SettingsDropdown menu={{ items: collectionMenuItems }} />
-                      </>
-                    )}
-                  </Flex>
-                </>
-              ),
-            }}
-            items={minionsTabs}
-            onChange={(newTabKey) => {
-              setSearchParams((prev) => {
-                const newParams = new URLSearchParams(prev);
-                newParams.set("tab", newTabKey);
-                if (newTabKey !== "extra-data") {
-                  newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
-                }
-                return newParams;
-              });
-            }}
-            activeKey={tabKey}
-            destroyOnHidden={true}
-          />
+                          <SettingsDropdown menu={{ items: collectionMenuItems }} />
+                        </>
+                      )}
+                    </Flex>
+                  </>
+                ),
+              }}
+              items={minionsTabs}
+              onChange={(newTabKey) => {
+                setSearchParams((prev) => {
+                  const newParams = new URLSearchParams(prev);
+                  newParams.set("tab", newTabKey);
+                  if (newTabKey !== "extra-data") {
+                    newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
+                  }
+                  return newParams;
+                });
+              }}
+              activeKey={tabKey}
+              destroyOnHidden={true}
+            />
+          </ExtraDataCategoriesContext.Provider>
         </ErrorZone>
       </ErrorZone>
 

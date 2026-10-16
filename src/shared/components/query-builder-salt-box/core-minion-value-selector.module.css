@@ -1,0 +1,10 @@
+.fieldCascader {
+  min-width: 380px;
+}
+
+.optionLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}

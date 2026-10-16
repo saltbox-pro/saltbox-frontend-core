@@ -1,4 +1,5 @@
 import { isMongoQueryEmpty } from "@saltbox/saltbox-frontend-common";
+import { formatQuery } from "react-querybuilder";
 
 import type { MinionFilterStore } from "saltbox-core/store";
 
@@ -14,6 +15,10 @@ export function getFilterStateKey(filterStore: MinionFilterStore): string {
     }
   }
 
-  const query = filterStore.currentMongoDBQuery;
-  return isMongoQueryEmpty(query) ? EMPTY_FILTER_STATE_KEY : JSON.stringify(query);
+  const { rules } = filterStore.currentFilters;
+  if (!rules?.length) {
+    return EMPTY_FILTER_STATE_KEY;
+  }
+
+  return formatQuery(filterStore.currentFilters, "json_without_ids");
 }

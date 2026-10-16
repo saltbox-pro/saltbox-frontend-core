@@ -38,8 +38,16 @@ const fetchFilterValues = (slug: string, field: string, value: string): Promise<
   );
 };
 
+const isIncompleteCustomGrainField = (field: string): boolean =>
+  field === "grains." || field === "grains";
+
 const createGetOptionsForCollection = (slug: string): GetOptionsCallback => {
   return (field, value, setOptions) => {
+    if (isIncompleteCustomGrainField(field)) {
+      setOptions([]);
+      return;
+    }
+
     const normalizedValue = String(value ?? "");
     const requestKey = getRequestKey(slug, field, normalizedValue);
 
