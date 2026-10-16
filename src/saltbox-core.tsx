@@ -208,12 +208,6 @@ export const saltboxModule = {
         icon: () => <PolicyIcon />,
         path: "/core/policies",
       },
-      {
-        key: "pillars",
-        label: { en: "Pillars", ru: "Pillars" },
-        icon: "key",
-        path: "/core/pillars",
-      },
     ],
   },
   settingsConfig: [
@@ -227,6 +221,12 @@ export const saltboxModule = {
           label: { en: "Collections", ru: "Коллекции" },
           icon: "account_tree",
           path: "/core/collections",
+        },
+        {
+          key: "pillars",
+          label: { en: "Client Data", ru: "Данные клиентов" },
+          icon: "key",
+          path: "/core/pillars",
         },
         {
           key: "configuration-templates",

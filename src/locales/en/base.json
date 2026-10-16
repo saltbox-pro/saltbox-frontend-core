@@ -46,6 +46,7 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
+    "pillars": "Client Data",
     "extra-data": {
       "tab": "Extra data",
       "category-column": "Category",
@@ -707,7 +708,7 @@
     }
   },
   "pillars": {
-    "title": "Pillars",
+    "title": "Client Data",
     "create": {
       "add-button": "Create pillar",
       "modal-title-root": "Create a global pillar",

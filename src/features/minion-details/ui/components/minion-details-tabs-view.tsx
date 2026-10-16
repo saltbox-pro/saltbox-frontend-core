@@ -127,7 +127,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       },
       pillars: {
         key: "pillars",
-        label: "Pillars",
+        label: t("minions.pillars"),
         children: !!minion?.id && (
           <MinionPillarsTab
             targetId={minion.id}

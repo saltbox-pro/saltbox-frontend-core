@@ -46,6 +46,7 @@
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
     "grains": "Данные grains",
+    "pillars": "Данные клиента",
     "extra-data": {
       "tab": "Расширенные данные",
       "category-column": "Категория",
@@ -707,7 +708,7 @@
     }
   },
   "pillars": {
-    "title": "Pillars",
+    "title": "Данные клиентов",
     "create": {
       "add-button": "Создать pillar",
       "modal-title-root": "Создание глобального pillar",
