@@ -186,6 +186,7 @@
     "copy-minion-id": "Скопировать ID клиента",
     "copied": "Скопировано в буфер обмена",
     "filter-fields": {
+      "collection": "Коллекция",
       "created": "Создан",
       "modified": "Изменён",
       "minion_id": "ID клиента",
@@ -923,6 +924,9 @@
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
+    "error-unknown-references": "Фильтр ссылается на несуществующие коллекции: {{collections}}",
+    "error-reference-cycle": "Ссылки между коллекциями образуют цикл: {{path}}",
+    "error-referenced-by-collections": "На коллекцию ссылаются фильтры других коллекций: {{collections}}",
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
     "parent-collection-required": "Укажите родительскую коллекцию",

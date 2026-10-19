@@ -1,1 +1,2 @@
 export const COLLECTION_DESCRIPTION_MAX_LENGTH = 500;
+export const ROOT_COLLECTION_SLUG = "root";

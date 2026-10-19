@@ -14,7 +14,8 @@ import { useNavigate } from "react-router";
 
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { isDuplicateTitleError } from "saltbox-core/shared/helpers/is-duplicate-title-error";
-import { apiCoreStore, collectionsTreeStore } from "saltbox-core/store";
+import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
+import { apiCoreStore, collectionsFlatListStore, collectionsTreeStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
@@ -100,7 +101,7 @@ function CollectionCreateModal({
           ]);
           return;
         }
-        setCreateError(error);
+        setCreateError(localizeCollectionReferenceError(error, t, collectionsFlatListStore.items));
       },
     });
 

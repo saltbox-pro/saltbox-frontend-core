@@ -1,3 +1,5 @@
+import { COLLECTION_FILTER_FIELD } from "saltbox-core/shared/helpers/collection-filter-field";
+
 export const MINION_FILTER_GRAINS_GROUP_KEY = "grains";
 export const MINION_FILTER_CUSTOM_GRAIN_VALUE = "__custom_grain__";
 
@@ -130,7 +132,10 @@ export function buildMinionFilterFieldCascaderOptions({
   grainsGroupLabel,
   customGrainLabel,
 }: BuildMinionFilterFieldCascaderOptionsParams): MinionFilterFieldCascaderOption[] {
-  const grainFields = fields.filter((field) => !isExtraDataField(field.name));
+  const collectionField = fields.find((field) => field.name === COLLECTION_FILTER_FIELD);
+  const grainFields = fields.filter(
+    (field) => !isExtraDataField(field.name) && field.name !== COLLECTION_FILTER_FIELD
+  );
   const parsedExtraFields = fields.flatMap((field) => {
     const parsed = parseExtraDataFilterField(field.name);
     if (!parsed) {
@@ -212,7 +217,17 @@ export function buildMinionFilterFieldCascaderOptions({
     })
   );
 
-  return [grainsGroup, ...categoryGroups, ...leftoverExtraOptions];
+  const rootOptions: MinionFilterFieldCascaderOption[] = collectionField
+    ? [
+        {
+          value: collectionField.name,
+          label: collectionField.label,
+          searchText: `${collectionField.label} ${collectionField.name}`,
+        },
+      ]
+    : [];
+
+  return [...rootOptions, grainsGroup, ...categoryGroups, ...leftoverExtraOptions];
 }
 
 export function getMinionFilterFieldCascaderValue(

@@ -186,6 +186,7 @@
     "copy-minion-id": "Copy Minion ID",
     "copied": "Copied",
     "filter-fields": {
+      "collection": "Collection",
       "created": "Created",
       "modified": "Modified",
       "minion_id": "Minion ID",
@@ -923,6 +924,9 @@
     "error-updating-collection": "Error updating collection",
     "collection-deleted-successfully": "Collection deleted successfully",
     "error-deleting-collection": "Error deleting collection",
+    "error-unknown-references": "The filter references collections that do not exist: {{collections}}",
+    "error-reference-cycle": "Collection references form a cycle: {{path}}",
+    "error-referenced-by-collections": "The collection is referenced in filters of other collections: {{collections}}",
     "open-collection-page": "Open collection page",
     "parent-collection": "Parent collection",
     "parent-collection-required": "Parent collection is required",

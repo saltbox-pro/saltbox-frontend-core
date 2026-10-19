@@ -25,6 +25,7 @@ import { Link } from "react-router";
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
+import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import {
   type DrawerCloseGuard,
@@ -34,6 +35,7 @@ import { excludeSubtreeBySlug, findNodeBySlug } from "saltbox-core/shared/utils/
 import {
   MinionFilterStore,
   MinionsStore,
+  collectionsFlatListStore,
   collectionsTreeStore,
   type CollectionStore,
 } from "saltbox-core/store";
@@ -76,12 +78,17 @@ export const CollectionDetailsDrawer = observer(
 
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<AppError | null>(null);
+    const handleMutationError = useCallback(
+      (error: AppError | null) =>
+        setSaveError(
+          error ? localizeCollectionReferenceError(error, t, collectionsFlatListStore.items) : null
+        ),
+      [t]
+    );
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
     const [createFormInitializedId, setCreateFormInitializedId] = useState<string | null>(null);
     const [filterStore] = useState(() => new MinionFilterStore());
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
-
-    useMinionFilterSchemaLocalization(filterStore);
 
     const { isOpened, openedArg } = drawer;
     const isCreateMode = Boolean(openedArg?.isCreate);
@@ -103,6 +110,9 @@ export const CollectionDetailsDrawer = observer(
       ? undefined
       : (collectionStore.collectionSlug ?? openedArg?.slug);
     const isRoot = currentSlug === ROOT_SLUG;
+
+    useMinionFilterSchemaLocalization(filterStore, { excludeCollectionSlug: currentSlug });
+
     const parentSlug = isCreateMode
       ? ((isCreateFormReady ? watchedParentSlug : createParentSlug) ?? "")
       : collection?.parent_slug || currentSlug || "";
@@ -364,7 +374,7 @@ export const CollectionDetailsDrawer = observer(
     const { handleCreate, isCreating } = useCollectionCreate({
       form,
       resolveQuery: resolveQueryForSave,
-      onError: setSaveError,
+      onError: handleMutationError,
       onCreated: (created) => drawer.open({ id: created.id, slug: created.slug }),
     });
 
@@ -417,7 +427,7 @@ export const CollectionDetailsDrawer = observer(
             collectionStore.loadCollection();
           }
         },
-        onError: setSaveError,
+        onError: handleMutationError,
         form: asFormFieldsSetter(form),
       });
 

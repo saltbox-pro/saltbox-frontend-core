@@ -1,5 +1,11 @@
 import { ApartmentOutlined, DownOutlined, HolderOutlined } from "@ant-design/icons";
-import { ErrorZone, SearchInput, notify, runMutation } from "@saltbox/saltbox-frontend-common";
+import {
+  ErrorZone,
+  SearchInput,
+  notify,
+  notifyAppError,
+  runMutation,
+} from "@saltbox/saltbox-frontend-common";
 import { Button, Empty, Flex, Spin, Tooltip, Tree, type TreeProps, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
@@ -16,6 +22,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
+import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
+import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
 import { collectionsTreeStore } from "saltbox-core/store/collections-tree-store";
 
 import { buildHighlightedNode } from "../helpers/build-highlighted-tree";
@@ -225,7 +233,11 @@ export const CollectionsTree = observer(
               String(parent.key),
               insertBeforeKey != null ? String(insertBeforeKey) : null
             ),
-          errorMessage: t("collection.error-moving-collection"),
+          onError: (error) =>
+            notifyAppError(
+              localizeCollectionReferenceError(error, t, collectionsFlatListStore.items),
+              t("collection.error-moving-collection")
+            ),
         });
       },
       [treeData, t]

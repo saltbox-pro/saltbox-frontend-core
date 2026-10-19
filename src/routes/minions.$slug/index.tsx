@@ -6,6 +6,7 @@ import {
   generateIdsForQuery,
   Modal,
   notify,
+  notifyAppError,
   PageHeader,
   resolvePluginLocalizedLabel,
   runMutation,
@@ -41,11 +42,13 @@ import {
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
 import { ExtraDataCategoriesContext } from "saltbox-core/shared/contexts/extra-data-categories-context";
+import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import {
   appStore,
   CollectionStore,
+  collectionsFlatListStore,
   collectionsTreeStore,
   ExtraDataCategoriesStore,
   i18nStore,
@@ -447,7 +450,11 @@ const MinionsPage = observer(() => {
 
           const result = await runMutation({
             run: () => collectionStore.deleteCollection(),
-            errorMessage: t("collection.error-deleting-collection"),
+            onError: (error) =>
+              notifyAppError(
+                localizeCollectionReferenceError(error, t, collectionsFlatListStore.items),
+                t("collection.error-deleting-collection")
+              ),
           });
 
           setIsDeleteModalOpen(false);
