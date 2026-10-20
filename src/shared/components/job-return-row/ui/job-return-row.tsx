@@ -22,34 +22,26 @@ export const JobReturnRow = observer(function JobReturnRow({
   isStepsView,
   jobStore,
 }: JobReturnRowProps) {
-  const { getJobReturnData, getJobReturnDataState, loadJobReturnData } = jobStore;
+  const { getJobReturnData, getJobReturnDataState, isJobReturnDataStale, loadJobReturnData } =
+    jobStore;
 
   const jobReturnId = row.id;
   const load = getJobReturnDataState(jobReturnId);
   const dataFromRequest = getJobReturnData(jobReturnId);
-  const didRequestOnMountRef = useRef(false);
-  const didRequestOnIdleRef = useRef(false);
-
-  useEffect(() => {
-    if (!jobReturnId) return;
-    if (didRequestOnMountRef.current) return;
-    didRequestOnMountRef.current = true;
-
-    loadJobReturnData(jobReturnId, { force: true });
-  }, [jobReturnId, loadJobReturnData]);
+  const isStale = isJobReturnDataStale(jobReturnId);
+  const requestedJobReturnIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!jobReturnId) return;
 
-    if (load.status === "idle") {
-      if (didRequestOnIdleRef.current) return;
-      didRequestOnIdleRef.current = true;
+    if (requestedJobReturnIdRef.current !== jobReturnId) {
+      requestedJobReturnIdRef.current = jobReturnId;
       loadJobReturnData(jobReturnId, { force: true });
       return;
     }
 
-    didRequestOnIdleRef.current = false;
-  }, [jobReturnId, load.status, loadJobReturnData]);
+    if (isStale) loadJobReturnData(jobReturnId, { force: true });
+  }, [jobReturnId, isStale, loadJobReturnData]);
 
   const jobReturnToRender = useMemo(() => {
     return {
@@ -58,22 +50,17 @@ export const JobReturnRow = observer(function JobReturnRow({
     };
   }, [dataFromRequest, row]);
 
-  const isFirstLoad = load.isLoading && load.isInitialLoad;
-  const isRefetching = load.isLoading && !load.isInitialLoad;
+  const isLoadingData = load.status === "idle" || load.isLoading || isStale;
 
   return (
     <Flex className={styles.jobReturnsRow} align="center">
       <ErrorZone level="block" loaders={[load]}>
-        {load.status === "idle" || isFirstLoad ? (
+        {isLoadingData ? (
           <Skeleton.Input block active />
         ) : isStepsView ? (
-          <JobReturnSteps jobReturn={jobReturnToRender} inProcess={isRefetching} />
+          <JobReturnSteps jobReturn={jobReturnToRender} />
         ) : (
-          <JobReturnOutput
-            isFullOutput={isFullOutput}
-            inProcess={isRefetching}
-            jobReturn={jobReturnToRender}
-          />
+          <JobReturnOutput isFullOutput={isFullOutput} jobReturn={jobReturnToRender} />
         )}
       </ErrorZone>
     </Flex>
