@@ -2,6 +2,7 @@ import { ExportOutlined } from "@ant-design/icons";
 import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   applyFilterByValue,
+  BooleanDisplay,
   canApplyFilterByValue,
   FastTable,
   createSelectColumn,
@@ -12,7 +13,7 @@ import {
   type FilterFieldOptions,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
-import { message, Tag } from "antd";
+import { message } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -107,28 +108,14 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.efi", {
         id: "grains.efi",
         header: t("minions.table-efi"),
-        cell: (data) => {
-          return (
-            <Tag color={data.getValue() ? "green" : "red"}>
-              {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-        meta: { width: "2%", minWidth: 80 },
+        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        meta: { width: "2%", minWidth: 80, ellipsis: false },
       }),
       minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
         id: "grains.efi-secure-boot",
         header: t("minions.table-secure-boot"),
-        cell: (data) => {
-          const value = data.getValue();
-          if (value === null || value === undefined) return "";
-          return (
-            <Tag color={value ? "green" : "red"}>
-              {value ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-        meta: { width: "10%" },
+        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        meta: { width: "10%", ellipsis: false },
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
