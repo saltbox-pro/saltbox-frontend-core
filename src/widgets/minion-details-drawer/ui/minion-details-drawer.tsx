@@ -47,7 +47,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
     allowMissingMinion,
   });
 
-  const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
+  const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened, minion);
 
   return (
     <BaseMinionDrawer

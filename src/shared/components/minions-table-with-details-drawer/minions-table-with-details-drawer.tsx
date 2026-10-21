@@ -111,7 +111,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         cell: (data) => <BooleanDisplay value={data.getValue()} />,
         meta: { width: "2%", minWidth: 80, ellipsis: false },
       }),
-      minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
+      minionsColumnHelper.accessor((row) => row.grains?.efi_secure_boot, {
         id: "grains.efi-secure-boot",
         header: t("minions.table-secure-boot"),
         cell: (data) => <BooleanDisplay value={data.getValue()} />,

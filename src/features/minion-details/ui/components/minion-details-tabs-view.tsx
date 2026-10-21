@@ -11,8 +11,10 @@ import Parcel from "single-spa-react/parcel";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, i18nStore } from "saltbox-core/store";
 
+import { isMinionNeverActive } from "../../model/minion-activity";
 import {
   getMinionDetailsTabKeys,
+  isMinionDetailsTabDisabled,
   type MinionDetailsTabKey,
   parseMinionDetailsTabKey,
 } from "../../model/tabs";
@@ -59,6 +61,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
 
   const availableTabKeys = useMemo(() => getMinionDetailsTabKeys(isInDrawer), [isInDrawer]);
+  const isNeverActive = isMinionNeverActive(minion);
 
   const handleTabChange = useCallback(
     (key: string) => {
@@ -151,7 +154,10 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       },
     };
 
-    const builtInTabs = availableTabKeys.map((key) => tabConfigs[key]);
+    const builtInTabs = availableTabKeys.map((key) => ({
+      ...tabConfigs[key],
+      disabled: isMinionDetailsTabDisabled(key, isNeverActive),
+    }));
     const toolkitSlug = buildToolkitSlug(minion);
 
     const pluginTabItems = pluginTabs.map((pluginTab) => {
@@ -165,6 +171,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         key: pluginTab.key,
         label,
         style: pluginTab.tabStyle,
+        disabled: isMinionDetailsTabDisabled(pluginTab.key, isNeverActive),
         children: tabKey === pluginTab.key && (
           <Parcel
             config={asParcelConfig(pluginTab.parcel)}
@@ -189,6 +196,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     isMinionRefreshing,
     isInDrawer,
     isMinionLoading,
+    isNeverActive,
     minion,
     onFilterButton,
     pluginTabs,

@@ -1,5 +1,6 @@
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import {
+  BooleanDisplay,
   CopyToClipboardButton,
   FilterActionButton,
   formatInfoCardTextValue,
@@ -8,7 +9,7 @@ import {
   InfoDescriptions,
   type InfoDescriptionsProps,
 } from "@saltbox/saltbox-frontend-common";
-import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
+import { Alert, Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
 import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -16,6 +17,8 @@ import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-la
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
+import { isEmptyDetailValue } from "../../helpers/detail-value";
+import { isMinionNeverActive } from "../../model/minion-activity";
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
 import styles from "./minion-dashboard-tab.module.css";
@@ -38,6 +41,7 @@ interface MinionExtendDetailView {
   key: string;
   value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
   name: string;
+  filterField?: string;
   itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
     grainValueProps?: Partial<FlexProps>;
   };
@@ -71,10 +75,46 @@ const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
   );
 };
 
+const renderGrainValue = (value: ReactNode, keyPrefix: string): ReactNode => {
+  if (typeof value === "boolean") {
+    return <BooleanDisplay value={value} />;
+  }
+  if (Array.isArray(value)) {
+    return renderArrayValue(value, keyPrefix);
+  }
+  return value;
+};
+
+const emptyValuePlaceholder = (
+  <Typography.Text type="secondary">{formatInfoCardTextValue(null)}</Typography.Text>
+);
+
+const renderFilterButton = (
+  onFilterButton: OnFilterButtonHandler | undefined,
+  name: string,
+  value: unknown
+): ReactNode => {
+  if (!onFilterButton?.canApply(name, value)) {
+    return null;
+  }
+
+  return (
+    <FilterActionButton
+      active={onFilterButton.isActive(name, value)}
+      onClick={() => onFilterButton({ name, value })}
+    />
+  );
+};
+
+interface MinionDetailViewsRenderOptions {
+  schema: MinionDetailSchema;
+  onFilterButton?: OnFilterButtonHandler;
+  emptyValue?: ReactNode;
+}
+
 const minionDetailsViewsToDescriptionItems = (
   minionDetailViews: MinionDetailView[],
-  schema: MinionDetailSchema,
-  onFilterButton?: OnFilterButtonHandler
+  { schema, onFilterButton, emptyValue = "" }: MinionDetailViewsRenderOptions
 ): InfoDescriptionsProps["items"] => {
   const grainNameClassName = `minion-details-grain-name ${styles.minionDetailsGrainName}`;
 
@@ -88,13 +128,17 @@ const minionDetailsViewsToDescriptionItems = (
       return {
         key: minionDetailView.key,
         label: minionDetailView.name,
-        children: (
+        children: isEmptyDetailValue(grainValue) ? (
+          emptyValue
+        ) : (
           <Flex justify="space-between" className="minion-details-grain">
             <Flex className={grainNameClassName} {...grainValueProps}>
               {grainValue}
             </Flex>
-            <Flex className={styles.minionDetailsGrainButtons}>
+            <Flex gap={2} className={styles.minionDetailsGrainButtons}>
               {grainValueString !== "" && <CopyToClipboardButton text={grainValueString} />}
+              {minionDetailView.filterField &&
+                renderFilterButton(onFilterButton, minionDetailView.filterField, grainValue)}
             </Flex>
           </Flex>
         ),
@@ -108,36 +152,22 @@ const minionDetailsViewsToDescriptionItems = (
       ? grainValue.map((item) => transformValueToString(item)).join("\n")
       : transformValueToString(grainValue);
     const filterFieldName = `grains.${String(minionDetailView.key)}`;
-    const canFilter = !!onFilterButton?.canApply(filterFieldName, grainValue);
-    const isActive = !!onFilterButton?.isActive(filterFieldName, grainValue);
 
     return {
       key: minionDetailView.key,
       label: minionDetailView.name,
-      children: grainValue ? (
+      children: isEmptyDetailValue(grainValue) ? (
+        emptyValue
+      ) : (
         <Flex justify="space-between" className="minion-details-grain">
           <Flex className={grainNameClassName}>
-            {isGrainValueArray
-              ? renderArrayValue(grainValue, String(minionDetailView.key))
-              : grainValue}
+            {renderGrainValue(grainValue, String(minionDetailView.key))}
           </Flex>
           <Flex gap={2} className={styles.minionDetailsGrainButtons}>
             <CopyToClipboardButton text={grainValueString} />
-            {canFilter && onFilterButton && (
-              <FilterActionButton
-                active={isActive}
-                onClick={() =>
-                  onFilterButton({
-                    name: filterFieldName,
-                    value: grainValue,
-                  })
-                }
-              />
-            )}
+            {renderFilterButton(onFilterButton, filterFieldName, grainValue)}
           </Flex>
         </Flex>
-      ) : (
-        ""
       ),
       ...restItemProps,
     };
@@ -146,8 +176,7 @@ const minionDetailsViewsToDescriptionItems = (
 
 const minionDetailViewGroupsToCollapseItems = (
   minionDetailViewGroups: MinionDetailViewGroup[],
-  schema: MinionDetailSchema,
-  onFilterButton?: OnFilterButtonHandler
+  options: MinionDetailViewsRenderOptions
 ): CollapseProps["items"] => {
   return minionDetailViewGroups.map((minionDetailViewGroup) => {
     return {
@@ -155,11 +184,7 @@ const minionDetailViewGroupsToCollapseItems = (
       label: minionDetailViewGroup.name,
       children: (
         <InfoDescriptions
-          items={minionDetailsViewsToDescriptionItems(
-            minionDetailViewGroup.details,
-            schema,
-            onFilterButton
-          )}
+          items={minionDetailsViewsToDescriptionItems(minionDetailViewGroup.details, options)}
         />
       ),
     };
@@ -196,6 +221,15 @@ export function MinionDashboardTab({
         };
       }
 
+      if (tile.kind === "minionId") {
+        return {
+          key: tile.labelKey,
+          title,
+          value: formatInfoCardTextValue(minion.minion_id),
+          copyText: minion.minion_id || undefined,
+        };
+      }
+
       const grainValue = minion.grains[tile.grainKey];
       const copyText = transformGrainValueToString(grainValue as ReactNode);
 
@@ -210,8 +244,14 @@ export function MinionDashboardTab({
 
   const minionGeneralDetailViews: MinionDetailView[] = [
     { key: "virtual", name: t("minions.virtualization") },
-    { key: "localhost", name: t("minions.local-hostname") },
-    { key: "master", name: t("minions.salt-master") },
+    { key: "host", name: t("minions.hostname") },
+    {
+      key: "minion-master",
+      name: t("minions.salt-master"),
+      value: (schema) => schema.master,
+      filterField: "master",
+    },
+    { key: "master", name: t("minions.salt-master-grains") },
     { key: "fqdn", name: t("minions.fqdn") },
     { key: "uuid", name: t("minions.uuid") },
   ];
@@ -393,28 +433,33 @@ export function MinionDashboardTab({
     );
   }
 
+  const isNeverActive = isMinionNeverActive(minion);
+
   return (
     <Flex vertical gap="large">
+      {isNeverActive && <Alert type="info" showIcon message={t("minions.never-active-alert")} />}
+
       <InfoCardsGrid
         items={infoCardItems}
         colProps={isInDrawer ? { span: 12 } : { xs: 12, xl: 6 }}
       />
 
       <InfoDescriptions
-        items={minionDetailsViewsToDescriptionItems(
-          minionGeneralDetailViews,
-          minion,
-          onFilterButton
-        )}
+        items={minionDetailsViewsToDescriptionItems(minionGeneralDetailViews, {
+          schema: minion,
+          onFilterButton,
+          emptyValue: emptyValuePlaceholder,
+        })}
       />
 
-      <Collapse
-        items={minionDetailViewGroupsToCollapseItems(
-          minionGroupDetailsViews,
-          minion,
-          onFilterButton
-        )}
-      />
+      {!isNeverActive && (
+        <Collapse
+          items={minionDetailViewGroupsToCollapseItems(minionGroupDetailsViews, {
+            schema: minion,
+            onFilterButton,
+          })}
+        />
+      )}
     </Flex>
   );
 }

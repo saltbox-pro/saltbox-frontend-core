@@ -4,17 +4,20 @@ import { useSearchParams } from "react-router";
 
 import { appStore } from "saltbox-core/store";
 
+import type { MinionActivity } from "../model/minion-activity";
 import { type MinionDetailsTabKey, parseMinionDetailsTabKey } from "../model/tabs";
+
+import { useResolvedMinionDetailsTab } from "./use-resolved-minion-details-tab";
 
 function getDetailPluginKeys(): string[] {
   const plugins = appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ?? [];
   return plugins.map((plugin) => plugin.key).filter(Boolean);
 }
 
-export function useMinionDetailsUrlTab() {
+export function useMinionDetailsUrlTab(minion: MinionActivity | null | undefined) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const tabKey = useMemo(
+  const urlTabKey = useMemo(
     () => parseMinionDetailsTabKey(searchParams.get("tab"), false, getDetailPluginKeys()),
     [searchParams]
   );
@@ -25,23 +28,31 @@ export function useMinionDetailsUrlTab() {
     };
   }, []);
 
-  const onTabChange = useCallback(
-    (key: MinionDetailsTabKey) => {
+  const setUrlTab = useCallback(
+    (key: MinionDetailsTabKey, replace: boolean) => {
       // Toolkit FM parcel has its own BrowserRouter; read window so path/file
       // written by the parcel are not dropped when switching tabs.
-      setSearchParams(() => {
-        const newParams = new URLSearchParams(window.location.search);
-        newParams.set("tab", key);
-        if (key !== "file-manager") {
-          newParams.delete("path");
-          newParams.delete("file");
-          newParams.delete("source");
-        }
-        return newParams;
-      });
+      setSearchParams(
+        () => {
+          const newParams = new URLSearchParams(window.location.search);
+          newParams.set("tab", key);
+          if (key !== "file-manager") {
+            newParams.delete("path");
+            newParams.delete("file");
+            newParams.delete("source");
+          }
+          return newParams;
+        },
+        { replace }
+      );
     },
     [setSearchParams]
   );
+
+  const onTabChange = useCallback((key: MinionDetailsTabKey) => setUrlTab(key, false), [setUrlTab]);
+  const replaceTab = useCallback((key: MinionDetailsTabKey) => setUrlTab(key, true), [setUrlTab]);
+
+  const tabKey = useResolvedMinionDetailsTab(urlTabKey, minion, replaceTab);
 
   return { tabKey, onTabChange };
 }

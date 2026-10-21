@@ -1,4 +1,4 @@
-import { UploadOutlined } from "@ant-design/icons";
+import { DownloadOutlined } from "@ant-design/icons";
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { Button, Tooltip } from "antd";
 import { useState } from "react";
@@ -26,7 +26,7 @@ export function ExtraDataImportButton({
       <Tooltip title={title}>
         <Button
           type="primary"
-          icon={<UploadOutlined />}
+          icon={<DownloadOutlined />}
           onClick={() => setOpen(true)}
           aria-label={title}
         />

@@ -6,7 +6,7 @@ import { MinionDetailsTabsView } from "./components/minion-details-tabs-view";
 export type MinionDetailsFullPageProps = MinionDetailsCommonProps;
 
 export function MinionDetailsFullPage(props: MinionDetailsFullPageProps) {
-  const { tabKey, onTabChange } = useMinionDetailsUrlTab();
+  const { tabKey, onTabChange } = useMinionDetailsUrlTab(props.minion);
 
   return (
     <MinionDetailsTabsView
