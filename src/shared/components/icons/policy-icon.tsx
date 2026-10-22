@@ -1,12 +1,13 @@
 type PolicyIconProps = {
-  size?: number;
+  size?: number | string;
 };
 
-export function PolicyIcon({ size = 20 }: PolicyIconProps) {
+export function PolicyIcon({ size = "1em" }: PolicyIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="26 18 101 107"
+      viewBox="15.5 14.5 107 107"
+      overflow="visible"
       width={size}
       height={size}
       role="img"
@@ -19,11 +20,10 @@ export function PolicyIcon({ size = 20 }: PolicyIconProps) {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <rect x="28" y="20" width="82" height="96" rx="8" ry="8" />
+        <path d="M110,76 L110,28 A8,8 0 0 0 102,20 L36,20 A8,8 0 0 0 28,28 L28,108 A8,8 0 0 0 36,116 L75,116" />
         <line x1="43" y1="50" x2="95" y2="50" />
         <line x1="43" y1="70" x2="95" y2="70" />
-        <line x1="43" y1="90" x2="95" y2="90" />
-        <rect x="75" y="73" width="50" height="50" rx="16" ry="16" fill="#fff" strokeOpacity="0" />
+        <line x1="43" y1="90" x2="72" y2="90" />
         <path
           d="M100,98 C93,82 77,82 77,98 C77,114 93,114 100,98 C107,82 123,82 123,98 C123,114 107,114 100,98"
           strokeWidth="6"
