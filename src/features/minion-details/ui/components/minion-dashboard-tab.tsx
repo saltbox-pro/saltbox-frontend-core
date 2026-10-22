@@ -13,6 +13,7 @@ import { Alert, Collapse, type CollapseProps, Flex, Spin, Typography, type FlexP
 import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { MasterLink } from "saltbox-core/features/masters";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
@@ -40,6 +41,7 @@ interface MinionSimpleDetailView {
 interface MinionExtendDetailView {
   key: string;
   value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
+  render?: (minionDetailSchema: MinionDetailSchema) => ReactNode;
   name: string;
   filterField?: string;
   itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
@@ -133,7 +135,7 @@ const minionDetailsViewsToDescriptionItems = (
         ) : (
           <Flex justify="space-between" className="minion-details-grain">
             <Flex className={grainNameClassName} {...grainValueProps}>
-              {grainValue}
+              {minionDetailView.render ? minionDetailView.render(schema) : grainValue}
             </Flex>
             <Flex gap={2} className={styles.minionDetailsGrainButtons}>
               {grainValueString !== "" && <CopyToClipboardButton text={grainValueString} />}
@@ -249,6 +251,7 @@ export function MinionDashboardTab({
       key: "minion-master",
       name: t("minions.salt-master"),
       value: (schema) => schema.master,
+      render: (schema) => <MasterLink masterId={schema.master} />,
       filterField: "master",
     },
     { key: "master", name: t("minions.salt-master-grains") },

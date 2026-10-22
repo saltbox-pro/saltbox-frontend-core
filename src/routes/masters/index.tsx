@@ -14,7 +14,11 @@ import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { MasterAvailabilityCell, MasterStatusBadge } from "saltbox-core/features/masters";
+import {
+  buildMasterPagePath,
+  MasterAvailabilityCell,
+  MasterStatusBadge,
+} from "saltbox-core/features/masters";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -197,7 +201,7 @@ function MastersPage() {
           onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(master) => {
             if (master.status === "accepted") {
-              navigate(`/core/masters/${master.master_id}`);
+              navigate(buildMasterPagePath(master.master_id));
             }
           }}
           isRowClickable={(master) => master.status === "accepted"}
