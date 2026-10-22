@@ -1,4 +1,4 @@
-import { Flex, Spin, Tabs } from "antd";
+import { Empty, Flex, Spin, Tabs } from "antd";
 import { observer } from "mobx-react-lite";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -43,7 +43,7 @@ export const CollectionExtraDataTab = observer(function CollectionExtraDataTab({
         </Flex>
       ) : orderedCategories.length === 0 ? (
         <Flex align="center" justify="center" className={styles.loader}>
-          {t("minions.extra-data.empty")}
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("minions.extra-data.empty")} />
         </Flex>
       ) : (
         <Flex vertical flex={1} className={styles.content}>
