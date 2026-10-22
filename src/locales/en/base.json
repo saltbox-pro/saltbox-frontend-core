@@ -326,7 +326,9 @@
     "policy-created-successfully": "Policy created successfully",
     "error-creating-policy": "Error creating policy",
     "ttl-task": "Policy lifetime",
-    "ttl-task-tooltip": "How long the policy may run after it is started, including waiting for new minions. When the time is up, the policy is stopped. Unlimited if empty"
+    "ttl-task-tooltip": "How long the policy may run after it is started, including waiting for new minions. When the time is up, the policy is stopped. Unlimited if empty",
+    "target-masters-empty": "No minions currently match the targeting: the policy will wait for matching minions to appear",
+    "target-masters-not-accepted": "Some minions are connected to masters that are not accepted or not registered: the policy may not run on them"
   },
   "task-create": {
     "configure-task-title": "Task Configuration",
@@ -375,7 +377,12 @@
     "warning-apply-to-whole-collection": "{{entityType}} will be applied to all minions in the \"{{collectionName}}\" collection",
     "warning-apply-to-filtered-collection": "{{entityType}} will be applied to filtered minions in the \"{{collectionName}}\" collection",
     "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
-    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems."
+    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
+    "target-masters-total-minions": "Total minions: {{total}}",
+    "target-masters-empty": "No minions match the targeting: the task will not be executed",
+    "target-masters-not-accepted": "Some minions are connected to masters that are not accepted or not registered: the task may not run on them",
+    "target-masters-no-master": "No master",
+    "target-masters-unregistered": "Not registered"
   },
   "template-picker": {
     "title": "Select template",

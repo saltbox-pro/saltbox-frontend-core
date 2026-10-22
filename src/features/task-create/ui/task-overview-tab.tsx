@@ -10,9 +10,11 @@ import { useTranslation } from "react-i18next";
 
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
+import { taskCreationService } from "../service";
 import type { TaskOverviewData } from "../type/types";
 
 import { TaskCreateFooter } from "./task-create-footer";
+import { TaskTargetMasters } from "./task-target-masters";
 
 export type TaskOverviewTabProps = {
   type: TaskType;
@@ -78,9 +80,18 @@ export function TaskOverviewTab({
     [template, configuration, context, i18n.language]
   );
 
+  const targetingMastersBody = useMemo(
+    () => taskCreationService.buildTargetingMastersBody(context, template),
+    [context, template]
+  );
+
   return (
     <Flex vertical>
-      <TaskDetails data={detailsData} templateInfoExtraItems={templateInfoExtraItems} />
+      <Flex vertical gap="large">
+        <TaskDetails data={detailsData} templateInfoExtraItems={templateInfoExtraItems} />
+
+        <TaskTargetMasters body={targetingMastersBody} isPolicy={type === TaskType.Policy} />
+      </Flex>
 
       <TaskCreateFooter>
         <Button onClick={onBack}>{t("task-create.back-to-config")}</Button>
