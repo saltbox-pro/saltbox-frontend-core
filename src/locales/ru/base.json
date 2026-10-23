@@ -986,6 +986,7 @@
     "save-block": "Сохранить блок",
     "field-label": "Поле данных",
     "field-placeholder": "Выберите поле",
+    "field-group-general": "Общие данные",
     "field-group-grains": "Данные grains",
     "field-group-extra": "Расширенные данные",
     "preset-label": "Вариант отображения",

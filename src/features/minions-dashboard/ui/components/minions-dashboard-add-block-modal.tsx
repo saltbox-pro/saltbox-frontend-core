@@ -5,6 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
+  buildMinionFieldCascaderOptions,
+  getMinionFieldCascaderValue,
+  type MinionFieldCascaderOption,
+} from "saltbox-core/shared/helpers/minion-field-cascader";
+
+import {
   DEFAULT_PREVIEW_SWATCH_COUNT,
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "../../constants/dashboard-preview";
@@ -17,8 +23,6 @@ import {
 
 import styles from "./minions-dashboard-add-block-modal.module.css";
 
-const GRAINS_GROUP_KEY = "grains";
-
 const FIELD_CASCADER_THEME = {
   components: {
     Cascader: {
@@ -27,55 +31,24 @@ const FIELD_CASCADER_THEME = {
   },
 };
 
-type FieldCascaderOption = {
-  value: string;
-  label: string;
-  children?: FieldCascaderOption[];
-};
-
 const getFieldCascaderOptions = (
   fieldOptions: DashboardFieldOption[],
   t: TFunction
-): FieldCascaderOption[] => {
-  const groups = new Map<string, FieldCascaderOption>();
-
-  fieldOptions.forEach((option) => {
-    const { extraCategory } = option;
-    const groupKey = extraCategory
-      ? `${extraCategory.source}.${extraCategory.name}`
-      : GRAINS_GROUP_KEY;
-    const groupLabel = extraCategory
-      ? (option.categoryLabel ?? t("dashboard.field-group-extra"))
-      : t("dashboard.field-group-grains");
-    const label = extraCategory
-      ? option.value
-      : `${t(`dashboard.field-${option.value}`, { defaultValue: option.label })} (${option.source})`;
-
-    const group = groups.get(groupKey) ?? { value: groupKey, label: groupLabel, children: [] };
-    group.children?.push({ value: option.source, label });
-    groups.set(groupKey, group);
+): MinionFieldCascaderOption[] =>
+  buildMinionFieldCascaderOptions({
+    fields: fieldOptions.map((option) => ({
+      name: option.source,
+      label: option.extraCategory
+        ? option.label
+        : t(`dashboard.field-${option.value}`, { defaultValue: option.label }),
+    })),
+    categories: fieldOptions.flatMap(({ extraCategory, categoryLabel }) =>
+      extraCategory ? [{ ...extraCategory, label: categoryLabel ?? extraCategory.name }] : []
+    ),
+    generalGroupLabel: t("dashboard.field-group-general"),
+    grainsGroupLabel: t("dashboard.field-group-grains"),
+    extraDataGroupLabel: t("dashboard.field-group-extra"),
   });
-
-  return Array.from(groups.values());
-};
-
-const getFieldCascaderValue = (
-  fieldSource: string | undefined,
-  options: FieldCascaderOption[]
-): string[] | undefined => {
-  if (!fieldSource) {
-    return undefined;
-  }
-
-  const group = options.find((option) =>
-    option.children?.some((child) => child.value === fieldSource)
-  );
-  if (!group) {
-    return undefined;
-  }
-
-  return [group.value, fieldSource];
-};
 
 const filterFieldCascader = (inputValue: string, path: DefaultOptionType[]) => {
   const query = inputValue.trim().toLowerCase();
@@ -134,7 +107,7 @@ export const MinionsDashboardAddBlockModal = ({
     [fieldOptions, t]
   );
   const fieldCascaderValue = useMemo(
-    () => getFieldCascaderValue(selectedField, fieldCascaderOptions),
+    () => getMinionFieldCascaderValue(selectedField, fieldCascaderOptions),
     [fieldCascaderOptions, selectedField]
   );
 

@@ -7,6 +7,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { FC, useMemo } from "react";
 
+import { MINION_GRAINS_FIELD_PREFIX } from "saltbox-core/shared/helpers/minion-field-cascader";
 import { apiCoreStore } from "saltbox-core/store";
 
 type CoreMinionValueEditorInnerProps = ValueEditorProps & { slug: string };
@@ -39,7 +40,7 @@ const fetchFilterValues = (slug: string, field: string, value: string): Promise<
 };
 
 const isIncompleteCustomGrainField = (field: string): boolean =>
-  field === "grains." || field === "grains";
+  field === MINION_GRAINS_FIELD_PREFIX || field === "grains";
 
 const createGetOptionsForCollection = (slug: string): GetOptionsCallback => {
   return (field, value, setOptions) => {

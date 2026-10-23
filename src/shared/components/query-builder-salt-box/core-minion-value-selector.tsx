@@ -4,22 +4,23 @@ import {
   normalizeMaterialIconValue,
   SaltBoxMinionValueSelector,
 } from "@saltbox/saltbox-frontend-common";
-import { Cascader, ConfigProvider, Flex, Input } from "antd";
+import { Cascader, ConfigProvider, Empty, Flex, Input } from "antd";
 import type { DefaultOptionType } from "antd/es/cascader";
 import { observer } from "mobx-react-lite";
-import { useEffect, useMemo, useState, type FC, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, useState, type FC, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useValueSelector, type ValueSelectorProps } from "react-querybuilder";
 
 import { useExtraDataCategoriesStore } from "saltbox-core/shared/contexts/extra-data-categories-context";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
-  buildMinionFilterFieldCascaderOptions,
+  buildMinionFieldCascaderOptions,
   flattenMinionFilterSchemaFields,
-  getMinionFilterFieldCascaderValue,
-  MINION_FILTER_CUSTOM_GRAIN_VALUE,
-  type MinionFilterFieldCascaderOption,
-} from "saltbox-core/shared/helpers/minion-filter-field-cascader";
+  getMinionFieldCascaderValue,
+  MINION_FIELD_CUSTOM_GRAIN_VALUE,
+  MINION_GRAINS_FIELD_PREFIX,
+  type MinionFieldCascaderOption,
+} from "saltbox-core/shared/helpers/minion-field-cascader";
 
 import styles from "./core-minion-value-selector.module.css";
 
@@ -40,19 +41,13 @@ type CascaderOptionWithSearch = DefaultOptionType & {
   children?: CascaderOptionWithSearch[];
 };
 
-const toCascaderOptions = (
-  options: MinionFilterFieldCascaderOption[]
-): CascaderOptionWithSearch[] =>
+const toCascaderOptions = (options: MinionFieldCascaderOption[]): CascaderOptionWithSearch[] =>
   options.map((option) => ({
     value: option.value,
     label: option.label,
     searchLabel: option.searchText ?? option.label,
     icon: option.icon,
-    children: option.children?.map((child) => ({
-      value: child.value,
-      label: child.label,
-      searchLabel: child.searchText ?? child.label,
-    })),
+    children: option.children ? toCascaderOptions(option.children) : undefined,
   }));
 
 const withOptionIcon = (icon: string | null | undefined, content: ReactNode): ReactNode => {
@@ -82,13 +77,23 @@ const filterFieldCascader = (inputValue: string, path: DefaultOptionType[]) => {
   });
 };
 
+const FieldCascaderNotFound = () => {
+  const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
+  return (
+    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} className={`${getPrefixCls("empty")}-small`} />
+  );
+};
+
 const renderFieldCascaderOption = (option: DefaultOptionType): ReactNode => {
-  const typed = option as CascaderOptionWithSearch;
-  if (typeof typed.label !== "string") {
-    return typed.label;
+  // rc-cascader renders "not found" as an option without label
+  if (option.label === undefined) {
+    return <FieldCascaderNotFound />;
+  }
+  if (typeof option.label !== "string") {
+    return option.label;
   }
 
-  return withOptionIcon(typed.icon, typed.label);
+  return withOptionIcon((option as CascaderOptionWithSearch).icon, option.label);
 };
 
 type CoreMinionFieldCascaderProps = Pick<
@@ -139,7 +144,7 @@ const CoreMinionFieldCascader = observer(
       }
 
       const isKnownField = knownFieldValues.has(selectedField);
-      const isCustomField = selectedField.startsWith("grains.") && !isKnownField;
+      const isCustomField = selectedField.startsWith(MINION_GRAINS_FIELD_PREFIX) && !isKnownField;
       if (!isCustomField) {
         setIsCustomValue(false);
         setCustomValue("");
@@ -147,7 +152,7 @@ const CoreMinionFieldCascader = observer(
       }
 
       setIsCustomValue(true);
-      setCustomValue(selectedField.slice("grains.".length));
+      setCustomValue(selectedField.slice(MINION_GRAINS_FIELD_PREFIX.length));
     }, [knownFieldValues, schemaFields.length, val]);
 
     const cascaderCategories = useMemo(
@@ -163,10 +168,12 @@ const CoreMinionFieldCascader = observer(
 
     const cascaderDataOptions = useMemo(
       () =>
-        buildMinionFilterFieldCascaderOptions({
+        buildMinionFieldCascaderOptions({
           fields: schemaFields,
           categories: cascaderCategories,
+          generalGroupLabel: t("dashboard.field-group-general"),
           grainsGroupLabel: t("dashboard.field-group-grains"),
+          extraDataGroupLabel: t("dashboard.field-group-extra"),
           customGrainLabel: tCommon("query-builder.custom-grain"),
         }),
       [cascaderCategories, schemaFields, t, tCommon]
@@ -179,7 +186,7 @@ const CoreMinionFieldCascader = observer(
 
     const cascaderValue = useMemo(
       () =>
-        getMinionFilterFieldCascaderValue(
+        getMinionFieldCascaderValue(
           typeof val === "string" ? val : undefined,
           cascaderDataOptions,
           isCustomValue
@@ -196,9 +203,9 @@ const CoreMinionFieldCascader = observer(
         return;
       }
 
-      if (leaf === MINION_FILTER_CUSTOM_GRAIN_VALUE) {
+      if (leaf === MINION_FIELD_CUSTOM_GRAIN_VALUE) {
         setIsCustomValue(true);
-        onChange("grains.");
+        onChange(MINION_GRAINS_FIELD_PREFIX);
         return;
       }
 
@@ -229,7 +236,7 @@ const CoreMinionFieldCascader = observer(
             onChange={(event) => {
               const nextValue = event.target.value;
               setCustomValue(nextValue);
-              onChange(`grains.${nextValue}`);
+              onChange(`${MINION_GRAINS_FIELD_PREFIX}${nextValue}`);
             }}
             disabled={disabled}
             title={title}
