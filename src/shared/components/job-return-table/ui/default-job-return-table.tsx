@@ -26,6 +26,7 @@ import {
   JobReturnStatusBadge,
 } from "saltbox-core/shared/components/job-return";
 import { JobReturnRow } from "saltbox-core/shared/components/job-return-row";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import {
   isJobReturnTtlEditable,
   resolveEffectiveTtl,
@@ -95,6 +96,7 @@ export const DefaultJobReturnTable = observer<DefaultJobReturnTableProps>(
 
     const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
       getId: (params) => params.drawerId ?? params.minionId,
+      drawerId: DRAWER_IDS.minionDetails,
     });
 
     const handleMinionTtlSubmit = useCallback(

@@ -2204,10 +2204,10 @@
   resolved "https://dev.saltbox.pro/api/v4/projects/2/packages/npm/@saltbox/saltbox-core-api-client/-/@saltbox/saltbox-core-api-client-0.4.0-56e895ec8efa14402a78b6ff145e25fb4ef86667.tgz#f40bf8a5ab1967da0e512e2caf81a1829916de1b"
   integrity sha1-9Av4pasZZ9oOUS4sr4GhgpkW3hs=
 
-"@saltbox/saltbox-frontend-common@^0.7.0":
-  version "0.7.0"
-  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.7.0.tgz#eeb21e4fd96d7dfe5378523aa0740e8e6637c9a1"
-  integrity sha1-7rIeT9ltff5TeFI6oHQOjmY3yaE=
+"@saltbox/saltbox-frontend-common@^0.7.2":
+  version "0.7.2"
+  resolved "https://dev.saltbox.pro/api/v4/projects/70/packages/npm/@saltbox/saltbox-frontend-common/-/@saltbox/saltbox-frontend-common-0.7.2.tgz#28ab7340161c43791d92d6c316f97e045cc4f9de"
+  integrity sha1-KKtzQBYcQ3kdktbDFvl+BFzE+d4=
   dependencies:
     "@material-symbols-svg/metadata" "^0.14.0"
     "@material-symbols/font-300" "^0.47.6"
@@ -2294,6 +2294,13 @@
   version "6.9.1"
   resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-6.9.1.tgz#7613a04e146dd2976d24ddf019730d57a89d56c2"
   integrity sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA==
+  dependencies:
+    "@adobe/css-tools" "^4.4.0"
+    aria-query "^5.0.0"
+    css.escape "^1.5.1"
+    dom-accessibility-api "^0.6.3"
+    picocolors "^1.1.1"
+    redent "^3.0.0"
 
 "@testing-library/react@^16.0.1":
   version "16.3.0"

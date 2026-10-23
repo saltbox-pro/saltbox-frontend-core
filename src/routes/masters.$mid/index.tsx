@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router";
 
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { SaltKeysStore, type SaltKeyWithId } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -55,6 +56,7 @@ const MasterPage = observer(() => {
 
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
+    drawerId: DRAWER_IDS.minionDetails,
   });
 
   const [selection, setSelection] = useState<RowSelectionState>({});

@@ -55,7 +55,6 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
     drawerId: DRAWER_IDS.minionDetails,
-    outsideClickIgnoreSelectors: [`#sbx-drawer-${DRAWER_IDS.extraDataCategoryDetails}`],
   });
   const enableRowSelection =
     props.rowSelection !== undefined && props.onRowSelectionChange !== undefined;

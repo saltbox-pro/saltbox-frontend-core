@@ -29,10 +29,6 @@ const CollectionsPage = observer(() => {
   const drawer = useInfoDrawer<CollectionDetailsDrawerOpenParams, string, HTMLDivElement>({
     getId: (params) => params.id,
     drawerId: DRAWER_IDS.collectionDetails,
-    outsideClickIgnoreSelectors: [
-      `#sbx-drawer-${DRAWER_IDS.minionDetails}`,
-      `#sbx-drawer-${DRAWER_IDS.extraDataCategoryDetails}`,
-    ],
     onBeforeClose: () => closeGuardRef.current?.() ?? true,
   });
   const { open: openDrawer } = drawer;
