@@ -9,10 +9,10 @@ import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
+import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, i18nStore } from "saltbox-core/store";
 
-import { isMinionNeverActive } from "../../model/minion-activity";
 import {
   getMinionDetailsTabKeys,
   isMinionDetailsTabDisabled,

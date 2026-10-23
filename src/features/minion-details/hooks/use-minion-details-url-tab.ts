@@ -2,9 +2,9 @@ import { clearFileBrowserLocationQueryFromWindow } from "@saltbox/saltbox-fronte
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
+import type { MinionActivity } from "saltbox-core/shared/helpers/minion-activity";
 import { appStore } from "saltbox-core/store";
 
-import type { MinionActivity } from "../model/minion-activity";
 import { type MinionDetailsTabKey, parseMinionDetailsTabKey } from "../model/tabs";
 
 import { useResolvedMinionDetailsTab } from "./use-resolved-minion-details-tab";

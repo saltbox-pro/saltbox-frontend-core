@@ -15,11 +15,11 @@ import { useTranslation } from "react-i18next";
 
 import { MasterLink } from "saltbox-core/features/masters";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
+import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
 import { isEmptyDetailValue } from "../../helpers/detail-value";
-import { isMinionNeverActive } from "../../model/minion-activity";
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 
 import styles from "./minion-dashboard-tab.module.css";

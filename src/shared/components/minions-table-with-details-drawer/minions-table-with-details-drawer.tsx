@@ -26,14 +26,20 @@ import {
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
+import styles from "./minions-table-with-details-drawer.module.css";
+
 const MinionsTable = FastTable.Paginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
+
+const getMinionRowClassName = (minion: MinionShortSchema) =>
+  isMinionNeverActive(minion) ? styles.neverActiveRow : undefined;
 
 export type MinionsTableWithDetailsDrawerProps = {
   slug: string;
@@ -210,6 +216,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           tableId="core-minions"
           columns={columns}
           getRowId={(row) => row.id}
+          getRowClassName={getMinionRowClassName}
           data={props.minionsStore.minions}
           total={props.minionsStore.totalMinions}
           isLoading={props.minionsStore.isLoading}

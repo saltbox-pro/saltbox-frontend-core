@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 
-import { isMinionNeverActive, type MinionActivity } from "../model/minion-activity";
+import {
+  isMinionNeverActive,
+  type MinionActivity,
+} from "saltbox-core/shared/helpers/minion-activity";
+
 import { type MinionDetailsTabKey, resolveMinionDetailsTabKey } from "../model/tabs";
 
 export function useResolvedMinionDetailsTab(
