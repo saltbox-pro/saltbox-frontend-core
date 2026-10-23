@@ -1,2 +1,3 @@
 export const ROOT_SLUG = "root";
 export const COLLECTION_DETAILS_DRAWER_WIDTH = 1350;
+export const COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE = 180;

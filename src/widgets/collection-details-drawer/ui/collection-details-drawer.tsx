@@ -40,7 +40,11 @@ import {
   type CollectionStore,
 } from "saltbox-core/store";
 
-import { COLLECTION_DETAILS_DRAWER_WIDTH, ROOT_SLUG } from "../constants";
+import {
+  COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE,
+  COLLECTION_DETAILS_DRAWER_WIDTH,
+  ROOT_SLUG,
+} from "../constants";
 import { EMPTY_FILTER_STATE_KEY, getFilterStateKey } from "../helpers/get-filter-state-key";
 import { useCollectionCreate } from "../hooks/use-collection-create";
 import type { CollectionDetailsDrawerOpenParams, CollectionEditFormType } from "../types";
@@ -454,7 +458,8 @@ export const CollectionDetailsDrawer = observer(
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
-          width={COLLECTION_DETAILS_DRAWER_WIDTH}
+          width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
+          push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
           titleName={collection?.title}
           titleLabel={t(

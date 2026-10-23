@@ -1,6 +1,7 @@
 import {
   type MinionDetailTabPlugin,
   resolvePluginLocalizedLabel,
+  useParentDrawerBridge,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, type TabsProps } from "antd";
 import { observer } from "mobx-react-lite";
@@ -58,6 +59,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
   const pluginTabs = getDetailTabPlugins();
+  const parentDrawer = useParentDrawerBridge();
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
 
   const availableTabKeys = useMemo(() => getMinionDetailsTabKeys(isInDrawer), [isInDrawer]);
@@ -182,6 +184,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
               minion,
               isInDrawer,
               isFullView,
+              parentDrawer: isInDrawer ? parentDrawer : null,
             }}
           />
         ),
@@ -199,6 +202,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     isNeverActive,
     minion,
     onFilterButton,
+    parentDrawer,
     pluginTabs,
     t,
     tabKey,
