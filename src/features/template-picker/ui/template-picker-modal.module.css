@@ -1,7 +1,10 @@
+.pickerBody {
+  min-height: 130px;
+}
+
 .modalContent {
   --scrollbar-offset: 12px;
 
-  min-height: 89px;
   max-height: 70vh;
   overflow-y: auto;
   padding-right: var(--scrollbar-offset);

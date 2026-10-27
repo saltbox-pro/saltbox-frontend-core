@@ -1,6 +1,12 @@
-import { Modal, SearchInput, useFocusOnOpenChange } from "@saltbox/saltbox-frontend-common";
-import { Alert, Button, Flex, type InputRef } from "antd";
-import { useCallback } from "react";
+import {
+  ErrorZone,
+  Modal,
+  SearchInput,
+  useFocusOnOpenChange,
+} from "@saltbox/saltbox-frontend-common";
+import { Alert, Button, Flex, Skeleton, type InputRef } from "antd";
+import { observer } from "mobx-react-lite";
+import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
@@ -30,7 +36,7 @@ export type TemplatePickerModalProps = {
   onSelectCustomFunction?: (fun: string) => void;
 };
 
-export function TemplatePickerModal({
+export const TemplatePickerModal = observer(function TemplatePickerModal({
   mode,
   isOpen,
   destroyOnHidden = true,
@@ -42,8 +48,11 @@ export function TemplatePickerModal({
 }: TemplatePickerModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { ref: searchInputRef, onOpenChange: handlePickerAfterOpenChange } =
-    useFocusOnOpenChange<InputRef>();
+  const {
+    ref: searchInputRef,
+    onOpenChange: handlePickerAfterOpenChange,
+    focus: focusSearchInput,
+  } = useFocusOnOpenChange<InputRef>();
   const {
     appliedSearchQuery,
     setAppliedSearchQuery,
@@ -62,6 +71,12 @@ export function TemplatePickerModal({
   } = useTemplatePicker({ isOpen });
 
   const isEmptyState = hasNoData || hasNoResults;
+
+  useEffect(() => {
+    if (isOpen && !isLoading) {
+      focusSearchInput();
+    }
+  }, [focusSearchInput, isLoading, isOpen]);
 
   const handleGoToConfigurationTemplates = useCallback(() => {
     onLeaveFlow();
@@ -104,67 +119,70 @@ export function TemplatePickerModal({
     ) : null;
 
   return (
-    <>
-      <Modal
-        title={t("template-picker.title")}
-        open={isOpen}
-        onCancel={onClose}
-        afterOpenChange={handlePickerAfterOpenChange}
-        afterClose={onAfterClose}
-        footer={
-          isEmptyState ? null : (
-            <Button type="default" onClick={handleGoToConfigurationTemplates}>
-              {t("configuration-templates.page-title")}
-            </Button>
-          )
-        }
-        maskClosable={false}
-        width={900}
-        destroyOnHidden={destroyOnHidden}
-        loading={isLoading}
-      >
-        <Flex vertical gap="middle">
-          <SearchInput
-            ref={searchInputRef}
-            placeholder={t(
-              isCustomFunctionAllowed
-                ? "template-picker.search-placeholder-with-function"
-                : "template-picker.search-placeholder"
-            )}
-            defaultValue={appliedSearchQuery}
-            onSearch={setAppliedSearchQuery}
-          />
+    <Modal
+      title={t("template-picker.title")}
+      open={isOpen}
+      onCancel={onClose}
+      afterOpenChange={handlePickerAfterOpenChange}
+      afterClose={onAfterClose}
+      footer={
+        isEmptyState ? null : (
+          <Button type="default" onClick={handleGoToConfigurationTemplates}>
+            {t("configuration-templates.page-title")}
+          </Button>
+        )
+      }
+      maskClosable={false}
+      width={900}
+      destroyOnHidden={destroyOnHidden}
+    >
+      <ErrorZone level="block" loaders={[sourceRowsLoad]}>
+        <div className={styles.pickerBody}>
+          <Skeleton loading={isLoading} active title={{ width: "100%" }}>
+            <Flex vertical gap="middle">
+              <SearchInput
+                ref={searchInputRef}
+                placeholder={t(
+                  isCustomFunctionAllowed
+                    ? "template-picker.search-placeholder-with-function"
+                    : "template-picker.search-placeholder"
+                )}
+                defaultValue={appliedSearchQuery}
+                onSearch={setAppliedSearchQuery}
+              />
 
-          {showInvalidFormatHint && (
-            <Alert
-              type="info"
-              showIcon
-              message={t("job-function-select.invalid-function-format")}
-            />
-          )}
+              {showInvalidFormatHint && (
+                <Alert
+                  type="info"
+                  showIcon
+                  message={t("job-function-select.invalid-function-format")}
+                />
+              )}
 
-          {showCommandCustomFunction && (
-            <div className={styles.customFunctionAction}>{customFunctionButton}</div>
-          )}
+              {showCommandCustomFunction && (
+                <div className={styles.customFunctionAction}>{customFunctionButton}</div>
+              )}
 
-          <TemplatePickerContent
-            isLoading={isLoading}
-            loader={sourceRowsLoad}
-            hasNoData={hasNoData}
-            hasNoResults={showNoResults}
-            customFunctionAction={showEmptyStateCustomFunction ? customFunctionButton : undefined}
-            isSearchReset={isSearchReset}
-            activeKeys={activeKeys}
-            filteredRows={filteredRows}
-            searchQuery={searchQuery}
-            getSourceLabel={getSourceLabel}
-            getAccessibilityLoad={getAccessibilityLoad}
-            onCollapseChange={handleCollapseChange}
-            onSelectTemplate={onSelectTemplate}
-            onGoToConfigurationTemplates={handleGoToConfigurationTemplates}
-          />
-        </Flex>
-      </Modal>
-    </>
+              <TemplatePickerContent
+                hasNoData={hasNoData}
+                hasNoResults={showNoResults}
+                customFunctionAction={
+                  showEmptyStateCustomFunction ? customFunctionButton : undefined
+                }
+                isSearchReset={isSearchReset}
+                activeKeys={activeKeys}
+                filteredRows={filteredRows}
+                searchQuery={searchQuery}
+                getSourceLabel={getSourceLabel}
+                getAccessibilityLoad={getAccessibilityLoad}
+                onCollapseChange={handleCollapseChange}
+                onSelectTemplate={onSelectTemplate}
+                onGoToConfigurationTemplates={handleGoToConfigurationTemplates}
+              />
+            </Flex>
+          </Skeleton>
+        </div>
+      </ErrorZone>
+    </Modal>
   );
-}
+});
