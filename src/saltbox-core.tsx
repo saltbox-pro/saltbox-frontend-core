@@ -28,6 +28,7 @@ import {
   apiGatewayStore,
   appStore,
   bindLanguageSettings,
+  bindSidebarSettings,
   envStore,
   i18nStore,
 } from "saltbox-core/store";
@@ -43,6 +44,7 @@ import Root from "./root.component";
 
 let disposeWebSocketAccessTokenSync: (() => void) | undefined;
 let disposeLanguageSettingsSync: (() => void) | undefined;
+let disposeSidebarSettingsSync: (() => void) | undefined;
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -213,7 +215,7 @@ export const saltboxModule = {
   settingsConfig: [
     {
       priority: 20,
-      key: "core",
+      key: "core-module",
       label: "Core",
       children: [
         {
@@ -246,7 +248,7 @@ export const saltboxModule = {
       ],
     },
   ],
-  init: (authStore, services, localeStore, pluginsStore) => {
+  init: (authStore, services, localeStore, pluginsStore, menuLayout) => {
     appStore.init(authStore, pluginsStore);
     disposeWebSocketAccessTokenSync?.();
     disposeWebSocketAccessTokenSync = bindWebSocketAccessTokenSync(
@@ -263,6 +265,10 @@ export const saltboxModule = {
       authStore as AuthStoreWithAccessToken,
       localeStore
     );
+    disposeSidebarSettingsSync?.();
+    disposeSidebarSettingsSync = menuLayout
+      ? bindSidebarSettings(authStore as AuthStoreWithAccessToken, menuLayout)
+      : undefined;
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
     });

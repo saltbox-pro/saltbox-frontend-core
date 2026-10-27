@@ -4,6 +4,7 @@ export { appStore } from "./app-store";
 export { apiCoreStore } from "./api-core-store";
 export { apiGatewayStore } from "./api-gateway-store";
 export { bindLanguageSettings } from "./bind-language-settings";
+export { bindSidebarSettings } from "./bind-sidebar-settings";
 export { jobStore } from "./job-store";
 export { mastersStore } from "./masters-store";
 
