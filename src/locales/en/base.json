@@ -183,6 +183,11 @@
     "export-scope-selected": "all selected minions",
     "actions-select-items": "Select minions",
     "never-synced": "never",
+    "activity-status": {
+      "active": "Active",
+      "inactive": "Not Active",
+      "never-active": "Never Active"
+    },
     "filter-applied": "Filter applied",
     "filter-value-unsupported": "This value cannot be used in a filter",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
@@ -220,6 +225,8 @@
       "master": "Master",
       "last_activity": "Last Activity",
       "last_activity_seconds": "Seconds From Last Activity",
+      "is_never_active": "Never Active",
+      "is_not_active": "Not Active",
       "extra": "Extra aggregated data",
       "grains": {
         "host": "Host",

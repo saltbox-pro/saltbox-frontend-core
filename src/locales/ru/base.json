@@ -183,6 +183,11 @@
     "export-scope-selected": "всех выбранных клиентов",
     "actions-select-items": "Выберите клиентов",
     "never-synced": "никогда",
+    "activity-status": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "never-active": "Ни разу не был активен"
+    },
     "filter-applied": "Фильтр применён",
     "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "root-collection-info": "Это корневая коллекция, которая содержит всех клиентов из всех подключенных контроллеров в системе",
@@ -220,6 +225,8 @@
       "master": "Контроллер",
       "last_activity": "Последняя активность",
       "last_activity_seconds": "Секунд с последней активности",
+      "is_never_active": "Ни разу не был активен",
+      "is_not_active": "Неактивен",
       "extra": "Расширенные данные (агрегированные)",
       "grains": {
         "host": "Хост",

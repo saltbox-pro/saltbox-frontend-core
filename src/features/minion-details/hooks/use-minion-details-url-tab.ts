@@ -2,7 +2,7 @@ import { clearFileBrowserLocationQueryFromWindow } from "@saltbox/saltbox-fronte
 import { useCallback, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router";
 
-import type { MinionActivity } from "saltbox-core/shared/helpers/minion-activity";
+import type { MinionActivityFlags } from "saltbox-core/shared/helpers/minion-activity";
 import { appStore } from "saltbox-core/store";
 
 import { type MinionDetailsTabKey, parseMinionDetailsTabKey } from "../model/tabs";
@@ -14,7 +14,7 @@ function getDetailPluginKeys(): string[] {
   return plugins.map((plugin) => plugin.key).filter(Boolean);
 }
 
-export function useMinionDetailsUrlTab(minion: MinionActivity | null | undefined) {
+export function useMinionDetailsUrlTab(minion: MinionActivityFlags | null | undefined) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const urlTabKey = useMemo(

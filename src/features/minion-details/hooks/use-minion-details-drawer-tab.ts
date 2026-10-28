@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import type { MinionActivity } from "saltbox-core/shared/helpers/minion-activity";
+import type { MinionActivityFlags } from "saltbox-core/shared/helpers/minion-activity";
 
 import { DEFAULT_MINION_DETAILS_TAB, type MinionDetailsTabKey } from "../model/tabs";
 
@@ -8,7 +8,7 @@ import { useResolvedMinionDetailsTab } from "./use-resolved-minion-details-tab";
 
 export function useMinionDetailsDrawerTab(
   isDrawerOpen: boolean,
-  minion: MinionActivity | null | undefined
+  minion: MinionActivityFlags | null | undefined
 ) {
   const [drawerTab, setDrawerTab] = useState<MinionDetailsTabKey>(DEFAULT_MINION_DETAILS_TAB);
 

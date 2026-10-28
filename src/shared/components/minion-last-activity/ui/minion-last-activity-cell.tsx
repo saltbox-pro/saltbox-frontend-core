@@ -1,33 +1,41 @@
 import { RelativeTime } from "@saltbox/saltbox-frontend-common";
-import { Badge } from "antd";
+import { Badge, type BadgeProps } from "antd";
 import type { ConfigType } from "dayjs";
 import type { ReactElement } from "react";
+import { useTranslation } from "react-i18next";
+
+import type { MinionActivityStatus } from "saltbox-core/shared/helpers/minion-activity";
 
 import styles from "./minion-last-activity-cell.module.css";
 
 export type MinionLastActivityCellProps = {
   date: ConfigType | null | undefined;
-  lastActivitySeconds?: number | null;
+  status: MinionActivityStatus;
   fallback?: ReactElement;
 };
 
-const lastActivitySecondsToBadgeColor = (seconds: number) => {
-  if (seconds < 5 * 60) return "green";
-  if (seconds < 24 * 60 * 60) return "cyan";
-  return "red";
+type ActivityStatusView = {
+  color: NonNullable<BadgeProps["color"]>;
+  titleKey: string;
 };
 
-export function MinionLastActivityCell(props: MinionLastActivityCellProps) {
-  const badgeColor =
-    props.lastActivitySeconds != null
-      ? lastActivitySecondsToBadgeColor(props.lastActivitySeconds)
-      : "orange";
+const ACTIVITY_STATUS_VIEW: Record<MinionActivityStatus, ActivityStatusView> = {
+  "never-active": { color: "orange", titleKey: "minions.activity-status.never-active" },
+  active: { color: "green", titleKey: "minions.activity-status.active" },
+  inactive: { color: "red", titleKey: "minions.activity-status.inactive" },
+};
+
+export function MinionLastActivityCell({ date, status, fallback }: MinionLastActivityCellProps) {
+  const { t } = useTranslation();
+  const { color, titleKey } = ACTIVITY_STATUS_VIEW[status];
 
   return (
     <>
-      <Badge classNames={{ indicator: styles.lastActivityBadge }} color={badgeColor} />
+      <span title={t(titleKey)}>
+        <Badge classNames={{ indicator: styles.lastActivityBadge }} color={color} />
+      </span>
 
-      <RelativeTime date={props.date} fallback={props.fallback} />
+      <RelativeTime date={date} fallback={fallback} />
     </>
   );
 }

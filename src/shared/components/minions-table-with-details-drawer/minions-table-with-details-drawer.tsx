@@ -26,7 +26,10 @@ import {
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
-import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
+import {
+  getMinionActivityStatus,
+  isMinionNeverActive,
+} from "saltbox-core/shared/helpers/minion-activity";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
@@ -133,7 +136,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           return (
             <MinionLastActivityCell
               date={data.getValue()}
-              lastActivitySeconds={data?.row.original.last_activity_seconds}
+              status={getMinionActivityStatus(data.row.original)}
               fallback={<>{t("minions.never-synced")}</>}
             />
           );

@@ -15,7 +15,10 @@ import { useTranslation } from "react-i18next";
 
 import { MasterLink } from "saltbox-core/features/masters";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
-import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
+import {
+  getMinionActivityStatus,
+  isMinionNeverActive,
+} from "saltbox-core/shared/helpers/minion-activity";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
@@ -216,7 +219,7 @@ export function MinionDashboardTab({
           value: (
             <MinionLastActivityCell
               date={minion.last_activity}
-              lastActivitySeconds={minion.last_activity_seconds}
+              status={getMinionActivityStatus(minion)}
               fallback={<>{t("minions.never-synced")}</>}
             />
           ),
