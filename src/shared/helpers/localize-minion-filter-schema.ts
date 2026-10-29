@@ -1,3 +1,4 @@
+import { MinionFilterGroup } from "@saltbox/saltbox-core-api-client";
 import type { TFunction } from "i18next";
 import type { Option, OptionList } from "react-querybuilder";
 
@@ -5,12 +6,12 @@ import {
   COLLECTION_FILTER_FIELD,
   type CollectionFilterOption,
 } from "saltbox-core/shared/helpers/collection-filter-field";
+import { readMinionFieldGroup } from "saltbox-core/shared/helpers/minion-filter-field-meta";
 
-const EXTRA_DATA_FIELD = "extra";
-const EXTRA_DATA_FIELD_PREFIX = `${EXTRA_DATA_FIELD}.`;
+const EXTRA_DATA_FIELD_PREFIX = "extra.";
 
-function isExtraDataField(name: string): boolean {
-  return name === EXTRA_DATA_FIELD || name.startsWith(EXTRA_DATA_FIELD_PREFIX);
+function isExtraDataField(field: Option): boolean {
+  return readMinionFieldGroup(field.group) === MinionFilterGroup.Extra;
 }
 
 function getFieldLabel(field: Option, t: TFunction): string {
@@ -40,9 +41,9 @@ export function localizeMinionFilterSchema(
   });
 
   const staticFields = fields
-    .filter((field) => !isExtraDataField(field.name))
+    .filter((field) => !isExtraDataField(field))
     .sort((first, second) => first.label.localeCompare(second.label, language));
-  const extraDataFields = fields.filter((field) => isExtraDataField(field.name));
+  const extraDataFields = fields.filter(isExtraDataField);
 
   return [...staticFields, ...extraDataFields];
 }

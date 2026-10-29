@@ -1,10 +1,12 @@
 import {
   type ExtraDataCategoryModel,
   MinionExtraDataCategoryFieldType,
+  MinionFilterGroup,
 } from "@saltbox/saltbox-core-api-client";
 
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import { buildExtraDataFilterField } from "saltbox-core/shared/helpers/extra-data-value";
+import { readMinionFieldGroup } from "saltbox-core/shared/helpers/minion-filter-field-meta";
 
 import { DASHBOARD_MAX_CARDS, DEFAULT_DASHBOARD_CARDS } from "../constants/dashboard-cards";
 import {
@@ -94,6 +96,7 @@ export type DashboardFieldOption = {
   label: string;
   source: string;
   type: DashboardFieldType;
+  group: MinionFilterGroup;
   extraCategory?: DashboardExtraCategoryRef;
   categoryLabel?: string;
 };
@@ -106,6 +109,7 @@ type SchemaOption = {
   inputType?: string;
   type?: string;
   values?: unknown[];
+  group?: unknown;
   options?: SchemaOption[];
 };
 
@@ -187,6 +191,7 @@ export const getDashboardFieldOptions = (
       label: option.label || normalizeFieldName(source),
       source,
       type: inferDashboardFieldType(option),
+      group: readMinionFieldGroup(option.group),
     });
   };
 
@@ -243,6 +248,7 @@ export const getExtraDataDashboardFieldOptions = (
           label: `${categoryLabel} / ${field.name}`,
           source: buildExtraDataFilterField(category.source, category.name, field.name),
           type,
+          group: MinionFilterGroup.Extra,
           extraCategory,
           categoryLabel,
         },
@@ -289,6 +295,7 @@ export const toDashboardFieldOption = (card: DashboardCardConfig): DashboardFiel
     label: card.fieldLabel,
     source: card.fieldSource,
     type: card.fieldType,
+    group: card.extraCategory ? MinionFilterGroup.Extra : MinionFilterGroup.General,
     extraCategory: card.extraCategory,
   };
 };

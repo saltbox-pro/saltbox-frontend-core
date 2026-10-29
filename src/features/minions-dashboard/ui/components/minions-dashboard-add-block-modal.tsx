@@ -41,6 +41,8 @@ const getFieldCascaderOptions = (
       label: option.extraCategory
         ? option.label
         : t(`dashboard.field-${option.value}`, { defaultValue: option.label }),
+      group: option.group,
+      extraCategory: option.extraCategory,
     })),
     categories: fieldOptions.flatMap(({ extraCategory, categoryLabel }) =>
       extraCategory ? [{ ...extraCategory, label: categoryLabel ?? extraCategory.name }] : []

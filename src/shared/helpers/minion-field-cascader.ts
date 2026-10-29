@@ -1,12 +1,19 @@
-import { COLLECTION_FILTER_FIELD } from "saltbox-core/shared/helpers/collection-filter-field";
+import {
+  MinionFilterGroup,
+  type MinionFilterExtraCategorySchema,
+} from "@saltbox/saltbox-core-api-client";
+
+import { buildExtraDataCategoryFieldPrefix } from "saltbox-core/shared/helpers/extra-data-value";
+import {
+  readMinionFieldExtraCategory,
+  readMinionFieldGroup,
+} from "saltbox-core/shared/helpers/minion-filter-field-meta";
 
 export const MINION_FIELD_GENERAL_GROUP_KEY = "__general__";
 export const MINION_FIELD_GRAINS_GROUP_KEY = "__grains__";
 export const MINION_FIELD_EXTRA_DATA_GROUP_KEY = "__extra_data__";
 export const MINION_FIELD_CUSTOM_GRAIN_VALUE = "__custom_grain__";
 export const MINION_GRAINS_FIELD_PREFIX = "grains.";
-
-const EXTRA_DATA_FIELD_PREFIX = "extra.";
 
 export type MinionFieldCascaderOption = {
   value: string;
@@ -16,24 +23,20 @@ export type MinionFieldCascaderOption = {
   children?: MinionFieldCascaderOption[];
 };
 
-type MinionSchemaField = {
+export type MinionSchemaField = {
   name: string;
   label: string;
+  group: MinionFilterGroup;
+  extraCategory?: MinionFilterExtraCategorySchema;
 };
 
-type MinionFieldCascaderCategory = {
-  source: string;
-  name: string;
+type MinionFieldCascaderCategory = MinionFilterExtraCategorySchema & {
   label: string;
   icon?: string | null;
 };
 
-type ParsedExtraField = {
-  source: string;
-  categoryName: string;
-  fieldName: string;
-  fullName: string;
-  label: string;
+type CategorizedExtraField = MinionSchemaField & {
+  extraCategory: MinionFilterExtraCategorySchema;
 };
 
 type BuildMinionFieldCascaderOptionsParams = {
@@ -44,33 +47,6 @@ type BuildMinionFieldCascaderOptionsParams = {
   extraDataGroupLabel: string;
   customGrainLabel?: string;
 };
-
-function isGrainField(name: string): boolean {
-  return name.startsWith(MINION_GRAINS_FIELD_PREFIX);
-}
-
-function isExtraDataField(name: string): boolean {
-  return name === "extra" || name.startsWith(EXTRA_DATA_FIELD_PREFIX);
-}
-
-export function parseExtraDataFilterField(name: string): Omit<ParsedExtraField, "label"> | null {
-  if (!name.startsWith(EXTRA_DATA_FIELD_PREFIX)) {
-    return null;
-  }
-
-  const parts = name.slice(EXTRA_DATA_FIELD_PREFIX.length).split(".");
-  if (parts.length < 3) {
-    return null;
-  }
-
-  const [source, categoryName, ...fieldParts] = parts;
-  const fieldName = fieldParts.join(".");
-  if (!source || !categoryName || !fieldName) {
-    return null;
-  }
-
-  return { source, categoryName, fieldName, fullName: name };
-}
 
 export function flattenMinionFilterSchemaFields(
   options: ReadonlyArray<unknown> | undefined
@@ -87,6 +63,8 @@ export function flattenMinionFilterSchemaFields(
       name?: unknown;
       value?: unknown;
       label?: unknown;
+      group?: unknown;
+      extra_category?: unknown;
     };
 
     if (Array.isArray(typed.options)) {
@@ -104,9 +82,12 @@ export function flattenMinionFilterSchemaFields(
       return;
     }
 
+    const extraCategory = readMinionFieldExtraCategory(typed.extra_category);
     result.push({
       name,
       label: typeof typed.label === "string" && typed.label ? typed.label : name,
+      group: readMinionFieldGroup(typed.group),
+      ...(extraCategory ? { extraCategory } : {}),
     });
   };
 
@@ -114,8 +95,22 @@ export function flattenMinionFilterSchemaFields(
   return result;
 }
 
-function getCategoryGroupKey(source: string, categoryName: string): string {
-  return `${source}.${categoryName}`;
+function getCategoryGroupKey({ source, name }: MinionFilterExtraCategorySchema): string {
+  return `${source}.${name}`;
+}
+
+function getExtraFieldShortName({ name, label, extraCategory }: CategorizedExtraField): string {
+  const categoryPrefix = buildExtraDataCategoryFieldPrefix(
+    extraCategory.source,
+    extraCategory.name
+  );
+  return name.startsWith(categoryPrefix) && name.length > categoryPrefix.length
+    ? name.slice(categoryPrefix.length)
+    : label;
+}
+
+function hasExtraCategory(field: MinionSchemaField): field is CategorizedExtraField {
+  return field.extraCategory !== undefined;
 }
 
 function toFieldLeafOption(field: MinionSchemaField): MinionFieldCascaderOption {
@@ -127,15 +122,37 @@ function toFieldLeafOption(field: MinionSchemaField): MinionFieldCascaderOption 
 }
 
 function toExtraLeafOption(
-  field: ParsedExtraField,
-  categoryLabel?: string
+  field: CategorizedExtraField,
+  categoryLabel: string
+): MinionFieldCascaderOption {
+  const shortName = getExtraFieldShortName(field);
+  return {
+    value: field.name,
+    label: shortName,
+    searchText: [categoryLabel, shortName, field.label, field.name].filter(Boolean).join(" "),
+  };
+}
+
+function toPlainLeafOption(field: MinionSchemaField): MinionFieldCascaderOption {
+  return {
+    value: field.name,
+    label: field.label,
+    searchText: `${field.label} ${field.name}`,
+  };
+}
+
+function toCategoryOption(
+  groupKey: string,
+  label: string,
+  fields: ReadonlyArray<CategorizedExtraField>,
+  icon?: string | null
 ): MinionFieldCascaderOption {
   return {
-    value: field.fullName,
-    label: field.fieldName,
-    searchText: [categoryLabel, field.fieldName, field.label, field.fullName]
-      .filter(Boolean)
-      .join(" "),
+    value: groupKey,
+    label,
+    icon,
+    searchText: label,
+    children: fields.map((field) => toExtraLeafOption(field, label)),
   };
 }
 
@@ -143,62 +160,54 @@ function buildExtraDataChildren(
   extraFields: ReadonlyArray<MinionSchemaField>,
   categories: ReadonlyArray<MinionFieldCascaderCategory>
 ): MinionFieldCascaderOption[] {
-  const parsedExtraFields = extraFields.flatMap((field) => {
-    const parsed = parseExtraDataFilterField(field.name);
-    return parsed ? [{ ...parsed, label: field.label }] : [];
-  });
-  const parsedExtraNames = new Set(parsedExtraFields.map((field) => field.fullName));
-  const leftoverExtraFields = extraFields.filter((field) => !parsedExtraNames.has(field.name));
+  const fieldsByCategory = new Map<string, CategorizedExtraField[]>();
+  const uncategorizedFields: MinionSchemaField[] = [];
+  for (const field of extraFields) {
+    if (!hasExtraCategory(field)) {
+      uncategorizedFields.push(field);
+      continue;
+    }
 
-  const fieldsByCategory = new Map<string, ParsedExtraField[]>();
-  for (const field of parsedExtraFields) {
-    const groupKey = getCategoryGroupKey(field.source, field.categoryName);
-    const groupFields = fieldsByCategory.get(groupKey) ?? [];
-    groupFields.push(field);
-    fieldsByCategory.set(groupKey, groupFields);
+    const groupKey = getCategoryGroupKey(field.extraCategory);
+    const groupFields = fieldsByCategory.get(groupKey);
+    if (groupFields) {
+      groupFields.push(field);
+    } else {
+      fieldsByCategory.set(groupKey, [field]);
+    }
   }
 
   const categoryGroups: MinionFieldCascaderOption[] = [];
   const usedGroupKeys = new Set<string>();
 
   for (const category of categories) {
-    const groupKey = getCategoryGroupKey(category.source, category.name);
+    const groupKey = getCategoryGroupKey(category);
     const groupFields = fieldsByCategory.get(groupKey);
     if (!groupFields?.length || usedGroupKeys.has(groupKey)) {
       continue;
     }
 
     usedGroupKeys.add(groupKey);
-    categoryGroups.push({
-      value: groupKey,
-      label: category.label,
-      icon: category.icon,
-      searchText: category.label,
-      children: groupFields.map((field) => toExtraLeafOption(field, category.label)),
-    });
+    categoryGroups.push(toCategoryOption(groupKey, category.label, groupFields, category.icon));
   }
 
   for (const [groupKey, groupFields] of fieldsByCategory) {
-    if (usedGroupKeys.has(groupKey) || !groupFields.length) {
+    if (usedGroupKeys.has(groupKey)) {
       continue;
     }
 
-    const [{ categoryName }] = groupFields;
-    categoryGroups.push({
-      value: groupKey,
-      label: categoryName,
-      searchText: categoryName,
-      children: groupFields.map((field) => toExtraLeafOption(field, categoryName)),
-    });
+    categoryGroups.push(toCategoryOption(groupKey, groupFields[0].extraCategory.name, groupFields));
   }
 
-  const leftoverExtraOptions: MinionFieldCascaderOption[] = leftoverExtraFields.map((field) => ({
-    value: field.name,
-    label: field.label,
-    searchText: `${field.label} ${field.name}`,
-  }));
+  return [...categoryGroups, ...uncategorizedFields.map(toPlainLeafOption)];
+}
 
-  return [...categoryGroups, ...leftoverExtraOptions];
+function toGroupOption(
+  value: string,
+  label: string,
+  children: MinionFieldCascaderOption[]
+): MinionFieldCascaderOption[] {
+  return children.length ? [{ value, label, searchText: label, children }] : [];
 }
 
 export function buildMinionFieldCascaderOptions({
@@ -209,39 +218,14 @@ export function buildMinionFieldCascaderOptions({
   extraDataGroupLabel,
   customGrainLabel,
 }: BuildMinionFieldCascaderOptionsParams): MinionFieldCascaderOption[] {
-  const collectionField = fields.find((field) => field.name === COLLECTION_FILTER_FIELD);
-  const grainFields = fields.filter((field) => isGrainField(field.name));
-  const extraFields = fields.filter((field) => isExtraDataField(field.name));
-  const generalFields = fields.filter(
-    (field) =>
-      field.name !== COLLECTION_FILTER_FIELD &&
-      !isGrainField(field.name) &&
-      !isExtraDataField(field.name)
-  );
+  const fieldsOf = (group: MinionFilterGroup) => fields.filter((field) => field.group === group);
 
-  const rootOptions: MinionFieldCascaderOption[] = collectionField
-    ? [
-        {
-          value: collectionField.name,
-          label: collectionField.label,
-          searchText: `${collectionField.label} ${collectionField.name}`,
-        },
-      ]
-    : [];
+  const collectionOptions = fieldsOf(MinionFilterGroup.Collection).map(toPlainLeafOption);
 
-  const generalGroup: MinionFieldCascaderOption[] = generalFields.length
-    ? [
-        {
-          value: MINION_FIELD_GENERAL_GROUP_KEY,
-          label: generalGroupLabel,
-          searchText: generalGroupLabel,
-          children: generalFields.map(toFieldLeafOption),
-        },
-      ]
-    : [];
+  const generalChildren = fieldsOf(MinionFilterGroup.General).map(toFieldLeafOption);
 
   const grainsChildren: MinionFieldCascaderOption[] = [
-    ...grainFields.map(toFieldLeafOption),
+    ...fieldsOf(MinionFilterGroup.Grains).map(toFieldLeafOption),
     ...(customGrainLabel
       ? [
           {
@@ -252,30 +236,15 @@ export function buildMinionFieldCascaderOptions({
         ]
       : []),
   ];
-  const grainsGroup: MinionFieldCascaderOption[] = grainsChildren.length
-    ? [
-        {
-          value: MINION_FIELD_GRAINS_GROUP_KEY,
-          label: grainsGroupLabel,
-          searchText: grainsGroupLabel,
-          children: grainsChildren,
-        },
-      ]
-    : [];
 
-  const extraDataChildren = buildExtraDataChildren(extraFields, categories);
-  const extraDataGroup: MinionFieldCascaderOption[] = extraDataChildren.length
-    ? [
-        {
-          value: MINION_FIELD_EXTRA_DATA_GROUP_KEY,
-          label: extraDataGroupLabel,
-          searchText: extraDataGroupLabel,
-          children: extraDataChildren,
-        },
-      ]
-    : [];
+  const extraDataChildren = buildExtraDataChildren(fieldsOf(MinionFilterGroup.Extra), categories);
 
-  return [...rootOptions, ...generalGroup, ...grainsGroup, ...extraDataGroup];
+  return [
+    ...collectionOptions,
+    ...toGroupOption(MINION_FIELD_GENERAL_GROUP_KEY, generalGroupLabel, generalChildren),
+    ...toGroupOption(MINION_FIELD_GRAINS_GROUP_KEY, grainsGroupLabel, grainsChildren),
+    ...toGroupOption(MINION_FIELD_EXTRA_DATA_GROUP_KEY, extraDataGroupLabel, extraDataChildren),
+  ];
 }
 
 function findOptionPath(

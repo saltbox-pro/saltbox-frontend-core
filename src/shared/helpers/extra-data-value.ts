@@ -19,12 +19,19 @@ export function getEqualExtraDataColumnWidth(columnCount: number): string | unde
   return `${100 / columnCount}%`;
 }
 
+export function buildExtraDataCategoryFieldPrefix(
+  categorySource: string,
+  categoryName: string
+): string {
+  return `extra.${categorySource}.${categoryName}.`;
+}
+
 export function buildExtraDataFilterField(
   categorySource: string,
   categoryName: string,
   field: string
 ): string {
-  return `extra.${categorySource}.${categoryName}.${field}`;
+  return `${buildExtraDataCategoryFieldPrefix(categorySource, categoryName)}${field}`;
 }
 
 const EXTRA_DATA_META_FIELDS = new Set(["_source", "_name", "_id", "id", "minions_count"]);

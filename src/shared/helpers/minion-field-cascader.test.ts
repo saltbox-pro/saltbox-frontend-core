@@ -1,3 +1,5 @@
+import { MinionFilterGroup } from "@saltbox/saltbox-core-api-client";
+
 import {
   buildMinionFieldCascaderOptions,
   flattenMinionFilterSchemaFields,
@@ -6,7 +8,7 @@ import {
   MINION_FIELD_EXTRA_DATA_GROUP_KEY,
   MINION_FIELD_GENERAL_GROUP_KEY,
   MINION_FIELD_GRAINS_GROUP_KEY,
-  parseExtraDataFilterField,
+  type MinionSchemaField,
 } from "./minion-field-cascader";
 
 const BASE_GROUP_LABELS = {
@@ -17,73 +19,85 @@ const BASE_GROUP_LABELS = {
 
 const GROUP_LABELS = { ...BASE_GROUP_LABELS, customGrainLabel: "Произвольный grain" };
 
-describe("parseExtraDataFilterField", () => {
-  it("parses extra field path", () => {
-    expect(parseExtraDataFilterField("extra.system.hardware.cpu_model")).toEqual({
-      source: "system",
-      categoryName: "hardware",
-      fieldName: "cpu_model",
-      fullName: "extra.system.hardware.cpu_model",
-    });
-  });
+const HARDWARE = { source: "system", name: "hardware" };
 
-  it("keeps dotted field name", () => {
-    expect(parseExtraDataFilterField("extra.user.custom.nested.field")).toEqual({
-      source: "user",
-      categoryName: "custom",
-      fieldName: "nested.field",
-      fullName: "extra.user.custom.nested.field",
-    });
-  });
-
-  it("returns null for invalid paths", () => {
-    expect(parseExtraDataFilterField("os")).toBeNull();
-    expect(parseExtraDataFilterField("extra.system")).toBeNull();
-    expect(parseExtraDataFilterField("extra.system.only")).toBeNull();
-    expect(parseExtraDataFilterField("extra.foo")).toBeNull();
-  });
-});
+const field = (
+  group: MinionFilterGroup,
+  name: string,
+  label: string,
+  extraCategory?: MinionSchemaField["extraCategory"]
+): MinionSchemaField => ({ name, label, group, ...(extraCategory ? { extraCategory } : {}) });
 
 describe("flattenMinionFilterSchemaFields", () => {
-  it("flattens nested option groups", () => {
+  it("flattens nested option groups with backend group and extra category", () => {
     expect(
       flattenMinionFilterSchemaFields([
-        { name: "grains.os", label: "OS" },
+        { name: "grains.os", label: "OS", group: "grains" },
         {
           label: "group",
-          options: [{ name: "extra.system.hw.cpu", label: "CPU" }],
+          options: [
+            {
+              name: "extra.system.hw.cpu",
+              label: "CPU",
+              group: "extra",
+              extra_category: { source: "system", name: "hw" },
+            },
+          ],
         },
       ])
     ).toEqual([
-      { name: "grains.os", label: "OS" },
-      { name: "extra.system.hw.cpu", label: "CPU" },
+      field(MinionFilterGroup.Grains, "grains.os", "OS"),
+      field(MinionFilterGroup.Extra, "extra.system.hw.cpu", "CPU", {
+        source: "system",
+        name: "hw",
+      }),
     ]);
   });
 
   it("falls back to value when name is missing", () => {
-    expect(flattenMinionFilterSchemaFields([{ value: "host", label: "Host" }])).toEqual([
-      { name: "host", label: "Host" },
-    ]);
+    expect(
+      flattenMinionFilterSchemaFields([{ value: "host", label: "Host", group: "general" }])
+    ).toEqual([field(MinionFilterGroup.General, "host", "Host")]);
   });
 });
 
 describe("buildMinionFieldCascaderOptions", () => {
   const fields = [
-    { name: "minion_id", label: "Minion ID" },
-    { name: "grains.os", label: "OS" },
-    { name: "collection", label: "Collection" },
-    { name: "grains.host", label: "Host" },
-    { name: "last_activity", label: "Last activity" },
-    { name: "extra", label: "Extra aggregated data" },
-    { name: "extra.system.hardware.cpu", label: 'Extra data field "system.hardware.cpu"' },
-    { name: "extra.system.hardware.ram", label: 'Extra data field "system.hardware.ram"' },
-    { name: "extra.user.notes.comment", label: 'Extra data field "user.notes.comment"' },
-    { name: "extra.orphan.cat.field", label: 'Extra data field "orphan.cat.field"' },
+    field(MinionFilterGroup.General, "minion_id", "Minion ID"),
+    field(MinionFilterGroup.Grains, "grains.os", "OS"),
+    field(MinionFilterGroup.Collection, "collection", "Collection"),
+    field(MinionFilterGroup.Grains, "grains.host", "Host"),
+    field(MinionFilterGroup.General, "last_activity", "Last activity"),
+    field(MinionFilterGroup.Extra, "extra", "Extra aggregated data"),
+    field(
+      MinionFilterGroup.Extra,
+      "extra.system.hardware.cpu",
+      'Extra data field "system.hardware.cpu"',
+      HARDWARE
+    ),
+    field(
+      MinionFilterGroup.Extra,
+      "extra.system.hardware.ram",
+      'Extra data field "system.hardware.ram"',
+      HARDWARE
+    ),
+    field(
+      MinionFilterGroup.Extra,
+      "extra.user.notes.comment",
+      'Extra data field "user.notes.comment"',
+      { source: "user", name: "notes" }
+    ),
+    field(
+      MinionFilterGroup.Extra,
+      "extra.orphan.cat.field",
+      'Extra data field "orphan.cat.field"',
+      { source: "orphan", name: "cat" }
+    ),
   ];
 
   const categories = [
     { source: "user", name: "notes", label: "Заметки", icon: "sticky_note_2" },
-    { source: "system", name: "hardware", label: "Оборудование", icon: "memory" },
+    { ...HARDWARE, label: "Оборудование", icon: "memory" },
     { source: "system", name: "empty", label: "Пустая", icon: "inbox" },
   ];
 
@@ -103,7 +117,7 @@ describe("buildMinionFieldCascaderOptions", () => {
     });
   });
 
-  it("puts non-grain and non-extra fields into general group", () => {
+  it("puts general fields into general group", () => {
     expect(options[1]).toEqual({
       value: MINION_FIELD_GENERAL_GROUP_KEY,
       label: "Общие данные",
@@ -119,7 +133,7 @@ describe("buildMinionFieldCascaderOptions", () => {
     });
   });
 
-  it("puts grains.* fields into grains group with custom grain option", () => {
+  it("puts grains fields into grains group with custom grain option", () => {
     expect(options[2]).toEqual({
       value: MINION_FIELD_GRAINS_GROUP_KEY,
       label: "Данные grains",
@@ -136,7 +150,22 @@ describe("buildMinionFieldCascaderOptions", () => {
     });
   });
 
-  it("nests extra data categories and aggregated field last into extra data group", () => {
+  it("groups by backend group instead of field name", () => {
+    const grouped = buildMinionFieldCascaderOptions({
+      fields: [
+        field(MinionFilterGroup.General, "grains.uptime", "Uptime"),
+        field(MinionFilterGroup.Grains, "os_family", "OS family"),
+      ],
+      ...BASE_GROUP_LABELS,
+    });
+
+    expect(grouped.map((option) => option.children?.map((child) => child.value))).toEqual([
+      ["grains.uptime"],
+      ["os_family"],
+    ]);
+  });
+
+  it("nests extra data categories and uncategorized fields last into extra data group", () => {
     const extraGroup = options[3];
 
     expect(extraGroup?.label).toBe("Расширенные данные");
@@ -173,7 +202,7 @@ describe("buildMinionFieldCascaderOptions", () => {
     });
   });
 
-  it("skips empty categories and keeps unmatched categories by path name", () => {
+  it("skips empty categories and keeps unmatched categories by category name", () => {
     const extraChildren = options[3]?.children ?? [];
 
     expect(extraChildren.some((option) => option.value === "system.empty")).toBe(false);
@@ -191,9 +220,27 @@ describe("buildMinionFieldCascaderOptions", () => {
     });
   });
 
+  it("keeps dotted extra field names and falls back to label for foreign paths", () => {
+    const custom = { source: "user", name: "custom" };
+    const withDotted = buildMinionFieldCascaderOptions({
+      fields: [
+        field(MinionFilterGroup.Extra, "extra.user.custom.nested.field", "Nested", custom),
+        field(MinionFilterGroup.Extra, "extra.other.path", "Foreign", custom),
+      ],
+      ...BASE_GROUP_LABELS,
+    });
+
+    expect(
+      withDotted[0]?.children?.[0]?.children?.map((child) => [child.value, child.label])
+    ).toEqual([
+      ["extra.user.custom.nested.field", "nested.field"],
+      ["extra.other.path", "Foreign"],
+    ]);
+  });
+
   it("omits empty general and extra data groups", () => {
     const grainsOnly = buildMinionFieldCascaderOptions({
-      fields: [{ name: "grains.os", label: "OS" }],
+      fields: [field(MinionFilterGroup.Grains, "grains.os", "OS")],
       ...GROUP_LABELS,
     });
 
@@ -202,24 +249,24 @@ describe("buildMinionFieldCascaderOptions", () => {
 
   it("omits custom grain option and empty grains group without custom grain label", () => {
     const withGrains = buildMinionFieldCascaderOptions({
-      fields: [{ name: "grains.os", label: "OS" }],
+      fields: [field(MinionFilterGroup.Grains, "grains.os", "OS")],
       ...BASE_GROUP_LABELS,
     });
     expect(withGrains[0]?.children?.map((child) => child.value)).toEqual(["grains.os"]);
 
     const withoutGrains = buildMinionFieldCascaderOptions({
-      fields: [{ name: "minion_id", label: "Minion ID" }],
+      fields: [field(MinionFilterGroup.General, "minion_id", "Minion ID")],
       ...BASE_GROUP_LABELS,
     });
     expect(withoutGrains.map((option) => option.value)).toEqual([MINION_FIELD_GENERAL_GROUP_KEY]);
   });
 
   it("builds single group for duplicated categories", () => {
-    const hardware = { source: "system", name: "hardware", label: "Оборудование" };
+    const hardware = { ...HARDWARE, label: "Оборудование" };
     const withDuplicates = buildMinionFieldCascaderOptions({
       fields: [
-        { name: "extra.system.hardware.cpu", label: "CPU" },
-        { name: "extra.system.hardware.ram", label: "RAM" },
+        field(MinionFilterGroup.Extra, "extra.system.hardware.cpu", "CPU", HARDWARE),
+        field(MinionFilterGroup.Extra, "extra.system.hardware.ram", "RAM", HARDWARE),
       ],
       categories: [hardware, hardware],
       ...GROUP_LABELS,
@@ -230,13 +277,13 @@ describe("buildMinionFieldCascaderOptions", () => {
     ]);
   });
 
-  it("keeps leftover short extra paths inside extra data group", () => {
-    const withShortExtra = buildMinionFieldCascaderOptions({
-      fields: [{ name: "extra.foo", label: "Short extra" }],
+  it("keeps extra fields without category inside extra data group", () => {
+    const withUncategorized = buildMinionFieldCascaderOptions({
+      fields: [field(MinionFilterGroup.Extra, "extra.foo", "Short extra")],
       ...GROUP_LABELS,
     });
 
-    expect(withShortExtra.at(-1)?.children).toEqual([
+    expect(withUncategorized.at(-1)?.children).toEqual([
       { value: "extra.foo", label: "Short extra", searchText: "Short extra extra.foo" },
     ]);
   });
@@ -245,13 +292,13 @@ describe("buildMinionFieldCascaderOptions", () => {
 describe("getMinionFieldCascaderValue", () => {
   const options = buildMinionFieldCascaderOptions({
     fields: [
-      { name: "collection", label: "Collection" },
-      { name: "minion_id", label: "Minion ID" },
-      { name: "grains.os", label: "OS" },
-      { name: "extra", label: "Extra aggregated data" },
-      { name: "extra.system.hardware.cpu", label: "CPU" },
+      field(MinionFilterGroup.Collection, "collection", "Collection"),
+      field(MinionFilterGroup.General, "minion_id", "Minion ID"),
+      field(MinionFilterGroup.Grains, "grains.os", "OS"),
+      field(MinionFilterGroup.Extra, "extra", "Extra aggregated data"),
+      field(MinionFilterGroup.Extra, "extra.system.hardware.cpu", "CPU", HARDWARE),
     ],
-    categories: [{ source: "system", name: "hardware", label: "Оборудование", icon: "memory" }],
+    categories: [{ ...HARDWARE, label: "Оборудование", icon: "memory" }],
     ...GROUP_LABELS,
   });
 
