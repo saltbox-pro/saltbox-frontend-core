@@ -23,6 +23,7 @@ export type TaskDetailsData = {
     userQuery?: object;
     userQueryFilterSchema?: OptionList;
     showMinionsDetails?: boolean;
+    neverActiveMinionsCount?: number;
   };
   pillars?: TaskModel["pillars"];
 };

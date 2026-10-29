@@ -5,11 +5,13 @@ import {
   getLocalizedText,
 } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
+import { observer } from "mobx-react-lite";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
+import { useTaskTargetingMasters } from "../hooks/use-task-targeting-masters";
 import { taskCreationService } from "../service";
 import type { TaskOverviewData } from "../type/types";
 
@@ -25,7 +27,7 @@ export type TaskOverviewTabProps = {
   onConfirm: () => void;
 };
 
-export function TaskOverviewTab({
+export const TaskOverviewTab = observer(function TaskOverviewTab({
   type,
   isLoading = false,
   overviewData,
@@ -48,6 +50,15 @@ export function TaskOverviewTab({
       },
     ];
   }, [configuration.save_pillars_as_default, t]);
+
+  const targetingMastersBody = useMemo(
+    () => taskCreationService.buildTargetingMastersBody(context, template),
+    [context, template]
+  );
+
+  const targeting = useTaskTargetingMasters(targetingMastersBody);
+  const { neverActiveMinions } = targeting.summary;
+  const isPolicy = type === TaskType.Policy;
 
   const detailsData = useMemo<TaskDetailsData>(
     () => ({
@@ -75,14 +86,10 @@ export function TaskOverviewTab({
         isQueryBased: !isMongoQueryEmpty(context.query),
         userQuery: context.query,
         userQueryFilterSchema: context.queryFilterSchema,
+        neverActiveMinionsCount: neverActiveMinions,
       },
     }),
-    [template, configuration, context, i18n.language]
-  );
-
-  const targetingMastersBody = useMemo(
-    () => taskCreationService.buildTargetingMastersBody(context, template),
-    [context, template]
+    [template, configuration, context, i18n.language, neverActiveMinions]
   );
 
   return (
@@ -90,7 +97,13 @@ export function TaskOverviewTab({
       <Flex vertical gap="large">
         <TaskDetails data={detailsData} templateInfoExtraItems={templateInfoExtraItems} />
 
-        <TaskTargetMasters body={targetingMastersBody} isPolicy={type === TaskType.Policy} />
+        <TaskTargetMasters
+          masters={targeting.masters}
+          loader={targeting.loader}
+          isLoaded={targeting.isLoaded}
+          summary={targeting.summary}
+          isPolicy={isPolicy}
+        />
       </Flex>
 
       <TaskCreateFooter>
@@ -99,11 +112,9 @@ export function TaskOverviewTab({
         {pluginButtons}
 
         <Button type="primary" onClick={onConfirm} loading={isLoading}>
-          {t(
-            type === TaskType.Policy ? "policy-create.create-button" : "task-create.create-button"
-          )}
+          {t(isPolicy ? "policy-create.create-button" : "task-create.create-button")}
         </Button>
       </TaskCreateFooter>
     </Flex>
   );
-}
+});

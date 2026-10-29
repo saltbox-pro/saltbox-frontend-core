@@ -421,6 +421,8 @@
       "target-minions": "Target minions",
       "query-based-selection": "Query based",
       "no-query-selection": "Whole collection",
+      "never-active-minions-warning": "The task targeting includes minions that have never been active in the system. Execution on them will not start until they connect to a master. Such minions: {{count}}",
+      "never-active-minions-warning-policy": "The policy targeting includes minions that have never been active in the system. Execution on them will not start until they connect to a master. Such minions: {{count}}",
       "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
