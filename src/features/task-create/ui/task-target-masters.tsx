@@ -76,7 +76,8 @@ export const TaskTargetMasters = observer(function TaskTargetMasters({
         },
         meta: {
           showCopy: true,
-          width: "50%",
+          width: "35%",
+          minWidth: 150,
         },
       }),
       columnHelper.accessor("status", {
@@ -98,12 +99,22 @@ export const TaskTargetMasters = observer(function TaskTargetMasters({
             </StatusBadge>
           );
         },
-        meta: { minWidth: 150 },
+        meta: { width: "18%", minWidth: 110 },
+      }),
+      columnHelper.accessor("never_active_minions_count", {
+        header: t("masters.table-never-active-minions-count"),
+        cell: (data) => data.getValue() ?? 0,
+        meta: { minWidth: 100 },
+      }),
+      columnHelper.accessor("not_active_minions_count", {
+        header: t("masters.table-not-active-minions-count"),
+        cell: (data) => data.getValue() ?? 0,
+        meta: { minWidth: 100 },
       }),
       columnHelper.accessor("minions_count", {
-        header: t("masters.table-minions-count"),
+        header: t("masters.table-total-minions-count"),
         cell: (data) => data.getValue() ?? 0,
-        meta: { minWidth: 120 },
+        meta: { minWidth: 100 },
       }),
     ],
     [t]
@@ -153,6 +164,8 @@ export const TaskTargetMasters = observer(function TaskTargetMasters({
             isLoading={mastersLoad.isLoading}
             loader={mastersLoad}
             enableColumnSettings={false}
+            wrapHeaders
+            compactLoader
             hideFooter
           />
         </Flex>
