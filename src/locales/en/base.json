@@ -421,8 +421,11 @@
       "target-minions": "Target minions",
       "query-based-selection": "Query based",
       "no-query-selection": "Whole collection",
-      "never-active-minions-warning": "The task targeting includes minions that have never been active in the system. Execution on them will not start until they connect to a master. Such minions: {{count}}",
-      "never-active-minions-warning-policy": "The policy targeting includes minions that have never been active in the system. Execution on them will not start until they connect to a master. Such minions: {{count}}",
+      "never-active-minions-warning": {
+        "title": "The {{entityType}} targeting includes minions that have never connected to the system",
+        "description": "The {{entityType}} will start running on these minions only after their first connection to a master",
+        "count": "Number of such minions: {{count}}"
+      },
       "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
@@ -463,6 +466,8 @@
     "type-policy": "Policy",
     "type-classic-accusative": "task",
     "type-policy-accusative": "policy",
+    "type-classic-genitive": "task",
+    "type-policy-genitive": "policy",
     "minions": {
       "table-minion-id": "Minion ID",
       "table-master": "Master",

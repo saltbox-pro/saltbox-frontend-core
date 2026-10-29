@@ -13,7 +13,7 @@ import type { TaskDetailsData } from "../type/task-details-data";
 
 import styles from "./task-details.module.css";
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 export type TaskDetailsProps = {
   data: TaskDetailsData;
@@ -32,6 +32,7 @@ export function TaskDetails({
   const { template, parameters, system, target, pillars } = data;
   const isPolicy = system.taskType === TaskType.Policy;
   const neverActiveMinionsCount = target.neverActiveMinionsCount ?? 0;
+  const entityType = t(isPolicy ? "task.type-policy-genitive" : "task.type-classic-genitive");
 
   const templateParams = useMemo<InfoDescriptionsProps["items"]>(() => {
     const entries = Object.entries(parameters || {}).filter(([key]) => key !== "mods");
@@ -218,12 +219,21 @@ export function TaskDetails({
             <Alert
               type="warning"
               showIcon
-              message={t(
-                isPolicy
-                  ? "task.details.never-active-minions-warning-policy"
-                  : "task.details.never-active-minions-warning",
-                { count: neverActiveMinionsCount }
-              )}
+              message={
+                <Flex vertical>
+                  <Text strong>
+                    {t("task.details.never-active-minions-warning.title", { entityType })}
+                  </Text>
+                  <Text>
+                    {t("task.details.never-active-minions-warning.description", { entityType })}
+                  </Text>
+                  <Text strong>
+                    {t("task.details.never-active-minions-warning.count", {
+                      count: neverActiveMinionsCount,
+                    })}
+                  </Text>
+                </Flex>
+              }
             />
           )
         }
