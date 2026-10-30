@@ -259,18 +259,21 @@ export function buildMinionFieldCascaderOptions({
 
   const generalChildren = buildGeneralChildren(fields, compareLabels);
 
-  const grainsChildren: MinionFieldCascaderOption[] = [
-    ...sortOptionsByLabel(fieldsOf(MinionFilterGroup.Grains).map(toFieldLeafOption), compareLabels),
-    ...(customGrainLabel
-      ? [
-          {
-            value: MINION_FIELD_CUSTOM_GRAIN_VALUE,
-            label: customGrainLabel,
-            searchText: customGrainLabel,
-          },
-        ]
-      : []),
-  ];
+  const grainsChildren = sortOptionsByLabel(
+    [
+      ...fieldsOf(MinionFilterGroup.Grains).map(toFieldLeafOption),
+      ...(customGrainLabel
+        ? [
+            {
+              value: MINION_FIELD_CUSTOM_GRAIN_VALUE,
+              label: customGrainLabel,
+              searchText: customGrainLabel,
+            },
+          ]
+        : []),
+    ],
+    compareLabels
+  );
 
   const extraDataChildren = buildExtraDataChildren(
     fieldsOf(MinionFilterGroup.Extra),

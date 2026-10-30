@@ -336,13 +336,13 @@ describe("buildMinionFieldCascaderOptions", () => {
       ]);
     });
 
-    it("sorts grains fields and keeps custom grain option last", () => {
+    it("sorts custom grain option together with grains fields", () => {
       const grainsGroup = sorted.find((option) => option.value === MINION_FIELD_GRAINS_GROUP_KEY);
 
       expect(grainsGroup?.children?.map((child) => child.value)).toEqual([
+        MINION_FIELD_CUSTOM_GRAIN_VALUE,
         "grains.host",
         "grains.os",
-        MINION_FIELD_CUSTOM_GRAIN_VALUE,
       ]);
     });
 
