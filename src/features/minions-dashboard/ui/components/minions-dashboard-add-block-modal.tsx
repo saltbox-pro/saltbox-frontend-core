@@ -7,8 +7,10 @@ import { useTranslation } from "react-i18next";
 import {
   buildMinionFieldCascaderOptions,
   getMinionFieldCascaderValue,
+  type LabelComparator,
   type MinionFieldCascaderOption,
 } from "saltbox-core/shared/helpers/minion-field-cascader";
+import { useFilterLabelComparator } from "saltbox-core/shared/hooks/useFilterLabelComparator";
 
 import {
   DEFAULT_PREVIEW_SWATCH_COUNT,
@@ -33,7 +35,8 @@ const FIELD_CASCADER_THEME = {
 
 const getFieldCascaderOptions = (
   fieldOptions: DashboardFieldOption[],
-  t: TFunction
+  t: TFunction,
+  compareLabels: LabelComparator
 ): MinionFieldCascaderOption[] =>
   buildMinionFieldCascaderOptions({
     fields: fieldOptions.map((option) => ({
@@ -50,6 +53,7 @@ const getFieldCascaderOptions = (
     generalGroupLabel: t("dashboard.field-group-general"),
     grainsGroupLabel: t("dashboard.field-group-grains"),
     extraDataGroupLabel: t("dashboard.field-group-extra"),
+    compareLabels,
   });
 
 const filterFieldCascader = (inputValue: string, path: DefaultOptionType[]) => {
@@ -83,6 +87,7 @@ export const MinionsDashboardAddBlockModal = ({
   onSubmit,
 }: MinionsDashboardAddBlockModalProps) => {
   const { t } = useTranslation();
+  const compareLabels = useFilterLabelComparator();
   const [selectedField, setSelectedField] = useState<string>();
   const [selectedPreset, setSelectedPreset] = useState<DashboardPreset>();
 
@@ -105,8 +110,8 @@ export const MinionsDashboardAddBlockModal = ({
   );
 
   const fieldCascaderOptions = useMemo(
-    () => getFieldCascaderOptions(fieldOptions, t),
-    [fieldOptions, t]
+    () => getFieldCascaderOptions(fieldOptions, t, compareLabels),
+    [fieldOptions, t, compareLabels]
   );
   const fieldCascaderValue = useMemo(
     () => getMinionFieldCascaderValue(selectedField, fieldCascaderOptions),

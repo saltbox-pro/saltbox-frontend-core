@@ -17,7 +17,7 @@ export const useMinionFilterSchemaLocalization = (
   filterStore: MinionFilterStore | CollectionPopoverFilterStore,
   { excludeCollectionSlug }: MinionFilterSchemaLocalizationOptions = {}
 ) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const collections = collectionsFlatListStore.items;
 
   useEffect(() => {
@@ -30,9 +30,8 @@ export const useMinionFilterSchemaLocalization = (
   );
 
   const filterSchema = useMemo(
-    () =>
-      localizeMinionFilterSchema(filterStore.rawFilterSchema, t, i18n.language, collectionOptions),
-    [filterStore.rawFilterSchema, t, i18n.language, collectionOptions]
+    () => localizeMinionFilterSchema(filterStore.rawFilterSchema, t, collectionOptions),
+    [filterStore.rawFilterSchema, t, collectionOptions]
   );
 
   useEffect(() => {

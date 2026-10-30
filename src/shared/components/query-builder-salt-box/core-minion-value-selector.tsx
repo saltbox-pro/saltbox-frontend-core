@@ -21,6 +21,7 @@ import {
   MINION_GRAINS_FIELD_PREFIX,
   type MinionFieldCascaderOption,
 } from "saltbox-core/shared/helpers/minion-field-cascader";
+import { useFilterLabelComparator } from "saltbox-core/shared/hooks/useFilterLabelComparator";
 
 import styles from "./core-minion-value-selector.module.css";
 
@@ -113,6 +114,7 @@ const CoreMinionFieldCascader = observer(
     const { t, i18n } = useTranslation();
     const { t: tCommon } = useTranslation("common");
     const categoriesStore = useExtraDataCategoriesStore();
+    const compareLabels = useFilterLabelComparator();
     const [isCustomValue, setIsCustomValue] = useState(false);
     const [customValue, setCustomValue] = useState("");
 
@@ -175,8 +177,9 @@ const CoreMinionFieldCascader = observer(
           grainsGroupLabel: t("dashboard.field-group-grains"),
           extraDataGroupLabel: t("dashboard.field-group-extra"),
           customGrainLabel: tCommon("query-builder.custom-grain"),
+          compareLabels,
         }),
-      [cascaderCategories, schemaFields, t, tCommon]
+      [cascaderCategories, schemaFields, t, tCommon, compareLabels]
     );
 
     const cascaderOptions = useMemo(

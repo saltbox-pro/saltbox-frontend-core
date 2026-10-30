@@ -39,6 +39,8 @@ type CategorizedExtraField = MinionSchemaField & {
   extraCategory: MinionFilterExtraCategorySchema;
 };
 
+export type LabelComparator = (a: string, b: string) => number;
+
 type BuildMinionFieldCascaderOptionsParams = {
   fields: ReadonlyArray<MinionSchemaField>;
   categories?: ReadonlyArray<MinionFieldCascaderCategory>;
@@ -46,6 +48,7 @@ type BuildMinionFieldCascaderOptionsParams = {
   grainsGroupLabel: string;
   extraDataGroupLabel: string;
   customGrainLabel?: string;
+  compareLabels?: LabelComparator;
 };
 
 export function flattenMinionFilterSchemaFields(
@@ -141,24 +144,35 @@ function toPlainLeafOption(field: MinionSchemaField): MinionFieldCascaderOption 
   };
 }
 
+function sortOptionsByLabel(
+  options: MinionFieldCascaderOption[],
+  compareLabels?: LabelComparator
+): MinionFieldCascaderOption[] {
+  return compareLabels ? [...options].sort((a, b) => compareLabels(a.label, b.label)) : options;
+}
+
 function toCategoryOption(
   groupKey: string,
   label: string,
   fields: ReadonlyArray<CategorizedExtraField>,
-  icon?: string | null
+  { icon, compareLabels }: { icon?: string | null; compareLabels?: LabelComparator } = {}
 ): MinionFieldCascaderOption {
   return {
     value: groupKey,
     label,
     icon,
     searchText: label,
-    children: fields.map((field) => toExtraLeafOption(field, label)),
+    children: sortOptionsByLabel(
+      fields.map((field) => toExtraLeafOption(field, label)),
+      compareLabels
+    ),
   };
 }
 
 function buildExtraDataChildren(
   extraFields: ReadonlyArray<MinionSchemaField>,
-  categories: ReadonlyArray<MinionFieldCascaderCategory>
+  categories: ReadonlyArray<MinionFieldCascaderCategory>,
+  compareLabels?: LabelComparator
 ): MinionFieldCascaderOption[] {
   const fieldsByCategory = new Map<string, CategorizedExtraField[]>();
   const uncategorizedFields: MinionSchemaField[] = [];
@@ -188,7 +202,12 @@ function buildExtraDataChildren(
     }
 
     usedGroupKeys.add(groupKey);
-    categoryGroups.push(toCategoryOption(groupKey, category.label, groupFields, category.icon));
+    categoryGroups.push(
+      toCategoryOption(groupKey, category.label, groupFields, {
+        icon: category.icon,
+        compareLabels,
+      })
+    );
   }
 
   for (const [groupKey, groupFields] of fieldsByCategory) {
@@ -196,10 +215,25 @@ function buildExtraDataChildren(
       continue;
     }
 
-    categoryGroups.push(toCategoryOption(groupKey, groupFields[0].extraCategory.name, groupFields));
+    categoryGroups.push(
+      toCategoryOption(groupKey, groupFields[0].extraCategory.name, groupFields, { compareLabels })
+    );
   }
 
-  return [...categoryGroups, ...uncategorizedFields.map(toPlainLeafOption)];
+  return [
+    ...sortOptionsByLabel(categoryGroups, compareLabels),
+    ...sortOptionsByLabel(uncategorizedFields.map(toPlainLeafOption), compareLabels),
+  ];
+}
+
+function buildGeneralChildren(
+  fields: ReadonlyArray<MinionSchemaField>,
+  compareLabels?: LabelComparator
+): MinionFieldCascaderOption[] {
+  return sortOptionsByLabel(
+    fields.filter((field) => field.group === MinionFilterGroup.General).map(toFieldLeafOption),
+    compareLabels
+  );
 }
 
 function toGroupOption(
@@ -217,15 +251,16 @@ export function buildMinionFieldCascaderOptions({
   grainsGroupLabel,
   extraDataGroupLabel,
   customGrainLabel,
+  compareLabels,
 }: BuildMinionFieldCascaderOptionsParams): MinionFieldCascaderOption[] {
   const fieldsOf = (group: MinionFilterGroup) => fields.filter((field) => field.group === group);
 
   const collectionOptions = fieldsOf(MinionFilterGroup.Collection).map(toPlainLeafOption);
 
-  const generalChildren = fieldsOf(MinionFilterGroup.General).map(toFieldLeafOption);
+  const generalChildren = buildGeneralChildren(fields, compareLabels);
 
   const grainsChildren: MinionFieldCascaderOption[] = [
-    ...fieldsOf(MinionFilterGroup.Grains).map(toFieldLeafOption),
+    ...sortOptionsByLabel(fieldsOf(MinionFilterGroup.Grains).map(toFieldLeafOption), compareLabels),
     ...(customGrainLabel
       ? [
           {
@@ -237,14 +272,33 @@ export function buildMinionFieldCascaderOptions({
       : []),
   ];
 
-  const extraDataChildren = buildExtraDataChildren(fieldsOf(MinionFilterGroup.Extra), categories);
+  const extraDataChildren = buildExtraDataChildren(
+    fieldsOf(MinionFilterGroup.Extra),
+    categories,
+    compareLabels
+  );
 
-  return [
-    ...collectionOptions,
-    ...toGroupOption(MINION_FIELD_GENERAL_GROUP_KEY, generalGroupLabel, generalChildren),
-    ...toGroupOption(MINION_FIELD_GRAINS_GROUP_KEY, grainsGroupLabel, grainsChildren),
-    ...toGroupOption(MINION_FIELD_EXTRA_DATA_GROUP_KEY, extraDataGroupLabel, extraDataChildren),
-  ];
+  return sortOptionsByLabel(
+    [
+      ...collectionOptions,
+      ...toGroupOption(MINION_FIELD_GENERAL_GROUP_KEY, generalGroupLabel, generalChildren),
+      ...toGroupOption(MINION_FIELD_GRAINS_GROUP_KEY, grainsGroupLabel, grainsChildren),
+      ...toGroupOption(MINION_FIELD_EXTRA_DATA_GROUP_KEY, extraDataGroupLabel, extraDataChildren),
+    ],
+    compareLabels
+  );
+}
+
+export function getDefaultMinionFilterField(
+  options: ReadonlyArray<unknown> | undefined,
+  compareLabels?: LabelComparator
+): string {
+  const [firstGeneralOption] = buildGeneralChildren(
+    flattenMinionFilterSchemaFields(options),
+    compareLabels
+  );
+
+  return firstGeneralOption?.value ?? "";
 }
 
 function findOptionPath(

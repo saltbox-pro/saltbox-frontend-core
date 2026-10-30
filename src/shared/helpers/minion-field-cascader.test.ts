@@ -3,6 +3,7 @@ import { MinionFilterGroup } from "@saltbox/saltbox-core-api-client";
 import {
   buildMinionFieldCascaderOptions,
   flattenMinionFilterSchemaFields,
+  getDefaultMinionFilterField,
   getMinionFieldCascaderValue,
   MINION_FIELD_CUSTOM_GRAIN_VALUE,
   MINION_FIELD_EXTRA_DATA_GROUP_KEY,
@@ -286,6 +287,125 @@ describe("buildMinionFieldCascaderOptions", () => {
     expect(withUncategorized.at(-1)?.children).toEqual([
       { value: "extra.foo", label: "Short extra", searchText: "Short extra extra.foo" },
     ]);
+  });
+
+  describe("with label comparator", () => {
+    const compareLabels = (a: string, b: string) =>
+      a.localeCompare(b, "ru", { sensitivity: "base" });
+
+    const sorted = buildMinionFieldCascaderOptions({
+      fields: fields.map((item) =>
+        item.name === "collection" ? { ...item, label: "Коллекция" } : item
+      ),
+      categories: [
+        { source: "user", name: "notes", label: "Пользовательские заметки" },
+        { ...HARDWARE, label: "Оборудование" },
+      ],
+      ...GROUP_LABELS,
+      compareLabels,
+    });
+
+    it("sorts root options by label", () => {
+      expect(sorted.map((option) => option.label)).toEqual([
+        "Данные grains",
+        "Коллекция",
+        "Общие данные",
+        "Расширенные данные",
+      ]);
+    });
+
+    it("sorts extra data categories and keeps uncategorized fields last", () => {
+      const extraGroup = sorted.find(
+        (option) => option.value === MINION_FIELD_EXTRA_DATA_GROUP_KEY
+      );
+
+      expect(extraGroup?.children?.map((child) => child.value)).toEqual([
+        "system.hardware",
+        "user.notes",
+        "orphan.cat",
+        "extra",
+      ]);
+    });
+
+    it("sorts fields inside groups by displayed label", () => {
+      const generalGroup = sorted.find((option) => option.value === MINION_FIELD_GENERAL_GROUP_KEY);
+
+      expect(generalGroup?.children?.map((child) => child.label)).toEqual([
+        "Last activity (last_activity)",
+        "Minion ID (minion_id)",
+      ]);
+    });
+
+    it("sorts grains fields and keeps custom grain option last", () => {
+      const grainsGroup = sorted.find((option) => option.value === MINION_FIELD_GRAINS_GROUP_KEY);
+
+      expect(grainsGroup?.children?.map((child) => child.value)).toEqual([
+        "grains.host",
+        "grains.os",
+        MINION_FIELD_CUSTOM_GRAIN_VALUE,
+      ]);
+    });
+
+    it("sorts extra data fields by short name inside categories and among uncategorized", () => {
+      const extraOnly = buildMinionFieldCascaderOptions({
+        fields: [
+          field(MinionFilterGroup.Extra, "extra.system.hardware.ram", "RAM field", HARDWARE),
+          field(MinionFilterGroup.Extra, "extra.system.hardware.cpu", "CPU field", HARDWARE),
+          field(MinionFilterGroup.Extra, "extra.zeta", "Zeta"),
+          field(MinionFilterGroup.Extra, "extra.alpha", "Alpha"),
+        ],
+        categories: [{ ...HARDWARE, label: "Оборудование" }],
+        ...BASE_GROUP_LABELS,
+        compareLabels,
+      });
+
+      const extraChildren = extraOnly[0]?.children ?? [];
+
+      expect(extraChildren.map((child) => child.value)).toEqual([
+        "system.hardware",
+        "extra.alpha",
+        "extra.zeta",
+      ]);
+      expect(extraChildren[0]?.children?.map((child) => child.label)).toEqual(["cpu", "ram"]);
+    });
+  });
+});
+
+describe("getDefaultMinionFilterField", () => {
+  const schema = [
+    { name: "grains.efi", label: "EFI", group: MinionFilterGroup.Grains },
+    { name: "master", label: "Контроллер", group: MinionFilterGroup.General },
+    { name: "minion_id", label: "ID клиента", group: MinionFilterGroup.General },
+  ];
+  const compareLabels = (a: string, b: string) => a.localeCompare(b, "en");
+
+  it("returns the first general field sorted by comparator", () => {
+    expect(getDefaultMinionFilterField(schema, compareLabels)).toBe("minion_id");
+  });
+
+  it("matches the first general option of the cascader", () => {
+    const generalGroup = buildMinionFieldCascaderOptions({
+      fields: flattenMinionFilterSchemaFields(schema),
+      ...BASE_GROUP_LABELS,
+      compareLabels,
+    }).find((option) => option.value === MINION_FIELD_GENERAL_GROUP_KEY);
+
+    expect(getDefaultMinionFilterField(schema, compareLabels)).toBe(
+      generalGroup?.children?.[0]?.value
+    );
+  });
+
+  it("returns the first general field in schema order without comparator", () => {
+    expect(getDefaultMinionFilterField(schema)).toBe("master");
+  });
+
+  it("returns an empty string when there are no general fields", () => {
+    expect(
+      getDefaultMinionFilterField([
+        { name: "grains.efi", label: "EFI", group: MinionFilterGroup.Grains },
+      ])
+    ).toBe("");
+    expect(getDefaultMinionFilterField([])).toBe("");
   });
 });
 
