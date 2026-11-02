@@ -41,6 +41,7 @@ import {
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
+import { COLLECTION_TAB_QUERY_PARAM } from "saltbox-core/shared/constants/collection";
 import { ExtraDataCategoriesContext } from "saltbox-core/shared/contexts/extra-data-categories-context";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { useMinionFilterSchemaLocalization } from "saltbox-core/shared/hooks/useMinionFilterSchemaLocalization";
@@ -121,7 +122,10 @@ const MinionsPage = observer(() => {
   const deferredShownMinionsFilters = useDeferredValue(shownMinionsFilters);
   const showMinionsFilters = shownMinionsFilters && deferredShownMinionsFilters;
 
-  const tabKey = useMemo(() => searchParams.get("tab") || "list", [searchParams]);
+  const tabKey = useMemo(
+    () => searchParams.get(COLLECTION_TAB_QUERY_PARAM) || "list",
+    [searchParams]
+  );
 
   useLayoutEffect(() => {
     if (location.state?.resetFilters) {
@@ -239,7 +243,7 @@ const MinionsPage = observer(() => {
   const goToClientList = useCallback(() => {
     setSearchParams((prev) => {
       const newParams = new URLSearchParams(prev);
-      newParams.set("tab", "list");
+      newParams.set(COLLECTION_TAB_QUERY_PARAM, "list");
       newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
       return newParams;
     });
@@ -427,7 +431,7 @@ const MinionsPage = observer(() => {
               onChange={(newTabKey) => {
                 setSearchParams((prev) => {
                   const newParams = new URLSearchParams(prev);
-                  newParams.set("tab", newTabKey);
+                  newParams.set(COLLECTION_TAB_QUERY_PARAM, newTabKey);
                   if (newTabKey !== "extra-data") {
                     newParams.delete(EXTRA_DATA_CATEGORY_QUERY_PARAM);
                   }

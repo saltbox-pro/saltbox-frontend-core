@@ -22,6 +22,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
+import { matchCollectionSlug } from "saltbox-core/shared/helpers/collection-route";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
 import { collectionsTreeStore } from "saltbox-core/store/collections-tree-store";
@@ -75,15 +76,11 @@ export const CollectionsTree = observer(
     const savedExpandedKeys = useRef<Key[]>([]);
     const prevSearch = useRef<string>("");
 
-    const location = useLocation();
-    const pathnameRef = useRef(location.pathname);
+    const { pathname } = useLocation();
 
     const activeSlug = useMemo(
-      () =>
-        selectedSlug !== undefined
-          ? selectedSlug
-          : (pathnameRef.current.match(/^\/core\/minions\/([^/]+)/)?.[1] ?? null),
-      [selectedSlug]
+      () => (selectedSlug !== undefined ? selectedSlug : matchCollectionSlug(pathname)),
+      [selectedSlug, pathname]
     );
 
     const treeData = useMemo(

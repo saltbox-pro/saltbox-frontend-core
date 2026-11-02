@@ -91,25 +91,11 @@
   flex-shrink: 0;
 }
 
-.compact {
-  --offset: 24px;
-
-  height: calc(100% + var(--offset));
-  min-width: 420px;
-
-  margin-bottom: calc(var(--offset) * -1);
-  margin-right: calc(var(--offset) * -1);
+.compact .tree {
+  width: max-content;
+  min-width: 100%;
 }
 
-.compact .content :global(.ant-spin-container) {
-  padding-bottom: var(--offset);
-  padding-right: var(--offset);
-}
-
-.compact .header {
-  padding-right: var(--offset);
-}
-
-.compact :global(.ant-tree .ant-tree-treenode .ant-tree-node-content-wrapper) {
-  max-width: 350px;
+.compact :global(.ant-tree .ant-tree-title) {
+  white-space: nowrap;
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
 
+import { getConfigurationTemplatesListPath } from "saltbox-core/features/configuration-templates/shared/helpers/source-presentation";
 import { TemplateEditor, TemplateEditorStore } from "saltbox-core/features/task-template-editor";
 
 import NotFound from "../not-found";
@@ -27,7 +28,7 @@ const CreateTemplatePage = observer(() => {
     <TemplateEditor
       store={store}
       title={t("task-template-editor.create-title")}
-      backPath={`/core/configuration-templates/${encodeURIComponent(sourceId)}`}
+      backPath={getConfigurationTemplatesListPath()}
     />
   );
 });
