@@ -11,8 +11,6 @@ import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { getTemplateSourceDetailPath } from "saltbox-core/features/configuration-templates/shared/helpers/source-presentation";
-import type { TemplateSourceNavigationState } from "saltbox-core/features/configuration-templates/shared/types/template-source-navigation-state";
 import { getBgTaskErrorMessage } from "saltbox-core/shared/helpers/get-bg-task-error-message";
 
 import { useMonacoReady } from "../hooks/use-monaco-ready";
@@ -61,13 +59,6 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
 
   useUnsavedChangesGuard(() => store.isDirty, confirmLeave);
 
-  const getPostSavePath = (): string => {
-    if (store.isDuplicate && store.effectiveTargetSourceId) {
-      return getTemplateSourceDetailPath(store.effectiveTargetSourceId);
-    }
-    return backPath;
-  };
-
   const showNoConnectedLocalSourceAlert =
     store.isDuplicate && !store.isLoadingTargetSources && store.targetSources.length === 0;
 
@@ -81,13 +72,9 @@ export const TemplateEditor = observer(({ store, title, backPath }: TemplateEdit
 
     if (!result.ok) return;
 
-    const highlightState: TemplateSourceNavigationState | undefined = result.data
-      ? { highlightedTemplateId: result.data }
-      : undefined;
-
     notify.success(t("task-template-editor.save-success"));
     setSaveModalOpen(false);
-    navigate(getPostSavePath(), { state: highlightState });
+    navigate(backPath);
   };
 
   const handleSaveClick = () => {

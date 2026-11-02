@@ -21,10 +21,7 @@ import {
   getSourceActionContext,
   isAddFileInProgress,
 } from "../../../shared/helpers/source-action-progress";
-import {
-  getCreateTemplatePath,
-  getTemplateSourceDetailPath,
-} from "../../../shared/helpers/source-presentation";
+import { getCreateTemplatePath } from "../../../shared/helpers/source-presentation";
 import { TemplateSourceActionsToolbar } from "../../../shared/ui/template-source-actions-toolbar";
 import { TemplateSourceLastErrorAlert } from "../../../shared/ui/template-source-last-error-alert";
 import {
@@ -86,7 +83,6 @@ export const TemplateSourceListEntry = observer(
         <TemplateSourceListItem
           name={source.name}
           searchQuery={searchQuery}
-          detailHref={getTemplateSourceDetailPath(source.id)}
           sourceType={source.source_type}
           sourceState={source.state}
           currentOperation={source.current_operation}
