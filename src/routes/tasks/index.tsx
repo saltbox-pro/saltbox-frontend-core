@@ -233,7 +233,7 @@ export default observer(function TasksPage() {
           onRowClick={(task) =>
             navigate(`/core/minions/${task.target_collection.slug}/tasks/${task.id}`)
           }
-          useVirtualScroll={false}
+          useVirtualScroll
         />
       </FastTable.Provider>
     </>

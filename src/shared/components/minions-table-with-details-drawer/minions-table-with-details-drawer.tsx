@@ -235,7 +235,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           activeRowId={drawer.activeRowId}
           bodyRef={drawer.mainContentRef}
           onRowClick={handleRowClick}
-          useVirtualScroll={false}
+          useVirtualScroll
           actionLinkComponent={Link}
         />
       </FastTable.Provider>

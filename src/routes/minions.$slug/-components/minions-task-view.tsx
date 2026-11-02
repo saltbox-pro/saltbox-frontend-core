@@ -235,7 +235,7 @@ export const MinionsTaskView = observer((props: MinionsTaskViewProps) => {
           sorting={tasksStore.sorting}
           onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(task) => navigate(`/core/minions/${props.slug}/tasks/${task.id}`)}
-          useVirtualScroll={false}
+          useVirtualScroll
         />
       </FastTable.Provider>
     </Flex>
