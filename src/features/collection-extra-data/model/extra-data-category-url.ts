@@ -1,8 +1,8 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 
-import { pickDefaultCategoryName } from "../helpers/categories";
+export { EXTRA_DATA_CATEGORY_QUERY_PARAM } from "saltbox-core/shared/constants/collection";
 
-export const EXTRA_DATA_CATEGORY_QUERY_PARAM = "category";
+import { pickDefaultCategoryName } from "../helpers/categories";
 
 export function resolveActiveExtraDataCategoryName(
   categories: readonly ExtraDataCategoryModel[],

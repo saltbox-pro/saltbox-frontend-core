@@ -10,6 +10,7 @@ import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-ro
 import "react-querybuilder/dist/query-builder.css";
 import { MASTER_PAGE_ROUTE } from "saltbox-core/features/masters";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
+import { COLLECTIONS_PATH } from "saltbox-core/shared/constants/collection";
 import { i18nStore } from "saltbox-core/store";
 
 import { coreResources } from "./i18n-resources";
@@ -36,7 +37,7 @@ import AggregatedTasksPage from "./routes/tasks";
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
 const MODULE_NAME = "Core";
-const MAIN_PATH = "/core/minions";
+const MAIN_PATH = COLLECTIONS_PATH;
 
 const { createRoutes } = createModuleErrorBoundaryKit({
   ErrorBoundary,
