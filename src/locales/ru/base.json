@@ -1233,14 +1233,14 @@
     "sync": "Синхронизировать"
   },
   "entity-source": {
-    "column": "Тип источника",
+    "column": "Источник",
     "id-column": "ID источника",
     "type": {
       "rest": "Вручную",
-      "task": "Из задачи",
-      "scheduler": "Из планировщика",
-      "migration": "Из сценария",
-      "system": "Системой"
+      "task": "Задача",
+      "scheduler": "Планировщик",
+      "migration": "Сценарий",
+      "system": "Система"
     }
   },
   "task-template-editor": {

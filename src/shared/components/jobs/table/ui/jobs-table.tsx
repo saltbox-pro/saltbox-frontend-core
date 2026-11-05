@@ -106,7 +106,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
         meta: {
-          width: "10%",
+          width: "11%",
           actions: [createFilterAction("fun")],
         },
       }),
@@ -135,7 +135,8 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
           );
         },
         meta: {
-          width: "10%",
+          width: "9%",
+          minWidth: 150,
           actions: [createFilterAction("source.type")],
         },
       }),
@@ -156,7 +157,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
           />
         ),
         meta: {
-          width: "11%",
+          width: "12%",
           minWidth: 180,
           actions: [createFilterAction("status")],
         },

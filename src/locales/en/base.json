@@ -1233,14 +1233,14 @@
     "sync": "Sync"
   },
   "entity-source": {
-    "column": "Source type",
+    "column": "Source",
     "id-column": "Source ID",
     "type": {
       "rest": "Manual",
-      "task": "From task",
-      "scheduler": "From scheduler",
-      "migration": "From scenario",
-      "system": "By system"
+      "task": "Task",
+      "scheduler": "Scheduler",
+      "migration": "Scenario",
+      "system": "System"
     }
   },
   "task-template-editor": {
