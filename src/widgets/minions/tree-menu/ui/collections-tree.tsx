@@ -22,6 +22,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
+import { ROOT_COLLECTION_SLUG } from "saltbox-core/shared/constants/collection";
 import { matchCollectionSlug } from "saltbox-core/shared/helpers/collection-route";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
@@ -39,8 +40,6 @@ import type { CollectionTreeAntdNode } from "../types/node";
 
 import styles from "./collections-tree.module.css";
 import { MinionsTreeRefreshButton } from "./minions-tree-refresh-button";
-
-const ROOT_SLUG = "root";
 
 interface CollectionsTreeProps {
   onSelectNode: (node: CollectionTreeAntdNode) => void;
@@ -171,7 +170,7 @@ export const CollectionsTree = observer(
 
     const allowDrop = useCallback<NonNullable<TreeProps<CollectionTreeAntdNode>["allowDrop"]>>(
       ({ dragNode, dropNode, dropPosition }) => {
-        if (dropNode.slug === ROOT_SLUG && dropPosition !== 0) return false;
+        if (dropNode.slug === ROOT_COLLECTION_SLUG && dropPosition !== 0) return false;
         if (dropNode.key === dragNode.key) return dropPosition !== 0;
         if (isNodeInSubtree(dragNode, dropNode.key)) return false;
         return true;
@@ -184,7 +183,7 @@ export const CollectionsTree = observer(
         if (collectionsTreeStore.isMoving) return;
 
         const dragNode = info.dragNode as CollectionTreeAntdNode;
-        if (dragNode.slug === ROOT_SLUG) return;
+        if (dragNode.slug === ROOT_COLLECTION_SLUG) return;
 
         const dropNode = info.node as CollectionTreeAntdNode;
 
@@ -247,15 +246,21 @@ export const CollectionsTree = observer(
     const titleRender = useMemo(() => {
       if (!renderActions && !showDescription) return undefined;
       return (node: CollectionTreeAntdNode) => (
-        <Flex className={styles.nodeRow} align="center" gap="small">
-          <span className={styles.nodeTitle}>{node.title as ReactNode}</span>
+        <Flex className={styles.nodeRow} align="center" gap="small" title="">
+          <span
+            className={styles.nodeTitle}
+            title={typeof node.title === "string" ? node.title : undefined}
+          >
+            {node.title as ReactNode}
+          </span>
           {showDescription &&
-            node.slug !== ROOT_SLUG &&
+            node.slug !== ROOT_COLLECTION_SLUG &&
             (node.description ? (
               <Typography.Text
                 type="secondary"
                 className={styles.nodeDescription}
-                ellipsis={{ tooltip: node.description }}
+                ellipsis
+                title={node.description}
               >
                 {node.description}
               </Typography.Text>
@@ -324,7 +329,7 @@ export const CollectionsTree = observer(
                       ? {
                           icon: <HolderOutlined />,
                           nodeDraggable: (node) =>
-                            (node as CollectionTreeAntdNode).slug !== ROOT_SLUG,
+                            (node as CollectionTreeAntdNode).slug !== ROOT_COLLECTION_SLUG,
                         }
                       : false
                   }

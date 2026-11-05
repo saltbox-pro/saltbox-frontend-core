@@ -1,3 +1,4 @@
+import { CopyOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   type AppError,
   freeTextErrorI18nKey,
@@ -22,7 +23,10 @@ import {
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
+import {
+  COLLECTION_DESCRIPTION_MAX_LENGTH,
+  ROOT_COLLECTION_SLUG,
+} from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { asFormFieldsSetter } from "saltbox-core/shared/helpers/as-form-fields-setter";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
@@ -43,18 +47,23 @@ import {
 import {
   COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE,
   COLLECTION_DETAILS_DRAWER_WIDTH,
-  ROOT_SLUG,
 } from "../constants";
-import { EMPTY_FILTER_STATE_KEY, getFilterStateKey } from "../helpers/get-filter-state-key";
+import { getFilterStateKey } from "../helpers/get-filter-state-key";
+import { buildViewOpenParams } from "../helpers/open-params";
 import { useCollectionCreate } from "../hooks/use-collection-create";
+import { useCollectionCreateDraft } from "../hooks/use-collection-create-draft";
+import { useDuplicateSource } from "../hooks/use-duplicate-source";
 import type { CollectionDetailsDrawerOpenParams, CollectionEditFormType } from "../types";
 
 import { CollectionClientsPreview } from "./collection-clients-preview";
 import { CollectionCreateActions } from "./collection-create-actions";
-import { CollectionCreateSubcollectionButton } from "./collection-create-subcollection-button";
 import styles from "./collection-details-drawer.module.css";
 import { CollectionEditActions } from "./collection-edit-actions";
 import { CollectionFilterSection } from "./collection-filter-section";
+import { CollectionHeaderActionButton } from "./collection-header-action-button";
+import { ValidateFieldsOnMount } from "./validate-fields-on-mount";
+
+const DUPLICATE_VALIDATED_FIELDS = ["title"] as const;
 
 type CollectionDetailsDrawerProps = {
   drawer: {
@@ -66,6 +75,7 @@ type CollectionDetailsDrawerProps = {
   collectionStore: CollectionStore;
   closeGuardRef: RefObject<DrawerCloseGuard | null>;
   onCreateSubcollection?: (parentSlug: string) => void;
+  onDuplicate?: (sourceSlug: string) => void;
 };
 
 export const CollectionDetailsDrawer = observer(
@@ -74,6 +84,7 @@ export const CollectionDetailsDrawer = observer(
     collectionStore,
     closeGuardRef,
     onCreateSubcollection,
+    onDuplicate,
   }: CollectionDetailsDrawerProps) => {
     const { t } = useTranslation();
     const { t: tCommon } = useTranslation("common");
@@ -90,30 +101,52 @@ export const CollectionDetailsDrawer = observer(
       [t]
     );
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
-    const [createFormInitializedId, setCreateFormInitializedId] = useState<string | null>(null);
     const [filterStore] = useState(() => new MinionFilterStore());
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     const { isOpened, openedArg } = drawer;
-    const isCreateMode = Boolean(openedArg?.isCreate);
-    const createParentSlug = isCreateMode ? openedArg?.slug : undefined;
-    const isCreateFormReady = isCreateMode && createFormInitializedId === openedArg?.id;
+    const viewSlug = openedArg?.mode === "view" ? openedArg.slug : undefined;
+    const duplicateArg = openedArg?.mode === "duplicate" ? openedArg : undefined;
+
+    const { sourceCollection, sourceLoad } = useDuplicateSource(
+      duplicateArg?.sourceSlug,
+      duplicateArg?.preloadedSource
+    );
+    const {
+      isCreateMode,
+      isDuplicateMode,
+      isCreateFormReady,
+      createParentSlug,
+      createDraft,
+      createFiltersBaselineKey,
+      draftVersion,
+      resetCreateDraft,
+    } = useCollectionCreateDraft({ form, filterStore, openedArg, sourceCollection });
+    const activeCollectionLoad = isDuplicateMode ? sourceLoad : collectionStore.collectionLoad;
+
+    useLayoutEffect(() => {
+      if (isCreateMode) {
+        collectionStore.reset();
+      }
+    }, [isCreateMode, collectionStore]);
 
     const watchedTitle = Form.useWatch("title", { form, preserve: true });
     const watchedDescription = Form.useWatch("description", { form, preserve: true });
     const watchedParentSlug = Form.useWatch("parent_slug", { form, preserve: true });
 
     useEffect(() => {
-      if (isOpened && openedArg && !openedArg.isCreate) {
-        collectionStore.setCollectionSlug(openedArg.slug);
+      if (isOpened && viewSlug) {
+        collectionStore.setCollectionSlug(viewSlug);
       }
-    }, [isOpened, openedArg, collectionStore]);
+    }, [isOpened, openedArg, viewSlug, collectionStore]);
+
+    useEffect(() => {
+      setSaveError(null);
+    }, [openedArg?.id]);
 
     const collection = isCreateMode ? undefined : collectionStore.collection;
-    const currentSlug = isCreateMode
-      ? undefined
-      : (collectionStore.collectionSlug ?? openedArg?.slug);
-    const isRoot = currentSlug === ROOT_SLUG;
+    const currentSlug = isCreateMode ? undefined : (collectionStore.collectionSlug ?? viewSlug);
+    const isRoot = currentSlug === ROOT_COLLECTION_SLUG;
 
     useMinionFilterSchemaLocalization(filterStore, { excludeCollectionSlug: currentSlug });
 
@@ -122,9 +155,9 @@ export const CollectionDetailsDrawer = observer(
       : collection?.parent_slug || currentSlug || "";
     const clientsSlug = isCreateMode ? parentSlug : currentSlug;
     const searchQueryKey = JSON.stringify(filterStore.searchMongoDBQuery);
-    const isInitialLoading = collectionStore.collectionLoad.isLoading;
+    const isInitialLoading = activeCollectionLoad.isLoading;
     const isCollectionLoaded = Boolean(collection) && !isInitialLoading;
-    const isReady = isCreateMode || isCollectionLoaded;
+    const isReady = isCreateMode ? isCreateFormReady : isCollectionLoaded;
     const isEditable = isReady && !isRoot;
 
     const syncFromCollection = useCallback(() => {
@@ -136,7 +169,7 @@ export const CollectionDetailsDrawer = observer(
       form.setFieldsValue({
         title: current.title,
         description: current.description,
-        parent_slug: current.parent_slug ?? ROOT_SLUG,
+        parent_slug: current.parent_slug ?? ROOT_COLLECTION_SLUG,
       });
       filterStore.resetInputMode();
       filterStore.initializeByQuery(current.query ?? {});
@@ -146,16 +179,6 @@ export const CollectionDetailsDrawer = observer(
     const focusTitleInput = useCallback(() => {
       requestAnimationFrame(() => titleInputRef.current?.focus({ preventScroll: true }));
     }, []);
-
-    const resetCreateForm = useCallback(() => {
-      form.setFields([
-        { name: "title", value: "", errors: [] },
-        { name: "description", value: "", errors: [] },
-        { name: "parent_slug", value: createParentSlug, errors: [] },
-      ]);
-      filterStore.resetInputMode();
-      filterStore.initializeByQuery({});
-    }, [createParentSlug, form, filterStore]);
 
     useEffect(() => {
       setSaveError(null);
@@ -177,18 +200,6 @@ export const CollectionDetailsDrawer = observer(
         collectionsTreeStore.loadTree();
       }
     }, [isOpened, isCollectionLoaded, currentSlug, isRoot, syncFromCollection]);
-
-    useLayoutEffect(() => {
-      if (!isCreateMode) {
-        setCreateFormInitializedId(null);
-        return;
-      }
-
-      collectionStore.reset();
-      setSaveError(null);
-      resetCreateForm();
-      setCreateFormInitializedId(openedArg?.id ?? null);
-    }, [isCreateMode, openedArg, collectionStore, resetCreateForm]);
 
     useEffect(() => {
       if (isOpened) {
@@ -232,14 +243,17 @@ export const CollectionDetailsDrawer = observer(
       return currentSlug ? excludeSubtreeBySlug(collectionsTreeStore.treeNodes, currentSlug) : [];
     }, [collectionsTreeStore.treeNodes, currentSlug, isCreateMode]);
 
-    const initialParentSlug = isCreateMode ? createParentSlug : collection?.parent_slug;
-    const initialFiltersKey = isCreateMode ? EMPTY_FILTER_STATE_KEY : filtersBaselineKey;
+    const initialTitle = isCreateMode ? createDraft?.title : collection?.title;
+    const initialDescription = isCreateMode ? createDraft?.description : collection?.description;
+    const initialParentSlug = isCreateMode ? createDraft?.parent_slug : collection?.parent_slug;
+    const initialFiltersKey = isCreateMode ? createFiltersBaselineKey : filtersBaselineKey;
 
     const isFormDirty =
       isEditable &&
-      ((watchedTitle ?? "") !== (collection?.title ?? "") ||
-        (watchedDescription ?? "").trim() !== (collection?.description ?? "").trim() ||
-        (watchedParentSlug ?? ROOT_SLUG) !== (initialParentSlug ?? ROOT_SLUG));
+      ((watchedTitle ?? "") !== (initialTitle ?? "") ||
+        (watchedDescription ?? "").trim() !== (initialDescription ?? "").trim() ||
+        (watchedParentSlug ?? ROOT_COLLECTION_SLUG) !==
+          (initialParentSlug ?? ROOT_COLLECTION_SLUG));
 
     const isFiltersDirty =
       isEditable &&
@@ -248,6 +262,7 @@ export const CollectionDetailsDrawer = observer(
 
     const hasUnsavedChanges = isFormDirty || isFiltersDirty;
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
+    const canDuplicate = !!onDuplicate && isCollectionLoaded && !isRoot;
 
     const modalContextHolder = useUnsavedChangesCloseGuard({
       closeGuardRef,
@@ -358,7 +373,7 @@ export const CollectionDetailsDrawer = observer(
     const handleReset = () => {
       setSaveError(null);
       if (isCreateMode) {
-        resetCreateForm();
+        resetCreateDraft();
         return;
       }
       syncFromCollection();
@@ -379,7 +394,7 @@ export const CollectionDetailsDrawer = observer(
       form,
       resolveQuery: resolveQueryForSave,
       onError: handleMutationError,
-      onCreated: (created) => drawer.open({ id: created.id, slug: created.slug }),
+      onCreated: (created) => drawer.open(buildViewOpenParams(created.id, created.slug)),
     });
 
     const handleSave = async () => {
@@ -395,7 +410,7 @@ export const CollectionDetailsDrawer = observer(
         return;
       }
 
-      const currentParentSlug = collection?.parent_slug ?? ROOT_SLUG;
+      const currentParentSlug = collection?.parent_slug ?? ROOT_COLLECTION_SLUG;
       const parentChanged = values.parent_slug !== currentParentSlug;
       const newParent = parentChanged
         ? findNodeBySlug(collectionsTreeStore.treeNodes, values.parent_slug)
@@ -445,12 +460,41 @@ export const CollectionDetailsDrawer = observer(
 
     const createSubcollectionButton =
       canCreateSubcollection && currentSlug ? (
-        <CollectionCreateSubcollectionButton
+        <CollectionHeaderActionButton
+          icon={<PlusOutlined />}
+          label={t("collection.create-subcollection")}
+          blockedTooltip={t("collection.tooltip-create-subcollection-blocked")}
           hasUnsavedChanges={hasUnsavedChanges}
           isSaving={isSaving}
           onClick={() => onCreateSubcollection?.(currentSlug)}
         />
       ) : undefined;
+
+    const duplicateButton =
+      canDuplicate && currentSlug ? (
+        <CollectionHeaderActionButton
+          icon={<CopyOutlined />}
+          label={t("collection.duplicate")}
+          blockedTooltip={t("collection.tooltip-duplicate-blocked")}
+          hasUnsavedChanges={hasUnsavedChanges}
+          isSaving={isSaving}
+          onClick={() => onDuplicate?.(currentSlug)}
+        />
+      ) : undefined;
+
+    const headerActions =
+      createSubcollectionButton || duplicateButton ? (
+        <Flex gap="small" wrap>
+          {createSubcollectionButton}
+          {duplicateButton}
+        </Flex>
+      ) : undefined;
+
+    const titleLabelKey = isDuplicateMode
+      ? "collection.duplicate-drawer-title"
+      : isCreateMode
+        ? "collection-create-modal.dialog-title"
+        : "collection.collection";
 
     return (
       <>
@@ -461,16 +505,14 @@ export const CollectionDetailsDrawer = observer(
           width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
           push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
-          titleName={collection?.title}
-          titleLabel={t(
-            isCreateMode ? "collection-create-modal.dialog-title" : "collection.collection"
-          )}
+          titleName={isDuplicateMode ? sourceCollection?.title : collection?.title}
+          titleLabel={t(titleLabelKey)}
           linkTo={currentSlug ? `/core/minions/${currentSlug}` : undefined}
           linkTitle={t("collection.open-collection-page")}
           linkComponent={Link}
           loading={isInitialLoading}
-          hasData={isCreateMode || !!collection}
-          loaders={[collectionStore.collectionLoad]}
+          hasData={isCreateMode ? isCreateFormReady : !!collection}
+          loaders={[activeCollectionLoad]}
           transitionKey={isCreateMode ? openedArg?.id : collection?.slug}
           afterOpenChange={(open) => {
             if (open && isCreateMode) {
@@ -492,7 +534,7 @@ export const CollectionDetailsDrawer = observer(
               />
 
               <InfoDescriptions
-                title={createSubcollectionButton}
+                title={headerActions}
                 items={descriptionItems}
                 extra={
                   isCreateMode ? (
@@ -512,6 +554,13 @@ export const CollectionDetailsDrawer = observer(
                   ) : undefined
                 }
               />
+              {isDuplicateMode && (
+                <ValidateFieldsOnMount
+                  key={draftVersion}
+                  form={form}
+                  names={DUPLICATE_VALIDATED_FIELDS}
+                />
+              )}
 
               <section className={styles.section}>
                 {isRoot ? (
