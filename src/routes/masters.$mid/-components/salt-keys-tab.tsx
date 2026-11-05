@@ -148,6 +148,7 @@ export const SaltKeysTab = observer(function SaltKeysTab({
             bodyRef={drawer.mainContentRef}
             rowSelection={selection}
             onRowSelectionChange={onSelectionChange}
+            enableRowSelectionShortcuts
             onRowClick={onRowClick}
             locale={{ empty: emptyText }}
           />

@@ -229,6 +229,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           sorting={props.minionsStore.sorting}
           onRowSelectionChange={props.onRowSelectionChange}
           rowSelection={props.rowSelection}
+          enableRowSelectionShortcuts
           onLazyLoad={(pagination, sorting) =>
             props.minionsStore.handleLazyLoad(pagination, sorting)
           }
