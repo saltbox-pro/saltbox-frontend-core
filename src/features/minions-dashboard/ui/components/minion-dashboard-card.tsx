@@ -147,7 +147,11 @@ export const MinionDashboardCard = observer(
       Modal.confirm({
         title: t("dashboard.delete-card-confirm-title"),
         icon: null,
-        content: t("dashboard.delete-card-confirm-description"),
+        content: t(
+          dashboardStore.isActiveTabGlobal
+            ? "dashboard.delete-global-card-confirm-description"
+            : "dashboard.delete-card-confirm-description"
+        ),
         okButtonProps: { danger: true },
         okText: t("dashboard.delete-card"),
         onOk: () => dashboardStore.removeCard(card.id),

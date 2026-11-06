@@ -83,6 +83,10 @@ export type DashboardStorageConfig = {
   activeTabId: string;
 };
 
+export type DashboardGlobalStorageConfig = {
+  tabs: DashboardTab[];
+};
+
 export type DashboardTabNames = {
   firstTab: string;
   newTab: string;
@@ -353,7 +357,7 @@ export const createUniqueTabName = (
 export const validateTabName = (
   name: string,
   tabs: DashboardTab[],
-  tabId: string
+  tabId?: string
 ): TabNameError | null => {
   const normalized = normalizeTabName(name);
   if (!normalized) {
@@ -410,15 +414,17 @@ export const createFirstDashboardTab = (name: string): DashboardTab => {
 
 const normalizeTabs = (
   rawTabs: Partial<DashboardTab>[],
-  names: DashboardTabNames
+  names: DashboardTabNames,
+  withPrimary = true
 ): DashboardTab[] => {
   const tabs: DashboardTab[] = [];
   let hasPrimary = false;
 
   for (const rawTab of rawTabs) {
     const storedName = typeof rawTab?.name === "string" ? normalizeTabName(rawTab.name) : "";
-    const baseName = storedName || (tabs.length === 0 ? names.firstTab : names.newTab);
-    const primary = rawTab?.primary === true && !hasPrimary;
+    const baseName =
+      storedName || (withPrimary && tabs.length === 0 ? names.firstTab : names.newTab);
+    const primary = withPrimary && rawTab?.primary === true && !hasPrimary;
     hasPrimary = hasPrimary || primary;
     tabs.push({
       id: typeof rawTab?.id === "string" && rawTab.id ? rawTab.id : createTabId(),
@@ -435,11 +441,19 @@ const normalizeTabs = (
     });
   }
 
-  if (!hasPrimary && tabs.length > 0) {
+  if (withPrimary && !hasPrimary && tabs.length > 0) {
     tabs[0].primary = true;
   }
 
   return tabs;
+};
+
+export const normalizeGlobalDashboardTabs = (
+  rawValue: unknown,
+  names: DashboardTabNames
+): DashboardTab[] => {
+  const rawTabs = (rawValue as { tabs?: unknown } | null | undefined)?.tabs;
+  return Array.isArray(rawTabs) ? normalizeTabs(rawTabs, names, false) : [];
 };
 
 export const normalizeDashboardStorage = (
@@ -460,9 +474,10 @@ export const normalizeDashboardStorage = (
 
     if (Array.isArray(parsed?.tabs) && parsed.tabs.length > 0) {
       const tabs = normalizeTabs(parsed.tabs, names);
-      const activeTabId = tabs.some((tab) => tab.id === parsed.activeTabId)
-        ? parsed.activeTabId
-        : tabs[0].id;
+      const activeTabId =
+        typeof parsed.activeTabId === "string" && parsed.activeTabId
+          ? parsed.activeTabId
+          : tabs[0].id;
       return { tabs, activeTabId };
     }
 

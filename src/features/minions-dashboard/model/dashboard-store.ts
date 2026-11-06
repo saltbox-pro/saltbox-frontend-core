@@ -22,14 +22,21 @@ import {
   getUpdatedDashboardCard,
   moveDashboardTab,
   normalizeDashboardStorage,
+  normalizeGlobalDashboardTabs,
   normalizeTabName,
   TabNameError,
   validateTabName,
 } from "./dashboard-model";
-import { getDashboardSettings, setDashboardSettings } from "./dashboard-settings";
+import {
+  getDashboardSettings,
+  getGlobalDashboardSettings,
+  setDashboardSettings,
+  setGlobalDashboardSettings,
+} from "./dashboard-settings";
 
 export class DashboardStore {
-  tabs: DashboardTab[];
+  localTabs: DashboardTab[];
+  globalTabs: DashboardTab[];
   activeTabId: string;
   fullScreenCardId: string | null;
   isHydrated = false;
@@ -39,7 +46,8 @@ export class DashboardStore {
 
   constructor() {
     makeAutoObservable(this);
-    this.tabs = [];
+    this.localTabs = [];
+    this.globalTabs = [];
     this.activeTabId = "";
     this.fullScreenCardId = null;
   }
@@ -80,7 +88,8 @@ export class DashboardStore {
 
   private reload() {
     this.isHydrated = false;
-    this.tabs = [];
+    this.localTabs = [];
+    this.globalTabs = [];
     this.activeTabId = "";
     this.fullScreenCardId = null;
 
@@ -110,14 +119,51 @@ export class DashboardStore {
     }
 
     const stored = normalizeDashboardStorage(getDashboardSettings(collectionSlug), this.tabNames);
-    this.tabs = stored.tabs.map((tab) => ({
-      ...tab,
-      layout: tab.layout.length > 0 ? tab.layout : this.buildDefaultLayout(tab.cards),
-    }));
-    this.activeTabId = stored.activeTabId;
+    this.localTabs = stored.tabs.map((tab) => this.withDefaultLayout(tab));
+    this.globalTabs = normalizeGlobalDashboardTabs(getGlobalDashboardSettings(), this.tabNames).map(
+      (tab) => this.withDefaultLayout(tab)
+    );
+    this.activeTabId = this.tabs.some((tab) => tab.id === stored.activeTabId)
+      ? stored.activeTabId
+      : this.tabs[0].id;
     this.fullScreenCardId = null;
     this.isHydrated = true;
     this.syncDefaultTabName();
+  }
+
+  private withDefaultLayout(tab: DashboardTab): DashboardTab {
+    return {
+      ...tab,
+      layout: tab.layout.length > 0 ? tab.layout : this.buildDefaultLayout(tab.cards),
+    };
+  }
+
+  private get groupedTabs(): DashboardTab[][] {
+    return [
+      this.localTabs.filter((tab) => tab.primary),
+      this.globalTabs,
+      this.localTabs.filter((tab) => !tab.primary),
+    ];
+  }
+
+  get tabs(): DashboardTab[] {
+    return this.groupedTabs.flat();
+  }
+
+  get tabGroups(): string[][] {
+    return this.groupedTabs.map((group) => group.map((tab) => tab.id));
+  }
+
+  isGlobalTab(tabId: string): boolean {
+    return this.globalTabs.some((tab) => tab.id === tabId);
+  }
+
+  get isActiveTabGlobal(): boolean {
+    return this.activeTab ? this.isGlobalTab(this.activeTab.id) : false;
+  }
+
+  get newTabName(): string {
+    return this.tabNames ? createUniqueTabName(this.tabNames.newTab, this.tabs) : "";
   }
 
   get activeTab(): DashboardTab {
@@ -168,9 +214,10 @@ export class DashboardStore {
     }
 
     setDashboardSettings(this.collectionSlug, {
-      tabs: toJS(this.tabs),
+      tabs: toJS(this.localTabs),
       activeTabId: this.activeTabId,
     });
+    setGlobalDashboardSettings({ tabs: toJS(this.globalTabs) });
   }
 
   setActiveTab(tabId: string) {
@@ -182,16 +229,24 @@ export class DashboardStore {
     this.saveSettings();
   }
 
-  addTab(): string | null {
-    if (!this.isHydrated || !this.tabNames) {
+  addTab(name: string, local: boolean): TabNameError | null {
+    if (!this.isHydrated) {
       return null;
     }
-    const tab = createDashboardTab(createUniqueTabName(this.tabNames.newTab, this.tabs));
-    this.tabs.push(tab);
+    const error = validateTabName(name, this.tabs);
+    if (error) {
+      return error;
+    }
+    const tab = createDashboardTab(normalizeTabName(name));
+    if (local) {
+      this.localTabs.push(tab);
+    } else {
+      this.globalTabs.push(tab);
+    }
     this.activeTabId = tab.id;
     this.fullScreenCardId = null;
     this.saveSettings();
-    return tab.id;
+    return null;
   }
 
   removeTab(tabId: string) {
@@ -199,7 +254,11 @@ export class DashboardStore {
     if (tabIndex === -1 || !canRemoveDashboardTab(this.tabs[tabIndex], this.tabs)) {
       return;
     }
-    this.tabs.splice(tabIndex, 1);
+    if (this.isGlobalTab(tabId)) {
+      this.globalTabs = this.globalTabs.filter((tab) => tab.id !== tabId);
+    } else {
+      this.localTabs = this.localTabs.filter((tab) => tab.id !== tabId);
+    }
     if (this.activeTabId === tabId) {
       this.activeTabId = this.tabs[Math.min(tabIndex, this.tabs.length - 1)].id;
     }
@@ -208,11 +267,21 @@ export class DashboardStore {
   }
 
   moveTab(fromTabId: string, toTabId: string) {
-    const tabs = moveDashboardTab(this.tabs, fromTabId, toTabId);
-    if (tabs === this.tabs) {
+    const group = this.tabGroups.find((tabIds) => tabIds.includes(fromTabId));
+    if (!group?.includes(toTabId)) {
       return;
     }
-    this.tabs = tabs;
+    const isGlobal = this.isGlobalTab(fromTabId);
+    const source = isGlobal ? this.globalTabs : this.localTabs;
+    const tabs = moveDashboardTab(source, fromTabId, toTabId);
+    if (tabs === source) {
+      return;
+    }
+    if (isGlobal) {
+      this.globalTabs = tabs;
+    } else {
+      this.localTabs = tabs;
+    }
     this.saveSettings();
   }
 
@@ -221,13 +290,13 @@ export class DashboardStore {
     if (!tab) {
       return null;
     }
-    const error = validateTabName(name, this.tabs, tabId);
-    if (error) {
-      return error;
-    }
     const normalized = normalizeTabName(name);
     if (normalized === tab.name) {
       return null;
+    }
+    const error = validateTabName(name, this.tabs, tabId);
+    if (error) {
+      return error;
     }
     tab.name = normalized;
     tab.nameCustomized = true;

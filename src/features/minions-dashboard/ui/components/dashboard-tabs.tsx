@@ -1,6 +1,6 @@
-import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, GlobalOutlined, MoreOutlined } from "@ant-design/icons";
 import { Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Button, Input, InputRef, Tabs, Tooltip } from "antd";
+import { Button, Input, InputRef, Modal, Tabs, Tooltip } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -15,10 +15,12 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useDashboardAddTab } from "../../hooks/use-dashboard-add-tab";
 import { useDashboardTabDrag } from "../../hooks/use-dashboard-tab-drag";
 import { canRemoveDashboardTab, DashboardTab, TabNameError } from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 
+import { DashboardAddTabPopover } from "./dashboard-add-tab-popover";
 import styles from "./dashboard-tabs.module.css";
 
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
@@ -82,8 +84,9 @@ export const DashboardTabs = observer(() => {
   const [editingName, setEditingName] = useState("");
   const [nameError, setNameError] = useState<TabNameError | null>(null);
   const { draggedTabId, getDropSide, getDragProps, containerDragProps } = useDashboardTabDrag(
-    dashboardStore.tabs.map((tab) => tab.id)
+    dashboardStore.tabGroups
   );
+  const addTab = useDashboardAddTab();
 
   const startEditing = (tabId: string, name: string) => {
     setEditingTabId(tabId);
@@ -122,13 +125,30 @@ export const DashboardTabs = observer(() => {
     const element = node as ReactElement<HTMLAttributes<HTMLElement>>;
     const tabId = String(element.key);
     const dropSide = getDropSide(tabId);
+    const isPrimary = dashboardStore.tabs.find((tab) => tab.id === tabId)?.primary === true;
     return cloneElement(element, {
-      ...getDragProps(tabId, editingTabId !== tabId),
+      ...getDragProps(tabId, editingTabId !== tabId && !isPrimary),
       className: clsx(element.props.className, {
         [styles.tabDragging]: draggedTabId === tabId,
         [styles.tabDropBefore]: dropSide === "before",
         [styles.tabDropAfter]: dropSide === "after",
       }),
+    });
+  };
+
+  const handleRemoveTab = (tab: DashboardTab) => {
+    if (!dashboardStore.isGlobalTab(tab.id)) {
+      dashboardStore.removeTab(tab.id);
+      return;
+    }
+    Modal.confirm({
+      title: t("dashboard.delete-global-tab-confirm-title"),
+      icon: null,
+      content: t("dashboard.delete-global-tab-confirm-description"),
+      okButtonProps: { danger: true },
+      okText: t("dashboard.delete-tab"),
+      cancelText: t("common.cancel"),
+      onOk: () => dashboardStore.removeTab(tab.id),
     });
   };
 
@@ -145,7 +165,7 @@ export const DashboardTabs = observer(() => {
       label: t("dashboard.delete-tab"),
       danger: true,
       disabled: !canRemoveDashboardTab(tab, dashboardStore.tabs),
-      onClick: () => dashboardStore.removeTab(tab.id),
+      onClick: () => handleRemoveTab(tab),
     },
   ];
 
@@ -173,6 +193,11 @@ export const DashboardTabs = observer(() => {
             />
           ) : (
             <>
+              {dashboardStore.isGlobalTab(tab.id) && (
+                <Tooltip title={t("dashboard.global-tab-tooltip")}>
+                  <GlobalOutlined />
+                </Tooltip>
+              )}
               <span className={styles.tabLabelText}>{tab.name}</span>
               <Dropdown menu={{ items: getMenuItems(tab) }} trigger={["click"]}>
                 <Button
@@ -202,7 +227,18 @@ export const DashboardTabs = observer(() => {
         size="small"
         items={items}
         activeKey={dashboardStore.activeTabId}
-        addIcon={<PlusOutlined />}
+        addIcon={
+          <DashboardAddTabPopover
+            className={styles.addTabTrigger}
+            anchor={addTab.anchor}
+            defaultName={dashboardStore.newTabName}
+            error={addTab.error}
+            onOpen={addTab.openAt}
+            onClose={addTab.close}
+            onSubmit={addTab.submit}
+            onChange={addTab.clearError}
+          />
+        }
         hideAdd={!dashboardStore.isHydrated}
         renderTabBar={(tabBarProps, DefaultTabBar) => (
           <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
@@ -211,14 +247,14 @@ export const DashboardTabs = observer(() => {
           commitName(false);
           dashboardStore.setActiveTab(tabId);
         }}
-        onEdit={(_, action) => {
-          if (action !== "add") {
+        onEdit={(event, action) => {
+          if (action !== "add" || typeof event === "string") {
             return;
           }
           commitName(false);
-          const tabId = dashboardStore.addTab();
-          if (tabId) {
-            startEditing(tabId, dashboardStore.activeTab.name);
+          const target = event.target as HTMLElement;
+          if (!target.closest(`.${styles.addTabTrigger}`)) {
+            addTab.openAt(target.closest("button"));
           }
         }}
       />

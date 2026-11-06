@@ -9,14 +9,13 @@ export const DashboardResetButton = ({ disabled }: { disabled?: boolean }) => {
 
   const handleClick = () => {
     const isPrimaryTab = dashboardStore.activeTab?.primary === true;
+    const emptyDescriptionKey = dashboardStore.isActiveTabGlobal
+      ? "dashboard.reset-confirm-description-global"
+      : "dashboard.reset-confirm-description-empty";
     Modal.confirm({
       title: t("dashboard.reset-confirm-title"),
       icon: null,
-      content: t(
-        isPrimaryTab
-          ? "dashboard.reset-confirm-description"
-          : "dashboard.reset-confirm-description-empty"
-      ),
+      content: t(isPrimaryTab ? "dashboard.reset-confirm-description" : emptyDescriptionKey),
       okButtonProps: { danger: true },
       okText: t("dashboard.reset-button"),
       cancelText: t("common.cancel"),
