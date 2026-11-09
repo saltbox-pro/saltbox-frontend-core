@@ -32,10 +32,6 @@ export function MinionExtraDataRecordList({
       fields.map((field) => {
         const value = record[field];
         const displayValue = toExtraDataCopyValue(value);
-        if (!displayValue) {
-          return { key: field, label: field, children: undefined };
-        }
-
         const filterFieldName = buildExtraDataFilterField(category.source, category.name, field);
 
         return {
