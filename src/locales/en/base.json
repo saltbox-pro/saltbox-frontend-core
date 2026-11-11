@@ -429,7 +429,7 @@
       "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
-    "details-title": "Task Details",
+    "details-title": "Task Parameters",
     "page-title": "{{templateName}}: #{{taskId}}",
     "breadcrumbs-title-template": "Task: {{templateName}}",
     "breadcrumbs-title-empty": "Task: #{{taskId}}",
@@ -550,7 +550,7 @@
   },
   "policy": {
     "show-details": "Policy Parameters",
-    "details-title": "Policy Details"
+    "details-title": "Policy Parameters"
   },
   "extra-data-categories": {
     "title": "Extra data categories",
