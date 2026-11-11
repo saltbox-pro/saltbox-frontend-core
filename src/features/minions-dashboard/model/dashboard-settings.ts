@@ -3,7 +3,7 @@ import { getUserSettingsValue, setUserSettingsValue } from "@saltbox/saltbox-fro
 import type { DashboardGlobalStorageConfig, DashboardStorageConfig } from "./dashboard-model";
 
 const DASHBOARDS_SECTION = "dashboards";
-const GLOBAL_DASHBOARD_SECTION = "global_dashboard";
+const GLOBAL_DASHBOARD_SECTION = "dashboards_global";
 
 export function getDashboardSettings(collectionSlug: string): unknown {
   return getUserSettingsValue([DASHBOARDS_SECTION, collectionSlug]);
