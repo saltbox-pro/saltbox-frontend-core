@@ -11,6 +11,13 @@
   margin-bottom: 20px;
 }
 
+.loadingState {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+}
+
 .emptyState {
   display: flex;
   min-height: 320px;

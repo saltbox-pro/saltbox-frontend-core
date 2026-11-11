@@ -1,6 +1,6 @@
 import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { Popover } from "@saltbox/saltbox-frontend-common";
-import { Button, Empty, Flex } from "antd";
+import { Button, Empty, Flex, Spin } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import { ReactNode, useEffect, useState } from "react";
@@ -76,6 +76,7 @@ export const MinionsDashboardView = observer(
     const { t } = useTranslation();
     const { width, containerRef } = useContainerWidth();
     const rowHeight = useGridRowHeight();
+    const isEmpty = dashboardStore.isHydrated && dashboardStore.cards.length === 0;
 
     return (
       <Flex ref={containerRef} gap={12} vertical style={{ height: "100%" }}>
@@ -116,7 +117,13 @@ export const MinionsDashboardView = observer(
           </>
         )}
 
-        {dashboardStore.cards.length === 0 ? (
+        {!dashboardStore.isHydrated && (
+          <div className={styles.loadingState}>
+            <Spin />
+          </div>
+        )}
+
+        {isEmpty && (
           <div className={styles.emptyState}>
             <Empty
               image={<BarChartOutlined className={styles.emptyStateIcon} />}
@@ -128,7 +135,9 @@ export const MinionsDashboardView = observer(
               }
             />
           </div>
-        ) : (
+        )}
+
+        {dashboardStore.cards.length > 0 && (
           <div
             className={clsx(
               styles.dashboardContainer,

@@ -1,7 +1,7 @@
 import {
-  DashOutlined,
   DeleteOutlined,
   EditOutlined,
+  EllipsisOutlined,
   FullscreenExitOutlined,
   FullscreenOutlined,
   HolderOutlined,
@@ -330,7 +330,7 @@ export const MinionDashboardCard = observer(
                     type="text"
                     size="small"
                     loading={isTogglingFullScreen}
-                    icon={<DashOutlined />}
+                    icon={<EllipsisOutlined />}
                     className={styles.dashboardTableBlockMenuIcon}
                   />
                 </Dropdown>
