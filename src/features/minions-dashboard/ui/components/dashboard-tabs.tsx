@@ -268,7 +268,6 @@ export const DashboardTabs = observer(() => {
       </div>
       <DashboardAddTabModal
         open={isAddTabOpen}
-        defaultName={dashboardStore.newTabName}
         validateName={validateNewTabName}
         onSubmit={handleAddTab}
         onCancel={() => setIsAddTabOpen(false)}

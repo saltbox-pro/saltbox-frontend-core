@@ -18,13 +18,12 @@ import type {
 
 type DashboardAddTabModalProps = {
   open: boolean;
-  defaultName: string;
   validateName: (name: string, scope: DashboardTabScope) => TabNameError | null;
   onSubmit: (values: DashboardAddTabValues) => void;
   onCancel: () => void;
 };
 
-const INITIAL_SCOPE: DashboardTabScope = "global";
+const INITIAL_VALUES: DashboardAddTabValues = { name: "", scope: "global" };
 
 const toScope = (event: CheckboxChangeEvent): DashboardTabScope => {
   return event.target.checked ? "local" : "global";
@@ -34,7 +33,6 @@ const toCheckboxProps = (scope: DashboardTabScope) => ({ checked: scope === "loc
 
 export const DashboardAddTabModal = ({
   open,
-  defaultName,
   validateName,
   onSubmit,
   onCancel,
@@ -54,7 +52,7 @@ export const DashboardAddTabModal = ({
 
   const handleAfterOpenChange = (isOpen: boolean) => {
     if (isOpen) {
-      inputRef.current?.focus({ cursor: "all" });
+      inputRef.current?.focus();
     }
   };
 
@@ -73,7 +71,7 @@ export const DashboardAddTabModal = ({
       <Form<DashboardAddTabValues>
         form={form}
         layout="vertical"
-        initialValues={{ name: defaultName, scope: INITIAL_SCOPE }}
+        initialValues={INITIAL_VALUES}
         clearOnDestroy
         onFinish={onSubmit}
       >

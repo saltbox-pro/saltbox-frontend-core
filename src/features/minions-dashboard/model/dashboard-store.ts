@@ -202,10 +202,6 @@ export class DashboardStore {
     });
   }
 
-  get newTabName(): string {
-    return this.tabNames ? createUniqueTabName(this.tabNames.newTab, this.tabs) : "";
-  }
-
   get activeTab(): DashboardTab {
     return this.tabs.find((tab) => tab.id === this.activeTabId) ?? this.tabs[0];
   }
