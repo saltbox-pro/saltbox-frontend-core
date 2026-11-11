@@ -1,5 +1,5 @@
 import { clearFileBrowserLocationQueryFromWindow } from "@saltbox/saltbox-frontend-common";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router";
 
 import type { MinionActivityFlags } from "saltbox-core/shared/helpers/minion-activity";
@@ -17,10 +17,7 @@ function getDetailPluginKeys(): string[] {
 export function useMinionDetailsUrlTab(minion: MinionActivityFlags | null | undefined) {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const urlTabKey = useMemo(
-    () => parseMinionDetailsTabKey(searchParams.get("tab"), false, getDetailPluginKeys()),
-    [searchParams]
-  );
+  const urlTabKey = parseMinionDetailsTabKey(searchParams.get("tab"), false, getDetailPluginKeys());
 
   useEffect(() => {
     return () => {

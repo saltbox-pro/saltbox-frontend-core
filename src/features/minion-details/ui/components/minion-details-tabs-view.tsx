@@ -5,7 +5,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, type TabsProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useMemo } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
@@ -71,6 +71,12 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     },
     [isInDrawer, onTabChange, pluginKeys]
   );
+
+  const handleTabChangeRef = useRef(handleTabChange);
+  useLayoutEffect(() => {
+    handleTabChangeRef.current = handleTabChange;
+  }, [handleTabChange]);
+  const handleParcelTabChange = useCallback((key: string) => handleTabChangeRef.current(key), []);
 
   const fullViewActions = isFullView
     ? {
@@ -185,6 +191,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
               isInDrawer,
               isFullView,
               parentDrawer: isInDrawer ? parentDrawer : null,
+              onTabChange: handleParcelTabChange,
             }}
           />
         ),
@@ -195,6 +202,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   }, [
     availableTabKeys,
     collectionSlug,
+    handleParcelTabChange,
     isFullView,
     isMinionRefreshing,
     isInDrawer,
