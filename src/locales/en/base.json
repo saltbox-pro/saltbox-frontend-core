@@ -1577,11 +1577,8 @@
   },
   "tasks-bulk": {
     "select-tasks": "Select tasks",
-    "run-confirm-title": "Run selected tasks: {{count}}?",
     "stop-confirm-title": "Stop selected tasks: {{count}}?",
-    "restart-failed-confirm-title": "Restart tasks on failed clients: {{count}}?",
     "skipped-description": "Skipped (action unavailable): {{count}}",
-    "restart-failed-ok": "Restart",
     "result": "Done: {{succeeded}}, failed: {{failed}}, skipped: {{skipped}}",
     "failed-tasks": "Failed tasks: {{ids}}"
   },

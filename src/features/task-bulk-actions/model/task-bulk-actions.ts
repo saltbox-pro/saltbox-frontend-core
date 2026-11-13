@@ -1,24 +1,14 @@
-import { TaskListResponseSchema, TaskModel } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
 
 import { runInBatches } from "saltbox-core/shared/utils/run-in-batches";
-import {
-  getTaskPermissions,
-  type TaskPermissions,
-} from "saltbox-core/shared/utils/task-permissions";
+import { getTaskPermissions } from "saltbox-core/shared/utils/task-permissions";
 import { apiCoreStore } from "saltbox-core/store";
 
 const BATCH_SIZE = 5;
 
-export type TaskBulkAction = "run" | "stop" | "restartFailed";
-
 export type TaskBulkActionResult = {
   succeeded: number;
   failedTaskIds: string[];
-};
-
-type TaskBulkActionDefinition = {
-  permission: keyof TaskPermissions;
-  request: (taskId: string) => Promise<TaskModel>;
 };
 
 const getTasksApi = () => {
@@ -29,41 +19,21 @@ const getTasksApi = () => {
   return tasksApi;
 };
 
-const TASK_BULK_ACTIONS: Record<TaskBulkAction, TaskBulkActionDefinition> = {
-  run: {
-    permission: "canRun",
-    request: (taskId) => getTasksApi().taskRun({ tid: taskId }),
-  },
-  stop: {
-    permission: "canStop",
-    request: (taskId) => getTasksApi().taskStop({ tid: taskId }),
-  },
-  restartFailed: {
-    permission: "canRestartFailed",
-    request: (taskId) => getTasksApi().restartFailed({ tid: taskId, RestartFailedBody: {} }),
-  },
-};
-
-export const getTasksForBulkAction = (
-  bulkAction: TaskBulkAction,
-  tasks: TaskListResponseSchema[]
-): TaskListResponseSchema[] =>
+export const getStoppableTasks = (tasks: TaskListResponseSchema[]): TaskListResponseSchema[] =>
   tasks.filter(
     (task) =>
       getTaskPermissions({
         taskStatus: task.status?.type,
         failedCount: task.minions_count?.failed,
         pendingCount: task.minions_count?.pending,
-      })[TASK_BULK_ACTIONS[bulkAction].permission]
+      }).canStop
   );
 
-export const executeTaskBulkAction = async (
-  bulkAction: TaskBulkAction,
-  tasks: TaskListResponseSchema[]
-): Promise<TaskBulkActionResult> => {
+export const stopTasks = async (tasks: TaskListResponseSchema[]): Promise<TaskBulkActionResult> => {
+  const tasksApi = getTasksApi();
   const results = await runInBatches(
     tasks,
-    (task) => TASK_BULK_ACTIONS[bulkAction].request(task.id),
+    (task) => tasksApi.taskStop({ tid: task.id }),
     BATCH_SIZE
   );
 
