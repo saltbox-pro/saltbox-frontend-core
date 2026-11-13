@@ -25,7 +25,10 @@ import {
   normalizeDashboardStorage,
   normalizeGlobalDashboardTabs,
   normalizeTabName,
+  resolveStickyDashboardTabId,
+  StickyDashboardTab,
   TabNameError,
+  toStickyDashboardTab,
   validateTabName,
 } from "./dashboard-model";
 import {
@@ -44,6 +47,8 @@ export class DashboardStore {
   private userId: string | null = null;
   private collectionSlug: string | null = null;
   private tabNames: DashboardTabNames | null = null;
+  private pendingStickyTab: StickyDashboardTab | null = null;
+  private persistedActiveTabId: string | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -58,6 +63,8 @@ export class DashboardStore {
       return;
     }
     this.userId = userId;
+    this.pendingStickyTab = null;
+    this.persistedActiveTabId = null;
     this.reload();
   }
 
@@ -67,8 +74,23 @@ export class DashboardStore {
       this.syncDefaultTabName();
       return;
     }
+    if (collectionSlug) {
+      this.captureStickyTabOnLeave();
+    }
     this.collectionSlug = collectionSlug;
     this.reload();
+  }
+
+  private captureStickyTabOnLeave() {
+    if (!this.isHydrated) {
+      return;
+    }
+    const tab = this.tabs.find((item) => item.id === this.activeTabId);
+    if (!tab) {
+      this.pendingStickyTab = null;
+      return;
+    }
+    this.pendingStickyTab = toStickyDashboardTab(tab, this.getTabScope(tab.id));
   }
 
   private syncDefaultTabName() {
@@ -93,8 +115,10 @@ export class DashboardStore {
     this.globalTabs = [];
     this.activeTabId = "";
     this.fullScreenCardId = null;
+    this.persistedActiveTabId = null;
 
     if (!this.userId || !this.collectionSlug || !this.tabNames) {
+      this.pendingStickyTab = null;
       return;
     }
 
@@ -116,6 +140,7 @@ export class DashboardStore {
 
   private applySettings(collectionSlug: string) {
     if (!this.tabNames) {
+      this.pendingStickyTab = null;
       return;
     }
 
@@ -127,7 +152,12 @@ export class DashboardStore {
     );
     this.globalTabs = globalTabs.map((tab) => this.withDefaultLayout(tab));
     this.localTabs = stored.tabs.map((tab) => this.withDefaultLayout(tab));
-    this.activeTabId = stored.activeTabId;
+    const sticky = this.pendingStickyTab;
+    this.pendingStickyTab = null;
+    const stickyTabId = resolveStickyDashboardTabId(sticky, this.globalTabs, this.localTabs);
+    this.activeTabId = stickyTabId ?? stored.activeTabId;
+    this.persistedActiveTabId =
+      stickyTabId && stickyTabId !== stored.activeTabId ? stored.activeTabId : null;
     this.fullScreenCardId = null;
     this.isHydrated = true;
     this.syncDefaultTabName();
@@ -244,13 +274,22 @@ export class DashboardStore {
     return layout;
   }
 
+  private get activeTabIdToStore(): string {
+    return this.persistedActiveTabId ?? this.activeTabId;
+  }
+
+  private commitActiveTab(tabId: string) {
+    this.activeTabId = tabId;
+    this.persistedActiveTabId = null;
+  }
+
   private saveLocal() {
     if (!this.isHydrated || !this.collectionSlug) {
       return;
     }
     setDashboardSettings(this.collectionSlug, {
       tabs: toJS(this.localTabs),
-      activeTabId: this.activeTabId,
+      activeTabId: this.activeTabIdToStore,
     });
   }
 
@@ -280,7 +319,7 @@ export class DashboardStore {
     if (!this.tabs.some((tab) => tab.id === tabId)) {
       return;
     }
-    this.activeTabId = tabId;
+    this.commitActiveTab(tabId);
     this.fullScreenCardId = null;
     this.saveLocal();
   }
@@ -291,7 +330,7 @@ export class DashboardStore {
     }
     const tab = createDashboardTab(normalizeTabName(name));
     this.setScopeTabs(scope, [...this.getScopeTabs(scope), tab]);
-    this.activeTabId = tab.id;
+    this.commitActiveTab(tab.id);
     this.fullScreenCardId = null;
     this.saveScopeWithActiveTab(scope);
     return true;
@@ -307,8 +346,16 @@ export class DashboardStore {
       scope,
       this.getScopeTabs(scope).filter((tab) => tab.id !== tabId)
     );
+    const neighborTabId = this.tabs[Math.min(tabIndex, this.tabs.length - 1)].id;
     if (this.activeTabId === tabId) {
-      this.activeTabId = this.tabs[Math.min(tabIndex, this.tabs.length - 1)].id;
+      const storedId = this.persistedActiveTabId;
+      const nextTabId =
+        storedId !== null && storedId !== tabId && this.tabs.some((tab) => tab.id === storedId)
+          ? storedId
+          : neighborTabId;
+      this.commitActiveTab(nextTabId);
+    } else if (this.persistedActiveTabId === tabId) {
+      this.persistedActiveTabId = this.tabs.find((tab) => tab.id !== this.activeTabId)?.id ?? null;
     }
     this.fullScreenCardId = null;
     this.saveScopeWithActiveTab(scope);
