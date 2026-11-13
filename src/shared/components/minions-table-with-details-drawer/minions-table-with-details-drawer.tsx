@@ -5,17 +5,19 @@ import {
   BooleanDisplay,
   canApplyFilterByValue,
   FastTable,
+  FilterActionButton,
   createSelectColumn,
   formatTimeByUserTZ,
   getFilterFieldOptions,
   hasFilterByValue,
   useInfoDrawer,
+  type CellAction,
   type FilterFieldOptions,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
 import { message } from "antd";
 import { observer } from "mobx-react-lite";
-import { type ReactNode, useCallback, useMemo } from "react";
+import { type ReactNode, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -57,16 +59,81 @@ export type MinionsTableWithDetailsDrawerProps = {
   toolbar: ReactNode;
 };
 
-export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer(
-  props: MinionsTableWithDetailsDrawerProps
-) {
+export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithDetailsDrawer({
+  slug,
+  minionsStore,
+  rowSelection,
+  onRowSelectionChange,
+  filterStore,
+  onAddFilter,
+  onFiltersApplied,
+  onRefresh,
+  toolbar,
+}: MinionsTableWithDetailsDrawerProps) {
   const { t } = useTranslation();
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
     drawerId: DRAWER_IDS.minionDetails,
   });
-  const enableRowSelection =
-    props.rowSelection !== undefined && props.onRowSelectionChange !== undefined;
+  const enableRowSelection = rowSelection !== undefined && onRowSelectionChange !== undefined;
+  const isDrawerOpenedRef = useRef(drawer.isOpened);
+  isDrawerOpenedRef.current = drawer.isOpened;
+
+  const { filterSchema, filtersRevision } = filterStore;
+
+  const getFieldOptions = useMemo(() => {
+    const fieldOptionsCache = new Map<string, FilterFieldOptions>();
+
+    return (field: string) => {
+      const cached = fieldOptionsCache.get(field);
+      if (cached) {
+        return cached;
+      }
+
+      const options = getFilterFieldOptions(filterSchema, field);
+      fieldOptionsCache.set(field, options);
+      return options;
+    };
+  }, [filterSchema]);
+
+  const applyFilter = useCallback(
+    (fieldName: string, value: unknown) => {
+      const next = applyFilterByValue(filterStore, fieldName, value, {
+        search: true,
+        fieldOptions: getFieldOptions(fieldName),
+      });
+      if (!next.ok) {
+        message.warning(t("minions.filter-value-unsupported"));
+        return;
+      }
+
+      onFiltersApplied?.();
+      if (next.result === "added") {
+        onAddFilter?.();
+        if (isDrawerOpenedRef.current) {
+          drawer.close();
+        }
+      }
+    },
+    [drawer.close, filterStore, getFieldOptions, onAddFilter, onFiltersApplied, t]
+  );
+
+  const createFilterAction = useCallback(
+    (fieldName: string): CellAction<MinionShortSchema> => {
+      const fieldOptions = getFieldOptions(fieldName);
+
+      return {
+        icon: FilterActionButton.getIcon(),
+        visible: (value) => canApplyFilterByValue(filterStore, fieldName, value, fieldOptions),
+        getPresentation: (value) =>
+          FilterActionButton.getPresentation(
+            hasFilterByValue(filterStore, fieldName, value, fieldOptions)
+          ),
+        onClick: (value) => applyFilter(fieldName, value),
+      };
+    },
+    [applyFilter, filterStore, getFieldOptions]
+  );
 
   const columns = useMemo(
     () => [
@@ -80,7 +147,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           actions: [
             {
               icon: <ExportOutlined />,
-              getHref: (_, row) => buildMinionDetailsPagePath(props.slug, row.id),
+              getHref: (_, row) => buildMinionDetailsPagePath(slug, row.id),
               title: t("minions.open-minion-details-page"),
             },
           ],
@@ -92,43 +159,72 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.fqdn", {
         id: "grains.fqdn",
         header: t("minions.table-fqdn"),
-        meta: { width: "10%", minWidth: 120 },
+        meta: {
+          width: "18%",
+          minWidth: 120,
+          actions: [createFilterAction("grains.fqdn")],
+        },
       }),
       minionsColumnHelper.accessor("grains.domain", {
         id: "grains.domain",
         header: t("minions.table-domain"),
-        meta: { width: "5%", minWidth: 120 },
+        meta: {
+          width: "5%",
+          minWidth: 120,
+          actions: [createFilterAction("grains.domain")],
+        },
       }),
       minionsColumnHelper.accessor("master", {
         header: t("minions.table-master"),
-        meta: { width: "10%", minWidth: 150 },
+        meta: {
+          width: "10%",
+          minWidth: 150,
+          actions: [createFilterAction("master")],
+        },
       }),
       minionsColumnHelper.accessor("grains.saltversion", {
         id: "grains.saltversion",
         header: t("minions.table-client-version"),
-        meta: { width: "5%" },
+        meta: {
+          width: "5%",
+          actions: [createFilterAction("grains.saltversion")],
+        },
       }),
       minionsColumnHelper.accessor("grains.osfinger", {
         id: "grains.osfinger",
         header: t("minions.table-os"),
-        meta: { width: "10%", minWidth: 150 },
+        meta: {
+          width: "10%",
+          minWidth: 150,
+          actions: [createFilterAction("grains.osfinger")],
+        },
       }),
       minionsColumnHelper.accessor("grains.efi", {
         id: "grains.efi",
         header: t("minions.table-efi"),
         cell: (data) => <BooleanDisplay value={data.getValue()} />,
-        meta: { width: "2%", minWidth: 80, ellipsis: false },
+        meta: {
+          width: "2%",
+          minWidth: 110,
+          ellipsis: false,
+          actions: [createFilterAction("grains.efi")],
+        },
       }),
       minionsColumnHelper.accessor((row) => row.grains?.efi_secure_boot, {
         id: "grains.efi-secure-boot",
         header: t("minions.table-secure-boot"),
         cell: (data) => <BooleanDisplay value={data.getValue()} />,
-        meta: { width: "10%", ellipsis: false },
+        meta: {
+          width: "6%",
+          minWidth: 110,
+          ellipsis: false,
+          actions: [createFilterAction("grains.efi_secure_boot")],
+        },
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
-        meta: { width: "15%", minWidth: 170 },
+        meta: { width: "11%", minWidth: 170 },
       }),
       minionsColumnHelper.accessor("last_activity", {
         header: t("minions.table-last-activity"),
@@ -144,95 +240,56 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         meta: { width: "10%" },
       }),
     ],
-    [enableRowSelection, props.slug, t]
+    [createFilterAction, enableRowSelection, slug, t]
   );
 
-  const { currentFilters, filterSchema } = props.filterStore;
-
+  // filtersRevision в deps: потребители drawer мемоизируют по identity onFilterButton
   const drawerFilterButton = useMemo(() => {
-    const fieldOptionsCache = new Map<string, FilterFieldOptions>();
-    const getFieldOptions = (field: string) => {
-      const cached = fieldOptionsCache.get(field);
-      if (cached) {
-        return cached;
-      }
-
-      const options = getFilterFieldOptions(filterSchema, field);
-      fieldOptionsCache.set(field, options);
-      return options;
-    };
-
-    const filterView = { filterSchema, currentFilters };
-
     const apply = ((params: OnFilterButtonParams) => {
-      const next = applyFilterByValue(props.filterStore, params.name, params.value, {
-        search: true,
-        fieldOptions: getFieldOptions(params.name),
-      });
-      if (!next.ok) {
-        message.warning(t("minions.filter-value-unsupported"));
-        return;
-      }
-
-      props.onFiltersApplied?.();
-      if (next.result === "added") {
-        props.onAddFilter?.();
-        message.success(t("minions.filter-applied"));
-        drawer.close();
-      }
+      applyFilter(params.name, params.value);
     }) as OnFilterButtonHandler;
 
     apply.canApply = (field: string, value: unknown) =>
-      canApplyFilterByValue(filterView, field, value, getFieldOptions(field));
+      canApplyFilterByValue(filterStore, field, value, getFieldOptions(field));
     apply.isActive = (field: string, value: unknown) =>
-      hasFilterByValue(filterView, field, value, getFieldOptions(field));
+      hasFilterByValue(filterStore, field, value, getFieldOptions(field));
 
     return apply;
-  }, [
-    currentFilters,
-    drawer.close,
-    filterSchema,
-    props.filterStore,
-    props.onAddFilter,
-    props.onFiltersApplied,
-    t,
-  ]);
+  }, [applyFilter, filterStore, filtersRevision, getFieldOptions]);
 
   const handleRowClick = useCallback(
     (minion: MinionShortSchema) => {
       drawer.toggle({
-        slug: props.slug,
+        slug,
         minionId: minion.minion_id ?? minion.id,
         drawerId: minion.id,
         innerId: minion.id,
       });
     },
-    [drawer.toggle, props.slug]
+    [drawer.toggle, slug]
   );
 
   return (
     <>
       <FastTable.Provider>
-        {props.toolbar}
+        {toolbar}
 
         <MinionsTable
           tableId="core-minions"
           columns={columns}
           getRowId={(row) => row.id}
           getRowClassName={getMinionRowClassName}
-          data={props.minionsStore.minions}
-          total={props.minionsStore.totalMinions}
-          isLoading={props.minionsStore.isLoading}
-          onRefresh={props.onRefresh}
-          loader={props.minionsStore.minionsLoad}
-          pagination={props.minionsStore.pagination}
-          sorting={props.minionsStore.sorting}
-          onRowSelectionChange={props.onRowSelectionChange}
-          rowSelection={props.rowSelection}
+          data={minionsStore.minions}
+          total={minionsStore.totalMinions}
+          isLoading={minionsStore.isLoading}
+          onRefresh={onRefresh}
+          loader={minionsStore.minionsLoad}
+          pagination={minionsStore.pagination}
+          sorting={minionsStore.sorting}
+          onRowSelectionChange={onRowSelectionChange}
+          rowSelection={rowSelection}
           enableRowSelectionShortcuts
-          onLazyLoad={(pagination, sorting) =>
-            props.minionsStore.handleLazyLoad(pagination, sorting)
-          }
+          onLazyLoad={(pagination, sorting) => minionsStore.handleLazyLoad(pagination, sorting)}
           activeRowId={drawer.activeRowId}
           bodyRef={drawer.mainContentRef}
           onRowClick={handleRowClick}

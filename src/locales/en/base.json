@@ -188,7 +188,6 @@
       "inactive": "Not Active",
       "never-active": "Never Active"
     },
-    "filter-applied": "Filter applied",
     "filter-value-unsupported": "This value cannot be used in a filter",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
     "subcollection-info": "This collection is a subcollection of",
