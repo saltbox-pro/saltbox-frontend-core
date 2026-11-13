@@ -9,35 +9,57 @@ import {
 import { ReactNode } from "react";
 import type { OptionList } from "react-querybuilder";
 
-import type { TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
+import type { DurationFieldUnit } from "saltbox-core/shared/utils/job-modal-utils";
 
 export type SelectedTaskTemplate =
   | { kind: "template"; sourceId: string; templateId: string; sourceName?: string }
   | { kind: "custom-function"; fun: string };
 
-export type TaskOverviewData = {
-  template: TaskTemplateModel;
-  configuration: TaskConfigurationFormData;
-  context: TaskCreationContext;
+export type TaskDurationParts = {
+  value: number | null;
+  unit: DurationFieldUnit;
+};
+
+export type TaskDurationValue = {
+  value: number;
+  unit: DurationFieldUnit;
 };
 
 export type TaskConfigurationFormData = {
   task_template_id: string;
   batch_size: number;
   max_retries: number;
-  retry_delay: number;
+  retry_delay: TaskDurationParts;
   max_jobs_count_at_same_time: number;
-  ttl_jobs?: number;
-  ttl_task?: number;
+  ttl_jobs?: TaskDurationParts;
+  ttl_task?: TaskDurationParts;
   save_pillars_as_default: boolean;
   data: TaskData;
+};
+
+export type CompleteTaskConfiguration = Omit<
+  TaskConfigurationFormData,
+  "retry_delay" | "ttl_jobs" | "ttl_task"
+> & {
+  retry_delay: TaskDurationValue;
+  ttl_jobs?: TaskDurationValue;
+  ttl_task?: TaskDurationValue;
+};
+
+export type TaskSettingsFormValues = Omit<
+  TaskConfigurationFormData,
+  "data" | "retry_delay" | "ttl_jobs" | "ttl_task"
+>;
+
+export type TaskOverviewData = {
+  template: TaskTemplateModel;
+  configuration: CompleteTaskConfiguration;
+  context: TaskCreationContext;
 };
 
 export type TaskTemplateDraft = {
   configuration: TaskConfigurationFormData;
   showAdvanced: boolean;
-  ttlJobsUnit?: TtlUnit;
-  ttlTaskUnit?: TtlUnit;
 };
 
 export type TaskCreationContext = {

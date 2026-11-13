@@ -358,8 +358,8 @@
     "max-retries": "Max retries",
     "max-retries-tooltip": "Maximal number of retries on error",
     "max-retries-error-required": "Max retries is required",
-    "retry-delay": "Retry delay (s)",
-    "retry-delay-tooltip": "Delay in seconds before retrying a failed task",
+    "retry-delay": "Retry delay",
+    "retry-delay-tooltip": "Delay before retrying a failed task",
     "retry-delay-error-required": "Retry delay is required",
     "max-parallel-jobs": "Parallel jobs",
     "max-parallel-jobs-tooltip": "Maximal number of parallel jobs",
@@ -414,7 +414,6 @@
       "max-parallel-jobs": "Parallel jobs",
       "max-retries": "Max retries",
       "retry-delay": "Retry delay",
-      "retry-delay-seconds": "{{count}} sec",
       "ttl-jobs": "Command response timeout",
       "target-info": "Target info",
       "collection": "Collection",
@@ -521,13 +520,7 @@
       "status-timeout": "Timeout",
       "status-success": "Success",
       "status-failed": "Failed",
-      "status-ignored": "Ignored",
-      "time-units": {
-        "milliseconds": "ms",
-        "seconds": "s",
-        "minutes": "m",
-        "hours": "h"
-      }
+      "status-ignored": "Ignored"
     },
     "minions-nav": {
       "list-all": "All"
@@ -909,9 +902,6 @@
     "hint-example-label": "Example:",
     "advanced-settings": "Advanced settings",
     "timeout-label": "Command response timeout",
-    "timeout-unit-seconds": "Sec",
-    "timeout-unit-minutes": "Min",
-    "timeout-unit-hours": "Hour",
     "error-job-create": "Failed to create job",
     "warning-template-unavailable": "Failed to load the job template. The form is opened with default parameters"
   },

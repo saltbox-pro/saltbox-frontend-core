@@ -8,13 +8,19 @@ import type {
 import { isValidDataWithAjv } from "@saltbox/saltbox-frontend-common";
 
 import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
+import { resolveTemplateDefaultTtlSeconds } from "saltbox-core/shared/utils/job-ttl-utils";
 import { apiCoreStore } from "saltbox-core/store";
 
-import { TaskConfigurationFormData, TaskCreationContext } from "../type/types";
+import { durationPartsToSeconds, durationValueToSeconds } from "../helpers/duration-parts";
+import type {
+  CompleteTaskConfiguration,
+  TaskConfigurationFormData,
+  TaskCreationContext,
+} from "../type/types";
 
 export class TaskCreationService {
   buildCreateRequest(
-    formData: TaskConfigurationFormData,
+    formData: CompleteTaskConfiguration,
     context: TaskCreationContext,
     taskTemplate?: TaskTemplateModel
   ): TaskCreateRequestSchema {
@@ -27,10 +33,11 @@ export class TaskCreationService {
       ...this.buildTargeting(context),
       batch_size: formData.batch_size,
       max_retries: formData.max_retries,
-      retry_delay: formData.retry_delay,
+      retry_delay: durationValueToSeconds(formData.retry_delay),
       max_jobs_count_at_same_time: formData.max_jobs_count_at_same_time,
-      ttl_jobs: formData.ttl_jobs,
-      ttl_task: formData.ttl_task || undefined,
+      ttl_jobs:
+        durationPartsToSeconds(formData.ttl_jobs) ?? resolveTemplateDefaultTtlSeconds(taskTemplate),
+      ttl_task: durationPartsToSeconds(formData.ttl_task),
       save_pillars_as_default: formData.save_pillars_as_default,
       data: this.filterTaskData(formData.data, taskTemplate),
     };
@@ -80,7 +87,7 @@ export class TaskCreationService {
     return {
       batch_size: 0,
       max_retries: 1,
-      retry_delay: 10,
+      retry_delay: { value: 10, unit: "seconds" },
       max_jobs_count_at_same_time: 1,
     };
   }

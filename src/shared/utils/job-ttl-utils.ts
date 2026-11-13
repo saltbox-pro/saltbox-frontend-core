@@ -1,7 +1,18 @@
-import { JobModel, JobReturnStatus, JobStatus } from "@saltbox/saltbox-core-api-client";
-import { EMPTY_VALUE } from "@saltbox/saltbox-frontend-common";
+import {
+  JobModel,
+  JobReturnStatus,
+  JobStatus,
+  type TaskTemplateModel,
+} from "@saltbox/saltbox-core-api-client";
+import {
+  convertDurationUnitToSeconds,
+  EMPTY_VALUE,
+  parseTtlValue,
+} from "@saltbox/saltbox-frontend-common";
 
-import { formatExecutionTime } from "./execution-time-utils";
+import { DEFAULT_JOB_TIMEOUT_SECONDS } from "saltbox-core/shared/constants/job-timeout";
+
+import { formatDurationDisplay, type DurationDisplay } from "./duration-display";
 
 type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
@@ -48,7 +59,21 @@ export const formatTtlValue = (seconds: number | null | undefined, t: TranslateF
   if (seconds === 0) {
     return t("jobs.ttl-unlimited");
   }
-  return formatExecutionTime(seconds, t);
+  return formatDurationDisplay({ seconds }, t);
+};
+
+export const resolveDefaultTtlSeconds = (ttl: unknown): number =>
+  parseTtlValue(ttl) ?? DEFAULT_JOB_TIMEOUT_SECONDS;
+
+export const resolveTemplateDefaultTtlSeconds = (template?: TaskTemplateModel): number =>
+  resolveDefaultTtlSeconds(template?.defaults?.ttl);
+
+export const formatTtlDisplay = (duration: DurationDisplay, t: TranslateFn): string => {
+  const seconds =
+    "unit" in duration
+      ? convertDurationUnitToSeconds(duration.value, duration.unit)
+      : duration.seconds;
+  return seconds === 0 ? t("jobs.ttl-unlimited") : formatDurationDisplay(duration, t);
 };
 
 export const parseManualTtlSeconds = (searchText: string | undefined): number | null => {
@@ -79,7 +104,7 @@ export const buildTtlOptions = ({
       value: manualSeconds,
       label: t("jobs.ttl-manual-option", {
         seconds: manualSeconds,
-        formatted: formatExecutionTime(manualSeconds, t),
+        formatted: formatDurationDisplay({ seconds: manualSeconds }, t),
       }),
     });
   }

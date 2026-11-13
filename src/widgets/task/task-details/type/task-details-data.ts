@@ -1,6 +1,8 @@
 import type { TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
 import type { OptionList } from "react-querybuilder";
 
+import type { DurationDisplay } from "saltbox-core/shared/utils/duration-display";
+
 export type TaskDetailsData = {
   template: {
     title: string;
@@ -12,9 +14,9 @@ export type TaskDetailsData = {
     batchSize: number;
     maxParallelJobs: number;
     maxRetries: number;
-    retryDelay: number;
-    ttlJobs?: number | null;
-    ttlTask?: number | null;
+    retryDelay?: DurationDisplay | null;
+    ttlJobs?: DurationDisplay | null;
+    ttlTask?: DurationDisplay | null;
   };
   target: {
     collection?: string;

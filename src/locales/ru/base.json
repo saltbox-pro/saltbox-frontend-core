@@ -358,8 +358,8 @@
     "max-retries": "Максимум попыток",
     "max-retries-tooltip": "Количество повторных попыток при ошибке",
     "max-retries-error-required": "Максимальное количество попыток обязательно",
-    "retry-delay": "Задержка повтора (с)",
-    "retry-delay-tooltip": "Задержка в секундах перед повторной попыткой",
+    "retry-delay": "Задержка повтора",
+    "retry-delay-tooltip": "Задержка перед повторной попыткой",
     "retry-delay-error-required": "Задержка повтора обязательна",
     "max-parallel-jobs": "Параллельные задачи",
     "max-parallel-jobs-tooltip": "Максимальное количество одновременных задач",
@@ -414,7 +414,6 @@
       "max-parallel-jobs": "Параллельные задачи",
       "max-retries": "Максимум попыток",
       "retry-delay": "Задержка повтора",
-      "retry-delay-seconds": "{{count}} сек",
       "ttl-jobs": "Время ожидания ответа команды",
       "target-info": "Целевые узлы",
       "collection": "Коллекция",
@@ -521,13 +520,7 @@
       "status-timeout": "Тайм-аут",
       "status-success": "Успешно",
       "status-failed": "Ошибка",
-      "status-ignored": "Игнорировано",
-      "time-units": {
-        "milliseconds": "мс",
-        "seconds": "с",
-        "minutes": "м",
-        "hours": "ч"
-      }
+      "status-ignored": "Игнорировано"
     },
     "minions-nav": {
       "list-all": "Все"
@@ -909,9 +902,6 @@
     "hint-example-label": "Пример:",
     "advanced-settings": "Расширенные настройки",
     "timeout-label": "Время ожидания ответа команды",
-    "timeout-unit-seconds": "Сек",
-    "timeout-unit-minutes": "Мин",
-    "timeout-unit-hours": "Час",
     "error-job-create": "Не удалось создать команду",
     "warning-template-unavailable": "Не удалось загрузить шаблон команды. Форма открыта с параметрами по умолчанию"
   },

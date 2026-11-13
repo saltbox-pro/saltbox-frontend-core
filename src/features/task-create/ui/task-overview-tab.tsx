@@ -9,6 +9,7 @@ import { observer } from "mobx-react-lite";
 import { type ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { resolveTemplateDefaultTtlSeconds } from "saltbox-core/shared/utils/job-ttl-utils";
 import { TaskDetails, type TaskDetailsData } from "saltbox-core/widgets/task/task-details";
 
 import { useTaskTargetingMasters } from "../hooks/use-task-targeting-masters";
@@ -77,7 +78,7 @@ export const TaskOverviewTab = observer(function TaskOverviewTab({
         maxParallelJobs: configuration.max_jobs_count_at_same_time,
         maxRetries: configuration.max_retries,
         retryDelay: configuration.retry_delay,
-        ttlJobs: configuration.ttl_jobs,
+        ttlJobs: configuration.ttl_jobs ?? { seconds: resolveTemplateDefaultTtlSeconds(template) },
         ttlTask: configuration.ttl_task,
       },
       target: {

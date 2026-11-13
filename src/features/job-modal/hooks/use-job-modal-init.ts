@@ -26,9 +26,9 @@ import {
   hasBaselineJobArgs,
   parseTtlValue,
   pruneKwargsBySchema,
-  totalSecondsToTtlParts,
-  type TtlUnit,
+  type DurationFieldUnit,
 } from "saltbox-core/shared/utils/job-modal-utils";
+import { resolveDefaultTtlSeconds } from "saltbox-core/shared/utils/job-ttl-utils";
 import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 import { apiCoreStore } from "saltbox-core/store";
 
@@ -219,7 +219,7 @@ export const useJobModalInit = ({
   const [jsonFormValue, setJsonFormValue] = useState<Record<string, unknown>>({});
   const [baselineKwarg, setBaselineKwarg] = useState<Record<string, unknown>>();
   const [ttlValue, setTtlValue] = useState<number | null>(null);
-  const [ttlUnit, setTtlUnit] = useState<TtlUnit>("seconds");
+  const [ttlUnit, setTtlUnit] = useState<DurationFieldUnit>("seconds");
 
   const runInitRef = useRef<() => Promise<JobModalInitResult>>(() =>
     Promise.resolve({ kind: "no-masters" })
@@ -255,13 +255,11 @@ export const useJobModalInit = ({
 
   const applyTtlFromInitialOrDefault = useCallback(
     (totalSeconds: number | null | undefined, defaultTtl: unknown) => {
-      if (totalSeconds != null && Number.isFinite(totalSeconds) && totalSeconds >= 0) {
-        const parts = totalSecondsToTtlParts(totalSeconds);
-        setTtlValue(parts.value);
-        setTtlUnit(parts.unit);
-        return;
-      }
-      setTtlValue(parseTtlValue(defaultTtl));
+      const seconds =
+        totalSeconds != null && Number.isFinite(totalSeconds) && totalSeconds >= 0
+          ? totalSeconds
+          : parseTtlValue(defaultTtl);
+      setTtlValue(seconds);
       setTtlUnit("seconds");
     },
     []
@@ -421,6 +419,9 @@ export const useJobModalInit = ({
     setTtlValue,
     ttlUnit,
     setTtlUnit,
+    defaultTtlSeconds: resolveDefaultTtlSeconds(
+      paramsSource == null ? undefined : getSourceDefaultTtl(paramsSource)
+    ),
     initializeModal,
     resetLoadedData,
     cancelInit,
