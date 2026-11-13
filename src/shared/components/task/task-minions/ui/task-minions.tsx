@@ -100,21 +100,22 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
             },
           ],
           color: "accent",
-          width: 400,
-          minWidth: 300,
+          width: "23%",
+          minWidth: 320,
         },
       }),
       columnHelper.accessor("master", {
         header: t("task.minions.table-master"),
+        meta: { width: "17%", minWidth: 240 },
       }),
       columnHelper.accessor("status", {
         header: t("task.minions.table-status"),
         cell: (data) => <MinionTaskStatus status={data.getValue()} />,
-        meta: { width: 150 },
+        meta: { width: "15%", minWidth: 200 },
       }),
       columnHelper.accessor("count_runs", {
         header: t("task.minions.table-count-runs"),
-        meta: { width: 205 },
+        meta: { width: "15%" },
       }),
       columnHelper.accessor("start_last_dt", {
         header: t("task.minions.table-started"),
