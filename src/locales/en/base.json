@@ -46,6 +46,7 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "grains": "Grains",
+    "pillars": "Client Data",
     "extra-data": {
       "tab": "Extra data",
       "category-column": "Category",
@@ -54,8 +55,36 @@
       "search-placeholder": "Search records",
       "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
       "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
-      "export-scope-collection": "all extra data records of the \"{{category}}\" category for all clients in the collection that match the current search",
+      "export-scope-collection-aggregated": "a summary of \"{{category}}\" extra data for the collection (unique values and client counts) that match the current search",
+      "export-scope-collection-flat": "\"{{category}}\" extra data per collection client (minion_id, master, and category fields) that match the current search",
       "export-subject": "extra data",
+      "export-format-label": "File format",
+      "export-format-aggregated": "Collection summary",
+      "export-format-flat": "Per client",
+      "import": {
+        "button": "Import CSV",
+        "title": "Import extra data: {{category}}",
+        "hint": "Upload a CSV in the \"Per client\" format: minion_id, master, and category fields",
+        "file": "CSV file",
+        "file-required": "Select a CSV file",
+        "file-invalid": "Only CSV files are allowed",
+        "file-drag-title": "Drop a CSV here or click to browse",
+        "file-drag-hint": "One UTF-8 encoded file",
+        "mode-label": "Import mode",
+        "mode-required": "Select import mode",
+        "mode-append": "Append to existing data",
+        "mode-replace": "Replace all category data",
+        "mode-single-item-tooltip": "This category allows only one record per client. Only replace mode is available",
+        "unknown-minion-label": "Unknown or out-of-collection clients",
+        "unknown-minion-required": "Select how to handle unknown clients",
+        "unknown-minion-error": "Stop the import",
+        "unknown-minion-skip": "Skip those rows",
+        "submit": "Import",
+        "success-title": "Import into \"{{category}}\" completed",
+        "success-description": "Loaded: {{itemsCount}} (clients: {{minionsCount}})",
+        "success-description-with-skipped": "Loaded: {{itemsCount}} (clients: {{minionsCount}})\nNot loaded: {{skippedCount}}",
+        "error": "Failed to import extra data"
+      },
       "add-data": "Add extra data",
       "delete-item": {
         "modal-title": "Delete extra data",
@@ -97,8 +126,9 @@
     "os-full-name": "OS Full Name",
     "os-release": "OS Release",
     "hostname": "Hostname",
-    "local-hostname": "Local Hostname",
     "salt-master": "Salt Master",
+    "salt-master-grains": "Salt Master (grains)",
+    "never-active-alert": "The minion has never connected yet. Grains data is not available",
     "domain": "Domain",
     "fqdn": "FQDN",
     "uuid": "UUID",
@@ -153,8 +183,11 @@
     "export-scope-selected": "all selected minions",
     "actions-select-items": "Select minions",
     "never-synced": "never",
-    "efi-yes": "Yes",
-    "efi-no": "No",
+    "activity-status": {
+      "active": "Active",
+      "inactive": "Not Active",
+      "never-active": "Never Active"
+    },
     "filter-applied": "Filter applied",
     "filter-value-unsupported": "This value cannot be used in a filter",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
@@ -185,12 +218,15 @@
     "copy-minion-id": "Copy Minion ID",
     "copied": "Copied",
     "filter-fields": {
+      "collection": "Collection",
       "created": "Created",
       "modified": "Modified",
       "minion_id": "Minion ID",
       "master": "Master",
       "last_activity": "Last Activity",
       "last_activity_seconds": "Seconds From Last Activity",
+      "is_never_active": "Never Active",
+      "is_not_active": "Not Active",
       "extra": "Extra aggregated data",
       "grains": {
         "host": "Host",
@@ -297,7 +333,9 @@
     "policy-created-successfully": "Policy created successfully",
     "error-creating-policy": "Error creating policy",
     "ttl-task": "Policy lifetime",
-    "ttl-task-tooltip": "How long the policy may run after it is started, including waiting for new minions. When the time is up, the policy is stopped. Unlimited if empty"
+    "ttl-task-tooltip": "How long the policy may run after it is started, including waiting for new minions. When the time is up, the policy is stopped. Unlimited if empty",
+    "target-masters-empty": "No minions currently match the targeting: the policy will wait for matching minions to appear",
+    "target-masters-not-accepted": "Some minions are connected to masters that are not accepted or not registered: the policy may not run on them"
   },
   "task-create": {
     "configure-task-title": "Task Configuration",
@@ -346,7 +384,12 @@
     "warning-apply-to-whole-collection": "{{entityType}} will be applied to all minions in the \"{{collectionName}}\" collection",
     "warning-apply-to-filtered-collection": "{{entityType}} will be applied to filtered minions in the \"{{collectionName}}\" collection",
     "confirm-apply-to-whole-collection-description": "You are about to launch {{entityType}} on all minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
-    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems."
+    "confirm-apply-to-filtered-collection-description": "You are about to launch {{entityType}} on filtered minions in the \"{{collectionName}}\" collection. This action may affect a large number of systems.",
+    "target-masters-total-minions": "Total minions: {{total}}",
+    "target-masters-empty": "No minions match the targeting: the task will not be executed",
+    "target-masters-not-accepted": "Some minions are connected to masters that are not accepted or not registered: the task may not run on them",
+    "target-masters-no-master": "No master",
+    "target-masters-unregistered": "Not registered"
   },
   "template-picker": {
     "title": "Select template",
@@ -378,10 +421,15 @@
       "target-minions": "Target minions",
       "query-based-selection": "Query based",
       "no-query-selection": "Whole collection",
+      "never-active-minions-warning": {
+        "title": "The {{entityType}} targeting includes minions that have never connected to the system",
+        "description": "The {{entityType}} will start running on these minions only after their first connection to a master",
+        "count": "Number of such minions: {{count}}"
+      },
       "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
-    "details-title": "Task Details",
+    "details-title": "Task Parameters",
     "page-title": "{{templateName}}: #{{taskId}}",
     "breadcrumbs-title-template": "Task: {{templateName}}",
     "breadcrumbs-title-empty": "Task: #{{taskId}}",
@@ -418,6 +466,8 @@
     "type-policy": "Policy",
     "type-classic-accusative": "task",
     "type-policy-accusative": "policy",
+    "type-classic-genitive": "task",
+    "type-policy-genitive": "policy",
     "minions": {
       "table-minion-id": "Minion ID",
       "table-master": "Master",
@@ -500,7 +550,7 @@
   },
   "policy": {
     "show-details": "Policy Parameters",
-    "details-title": "Policy Details"
+    "details-title": "Policy Parameters"
   },
   "extra-data-categories": {
     "title": "Extra data categories",
@@ -606,7 +656,9 @@
     "table-master-id": "Master ID",
     "table-status": "Status",
     "table-availability": "Availability",
-    "table-minions-count": "Minions",
+    "table-total-minions-count": "Total minions",
+    "table-never-active-minions-count": "Awaiting connection",
+    "table-not-active-minions-count": "Inactive minions",
     "table-new": "New",
     "table-rejected": "Rejected",
     "table-accepted": "Accepted",
@@ -617,8 +669,6 @@
     "table-actions": "Actions",
     "table-accept": "Accept",
     "table-reject": "Reject",
-    "table-accept-title": "Accept Master",
-    "table-reject-title": "Reject Master",
     "availability-available": "Available",
     "availability-unavailable": "Unavailable",
     "check-availability": "Check availability",
@@ -707,7 +757,7 @@
     }
   },
   "pillars": {
-    "title": "Pillars",
+    "title": "Client Data",
     "create": {
       "add-button": "Create pillar",
       "modal-title-root": "Create a global pillar",
@@ -900,6 +950,10 @@
     "no-description": "This collection has no description",
     "create-subcollection": "Create subcollection",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
+    "duplicate": "Duplicate",
+    "duplicate-title": "Copy of {{title}}",
+    "duplicate-drawer-title": "Duplicate collection",
+    "tooltip-duplicate-blocked": "Save collection changes before duplicating",
     "edit-structure": "Edit structure",
     "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
@@ -922,6 +976,9 @@
     "error-updating-collection": "Error updating collection",
     "collection-deleted-successfully": "Collection deleted successfully",
     "error-deleting-collection": "Error deleting collection",
+    "error-unknown-references": "The filter references collections that do not exist: {{collections}}",
+    "error-reference-cycle": "Collection references form a cycle: {{path}}",
+    "error-referenced-by-collections": "The collection is referenced in filters of other collections: {{collections}}",
     "open-collection-page": "Open collection page",
     "parent-collection": "Parent collection",
     "parent-collection-required": "Parent collection is required",
@@ -947,6 +1004,9 @@
     "save-block": "Save block",
     "field-label": "Data field",
     "field-placeholder": "Select field",
+    "field-group-general": "General data",
+    "field-group-grains": "Grains",
+    "field-group-extra": "Extra data",
     "preset-label": "Visualization preset",
     "select-field-first": "Select a field first",
     "kpi-total": "Total values",
@@ -959,16 +1019,25 @@
     "delete-card": "Delete",
     "delete-card-confirm-title": "Delete statistics block?",
     "delete-card-confirm-description": "This action cannot be undone",
+    "delete-global-card-confirm-description": "The block will be deleted in all collections, this action cannot be undone",
     "reset-button": "Reset",
     "reset-confirm-title": "Reset tab to default?",
     "reset-confirm-description": "Blocks of the current tab will be replaced with the default set, this action cannot be undone",
     "reset-confirm-description-empty": "All blocks of the current tab will be removed, this action cannot be undone",
-    "first-tab-name": "Statistics",
+    "reset-confirm-description-global": "All blocks of the tab will be removed in all collections, this action cannot be undone",
+    "first-tab-name": "Overview",
     "new-tab-name": "New tab",
     "rename-tab": "Rename tab",
     "delete-tab": "Delete tab",
+    "delete-global-tab-confirm-title": "Delete global tab?",
+    "delete-global-tab-confirm-description": "The tab will be deleted in all collections, this action cannot be undone",
     "tab-name-empty": "Enter a tab name",
     "tab-name-duplicate": "A tab with this name already exists",
+    "tab-name-reserved": "This name is reserved for the main tab",
+    "tab-name-label": "Name",
+    "add-tab-title": "Add tab",
+    "tab-local-checkbox": "Only for this collection",
+    "global-tab-tooltip": "Global tab: shown in all collections",
     "empty-title": "No charts added yet",
     "empty-description": "Add at least one statistics block to display charts",
     "preset-donut": "Donut chart",
@@ -1173,14 +1242,14 @@
     "sync": "Sync"
   },
   "entity-source": {
-    "column": "Source type",
+    "column": "Source",
     "id-column": "Source ID",
     "type": {
       "rest": "Manual",
-      "task": "From task",
-      "scheduler": "From scheduler",
-      "migration": "From scenario",
-      "system": "By system"
+      "task": "Task",
+      "scheduler": "Scheduler",
+      "migration": "Scenario",
+      "system": "System"
     }
   },
   "task-template-editor": {

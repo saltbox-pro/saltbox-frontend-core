@@ -470,7 +470,7 @@ export const TaskModal = observer(function TaskModal({
           }
           onFlowDismissed();
         }}
-        width="min(80vw, 800px)"
+        width="min(80vw, 900px)"
         footer={null}
         maskClosable={false}
         closable={!isCreating}

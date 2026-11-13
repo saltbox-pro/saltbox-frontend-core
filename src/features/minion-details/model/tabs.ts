@@ -19,6 +19,23 @@ export const MINION_DETAILS_DRAWER_TAB_KEYS = [
   "extra-data",
 ] as const satisfies readonly BuiltinMinionDetailsTabKey[];
 
+const NEVER_ACTIVE_MINION_TAB_KEYS = [
+  "dashboard",
+  "pillars",
+  "extra-data",
+] as const satisfies readonly BuiltinMinionDetailsTabKey[];
+
+export function isMinionDetailsTabDisabled(key: string, isNeverActive: boolean): boolean {
+  return isNeverActive && !(NEVER_ACTIVE_MINION_TAB_KEYS as readonly string[]).includes(key);
+}
+
+export function resolveMinionDetailsTabKey(
+  key: MinionDetailsTabKey,
+  isNeverActive: boolean
+): MinionDetailsTabKey {
+  return isMinionDetailsTabDisabled(key, isNeverActive) ? DEFAULT_MINION_DETAILS_TAB : key;
+}
+
 export function getMinionDetailsTabKeys(
   isInDrawer: boolean
 ): readonly BuiltinMinionDetailsTabKey[] {

@@ -19,6 +19,7 @@ import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details
 import { MinionTaskResultsDrawer } from "saltbox-core/features/task/job-return";
 import { MinionTaskStatus } from "saltbox-core/shared/components/minion-task-status";
 import { exportTaskMinionsCsv } from "saltbox-core/shared/components/task/task-minions/service/export-task-minions-csv.service";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { TaskStore } from "saltbox-core/store";
 import { useRestartFailedMinionHandler } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
@@ -37,6 +38,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
 
   const taskDrawer = useInfoDrawer<TaskMinionListResponse, string, HTMLTableSectionElement>({
     getId: (minion) => minion.id,
+    drawerId: DRAWER_IDS.minionDetails,
   });
 
   const selectedMinion = useMemo(() => {

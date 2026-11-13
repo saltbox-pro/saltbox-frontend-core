@@ -18,6 +18,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ExtraDataExportButton } from "saltbox-core/features/extra-data-export";
+import { ExtraDataImportButton } from "saltbox-core/features/extra-data-import";
+import { canAddExtraDataManually } from "saltbox-core/features/minion-extra-data-editor";
 import { ExtraDataSearchField } from "saltbox-core/shared/components/extra-data-search-field";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
@@ -130,6 +132,8 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
         })
       : "";
 
+  const canImport = canAddExtraDataManually(category);
+
   return (
     <FastTable.Provider>
       <Flex vertical className={styles.root}>
@@ -145,6 +149,13 @@ export const CollectionExtraDataCategoryTable = observer(function CollectionExtr
               collectionSlug={collectionSlug}
               search={store.search}
             />
+            {canImport && (
+              <ExtraDataImportButton
+                category={category}
+                collectionSlug={collectionSlug}
+                onSuccess={() => store.loadRecords()}
+              />
+            )}
             <FastTable.Toolbar />
           </div>
         </div>

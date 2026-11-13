@@ -39,7 +39,7 @@ export class JobStore {
   @observable tablePagination: PaginationState;
   @observable mongoDBQuery: object | undefined;
 
-  private staleJobReturnDataIds: Set<string> = new Set();
+  private readonly staleJobReturnDataIds = observable.set<string>();
   private shouldLoadJobReturnsAfterStarting = false;
   private readonly initialSorting: SortingState;
   private minionId: string | null = null;
@@ -96,7 +96,6 @@ export class JobStore {
       apiCoreStore.jobsApi?.jobReturnData({ job_return_mongo_id: jobReturnId }),
     onSuccess: (data, jobReturnId) => {
       this.jobReturnDataById = { ...this.jobReturnDataById, [jobReturnId]: data };
-      this.staleJobReturnDataIds.delete(jobReturnId);
     },
   });
 
@@ -181,6 +180,7 @@ export class JobStore {
     this.jobReturnTableTotal = 0;
   };
 
+  @action
   loadJobReturnData = (jobReturnId: string, opts?: { force?: boolean }): Promise<void> => {
     if (!jobReturnId) return Promise.resolve();
 
@@ -188,6 +188,9 @@ export class JobStore {
     const hasCachedData = Object.prototype.hasOwnProperty.call(this.jobReturnDataById, jobReturnId);
     if (hasCachedData && !shouldForceRefetch && !opts?.force) return Promise.resolve();
 
+    // Сбрасываем при старте, а не в onSuccess: обновление из сокета во время запроса
+    // должно снова пометить данные устаревшими и вызвать повторную загрузку.
+    this.staleJobReturnDataIds.delete(jobReturnId);
     return this.jobReturnDataLoad.run(jobReturnId);
   };
 

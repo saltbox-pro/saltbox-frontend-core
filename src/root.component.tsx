@@ -8,7 +8,9 @@ import { ErrorBoundary } from "react-error-boundary";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router";
 
 import "react-querybuilder/dist/query-builder.css";
+import { MASTER_PAGE_ROUTE } from "saltbox-core/features/masters";
 import DefaultMinionsPage from "saltbox-core/routes/minions";
+import { COLLECTIONS_PATH } from "saltbox-core/shared/constants/collection";
 import { i18nStore } from "saltbox-core/store";
 
 import { coreResources } from "./i18n-resources";
@@ -35,7 +37,7 @@ import AggregatedTasksPage from "./routes/tasks";
 import "@saltbox/saltbox-frontend-common/dist/saltbox-frontend-common.css";
 
 const MODULE_NAME = "Core";
-const MAIN_PATH = "/core/minions";
+const MAIN_PATH = COLLECTIONS_PATH;
 
 const { createRoutes } = createModuleErrorBoundaryKit({
   ErrorBoundary,
@@ -50,7 +52,7 @@ const coreRoutes = createRoutes(Route, [
   { path: `${MAIN_PATH}/:slug/:mid`, element: <MinionPage /> },
   { path: `${MAIN_PATH}/:slug`, element: <MinionsPage /> },
   { path: "/core/masters", element: <MastersPage /> },
-  { path: "/core/masters/:mid", element: <MasterPage /> },
+  { path: MASTER_PAGE_ROUTE, element: <MasterPage /> },
   { path: "/core/pillars", element: <PillarsPage /> },
   { path: "/core/collections", element: <CollectionsPage /> },
   { path: "/core/masters/:master_id/minion/:minion_id", element: <MinionRedirectPage /> },

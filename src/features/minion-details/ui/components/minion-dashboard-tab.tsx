@@ -1,18 +1,24 @@
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import {
-  CopyToClipboardButton,
+  BooleanDisplay,
   FilterActionButton,
   formatInfoCardTextValue,
   InfoCardsGrid,
   type InfoCardsGridProps,
   InfoDescriptions,
-  type InfoDescriptionsProps,
+  type InfoDescriptionsItem,
+  isEmptyDisplayValue,
 } from "@saltbox/saltbox-frontend-common";
-import { Collapse, type CollapseProps, Flex, Spin, Typography, type FlexProps } from "antd";
+import { Alert, Collapse, type CollapseProps, Flex, Spin, Typography } from "antd";
 import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { MasterLink } from "saltbox-core/features/masters";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
+import {
+  getMinionActivityStatus,
+  isMinionNeverActive,
+} from "saltbox-core/shared/helpers/minion-activity";
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
@@ -26,21 +32,23 @@ type SimpleGrainKeys = {
     : never]: MinionDetailSchema["grains"][K];
 };
 
+type MinionDetailItemProps = Partial<
+  Omit<InfoDescriptionsItem, "children" | "copyText" | "actions">
+>;
+
 interface MinionSimpleDetailView {
   key: keyof SimpleGrainKeys;
   name: string;
-  itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
-    grainValueProps?: Partial<FlexProps>;
-  };
+  itemProps?: MinionDetailItemProps;
 }
 
 interface MinionExtendDetailView {
   key: string;
   value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
+  render?: (minionDetailSchema: MinionDetailSchema) => ReactNode;
   name: string;
-  itemProps?: Partial<InfoDescriptionsProps["items"][number]> & {
-    grainValueProps?: Partial<FlexProps>;
-  };
+  filterField?: string;
+  itemProps?: MinionDetailItemProps;
 }
 
 type MinionDetailView = MinionSimpleDetailView | MinionExtendDetailView;
@@ -62,6 +70,9 @@ const transformValueToString = (value: unknown): string => {
 };
 
 const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
+  if (value.length === 0) {
+    return null;
+  }
   return (
     <Flex vertical>
       {value.map((item, index) => (
@@ -71,83 +82,85 @@ const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
   );
 };
 
+const renderGrainValue = (value: ReactNode, keyPrefix: string): ReactNode => {
+  if (typeof value === "boolean") {
+    return <BooleanDisplay value={value} />;
+  }
+  if (Array.isArray(value)) {
+    return renderArrayValue(value, keyPrefix);
+  }
+  return value;
+};
+
+const renderFilterButton = (
+  onFilterButton: OnFilterButtonHandler | undefined,
+  name: string,
+  value: unknown
+): ReactNode => {
+  if (!onFilterButton?.canApply(name, value)) {
+    return null;
+  }
+
+  return (
+    <FilterActionButton
+      active={onFilterButton.isActive(name, value)}
+      onClick={() => onFilterButton({ name, value })}
+    />
+  );
+};
+
+interface MinionDetailViewsRenderOptions {
+  schema: MinionDetailSchema;
+  onFilterButton?: OnFilterButtonHandler;
+}
+
 const minionDetailsViewsToDescriptionItems = (
   minionDetailViews: MinionDetailView[],
-  schema: MinionDetailSchema,
-  onFilterButton?: OnFilterButtonHandler
-): InfoDescriptionsProps["items"] => {
-  const grainNameClassName = `minion-details-grain-name ${styles.minionDetailsGrainName}`;
-
+  { schema, onFilterButton }: MinionDetailViewsRenderOptions
+): InfoDescriptionsItem[] => {
   return minionDetailViews.map((minionDetailView) => {
-    const { grainValueProps, ...restItemProps } = minionDetailView.itemProps ?? {};
+    const baseItem = {
+      key: minionDetailView.key,
+      label: minionDetailView.name,
+      ...minionDetailView.itemProps,
+    };
 
     if ("value" in minionDetailView) {
       const grainValue = minionDetailView.value(schema);
-      const grainValueString = transformGrainValueToString(grainValue);
+      if (isEmptyDisplayValue(grainValue)) {
+        return { ...baseItem, children: null };
+      }
 
       return {
-        key: minionDetailView.key,
-        label: minionDetailView.name,
-        children: (
-          <Flex justify="space-between" className="minion-details-grain">
-            <Flex className={grainNameClassName} {...grainValueProps}>
-              {grainValue}
-            </Flex>
-            <Flex className={styles.minionDetailsGrainButtons}>
-              {grainValueString !== "" && <CopyToClipboardButton text={grainValueString} />}
-            </Flex>
-          </Flex>
-        ),
-        ...restItemProps,
+        ...baseItem,
+        children: minionDetailView.render ? minionDetailView.render(schema) : grainValue,
+        copyText: transformGrainValueToString(grainValue),
+        actions:
+          minionDetailView.filterField &&
+          renderFilterButton(onFilterButton, minionDetailView.filterField, grainValue),
       };
     }
 
     const grainValue = schema.grains[minionDetailView.key];
-    const isGrainValueArray = Array.isArray(grainValue);
-    const grainValueString = isGrainValueArray
-      ? grainValue.map((item) => transformValueToString(item)).join("\n")
-      : transformValueToString(grainValue);
-    const filterFieldName = `grains.${String(minionDetailView.key)}`;
-    const canFilter = !!onFilterButton?.canApply(filterFieldName, grainValue);
-    const isActive = !!onFilterButton?.isActive(filterFieldName, grainValue);
 
     return {
-      key: minionDetailView.key,
-      label: minionDetailView.name,
-      children: grainValue ? (
-        <Flex justify="space-between" className="minion-details-grain">
-          <Flex className={grainNameClassName}>
-            {isGrainValueArray
-              ? renderArrayValue(grainValue, String(minionDetailView.key))
-              : grainValue}
-          </Flex>
-          <Flex gap={2} className={styles.minionDetailsGrainButtons}>
-            <CopyToClipboardButton text={grainValueString} />
-            {canFilter && onFilterButton && (
-              <FilterActionButton
-                active={isActive}
-                onClick={() =>
-                  onFilterButton({
-                    name: filterFieldName,
-                    value: grainValue,
-                  })
-                }
-              />
-            )}
-          </Flex>
-        </Flex>
-      ) : (
-        ""
+      ...baseItem,
+      children: renderGrainValue(grainValue, String(minionDetailView.key)),
+      copyText: Array.isArray(grainValue)
+        ? grainValue.map((item) => transformValueToString(item)).join("\n")
+        : transformValueToString(grainValue),
+      actions: renderFilterButton(
+        onFilterButton,
+        `grains.${String(minionDetailView.key)}`,
+        grainValue
       ),
-      ...restItemProps,
     };
   });
 };
 
 const minionDetailViewGroupsToCollapseItems = (
   minionDetailViewGroups: MinionDetailViewGroup[],
-  schema: MinionDetailSchema,
-  onFilterButton?: OnFilterButtonHandler
+  options: MinionDetailViewsRenderOptions
 ): CollapseProps["items"] => {
   return minionDetailViewGroups.map((minionDetailViewGroup) => {
     return {
@@ -155,11 +168,7 @@ const minionDetailViewGroupsToCollapseItems = (
       label: minionDetailViewGroup.name,
       children: (
         <InfoDescriptions
-          items={minionDetailsViewsToDescriptionItems(
-            minionDetailViewGroup.details,
-            schema,
-            onFilterButton
-          )}
+          items={minionDetailsViewsToDescriptionItems(minionDetailViewGroup.details, options)}
         />
       ),
     };
@@ -189,10 +198,19 @@ export function MinionDashboardTab({
           value: (
             <MinionLastActivityCell
               date={minion.last_activity}
-              lastActivitySeconds={minion.last_activity_seconds}
+              status={getMinionActivityStatus(minion)}
               fallback={<>{t("minions.never-synced")}</>}
             />
           ),
+        };
+      }
+
+      if (tile.kind === "minionId") {
+        return {
+          key: tile.labelKey,
+          title,
+          value: formatInfoCardTextValue(minion.minion_id),
+          copyText: minion.minion_id || undefined,
         };
       }
 
@@ -210,8 +228,15 @@ export function MinionDashboardTab({
 
   const minionGeneralDetailViews: MinionDetailView[] = [
     { key: "virtual", name: t("minions.virtualization") },
-    { key: "localhost", name: t("minions.local-hostname") },
-    { key: "master", name: t("minions.salt-master") },
+    { key: "host", name: t("minions.hostname") },
+    {
+      key: "minion-master",
+      name: t("minions.salt-master"),
+      value: (schema) => schema.master,
+      render: (schema) => <MasterLink masterId={schema.master} />,
+      filterField: "master",
+    },
+    { key: "master", name: t("minions.salt-master-grains") },
     { key: "fqdn", name: t("minions.fqdn") },
     { key: "uuid", name: t("minions.uuid") },
   ];
@@ -231,21 +256,24 @@ export function MinionDashboardTab({
         {
           key: "gpus",
           name: t("minions.gpus"),
-          value: (s) =>
-            (
-              <>
-                {Array.isArray(s.grains.gpus)
-                  ? s.grains.gpus.map((gpu) => (
-                      <div key={gpu.model} className={styles.interfaceBlock}>
-                        <div className={styles.interfaceDetails}>
-                          <div>Vendor: {gpu.vendor || ""}</div>
-                          <div>Model: {gpu.model || ""}</div>
-                        </div>
-                      </div>
-                    ))
-                  : ""}
-              </>
-            ) || "",
+          value: (s) => {
+            const gpus = s.grains.gpus;
+            if (!Array.isArray(gpus) || gpus.length === 0) {
+              return null;
+            }
+            return (
+              <Flex>
+                {gpus.map((gpu) => (
+                  <div key={gpu.model} className={styles.interfaceBlock}>
+                    <div className={styles.interfaceDetails}>
+                      <div>Vendor: {gpu.vendor || ""}</div>
+                      <div>Model: {gpu.model || ""}</div>
+                    </div>
+                  </div>
+                ))}
+              </Flex>
+            );
+          },
         },
         { key: "zfs_support", name: t("minions.zfs-support") },
         { key: "zfs_feature_flags", name: t("minions.zfs-features") },
@@ -352,26 +380,32 @@ export function MinionDashboardTab({
         {
           key: "interfaces",
           name: t("minions.network-interfaces"),
-          itemProps: { styles: { label: { verticalAlign: "top" } }, grainValueProps: { flex: 1 } },
-          value: (schema) => (
-            <Flex wrap style={{ flexGrow: 1 }}>
-              {Object.entries({
-                ...schema.grains.ip4_interfaces,
-                ...schema.grains.ip6_interfaces,
-                ...schema.grains.hwaddr_interfaces,
-              }).map(([iface]) => (
-                <Flex vertical key={iface} className={styles.interfaceBlock} flex="0 1 330px">
-                  <Typography.Text italic>{iface}</Typography.Text>
+          itemProps: { styles: { label: { verticalAlign: "top" } } },
+          value: (schema) => {
+            const interfaceNames = Object.keys({
+              ...schema.grains.ip4_interfaces,
+              ...schema.grains.ip6_interfaces,
+              ...schema.grains.hwaddr_interfaces,
+            });
+            if (interfaceNames.length === 0) {
+              return null;
+            }
+            return (
+              <Flex wrap style={{ flexGrow: 1 }}>
+                {interfaceNames.map((iface) => (
+                  <Flex vertical key={iface} className={styles.interfaceBlock} flex="0 1 330px">
+                    <Typography.Text italic>{iface}</Typography.Text>
 
-                  <ul className={styles.interfaceDetails}>
-                    <li>MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}</li>
-                    <li>IPv4: {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}</li>
-                    <li>IPv6: {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}</li>
-                  </ul>
-                </Flex>
-              ))}
-            </Flex>
-          ),
+                    <ul className={styles.interfaceDetails}>
+                      <li>MAC: {schema.grains.hwaddr_interfaces?.[iface] || ""}</li>
+                      <li>IPv4: {schema.grains.ip4_interfaces?.[iface]?.join(", ") || ""}</li>
+                      <li>IPv6: {schema.grains.ip6_interfaces?.[iface]?.join(", ") || ""}</li>
+                    </ul>
+                  </Flex>
+                ))}
+              </Flex>
+            );
+          },
         },
       ],
     },
@@ -393,28 +427,32 @@ export function MinionDashboardTab({
     );
   }
 
+  const isNeverActive = isMinionNeverActive(minion);
+
   return (
     <Flex vertical gap="large">
+      {isNeverActive && <Alert type="info" showIcon message={t("minions.never-active-alert")} />}
+
       <InfoCardsGrid
         items={infoCardItems}
         colProps={isInDrawer ? { span: 12 } : { xs: 12, xl: 6 }}
       />
 
       <InfoDescriptions
-        items={minionDetailsViewsToDescriptionItems(
-          minionGeneralDetailViews,
-          minion,
-          onFilterButton
-        )}
+        items={minionDetailsViewsToDescriptionItems(minionGeneralDetailViews, {
+          schema: minion,
+          onFilterButton,
+        })}
       />
 
-      <Collapse
-        items={minionDetailViewGroupsToCollapseItems(
-          minionGroupDetailsViews,
-          minion,
-          onFilterButton
-        )}
-      />
+      {!isNeverActive && (
+        <Collapse
+          items={minionDetailViewGroupsToCollapseItems(minionGroupDetailsViews, {
+            schema: minion,
+            onFilterButton,
+          })}
+        />
+      )}
     </Flex>
   );
 }

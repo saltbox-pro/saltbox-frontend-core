@@ -14,7 +14,11 @@ import { JSX, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
-import { MasterAvailabilityCell, MasterStatusBadge } from "saltbox-core/features/masters";
+import {
+  buildMasterPagePath,
+  MasterAvailabilityCell,
+  MasterStatusBadge,
+} from "saltbox-core/features/masters";
 import { mastersStore } from "saltbox-core/store";
 
 type TableRowData = MasterViewSchema & {
@@ -65,8 +69,18 @@ function MastersPage() {
       ),
       meta: { minWidth: 150 },
     }),
+    columnHelper.accessor("never_active_minions_count", {
+      header: t("masters.table-never-active-minions-count"),
+      cell: (data) => data.getValue() ?? 0,
+      meta: { minWidth: 120 },
+    }),
+    columnHelper.accessor("not_active_minions_count", {
+      header: t("masters.table-not-active-minions-count"),
+      cell: (data) => data.getValue() ?? 0,
+      meta: { minWidth: 120 },
+    }),
     columnHelper.accessor("minions_count", {
-      header: t("masters.table-minions-count"),
+      header: t("masters.table-total-minions-count"),
       cell: (data) => data.getValue() ?? 0,
       meta: { minWidth: 120 },
     }),
@@ -90,22 +104,9 @@ function MastersPage() {
 
         return (
           <Flex gap={5}>
-            {(status == "rejected" || status == "new") && (
-              <Button
-                color="primary"
-                variant="solid"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAccept(id);
-                }}
-                loading={isChanging}
-                title={t("masters.table-accept-title")}
-              >
-                {t("masters.table-accept")}
-              </Button>
-            )}
             {(status == "accepted" || status == "new") && (
               <Button
+                size="small"
                 color="danger"
                 variant="solid"
                 onClick={(e) => {
@@ -113,15 +114,28 @@ function MastersPage() {
                   handleReject(id);
                 }}
                 loading={isChanging}
-                title={t("masters.table-reject-title")}
               >
                 {t("masters.table-reject")}
+              </Button>
+            )}
+            {(status == "rejected" || status == "new") && (
+              <Button
+                size="small"
+                color="primary"
+                variant="solid"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAccept(id);
+                }}
+                loading={isChanging}
+              >
+                {t("masters.table-accept")}
               </Button>
             )}
           </Flex>
         );
       },
-      meta: { width: 230 },
+      meta: { width: 230, minWidth: 190 },
     }),
   ];
 
@@ -197,7 +211,7 @@ function MastersPage() {
           onLazyLoad={(pagination, sorting) => mastersStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(master) => {
             if (master.status === "accepted") {
-              navigate(`/core/masters/${master.master_id}`);
+              navigate(buildMasterPagePath(master.master_id));
             }
           }}
           isRowClickable={(master) => master.status === "accepted"}

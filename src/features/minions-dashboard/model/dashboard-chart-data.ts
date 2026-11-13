@@ -1,4 +1,4 @@
-import { GrainValue } from "@saltbox/saltbox-core-api-client";
+import { UniqueValueSchema } from "@saltbox/saltbox-core-api-client";
 
 import {
   BOOLEAN_FALSE_VALUES,
@@ -11,7 +11,7 @@ import { getChartTotal } from "../helpers/get-chart-total";
 export type ChartDatum = {
   name: string;
   count: number;
-  value: GrainValue["value"];
+  value: UniqueValueSchema["value"];
   isOther?: boolean;
 };
 
@@ -32,7 +32,7 @@ export const truncateXAxisLabel = (value: string): string => {
     : value;
 };
 
-export const valueToText = (value: GrainValue["value"], emptyLabel: string): string => {
+export const valueToText = (value: UniqueValueSchema["value"], emptyLabel: string): string => {
   if (value === null || value === undefined || value === "") {
     return emptyLabel;
   }
@@ -43,7 +43,7 @@ export const valueToText = (value: GrainValue["value"], emptyLabel: string): str
 };
 
 const normalizeBooleanLabel = (
-  value: GrainValue["value"],
+  value: UniqueValueSchema["value"],
   labels: BooleanLabels,
   emptyLabel: string
 ): string => {
@@ -58,7 +58,7 @@ const normalizeBooleanLabel = (
 };
 
 export const toChartData = (
-  values: GrainValue[],
+  values: UniqueValueSchema[],
   limit: number,
   emptyLabel: string
 ): ChartDatum[] => {
@@ -70,7 +70,7 @@ export const toChartData = (
 };
 
 export const toBooleanData = (
-  values: GrainValue[],
+  values: UniqueValueSchema[],
   labels: BooleanLabels,
   emptyLabel: string
 ): ChartDatum[] => {
@@ -88,7 +88,7 @@ export type KpiStats = {
   max: number | null;
 };
 
-export const toKpiStats = (values: GrainValue[]): KpiStats => {
+export const toKpiStats = (values: UniqueValueSchema[]): KpiStats => {
   const total = getChartTotal(values);
 
   const parsed = values
@@ -112,7 +112,7 @@ export const toKpiStats = (values: GrainValue[]): KpiStats => {
 };
 
 export const toHistogramData = (
-  values: GrainValue[],
+  values: UniqueValueSchema[],
   emptyLabel: string,
   limit: number
 ): ChartDatum[] => {

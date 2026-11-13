@@ -18,5 +18,7 @@ export function useTemplateSourceRows() {
     sourceRowsLoad.run().catch(() => undefined);
   }, [sourceRowsLoad]);
 
-  return { sourceRows, setSourceRows, isLoading: sourceRowsLoad.isLoading, sourceRowsLoad };
+  const isLoading = sourceRowsLoad.isInitialLoad && sourceRowsLoad.status !== "error";
+
+  return { sourceRows, setSourceRows, isLoading, sourceRowsLoad };
 }

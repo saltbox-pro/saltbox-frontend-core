@@ -1,12 +1,12 @@
 type TaskIconProps = {
-  size?: number;
+  size?: number | string;
 };
 
-export function TaskIcon({ size = 20 }: TaskIconProps) {
+export function TaskIcon({ size = "1em" }: TaskIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="26 18 101 107"
+      viewBox="15.5 14.5 107 107"
       width={size}
       height={size}
       role="img"

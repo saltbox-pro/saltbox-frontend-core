@@ -3,6 +3,8 @@ export { i18nStore } from "./i18n-store";
 export { appStore } from "./app-store";
 export { apiCoreStore } from "./api-core-store";
 export { apiGatewayStore } from "./api-gateway-store";
+export { bindLanguageSettings } from "./bind-language-settings";
+export { bindSidebarSettings } from "./bind-sidebar-settings";
 export { jobStore } from "./job-store";
 export { mastersStore } from "./masters-store";
 
@@ -23,6 +25,7 @@ export { JobFilterStore } from "./job-filter-store";
 export { JobStore } from "./job-store";
 export { JobsStore } from "./jobs-store";
 export { collectionsTreeStore, CollectionsTreeStore } from "./collections-tree-store";
+export { collectionsFlatListStore, CollectionsFlatListStore } from "./collections-flat-list-store";
 export { TasksFilterStore } from "./tasks-filter-store";
 export { PillarsFilterStore } from "./pillars-filter-store";
 export { SaltKeysStore, DUPLICATES_FILTER, ALL_FILTER } from "./salt-keys-store";

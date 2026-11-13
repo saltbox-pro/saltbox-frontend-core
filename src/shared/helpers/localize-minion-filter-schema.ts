@@ -1,12 +1,12 @@
 import type { TFunction } from "i18next";
 import type { Option, OptionList } from "react-querybuilder";
 
-const EXTRA_DATA_FIELD = "extra";
-const EXTRA_DATA_FIELD_PREFIX = `${EXTRA_DATA_FIELD}.`;
+import {
+  COLLECTION_FILTER_FIELD,
+  type CollectionFilterOption,
+} from "saltbox-core/shared/helpers/collection-filter-field";
 
-function isExtraDataField(name: string): boolean {
-  return name === EXTRA_DATA_FIELD || name.startsWith(EXTRA_DATA_FIELD_PREFIX);
-}
+const EXTRA_DATA_FIELD_PREFIX = "extra.";
 
 function getFieldLabel(field: Option, t: TFunction): string {
   if (field.name.startsWith(EXTRA_DATA_FIELD_PREFIX)) {
@@ -22,17 +22,14 @@ function getFieldLabel(field: Option, t: TFunction): string {
 export function localizeMinionFilterSchema(
   schema: OptionList,
   t: TFunction,
-  language: string
+  collectionOptions: CollectionFilterOption[] = []
 ): OptionList {
-  const fields: Option[] = (schema as Option[]).map((field) => ({
-    ...field,
-    label: getFieldLabel(field, t),
-  }));
+  return (schema as Option[]).map((field) => {
+    const localized = { ...field, label: getFieldLabel(field, t) };
+    if (field.name !== COLLECTION_FILTER_FIELD) {
+      return localized;
+    }
 
-  const staticFields = fields
-    .filter((field) => !isExtraDataField(field.name))
-    .sort((first, second) => first.label.localeCompare(second.label, language));
-  const extraDataFields = fields.filter((field) => isExtraDataField(field.name));
-
-  return [...staticFields, ...extraDataFields];
+    return { ...localized, type: "multiselect", selectOptions: collectionOptions };
+  });
 }

@@ -13,6 +13,7 @@ import {
   findNodeBySlug,
 } from "saltbox-core/shared/utils/tree-utils";
 import { apiCoreStore } from "saltbox-core/store";
+import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
 
 export class CollectionsTreeStore {
   treeNodes: CollectionTreeNodeSchema[] = [];
@@ -34,12 +35,14 @@ export class CollectionsTreeStore {
   }
 
   loadTree = (force = false) => {
+    if (force) collectionsFlatListStore.reload();
     if ((!force && this.isTreeLoaded) || this.treeLoad.isLoading) return;
 
     this.treeLoad.run().catch(() => undefined);
   };
 
   addNode = (collection: CollectionModel) => {
+    collectionsFlatListStore.reload();
     if (!this.isTreeLoaded) return;
 
     const newNode: CollectionTreeNodeSchema = {
@@ -67,6 +70,7 @@ export class CollectionsTreeStore {
   };
 
   removeNode = (slug: string) => {
+    collectionsFlatListStore.reload();
     if (this.treeNodes.length === 0) return;
 
     runInAction(() => {
@@ -123,6 +127,7 @@ export class CollectionsTreeStore {
     oldSlug: string,
     payload: { title: string; slug: string; description?: string }
   ) => {
+    collectionsFlatListStore.reload();
     if (this.treeNodes.length === 0) return;
 
     runInAction(() => {
@@ -189,6 +194,7 @@ export class CollectionsTreeStore {
       runInAction(() => {
         this.treeNodes = nodes;
       });
+      collectionsFlatListStore.reload();
     } catch (error) {
       runInAction(() => {
         this.treeNodes = snapshot;

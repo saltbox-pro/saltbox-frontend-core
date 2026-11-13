@@ -1,3 +1,13 @@
+import {
+  type ExtraDataCategoryModel,
+  MinionExtraDataCategoryFieldType,
+  MinionFilterGroup,
+} from "@saltbox/saltbox-core-api-client";
+
+import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
+import { buildExtraDataFilterField } from "saltbox-core/shared/helpers/extra-data-value";
+import { readMinionFieldGroup } from "saltbox-core/shared/helpers/minion-filter-field-meta";
+
 import { DASHBOARD_MAX_CARDS, DEFAULT_DASHBOARD_CARDS } from "../constants/dashboard-cards";
 import {
   ALLOWED_GRAIN_FIELDS,
@@ -10,6 +20,7 @@ import {
   NUMERIC_METADATA_TYPES,
 } from "../constants/dashboard-field-types";
 import { PRESETS } from "../constants/dashboard-presets";
+import { LEGACY_FIRST_TAB_NAMES } from "../constants/dashboard-tabs";
 
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 
@@ -31,14 +42,25 @@ export type DashboardPresetOption = {
   descriptionKey: string;
 };
 
+export type DashboardExtraCategoryRef = {
+  source: string;
+  name: string;
+};
+
 export type DashboardCardConfig = {
   id: string;
   field: string;
   fieldSource: string;
   fieldLabel: string;
   fieldType: DashboardFieldType;
+  extraCategory?: DashboardExtraCategoryRef;
   preset: DashboardPreset;
 };
+
+export type DashboardValuesTarget = Pick<
+  DashboardCardConfig,
+  "field" | "fieldSource" | "extraCategory"
+>;
 
 export type DashboardLayoutItem = {
   id: string;
@@ -62,19 +84,31 @@ export type DashboardStorageConfig = {
   activeTabId: string;
 };
 
+export type DashboardGlobalStorageConfig = Pick<DashboardStorageConfig, "tabs">;
+
+export type DashboardTabScope = "local" | "global";
+
+export type DashboardAddTabValues = {
+  name: string;
+  scope: DashboardTabScope;
+};
+
 export type DashboardTabNames = {
   firstTab: string;
   newTab: string;
   firstTabAliases: string[];
 };
 
-export type TabNameError = "empty" | "duplicate";
+export type TabNameError = "empty" | "duplicate" | "reserved";
 
 export type DashboardFieldOption = {
   value: string;
   label: string;
   source: string;
   type: DashboardFieldType;
+  group: MinionFilterGroup;
+  extraCategory?: DashboardExtraCategoryRef;
+  categoryLabel?: string;
 };
 
 type SchemaOption = {
@@ -85,6 +119,7 @@ type SchemaOption = {
   inputType?: string;
   type?: string;
   values?: unknown[];
+  group?: unknown;
   options?: SchemaOption[];
 };
 
@@ -166,6 +201,7 @@ export const getDashboardFieldOptions = (
       label: option.label || normalizeFieldName(source),
       source,
       type: inferDashboardFieldType(option),
+      group: readMinionFieldGroup(option.group),
     });
   };
 
@@ -183,19 +219,94 @@ export const getDashboardFieldOptions = (
     .filter((opt) => ALLOWED_GRAIN_FIELDS.has(opt.value));
 };
 
+const getExtraDataDashboardFieldType = (
+  type: MinionExtraDataCategoryFieldType
+): DashboardFieldType | undefined => {
+  switch (type) {
+    case MinionExtraDataCategoryFieldType.Str:
+    case MinionExtraDataCategoryFieldType.List:
+      return "categorical";
+    case MinionExtraDataCategoryFieldType.Int:
+    case MinionExtraDataCategoryFieldType.Float:
+      return "numeric";
+    case MinionExtraDataCategoryFieldType.Bool:
+      return "boolean";
+    case MinionExtraDataCategoryFieldType.Datetime:
+      return "date";
+    default:
+      return undefined;
+  }
+};
+
+export const getExtraDataDashboardFieldOptions = (
+  categories: ReadonlyArray<ExtraDataCategoryModel>,
+  language: string
+): DashboardFieldOption[] => {
+  return categories.flatMap((category) => {
+    const categoryLabel = getExtraDataCategoryDisplayName(category, language);
+    const extraCategory = { source: category.source, name: category.name };
+
+    return (category.fields ?? []).flatMap((field) => {
+      const type = getExtraDataDashboardFieldType(field.type);
+      if (!type) {
+        return [];
+      }
+
+      return [
+        {
+          value: field.name,
+          label: `${categoryLabel} / ${field.name}`,
+          source: buildExtraDataFilterField(category.source, category.name, field.name),
+          type,
+          group: MinionFilterGroup.Extra,
+          extraCategory,
+          categoryLabel,
+        },
+      ];
+    });
+  });
+};
+
 const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {
   const isValid = PRESETS[fieldType].some((option) => option.value === preset);
   return isValid ? (preset as DashboardPreset) : getDefaultPresetForField(fieldType);
 };
 
 const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
+  const extraCategory =
+    card.extraCategory?.source && card.extraCategory?.name ? card.extraCategory : undefined;
+
   return {
     id: card.id,
     field: card.field,
     fieldSource: card.fieldSource,
     fieldLabel: card.fieldLabel,
     fieldType: card.fieldType,
+    extraCategory,
     preset: normalizePreset(card.preset, card.fieldType),
+  };
+};
+
+type DashboardCardFieldConfig = Omit<DashboardCardConfig, "id" | "preset">;
+
+const toCardFieldConfig = (fieldOption: DashboardFieldOption): DashboardCardFieldConfig => {
+  return {
+    field: fieldOption.value,
+    fieldSource: fieldOption.source,
+    fieldLabel: fieldOption.label,
+    fieldType: fieldOption.type,
+    extraCategory: fieldOption.extraCategory,
+  };
+};
+
+export const toDashboardFieldOption = (card: DashboardCardConfig): DashboardFieldOption => {
+  return {
+    value: card.field,
+    label: card.fieldLabel,
+    source: card.fieldSource,
+    type: card.fieldType,
+    group: card.extraCategory ? MinionFilterGroup.Extra : MinionFilterGroup.General,
+    extraCategory: card.extraCategory,
   };
 };
 
@@ -205,10 +316,7 @@ export const createDashboardCard = (
 ): DashboardCardConfig => {
   return {
     id: createCardId(fieldOption.value, Date.now()),
-    field: fieldOption.value,
-    fieldSource: fieldOption.source,
-    fieldLabel: fieldOption.label,
-    fieldType: fieldOption.type,
+    ...toCardFieldConfig(fieldOption),
     preset,
   };
 };
@@ -220,10 +328,7 @@ export const getUpdatedDashboardCard = (
 ): DashboardCardConfig => {
   return {
     ...card,
-    field: fieldOption.value,
-    fieldSource: fieldOption.source,
-    fieldLabel: fieldOption.label,
-    fieldType: fieldOption.type,
+    ...toCardFieldConfig(fieldOption),
     preset,
   };
 };
@@ -255,16 +360,24 @@ export const createUniqueTabName = (
   return `${base} ${suffix}`;
 };
 
+type ValidateTabNameOptions = {
+  excludeTabId?: string;
+  reservedNames?: string[];
+};
+
 export const validateTabName = (
   name: string,
   tabs: DashboardTab[],
-  tabId: string
+  { excludeTabId, reservedNames = [] }: ValidateTabNameOptions = {}
 ): TabNameError | null => {
   const normalized = normalizeTabName(name);
   if (!normalized) {
     return "empty";
   }
-  if (tabs.some((tab) => tab.id !== tabId && tab.name === normalized)) {
+  if (reservedNames.includes(normalized)) {
+    return "reserved";
+  }
+  if (tabs.some((tab) => tab.id !== excludeTabId && tab.name === normalized)) {
     return "duplicate";
   }
   return null;
@@ -313,17 +426,27 @@ export const createFirstDashboardTab = (name: string): DashboardTab => {
   };
 };
 
+const isFirstTabAlias = (name: string, names: DashboardTabNames): boolean => {
+  return names.firstTabAliases.includes(name) || LEGACY_FIRST_TAB_NAMES.includes(name);
+};
+
+type NormalizeTabsOptions = {
+  withPrimary: boolean;
+};
+
 const normalizeTabs = (
   rawTabs: Partial<DashboardTab>[],
-  names: DashboardTabNames
+  names: DashboardTabNames,
+  { withPrimary }: NormalizeTabsOptions
 ): DashboardTab[] => {
   const tabs: DashboardTab[] = [];
   let hasPrimary = false;
 
   for (const rawTab of rawTabs) {
     const storedName = typeof rawTab?.name === "string" ? normalizeTabName(rawTab.name) : "";
-    const baseName = storedName || (tabs.length === 0 ? names.firstTab : names.newTab);
-    const primary = rawTab?.primary === true && !hasPrimary;
+    const baseName =
+      storedName || (withPrimary && tabs.length === 0 ? names.firstTab : names.newTab);
+    const primary = withPrimary && rawTab?.primary === true && !hasPrimary;
     hasPrimary = hasPrimary || primary;
     tabs.push({
       id: typeof rawTab?.id === "string" && rawTab.id ? rawTab.id : createTabId(),
@@ -332,7 +455,7 @@ const normalizeTabs = (
       nameCustomized:
         typeof rawTab?.nameCustomized === "boolean"
           ? rawTab.nameCustomized
-          : Boolean(storedName) && !names.firstTabAliases.includes(storedName),
+          : Boolean(storedName) && !isFirstTabAlias(storedName, names),
       cards: Array.isArray(rawTab?.cards)
         ? rawTab.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard)
         : [],
@@ -340,16 +463,40 @@ const normalizeTabs = (
     });
   }
 
-  if (!hasPrimary && tabs.length > 0) {
+  if (withPrimary && !hasPrimary && tabs.length > 0) {
     tabs[0].primary = true;
   }
 
   return tabs;
 };
 
-export const normalizeDashboardStorage = (
+const parseStoredValue = (rawValue: unknown): unknown => {
+  return typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+};
+
+const resolveActiveTabId = (activeTabId: unknown, tabs: DashboardTab[]): string => {
+  if (typeof activeTabId === "string" && tabs.some((tab) => tab.id === activeTabId)) {
+    return activeTabId;
+  }
+  return (tabs.find((tab) => tab.primary) ?? tabs[0]).id;
+};
+
+export const normalizeGlobalDashboardTabs = (
   rawValue: unknown,
   names: DashboardTabNames
+): DashboardTab[] => {
+  try {
+    const rawTabs = (parseStoredValue(rawValue) as { tabs?: unknown } | null | undefined)?.tabs;
+    return Array.isArray(rawTabs) ? normalizeTabs(rawTabs, names, { withPrimary: false }) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const normalizeDashboardStorage = (
+  rawValue: unknown,
+  names: DashboardTabNames,
+  globalTabs: DashboardTab[]
 ): DashboardStorageConfig => {
   const createDefaultConfig = (): DashboardStorageConfig => {
     const tab = createFirstDashboardTab(names.firstTab);
@@ -361,18 +508,20 @@ export const normalizeDashboardStorage = (
   }
 
   try {
-    const parsed = typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+    const parsed = parseStoredValue(rawValue) as Record<string, unknown> | null;
 
     if (Array.isArray(parsed?.tabs) && parsed.tabs.length > 0) {
-      const tabs = normalizeTabs(parsed.tabs, names);
-      const activeTabId = tabs.some((tab) => tab.id === parsed.activeTabId)
-        ? parsed.activeTabId
-        : tabs[0].id;
-      return { tabs, activeTabId };
+      const tabs = normalizeTabs(parsed.tabs, names, { withPrimary: true });
+      return {
+        tabs,
+        activeTabId: resolveActiveTabId(parsed.activeTabId, [...tabs, ...globalTabs]),
+      };
     }
 
     if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
-      const tabs = normalizeTabs([{ cards: parsed.cards, layout: parsed.layout }], names);
+      const tabs = normalizeTabs([{ cards: parsed.cards, layout: parsed.layout }], names, {
+        withPrimary: true,
+      });
       return { tabs, activeTabId: tabs[0].id };
     }
 

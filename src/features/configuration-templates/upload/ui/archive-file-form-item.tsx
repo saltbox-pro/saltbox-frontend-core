@@ -14,8 +14,6 @@ import {
   validateArchiveSourceFile,
 } from "../helpers/validate-archive-source-file";
 
-import styles from "./archive-file-form-item.module.css";
-
 const FIELD_NAME = "file";
 const I18N_PREFIX = "configuration-templates.archive-source-modal";
 const { Dragger } = Upload;
@@ -82,7 +80,6 @@ export function ArchiveFileFormItem({ label, disabled = false }: ArchiveFileForm
 
   return (
     <Form.Item<ArchiveFileFormValues>
-      className={styles.fileField}
       label={label}
       required
       name={FIELD_NAME}

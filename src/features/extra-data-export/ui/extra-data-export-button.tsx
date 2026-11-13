@@ -1,18 +1,32 @@
 import type { ExtraDataCategoryModel } from "@saltbox/saltbox-core-api-client";
 import { ExportToCsv, buildCsvExportFilename, runMutation } from "@saltbox/saltbox-frontend-common";
-import { useCallback } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { fileDownloader } from "saltbox-core/features/file-download";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 
 import { exportExtraData } from "../api/export-extra-data";
+import {
+  DEFAULT_EXTRA_DATA_COLLECTION_EXPORT_FORMAT,
+  type ExtraDataCollectionExportFormat,
+} from "../model/types";
+
+import { ExtraDataCollectionExportConfirmContent } from "./extra-data-collection-export-confirm-content";
 
 export interface ExtraDataExportButtonProps {
   category: ExtraDataCategoryModel;
   collectionSlug: string;
   minionId?: string;
   search: string;
+}
+
+function getCollectionExportFallbackPrefix(
+  categoryName: string,
+  format: ExtraDataCollectionExportFormat
+): string {
+  const suffix = format === "flat" ? "per_client" : "summary";
+  return `export_extra_data_${categoryName}_${suffix}`;
 }
 
 export function ExtraDataExportButton({
@@ -23,13 +37,20 @@ export function ExtraDataExportButton({
 }: ExtraDataExportButtonProps) {
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation("common");
+  const collectionFormatRef = useRef<ExtraDataCollectionExportFormat>(
+    DEFAULT_EXTRA_DATA_COLLECTION_EXPORT_FORMAT
+  );
 
   const categoryLabel = getExtraDataCategoryDisplayName(category, i18n.language);
-  const scope = minionId
-    ? t("minions.extra-data.export-scope-client", { category: categoryLabel })
-    : t("minions.extra-data.export-scope-collection", { category: categoryLabel });
+  const isCollectionExport = !minionId;
+
+  const handleFormatChange = useCallback((format: ExtraDataCollectionExportFormat) => {
+    collectionFormatRef.current = format;
+  }, []);
 
   const handleExport = useCallback(async () => {
+    const collectionFormat = isCollectionExport ? collectionFormatRef.current : undefined;
+
     const result = await runMutation({
       run: async () => {
         const response = await exportExtraData({
@@ -37,12 +58,14 @@ export function ExtraDataExportButton({
           collectionSlug,
           categoryId: category.id,
           search,
+          collectionFormat,
         });
 
-        await fileDownloader.downloadByResponse(
-          response,
-          buildCsvExportFilename(`export_extra_data_${category.name}`)
-        );
+        const fallbackPrefix = collectionFormat
+          ? getCollectionExportFallbackPrefix(category.name, collectionFormat)
+          : `export_extra_data_${category.name}`;
+
+        await fileDownloader.downloadByResponse(response, buildCsvExportFilename(fallbackPrefix));
       },
       errorMessage: tCommon("export-to-csv.error", {
         subject: t("minions.extra-data.export-subject"),
@@ -50,7 +73,35 @@ export function ExtraDataExportButton({
     });
 
     return result.ok;
-  }, [category.id, category.name, collectionSlug, minionId, search, t, tCommon]);
+  }, [
+    category.id,
+    category.name,
+    collectionSlug,
+    isCollectionExport,
+    minionId,
+    search,
+    t,
+    tCommon,
+  ]);
 
-  return <ExportToCsv scope={scope} onExport={handleExport} />;
+  const collectionConfirmContent = useMemo(
+    () => (
+      <ExtraDataCollectionExportConfirmContent
+        categoryLabel={categoryLabel}
+        onFormatChange={handleFormatChange}
+      />
+    ),
+    [categoryLabel, handleFormatChange]
+  );
+
+  if (isCollectionExport) {
+    return <ExportToCsv onExport={handleExport} confirmContent={collectionConfirmContent} />;
+  }
+
+  return (
+    <ExportToCsv
+      scope={t("minions.extra-data.export-scope-client", { category: categoryLabel })}
+      onExport={handleExport}
+    />
+  );
 }

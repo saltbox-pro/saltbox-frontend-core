@@ -1,4 +1,5 @@
 import { JobModel, JobReturnStatus, JobStatus } from "@saltbox/saltbox-core-api-client";
+import { EMPTY_VALUE } from "@saltbox/saltbox-frontend-common";
 
 import { formatExecutionTime } from "./execution-time-utils";
 
@@ -42,7 +43,7 @@ export const isJobReturnTtlEditable = (
 
 export const formatTtlValue = (seconds: number | null | undefined, t: TranslateFn): string => {
   if (seconds == null) {
-    return "—";
+    return EMPTY_VALUE;
   }
   if (seconds === 0) {
     return t("jobs.ttl-unlimited");

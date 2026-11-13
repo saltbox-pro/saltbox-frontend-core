@@ -24,7 +24,14 @@ import {
   OpenRelatedJobsButton,
   type OpenRelatedJobsButtonProps,
 } from "saltbox-core/shared/components/jobs/open-related-jobs-button";
-import { apiGatewayStore, appStore, envStore, i18nStore } from "saltbox-core/store";
+import {
+  apiGatewayStore,
+  appStore,
+  bindLanguageSettings,
+  bindSidebarSettings,
+  envStore,
+  i18nStore,
+} from "saltbox-core/store";
 import { MinionsTreeMenu } from "saltbox-core/widgets/minions/tree-menu";
 
 import {
@@ -36,6 +43,8 @@ import { coreResources } from "./i18n-resources";
 import Root from "./root.component";
 
 let disposeWebSocketAccessTokenSync: (() => void) | undefined;
+let disposeLanguageSettingsSync: (() => void) | undefined;
+let disposeSidebarSettingsSync: (() => void) | undefined;
 
 const coreLifecycles = singleSpaReact({
   React,
@@ -201,18 +210,12 @@ export const saltboxModule = {
         icon: () => <PolicyIcon />,
         path: "/core/policies",
       },
-      {
-        key: "pillars",
-        label: { en: "Pillars", ru: "Pillars" },
-        icon: "key",
-        path: "/core/pillars",
-      },
     ],
   },
   settingsConfig: [
     {
       priority: 20,
-      key: "core",
+      key: "core-module",
       label: "Core",
       children: [
         {
@@ -220,6 +223,12 @@ export const saltboxModule = {
           label: { en: "Collections", ru: "Коллекции" },
           icon: "account_tree",
           path: "/core/collections",
+        },
+        {
+          key: "pillars",
+          label: { en: "Client Data", ru: "Данные клиентов" },
+          icon: "key",
+          path: "/core/pillars",
         },
         {
           key: "configuration-templates",
@@ -239,7 +248,7 @@ export const saltboxModule = {
       ],
     },
   ],
-  init: (authStore, services, localeStore, pluginsStore) => {
+  init: (authStore, services, localeStore, pluginsStore, menuLayout) => {
     appStore.init(authStore, pluginsStore);
     disposeWebSocketAccessTokenSync?.();
     disposeWebSocketAccessTokenSync = bindWebSocketAccessTokenSync(
@@ -251,6 +260,15 @@ export const saltboxModule = {
       }
     });
     initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
+    disposeLanguageSettingsSync?.();
+    disposeLanguageSettingsSync = bindLanguageSettings(
+      authStore as AuthStoreWithAccessToken,
+      localeStore
+    );
+    disposeSidebarSettingsSync?.();
+    disposeSidebarSettingsSync = menuLayout
+      ? bindSidebarSettings(authStore as AuthStoreWithAccessToken, menuLayout)
+      : undefined;
     autorun(() => {
       i18nStore.setLanguage(localeStore.currentLocale);
     });

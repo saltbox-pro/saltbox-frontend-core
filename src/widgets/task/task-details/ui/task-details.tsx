@@ -1,6 +1,6 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
 import { InfoDescriptions, type InfoDescriptionsProps } from "@saltbox/saltbox-frontend-common";
-import { Flex, Typography } from "antd";
+import { Alert, Flex, Typography } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
@@ -13,7 +13,7 @@ import type { TaskDetailsData } from "../type/task-details-data";
 
 import styles from "./task-details.module.css";
 
-const { Paragraph } = Typography;
+const { Paragraph, Text } = Typography;
 
 export type TaskDetailsProps = {
   data: TaskDetailsData;
@@ -30,6 +30,9 @@ export function TaskDetails({
 }: TaskDetailsProps) {
   const { t } = useTranslation();
   const { template, parameters, system, target, pillars } = data;
+  const isPolicy = system.taskType === TaskType.Policy;
+  const neverActiveMinionsCount = target.neverActiveMinionsCount ?? 0;
+  const entityType = t(isPolicy ? "task.type-policy-genitive" : "task.type-classic-genitive");
 
   const templateParams = useMemo<InfoDescriptionsProps["items"]>(() => {
     const entries = Object.entries(parameters || {}).filter(([key]) => key !== "mods");
@@ -97,19 +100,17 @@ export function TaskDetails({
           ]
         : []),
       {
-        label: t(
-          system.taskType === TaskType.Policy ? "policy-create.ttl-task" : "task-create.ttl-task"
-        ),
+        label: t(isPolicy ? "policy-create.ttl-task" : "task-create.ttl-task"),
         children:
           system.ttlTask != null ? formatTtlValue(system.ttlTask, t) : t("task.ttl-task-unlimited"),
       },
     ],
     [
+      isPolicy,
       system.batchSize,
       system.maxParallelJobs,
       system.maxRetries,
       system.retryDelay,
-      system.taskType,
       system.ttlJobs,
       system.ttlTask,
       t,
@@ -211,7 +212,33 @@ export function TaskDetails({
 
       <InfoDescriptions title={t("task.details.system-parameters")} items={systemParams} />
 
-      <InfoDescriptions title={t("task.details.target-info")} items={targetInfo} />
+      <InfoDescriptions
+        title={t("task.details.target-info")}
+        notice={
+          neverActiveMinionsCount > 0 && (
+            <Alert
+              type="warning"
+              showIcon
+              message={
+                <Flex vertical>
+                  <Text strong>
+                    {t("task.details.never-active-minions-warning.title", { entityType })}
+                  </Text>
+                  <Text>
+                    {t("task.details.never-active-minions-warning.description", { entityType })}
+                  </Text>
+                  <Text strong>
+                    {t("task.details.never-active-minions-warning.count", {
+                      count: neverActiveMinionsCount,
+                    })}
+                  </Text>
+                </Flex>
+              }
+            />
+          )
+        }
+        items={targetInfo}
+      />
     </Flex>
   );
 }

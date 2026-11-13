@@ -5,7 +5,8 @@ export { DashboardResetButton } from "./ui/components/dashboard-reset-button";
 export { DashboardTabs } from "./ui/components/dashboard-tabs";
 export { dashboardStore } from "./model/dashboard-store";
 export { useDashboardCollection } from "./hooks/use-dashboard-collection";
-export { getDashboardFieldOptions, getPresetOptionsForFieldType } from "./model/dashboard-model";
+export { useDashboardFieldOptions } from "./hooks/use-dashboard-field-options";
+export { getPresetOptionsForFieldType, toDashboardFieldOption } from "./model/dashboard-model";
 export type {
   DashboardPreset,
   DashboardCardConfig,

@@ -47,7 +47,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
     allowMissingMinion,
   });
 
-  const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened);
+  const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened, minion);
 
   return (
     <BaseMinionDrawer
@@ -60,6 +60,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
       hasData={hasData}
       loaders={[minionLoad]}
       mask={mask}
+      width={960}
       transitionKey={minion?.minion_id}
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
       linkPlacement="title"

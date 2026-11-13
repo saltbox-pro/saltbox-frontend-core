@@ -46,6 +46,7 @@
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
     "grains": "Данные grains",
+    "pillars": "Данные клиента",
     "extra-data": {
       "tab": "Расширенные данные",
       "category-column": "Категория",
@@ -54,8 +55,36 @@
       "search-placeholder": "Поиск по записям",
       "single-item-inconsistent": "В категории допускается только одна запись на клиента, но найдено несколько. Показан полный список.",
       "export-scope-client": "все расширенные данные категории \"{{category}}\" этого клиента, подходящие под текущий поиск",
-      "export-scope-collection": "все расширенные данные категории \"{{category}}\" по всем клиентам коллекции, подходящие под текущий поиск",
+      "export-scope-collection-aggregated": "сводку расширенных данных категории \"{{category}}\" по коллекции (уникальные значения и число клиентов), подходящую под текущий поиск",
+      "export-scope-collection-flat": "расширенные данные категории \"{{category}}\" по клиентам коллекции (minion_id, master и поля категории), подходящие под текущий поиск",
       "export-subject": "расширенные данные",
+      "export-format-label": "Формат файла",
+      "export-format-aggregated": "Сводка по коллекции",
+      "export-format-flat": "По клиентам",
+      "import": {
+        "button": "Импорт CSV",
+        "title": "Импорт расширенных данных: {{category}}",
+        "hint": "Загрузите CSV в формате \"По клиентам\": minion_id, master и поля категории",
+        "file": "CSV-файл",
+        "file-required": "Выберите CSV-файл",
+        "file-invalid": "Допускаются только файлы CSV",
+        "file-drag-title": "Перетащите CSV сюда или нажмите для выбора",
+        "file-drag-hint": "Один файл в кодировке UTF-8",
+        "mode-label": "Режим импорта",
+        "mode-required": "Выберите режим импорта",
+        "mode-append": "Добавить к существующим",
+        "mode-replace": "Заменить все данные категории",
+        "mode-single-item-tooltip": "В категории допускается только одна запись на клиента. Доступна только замена данных",
+        "unknown-minion-label": "Неизвестные или чужие клиенты",
+        "unknown-minion-required": "Выберите поведение для неизвестных клиентов",
+        "unknown-minion-error": "Остановить импорт",
+        "unknown-minion-skip": "Пропустить строки",
+        "submit": "Импортировать",
+        "success-title": "Импорт в категорию \"{{category}}\" выполнен",
+        "success-description": "Загружено: {{itemsCount}} (клиентов: {{minionsCount}})",
+        "success-description-with-skipped": "Загружено: {{itemsCount}} (клиентов: {{minionsCount}})\nНе загружено: {{skippedCount}}",
+        "error": "Не удалось импортировать расширенные данные"
+      },
       "add-data": "Добавить расширенные данные",
       "delete-item": {
         "modal-title": "Удаление расширенных данных",
@@ -97,8 +126,9 @@
     "os-full-name": "Полное имя ОС",
     "os-release": "Версия ОС",
     "hostname": "Имя хоста",
-    "local-hostname": "Локальное имя хоста",
     "salt-master": "Контроллер Salt",
+    "salt-master-grains": "Контроллер Salt (grains)",
+    "never-active-alert": "Клиент ещё ни разу не выходил на связь. Данные grains пока недоступны",
     "domain": "Домен",
     "fqdn": "FQDN",
     "uuid": "UUID",
@@ -153,8 +183,11 @@
     "export-scope-selected": "всех выбранных клиентов",
     "actions-select-items": "Выберите клиентов",
     "never-synced": "никогда",
-    "efi-yes": "Да",
-    "efi-no": "Нет",
+    "activity-status": {
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "never-active": "Ни разу не был активен"
+    },
     "filter-applied": "Фильтр применён",
     "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "root-collection-info": "Это корневая коллекция, которая содержит всех клиентов из всех подключенных контроллеров в системе",
@@ -185,12 +218,15 @@
     "copy-minion-id": "Скопировать ID клиента",
     "copied": "Скопировано в буфер обмена",
     "filter-fields": {
+      "collection": "Коллекция",
       "created": "Создан",
       "modified": "Изменён",
       "minion_id": "ID клиента",
       "master": "Контроллер",
       "last_activity": "Последняя активность",
       "last_activity_seconds": "Секунд с последней активности",
+      "is_never_active": "Ни разу не был активен",
+      "is_not_active": "Неактивен",
       "extra": "Расширенные данные (агрегированные)",
       "grains": {
         "host": "Хост",
@@ -297,7 +333,9 @@
     "policy-created-successfully": "Политика успешно создана",
     "error-creating-policy": "Ошибка создания политики",
     "ttl-task": "Время жизни политики",
-    "ttl-task-tooltip": "Сколько политика может работать с момента запуска, включая ожидание новых клиентов. По истечении политика будет остановлена. Если не задано, время не ограничено"
+    "ttl-task-tooltip": "Сколько политика может работать с момента запуска, включая ожидание новых клиентов. По истечении политика будет остановлена. Если не задано, время не ограничено",
+    "target-masters-empty": "Сейчас под нацеливание не попадает ни один клиент: политика будет ждать появления подходящих клиентов",
+    "target-masters-not-accepted": "Часть клиентов подключена к непринятым или незарегистрированным контроллерам: на них политика может не выполниться"
   },
   "task-create": {
     "configure-task-title": "Настройки задачи",
@@ -346,7 +384,12 @@
     "warning-apply-to-whole-collection": "{{entityType}} будет применена ко всем клиентам коллекции \"{{collectionName}}\"",
     "warning-apply-to-filtered-collection": "{{entityType}} будет применена к отфильтрованным клиентам коллекции \"{{collectionName}}\"",
     "confirm-apply-to-whole-collection-description": "Вы собираетесь запустить {{entityType}} на всех клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
-    "confirm-apply-to-filtered-collection-description": "Вы собираетесь запустить {{entityType}} на отфильтрованных клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем."
+    "confirm-apply-to-filtered-collection-description": "Вы собираетесь запустить {{entityType}} на отфильтрованных клиентах коллекции \"{{collectionName}}\". Это действие может затронуть большое количество систем.",
+    "target-masters-total-minions": "Всего клиентов: {{total}}",
+    "target-masters-empty": "Под нацеливание не попал ни один клиент: задача не будет выполнена",
+    "target-masters-not-accepted": "Часть клиентов подключена к непринятым или незарегистрированным контроллерам: на них задача может не выполниться",
+    "target-masters-no-master": "Без контроллера",
+    "target-masters-unregistered": "Не зарегистрирован"
   },
   "template-picker": {
     "title": "Выберите шаблон",
@@ -378,10 +421,15 @@
       "target-minions": "Целевые клиенты",
       "query-based-selection": "Выбор по запросу",
       "no-query-selection": "Вся коллекция",
+      "never-active-minions-warning": {
+        "title": "В нацеливание {{entityType}} входят клиенты, которые ни разу не подключались к системе",
+        "description": "Выполнение {{entityType}} на этих клиентах начнётся только после их первого подключения к контроллеру",
+        "count": "Количество таких клиентов: {{count}}"
+      },
       "pillars": "Pillars"
     },
     "show-details": "Параметры задачи",
-    "details-title": "Детали задачи",
+    "details-title": "Параметры задачи",
     "page-title": "{{templateName}}: #{{taskId}}",
     "breadcrumbs-title-template": "Задача: {{templateName}}",
     "breadcrumbs-title-empty": "Задача: #{{taskId}}",
@@ -418,6 +466,8 @@
     "type-policy": "Политика",
     "type-classic-accusative": "задачу",
     "type-policy-accusative": "политику",
+    "type-classic-genitive": "задачи",
+    "type-policy-genitive": "политики",
     "minions": {
       "table-minion-id": "ID клиента",
       "table-master": "Контроллер",
@@ -500,7 +550,7 @@
   },
   "policy": {
     "show-details": "Параметры политики",
-    "details-title": "Детали политики"
+    "details-title": "Параметры политики"
   },
   "extra-data-categories": {
     "title": "Категории расширенных данных",
@@ -606,7 +656,9 @@
     "table-master-id": "ID контроллера",
     "table-status": "Статус",
     "table-availability": "Доступность",
-    "table-minions-count": "Клиенты",
+    "table-total-minions-count": "Всего клиентов",
+    "table-never-active-minions-count": "Ожидают подключения",
+    "table-not-active-minions-count": "Неактивные клиенты",
     "table-new": "Новый",
     "table-rejected": "Отклонен",
     "table-accepted": "Принят",
@@ -617,8 +669,6 @@
     "table-actions": "Действия",
     "table-accept": "Принять",
     "table-reject": "Отклонить",
-    "table-accept-title": "Принять контроллер",
-    "table-reject-title": "Отклонить контроллер",
     "availability-available": "Доступен",
     "availability-unavailable": "Недоступен",
     "check-availability": "Проверить доступность",
@@ -707,7 +757,7 @@
     }
   },
   "pillars": {
-    "title": "Pillars",
+    "title": "Данные клиентов",
     "create": {
       "add-button": "Создать pillar",
       "modal-title-root": "Создание глобального pillar",
@@ -900,6 +950,10 @@
     "no-description": "Описание для данной коллекции отсутствует",
     "create-subcollection": "Создать подколлекцию",
     "tooltip-create-subcollection-blocked": "Необходимо сохранить изменения в коллекции для создания подколлекции",
+    "duplicate": "Дублировать",
+    "duplicate-title": "Копия {{title}}",
+    "duplicate-drawer-title": "Дублирование коллекции",
+    "tooltip-duplicate-blocked": "Необходимо сохранить изменения в коллекции для дублирования",
     "edit-structure": "Редактировать структуру",
     "edit-structure-hint": "Перетаскивайте коллекции, чтобы изменить их родителя и порядок",
     "error-moving-collection": "Не удалось переместить коллекцию",
@@ -922,6 +976,9 @@
     "error-updating-collection": "Ошибка при обновлении коллекции",
     "collection-deleted-successfully": "Коллекция успешно удалена",
     "error-deleting-collection": "Ошибка при удалении коллекции",
+    "error-unknown-references": "Фильтр ссылается на несуществующие коллекции: {{collections}}",
+    "error-reference-cycle": "Ссылки между коллекциями образуют цикл: {{path}}",
+    "error-referenced-by-collections": "На коллекцию ссылаются фильтры других коллекций: {{collections}}",
     "open-collection-page": "Перейти на страницу коллекции",
     "parent-collection": "Родительская коллекция",
     "parent-collection-required": "Укажите родительскую коллекцию",
@@ -947,6 +1004,9 @@
     "save-block": "Сохранить блок",
     "field-label": "Поле данных",
     "field-placeholder": "Выберите поле",
+    "field-group-general": "Общие данные",
+    "field-group-grains": "Данные grains",
+    "field-group-extra": "Расширенные данные",
     "preset-label": "Вариант отображения",
     "select-field-first": "Сначала выберите поле",
     "kpi-total": "Всего значений",
@@ -959,16 +1019,25 @@
     "delete-card": "Удалить",
     "delete-card-confirm-title": "Удалить блок статистики?",
     "delete-card-confirm-description": "Это действие нельзя отменить",
+    "delete-global-card-confirm-description": "Блок будет удалён во всех коллекциях, действие нельзя отменить",
     "reset-button": "Сбросить",
     "reset-confirm-title": "Сбросить вкладку к состоянию по умолчанию?",
     "reset-confirm-description": "Блоки текущей вкладки будут заменены набором по умолчанию, действие нельзя отменить",
     "reset-confirm-description-empty": "Все блоки текущей вкладки будут удалены, действие нельзя отменить",
-    "first-tab-name": "Статистика",
+    "reset-confirm-description-global": "Все блоки вкладки будут удалены во всех коллекциях, действие нельзя отменить",
+    "first-tab-name": "Обзор",
     "new-tab-name": "Новая вкладка",
     "rename-tab": "Переименовать вкладку",
     "delete-tab": "Удалить вкладку",
+    "delete-global-tab-confirm-title": "Удалить глобальную вкладку?",
+    "delete-global-tab-confirm-description": "Вкладка будет удалена во всех коллекциях, действие нельзя отменить",
     "tab-name-empty": "Введите название вкладки",
     "tab-name-duplicate": "Вкладка с таким названием уже есть",
+    "tab-name-reserved": "Это название зарезервировано для основной вкладки",
+    "tab-name-label": "Название",
+    "add-tab-title": "Добавить вкладку",
+    "tab-local-checkbox": "Только для этой коллекции",
+    "global-tab-tooltip": "Глобальная вкладка: отображается во всех коллекциях",
     "empty-title": "Графики ещё не добавлены",
     "empty-description": "Для отображения статистики добавьте хотя бы один блок с графиком",
     "preset-donut": "Кольцевая диаграмма",
@@ -1173,14 +1242,14 @@
     "sync": "Синхронизировать"
   },
   "entity-source": {
-    "column": "Тип источника",
+    "column": "Источник",
     "id-column": "ID источника",
     "type": {
       "rest": "Вручную",
-      "task": "Из задачи",
-      "scheduler": "Из планировщика",
-      "migration": "Из сценария",
-      "system": "Системой"
+      "task": "Задача",
+      "scheduler": "Планировщик",
+      "migration": "Сценарий",
+      "system": "Система"
     }
   },
   "task-template-editor": {

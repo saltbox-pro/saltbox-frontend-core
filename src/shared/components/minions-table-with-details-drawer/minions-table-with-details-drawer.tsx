@@ -2,6 +2,7 @@ import { ExportOutlined } from "@ant-design/icons";
 import { type MinionShortSchema } from "@saltbox/saltbox-core-api-client";
 import {
   applyFilterByValue,
+  BooleanDisplay,
   canApplyFilterByValue,
   FastTable,
   createSelectColumn,
@@ -12,7 +13,7 @@ import {
   type FilterFieldOptions,
 } from "@saltbox/saltbox-frontend-common";
 import { createColumnHelper, type RowSelectionState } from "@tanstack/react-table";
-import { message, Tag } from "antd";
+import { message } from "antd";
 import { observer } from "mobx-react-lite";
 import { type ReactNode, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,14 +26,23 @@ import {
 } from "saltbox-core/features/minion-details";
 import { MinionLastActivityCell } from "saltbox-core/shared/components/minion-last-activity";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import {
+  getMinionActivityStatus,
+  isMinionNeverActive,
+} from "saltbox-core/shared/helpers/minion-activity";
 import type { MinionFilterStore, MinionsStore } from "saltbox-core/store";
 import {
   MinionDetailsDrawer,
   type MinionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/minion-details-drawer";
 
+import styles from "./minions-table-with-details-drawer.module.css";
+
 const MinionsTable = FastTable.Paginated<MinionShortSchema>;
 const minionsColumnHelper = createColumnHelper<MinionShortSchema>();
+
+const getMinionRowClassName = (minion: MinionShortSchema) =>
+  isMinionNeverActive(minion) ? styles.neverActiveRow : undefined;
 
 export type MinionsTableWithDetailsDrawerProps = {
   slug: string;
@@ -54,7 +64,6 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   const drawer = useInfoDrawer<MinionDetailsDrawerOpenParams, string, HTMLTableSectionElement>({
     getId: (params) => params.drawerId ?? params.minionId,
     drawerId: DRAWER_IDS.minionDetails,
-    outsideClickIgnoreSelectors: [`#sbx-drawer-${DRAWER_IDS.extraDataCategoryDetails}`],
   });
   const enableRowSelection =
     props.rowSelection !== undefined && props.onRowSelectionChange !== undefined;
@@ -107,28 +116,14 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.efi", {
         id: "grains.efi",
         header: t("minions.table-efi"),
-        cell: (data) => {
-          return (
-            <Tag color={data.getValue() ? "green" : "red"}>
-              {data.getValue() ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-        meta: { width: "2%", minWidth: 80 },
+        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        meta: { width: "2%", minWidth: 80, ellipsis: false },
       }),
-      minionsColumnHelper.accessor((row) => row.grains?.["efi-secure-boot"], {
+      minionsColumnHelper.accessor((row) => row.grains?.efi_secure_boot, {
         id: "grains.efi-secure-boot",
         header: t("minions.table-secure-boot"),
-        cell: (data) => {
-          const value = data.getValue();
-          if (value === null || value === undefined) return "";
-          return (
-            <Tag color={value ? "green" : "red"}>
-              {value ? t("minions.efi-yes") : t("minions.efi-no")}
-            </Tag>
-          );
-        },
-        meta: { width: "10%" },
+        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        meta: { width: "10%", ellipsis: false },
       }),
       minionsColumnHelper.accessor("created", {
         header: t("minions.table-created"),
@@ -141,7 +136,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           return (
             <MinionLastActivityCell
               date={data.getValue()}
-              lastActivitySeconds={data?.row.original.last_activity_seconds}
+              status={getMinionActivityStatus(data.row.original)}
               fallback={<>{t("minions.never-synced")}</>}
             />
           );
@@ -224,6 +219,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           tableId="core-minions"
           columns={columns}
           getRowId={(row) => row.id}
+          getRowClassName={getMinionRowClassName}
           data={props.minionsStore.minions}
           total={props.minionsStore.totalMinions}
           isLoading={props.minionsStore.isLoading}
@@ -233,6 +229,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
           sorting={props.minionsStore.sorting}
           onRowSelectionChange={props.onRowSelectionChange}
           rowSelection={props.rowSelection}
+          enableRowSelectionShortcuts
           onLazyLoad={(pagination, sorting) =>
             props.minionsStore.handleLazyLoad(pagination, sorting)
           }

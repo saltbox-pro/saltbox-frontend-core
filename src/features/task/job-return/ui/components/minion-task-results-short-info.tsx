@@ -40,7 +40,7 @@ export function MinionTaskResultsShortInfo({
       {
         label: t("task.minions.table-status"),
         children: (
-          <Flex className={styles.status} align="center">
+          <Flex className={styles.status} align="center" gap="small">
             <MinionTaskStatus status={status} />
 
             {status === TaskMinionStatus.Failed && (

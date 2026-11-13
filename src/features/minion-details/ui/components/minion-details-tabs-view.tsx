@@ -1,18 +1,21 @@
 import {
   type MinionDetailTabPlugin,
   resolvePluginLocalizedLabel,
+  useParentDrawerBridge,
 } from "@saltbox/saltbox-frontend-common";
 import { Flex, Tabs, type TabsProps } from "antd";
 import { observer } from "mobx-react-lite";
-import { useCallback, useMemo } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import Parcel from "single-spa-react/parcel";
 
+import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity";
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, i18nStore } from "saltbox-core/store";
 
 import {
   getMinionDetailsTabKeys,
+  isMinionDetailsTabDisabled,
   type MinionDetailsTabKey,
   parseMinionDetailsTabKey,
 } from "../../model/tabs";
@@ -56,9 +59,11 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
   const pluginTabs = getDetailTabPlugins();
+  const parentDrawer = useParentDrawerBridge();
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
 
   const availableTabKeys = useMemo(() => getMinionDetailsTabKeys(isInDrawer), [isInDrawer]);
+  const isNeverActive = isMinionNeverActive(minion);
 
   const handleTabChange = useCallback(
     (key: string) => {
@@ -66,6 +71,12 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     },
     [isInDrawer, onTabChange, pluginKeys]
   );
+
+  const handleTabChangeRef = useRef(handleTabChange);
+  useLayoutEffect(() => {
+    handleTabChangeRef.current = handleTabChange;
+  }, [handleTabChange]);
+  const handleParcelTabChange = useCallback((key: string) => handleTabChangeRef.current(key), []);
 
   const fullViewActions = isFullView
     ? {
@@ -127,7 +138,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       },
       pillars: {
         key: "pillars",
-        label: "Pillars",
+        label: t("minions.pillars"),
         children: !!minion?.id && (
           <MinionPillarsTab
             targetId={minion.id}
@@ -151,7 +162,10 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
       },
     };
 
-    const builtInTabs = availableTabKeys.map((key) => tabConfigs[key]);
+    const builtInTabs = availableTabKeys.map((key) => ({
+      ...tabConfigs[key],
+      disabled: isMinionDetailsTabDisabled(key, isNeverActive),
+    }));
     const toolkitSlug = buildToolkitSlug(minion);
 
     const pluginTabItems = pluginTabs.map((pluginTab) => {
@@ -165,6 +179,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         key: pluginTab.key,
         label,
         style: pluginTab.tabStyle,
+        disabled: isMinionDetailsTabDisabled(pluginTab.key, isNeverActive),
         children: tabKey === pluginTab.key && (
           <Parcel
             config={asParcelConfig(pluginTab.parcel)}
@@ -175,6 +190,8 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
               minion,
               isInDrawer,
               isFullView,
+              parentDrawer: isInDrawer ? parentDrawer : null,
+              onTabChange: handleParcelTabChange,
             }}
           />
         ),
@@ -185,12 +202,15 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   }, [
     availableTabKeys,
     collectionSlug,
+    handleParcelTabChange,
     isFullView,
     isMinionRefreshing,
     isInDrawer,
     isMinionLoading,
+    isNeverActive,
     minion,
     onFilterButton,
+    parentDrawer,
     pluginTabs,
     t,
     tabKey,

@@ -1,6 +1,8 @@
 import type {
   TaskCreateRequestSchema,
   TaskData,
+  TaskTargetingMasterSchema,
+  TaskTargetingMastersBody,
   TaskTemplateModel,
 } from "@saltbox/saltbox-core-api-client";
 import { isValidDataWithAjv } from "@saltbox/saltbox-frontend-common";
@@ -22,9 +24,7 @@ export class TaskCreationService {
       task_template_id: isCustomFunction ? null : formData.task_template_id,
       fun: isCustomFunction ? taskTemplate?.fun : undefined,
       task_type: context.taskType,
-      collection_slug: context.collection?.slug ?? context.slug,
-      minions: context.minionList ?? [],
-      query: context.query ?? {},
+      ...this.buildTargeting(context),
       batch_size: formData.batch_size,
       max_retries: formData.max_retries,
       retry_delay: formData.retry_delay,
@@ -49,6 +49,30 @@ export class TaskCreationService {
     return task.id;
   }
 
+  buildTargetingMastersBody(
+    context: TaskCreationContext,
+    taskTemplate?: TaskTemplateModel
+  ): TaskTargetingMastersBody {
+    return {
+      ...this.buildTargeting(context),
+      task_template_id: isDefaultTaskTemplate(taskTemplate) ? null : taskTemplate?.id,
+    };
+  }
+
+  async loadTargetingMasters(
+    body: TaskTargetingMastersBody
+  ): Promise<Array<TaskTargetingMasterSchema>> {
+    const response = await apiCoreStore.tasksApi?.taskTargetingMasters({
+      TaskTargetingMastersBody: body,
+    });
+
+    if (!response) {
+      throw new Error("Tasks API is not available");
+    }
+
+    return response;
+  }
+
   getDefaultConfiguration(): Pick<
     TaskConfigurationFormData,
     "batch_size" | "max_retries" | "retry_delay" | "max_jobs_count_at_same_time"
@@ -58,6 +82,16 @@ export class TaskCreationService {
       max_retries: 1,
       retry_delay: 10,
       max_jobs_count_at_same_time: 1,
+    };
+  }
+
+  private buildTargeting(
+    context: TaskCreationContext
+  ): Pick<TaskCreateRequestSchema, "collection_slug" | "minions" | "query"> {
+    return {
+      collection_slug: context.collection?.slug ?? context.slug,
+      minions: context.minionList ?? [],
+      query: context.query ?? {},
     };
   }
 
