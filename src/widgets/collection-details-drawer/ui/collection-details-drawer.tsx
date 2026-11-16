@@ -23,6 +23,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
 import {
   COLLECTION_DESCRIPTION_MAX_LENGTH,
   ROOT_COLLECTION_SLUG,
@@ -410,6 +411,7 @@ export const CollectionDetailsDrawer = observer(
         return;
       }
 
+      const queryChanged = getFilterStateKey(filterStore) !== filtersBaselineKey;
       const currentParentSlug = collection?.parent_slug ?? ROOT_COLLECTION_SLUG;
       const parentChanged = values.parent_slug !== currentParentSlug;
       const newParent = parentChanged
@@ -444,6 +446,10 @@ export const CollectionDetailsDrawer = observer(
               newParent.children?.[0]?.id ?? null
             );
             collectionStore.loadCollection();
+          }
+
+          if (queryChanged) {
+            await collectionsTreeStore.loadTree(true, { reloadFlatList: false });
           }
         },
         onError: handleMutationError,
@@ -495,6 +501,7 @@ export const CollectionDetailsDrawer = observer(
       : isCreateMode
         ? "collection-create-modal.dialog-title"
         : "collection.collection";
+    const titleCollection = isDuplicateMode ? sourceCollection : collection;
 
     return (
       <>
@@ -505,8 +512,13 @@ export const CollectionDetailsDrawer = observer(
           width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
           push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
-          titleName={isDuplicateMode ? sourceCollection?.title : collection?.title}
+          titleName={titleCollection?.title}
           titleLabel={t(titleLabelKey)}
+          titleExtra={
+            titleCollection ? (
+              <CollectionMinionsCountTag count={titleCollection.minions_count ?? 0} />
+            ) : undefined
+          }
           linkTo={currentSlug ? `/core/minions/${currentSlug}` : undefined}
           linkTitle={t("collection.open-collection-page")}
           linkComponent={Link}

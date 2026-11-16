@@ -937,6 +937,7 @@
     "description-placeholder": "Enter collection description",
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
+    "clients-count": "Clients: {{count}}",
     "create-subcollection": "Create subcollection",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
     "duplicate": "Duplicate",

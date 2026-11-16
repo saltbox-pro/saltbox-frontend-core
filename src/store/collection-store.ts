@@ -74,6 +74,7 @@ export class CollectionStore {
             title: updatedCollection.title,
             slug: updatedCollection.slug,
             description: updatedCollection.description,
+            minionsCount: updatedCollection.minions_count ?? 0,
           });
           this.collectionSlug = updatedCollection.slug;
         }

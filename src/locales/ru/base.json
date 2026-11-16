@@ -937,6 +937,7 @@
     "description-placeholder": "Введите описание коллекции",
     "description-max": "Описание не должно превышать {{max}} символов",
     "no-description": "Описание для данной коллекции отсутствует",
+    "clients-count": "Клиентов: {{count}}",
     "create-subcollection": "Создать подколлекцию",
     "tooltip-create-subcollection-blocked": "Необходимо сохранить изменения в коллекции для создания подколлекции",
     "duplicate": "Дублировать",

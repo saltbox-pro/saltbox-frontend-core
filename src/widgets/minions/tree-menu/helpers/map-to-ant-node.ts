@@ -8,6 +8,7 @@ export function mapToAntdNode(node: CollectionTreeNodeSchema): CollectionTreeAnt
     title: node.title,
     slug: node.slug,
     description: node.description,
+    minionsCount: node.minions_count ?? 0,
     children: node.children?.length ? node.children.map(mapToAntdNode) : undefined,
   };
 }

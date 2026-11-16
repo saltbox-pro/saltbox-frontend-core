@@ -34,11 +34,19 @@ export class CollectionsTreeStore {
     return this.treeLoad.status === "success";
   }
 
-  loadTree = (force = false) => {
-    if (force) collectionsFlatListStore.reload();
-    if ((!force && this.isTreeLoaded) || this.treeLoad.isLoading) return;
+  loadTree = async (
+    force = false,
+    { reloadFlatList = force }: { reloadFlatList?: boolean } = {}
+  ): Promise<void> => {
+    if (reloadFlatList) {
+      collectionsFlatListStore.reload();
+    }
 
-    this.treeLoad.run().catch(() => undefined);
+    if (!force && (this.isTreeLoaded || this.treeLoad.isLoading)) {
+      return;
+    }
+
+    await this.treeLoad.run().catch(() => undefined);
   };
 
   addNode = (collection: CollectionModel) => {
@@ -50,6 +58,7 @@ export class CollectionsTreeStore {
       title: collection.title,
       slug: collection.slug,
       description: collection.description,
+      minions_count: collection.minions_count ?? 0,
       parent_id: collection.parent_id ?? undefined,
       children: [],
     };
@@ -125,7 +134,7 @@ export class CollectionsTreeStore {
 
   updateNode = (
     oldSlug: string,
-    payload: { title: string; slug: string; description?: string }
+    payload: { title: string; slug: string; description?: string; minionsCount?: number }
   ) => {
     collectionsFlatListStore.reload();
     if (this.treeNodes.length === 0) return;
@@ -137,6 +146,9 @@ export class CollectionsTreeStore {
       node.title = payload.title;
       node.slug = payload.slug;
       node.description = payload.description;
+      if (payload.minionsCount !== undefined) {
+        node.minions_count = payload.minionsCount;
+      }
       this.treeNodes = [...this.treeNodes];
     });
   };
@@ -162,6 +174,7 @@ export class CollectionsTreeStore {
       title: updated.title,
       slug: updated.slug,
       description: updated.description,
+      minionsCount: updated.minions_count ?? 0,
     });
   };
 
@@ -214,6 +227,7 @@ export class CollectionsTreeStore {
     const created = await api.minionCollectionCreate({ CollectionCreateRequestSchema: payload });
 
     this.addNode(created);
+    await this.loadTree(true, { reloadFlatList: false });
 
     return created;
   };

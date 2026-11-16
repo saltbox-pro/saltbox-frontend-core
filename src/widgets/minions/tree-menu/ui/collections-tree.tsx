@@ -22,6 +22,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
+import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
 import { ROOT_COLLECTION_SLUG } from "saltbox-core/shared/constants/collection";
 import { matchCollectionSlug } from "saltbox-core/shared/helpers/collection-route";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
@@ -243,16 +244,19 @@ export const CollectionsTree = observer(
       setAppliedSearchQuery(search);
     }, []);
 
-    const titleRender = useMemo(() => {
-      if (!renderActions && !showDescription) return undefined;
-      return (node: CollectionTreeAntdNode) => (
+    const titleRender = useCallback(
+      (node: CollectionTreeAntdNode) => (
         <Flex className={styles.nodeRow} align="center" gap="small" title="">
           <span
-            className={styles.nodeTitle}
+            className={clsx(styles.nodeTitle, showDescription && styles.nodeTitleLimited)}
             title={typeof node.title === "string" ? node.title : undefined}
           >
             {node.title as ReactNode}
           </span>
+          <CollectionMinionsCountTag
+            count={node.minionsCount}
+            className={styles.nodeClientsCount}
+          />
           {showDescription &&
             node.slug !== ROOT_COLLECTION_SLUG &&
             (node.description ? (
@@ -271,8 +275,9 @@ export const CollectionsTree = observer(
             ))}
           {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
         </Flex>
-      );
-    }, [renderActions, showDescription, t]);
+      ),
+      [renderActions, showDescription, t]
+    );
 
     return (
       <Flex
