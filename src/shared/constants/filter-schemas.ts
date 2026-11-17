@@ -63,11 +63,13 @@ export const getTasksFilterSchema = (
       name: "task_template.title",
       label: t("minions.table-task-template-title"),
       operators: defaultStringOperators,
+      ignoreEmptyValue: true,
     },
     {
       name: "task_template.name",
       label: t("minions.table-task-template-name"),
       operators: defaultStringOperators,
+      ignoreEmptyValue: true,
     },
     {
       name: "user.name",
