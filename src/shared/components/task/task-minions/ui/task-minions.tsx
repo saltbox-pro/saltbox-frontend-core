@@ -38,7 +38,7 @@ export const TaskMinions = observer(function TaskMinions({ taskStore }: TaskMini
 
   const taskDrawer = useInfoDrawer<TaskMinionListResponse, string, HTMLTableSectionElement>({
     getId: (minion) => minion.id,
-    drawerId: DRAWER_IDS.minionDetails,
+    drawerId: DRAWER_IDS.minionTaskResults,
   });
 
   const selectedMinion = useMemo(() => {
