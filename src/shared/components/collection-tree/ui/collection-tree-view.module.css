@@ -1,0 +1,52 @@
+.tree {
+  background: transparent;
+}
+
+.tree :global(.ant-tree-treenode:not(.ant-tree-treenode-disabled) .ant-tree-title) {
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.tree
+  :global(
+    .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled)
+      .ant-tree-node-content-wrapper
+  ),
+.tree
+  :global(
+    .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled)
+      .ant-tree-node-content-wrapper:hover
+  ),
+.tree :global(.ant-tree-node-content-wrapper.ant-tree-node-selected),
+.tree :global(.ant-tree-node-content-wrapper.ant-tree-node-selected:hover) {
+  background-color: #e6f4ff;
+}
+
+.tree
+  :global(
+    .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled) .ant-tree-title
+  ) {
+  color: var(--ant-color-primary, #1677ff);
+}
+
+.tree :global(.ant-tree-node-content-wrapper) {
+  min-width: 0;
+  cursor: default;
+}
+
+.treeSelectable :global(.ant-tree-node-content-wrapper) {
+  cursor: pointer;
+}
+
+.treeSelectable :global(.ant-tree-node-content-wrapper:hover) {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+.nowrapTitles :global(.ant-tree-title) {
+  white-space: nowrap;
+}
+
+.compact {
+  width: max-content;
+  min-width: 100%;
+  font-size: 13px;
+}
