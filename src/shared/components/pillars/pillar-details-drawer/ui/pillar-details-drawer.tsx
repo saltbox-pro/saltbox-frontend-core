@@ -33,6 +33,7 @@ export function PillarDetailsDrawer({
       titleLabel={t("pillar.title")}
       transitionKey={open ? "opened" : "closed"}
       {...restProps}
+      resizable
     >
       <PillarDetailsDrawerContent
         pillar={pillar}

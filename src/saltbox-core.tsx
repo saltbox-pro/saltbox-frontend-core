@@ -248,7 +248,7 @@ export const saltboxModule = {
       ],
     },
   ],
-  init: (authStore, services, localeStore, pluginsStore, menuLayout) => {
+  init: async (authStore, services, localeStore, pluginsStore, menuLayout) => {
     appStore.init(authStore, pluginsStore);
     disposeWebSocketAccessTokenSync?.();
     disposeWebSocketAccessTokenSync = bindWebSocketAccessTokenSync(
@@ -259,7 +259,7 @@ export const saltboxModule = {
         envStore.services.set(service.service_name, service.env);
       }
     });
-    initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
+    await initUserSettings(createUserSettingsTransport(() => apiGatewayStore.userSettingsApi));
     disposeLanguageSettingsSync?.();
     disposeLanguageSettingsSync = bindLanguageSettings(
       authStore as AuthStoreWithAccessToken,

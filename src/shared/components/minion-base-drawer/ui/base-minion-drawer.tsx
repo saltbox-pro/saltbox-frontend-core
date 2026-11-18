@@ -41,6 +41,7 @@ export function BaseMinionDrawer({
       linkPlacement={linkPlacement}
       width={width}
       {...restProps}
+      resizable
     >
       {children}
     </InfoDrawer>

@@ -502,7 +502,8 @@ export const CollectionDetailsDrawer = observer(
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
-          width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
+          width={COLLECTION_DETAILS_DRAWER_WIDTH}
+          resizable
           push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
           titleName={titleCollection?.title}
