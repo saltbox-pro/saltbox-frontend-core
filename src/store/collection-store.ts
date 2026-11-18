@@ -31,6 +31,9 @@ export class CollectionStore {
     return this.collectionLoad.isLoading || this.isSaving;
   }
 
+  getSettledCollection = (slug: string): CollectionDetailSchema | undefined =>
+    this.collectionSlug === slug && !this.isLoading ? this.collection : undefined;
+
   loadCollection = () => {
     if (!this.collectionSlug) return;
     this.collectionLoad.run().catch(() => undefined);
@@ -71,6 +74,7 @@ export class CollectionStore {
             title: updatedCollection.title,
             slug: updatedCollection.slug,
             description: updatedCollection.description,
+            minionsCount: updatedCollection.minions_count ?? 0,
           });
           this.collectionSlug = updatedCollection.slug;
         }

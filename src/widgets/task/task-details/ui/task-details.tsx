@@ -1,12 +1,17 @@
 import { TaskType } from "@saltbox/saltbox-core-api-client";
-import { InfoDescriptions, type InfoDescriptionsProps } from "@saltbox/saltbox-frontend-common";
+import {
+  EMPTY_VALUE,
+  InfoDescriptions,
+  type InfoDescriptionsProps,
+} from "@saltbox/saltbox-frontend-common";
 import { Alert, Flex, Typography } from "antd";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import ReactJson from "react-json-view";
 
 import { CollectionAppliedFilterPopover } from "saltbox-core/shared/components/collection-applied-filter-popover";
-import { formatTtlValue } from "saltbox-core/shared/utils/job-ttl-utils";
+import { formatDurationDisplay } from "saltbox-core/shared/utils/duration-display";
+import { formatTtlDisplay } from "saltbox-core/shared/utils/job-ttl-utils";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 
 import type { TaskDetailsData } from "../type/task-details-data";
@@ -89,20 +94,23 @@ export function TaskDetails({
       },
       {
         label: t("task.details.retry-delay"),
-        children: t("task.details.retry-delay-seconds", { count: system.retryDelay }),
+        children:
+          system.retryDelay == null ? EMPTY_VALUE : formatDurationDisplay(system.retryDelay, t),
       },
       ...(system.ttlJobs != null
         ? [
             {
               label: t("task.details.ttl-jobs"),
-              children: formatTtlValue(system.ttlJobs, t),
+              children: formatTtlDisplay(system.ttlJobs, t),
             },
           ]
         : []),
       {
         label: t(isPolicy ? "policy-create.ttl-task" : "task-create.ttl-task"),
         children:
-          system.ttlTask != null ? formatTtlValue(system.ttlTask, t) : t("task.ttl-task-unlimited"),
+          system.ttlTask != null
+            ? formatTtlDisplay(system.ttlTask, t)
+            : t("task.ttl-task-unlimited"),
       },
     ],
     [

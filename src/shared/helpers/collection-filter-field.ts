@@ -11,7 +11,10 @@ export type CollectionFilterOption = {
   label: string;
 };
 
-type CollectionListItem = Pick<CollectionFlatListItemSchema, "id" | "slug" | "title" | "parent_id">;
+type CollectionListItem = Pick<
+  CollectionFlatListItemSchema,
+  "id" | "slug" | "title" | "parent_id" | "minions_count"
+>;
 
 function buildCollectionPath(
   item: CollectionListItem,
@@ -75,6 +78,17 @@ export function buildCollectionFilterOptions(
 
   return items
     .filter((item) => item.slug !== ROOT_COLLECTION_SLUG && !excludedSlugs.has(item.slug))
-    .map((item) => ({ value: item.slug, label: labelBySlug.get(item.slug) ?? item.title }))
-    .sort((first, second) => first.label.localeCompare(second.label));
+    .map((item) => {
+      const pathLabel = labelBySlug.get(item.slug) ?? item.title;
+      return {
+        value: item.slug,
+        pathLabel,
+        count: item.minions_count ?? 0,
+      };
+    })
+    .sort((first, second) => first.pathLabel.localeCompare(second.pathLabel))
+    .map(({ value, pathLabel, count }) => ({
+      value,
+      label: `${pathLabel} (${count})`,
+    }));
 }

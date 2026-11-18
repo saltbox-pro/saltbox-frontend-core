@@ -1,7 +1,7 @@
 import type { Rule } from "antd/es/form";
 import type { TFunction } from "i18next";
 
-import { isValidExtraDataCategoryFieldName } from "../helpers/extra-data-category-name-validation";
+import { getExtraDataCategoryFieldNameIssue } from "../helpers/extra-data-category-field-form";
 
 export function getExtraDataCategoryFieldNameRules(
   t: TFunction,
@@ -15,13 +15,13 @@ export function getExtraDataCategoryFieldNameRules(
     },
     {
       validator: async (_, value: string | undefined) => {
-        const trimmed = value?.trim();
-        if (!trimmed) return;
-        if (!isValidExtraDataCategoryFieldName(trimmed)) {
-          throw new Error(t("extra-data-categories.name-forbidden-characters"));
-        }
-        if (isDuplicate(trimmed)) {
-          throw new Error(t("extra-data-categories.field-form.field-name-unique"));
+        switch (getExtraDataCategoryFieldNameIssue(value, isDuplicate)) {
+          case "forbidden":
+            throw new Error(t("extra-data-categories.name-forbidden-characters"));
+          case "duplicate":
+            throw new Error(t("extra-data-categories.field-form.field-name-unique"));
+          default:
+            return;
         }
       },
     },

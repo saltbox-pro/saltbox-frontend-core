@@ -45,6 +45,7 @@
     "no-minion-data-available": "Нет данных о клиенте",
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
+    "minion-collections": "Коллекции клиента",
     "grains": "Данные grains",
     "pillars": "Данные клиента",
     "extra-data": {
@@ -188,7 +189,6 @@
       "inactive": "Неактивен",
       "never-active": "Ни разу не был активен"
     },
-    "filter-applied": "Фильтр применён",
     "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "root-collection-info": "Это корневая коллекция, которая содержит всех клиентов из всех подключенных контроллеров в системе",
     "subcollection-info": "Эта коллекция является подколлекцией",
@@ -358,8 +358,8 @@
     "max-retries": "Максимум попыток",
     "max-retries-tooltip": "Количество повторных попыток при ошибке",
     "max-retries-error-required": "Максимальное количество попыток обязательно",
-    "retry-delay": "Задержка повтора (с)",
-    "retry-delay-tooltip": "Задержка в секундах перед повторной попыткой",
+    "retry-delay": "Задержка повтора",
+    "retry-delay-tooltip": "Задержка перед повторной попыткой",
     "retry-delay-error-required": "Задержка повтора обязательна",
     "max-parallel-jobs": "Параллельные задачи",
     "max-parallel-jobs-tooltip": "Максимальное количество одновременных задач",
@@ -414,7 +414,6 @@
       "max-parallel-jobs": "Параллельные задачи",
       "max-retries": "Максимум попыток",
       "retry-delay": "Задержка повтора",
-      "retry-delay-seconds": "{{count}} сек",
       "ttl-jobs": "Время ожидания ответа команды",
       "target-info": "Целевые узлы",
       "collection": "Коллекция",
@@ -429,7 +428,7 @@
       "pillars": "Pillars"
     },
     "show-details": "Параметры задачи",
-    "details-title": "Детали задачи",
+    "details-title": "Параметры задачи",
     "page-title": "{{templateName}}: #{{taskId}}",
     "breadcrumbs-title-template": "Задача: {{templateName}}",
     "breadcrumbs-title-empty": "Задача: #{{taskId}}",
@@ -521,13 +520,7 @@
       "status-timeout": "Тайм-аут",
       "status-success": "Успешно",
       "status-failed": "Ошибка",
-      "status-ignored": "Игнорировано",
-      "time-units": {
-        "milliseconds": "мс",
-        "seconds": "с",
-        "minutes": "м",
-        "hours": "ч"
-      }
+      "status-ignored": "Игнорировано"
     },
     "minions-nav": {
       "list-all": "Все"
@@ -550,7 +543,7 @@
   },
   "policy": {
     "show-details": "Параметры политики",
-    "details-title": "Детали политики"
+    "details-title": "Параметры политики"
   },
   "extra-data-categories": {
     "title": "Категории расширенных данных",
@@ -625,7 +618,7 @@
     "field-form": {
       "field-name-placeholder": "Введите название поля",
       "field-name-required": "Укажите название поля",
-      "field-name-unique": "Поле с таким названием уже есть в категории",
+      "field-name-unique": "Поле с таким названием уже есть",
       "field-type-placeholder": "Выберите тип",
       "field-type-required": "Укажите тип"
     },
@@ -909,9 +902,6 @@
     "hint-example-label": "Пример:",
     "advanced-settings": "Расширенные настройки",
     "timeout-label": "Время ожидания ответа команды",
-    "timeout-unit-seconds": "Сек",
-    "timeout-unit-minutes": "Мин",
-    "timeout-unit-hours": "Час",
     "error-job-create": "Не удалось создать команду",
     "warning-template-unavailable": "Не удалось загрузить шаблон команды. Форма открыта с параметрами по умолчанию"
   },
@@ -948,8 +938,13 @@
     "description-placeholder": "Введите описание коллекции",
     "description-max": "Описание не должно превышать {{max}} символов",
     "no-description": "Описание для данной коллекции отсутствует",
+    "clients-count": "Клиентов: {{count}}",
     "create-subcollection": "Создать подколлекцию",
     "tooltip-create-subcollection-blocked": "Необходимо сохранить изменения в коллекции для создания подколлекции",
+    "duplicate": "Дублировать",
+    "duplicate-title": "Копия {{title}}",
+    "duplicate-drawer-title": "Дублирование коллекции",
+    "tooltip-duplicate-blocked": "Необходимо сохранить изменения в коллекции для дублирования",
     "edit-structure": "Редактировать структуру",
     "edit-structure-hint": "Перетаскивайте коллекции, чтобы изменить их родителя и порядок",
     "error-moving-collection": "Не удалось переместить коллекцию",
@@ -1015,16 +1010,25 @@
     "delete-card": "Удалить",
     "delete-card-confirm-title": "Удалить блок статистики?",
     "delete-card-confirm-description": "Это действие нельзя отменить",
+    "delete-global-card-confirm-description": "Блок будет удалён во всех коллекциях, действие нельзя отменить",
     "reset-button": "Сбросить",
     "reset-confirm-title": "Сбросить вкладку к состоянию по умолчанию?",
     "reset-confirm-description": "Блоки текущей вкладки будут заменены набором по умолчанию, действие нельзя отменить",
     "reset-confirm-description-empty": "Все блоки текущей вкладки будут удалены, действие нельзя отменить",
-    "first-tab-name": "Статистика",
+    "reset-confirm-description-global": "Все блоки вкладки будут удалены во всех коллекциях, действие нельзя отменить",
+    "first-tab-name": "Обзор",
     "new-tab-name": "Новая вкладка",
     "rename-tab": "Переименовать вкладку",
     "delete-tab": "Удалить вкладку",
+    "delete-global-tab-confirm-title": "Удалить глобальную вкладку?",
+    "delete-global-tab-confirm-description": "Вкладка будет удалена во всех коллекциях, действие нельзя отменить",
     "tab-name-empty": "Введите название вкладки",
     "tab-name-duplicate": "Вкладка с таким названием уже есть",
+    "tab-name-reserved": "Это название зарезервировано для основной вкладки",
+    "tab-name-label": "Название",
+    "add-tab-title": "Добавить вкладку",
+    "tab-local-checkbox": "Только для этой коллекции",
+    "global-tab-tooltip": "Глобальная вкладка: отображается во всех коллекциях",
     "empty-title": "Графики ещё не добавлены",
     "empty-description": "Для отображения статистики добавьте хотя бы один блок с графиком",
     "preset-donut": "Кольцевая диаграмма",
@@ -1229,14 +1233,14 @@
     "sync": "Синхронизировать"
   },
   "entity-source": {
-    "column": "Тип источника",
+    "column": "Источник",
     "id-column": "ID источника",
     "type": {
       "rest": "Вручную",
-      "task": "Из задачи",
-      "scheduler": "Из планировщика",
-      "migration": "Из сценария",
-      "system": "Системой"
+      "task": "Задача",
+      "scheduler": "Планировщик",
+      "migration": "Сценарий",
+      "system": "Система"
     }
   },
   "task-template-editor": {

@@ -3,7 +3,7 @@ import { formatQuery } from "react-querybuilder";
 
 import type { MinionFilterStore } from "saltbox-core/store";
 
-export const EMPTY_FILTER_STATE_KEY = "{}";
+const EMPTY_FILTER_STATE_KEY = "{}";
 
 export function getFilterStateKey(filterStore: MinionFilterStore): string {
   if (filterStore.inputMode === "free-text") {

@@ -3,6 +3,7 @@ import { observer } from "mobx-react-lite";
 import { useTranslation } from "react-i18next";
 
 import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
+import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import { TaskStore } from "saltbox-core/store";
 import { type MinionTaskRestartFailedButtonProps } from "saltbox-core/widgets/task/minion-task-restart-failed-button";
 
@@ -59,6 +60,7 @@ export const MinionTaskResultsDrawer = observer<MinionTaskResultsDrawerProps>(
 
     return (
       <BaseMinionDrawer
+        drawerId={DRAWER_IDS.minionTaskResults}
         id={minionId}
         innerId={minionInnerId}
         slug={slug}

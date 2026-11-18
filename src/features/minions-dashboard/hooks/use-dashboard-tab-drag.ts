@@ -4,9 +4,14 @@ import { dashboardStore } from "../model/dashboard-store";
 
 type DropSide = "before" | "after";
 
-export const useDashboardTabDrag = (tabIds: string[]) => {
+export const useDashboardTabDrag = (tabGroups: string[][]) => {
   const [draggedTabId, setDraggedTabId] = useState<string | null>(null);
   const [overTabId, setOverTabId] = useState<string | null>(null);
+
+  const tabIds = tabGroups.flat();
+  const draggedGroup = draggedTabId
+    ? tabGroups.find((group) => group.includes(draggedTabId))
+    : undefined;
 
   const reset = () => {
     setDraggedTabId(null);
@@ -31,8 +36,12 @@ export const useDashboardTabDrag = (tabIds: string[]) => {
       if (!draggedTabId) {
         return;
       }
-      event.preventDefault();
       event.stopPropagation();
+      if (!draggedGroup?.includes(tabId)) {
+        setOverTabId(null);
+        return;
+      }
+      event.preventDefault();
       event.dataTransfer.dropEffect = "move";
       setOverTabId(tabId);
     },
@@ -47,7 +56,7 @@ export const useDashboardTabDrag = (tabIds: string[]) => {
     onDragEnd: reset,
   });
 
-  const lastTabId = tabIds[tabIds.length - 1] ?? null;
+  const lastTabId = draggedGroup?.at(-1) ?? null;
 
   const containerDragProps = {
     onDragOver: (event: DragEvent<HTMLElement>) => {

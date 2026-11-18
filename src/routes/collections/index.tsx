@@ -1,21 +1,24 @@
-import { PlusCircleOutlined } from "@ant-design/icons";
 import { PageLayout, useInfoDrawer } from "@saltbox/saltbox-frontend-common";
-import { Button, Tooltip } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 
+import { ROOT_COLLECTION_SLUG } from "saltbox-core/shared/constants/collection";
 import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
 import type { DrawerCloseGuard } from "saltbox-core/shared/hooks/useUnsavedChangesCloseGuard";
 import { findNodeBySlug } from "saltbox-core/shared/utils/tree-utils";
 import { CollectionStore, collectionsTreeStore } from "saltbox-core/store";
 import {
+  buildCreateOpenParams,
+  buildDuplicateOpenParams,
+  buildViewOpenParams,
   CollectionDetailsDrawer,
   type CollectionDetailsDrawerOpenParams,
 } from "saltbox-core/widgets/collection-details-drawer";
 import { CollectionsTree } from "saltbox-core/widgets/minions/tree-menu";
 
+import { CollectionTreeNodeActions } from "./-components/collection-tree-node-actions";
 import styles from "./index.module.css";
 
 const CollectionsPage = observer(() => {
@@ -39,7 +42,7 @@ const CollectionsPage = observer(() => {
 
   useEffect(() => {
     const slug = searchParams.get("slug");
-    if (!slug || slug === "root" || !collectionsTreeStore.isTreeLoaded) {
+    if (!slug || slug === ROOT_COLLECTION_SLUG || !collectionsTreeStore.isTreeLoaded) {
       return;
     }
 
@@ -53,10 +56,7 @@ const CollectionsPage = observer(() => {
     }
 
     deepLinkHandledRef.current = slug;
-    openDrawer({
-      id: String(node.id),
-      slug,
-    });
+    openDrawer(buildViewOpenParams(String(node.id), slug));
 
     setSearchParams(
       (prev) => {
@@ -83,15 +83,22 @@ const CollectionsPage = observer(() => {
     });
   };
 
-  const openCreateDrawer = (parentSlug: string) => {
-    const id = `create:${parentSlug}`;
-    if (drawer.openedId === id) {
+  const openDraftDrawer = (params: CollectionDetailsDrawerOpenParams) => {
+    if (drawer.openedId === params.id) {
       return;
     }
 
     deepLinkHandledRef.current = null;
-    drawer.toggle({ id, slug: parentSlug, isCreate: true });
+    drawer.toggle(params);
   };
+
+  const openCreateDrawer = (parentSlug: string) =>
+    openDraftDrawer(buildCreateOpenParams(parentSlug));
+
+  const openDuplicateDrawer = (sourceSlug: string) =>
+    openDraftDrawer(
+      buildDuplicateOpenParams(sourceSlug, collectionStore.getSettledCollection(sourceSlug))
+    );
 
   return (
     <PageLayout title={t("collection.collections")} className={styles.pageLayout}>
@@ -103,31 +110,25 @@ const CollectionsPage = observer(() => {
           onSelectNode={(node) => {
             if (node.slug) {
               deepLinkHandledRef.current = null;
-              drawer.toggle({ id: String(node.key), slug: node.slug });
+              drawer.toggle(buildViewOpenParams(String(node.key), node.slug));
             }
           }}
           renderActions={
             isStructureEditMode
               ? undefined
               : (node) => (
-                  <Tooltip title={t("collection.create-subcollection")}>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<PlusCircleOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openCreateDrawer(node.slug);
-                      }}
-                    />
-                  </Tooltip>
+                  <CollectionTreeNodeActions
+                    slug={node.slug}
+                    onCreateSubcollection={openCreateDrawer}
+                    onDuplicate={openDuplicateDrawer}
+                  />
                 )
           }
           showDescription
           className={styles.collectionsTree}
           selectedSlug={
-            !isStructureEditMode && drawer.isOpened && !drawer.openedArg?.isCreate
-              ? (collectionStore.collectionSlug ?? drawer.openedArg?.slug ?? null)
+            !isStructureEditMode && drawer.isOpened && drawer.openedArg?.mode === "view"
+              ? (collectionStore.collectionSlug ?? drawer.openedArg.slug)
               : null
           }
         />
@@ -138,6 +139,7 @@ const CollectionsPage = observer(() => {
         collectionStore={collectionStore}
         closeGuardRef={closeGuardRef}
         onCreateSubcollection={openCreateDrawer}
+        onDuplicate={openDuplicateDrawer}
       />
     </PageLayout>
   );

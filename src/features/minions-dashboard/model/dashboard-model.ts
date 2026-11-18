@@ -20,6 +20,7 @@ import {
   NUMERIC_METADATA_TYPES,
 } from "../constants/dashboard-field-types";
 import { PRESETS } from "../constants/dashboard-presets";
+import { LEGACY_FIRST_TAB_NAMES } from "../constants/dashboard-tabs";
 
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 
@@ -83,13 +84,22 @@ export type DashboardStorageConfig = {
   activeTabId: string;
 };
 
+export type DashboardGlobalStorageConfig = Pick<DashboardStorageConfig, "tabs">;
+
+export type DashboardTabScope = "local" | "global";
+
+export type DashboardAddTabValues = {
+  name: string;
+  scope: DashboardTabScope;
+};
+
 export type DashboardTabNames = {
   firstTab: string;
   newTab: string;
   firstTabAliases: string[];
 };
 
-export type TabNameError = "empty" | "duplicate";
+export type TabNameError = "empty" | "duplicate" | "reserved";
 
 export type DashboardFieldOption = {
   value: string;
@@ -350,16 +360,24 @@ export const createUniqueTabName = (
   return `${base} ${suffix}`;
 };
 
+type ValidateTabNameOptions = {
+  excludeTabId?: string;
+  reservedNames?: string[];
+};
+
 export const validateTabName = (
   name: string,
   tabs: DashboardTab[],
-  tabId: string
+  { excludeTabId, reservedNames = [] }: ValidateTabNameOptions = {}
 ): TabNameError | null => {
   const normalized = normalizeTabName(name);
   if (!normalized) {
     return "empty";
   }
-  if (tabs.some((tab) => tab.id !== tabId && tab.name === normalized)) {
+  if (reservedNames.includes(normalized)) {
+    return "reserved";
+  }
+  if (tabs.some((tab) => tab.id !== excludeTabId && tab.name === normalized)) {
     return "duplicate";
   }
   return null;
@@ -385,6 +403,41 @@ export const canRemoveDashboardTab = (tab: DashboardTab, tabs: DashboardTab[]): 
   return !tab.primary && tabs.length > 1;
 };
 
+export type StickyDashboardTab =
+  | { kind: "global"; id: string }
+  | { kind: "primary" }
+  | { kind: "local"; name: string };
+
+export const toStickyDashboardTab = (
+  tab: DashboardTab,
+  scope: DashboardTabScope
+): StickyDashboardTab => {
+  if (scope === "global") {
+    return { kind: "global", id: tab.id };
+  }
+  if (tab.primary) {
+    return { kind: "primary" };
+  }
+  return { kind: "local", name: tab.name };
+};
+
+export const resolveStickyDashboardTabId = (
+  sticky: StickyDashboardTab | null,
+  globalTabs: DashboardTab[],
+  localTabs: DashboardTab[]
+): string | null => {
+  if (!sticky) {
+    return null;
+  }
+  if (sticky.kind === "global") {
+    return globalTabs.some((tab) => tab.id === sticky.id) ? sticky.id : null;
+  }
+  if (sticky.kind === "primary") {
+    return localTabs.find((tab) => tab.primary)?.id ?? null;
+  }
+  return localTabs.find((tab) => !tab.primary && tab.name === sticky.name)?.id ?? null;
+};
+
 export const createDashboardTab = (name: string): DashboardTab => {
   return {
     id: createTabId(),
@@ -408,17 +461,27 @@ export const createFirstDashboardTab = (name: string): DashboardTab => {
   };
 };
 
+const isFirstTabAlias = (name: string, names: DashboardTabNames): boolean => {
+  return names.firstTabAliases.includes(name) || LEGACY_FIRST_TAB_NAMES.includes(name);
+};
+
+type NormalizeTabsOptions = {
+  withPrimary: boolean;
+};
+
 const normalizeTabs = (
   rawTabs: Partial<DashboardTab>[],
-  names: DashboardTabNames
+  names: DashboardTabNames,
+  { withPrimary }: NormalizeTabsOptions
 ): DashboardTab[] => {
   const tabs: DashboardTab[] = [];
   let hasPrimary = false;
 
   for (const rawTab of rawTabs) {
     const storedName = typeof rawTab?.name === "string" ? normalizeTabName(rawTab.name) : "";
-    const baseName = storedName || (tabs.length === 0 ? names.firstTab : names.newTab);
-    const primary = rawTab?.primary === true && !hasPrimary;
+    const baseName =
+      storedName || (withPrimary && tabs.length === 0 ? names.firstTab : names.newTab);
+    const primary = withPrimary && rawTab?.primary === true && !hasPrimary;
     hasPrimary = hasPrimary || primary;
     tabs.push({
       id: typeof rawTab?.id === "string" && rawTab.id ? rawTab.id : createTabId(),
@@ -427,7 +490,7 @@ const normalizeTabs = (
       nameCustomized:
         typeof rawTab?.nameCustomized === "boolean"
           ? rawTab.nameCustomized
-          : Boolean(storedName) && !names.firstTabAliases.includes(storedName),
+          : Boolean(storedName) && !isFirstTabAlias(storedName, names),
       cards: Array.isArray(rawTab?.cards)
         ? rawTab.cards.slice(0, DASHBOARD_MAX_CARDS).map(normalizeCard)
         : [],
@@ -435,16 +498,40 @@ const normalizeTabs = (
     });
   }
 
-  if (!hasPrimary && tabs.length > 0) {
+  if (withPrimary && !hasPrimary && tabs.length > 0) {
     tabs[0].primary = true;
   }
 
   return tabs;
 };
 
-export const normalizeDashboardStorage = (
+const parseStoredValue = (rawValue: unknown): unknown => {
+  return typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+};
+
+const resolveActiveTabId = (activeTabId: unknown, tabs: DashboardTab[]): string => {
+  if (typeof activeTabId === "string" && tabs.some((tab) => tab.id === activeTabId)) {
+    return activeTabId;
+  }
+  return (tabs.find((tab) => tab.primary) ?? tabs[0]).id;
+};
+
+export const normalizeGlobalDashboardTabs = (
   rawValue: unknown,
   names: DashboardTabNames
+): DashboardTab[] => {
+  try {
+    const rawTabs = (parseStoredValue(rawValue) as { tabs?: unknown } | null | undefined)?.tabs;
+    return Array.isArray(rawTabs) ? normalizeTabs(rawTabs, names, { withPrimary: false }) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const normalizeDashboardStorage = (
+  rawValue: unknown,
+  names: DashboardTabNames,
+  globalTabs: DashboardTab[]
 ): DashboardStorageConfig => {
   const createDefaultConfig = (): DashboardStorageConfig => {
     const tab = createFirstDashboardTab(names.firstTab);
@@ -456,18 +543,20 @@ export const normalizeDashboardStorage = (
   }
 
   try {
-    const parsed = typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+    const parsed = parseStoredValue(rawValue) as Record<string, unknown> | null;
 
     if (Array.isArray(parsed?.tabs) && parsed.tabs.length > 0) {
-      const tabs = normalizeTabs(parsed.tabs, names);
-      const activeTabId = tabs.some((tab) => tab.id === parsed.activeTabId)
-        ? parsed.activeTabId
-        : tabs[0].id;
-      return { tabs, activeTabId };
+      const tabs = normalizeTabs(parsed.tabs, names, { withPrimary: true });
+      return {
+        tabs,
+        activeTabId: resolveActiveTabId(parsed.activeTabId, [...tabs, ...globalTabs]),
+      };
     }
 
     if (Array.isArray(parsed?.cards) && Array.isArray(parsed?.layout)) {
-      const tabs = normalizeTabs([{ cards: parsed.cards, layout: parsed.layout }], names);
+      const tabs = normalizeTabs([{ cards: parsed.cards, layout: parsed.layout }], names, {
+        withPrimary: true,
+      });
       return { tabs, activeTabId: tabs[0].id };
     }
 

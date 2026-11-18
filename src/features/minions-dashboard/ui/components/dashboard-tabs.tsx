@@ -1,6 +1,12 @@
-import { DeleteOutlined, EditOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  GlobalOutlined,
+  MoreOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import { Dropdown } from "@saltbox/saltbox-frontend-common";
-import { Button, Input, InputRef, Tabs, Tooltip } from "antd";
+import { Button, Input, InputRef, Modal, Tabs, Tooltip } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -16,9 +22,16 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useDashboardTabDrag } from "../../hooks/use-dashboard-tab-drag";
-import { canRemoveDashboardTab, DashboardTab, TabNameError } from "../../model/dashboard-model";
+import {
+  canRemoveDashboardTab,
+  DashboardAddTabValues,
+  DashboardTab,
+  DashboardTabScope,
+  TabNameError,
+} from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 
+import { DashboardAddTabModal } from "./dashboard-add-tab-modal";
 import styles from "./dashboard-tabs.module.css";
 
 type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
@@ -82,8 +95,9 @@ export const DashboardTabs = observer(() => {
   const [editingName, setEditingName] = useState("");
   const [nameError, setNameError] = useState<TabNameError | null>(null);
   const { draggedTabId, getDropSide, getDragProps, containerDragProps } = useDashboardTabDrag(
-    dashboardStore.tabs.map((tab) => tab.id)
+    dashboardStore.tabGroups
   );
+  const [isAddTabOpen, setIsAddTabOpen] = useState(false);
 
   const startEditing = (tabId: string, name: string) => {
     setEditingTabId(tabId);
@@ -122,8 +136,9 @@ export const DashboardTabs = observer(() => {
     const element = node as ReactElement<HTMLAttributes<HTMLElement>>;
     const tabId = String(element.key);
     const dropSide = getDropSide(tabId);
+    const isPrimary = tabId === dashboardStore.primaryTabId;
     return cloneElement(element, {
-      ...getDragProps(tabId, editingTabId !== tabId),
+      ...getDragProps(tabId, editingTabId !== tabId && !isPrimary),
       className: clsx(element.props.className, {
         [styles.tabDragging]: draggedTabId === tabId,
         [styles.tabDropBefore]: dropSide === "before",
@@ -131,6 +146,31 @@ export const DashboardTabs = observer(() => {
       }),
     });
   };
+
+  const handleRemoveTab = (tab: DashboardTab) => {
+    if (!dashboardStore.isGlobalTab(tab.id)) {
+      dashboardStore.removeTab(tab.id);
+      return;
+    }
+    Modal.confirm({
+      title: t("dashboard.delete-global-tab-confirm-title"),
+      icon: null,
+      content: t("dashboard.delete-global-tab-confirm-description"),
+      okButtonProps: { danger: true },
+      okText: t("dashboard.delete-tab"),
+      cancelText: t("common.cancel"),
+      onOk: () => dashboardStore.removeTab(tab.id),
+    });
+  };
+
+  const handleAddTab = ({ name, scope }: DashboardAddTabValues) => {
+    if (dashboardStore.addTab(name, scope)) {
+      setIsAddTabOpen(false);
+    }
+  };
+
+  const validateNewTabName = (name: string, scope: DashboardTabScope) =>
+    dashboardStore.validateNewTabName(name, scope);
 
   const getMenuItems = (tab: DashboardTab): MenuItems => [
     {
@@ -145,7 +185,7 @@ export const DashboardTabs = observer(() => {
       label: t("dashboard.delete-tab"),
       danger: true,
       disabled: !canRemoveDashboardTab(tab, dashboardStore.tabs),
-      onClick: () => dashboardStore.removeTab(tab.id),
+      onClick: () => handleRemoveTab(tab),
     },
   ];
 
@@ -173,6 +213,11 @@ export const DashboardTabs = observer(() => {
             />
           ) : (
             <>
+              {dashboardStore.isGlobalTab(tab.id) && (
+                <Tooltip title={t("dashboard.global-tab-tooltip")}>
+                  <GlobalOutlined aria-label={t("dashboard.global-tab-tooltip")} />
+                </Tooltip>
+              )}
               <span className={styles.tabLabelText}>{tab.name}</span>
               <Dropdown menu={{ items: getMenuItems(tab) }} trigger={["click"]}>
                 <Button
@@ -192,36 +237,41 @@ export const DashboardTabs = observer(() => {
   });
 
   return (
-    <div
-      className={styles.dashboardTabs}
-      onMouseDownCapture={keepEditorFocus}
-      {...containerDragProps}
-    >
-      <Tabs
-        type="editable-card"
-        size="small"
-        items={items}
-        activeKey={dashboardStore.activeTabId}
-        addIcon={<PlusOutlined />}
-        hideAdd={!dashboardStore.isHydrated}
-        renderTabBar={(tabBarProps, DefaultTabBar) => (
-          <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
-        )}
-        onChange={(tabId) => {
-          commitName(false);
-          dashboardStore.setActiveTab(tabId);
-        }}
-        onEdit={(_, action) => {
-          if (action !== "add") {
-            return;
-          }
-          commitName(false);
-          const tabId = dashboardStore.addTab();
-          if (tabId) {
-            startEditing(tabId, dashboardStore.activeTab.name);
-          }
-        }}
+    <>
+      <div
+        className={styles.dashboardTabs}
+        onMouseDownCapture={keepEditorFocus}
+        {...containerDragProps}
+      >
+        <Tabs
+          type="editable-card"
+          size="small"
+          items={items}
+          activeKey={dashboardStore.activeTabId}
+          addIcon={<PlusOutlined />}
+          hideAdd={!dashboardStore.isHydrated}
+          renderTabBar={(tabBarProps, DefaultTabBar) => (
+            <DefaultTabBar {...tabBarProps}>{renderDraggableTab}</DefaultTabBar>
+          )}
+          onChange={(tabId) => {
+            commitName(false);
+            dashboardStore.setActiveTab(tabId);
+          }}
+          onEdit={(_, action) => {
+            if (action !== "add") {
+              return;
+            }
+            commitName(false);
+            setIsAddTabOpen(true);
+          }}
+        />
+      </div>
+      <DashboardAddTabModal
+        open={isAddTabOpen}
+        validateName={validateNewTabName}
+        onSubmit={handleAddTab}
+        onCancel={() => setIsAddTabOpen(false)}
       />
-    </div>
+    </>
   );
 });

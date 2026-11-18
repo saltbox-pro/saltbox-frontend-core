@@ -22,6 +22,7 @@ import { buildDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
 import { parseTtlValue } from "saltbox-core/shared/utils/job-modal-utils";
 import { getTemplateSchemaError } from "saltbox-core/shared/utils/template-schema-validation";
 
+import { isCompleteTaskConfiguration, secondsToDurationParts } from "../helpers/duration-parts";
 import { getTaskTargetMode } from "../helpers/get-task-target-mode";
 import { taskCreationService } from "../service";
 import type {
@@ -132,14 +133,16 @@ export const TaskModal = observer(function TaskModal({
             ? templateDefaults.max_retries
             : defaultConfig.max_retries,
         retry_delay:
-          typeof templateDefaults?.retry_delay === "number"
-            ? templateDefaults.retry_delay
-            : defaultConfig.retry_delay,
+          secondsToDurationParts(
+            typeof templateDefaults?.retry_delay === "number"
+              ? templateDefaults.retry_delay
+              : undefined
+          ) ?? defaultConfig.retry_delay,
         max_jobs_count_at_same_time:
           typeof templateDefaults?.max_jobs_count_at_same_time === "number"
             ? templateDefaults.max_jobs_count_at_same_time
             : defaultConfig.max_jobs_count_at_same_time,
-        ttl_jobs: parseTtlValue(templateDefaults?.ttl) ?? undefined,
+        ttl_jobs: secondsToDurationParts(parseTtlValue(templateDefaults?.ttl) ?? undefined),
         data: {},
       });
     };
@@ -274,7 +277,7 @@ export const TaskModal = observer(function TaskModal({
   };
 
   const handleCreateTask = async () => {
-    if (!configuration || !template) {
+    if (!template || !isCompleteTaskConfiguration(configuration)) {
       notify.error(t("task-create.invalid-configuration"));
       return;
     }
@@ -293,11 +296,7 @@ export const TaskModal = observer(function TaskModal({
     const result = await runMutation({
       run: () =>
         taskCreationService.createTask(
-          taskCreationService.buildCreateRequest(
-            configuration as TaskConfigurationFormData,
-            context,
-            template
-          )
+          taskCreationService.buildCreateRequest(configuration, context, template)
         ),
       successMessage: t(
         isPolicy
@@ -314,24 +313,24 @@ export const TaskModal = observer(function TaskModal({
   };
 
   const overviewData = useMemo(() => {
-    return {
-      template,
-      configuration,
-      context,
-    } as TaskOverviewData;
-  }, [configuration, context, template]);
-
-  const pluginData = useMemo<PluginRenderData | undefined>(() => {
-    if (!template || schemaError) {
+    if (!template || !isCompleteTaskConfiguration(configuration)) {
       return undefined;
     }
 
     return {
-      taskCreateRequest: taskCreationService.buildCreateRequest(
-        configuration as TaskConfigurationFormData,
-        context,
-        template
-      ),
+      template,
+      configuration,
+      context,
+    } satisfies TaskOverviewData;
+  }, [configuration, context, template]);
+
+  const pluginData = useMemo<PluginRenderData | undefined>(() => {
+    if (!template || schemaError || !isCompleteTaskConfiguration(configuration)) {
+      return undefined;
+    }
+
+    return {
+      taskCreateRequest: taskCreationService.buildCreateRequest(configuration, context, template),
       templateDescription:
         getLocalizedText(template.description ?? null, i18n.language) ||
         getLocalizedText(template.title, i18n.language) ||
@@ -379,8 +378,6 @@ export const TaskModal = observer(function TaskModal({
             template={template}
             initialData={configuration}
             initialShowAdvanced={initialDraft?.showAdvanced}
-            initialTtlJobsUnit={initialDraft?.ttlJobsUnit}
-            initialTtlTaskUnit={initialDraft?.ttlTaskUnit}
             isPolicy={isPolicy}
             topContent={configurationTopContent}
             onSubmit={handleConfigurationSubmit}
@@ -392,7 +389,7 @@ export const TaskModal = observer(function TaskModal({
         key: TabKey.Overview,
         label: t("task-create.overview-tab"),
         disabled: activeTabKey !== TabKey.Overview,
-        children: configuration && (
+        children: overviewData && (
           <TaskOverviewTab
             type={context.taskType}
             isLoading={isCreating}
@@ -414,8 +411,6 @@ export const TaskModal = observer(function TaskModal({
     handleCreateTask,
     handleReturnToTemplatePicker,
     initialDraft?.showAdvanced,
-    initialDraft?.ttlJobsUnit,
-    initialDraft?.ttlTaskUnit,
     isCreating,
     isPolicy,
     overviewData,

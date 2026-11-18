@@ -45,9 +45,9 @@ import {
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { DurationField } from "saltbox-core/shared/components/duration-field";
 import { MinionGatherModal } from "saltbox-core/shared/components/minion-gather-modal/minion-gather-modal";
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
-import { TtlInput } from "saltbox-core/shared/components/ttl-input";
 import { useDocumentEvent } from "saltbox-core/shared/hooks/useDocumentEvent";
 import { resolveBuiltinJobSchema } from "saltbox-core/shared/sls-templates";
 import {
@@ -154,6 +154,7 @@ export const JobModal = observer(function JobModal({
     setTtlValue,
     ttlUnit,
     setTtlUnit,
+    defaultTtlSeconds,
     initializeModal,
     resetLoadedData,
     cancelInit,
@@ -313,7 +314,7 @@ export const JobModal = observer(function JobModal({
     notifyJsonFormValidationError,
   ]);
 
-  const getTtlValue = (): number | undefined => ttlPartsToTotalSeconds(ttlValue, ttlUnit);
+  const getTtlValue = (): number => ttlPartsToTotalSeconds(ttlValue, ttlUnit) ?? defaultTtlSeconds;
 
   const resetModalState = useCallback(() => {
     cancelInit();
@@ -695,9 +696,10 @@ export const JobModal = observer(function JobModal({
 
                 {isAdvancedSettingsEnabled && (
                   <Form.Item label={t("job-modal.timeout-label")}>
-                    <TtlInput
+                    <DurationField
                       value={ttlValue}
                       unit={ttlUnit}
+                      defaultSeconds={defaultTtlSeconds}
                       onValueChange={setTtlValue}
                       onUnitChange={setTtlUnit}
                       disabled={isLoading}

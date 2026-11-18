@@ -45,26 +45,27 @@
     "no-minion-data-available": "No minion data available",
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
+    "minion-collections": "Minion collections",
     "grains": "Grains",
-    "pillars": "Client Data",
+    "pillars": "Minion Data",
     "extra-data": {
       "tab": "Extra data",
       "category-column": "Category",
       "empty": "No extra data available",
       "empty-category": "No extra data in the \"{{category}}\" category",
       "search-placeholder": "Search records",
-      "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
-      "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
-      "export-scope-collection-aggregated": "a summary of \"{{category}}\" extra data for the collection (unique values and client counts) that match the current search",
-      "export-scope-collection-flat": "\"{{category}}\" extra data per collection client (minion_id, master, and category fields) that match the current search",
+      "single-item-inconsistent": "This category allows only one record per minion, but multiple records were found. Showing the full list.",
+      "export-scope-client": "all extra data records of the \"{{category}}\" category for this minion that match the current search",
+      "export-scope-collection-aggregated": "a summary of \"{{category}}\" extra data for the collection (unique values and minion counts) that match the current search",
+      "export-scope-collection-flat": "\"{{category}}\" extra data per collection minion (minion_id, master, and category fields) that match the current search",
       "export-subject": "extra data",
       "export-format-label": "File format",
       "export-format-aggregated": "Collection summary",
-      "export-format-flat": "Per client",
+      "export-format-flat": "Per minion",
       "import": {
         "button": "Import CSV",
         "title": "Import extra data: {{category}}",
-        "hint": "Upload a CSV in the \"Per client\" format: minion_id, master, and category fields",
+        "hint": "Upload a CSV in the \"Per minion\" format: minion_id, master, and category fields",
         "file": "CSV file",
         "file-required": "Select a CSV file",
         "file-invalid": "Only CSV files are allowed",
@@ -74,15 +75,15 @@
         "mode-required": "Select import mode",
         "mode-append": "Append to existing data",
         "mode-replace": "Replace all category data",
-        "mode-single-item-tooltip": "This category allows only one record per client. Only replace mode is available",
-        "unknown-minion-label": "Unknown or out-of-collection clients",
-        "unknown-minion-required": "Select how to handle unknown clients",
+        "mode-single-item-tooltip": "This category allows only one record per minion. Only replace mode is available",
+        "unknown-minion-label": "Unknown or out-of-collection minions",
+        "unknown-minion-required": "Select how to handle unknown minions",
         "unknown-minion-error": "Stop the import",
         "unknown-minion-skip": "Skip those rows",
         "submit": "Import",
         "success-title": "Import into \"{{category}}\" completed",
-        "success-description": "Loaded: {{itemsCount}} (clients: {{minionsCount}})",
-        "success-description-with-skipped": "Loaded: {{itemsCount}} (clients: {{minionsCount}})\nNot loaded: {{skippedCount}}",
+        "success-description": "Loaded: {{itemsCount}} (minions: {{minionsCount}})",
+        "success-description-with-skipped": "Loaded: {{itemsCount}} (minions: {{minionsCount}})\nNot loaded: {{skippedCount}}",
         "error": "Failed to import extra data"
       },
       "add-data": "Add extra data",
@@ -188,7 +189,6 @@
       "inactive": "Not Active",
       "never-active": "Never Active"
     },
-    "filter-applied": "Filter applied",
     "filter-value-unsupported": "This value cannot be used in a filter",
     "root-collection-info": "This is a root collection that contains all minions from all connected masters in the system",
     "subcollection-info": "This collection is a subcollection of",
@@ -358,8 +358,8 @@
     "max-retries": "Max retries",
     "max-retries-tooltip": "Maximal number of retries on error",
     "max-retries-error-required": "Max retries is required",
-    "retry-delay": "Retry delay (s)",
-    "retry-delay-tooltip": "Delay in seconds before retrying a failed task",
+    "retry-delay": "Retry delay",
+    "retry-delay-tooltip": "Delay before retrying a failed task",
     "retry-delay-error-required": "Retry delay is required",
     "max-parallel-jobs": "Parallel jobs",
     "max-parallel-jobs-tooltip": "Maximal number of parallel jobs",
@@ -414,7 +414,6 @@
       "max-parallel-jobs": "Parallel jobs",
       "max-retries": "Max retries",
       "retry-delay": "Retry delay",
-      "retry-delay-seconds": "{{count}} sec",
       "ttl-jobs": "Command response timeout",
       "target-info": "Target info",
       "collection": "Collection",
@@ -429,7 +428,7 @@
       "pillars": "Pillars"
     },
     "show-details": "Task Parameters",
-    "details-title": "Task Details",
+    "details-title": "Task Parameters",
     "page-title": "{{templateName}}: #{{taskId}}",
     "breadcrumbs-title-template": "Task: {{templateName}}",
     "breadcrumbs-title-empty": "Task: #{{taskId}}",
@@ -521,13 +520,7 @@
       "status-timeout": "Timeout",
       "status-success": "Success",
       "status-failed": "Failed",
-      "status-ignored": "Ignored",
-      "time-units": {
-        "milliseconds": "ms",
-        "seconds": "s",
-        "minutes": "m",
-        "hours": "h"
-      }
+      "status-ignored": "Ignored"
     },
     "minions-nav": {
       "list-all": "All"
@@ -550,7 +543,7 @@
   },
   "policy": {
     "show-details": "Policy Parameters",
-    "details-title": "Policy Details"
+    "details-title": "Policy Parameters"
   },
   "extra-data-categories": {
     "title": "Extra data categories",
@@ -578,13 +571,13 @@
     },
     "delete-field": {
       "modal-title": "Deleting field",
-      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in client extra data will be permanently deleted",
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in minion extra data will be permanently deleted",
       "success": "Field \"{{name}}\" deleted",
       "error": "Failed to delete field \"{{name}}\""
     },
     "delete": {
       "modal-title": "Deleting category",
-      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related client data will be deleted",
+      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related minion data will be deleted",
       "success": "Category \"{{name}}\" deleted",
       "error": "Failed to delete category \"{{name}}\""
     },
@@ -603,7 +596,7 @@
     "extra-fields-policies": {
       "ignore": "Ignore",
       "save_to_category": "Save to category",
-      "save_to_minion": "Save to client"
+      "save_to_minion": "Save to minion"
     },
     "create": {
       "modal-title": "Adding category",
@@ -617,7 +610,7 @@
       "field-description": "Description",
       "field-description-placeholder": "Enter description",
       "field-single-item": "Single record",
-      "field-single-item-tooltip": "A client will have only one record in this category. Adding data again will overwrite the existing record",
+      "field-single-item-tooltip": "A minion will have only one record in this category. Adding data again will overwrite the existing record",
       "submit": "Create",
       "success": "Category \"{{name}}\" created successfully",
       "error": "Failed to create category"
@@ -625,7 +618,7 @@
     "field-form": {
       "field-name-placeholder": "Enter field name",
       "field-name-required": "Field name is required",
-      "field-name-unique": "A field with this name already exists in the category",
+      "field-name-unique": "A field with this name already exists",
       "field-type-placeholder": "Select type",
       "field-type-required": "Select a type"
     },
@@ -678,7 +671,7 @@
   },
   "master": {
     "tab-jobs-title": "Jobs",
-    "tab-salt-keys-title": "Client keys",
+    "tab-salt-keys-title": "Minion keys",
     "table-minion-id": "Minion ID",
     "table-status": "Status",
     "table-status-unaccepted": "Unaccepted",
@@ -757,7 +750,7 @@
     }
   },
   "pillars": {
-    "title": "Client Data",
+    "title": "Minion Data",
     "create": {
       "add-button": "Create pillar",
       "modal-title-root": "Create a global pillar",
@@ -909,9 +902,6 @@
     "hint-example-label": "Example:",
     "advanced-settings": "Advanced settings",
     "timeout-label": "Command response timeout",
-    "timeout-unit-seconds": "Sec",
-    "timeout-unit-minutes": "Min",
-    "timeout-unit-hours": "Hour",
     "error-job-create": "Failed to create job",
     "warning-template-unavailable": "Failed to load the job template. The form is opened with default parameters"
   },
@@ -948,8 +938,13 @@
     "description-placeholder": "Enter collection description",
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
+    "clients-count": "Minions: {{count}}",
     "create-subcollection": "Create subcollection",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
+    "duplicate": "Duplicate",
+    "duplicate-title": "Copy of {{title}}",
+    "duplicate-drawer-title": "Duplicate collection",
+    "tooltip-duplicate-blocked": "Save collection changes before duplicating",
     "edit-structure": "Edit structure",
     "edit-structure-hint": "Drag collections to change their parent and order",
     "error-moving-collection": "Failed to move collection",
@@ -1015,16 +1010,25 @@
     "delete-card": "Delete",
     "delete-card-confirm-title": "Delete statistics block?",
     "delete-card-confirm-description": "This action cannot be undone",
+    "delete-global-card-confirm-description": "The block will be deleted in all collections, this action cannot be undone",
     "reset-button": "Reset",
     "reset-confirm-title": "Reset tab to default?",
     "reset-confirm-description": "Blocks of the current tab will be replaced with the default set, this action cannot be undone",
     "reset-confirm-description-empty": "All blocks of the current tab will be removed, this action cannot be undone",
-    "first-tab-name": "Statistics",
+    "reset-confirm-description-global": "All blocks of the tab will be removed in all collections, this action cannot be undone",
+    "first-tab-name": "Overview",
     "new-tab-name": "New tab",
     "rename-tab": "Rename tab",
     "delete-tab": "Delete tab",
+    "delete-global-tab-confirm-title": "Delete global tab?",
+    "delete-global-tab-confirm-description": "The tab will be deleted in all collections, this action cannot be undone",
     "tab-name-empty": "Enter a tab name",
     "tab-name-duplicate": "A tab with this name already exists",
+    "tab-name-reserved": "This name is reserved for the main tab",
+    "tab-name-label": "Name",
+    "add-tab-title": "Add tab",
+    "tab-local-checkbox": "Only for this collection",
+    "global-tab-tooltip": "Global tab: shown in all collections",
     "empty-title": "No charts added yet",
     "empty-description": "Add at least one statistics block to display charts",
     "preset-donut": "Donut chart",
@@ -1229,14 +1233,14 @@
     "sync": "Sync"
   },
   "entity-source": {
-    "column": "Source type",
+    "column": "Source",
     "id-column": "Source ID",
     "type": {
       "rest": "Manual",
-      "task": "From task",
-      "scheduler": "From scheduler",
-      "migration": "From scenario",
-      "system": "By system"
+      "task": "Task",
+      "scheduler": "Scheduler",
+      "migration": "Scenario",
+      "system": "System"
     }
   },
   "task-template-editor": {

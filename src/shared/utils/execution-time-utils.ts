@@ -1,46 +1,11 @@
 import { JobReturnModel } from "@saltbox/saltbox-core-api-client";
 
-export const formatExecutionTime = (
-  executionTimeSeconds: number,
-  t: (key: string) => string
-): string => {
-  const formatSeconds = (value: number): string => {
-    const normalizedValue = Number(value.toFixed(2));
-    const displayValue = Number.isInteger(normalizedValue)
-      ? String(normalizedValue)
-      : String(normalizedValue);
-    return `${displayValue}${t("task.job-returns-table.time-units.seconds")}`;
-  };
+import { formatDurationDisplay } from "./duration-display";
 
-  if (executionTimeSeconds < 1) {
-    const milliseconds = Math.round(executionTimeSeconds * 1000);
-    return `${milliseconds}${t("task.job-returns-table.time-units.milliseconds")}`;
-  }
+type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 
-  if (executionTimeSeconds < 60) {
-    return formatSeconds(executionTimeSeconds);
-  }
-
-  const totalSeconds = Number(executionTimeSeconds.toFixed(2));
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = Number((totalSeconds - hours * 3600 - minutes * 60).toFixed(2));
-  const parts: string[] = [];
-
-  if (hours > 0) {
-    parts.push(`${hours}${t("task.job-returns-table.time-units.hours")}`);
-  }
-
-  if (minutes > 0) {
-    parts.push(`${minutes}${t("task.job-returns-table.time-units.minutes")}`);
-  }
-
-  if (seconds > 0 || parts.length === 0) {
-    parts.push(formatSeconds(seconds));
-  }
-
-  return parts.join(" ");
-};
+export const formatExecutionTime = (executionTimeSeconds: number, t: TranslateFn): string =>
+  formatDurationDisplay({ seconds: executionTimeSeconds }, t);
 
 export interface Statistics {
   mean: number;
@@ -146,7 +111,7 @@ export const useFormatAndGetExecutionTimeColor = (
   stamp: string | null,
   jobReturn: JobReturnModel | null,
   allJobReturns: JobReturnModel[],
-  t: (key: string) => string
+  t: TranslateFn
 ): { formattedTime: string; color: string } => {
   const status = (jobReturn as { status?: string } | null)?.status;
   if (status === "timeout") {

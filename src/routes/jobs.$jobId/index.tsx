@@ -8,6 +8,7 @@ import {
 import {
   FastTable,
   CopyToClipboardButton,
+  EMPTY_VALUE,
   ExportToCsv,
   PageHeader,
   WebSocketMessage,
@@ -424,7 +425,7 @@ const JobPage = observer(() => {
                   title={t("jobs.job-execution-duration-actual-tooltip")}
                 >
                   {isLaunchError ? (
-                    "—"
+                    EMPTY_VALUE
                   ) : !jobStore.isJobComplete ? (
                     <Timer
                       type="countup"
@@ -434,7 +435,7 @@ const JobPage = observer(() => {
                   ) : jobStore.actualJobDuration != null ? (
                     formatJobDuration(jobStore.actualJobDuration)
                   ) : (
-                    "—"
+                    EMPTY_VALUE
                   )}
                 </span>
               </div>

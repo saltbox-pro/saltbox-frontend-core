@@ -17,21 +17,25 @@ import {
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TtlInput } from "saltbox-core/shared/components/ttl-input";
+import { DurationField } from "saltbox-core/shared/components/duration-field";
 import { isDefaultTaskTemplate } from "saltbox-core/shared/sls-templates";
-import { type TtlUnit } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getJobParamsSchemaLayout,
   type JsonSchemaRecord,
   type UiSchemaRecord,
 } from "saltbox-core/shared/utils/job-schema-split";
+import { resolveTemplateDefaultTtlSeconds } from "saltbox-core/shared/utils/job-ttl-utils";
 import { createObjectMemoizer } from "saltbox-core/shared/utils/memoize-object";
 import { getTemplateParamsSchema } from "saltbox-core/shared/utils/template-params-schema";
 
 import { buildTaskConfigurationFormData } from "../helpers/build-task-configuration-form-data";
-import { useTtlParts } from "../hooks/use-ttl-parts";
+import { useDurationParts } from "../hooks/use-duration-parts";
 import { taskCreationService } from "../service";
-import type { TaskConfigurationFormData, TaskTemplateDraft } from "../type/types";
+import type {
+  TaskConfigurationFormData,
+  TaskSettingsFormValues,
+  TaskTemplateDraft,
+} from "../type/types";
 
 import styles from "./task-configuration-tab.module.css";
 import { TaskCreateFooter } from "./task-create-footer";
@@ -41,8 +45,6 @@ export type TaskConfigurationTabProps = {
   template?: TaskTemplateModel;
   initialData?: Partial<TaskConfigurationFormData>;
   initialShowAdvanced?: boolean;
-  initialTtlJobsUnit?: TtlUnit;
-  initialTtlTaskUnit?: TtlUnit;
   isPolicy?: boolean;
   topContent?: ReactNode;
   onSubmit: (data: TaskConfigurationFormData) => void;
@@ -55,8 +57,6 @@ export function TaskConfigurationTab({
   template,
   initialData,
   initialShowAdvanced,
-  initialTtlJobsUnit,
-  initialTtlTaskUnit,
   isPolicy = false,
   topContent,
   onSubmit,
@@ -64,13 +64,21 @@ export function TaskConfigurationTab({
 }: TaskConfigurationTabProps) {
   const { t, i18n } = useTranslation();
 
-  const [settingsForm] = Form.useForm<Omit<TaskConfigurationFormData, "data">>();
+  const [settingsForm] = Form.useForm<TaskSettingsFormValues>();
 
   const [showAdvanced, setShowAdvanced] = useState<boolean>(initialShowAdvanced ?? false);
-  const ttlJobs = useTtlParts();
-  const ttlTask = useTtlParts();
+  const [retryDelayError, setRetryDelayError] = useState<string>();
+  const retryDelay = useDurationParts();
+  const ttlJobs = useDurationParts();
+  const ttlTask = useDurationParts();
+  const { syncFrom: syncRetryDelay } = retryDelay;
   const { syncFrom: syncTtlJobs } = ttlJobs;
   const { syncFrom: syncTtlTask } = ttlTask;
+
+  const defaultSettingsFormValues = useMemo(() => {
+    const { retry_delay: _retryDelay, ...settings } = taskCreationService.getDefaultConfiguration();
+    return settings;
+  }, []);
 
   const taskDataFormRef = useRef<TaskDataFormHandle>(null);
 
@@ -101,31 +109,34 @@ export function TaskConfigurationTab({
     }
 
     const defaultConfig = taskCreationService.getDefaultConfiguration();
+    const { retry_delay: defaultRetryDelay, ...defaultSettings } = defaultConfig;
 
     settingsForm.setFieldsValue({
-      ...defaultConfig,
+      ...defaultSettings,
       batch_size: initialData.batch_size ?? defaultConfig.batch_size,
       max_retries: initialData.max_retries ?? defaultConfig.max_retries,
-      retry_delay: initialData.retry_delay ?? defaultConfig.retry_delay,
       max_jobs_count_at_same_time:
         initialData.max_jobs_count_at_same_time ?? defaultConfig.max_jobs_count_at_same_time,
       save_pillars_as_default: initialData.save_pillars_as_default ?? true,
     });
 
-    syncTtlJobs(initialData.ttl_jobs, initialTtlJobsUnit);
-    syncTtlTask(initialData.ttl_task, initialTtlTaskUnit);
-  }, [
-    settingsForm,
-    initialData,
-    initialTtlJobsUnit,
-    initialTtlTaskUnit,
-    syncTtlJobs,
-    syncTtlTask,
-    template,
-  ]);
+    syncRetryDelay(initialData.retry_delay ?? defaultRetryDelay);
+    syncTtlJobs(initialData.ttl_jobs);
+    syncTtlTask(initialData.ttl_task);
+    setRetryDelayError(undefined);
+  }, [settingsForm, initialData, syncRetryDelay, syncTtlJobs, syncTtlTask, template]);
+
+  const validateRetryDelay = () => {
+    if (retryDelay.value == null) {
+      setRetryDelayError(t("task-create.retry-delay-error-required"));
+      return false;
+    }
+    setRetryDelayError(undefined);
+    return true;
+  };
 
   const buildConfigurationFromSettings = (
-    settings: Partial<Omit<TaskConfigurationFormData, "data" | "task_template_id">>,
+    settings: Partial<TaskSettingsFormValues>,
     data?: TaskConfigurationFormData["data"]
   ): TaskConfigurationFormData | undefined => {
     if (!template) {
@@ -134,7 +145,12 @@ export function TaskConfigurationTab({
 
     return buildTaskConfigurationFormData({
       templateId: template.id,
-      settings: { ...settings, ttl_jobs: ttlJobs.totalSeconds, ttl_task: ttlTask.totalSeconds },
+      settings: {
+        ...settings,
+        retry_delay: retryDelay.parts,
+        ttl_jobs: ttlJobs.parts.value == null ? undefined : ttlJobs.parts,
+        ttl_task: ttlTask.parts.value == null ? undefined : ttlTask.parts,
+      },
       data,
       defaults: taskCreationService.getDefaultConfiguration(),
     });
@@ -148,21 +164,17 @@ export function TaskConfigurationTab({
     if (!configuration) {
       return;
     }
-    onReturnToTemplatePicker({
-      configuration,
-      showAdvanced,
-      ttlJobsUnit: ttlJobs.unit,
-      ttlTaskUnit: ttlTask.unit,
-    });
+    onReturnToTemplatePicker({ configuration, showAdvanced });
   };
 
   const showValidationError = () => {
     notify.error(t("errors.form-validation"));
   };
 
-  const handleFormFinishFailed: FormProps<
-    Omit<TaskConfigurationFormData, "data">
-  >["onFinishFailed"] = (errorInfo) => {
+  const handleFormFinishFailed: FormProps<TaskSettingsFormValues>["onFinishFailed"] = (
+    errorInfo
+  ) => {
+    validateRetryDelay();
     showValidationError();
     setShowAdvanced(true);
 
@@ -177,24 +189,29 @@ export function TaskConfigurationTab({
     );
   };
 
-  const handleSubmit = (formValue: TaskConfigurationFormData) => {
-    const configData = buildConfigurationFromSettings(formValue, formValue.data);
+  const handleSubmit = (
+    settings: Partial<TaskSettingsFormValues>,
+    data: TaskConfigurationFormData["data"]
+  ) => {
+    const configData = buildConfigurationFromSettings(settings, data);
     if (!configData) {
       return;
     }
     onSubmit(configData);
   };
 
-  const handleFormFinish: FormProps<Omit<TaskConfigurationFormData, "data">>["onFinish"] = (
-    formValue
-  ) => {
+  const handleFormFinish: FormProps<TaskSettingsFormValues>["onFinish"] = (formValue) => {
+    if (!validateRetryDelay()) {
+      showValidationError();
+      setShowAdvanced(true);
+      return;
+    }
+
     if (!taskDataFormRef.current?.validate()) {
       return;
     }
 
-    const jsonDataFromForm = taskDataFormRef.current?.getData() ?? {};
-
-    handleSubmit({ ...formValue, data: jsonDataFromForm });
+    handleSubmit(formValue, taskDataFormRef.current?.getData() ?? {});
   };
 
   const handleTaskDataFinish: TaskDataFormProps["onSubmit"] = async (jsonDataFromForm) => {
@@ -204,8 +221,13 @@ export function TaskConfigurationTab({
 
     try {
       const settingsFormValue = await settingsForm.validateFields();
+      if (!validateRetryDelay()) {
+        showValidationError();
+        setShowAdvanced(true);
+        return;
+      }
 
-      handleSubmit({ ...settingsFormValue, data: jsonDataFromForm });
+      handleSubmit(settingsFormValue, jsonDataFromForm);
     } catch (errorInfo) {
       handleFormFinishFailed(errorInfo);
     }
@@ -227,7 +249,7 @@ export function TaskConfigurationTab({
             name="task-settings-form"
             id="task-settings-form"
             layout="vertical"
-            initialValues={memoize(taskCreationService.getDefaultConfiguration())}
+            initialValues={memoize(defaultSettingsFormValues)}
             autoComplete="off"
             onFinish={handleFormFinish}
             onFinishFailed={handleFormFinishFailed}
@@ -302,25 +324,37 @@ export function TaskConfigurationTab({
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="retry_delay"
                     label={t("task-create.retry-delay")}
                     tooltip={t("task-create.retry-delay-tooltip")}
-                    rules={memoize([
-                      { required: true, message: t("task-create.retry-delay-error-required") },
-                    ])}
+                    required
+                    validateStatus={retryDelayError ? "error" : undefined}
+                    help={retryDelayError}
                   >
-                    <InputNumber min={0} className={styles.formItem} />
+                    <DurationField
+                      value={retryDelay.value}
+                      unit={retryDelay.unit}
+                      onValueChange={(value) => {
+                        retryDelay.setValue(value);
+                        if (value != null) {
+                          setRetryDelayError(undefined);
+                        }
+                      }}
+                      onUnitChange={retryDelay.setUnit}
+                      className={styles.formItem}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item label={t("task-create.ttl")} tooltip={t("task-create.ttl-tooltip")}>
-                    <TtlInput
+                    <DurationField
                       value={ttlJobs.value}
                       unit={ttlJobs.unit}
+                      defaultSeconds={resolveTemplateDefaultTtlSeconds(template)}
                       onValueChange={ttlJobs.setValue}
                       onUnitChange={ttlJobs.setUnit}
+                      className={styles.formItem}
                     />
                   </Form.Item>
                 </Col>
@@ -331,13 +365,14 @@ export function TaskConfigurationTab({
                       isPolicy ? "policy-create.ttl-task-tooltip" : "task-create.ttl-task-tooltip"
                     )}
                   >
-                    <TtlInput
+                    <DurationField
                       value={ttlTask.value}
                       unit={ttlTask.unit}
                       min={1}
                       placeholder={t("task-create.ttl-task-placeholder")}
                       onValueChange={ttlTask.setValue}
                       onUnitChange={ttlTask.setUnit}
+                      className={styles.formItem}
                     />
                   </Form.Item>
                 </Col>
