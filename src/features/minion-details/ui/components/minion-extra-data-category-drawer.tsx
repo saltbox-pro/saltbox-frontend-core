@@ -158,6 +158,7 @@ export const MinionExtraDataCategoryDrawer = observer<MinionExtraDataCategoryDra
         transitionKey={open ? (category?.id ?? "opened") : "closed"}
         fillHeight
         {...restProps}
+        resizable
         titleCopyable={false}
       >
         {!!extraDataRecordsStore && (

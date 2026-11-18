@@ -45,26 +45,28 @@
     "no-minion-data-available": "No minion data available",
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
+    "minion-collections": "Minion collections",
+    "minion-collections-empty": "The minion does not belong to any collection",
     "grains": "Grains",
-    "pillars": "Client Data",
+    "pillars": "Minion Data",
     "extra-data": {
       "tab": "Extra data",
       "category-column": "Category",
       "empty": "No extra data available",
       "empty-category": "No extra data in the \"{{category}}\" category",
       "search-placeholder": "Search records",
-      "single-item-inconsistent": "This category allows only one record per client, but multiple records were found. Showing the full list.",
-      "export-scope-client": "all extra data records of the \"{{category}}\" category for this client that match the current search",
-      "export-scope-collection-aggregated": "a summary of \"{{category}}\" extra data for the collection (unique values and client counts) that match the current search",
-      "export-scope-collection-flat": "\"{{category}}\" extra data per collection client (minion_id, master, and category fields) that match the current search",
+      "single-item-inconsistent": "This category allows only one record per minion, but multiple records were found. Showing the full list.",
+      "export-scope-client": "all extra data records of the \"{{category}}\" category for this minion that match the current search",
+      "export-scope-collection-aggregated": "a summary of \"{{category}}\" extra data for the collection (unique values and minion counts) that match the current search",
+      "export-scope-collection-flat": "\"{{category}}\" extra data per collection minion (minion_id, master, and category fields) that match the current search",
       "export-subject": "extra data",
       "export-format-label": "File format",
       "export-format-aggregated": "Collection summary",
-      "export-format-flat": "Per client",
+      "export-format-flat": "Per minion",
       "import": {
         "button": "Import CSV",
         "title": "Import extra data: {{category}}",
-        "hint": "Upload a CSV in the \"Per client\" format: minion_id, master, and category fields",
+        "hint": "Upload a CSV in the \"Per minion\" format: minion_id, master, and category fields",
         "file": "CSV file",
         "file-required": "Select a CSV file",
         "file-invalid": "Only CSV files are allowed",
@@ -74,15 +76,15 @@
         "mode-required": "Select import mode",
         "mode-append": "Append to existing data",
         "mode-replace": "Replace all category data",
-        "mode-single-item-tooltip": "This category allows only one record per client. Only replace mode is available",
-        "unknown-minion-label": "Unknown or out-of-collection clients",
-        "unknown-minion-required": "Select how to handle unknown clients",
+        "mode-single-item-tooltip": "This category allows only one record per minion. Only replace mode is available",
+        "unknown-minion-label": "Unknown or out-of-collection minions",
+        "unknown-minion-required": "Select how to handle unknown minions",
         "unknown-minion-error": "Stop the import",
         "unknown-minion-skip": "Skip those rows",
         "submit": "Import",
         "success-title": "Import into \"{{category}}\" completed",
-        "success-description": "Loaded: {{itemsCount}} (clients: {{minionsCount}})",
-        "success-description-with-skipped": "Loaded: {{itemsCount}} (clients: {{minionsCount}})\nNot loaded: {{skippedCount}}",
+        "success-description": "Loaded: {{itemsCount}} (minions: {{minionsCount}})",
+        "success-description-with-skipped": "Loaded: {{itemsCount}} (minions: {{minionsCount}})\nNot loaded: {{skippedCount}}",
         "error": "Failed to import extra data"
       },
       "add-data": "Add extra data",
@@ -570,13 +572,13 @@
     },
     "delete-field": {
       "modal-title": "Deleting field",
-      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in client extra data will be permanently deleted",
+      "modal-text": "Are you sure you want to delete the field \"{{name}}\"?\n\nThe field will be removed from the category. All values of this field in minion extra data will be permanently deleted",
       "success": "Field \"{{name}}\" deleted",
       "error": "Failed to delete field \"{{name}}\""
     },
     "delete": {
       "modal-title": "Deleting category",
-      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related client data will be deleted",
+      "modal-text": "Are you sure you want to delete the category \"{{name}}\"?\n\nThe category and all related minion data will be deleted",
       "success": "Category \"{{name}}\" deleted",
       "error": "Failed to delete category \"{{name}}\""
     },
@@ -595,7 +597,7 @@
     "extra-fields-policies": {
       "ignore": "Ignore",
       "save_to_category": "Save to category",
-      "save_to_minion": "Save to client"
+      "save_to_minion": "Save to minion"
     },
     "create": {
       "modal-title": "Adding category",
@@ -609,7 +611,7 @@
       "field-description": "Description",
       "field-description-placeholder": "Enter description",
       "field-single-item": "Single record",
-      "field-single-item-tooltip": "A client will have only one record in this category. Adding data again will overwrite the existing record",
+      "field-single-item-tooltip": "A minion will have only one record in this category. Adding data again will overwrite the existing record",
       "submit": "Create",
       "success": "Category \"{{name}}\" created successfully",
       "error": "Failed to create category"
@@ -670,7 +672,7 @@
   },
   "master": {
     "tab-jobs-title": "Jobs",
-    "tab-salt-keys-title": "Client keys",
+    "tab-salt-keys-title": "Minion keys",
     "table-minion-id": "Minion ID",
     "table-status": "Status",
     "table-status-unaccepted": "Unaccepted",
@@ -749,7 +751,7 @@
     }
   },
   "pillars": {
-    "title": "Client Data",
+    "title": "Minion Data",
     "create": {
       "add-button": "Create pillar",
       "modal-title-root": "Create a global pillar",
@@ -937,7 +939,7 @@
     "description-placeholder": "Enter collection description",
     "description-max": "Description must not exceed {{max}} characters",
     "no-description": "This collection has no description",
-    "clients-count": "Clients: {{count}}",
+    "clients-count": "Minions: {{count}}",
     "create-subcollection": "Create subcollection",
     "tooltip-create-subcollection-blocked": "Save collection changes before creating a subcollection",
     "duplicate": "Duplicate",

@@ -44,6 +44,7 @@ export const TemplatePreviewDrawer = observer(function TemplatePreviewDrawer({
       loaders={[store.previewLoad]}
       transitionKey={open ? "opened" : "closed"}
       width={900}
+      resizable
       onClose={onClose}
       afterOpenChange={(isOpen) => {
         if (!isOpen) {

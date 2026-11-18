@@ -45,6 +45,7 @@ export function ExtraDataCategoryDrawer({
       titleName={category?.name}
       hasData={!!category}
       transitionKey={open ? (category?.id ?? "opened") : "closed"}
+      resizable
       extra={
         <ExtraDataCategoryActionsMenu
           category={category}

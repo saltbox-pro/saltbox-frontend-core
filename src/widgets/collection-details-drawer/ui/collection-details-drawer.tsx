@@ -106,6 +106,8 @@ export const CollectionDetailsDrawer = observer(
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     const { isOpened, openedArg } = drawer;
+    const isOpenedRef = useRef(isOpened);
+    isOpenedRef.current = isOpened;
     const viewSlug = openedArg?.mode === "view" ? openedArg.slug : undefined;
     const duplicateArg = openedArg?.mode === "duplicate" ? openedArg : undefined;
 
@@ -202,15 +204,6 @@ export const CollectionDetailsDrawer = observer(
       }
     }, [isOpened, isCollectionLoaded, currentSlug, isRoot, syncFromCollection]);
 
-    useEffect(() => {
-      if (isOpened) {
-        return;
-      }
-
-      filterStore.resetInputMode();
-      filterStore.handleResetFiltersSilent();
-    }, [isOpened, filterStore]);
-
     const applyMinionsPreview = useCallback(() => {
       if (!parentSlug || isRoot) {
         return;
@@ -261,7 +254,7 @@ export const CollectionDetailsDrawer = observer(
       Boolean(initialFiltersKey) &&
       getFilterStateKey(filterStore) !== initialFiltersKey;
 
-    const hasUnsavedChanges = isFormDirty || isFiltersDirty;
+    const hasUnsavedChanges = isOpened && (isFormDirty || isFiltersDirty);
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
     const canDuplicate = !!onDuplicate && isCollectionLoaded && !isRoot;
 
@@ -509,7 +502,8 @@ export const CollectionDetailsDrawer = observer(
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
-          width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
+          width={COLLECTION_DETAILS_DRAWER_WIDTH}
+          resizable
           push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
           titleName={titleCollection?.title}
@@ -527,9 +521,20 @@ export const CollectionDetailsDrawer = observer(
           loaders={[activeCollectionLoad]}
           transitionKey={isCreateMode ? openedArg?.id : collection?.slug}
           afterOpenChange={(open) => {
-            if (open && isCreateMode) {
-              focusTitleInput();
+            if (open) {
+              if (isCreateMode) {
+                focusTitleInput();
+              }
+              return;
             }
+
+            if (isOpenedRef.current) {
+              return;
+            }
+
+            filterStore.resetInputMode();
+            filterStore.handleResetFiltersSilent();
+            setFiltersBaselineKey("");
           }}
           onClose={drawer.close}
         >

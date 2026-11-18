@@ -1,5 +1,9 @@
 import { TaskListResponseSchema, TaskModel, TaskType } from "@saltbox/saltbox-core-api-client";
-import { createLoader, toBackendSorting } from "@saltbox/saltbox-frontend-common";
+import {
+  createLoader,
+  isMongoQueryEmpty,
+  toBackendSorting,
+} from "@saltbox/saltbox-frontend-common";
 import { PaginationState, SortingState } from "@tanstack/react-table";
 import { action, computed, makeObservable, observable } from "mobx";
 
@@ -83,7 +87,7 @@ export class TasksStore {
   };
 
   @computed get hasActiveFilters(): boolean {
-    return this.mongoDBQuery !== undefined && Object.keys(this.mongoDBQuery).length > 0;
+    return !isMongoQueryEmpty(this.mongoDBQuery);
   }
 
   @action updateTask = (task: TaskModel) => {

@@ -1,8 +1,1 @@
-import type { TreeDataNode } from "antd";
-
-export type CollectionTreeAntdNode = TreeDataNode & {
-  slug: string;
-  description?: string;
-  minionsCount: number;
-  children?: CollectionTreeAntdNode[];
-};
+export type { CollectionTreeAntdNode } from "saltbox-core/shared/components/collection-tree";

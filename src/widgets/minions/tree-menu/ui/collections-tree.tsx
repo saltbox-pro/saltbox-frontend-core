@@ -1,4 +1,4 @@
-import { ApartmentOutlined, DownOutlined, HolderOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, HolderOutlined } from "@ant-design/icons";
 import {
   ErrorZone,
   SearchInput,
@@ -6,7 +6,7 @@ import {
   notifyAppError,
   runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Empty, Flex, Spin, Tooltip, Tree, type TreeProps, Typography } from "antd";
+import { Button, Empty, Flex, Spin, Tooltip, type TreeProps, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -23,6 +23,11 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
 import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
+import {
+  CollectionTreeView,
+  mapCollectionTreeNodes,
+  type CollectionTreeAntdNode,
+} from "saltbox-core/shared/components/collection-tree";
 import { ROOT_COLLECTION_SLUG } from "saltbox-core/shared/constants/collection";
 import { matchCollectionSlug } from "saltbox-core/shared/helpers/collection-route";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
@@ -36,8 +41,6 @@ import { filterTree } from "../helpers/filter-tree";
 import { findNodePath } from "../helpers/find-node-path";
 import { findParentByKey } from "../helpers/find-parent-by-key";
 import { isNodeInSubtree } from "../helpers/is-node-in-subtree";
-import { mapToAntdNode } from "../helpers/map-to-ant-node";
-import type { CollectionTreeAntdNode } from "../types/node";
 
 import styles from "./collections-tree.module.css";
 import { MinionsTreeRefreshButton } from "./minions-tree-refresh-button";
@@ -84,7 +87,7 @@ export const CollectionsTree = observer(
     );
 
     const treeData = useMemo(
-      () => collectionsTreeStore.treeNodes.map(mapToAntdNode),
+      () => mapCollectionTreeNodes(collectionsTreeStore.treeNodes),
       [collectionsTreeStore.treeNodes]
     );
     const activePath = useMemo(
@@ -280,12 +283,7 @@ export const CollectionsTree = observer(
     );
 
     return (
-      <Flex
-        className={clsx(styles.collectionsTree, compact && styles.compact, className)}
-        vertical
-        flex="1"
-        gap="middle"
-      >
+      <Flex className={clsx(styles.collectionsTree, className)} vertical flex="1" gap="middle">
         <Flex className={styles.header} gap="small" align="center">
           <SearchInput
             disabled={Boolean(collectionsTreeStore.treeLoad.error)}
@@ -316,19 +314,18 @@ export const CollectionsTree = observer(
         >
           <div ref={contentRef}>
             <ErrorZone level="block" loaders={[collectionsTreeStore.treeLoad]}>
-              {noResults ? (
+              {noResults && (
                 <Empty
                   className={styles.searchEmptyState}
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={t("collection.search-no-results")}
                 />
-              ) : (
-                <Tree
-                  className={styles.tree}
-                  showLine
-                  switcherIcon={<DownOutlined />}
+              )}
+              {!noResults && (
+                <CollectionTreeView
+                  compact={compact}
+                  nowrapTitles={compact}
                   selectable={!structureEditable}
-                  blockNode
                   draggable={
                     isDndActive
                       ? {

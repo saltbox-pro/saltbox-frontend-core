@@ -4,12 +4,13 @@ import { Link } from "react-router";
 
 import { buildMinionDetailsPagePath } from "saltbox-core/features/minion-details";
 import type { MinionDetailsTabKey } from "saltbox-core/features/minion-details/model/tabs";
-import { DRAWER_IDS } from "saltbox-core/shared/constants/drawer-ids";
+import { DRAWER_IDS, type MinionDrawerId } from "saltbox-core/shared/constants/drawer-ids";
 
 export interface BaseMinionDrawerProps extends Omit<
   InfoDrawerProps,
   "drawerId" | "titleName" | "titleLabel" | "linkTo" | "linkTitle" | "linkComponent"
 > {
+  drawerId?: MinionDrawerId;
   innerId: string;
   id: string;
   slug: string | null | undefined;
@@ -22,6 +23,7 @@ export function BaseMinionDrawer({
   slug,
   activeTab,
   children,
+  drawerId = DRAWER_IDS.minionDetails,
   width = 820,
   linkPlacement = "extra",
   ...restProps
@@ -30,7 +32,7 @@ export function BaseMinionDrawer({
 
   return (
     <InfoDrawer
-      drawerId={DRAWER_IDS.minionDetails}
+      drawerId={drawerId}
       titleName={id}
       titleLabel={t("minions.minion")}
       linkTo={innerId && slug ? buildMinionDetailsPagePath(slug, innerId, activeTab) : undefined}
@@ -39,6 +41,7 @@ export function BaseMinionDrawer({
       linkPlacement={linkPlacement}
       width={width}
       {...restProps}
+      resizable
     >
       {children}
     </InfoDrawer>
