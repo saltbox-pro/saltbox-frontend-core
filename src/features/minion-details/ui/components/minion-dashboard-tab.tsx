@@ -316,10 +316,10 @@ export function MinionDashboardTab({
           {
             key: "minion-collections",
             label: t("minions.minion-collections"),
-            styles: { label: { verticalAlign: "top" } },
             children: (
               <MinionCollectionsSection
                 minionInnerId={minion.id}
+                collectionsCount={minion.collections_count}
                 collectionsTreeStore={collectionsTreeStore}
                 activeCollectionSlug={isInDrawer ? collectionSlug : undefined}
                 onOpenCollection={onOpenCollection}

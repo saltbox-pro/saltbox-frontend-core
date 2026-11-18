@@ -46,7 +46,6 @@
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
     "minion-collections": "Коллекции клиента",
-    "minion-collections-empty": "Клиент не принадлежит ни одной коллекции",
     "grains": "Данные grains",
     "pillars": "Данные клиента",
     "extra-data": {

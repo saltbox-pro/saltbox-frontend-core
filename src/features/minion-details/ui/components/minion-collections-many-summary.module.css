@@ -1,0 +1,29 @@
+.modalWrapper {
+  overflow: hidden;
+}
+
+.modalContent {
+  height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalInner {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.modalTreeScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}

@@ -1,7 +1,39 @@
+export type TreeNodeWithChildren<T = unknown> = {
+  children?: T[] | null;
+};
+
 export type TreeNodeWithSlug<T = unknown> = {
   slug: string;
   children?: T[];
 };
+
+export function flattenTreeNodes<T extends TreeNodeWithChildren<T>>(nodes: T[]): T[] {
+  const result: T[] = [];
+
+  for (const node of nodes) {
+    result.push(node);
+    if (node.children?.length) {
+      result.push(...flattenTreeNodes(node.children));
+    }
+  }
+
+  return result;
+}
+
+export function findTreeLeaves<T extends TreeNodeWithChildren<T>>(nodes: T[]): T[] {
+  const leaves: T[] = [];
+
+  for (const node of nodes) {
+    if (!node.children?.length) {
+      leaves.push(node);
+      continue;
+    }
+
+    leaves.push(...findTreeLeaves(node.children));
+  }
+
+  return leaves;
+}
 
 export function findNodeBySlug<T extends TreeNodeWithSlug<T>>(nodes: T[], slug: string): T | null {
   for (const node of nodes) {

@@ -22,9 +22,12 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
-import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
 import {
+  buildHighlightedCollectionTreeNode,
+  collectCollectionTreeMatchedKeys,
+  CollectionTreeNodeTitle,
   CollectionTreeView,
+  filterCollectionTreeNodes,
   mapCollectionTreeNodes,
   type CollectionTreeAntdNode,
 } from "saltbox-core/shared/components/collection-tree";
@@ -34,10 +37,7 @@ import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/lo
 import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
 import { collectionsTreeStore } from "saltbox-core/store/collections-tree-store";
 
-import { buildHighlightedNode } from "../helpers/build-highlighted-tree";
 import { collectExpandedKeys } from "../helpers/collect-expanded-keys";
-import { collectMatchedKeys } from "../helpers/collect-matched-keys";
-import { filterTree } from "../helpers/filter-tree";
 import { findNodePath } from "../helpers/find-node-path";
 import { findParentByKey } from "../helpers/find-parent-by-key";
 import { isNodeInSubtree } from "../helpers/is-node-in-subtree";
@@ -105,18 +105,20 @@ export const CollectionsTree = observer(
     }, [treeData, activePath]);
 
     const displayData = useMemo(() => {
-      const filtered = filterTree(treeData, appliedSearchQuery);
+      const filtered = filterCollectionTreeNodes(treeData, appliedSearchQuery);
       return filtered ?? treeData;
     }, [treeData, appliedSearchQuery]);
 
     const matchedKeys = useMemo(
-      () => collectMatchedKeys(displayData, appliedSearchQuery),
+      () => collectCollectionTreeMatchedKeys(displayData, appliedSearchQuery),
       [displayData, appliedSearchQuery]
     );
 
     const highlightedTreeData = useMemo(() => {
       if (!appliedSearchQuery) return displayData;
-      return displayData.map((node) => buildHighlightedNode(node, appliedSearchQuery, matchedKeys));
+      return displayData.map((node) =>
+        buildHighlightedCollectionTreeNode(node, appliedSearchQuery, matchedKeys)
+      );
     }, [displayData, appliedSearchQuery, matchedKeys]);
 
     const noResults = appliedSearchQuery.length > 0 && displayData.length === 0;
@@ -249,35 +251,33 @@ export const CollectionsTree = observer(
 
     const titleRender = useCallback(
       (node: CollectionTreeAntdNode) => (
-        <Flex className={styles.nodeRow} align="center" gap="small" title="">
-          <span
-            className={clsx(styles.nodeTitle, showDescription && styles.nodeTitleLimited)}
-            title={typeof node.title === "string" ? node.title : undefined}
-          >
-            {node.title as ReactNode}
-          </span>
-          <CollectionMinionsCountTag
-            count={node.minionsCount}
-            className={styles.nodeClientsCount}
-          />
-          {showDescription &&
-            node.slug !== ROOT_COLLECTION_SLUG &&
-            (node.description ? (
-              <Typography.Text
-                type="secondary"
-                className={styles.nodeDescription}
-                ellipsis
-                title={node.description}
-              >
-                {node.description}
-              </Typography.Text>
-            ) : (
-              <Typography.Text type="secondary" italic className={styles.nodeDescription}>
-                {t("collection.no-description")}
-              </Typography.Text>
-            ))}
-          {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
-        </Flex>
+        <CollectionTreeNodeTitle
+          node={node}
+          limitTitleWidth={showDescription}
+          extra={
+            showDescription || renderActions ? (
+              <>
+                {showDescription &&
+                  node.slug !== ROOT_COLLECTION_SLUG &&
+                  (node.description ? (
+                    <Typography.Text
+                      type="secondary"
+                      className={styles.nodeDescription}
+                      ellipsis
+                      title={node.description}
+                    >
+                      {node.description}
+                    </Typography.Text>
+                  ) : (
+                    <Typography.Text type="secondary" italic className={styles.nodeDescription}>
+                      {t("collection.no-description")}
+                    </Typography.Text>
+                  ))}
+                {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
+              </>
+            ) : undefined
+          }
+        />
       ),
       [renderActions, showDescription, t]
     );

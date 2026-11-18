@@ -2,24 +2,27 @@ import clsx from "clsx";
 
 import type { CollectionTreeAntdNode } from "../types";
 
-interface WithCollectionTreeSelectabilityOptions {
-  clickableClassName?: string;
-}
+import styles from "./with-collection-tree-selectability.module.css";
+
+type CollectionTreeNodeSelectability = {
+  selectable: boolean;
+  disabled?: boolean;
+};
 
 export function withCollectionTreeSelectability(
   nodes: CollectionTreeAntdNode[],
-  isSelectable: (node: CollectionTreeAntdNode) => boolean,
-  options: WithCollectionTreeSelectabilityOptions = {}
+  resolve: (node: CollectionTreeAntdNode) => CollectionTreeNodeSelectability
 ): CollectionTreeAntdNode[] {
   return nodes.map((node) => {
-    const selectable = isSelectable(node);
+    const { selectable, disabled } = resolve(node);
 
     return {
       ...node,
       selectable,
-      className: clsx(node.className, selectable && options.clickableClassName),
+      disabled: disabled ?? node.disabled,
+      className: clsx(node.className, selectable && styles.openable),
       children: node.children?.length
-        ? withCollectionTreeSelectability(node.children, isSelectable, options)
+        ? withCollectionTreeSelectability(node.children, resolve)
         : undefined,
     };
   });

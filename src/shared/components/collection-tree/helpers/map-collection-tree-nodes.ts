@@ -12,6 +12,7 @@ function mapCollectionTreeNode(node: CollectionTreeNodeSchema): CollectionTreeAn
   return {
     key: node.id,
     title: node.title,
+    titleText: node.title,
     slug: node.slug,
     description: node.description,
     minionsCount: node.minions_count ?? 0,

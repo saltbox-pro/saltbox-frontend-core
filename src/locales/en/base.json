@@ -46,7 +46,6 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "minion-collections": "Minion collections",
-    "minion-collections-empty": "The minion does not belong to any collection",
     "grains": "Grains",
     "pillars": "Minion Data",
     "extra-data": {

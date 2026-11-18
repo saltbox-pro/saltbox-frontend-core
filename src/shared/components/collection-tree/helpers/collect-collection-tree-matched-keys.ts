@@ -1,20 +1,21 @@
 import type { Key } from "react";
 
-import type { CollectionTreeAntdNode } from "../types/node";
+import type { CollectionTreeAntdNode } from "../types";
 
-export function collectMatchedKeys(nodes: CollectionTreeAntdNode[], search: string): Set<Key> {
+export function collectCollectionTreeMatchedKeys(
+  nodes: CollectionTreeAntdNode[],
+  search: string
+): Set<Key> {
   const matched = new Set<Key>();
-  if (!search.trim()) return matched;
+  if (!search.trim()) {
+    return matched;
+  }
 
   const lower = search.trim().toLowerCase();
 
   function walk(nodesList: CollectionTreeAntdNode[]) {
     for (const node of nodesList) {
-      if (
-        String(node.title ?? "")
-          .toLowerCase()
-          .includes(lower)
-      ) {
+      if (node.titleText.toLowerCase().includes(lower)) {
         matched.add(node.key);
       }
       if (node.children?.length) {
@@ -22,6 +23,7 @@ export function collectMatchedKeys(nodes: CollectionTreeAntdNode[], search: stri
       }
     }
   }
+
   walk(nodes);
   return matched;
 }

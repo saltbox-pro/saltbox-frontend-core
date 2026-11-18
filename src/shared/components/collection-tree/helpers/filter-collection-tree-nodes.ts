@@ -1,21 +1,21 @@
-import type { CollectionTreeAntdNode } from "../types/node";
+import type { CollectionTreeAntdNode } from "../types";
 
-export function filterTree(
+export function filterCollectionTreeNodes(
   nodes: CollectionTreeAntdNode[],
   search: string
 ): CollectionTreeAntdNode[] | null {
-  if (!search.trim()) return null;
+  if (!search.trim()) {
+    return null;
+  }
 
   const lower = search.trim().toLowerCase();
 
   function recurse(node: CollectionTreeAntdNode): CollectionTreeAntdNode | null {
-    const selfMatch = String(node.title ?? "")
-      .toLowerCase()
-      .includes(lower);
+    const selfMatch = node.titleText.toLowerCase().includes(lower);
 
     const filteredChildren = (node.children ?? [])
       .map(recurse)
-      .filter((n): n is CollectionTreeAntdNode => n !== null);
+      .filter((child): child is CollectionTreeAntdNode => child !== null);
 
     if (selfMatch) {
       return { ...node, children: node.children };
@@ -28,7 +28,5 @@ export function filterTree(
     return null;
   }
 
-  const filtered = nodes.map(recurse).filter((n): n is CollectionTreeAntdNode => n !== null);
-  if (filtered.length === 0) return [];
-  return filtered;
+  return nodes.map(recurse).filter((node): node is CollectionTreeAntdNode => node !== null);
 }
