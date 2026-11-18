@@ -618,7 +618,7 @@
     "field-form": {
       "field-name-placeholder": "Введите название поля",
       "field-name-required": "Укажите название поля",
-      "field-name-unique": "Поле с таким названием уже есть в категории",
+      "field-name-unique": "Поле с таким названием уже есть",
       "field-type-placeholder": "Выберите тип",
       "field-type-required": "Укажите тип"
     },

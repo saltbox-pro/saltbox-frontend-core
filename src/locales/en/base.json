@@ -618,7 +618,7 @@
     "field-form": {
       "field-name-placeholder": "Enter field name",
       "field-name-required": "Field name is required",
-      "field-name-unique": "A field with this name already exists in the category",
+      "field-name-unique": "A field with this name already exists",
       "field-type-placeholder": "Select type",
       "field-type-required": "Select a type"
     },
