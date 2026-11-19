@@ -156,7 +156,7 @@ const MinionsPage = observer(() => {
   );
 
   const fieldOptionsForModal = useMemo(() => {
-    if (!editingCard) {
+    if (!editingCard || editingCard.kind === "collection-history") {
       return dashboardFieldOptions;
     }
     if (dashboardFieldOptions.some((o) => o.source === editingCard.fieldSource)) {
@@ -512,11 +512,11 @@ const MinionsPage = observer(() => {
           setIsAddDashboardBlockModalOpen(false);
           setEditingDashboardCardId(null);
         }}
-        onSubmit={(fieldOption, preset) => {
+        onSubmit={(input) => {
           if (editingDashboardCardId) {
-            dashboardStore.updateCard(editingDashboardCardId, fieldOption, preset);
+            dashboardStore.updateCard(editingDashboardCardId, input);
           } else {
-            dashboardStore.addCard(fieldOption, preset);
+            dashboardStore.addCard(input);
           }
           setIsAddDashboardBlockModalOpen(false);
         }}

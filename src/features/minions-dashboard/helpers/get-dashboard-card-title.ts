@@ -7,6 +7,9 @@ export const getDashboardCardTitle = (
   card: DashboardCardConfig,
   fieldOptions: DashboardFieldOption[]
 ): string => {
+  if (card.kind === "collection-history") {
+    return t("dashboard.history-title");
+  }
   if (!card.extraCategory) {
     return t(`dashboard.field-${card.field}`, { defaultValue: card.fieldLabel });
   }

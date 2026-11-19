@@ -1,27 +1,11 @@
-import {
-  DeleteOutlined,
-  EditOutlined,
-  EllipsisOutlined,
-  FullscreenExitOutlined,
-  FullscreenOutlined,
-  HolderOutlined,
-} from "@ant-design/icons";
-import {
-  applyFilterByValue,
-  CopyToClipboardButton,
-  Dropdown,
-  ErrorZone,
-} from "@saltbox/saltbox-frontend-common";
-import { Button, Card, Empty, Flex, message, Modal, Spin, Typography } from "antd";
-import clsx from "clsx";
+import { applyFilterByValue } from "@saltbox/saltbox-frontend-common";
+import { Empty, message } from "antd";
 import { observer } from "mobx-react-lite";
-import { ComponentProps, useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { MinionFilterStore } from "saltbox-core/store";
 
-import { DASHBOARD_DRAG_HANDLE_CLASS } from "../../constants/dashboard-cards";
 import { FULLSCREEN_CARD_GRID_SIZE, getChartDataLimit } from "../../helpers/chart-data-limit";
 import { getChartTotal } from "../../helpers/get-chart-total";
 import { getDashboardCardTitle } from "../../helpers/get-dashboard-card-title";
@@ -34,7 +18,11 @@ import {
   toHistogramData,
   valueToText,
 } from "../../model/dashboard-chart-data";
-import { DashboardCardConfig, DashboardFieldOption } from "../../model/dashboard-model";
+import {
+  DashboardCardConfig,
+  DashboardFieldCardConfig,
+  DashboardFieldOption,
+} from "../../model/dashboard-model";
 import { dashboardStore } from "../../model/dashboard-store";
 import {
   DonutChart,
@@ -44,11 +32,11 @@ import {
   VerticalBarChart,
 } from "../charts";
 
+import { CollectionHistoryCard } from "./collection-history-card";
+import { DashboardCardShell } from "./dashboard-card-shell";
 import { GrainTable } from "./grain-table";
 import { KpiPanel } from "./kpi-panel";
 import styles from "./minion-dashboard-card.module.css";
-
-type MenuItems = ComponentProps<typeof Dropdown>["menu"]["items"];
 
 type MinionDashboardCardProps = {
   card: DashboardCardConfig;
@@ -59,7 +47,14 @@ type MinionDashboardCardProps = {
   fullscreenContainer?: HTMLElement | null;
 };
 
-export const MinionDashboardCard = observer(
+export const MinionDashboardCard = (props: MinionDashboardCardProps) =>
+  props.card.kind === "collection-history" ? (
+    <CollectionHistoryCard {...props} card={props.card} />
+  ) : (
+    <FieldDashboardCard {...props} card={props.card} />
+  );
+
+const FieldDashboardCard = observer(
   ({
     card,
     fieldOptions,
@@ -67,12 +62,10 @@ export const MinionDashboardCard = observer(
     slug,
     filterStore,
     fullscreenContainer,
-  }: MinionDashboardCardProps) => {
+  }: Omit<MinionDashboardCardProps, "card"> & { card: DashboardFieldCardConfig }) => {
     const { t } = useTranslation();
-    const [isFullScreen, setIsFullScreen] = useState(false);
-    const [dashboardCardStore] = useState(new DashboardCardStore());
-    const isFullScreenRef = useRef(isFullScreen);
-    const [isTogglingFullScreen, setIsTogglingFullScreen] = useState(false);
+    const isFullScreen = dashboardStore.fullScreenCardId === card.id;
+    const [dashboardCardStore] = useState(() => new DashboardCardStore());
     const [isLayoutTransitioning, setIsLayoutTransitioning] = useState(false);
     const layoutTransitionTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const prevPresetRef = useRef(card.preset);
@@ -99,27 +92,6 @@ export const MinionDashboardCard = observer(
       }
     }, [card, dashboardCardStore, filterStore.searchMongoDBQuery, slug]);
 
-    isFullScreenRef.current = isFullScreen;
-
-    useEffect(
-      () => () => {
-        if (isFullScreenRef.current) {
-          dashboardStore.setCardFullScreen(null);
-        }
-      },
-      []
-    );
-
-    const toggleFullScreen = () => {
-      setIsTogglingFullScreen(true);
-      requestAnimationFrame(() => {
-        const nextIsFullScreen = !isFullScreenRef.current;
-        setIsFullScreen(nextIsFullScreen);
-        dashboardStore.setCardFullScreen(nextIsFullScreen ? card.id : null);
-        setIsTogglingFullScreen(false);
-      });
-    };
-
     const cardLayout = dashboardStore.layout.find((item) => item.id === card.id);
     const isMinimalCardSize = !isFullScreen && cardLayout?.width === 1 && cardLayout?.height === 1;
     const chartLimitSize = isFullScreen ? FULLSCREEN_CARD_GRID_SIZE : cardLayout;
@@ -142,45 +114,6 @@ export const MinionDashboardCard = observer(
     const copyDataText = dashboardCardStore.values
       .map((item) => `${valueToText(item.value, emptyLabel)}: ${item.count}`)
       .join("\n");
-
-    const handleDeleteClick = () => {
-      Modal.confirm({
-        title: t("dashboard.delete-card-confirm-title"),
-        icon: null,
-        content: t(
-          dashboardStore.isActiveTabGlobal
-            ? "dashboard.delete-global-card-confirm-description"
-            : "dashboard.delete-card-confirm-description"
-        ),
-        okButtonProps: { danger: true },
-        okText: t("dashboard.delete-card"),
-        onOk: () => dashboardStore.removeCard(card.id),
-      });
-    };
-
-    const items: MenuItems = [
-      {
-        icon: <EditOutlined />,
-        label: t("dashboard.edit-card"),
-        onClick: () => onEdit(card.id),
-        key: "edit",
-        disabled: isFullScreen,
-      },
-      {
-        icon: isFullScreen ? <FullscreenExitOutlined /> : <FullscreenOutlined />,
-        label: isFullScreen ? t("dashboard.windowed") : t("dashboard.fullscreen"),
-        onClick: toggleFullScreen,
-        key: "fullscreen",
-      },
-      {
-        icon: <DeleteOutlined />,
-        label: t("dashboard.delete-card"),
-        onClick: handleDeleteClick,
-        key: "remove",
-        disabled: isFullScreen,
-        danger: true,
-      },
-    ];
 
     const getLimitedChartData = (limit: number): ChartDatum[] => {
       const { values } = dashboardCardStore;
@@ -293,59 +226,17 @@ export const MinionDashboardCard = observer(
 
     const showChartActions = card.preset !== "table" && dashboardCardStore.values.length > 0;
 
-    const cardElement = (
-      <Card
-        size="small"
-        className={clsx(styles.dashboardTableBlock, isFullScreen && styles.fullscreen)}
-        classNames={{ body: styles.dashboardTableBlockBody }}
+    return (
+      <DashboardCardShell
+        card={card}
+        title={fieldTitle}
+        copyText={showChartActions ? copyDataText : undefined}
+        loader={dashboardCardStore.valuesLoad}
+        onEdit={onEdit}
+        fullscreenContainer={fullscreenContainer}
       >
-        <Spin spinning={dashboardCardStore.isFilterLoading} tip={t("dashboard.loading-chart")}>
-          <ErrorZone level="block" loaders={[dashboardCardStore.valuesLoad]}>
-            <div
-              className={clsx(
-                styles.dashboardTableBlockHeader,
-                !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
-              )}
-            >
-              <HolderOutlined className={styles.dashboardDragIcon} />
-              <Flex vertical gap={2} className={styles.dashboardTableBlockTitleGroup}>
-                <Typography.Text
-                  strong
-                  ellipsis
-                  title={fieldTitle}
-                  className={styles.dashboardTableBlockTitle}
-                >
-                  {fieldTitle}
-                </Typography.Text>
-                <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
-                  {t(`dashboard.preset-${card.preset}`)}
-                </Typography.Text>
-              </Flex>
-              <div className={styles.dashboardTableBlockHeaderSettings}>
-                {showChartActions && (
-                  <CopyToClipboardButton size="small" type="text" text={copyDataText} />
-                )}
-                <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
-                  <Button
-                    type="text"
-                    size="small"
-                    loading={isTogglingFullScreen}
-                    icon={<EllipsisOutlined />}
-                    className={styles.dashboardTableBlockMenuIcon}
-                  />
-                </Dropdown>
-              </div>
-            </div>
-            <div className={styles.dashboardTableBlockChartBody}>
-              {!isLayoutTransitioning && renderChart()}
-            </div>
-          </ErrorZone>
-        </Spin>
-      </Card>
+        {!isLayoutTransitioning && renderChart()}
+      </DashboardCardShell>
     );
-
-    return isFullScreen && fullscreenContainer
-      ? createPortal(cardElement, fullscreenContainer)
-      : cardElement;
   }
 );

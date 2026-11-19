@@ -1,4 +1,4 @@
-import type { DashboardCardConfig, DashboardPreset } from "../model/dashboard-model";
+import type { DashboardFieldCardConfig, DashboardPreset } from "../model/dashboard-model";
 
 type CardSizeConfig = {
   width: number;
@@ -6,6 +6,7 @@ type CardSizeConfig = {
 };
 
 const CARD_SIZE_BY_PRESET: Partial<Record<DashboardPreset, CardSizeConfig>> = {
+  "collection-history": { width: 2, height: 1 },
   "horizontal-bar": { width: 2, height: 1 },
   "vertical-bar": { width: 2, height: 1 },
   histogram: { width: 2, height: 1 },
@@ -23,7 +24,7 @@ export const DASHBOARD_GRID_COLS = 4;
 
 export const DASHBOARD_DRAG_HANDLE_CLASS = "dashboardDragHandle";
 
-export const DEFAULT_DASHBOARD_CARDS: DashboardCardConfig[] = [
+export const DEFAULT_DASHBOARD_CARDS: DashboardFieldCardConfig[] = [
   {
     id: "dashboard-card-master-0",
     field: "master",

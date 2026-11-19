@@ -22,9 +22,11 @@ import {
 import { PRESETS } from "../constants/dashboard-presets";
 import { LEGACY_FIRST_TAB_NAMES } from "../constants/dashboard-tabs";
 
+import { CollectionHistorySettings, normalizeHistorySettings } from "./collection-history";
+
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 
-export type DashboardPreset =
+export type DashboardFieldPreset =
   | "donut"
   | "horizontal-bar"
   | "vertical-bar"
@@ -36,8 +38,10 @@ export type DashboardPreset =
   | "boolean-bars"
   | "table";
 
+export type DashboardPreset = DashboardFieldPreset | "collection-history";
+
 export type DashboardPresetOption = {
-  value: DashboardPreset;
+  value: DashboardFieldPreset;
   labelKey: string;
   descriptionKey: string;
 };
@@ -47,18 +51,32 @@ export type DashboardExtraCategoryRef = {
   name: string;
 };
 
-export type DashboardCardConfig = {
+export type DashboardFieldCardConfig = {
   id: string;
+  kind?: "field";
   field: string;
   fieldSource: string;
   fieldLabel: string;
   fieldType: DashboardFieldType;
   extraCategory?: DashboardExtraCategoryRef;
-  preset: DashboardPreset;
+  preset: DashboardFieldPreset;
 };
 
+export type DashboardHistoryCardConfig = {
+  id: string;
+  kind: "collection-history";
+  preset: "collection-history";
+  settings: CollectionHistorySettings;
+};
+
+export type DashboardCardConfig = DashboardFieldCardConfig | DashboardHistoryCardConfig;
+
+export type DashboardCardInput =
+  | { kind: "field"; fieldOption: DashboardFieldOption; preset: DashboardFieldPreset }
+  | { kind: "collection-history"; settings: CollectionHistorySettings };
+
 export type DashboardValuesTarget = Pick<
-  DashboardCardConfig,
+  DashboardFieldCardConfig,
   "field" | "fieldSource" | "extraCategory"
 >;
 
@@ -176,7 +194,7 @@ export const getPresetOptionsForFieldType = (fieldType: DashboardFieldType) => {
   return PRESETS[fieldType];
 };
 
-const getDefaultPresetForField = (fieldType: DashboardFieldType): DashboardPreset => {
+const getDefaultPresetForField = (fieldType: DashboardFieldType): DashboardFieldPreset => {
   return PRESETS[fieldType][0].value;
 };
 
@@ -267,12 +285,20 @@ export const getExtraDataDashboardFieldOptions = (
   });
 };
 
-const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardPreset => {
+const normalizePreset = (preset: string, fieldType: DashboardFieldType): DashboardFieldPreset => {
   const isValid = PRESETS[fieldType].some((option) => option.value === preset);
-  return isValid ? (preset as DashboardPreset) : getDefaultPresetForField(fieldType);
+  return isValid ? (preset as DashboardFieldPreset) : getDefaultPresetForField(fieldType);
 };
 
 const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
+  if (card.kind === "collection-history") {
+    return {
+      id: card.id,
+      kind: "collection-history",
+      preset: "collection-history",
+      settings: normalizeHistorySettings(card.settings),
+    };
+  }
   const extraCategory =
     card.extraCategory?.source && card.extraCategory?.name ? card.extraCategory : undefined;
 
@@ -287,7 +313,7 @@ const normalizeCard = (card: DashboardCardConfig): DashboardCardConfig => {
   };
 };
 
-type DashboardCardFieldConfig = Omit<DashboardCardConfig, "id" | "preset">;
+type DashboardCardFieldConfig = Omit<DashboardFieldCardConfig, "id" | "preset">;
 
 const toCardFieldConfig = (fieldOption: DashboardFieldOption): DashboardCardFieldConfig => {
   return {
@@ -299,7 +325,7 @@ const toCardFieldConfig = (fieldOption: DashboardFieldOption): DashboardCardFiel
   };
 };
 
-export const toDashboardFieldOption = (card: DashboardCardConfig): DashboardFieldOption => {
+export const toDashboardFieldOption = (card: DashboardFieldCardConfig): DashboardFieldOption => {
   return {
     value: card.field,
     label: card.fieldLabel,
@@ -311,25 +337,21 @@ export const toDashboardFieldOption = (card: DashboardCardConfig): DashboardFiel
 };
 
 export const createDashboardCard = (
-  fieldOption: DashboardFieldOption,
-  preset: DashboardPreset
+  input: DashboardCardInput,
+  id?: string
 ): DashboardCardConfig => {
+  if (input.kind === "collection-history") {
+    return {
+      id: id ?? createCardId("collection-history", Date.now()),
+      kind: "collection-history",
+      preset: "collection-history",
+      settings: normalizeHistorySettings(input.settings),
+    };
+  }
   return {
-    id: createCardId(fieldOption.value, Date.now()),
-    ...toCardFieldConfig(fieldOption),
-    preset,
-  };
-};
-
-export const getUpdatedDashboardCard = (
-  card: DashboardCardConfig,
-  fieldOption: DashboardFieldOption,
-  preset: DashboardPreset
-): DashboardCardConfig => {
-  return {
-    ...card,
-    ...toCardFieldConfig(fieldOption),
-    preset,
+    id: id ?? createCardId(input.fieldOption.value, Date.now()),
+    ...toCardFieldConfig(input.fieldOption),
+    preset: input.preset,
   };
 };
 

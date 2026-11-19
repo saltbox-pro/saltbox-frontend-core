@@ -1,10 +1,10 @@
 import type {
   DashboardFieldType,
-  DashboardPreset,
+  DashboardFieldPreset,
   DashboardPresetOption,
 } from "../model/dashboard-model";
 
-const presetOption = (value: DashboardPreset): DashboardPresetOption => {
+const presetOption = (value: DashboardFieldPreset): DashboardPresetOption => {
   return {
     value,
     labelKey: `dashboard.preset-${value}`,

@@ -32,7 +32,7 @@
 
 .dashboardTableBlock :global(.ant-card-body) {
   height: 100%;
-  padding: 14px;
+  padding: var(--dashboard-card-padding, 14px);
 }
 
 .dashboardTableBlockBody,
@@ -47,14 +47,25 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 10px;
-  margin-bottom: 12px;
+  flex-shrink: 0;
+  padding-bottom: var(--dashboard-card-header-padding, 10px);
+  margin-bottom: var(--dashboard-card-header-gap, 12px);
   border-bottom: 1px solid var(--ant-color-border-secondary, #edf0f5);
 }
 
 .dashboardTableBlockTitleGroup {
+  display: flex;
   min-width: 0;
   flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dashboardTableBlockTitleWithMeta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
 }
 
 .dashboardTableBlockTitle {
@@ -94,8 +105,17 @@
 }
 
 .dashboardTableBlockChartBody {
-  height: calc(100% - 64px);
-  min-height: 210px;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.dashboardCardContent {
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .dashboardTableBlock :global(.fast-table-wrapper) {

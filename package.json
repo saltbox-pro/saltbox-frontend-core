@@ -77,6 +77,7 @@
     "@saltbox/saltbox-gateway-api-client": "0.3.0-d3c301a2a90cc9569087bba31fd36a02410fc34b",
     "antd": "5.26.0",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.19",
     "i18next": "^25.2.1",
     "i18next-browser-languagedetector": "^8.2.0",
     "json-logic-js": "^2.0.5",

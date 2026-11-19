@@ -1,4 +1,14 @@
-import { Button, Cascader, ConfigProvider, Empty, Flex, Modal, Spin, Typography } from "antd";
+import {
+  Button,
+  Cascader,
+  ConfigProvider,
+  Empty,
+  Flex,
+  Modal,
+  Segmented,
+  Spin,
+  Typography,
+} from "antd";
 import type { DefaultOptionType } from "antd/es/cascader";
 import type { TFunction } from "i18next";
 import { useEffect, useMemo, useState } from "react";
@@ -17,12 +27,19 @@ import {
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "../../constants/dashboard-preview";
 import {
+  CollectionHistorySettings,
+  createDefaultHistorySettings,
+  getHistorySettingsError,
+} from "../../model/collection-history";
+import {
   getPresetOptionsForFieldType,
   type DashboardCardConfig,
+  type DashboardCardInput,
   type DashboardFieldOption,
-  type DashboardPreset,
+  type DashboardFieldPreset,
 } from "../../model/dashboard-model";
 
+import { CollectionHistorySettingsEditor } from "./collection-history-settings";
 import styles from "./minions-dashboard-add-block-modal.module.css";
 
 const FIELD_CASCADER_THEME = {
@@ -75,7 +92,7 @@ type MinionsDashboardAddBlockModalProps = {
   fieldOptions: DashboardFieldOption[];
   isLoading?: boolean;
   onClose: () => void;
-  onSubmit: (fieldOption: DashboardFieldOption, preset: DashboardPreset) => void;
+  onSubmit: (input: DashboardCardInput) => void;
 };
 
 export const MinionsDashboardAddBlockModal = ({
@@ -89,14 +106,26 @@ export const MinionsDashboardAddBlockModal = ({
   const { t } = useTranslation();
   const compareLabels = useFilterLabelComparator();
   const [selectedField, setSelectedField] = useState<string>();
-  const [selectedPreset, setSelectedPreset] = useState<DashboardPreset>();
+  const [selectedPreset, setSelectedPreset] = useState<DashboardFieldPreset>();
+  const [kind, setKind] = useState<"field" | "collection-history">("field");
+  const [historySettings, setHistorySettings] = useState<CollectionHistorySettings>(
+    createDefaultHistorySettings
+  );
+  const historyError = getHistorySettingsError(
+    historySettings,
+    Intl.DateTimeFormat().resolvedOptions().timeZone
+  );
 
   useEffect(() => {
     if (!open) {
       return;
     }
-    setSelectedField(initialCard?.fieldSource);
-    setSelectedPreset(initialCard?.preset);
+    const historyCard = initialCard?.kind === "collection-history" ? initialCard : null;
+    const fieldCard = initialCard?.kind !== "collection-history" ? initialCard : null;
+    setKind(historyCard ? "collection-history" : "field");
+    setHistorySettings(historyCard?.settings ?? createDefaultHistorySettings());
+    setSelectedField(fieldCard?.fieldSource);
+    setSelectedPreset(fieldCard?.preset);
   }, [initialCard, open]);
 
   const fieldOption = useMemo(
@@ -131,10 +160,16 @@ export const MinionsDashboardAddBlockModal = ({
   };
 
   const handleSubmit = () => {
+    if (kind === "collection-history") {
+      if (!historyError) {
+        onSubmit({ kind, settings: historySettings });
+      }
+      return;
+    }
     if (!fieldOption || !selectedPreset) {
       return;
     }
-    onSubmit(fieldOption, selectedPreset);
+    onSubmit({ kind: "field", fieldOption, preset: selectedPreset });
   };
 
   const isEditMode = Boolean(initialCard);
@@ -147,7 +182,13 @@ export const MinionsDashboardAddBlockModal = ({
       footer={
         <Flex justify="end" gap={8}>
           <Button onClick={onClose}>{t("common.cancel")}</Button>
-          <Button type="primary" disabled={!fieldOption || !selectedPreset} onClick={handleSubmit}>
+          <Button
+            type="primary"
+            disabled={
+              kind === "collection-history" ? !!historyError : !fieldOption || !selectedPreset
+            }
+            onClick={handleSubmit}
+          >
             {t(isEditMode ? "dashboard.save-block" : "dashboard.create-block")}
           </Button>
         </Flex>
@@ -155,60 +196,103 @@ export const MinionsDashboardAddBlockModal = ({
       width={840}
     >
       <Flex vertical gap={20}>
-        <Flex vertical gap={8}>
-          <Typography.Text strong>{t("dashboard.field-label")}</Typography.Text>
-          <Spin spinning={isLoading} className={styles.fieldCascader}>
-            <ConfigProvider theme={FIELD_CASCADER_THEME}>
-              <Cascader
-                allowClear
-                showSearch={{ filter: filterFieldCascader }}
-                value={fieldCascaderValue}
-                options={fieldCascaderOptions}
-                placeholder={t("dashboard.field-placeholder")}
-                displayRender={(labels) => labels.join(" / ")}
-                className={styles.fieldCascader}
-                onChange={handleFieldChange}
-              />
-            </ConfigProvider>
-          </Spin>
-        </Flex>
-
-        <Flex vertical gap={8}>
-          <Typography.Text strong>{t("dashboard.preset-label")}</Typography.Text>
-          {fieldOption ? (
-            <div className={styles.presetsGrid}>
-              {presetOptions.map((preset) => (
-                <Button
-                  key={preset.value}
-                  type="text"
-                  className={`${styles.presetCard} ${selectedPreset === preset.value ? styles.selected : ""}`}
-                  onClick={() => setSelectedPreset(preset.value)}
-                >
-                  <span
-                    className={`${styles.presetPreview} ${styles[`preview-${preset.value}`]}`}
-                    aria-hidden
-                  >
-                    {Array.from({
-                      length:
-                        PRESET_PREVIEW_SWATCH_COUNT[preset.value] ?? DEFAULT_PREVIEW_SWATCH_COUNT,
-                    }).map((_, index) => (
-                      <span key={index} />
-                    ))}
-                  </span>
-                  <span className={styles.presetContent}>
-                    <span className={styles.presetName}>{t(preset.labelKey)}</span>
-                    <span className={styles.presetDescription}>{t(preset.descriptionKey)}</span>
-                  </span>
-                </Button>
-              ))}
+        <Segmented<"field" | "collection-history">
+          block
+          value={kind}
+          options={[
+            { value: "field", label: t("dashboard.block-kind-field") },
+            { value: "collection-history", label: t("dashboard.history-title") },
+          ]}
+          onChange={setKind}
+        />
+        {kind === "collection-history" ? (
+          <Flex vertical gap={20}>
+            <div className={styles.historyPreview}>
+              <svg viewBox="0 0 600 80" preserveAspectRatio="none" aria-hidden="true">
+                <path
+                  d="M0 65L65 48L145 55L230 30L310 38L390 20L470 25L540 8L600 12V80H0Z"
+                  fill="currentColor"
+                  opacity="0.1"
+                />
+                <path
+                  d="M0 65L65 48L145 55L230 30L310 38L390 20L470 25L540 8L600 12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
+              <Typography.Text strong>{t("dashboard.history-title")}</Typography.Text>
+              <Typography.Text type="secondary">
+                {t("dashboard.history-description")}
+              </Typography.Text>
             </div>
-          ) : (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description={t("dashboard.select-field-first")}
+            <CollectionHistorySettingsEditor
+              value={historySettings}
+              onChange={setHistorySettings}
             />
-          )}
-        </Flex>
+            <Typography.Text type="secondary">
+              {t("dashboard.history-demo-description")}
+            </Typography.Text>
+          </Flex>
+        ) : (
+          <>
+            <Flex vertical gap={8}>
+              <Typography.Text strong>{t("dashboard.field-label")}</Typography.Text>
+              <Spin spinning={isLoading} className={styles.fieldCascader}>
+                <ConfigProvider theme={FIELD_CASCADER_THEME}>
+                  <Cascader
+                    allowClear
+                    showSearch={{ filter: filterFieldCascader }}
+                    value={fieldCascaderValue}
+                    options={fieldCascaderOptions}
+                    placeholder={t("dashboard.field-placeholder")}
+                    displayRender={(labels) => labels.join(" / ")}
+                    className={styles.fieldCascader}
+                    onChange={handleFieldChange}
+                  />
+                </ConfigProvider>
+              </Spin>
+            </Flex>
+
+            <Flex vertical gap={8}>
+              <Typography.Text strong>{t("dashboard.preset-label")}</Typography.Text>
+              {fieldOption ? (
+                <div className={styles.presetsGrid}>
+                  {presetOptions.map((preset) => (
+                    <Button
+                      key={preset.value}
+                      type="text"
+                      className={`${styles.presetCard} ${selectedPreset === preset.value ? styles.selected : ""}`}
+                      onClick={() => setSelectedPreset(preset.value)}
+                    >
+                      <span
+                        className={`${styles.presetPreview} ${styles[`preview-${preset.value}`]}`}
+                        aria-hidden
+                      >
+                        {Array.from({
+                          length:
+                            PRESET_PREVIEW_SWATCH_COUNT[preset.value] ??
+                            DEFAULT_PREVIEW_SWATCH_COUNT,
+                        }).map((_, index) => (
+                          <span key={index} />
+                        ))}
+                      </span>
+                      <span className={styles.presetContent}>
+                        <span className={styles.presetName}>{t(preset.labelKey)}</span>
+                        <span className={styles.presetDescription}>{t(preset.descriptionKey)}</span>
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <Empty
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  description={t("dashboard.select-field-first")}
+                />
+              )}
+            </Flex>
+          </>
+        )}
       </Flex>
     </Modal>
   );

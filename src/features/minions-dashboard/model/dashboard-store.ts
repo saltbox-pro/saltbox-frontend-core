@@ -14,13 +14,11 @@ import {
   createDefaultTabCards,
   createUniqueTabName,
   DashboardCardConfig,
-  DashboardFieldOption,
+  DashboardCardInput,
   DashboardLayoutItem,
-  DashboardPreset,
   DashboardTab,
   DashboardTabNames,
   DashboardTabScope,
-  getUpdatedDashboardCard,
   moveDashboardTab,
   normalizeDashboardStorage,
   normalizeGlobalDashboardTabs,
@@ -407,12 +405,12 @@ export class DashboardStore {
     this.saveScope(this.activeTabScope);
   }
 
-  addCard(fieldOption: DashboardFieldOption, preset: DashboardPreset) {
+  addCard(input: DashboardCardInput) {
     if (!this.activeTab || !this.canAddCard) {
       return;
     }
-    const card = createDashboardCard(fieldOption, preset);
-    const size = getDefaultCardSize(preset);
+    const card = createDashboardCard(input);
+    const size = getDefaultCardSize(card.preset);
     const { x, y } = this.findFirstAvailablePosition(this.layout, size.width, size.height);
     this.activeTab.cards.unshift(card);
     this.activeTab.layout = [
@@ -445,29 +443,29 @@ export class DashboardStore {
     return { x: 0, y: maxY };
   }
 
-  updateCard(cardId: string, fieldOption: DashboardFieldOption, preset: DashboardPreset) {
+  updateCard(cardId: string, input: DashboardCardInput) {
     const cardIndex = this.cards.findIndex((item) => item.id === cardId);
     if (cardIndex === -1) {
       return;
     }
-    this.activeTab.cards[cardIndex] = getUpdatedDashboardCard(
-      this.cards[cardIndex],
-      fieldOption,
-      preset
-    );
-    const size = getDefaultCardSize(preset);
-    this.activeTab.layout = this.compactCards(
-      this.layout.map((item) => {
-        if (item.id !== cardId) {
-          return item;
-        }
-        return {
-          ...item,
-          width: size.width,
-          height: size.height,
-        };
-      })
-    );
+    const previous = this.cards[cardIndex];
+    const card = createDashboardCard(input, cardId);
+    this.activeTab.cards[cardIndex] = card;
+    if (previous.preset !== card.preset) {
+      const size = getDefaultCardSize(card.preset);
+      this.activeTab.layout = this.compactCards(
+        this.layout.map((item) => {
+          if (item.id !== cardId) {
+            return item;
+          }
+          return {
+            ...item,
+            width: size.width,
+            height: size.height,
+          };
+        })
+      );
+    }
     this.saveScope(this.activeTabScope);
   }
 
