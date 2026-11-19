@@ -41,11 +41,18 @@ export const getTasksFilterSchema = (
   const fields: Array<Record<string, unknown>> = [];
 
   if (includeTargetCollection) {
-    fields.push({
-      name: "target_collection.slug",
-      label: t("minions.table-collection"),
-      operators: defaultStringOperators,
-    });
+    fields.push(
+      {
+        name: "target_collection.title",
+        label: t("collection.edit-collection-name"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "target_collection.slug",
+        label: t(["minions.table-collection-key", "minions.table-collection"]),
+        operators: defaultStringOperators,
+      }
+    );
   }
 
   if (showSourceType) {
