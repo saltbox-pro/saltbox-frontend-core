@@ -202,7 +202,10 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor("grains.efi", {
         id: "grains.efi",
         header: t("minions.table-efi"),
-        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        cell: (data) => {
+          const value = data.getValue();
+          return typeof value === "boolean" ? <BooleanDisplay value={value} /> : null;
+        },
         meta: {
           width: "2%",
           minWidth: 110,
@@ -213,7 +216,10 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
       minionsColumnHelper.accessor((row) => row.grains?.efi_secure_boot, {
         id: "grains.efi-secure-boot",
         header: t("minions.table-secure-boot"),
-        cell: (data) => <BooleanDisplay value={data.getValue()} />,
+        cell: (data) => {
+          const value = data.getValue();
+          return typeof value === "boolean" ? <BooleanDisplay value={value} /> : null;
+        },
         meta: {
           width: "6%",
           minWidth: 110,
