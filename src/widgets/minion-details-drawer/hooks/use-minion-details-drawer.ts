@@ -3,7 +3,6 @@ import { createLoader, type LoadSource } from "@saltbox/saltbox-frontend-common"
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useOnMinionDataRefreshed } from "saltbox-core/features/minion-details/hooks/use-on-minion-data-refreshed";
-import { MinionCollectionsTreeStore } from "saltbox-core/features/minion-details/store/minion-collections-tree-store";
 import { isAbortError } from "saltbox-core/shared/helpers/is-abort-error";
 import { isApiNotFoundError } from "saltbox-core/shared/helpers/is-api-not-found-error";
 import { apiCoreStore } from "saltbox-core/store";
@@ -20,7 +19,6 @@ export type UseMinionDetailsDrawerResult = {
   slug: string | null;
   resolvedDisplayId: string;
   resolvedInnerId: string;
-  collectionsTreeStore: MinionCollectionsTreeStore;
 };
 
 export type UseMinionDetailsDrawerArgs = {
@@ -48,7 +46,6 @@ export function useMinionDetailsDrawer({
   const [minion, setMinion] = useState<MinionDetailSchema | null>(null);
   const [isMinionMissing, setIsMinionMissing] = useState(false);
   const [isMinionRefreshing, setIsMinionRefreshing] = useState(false);
-  const [collectionsTreeStore] = useState(() => new MinionCollectionsTreeStore());
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const refreshAbortControllerRef = useRef<AbortController | null>(null);
@@ -116,7 +113,6 @@ export function useMinionDetailsDrawer({
     setMinion(null);
     setIsMinionMissing(false);
     setIsMinionRefreshing(false);
-    collectionsTreeStore.reset();
 
     minionLoad.resetInitial();
     minionLoad.run(params, abortController.signal, allowMissingMinion).catch(() => undefined);
@@ -124,7 +120,7 @@ export function useMinionDetailsDrawer({
     return () => {
       abortController.abort();
     };
-  }, [allowMissingMinion, collectionsTreeStore, isOpened, minionLoad, openedArg]);
+  }, [allowMissingMinion, isOpened, minionLoad, openedArg]);
 
   // Refresh grains и другие действия toolkit доступны из drawer; здесь soft-sync данных.
   useOnMinionDataRefreshed(isOpened ? openedArg?.minionId : null, () => {
@@ -147,7 +143,6 @@ export function useMinionDetailsDrawer({
         }
         setMinion(loadedMinion);
         setIsMinionMissing(false);
-        collectionsTreeStore.reloadIfLoaded(loadedMinion.id);
       } catch (error) {
         if (!isAbortError(error)) {
           console.error("Error refreshing minion grains:", error);
@@ -176,6 +171,5 @@ export function useMinionDetailsDrawer({
     slug,
     resolvedDisplayId,
     resolvedInnerId,
-    collectionsTreeStore,
   };
 }

@@ -1,7 +1,0 @@
-.openable:global(:not(.ant-tree-treenode-disabled)) :global(.ant-tree-node-content-wrapper) {
-  cursor: pointer;
-}
-
-.openable:global(:not(.ant-tree-treenode-disabled)) :global(.ant-tree-node-content-wrapper:hover) {
-  background-color: rgba(0, 0, 0, 0.06);
-}
