@@ -19,7 +19,6 @@ import {
   type MinionDetailsTabKey,
   parseMinionDetailsTabKey,
 } from "../../model/tabs";
-import type { MinionCollectionsTreeStore } from "../../store/minion-collections-tree-store";
 import type { MinionDetailsCommonProps } from "../../types/minion-details-props";
 
 import { MinionDashboardTab } from "./minion-dashboard-tab";
@@ -33,7 +32,6 @@ type MinionDetailsTabsViewProps = MinionDetailsCommonProps & {
   isInDrawer: boolean;
   tabKey: MinionDetailsTabKey;
   onTabChange: (key: MinionDetailsTabKey) => void;
-  collectionsTreeStore: MinionCollectionsTreeStore;
 };
 
 export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
@@ -46,9 +44,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   isFullView,
   actionsMenu,
   collectionSlug,
-  collectionsTreeStore,
   onFilterButton,
-  onOpenCollection,
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
   const rawPluginTabs = appStore.pluginsStore?.plugins?.["minion.detail.tabs"];
@@ -109,10 +105,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
             minion={minion}
             isMinionLoading={isMinionLoading}
             isInDrawer={isInDrawer}
-            collectionSlug={collectionSlug}
-            collectionsTreeStore={collectionsTreeStore}
             onFilterButton={onFilterButton}
-            onOpenCollection={onOpenCollection}
           />
         ),
       },
@@ -199,7 +192,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   }, [
     availableTabKeys,
     collectionSlug,
-    collectionsTreeStore,
     handleParcelTabChange,
     isFullView,
     isMinionRefreshing,
@@ -208,7 +200,6 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
     isNeverActive,
     minion,
     onFilterButton,
-    onOpenCollection,
     parentDrawer,
     pluginTabs,
     t,

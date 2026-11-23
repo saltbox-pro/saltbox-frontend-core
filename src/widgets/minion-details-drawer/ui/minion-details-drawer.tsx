@@ -1,6 +1,5 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, type ReactNode } from "react";
-import { useNavigate } from "react-router";
+import type { ReactNode } from "react";
 
 import {
   MinionDetailActionsMenu,
@@ -9,7 +8,6 @@ import {
   useMinionDetailsDrawerTab,
 } from "saltbox-core/features/minion-details";
 import { BaseMinionDrawer } from "saltbox-core/shared/components/minion-base-drawer";
-import { getCollectionPath } from "saltbox-core/shared/helpers/collection-route";
 
 import { useMinionDetailsDrawer } from "../hooks/use-minion-details-drawer";
 import type { MinionDetailsDrawerOpenParams } from "../types";
@@ -43,7 +41,6 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
     slug,
     resolvedDisplayId,
     resolvedInnerId,
-    collectionsTreeStore,
   } = useMinionDetailsDrawer({
     isOpened: drawer.isOpened,
     openedArg: drawer.openedArg,
@@ -51,15 +48,6 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
   });
 
   const { tabKey, onTabChange } = useMinionDetailsDrawerTab(drawer.isOpened, minion);
-  const navigate = useNavigate();
-
-  const handleOpenCollection = useCallback(
-    (collectionSlug: string) => {
-      navigate(getCollectionPath(collectionSlug));
-      drawer.close();
-    },
-    [drawer.close, navigate]
-  );
 
   return (
     <BaseMinionDrawer
@@ -97,9 +85,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
           isMinionLoading={false}
           isMinionRefreshing={isMinionRefreshing}
           collectionSlug={slug ?? ""}
-          collectionsTreeStore={collectionsTreeStore}
           onFilterButton={onFilterButton}
-          onOpenCollection={handleOpenCollection}
         />
       )}
     </BaseMinionDrawer>

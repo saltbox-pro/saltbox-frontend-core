@@ -2,7 +2,6 @@ export { buildHighlightedCollectionTreeNode } from "./helpers/build-highlighted-
 export { collectCollectionTreeMatchedKeys } from "./helpers/collect-collection-tree-matched-keys";
 export { filterCollectionTreeNodes } from "./helpers/filter-collection-tree-nodes";
 export { mapCollectionTreeNodes } from "./helpers/map-collection-tree-nodes";
-export { withCollectionTreeSelectability } from "./helpers/with-collection-tree-selectability";
 export type { CollectionTreeAntdNode } from "./types";
 export { CollectionTreeNodeTitle } from "./ui/collection-tree-node-title";
 export { CollectionTreeView } from "./ui/collection-tree-view";

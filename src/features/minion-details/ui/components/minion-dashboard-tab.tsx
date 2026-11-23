@@ -18,7 +18,6 @@ import {
 import { transformGrainValueToString } from "saltbox-core/shared/utils/transform-grain-value-to-string";
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
-import type { MinionCollectionsTreeStore } from "../../store/minion-collections-tree-store";
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
 import {
   minionDetailViewGroupsToCollapseItems,
@@ -28,27 +27,20 @@ import {
   type MinionDetailViewGroup,
 } from "../helpers/minion-dashboard-detail-views";
 
-import { MinionCollectionsSection } from "./minion-collections-section";
 import styles from "./minion-dashboard-tab.module.css";
 
 interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
   isMinionLoading: boolean;
   isInDrawer?: boolean;
-  collectionSlug: string;
-  collectionsTreeStore: MinionCollectionsTreeStore;
   onFilterButton?: OnFilterButtonHandler;
-  onOpenCollection?: (slug: string) => void;
 }
 
 export function MinionDashboardTab({
   minion,
   isMinionLoading,
   isInDrawer = false,
-  collectionSlug,
-  collectionsTreeStore,
   onFilterButton,
-  onOpenCollection,
 }: MinionDashboardTabProps) {
   const { t } = useTranslation();
 
@@ -316,15 +308,7 @@ export function MinionDashboardTab({
           {
             key: "minion-collections",
             label: t("minions.minion-collections"),
-            children: (
-              <MinionCollectionsSection
-                minionInnerId={minion.id}
-                collectionsCount={minion.collections_count}
-                collectionsTreeStore={collectionsTreeStore}
-                activeCollectionSlug={isInDrawer ? collectionSlug : undefined}
-                onOpenCollection={onOpenCollection}
-              />
-            ),
+            children: minion.collections_count ?? 0,
           },
         ]}
       />
