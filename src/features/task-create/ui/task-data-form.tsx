@@ -11,6 +11,8 @@ import { type Ref, useImperativeHandle, useLayoutEffect, useRef, useState } from
 import { TemplateParamsPlaceholder } from "saltbox-core/shared/components/template-params-placeholder/template-params-placeholder";
 import { getDefaultJsonFormValue } from "saltbox-core/shared/utils/job-modal-utils";
 import {
+  getPrunedJsonFormData,
+  omitExtraFormDataBySchema,
   validateJobJsonFormData,
   type JsonSchemaRecord,
   type UiSchemaRecord,
@@ -26,6 +28,7 @@ export interface TaskDataFormProps {
   uiSchema: TaskTemplateModel["ui_schema"] | undefined;
   displaySchema: JsonSchemaRecord | null;
   displayUiSchema: UiSchemaRecord | undefined;
+  visibleSchema: JsonSchemaRecord | null;
   isFieldless: boolean;
   isAdvanced: boolean;
   initialData?: TaskData;
@@ -40,6 +43,7 @@ export function TaskDataForm({
   uiSchema,
   displaySchema,
   displayUiSchema,
+  visibleSchema,
   isFieldless,
   isAdvanced,
   initialData,
@@ -69,18 +73,25 @@ export function TaskDataForm({
     });
   }, [isAdvanced, onError]);
 
+  const getPrunedData = (): TaskData =>
+    getPrunedJsonFormData(
+      jsonFormRef.current,
+      jsonData as Record<string, unknown>,
+      jsonSchema as JsonSchemaRecord | undefined
+    ) as TaskData;
+
   const validate = (): boolean => {
     if (!jsonSchema || isFieldless) {
       return true;
     }
 
+    const prunedData = getPrunedData();
     const result = validateJobJsonFormData(
-      jsonData as Record<string, unknown>,
+      prunedData as Record<string, unknown>,
       jsonSchema as JsonSchemaRecord | undefined,
       uiSchema as UiSchemaRecord | undefined,
       isAdvanced,
-      displaySchema,
-      displayUiSchema
+      visibleSchema
     );
 
     if (result.ok) {
@@ -107,7 +118,7 @@ export function TaskDataForm({
 
   useImperativeHandle(ref, () => ({
     validate,
-    getData: () => jsonData,
+    getData: getPrunedData,
   }));
 
   if (!jsonSchema) {
@@ -118,7 +129,7 @@ export function TaskDataForm({
     return <TemplateParamsPlaceholder jsonSchema={jsonSchema} uiSchema={uiSchema} />;
   }
 
-  if (!displaySchema) {
+  if (!displaySchema || !visibleSchema) {
     return null;
   }
 
@@ -130,12 +141,18 @@ export function TaskDataForm({
       ref={jsonFormRef}
       schema={displaySchema}
       uiSchema={displayUiSchema}
-      omitExtraData={false}
       formData={jsonData}
       onChange={(data) => {
         setJsonData(data.formData);
       }}
-      onSubmit={(event) => onSubmit(event.formData)}
+      onSubmit={(event) =>
+        onSubmit(
+          omitExtraFormDataBySchema(
+            event.formData as Record<string, unknown>,
+            jsonSchema as JsonSchemaRecord | undefined
+          ) as TaskData
+        )
+      }
       onError={onError}
     >
       <Button

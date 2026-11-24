@@ -388,6 +388,7 @@ export function TaskConfigurationTab({
             uiSchema={paramsSchema.uiSchema}
             displaySchema={paramsSchemaLayout.displaySchema}
             displayUiSchema={paramsSchemaLayout.displayUiSchema}
+            visibleSchema={paramsSchemaLayout.visibleSchema}
             isFieldless={paramsSchema.isFieldless}
             isAdvanced={showAdvanced}
             initialData={initialData?.data}

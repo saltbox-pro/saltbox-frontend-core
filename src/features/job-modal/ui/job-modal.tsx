@@ -56,6 +56,7 @@ import {
 } from "saltbox-core/shared/utils/job-modal-utils";
 import {
   getJobParamsSchemaLayout,
+  getPrunedJsonFormData,
   hasJsonSchemaProperties,
   validateJobJsonFormData,
   type JsonSchemaRecord,
@@ -297,7 +298,7 @@ export const JobModal = observer(function JobModal({
       return;
     }
 
-    if (hasJsonSchemaProperties(jobParamsSchemaLayout.displaySchema)) {
+    if (hasJsonSchemaProperties(jobParamsSchemaLayout.visibleSchema)) {
       const firstInput = document.querySelector<HTMLElement>(JSON_FORM_INPUT_SELECTOR);
       firstInput?.focus({ preventScroll: true });
       return;
@@ -308,7 +309,7 @@ export const JobModal = observer(function JobModal({
     isFormReady,
     isModalOpen,
     isAdvancedSettingsEnabled,
-    jobParamsSchemaLayout.displaySchema,
+    jobParamsSchemaLayout.visibleSchema,
     form,
     schemaError,
     notifyJsonFormValidationError,
@@ -382,27 +383,25 @@ export const JobModal = observer(function JobModal({
     closeModal("return-to-picker");
   };
 
-  const getRequestArgAndKwarg = () =>
+  const getPrunedJsonFormValue = (): Record<string, unknown> =>
+    getPrunedJsonFormData(refJobParamsForm.current, jsonFormValue, paramsJsonSchema);
+
+  const getRequestArgAndKwarg = (formData: Record<string, unknown>) =>
     getArgAndKwargForRequest({
-      jsonFormValue,
+      jsonFormValue: formData,
       arg,
       kwarg: baselineKwarg,
     });
 
-  const validateJsonForm = (): "ok" | "open-advanced" | "invalid" => {
-    const formStateData = refJobParamsForm.current?.state?.formData;
-    const formData =
-      formStateData && typeof formStateData === "object" && !Array.isArray(formStateData)
-        ? (formStateData as Record<string, unknown>)
-        : jsonFormValue;
-
+  const validateJsonForm = (
+    formData: Record<string, unknown>
+  ): "ok" | "open-advanced" | "invalid" => {
     const result = validateJobJsonFormData(
       formData,
       paramsJsonSchema,
       paramsUiSchema,
       isAdvancedSettingsEnabled,
-      jobParamsSchemaLayout.displaySchema,
-      jobParamsSchemaLayout.displayUiSchema
+      jobParamsSchemaLayout.visibleSchema
     );
 
     if (result.ok) {
@@ -429,7 +428,8 @@ export const JobModal = observer(function JobModal({
   const handleFormFinish: FormProps<JobFormData>["onFinish"] = async (formValue) => {
     if (handleFormFinishInProgressRef.current || schemaError) return;
 
-    const jsonFormOutcome = validateJsonForm();
+    const prunedJsonFormValue = getPrunedJsonFormValue();
+    const jsonFormOutcome = validateJsonForm(prunedJsonFormValue);
     if (jsonFormOutcome === "open-advanced") {
       isSubmittingRef.current = false;
       return;
@@ -442,11 +442,12 @@ export const JobModal = observer(function JobModal({
       return;
     }
 
+    setJsonFormValue(prunedJsonFormValue);
     handleFormFinishInProgressRef.current = true;
     setIsJobCreating(true);
     setCreateError(null);
 
-    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg();
+    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg(prunedJsonFormValue);
 
     let requestTgt = formValue.tgt;
     if (formValue.tgt_type === "list") {
@@ -498,19 +499,8 @@ export const JobModal = observer(function JobModal({
     });
   };
 
-  const handleCreateJobPlugin = (pluginKey: string) => {
-    if (schemaError || validateJsonForm() !== "ok") {
-      return;
-    }
-    publish("jobs.jobmodal.create", {
-      pluginKey: pluginKey,
-      jobCreateRequest: getJobCreateRequest(),
-    });
-    closeModal("scheduler-handoff");
-  };
-
-  const getJobCreateRequest = (): CreateJobRequest => {
-    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg();
+  const getJobCreateRequest = (formData: Record<string, unknown>): CreateJobRequest => {
+    const { arg: requestArg, kwarg: requestKwarg } = getRequestArgAndKwarg(formData);
     return {
       tgt: form.getFieldValue("tgt"),
       fun,
@@ -521,6 +511,21 @@ export const JobModal = observer(function JobModal({
       kwarg: requestKwarg,
       ttl: getTtlValue(),
     };
+  };
+
+  const handleCreateJobPlugin = (pluginKey: string) => {
+    const prunedJsonFormValue = getPrunedJsonFormValue();
+
+    if (schemaError || validateJsonForm(prunedJsonFormValue) !== "ok") {
+      return;
+    }
+
+    setJsonFormValue(prunedJsonFormValue);
+    publish("jobs.jobmodal.create", {
+      pluginKey: pluginKey,
+      jobCreateRequest: getJobCreateRequest(prunedJsonFormValue),
+    });
+    closeModal("scheduler-handoff");
   };
 
   const jobsJobModalCreatePlugins = appStore.pluginsStore?.plugins?.["jobs.jobmodal.create"];
@@ -715,13 +720,12 @@ export const JobModal = observer(function JobModal({
                 />
               )}
 
-              {jobParamsSchemaLayout.displaySchema && (
+              {jobParamsSchemaLayout.displaySchema && jobParamsSchemaLayout.visibleSchema && (
                 <JsonForm
                   key={`${templateId ?? fun}-${isAdvancedSettingsEnabled ? "advanced" : "basic"}`}
                   ref={refJobParamsForm}
                   schema={jobParamsSchemaLayout.displaySchema}
                   uiSchema={jobParamsSchemaLayout.displayUiSchema}
-                  omitExtraData={false}
                   focusOnFirstError
                   id="job-params-form"
                   className={styles.jobParamsForm}
