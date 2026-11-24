@@ -26,8 +26,7 @@ export function useTaskTableColumns({
     const templateTitleColumn = columnHelper.accessor("task_template.title", {
       id: "task_template.title",
       header: t("minions.table-task-template-title"),
-      cell: (data) =>
-        getLocalizedText(data.getValue(), i18n.language) || data.row.original?.task_template?.name,
+      cell: (data) => getLocalizedText(data.getValue(), i18n.language) || "—",
       meta: { width: "15%", minWidth: 180 },
     });
 

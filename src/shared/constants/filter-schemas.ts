@@ -8,7 +8,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
-import type { OptionList } from "react-querybuilder";
+import { defaultOperators, type OptionList } from "react-querybuilder";
 
 import {
   getEntitySourceTypeSelectOptions,
@@ -21,6 +21,11 @@ export type TasksFilterSchemaOptions = {
   includeSourceType?: boolean;
   taskType?: TaskType;
 };
+
+const templateFilterOperators = [
+  ...defaultStringOperators,
+  ...defaultOperators.filter(({ name }) => name === "null" || name === "notNull"),
+];
 
 const statusSelectOptions = (t: TFunction) => [
   { label: t("task.created"), value: TaskStatus.Created },
@@ -69,13 +74,13 @@ export const getTasksFilterSchema = (
     {
       name: "task_template.title",
       label: t("minions.table-task-template-title"),
-      operators: defaultStringOperators,
+      operators: templateFilterOperators,
       ignoreEmptyValue: true,
     },
     {
       name: "task_template.name",
       label: t("minions.table-task-template-name"),
-      operators: defaultStringOperators,
+      operators: templateFilterOperators,
       ignoreEmptyValue: true,
     },
     {
