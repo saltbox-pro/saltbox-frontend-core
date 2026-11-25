@@ -192,11 +192,13 @@
   content: "·";
 }
 
-.demoTag {
-  flex-shrink: 0;
-  margin-inline-end: 0;
+.historyAvailable {
+  min-width: 0;
+  max-width: 55%;
+  overflow: hidden;
   font-size: 11px;
   line-height: 18px;
+  text-overflow: ellipsis;
 }
 
 .settings {

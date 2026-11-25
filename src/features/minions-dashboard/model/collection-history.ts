@@ -24,8 +24,7 @@ export type CollectionHistoryQuery = CollectionHistorySettings & {
 export type CollectionHistoryResponse = {
   interval: HistoryInterval;
   timezone: string;
-  history_from: string;
-  data_updated_at: string;
+  history_from: string | null;
   points: Array<{ timestamp: string; count: number | null }>;
 };
 

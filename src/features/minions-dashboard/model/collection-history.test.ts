@@ -1,5 +1,3 @@
-import { fetchCollectionHistoryMock } from "../api/collection-history.mock";
-
 import {
   CollectionHistoryQuery,
   CollectionHistoryResponse,
@@ -120,7 +118,6 @@ describe("collection history summary", () => {
     interval: "day",
     timezone: "UTC",
     history_from: "2026-01-01T00:00:00Z",
-    data_updated_at: "2026-11-03T00:00:00Z",
     points: [
       { timestamp: "2026-11-01T00:00:00Z", count: start },
       { timestamp: "2026-11-02T00:00:00Z", count: 500 },
@@ -151,37 +148,5 @@ describe("collection history summary", () => {
       change: null,
       changeRatio: null,
     });
-  });
-});
-
-describe("collection history mock", () => {
-  it("returns the same count at shared timestamps for different intervals", async () => {
-    const daily = await fetchCollectionHistoryMock("collection-a", query());
-    const hourly = await fetchCollectionHistoryMock("collection-a", query({ interval: "hour" }));
-    for (const point of daily.points) {
-      expect(hourly.points.find((item) => item.timestamp === point.timestamp)).toEqual(point);
-    }
-    expect(daily.points.every((point) => Number.isInteger(point.count) && point.count >= 0)).toBe(
-      true
-    );
-  });
-
-  it("returns null before available history and after the observation time", async () => {
-    const before = await fetchCollectionHistoryMock(
-      "collection-a",
-      query({
-        from: "2024-12-29T00:00:00Z",
-        to: "2024-12-31T00:00:00Z",
-      })
-    );
-    expect(before.points.every((point) => point.count === null)).toBe(true);
-    const future = await fetchCollectionHistoryMock(
-      "collection-a",
-      query({
-        from: "2099-01-01T00:00:00Z",
-        to: "2099-01-03T00:00:00Z",
-      })
-    );
-    expect(future.points.every((point) => point.count === null)).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import { createLoader } from "@saltbox/saltbox-frontend-common";
 import { makeAutoObservable } from "mobx";
 
-import { fetchCollectionHistoryMock } from "../api/collection-history.mock";
+import { fetchCollectionHistory } from "../api/collection-history";
 
 import type { CollectionHistoryResponse } from "./collection-history";
 
@@ -9,7 +9,7 @@ export class CollectionHistoryStore {
   response: CollectionHistoryResponse | null = null;
 
   readonly historyLoad = createLoader({
-    run: fetchCollectionHistoryMock,
+    run: fetchCollectionHistory,
     onSuccess: (response) => {
       this.response = response;
     },

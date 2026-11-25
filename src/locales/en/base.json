@@ -1111,15 +1111,12 @@
     "history-settings-hint": "Client count at each sample time. Time zone: {{timezone}}. Page filters do not apply.",
     "history-invalid-range": "Select a period with the start before the end.",
     "history-too-many-points": "This period exceeds {{limit}} points. Shorten the period or choose a larger interval.",
-    "history-demo": "Demo data",
-    "history-demo-description": "A sample history is shown. These values do not reflect the actual collection membership.",
     "history-no-observation": "No observation data",
     "history-tooltip-count": "Clients: {{value}}",
     "history-at-period-end": "at period end",
     "history-over-period": "over the period",
     "history-scope": "Entire collection · page filters excluded",
     "history-empty": "No history data for the selected period",
-    "history-updated-at": "Data as of {{time}}",
     "history-end-count": "Clients at period end",
     "history-start-count": "At period start",
     "history-change": "Change over period",
@@ -1128,7 +1125,10 @@
     "history-start-count-short": "At start",
     "history-change-short": "Change",
     "history-scope-short": "Entire collection",
-    "history-demo-short": "Demo"
+    "history-not-recorded": "Membership history has not been recorded for this collection yet",
+    "history-empty-before-start": "No data for the selected period. History is available from {{date}}",
+    "history-available": "History from {{date}}",
+    "history-available-short": "From {{date}}"
   },
   "collection-create-modal": {
     "dialog-title": "Create Collection",

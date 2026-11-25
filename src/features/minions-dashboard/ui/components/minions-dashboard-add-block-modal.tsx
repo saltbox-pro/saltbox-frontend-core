@@ -230,9 +230,6 @@ export const MinionsDashboardAddBlockModal = ({
               value={historySettings}
               onChange={setHistorySettings}
             />
-            <Typography.Text type="secondary">
-              {t("dashboard.history-demo-description")}
-            </Typography.Text>
           </Flex>
         ) : (
           <>

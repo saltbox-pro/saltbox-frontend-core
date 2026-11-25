@@ -5,10 +5,12 @@ import {
   ClockCircleOutlined,
   MinusOutlined,
 } from "@ant-design/icons";
-import { Empty, Tag } from "antd";
+import { Empty } from "antd";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
+import { apiCoreStore } from "saltbox-core/store";
 
 import { getCollectionHistorySummary } from "../../model/collection-history";
 import { CollectionHistoryStore } from "../../model/collection-history-store";
@@ -31,15 +33,20 @@ export const CollectionHistoryCard = observer(
     const [store] = useState(() => new CollectionHistoryStore());
     const { from, to, interval } = card.settings;
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const collectionsApi = apiCoreStore.minionCollectionsApi;
 
     useEffect(() => {
-      if (slug) {
+      const controller = new AbortController();
+      if (slug && collectionsApi) {
         store.historyLoad
-          .run(slug, { from, to, interval, timezone: userTimezone })
+          .run(slug, { from, to, interval, timezone: userTimezone }, controller.signal)
           .catch(() => undefined);
       }
-      return () => store.historyLoad.resetInitial();
-    }, [slug, from, to, interval, userTimezone, store]);
+      return () => {
+        controller.abort();
+        store.historyLoad.resetInitial();
+      };
+    }, [slug, from, to, interval, userTimezone, store, collectionsApi]);
 
     const response = store.response;
     const formatDate = (value: string) =>
@@ -52,6 +59,13 @@ export const CollectionHistoryCard = observer(
         minute: "2-digit",
       }).format(new Date(value));
     const hasData = response?.points.some((point) => point.count !== null);
+    const historyFrom = response?.history_from;
+    const emptyDescription =
+      response && !historyFrom
+        ? t("dashboard.history-not-recorded")
+        : historyFrom && Date.parse(to) < Date.parse(historyFrom)
+          ? t("dashboard.history-empty-before-start", { date: formatDate(historyFrom) })
+          : t("dashboard.history-empty");
     const shortDateFormat = new Intl.DateTimeFormat(i18n.language, {
       timeZone: userTimezone,
       day: "2-digit",
@@ -156,10 +170,7 @@ export const CollectionHistoryCard = observer(
             </div>
           ) : (
             <div className={styles.empty}>
-              <Empty
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={t("dashboard.history-empty")}
-              />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />
             </div>
           )}
           <div className={styles.footer}>
@@ -168,24 +179,23 @@ export const CollectionHistoryCard = observer(
                 <span className={styles.expanded}>{t("dashboard.history-scope")}</span>
                 <span className={styles.compact}>{t("dashboard.history-scope-short")}</span>
               </span>
-              <span
-                title={
-                  response
-                    ? `${userTimezone} · ${t("dashboard.history-updated-at", {
-                        time: formatDate(response.data_updated_at),
-                      })}`
-                    : userTimezone
-                }
-              >
-                {timezoneLabel ?? userTimezone}
-              </span>
+              <span title={userTimezone}>{timezoneLabel ?? userTimezone}</span>
             </div>
-            <Tag className={styles.demoTag} color="gold">
-              <span className={styles.expanded}>{t("dashboard.history-demo")}</span>
-              <span className={styles.compact} title={t("dashboard.history-demo")}>
-                {t("dashboard.history-demo-short")}
+            {historyFrom && (
+              <span
+                className={styles.historyAvailable}
+                title={t("dashboard.history-available", { date: formatDate(historyFrom) })}
+              >
+                <span className={styles.expanded}>
+                  {t("dashboard.history-available", { date: formatDate(historyFrom) })}
+                </span>
+                <span className={styles.compact}>
+                  {t("dashboard.history-available-short", {
+                    date: shortDateFormat.format(new Date(historyFrom)),
+                  })}
+                </span>
               </span>
-            </Tag>
+            )}
           </div>
         </div>
       </DashboardCardShell>
