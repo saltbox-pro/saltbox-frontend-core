@@ -1,4 +1,4 @@
-import { ApartmentOutlined, DownOutlined, HolderOutlined } from "@ant-design/icons";
+import { ApartmentOutlined, HolderOutlined } from "@ant-design/icons";
 import {
   ErrorZone,
   SearchInput,
@@ -6,7 +6,7 @@ import {
   notifyAppError,
   runMutation,
 } from "@saltbox/saltbox-frontend-common";
-import { Button, Empty, Flex, Spin, Tooltip, Tree, type TreeProps, Typography } from "antd";
+import { Button, Empty, Flex, Spin, Tooltip, type TreeProps, Typography } from "antd";
 import clsx from "clsx";
 import { observer } from "mobx-react-lite";
 import {
@@ -22,21 +22,25 @@ import {
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router";
 
+import {
+  buildHighlightedCollectionTreeNode,
+  collectCollectionTreeMatchedKeys,
+  CollectionTreeNodeTitle,
+  CollectionTreeView,
+  filterCollectionTreeNodes,
+  mapCollectionTreeNodes,
+  type CollectionTreeAntdNode,
+} from "saltbox-core/shared/components/collection-tree";
 import { ROOT_COLLECTION_SLUG } from "saltbox-core/shared/constants/collection";
 import { matchCollectionSlug } from "saltbox-core/shared/helpers/collection-route";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
 import { collectionsFlatListStore } from "saltbox-core/store/collections-flat-list-store";
 import { collectionsTreeStore } from "saltbox-core/store/collections-tree-store";
 
-import { buildHighlightedNode } from "../helpers/build-highlighted-tree";
 import { collectExpandedKeys } from "../helpers/collect-expanded-keys";
-import { collectMatchedKeys } from "../helpers/collect-matched-keys";
-import { filterTree } from "../helpers/filter-tree";
 import { findNodePath } from "../helpers/find-node-path";
 import { findParentByKey } from "../helpers/find-parent-by-key";
 import { isNodeInSubtree } from "../helpers/is-node-in-subtree";
-import { mapToAntdNode } from "../helpers/map-to-ant-node";
-import type { CollectionTreeAntdNode } from "../types/node";
 
 import styles from "./collections-tree.module.css";
 import { MinionsTreeRefreshButton } from "./minions-tree-refresh-button";
@@ -83,7 +87,7 @@ export const CollectionsTree = observer(
     );
 
     const treeData = useMemo(
-      () => collectionsTreeStore.treeNodes.map(mapToAntdNode),
+      () => mapCollectionTreeNodes(collectionsTreeStore.treeNodes),
       [collectionsTreeStore.treeNodes]
     );
     const activePath = useMemo(
@@ -101,18 +105,20 @@ export const CollectionsTree = observer(
     }, [treeData, activePath]);
 
     const displayData = useMemo(() => {
-      const filtered = filterTree(treeData, appliedSearchQuery);
+      const filtered = filterCollectionTreeNodes(treeData, appliedSearchQuery);
       return filtered ?? treeData;
     }, [treeData, appliedSearchQuery]);
 
     const matchedKeys = useMemo(
-      () => collectMatchedKeys(displayData, appliedSearchQuery),
+      () => collectCollectionTreeMatchedKeys(displayData, appliedSearchQuery),
       [displayData, appliedSearchQuery]
     );
 
     const highlightedTreeData = useMemo(() => {
       if (!appliedSearchQuery) return displayData;
-      return displayData.map((node) => buildHighlightedNode(node, appliedSearchQuery, matchedKeys));
+      return displayData.map((node) =>
+        buildHighlightedCollectionTreeNode(node, appliedSearchQuery, matchedKeys)
+      );
     }, [displayData, appliedSearchQuery, matchedKeys]);
 
     const noResults = appliedSearchQuery.length > 0 && displayData.length === 0;
@@ -243,44 +249,41 @@ export const CollectionsTree = observer(
       setAppliedSearchQuery(search);
     }, []);
 
-    const titleRender = useMemo(() => {
-      if (!renderActions && !showDescription) return undefined;
-      return (node: CollectionTreeAntdNode) => (
-        <Flex className={styles.nodeRow} align="center" gap="small" title="">
-          <span
-            className={styles.nodeTitle}
-            title={typeof node.title === "string" ? node.title : undefined}
-          >
-            {node.title as ReactNode}
-          </span>
-          {showDescription &&
-            node.slug !== ROOT_COLLECTION_SLUG &&
-            (node.description ? (
-              <Typography.Text
-                type="secondary"
-                className={styles.nodeDescription}
-                ellipsis
-                title={node.description}
-              >
-                {node.description}
-              </Typography.Text>
-            ) : (
-              <Typography.Text type="secondary" italic className={styles.nodeDescription}>
-                {t("collection.no-description")}
-              </Typography.Text>
-            ))}
-          {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
-        </Flex>
-      );
-    }, [renderActions, showDescription, t]);
+    const titleRender = useCallback(
+      (node: CollectionTreeAntdNode) => (
+        <CollectionTreeNodeTitle
+          node={node}
+          limitTitleWidth={showDescription}
+          extra={
+            showDescription || renderActions ? (
+              <>
+                {showDescription &&
+                  node.slug !== ROOT_COLLECTION_SLUG &&
+                  (node.description ? (
+                    <Typography.Text
+                      type="secondary"
+                      className={styles.nodeDescription}
+                      ellipsis
+                      title={node.description}
+                    >
+                      {node.description}
+                    </Typography.Text>
+                  ) : (
+                    <Typography.Text type="secondary" italic className={styles.nodeDescription}>
+                      {t("collection.no-description")}
+                    </Typography.Text>
+                  ))}
+                {renderActions && <span className={styles.nodeActions}>{renderActions(node)}</span>}
+              </>
+            ) : undefined
+          }
+        />
+      ),
+      [renderActions, showDescription, t]
+    );
 
     return (
-      <Flex
-        className={clsx(styles.collectionsTree, compact && styles.compact, className)}
-        vertical
-        flex="1"
-        gap="middle"
-      >
+      <Flex className={clsx(styles.collectionsTree, className)} vertical flex="1" gap="middle">
         <Flex className={styles.header} gap="small" align="center">
           <SearchInput
             disabled={Boolean(collectionsTreeStore.treeLoad.error)}
@@ -311,19 +314,18 @@ export const CollectionsTree = observer(
         >
           <div ref={contentRef}>
             <ErrorZone level="block" loaders={[collectionsTreeStore.treeLoad]}>
-              {noResults ? (
+              {noResults && (
                 <Empty
                   className={styles.searchEmptyState}
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={t("collection.search-no-results")}
                 />
-              ) : (
-                <Tree
-                  className={styles.tree}
-                  showLine
-                  switcherIcon={<DownOutlined />}
+              )}
+              {!noResults && (
+                <CollectionTreeView
+                  compact={compact}
+                  nowrapTitles={compact}
                   selectable={!structureEditable}
-                  blockNode
                   draggable={
                     isDndActive
                       ? {

@@ -19,7 +19,7 @@
     "table-secure-boot": "Secure boot",
     "table-cpu-model": "Модель процессора",
     "table-total-memory": "Объем памяти",
-    "table-created": "Создан",
+    "table-created": "Дата создания",
     "table-last-activity": "Последняя активность",
     "table-running": "Выполняется",
     "table-stopped": "Остановлено",
@@ -31,13 +31,13 @@
     "tasks-table-finished": "Завершена",
     "tasks-table-stopping": "Остановка",
     "tasks-table-postprocessing": "Постобработка",
-    "table-task-template-title": "Шаблон",
-    "table-task-template-name": "Имя шаблона",
-    "table-collection": "Коллекция",
-    "table-user": "Пользователь",
+    "table-task-template-title": "Название шаблона",
+    "table-task-template-name": "Идентификатор шаблона",
+    "table-collection": "Название коллекции",
+    "table-user": "Автор",
     "table-status": "Статус",
-    "table-total-clients": "Клиенты",
-    "table-failed-clients": "С ошибкой",
+    "table-total-clients": "Всего клиентов",
+    "table-failed-clients": "Количество сбоев",
     "table-progress": "Прогресс",
     "tasks-table-total-minions": "Всего клиентов",
     "tasks-table-status-header": "Статистика клиентов",
@@ -45,6 +45,7 @@
     "no-minion-data-available": "Нет данных о клиенте",
     "minion-id-not-specified": "Не удалось определить ID клиента",
     "dashboard": "Панель управления",
+    "minion-collections": "Коллекции клиента",
     "grains": "Данные grains",
     "pillars": "Данные клиента",
     "extra-data": {
@@ -188,7 +189,6 @@
       "inactive": "Неактивен",
       "never-active": "Ни разу не был активен"
     },
-    "filter-applied": "Фильтр применён",
     "filter-value-unsupported": "Это значение нельзя использовать в фильтре",
     "root-collection-info": "Это корневая коллекция, которая содержит всех клиентов из всех подключенных контроллеров в системе",
     "subcollection-info": "Эта коллекция является подколлекцией",
@@ -302,7 +302,8 @@
         "lvm": "LVM"
       }
     },
-    "filter-extra-data-field": "Поле расширенных данных \"{{path}}\""
+    "filter-extra-data-field": "Поле расширенных данных \"{{path}}\"",
+    "table-collection-key": "Ключ коллекции"
   },
   "mainmenu": {
     "popover-language-title": "Сменить язык",
@@ -358,8 +359,8 @@
     "max-retries": "Максимум попыток",
     "max-retries-tooltip": "Количество повторных попыток при ошибке",
     "max-retries-error-required": "Максимальное количество попыток обязательно",
-    "retry-delay": "Задержка повтора (с)",
-    "retry-delay-tooltip": "Задержка в секундах перед повторной попыткой",
+    "retry-delay": "Задержка повтора",
+    "retry-delay-tooltip": "Задержка перед повторной попыткой",
     "retry-delay-error-required": "Задержка повтора обязательна",
     "max-parallel-jobs": "Параллельные задачи",
     "max-parallel-jobs-tooltip": "Максимальное количество одновременных задач",
@@ -400,7 +401,7 @@
   "task": {
     "details": {
       "template-info": "Общая информация",
-      "template-title": "Название",
+      "template-title": "Название шаблона",
       "template-function": "Функция Salt",
       "save-pillars-as-default-title": "Сохранение значений для шаблона",
       "save-pillars-as-default-description": "Значения параметров будут сохранены как значения по умолчанию для шаблона",
@@ -414,10 +415,9 @@
       "max-parallel-jobs": "Параллельные задачи",
       "max-retries": "Максимум попыток",
       "retry-delay": "Задержка повтора",
-      "retry-delay-seconds": "{{count}} сек",
       "ttl-jobs": "Время ожидания ответа команды",
       "target-info": "Целевые узлы",
-      "collection": "Коллекция",
+      "collection": "Название коллекции",
       "target-minions": "Целевые клиенты",
       "query-based-selection": "Выбор по запросу",
       "no-query-selection": "Вся коллекция",
@@ -434,7 +434,7 @@
     "breadcrumbs-title-template": "Задача: {{templateName}}",
     "breadcrumbs-title-empty": "Задача: #{{taskId}}",
     "breadcrumbs-tasks": "Задачи",
-    "user": "Пользователь",
+    "user": "Автор",
     "run": "Запустить",
     "stop": "Остановить",
     "restart-failed": "Перезапустить завершенные с ошибкой",
@@ -489,17 +489,17 @@
       "table-not-started": "Не запускалась"
     },
     "jobs": {
-      "table-jid": "JID",
+      "table-jid": "ID команды",
       "table-status": "Статус",
       "table-running": "Выполняется",
       "table-failed": "Неудачно",
       "table-succeeded": "Успешно",
       "table-pending": "Ожидание",
       "table-unknown-code": "Неизвестный код",
-      "table-targets": "Цели",
+      "table-targets": "ID клиентов",
       "table-target-master": "Контроллер цели",
-      "table-target-type": "Тип цели",
-      "table-created": "Время создания",
+      "table-target-type": "Метод нацеливания",
+      "table-created": "Дата создания",
       "table-copy": "Скопировать"
     },
     "job-returns-table": {
@@ -513,7 +513,7 @@
       "table-ttl": "TTL",
       "table-yes": "Да",
       "table-no": "Нет",
-      "table-fun": "Функция",
+      "table-fun": "Название команды",
       "invalid-execution-time": "Недопустимое время выполнения",
       "execution-time-pending": "Ожидание",
       "status-unknown": "Неизвестно",
@@ -521,13 +521,7 @@
       "status-timeout": "Тайм-аут",
       "status-success": "Успешно",
       "status-failed": "Ошибка",
-      "status-ignored": "Игнорировано",
-      "time-units": {
-        "milliseconds": "мс",
-        "seconds": "с",
-        "minutes": "м",
-        "hours": "ч"
-      }
+      "status-ignored": "Игнорировано"
     },
     "minions-nav": {
       "list-all": "Все"
@@ -625,7 +619,7 @@
     "field-form": {
       "field-name-placeholder": "Введите название поля",
       "field-name-required": "Укажите название поля",
-      "field-name-unique": "Поле с таким названием уже есть в категории",
+      "field-name-unique": "Поле с таким названием уже есть",
       "field-type-placeholder": "Выберите тип",
       "field-type-required": "Укажите тип"
     },
@@ -798,13 +792,13 @@
     "open-related-tooltip-policy": "Показать команды, созданные из этой политики",
     "open-related-tooltip-scheduler": "Показать команды, созданные этим расписанием",
     "open-related-tooltip-scenario": "Показать команды, созданные из этого сценария",
-    "table-function": "Функция",
-    "table-target-type": "Тип цели",
-    "table-created": "Создана",
-    "table-targets": "Цели",
-    "table-user": "Пользователь",
-    "table-jid": "JID",
-    "table-master": "Контроллер",
+    "table-function": "Название команды",
+    "table-target-type": "Метод нацеливания",
+    "table-created": "Дата создания",
+    "table-targets": "ID клиентов",
+    "table-user": "Автор",
+    "table-jid": "ID команды",
+    "table-master": "ID контроллера",
     "table-status-starting": "Запускается",
     "table-status-running": "Запущена",
     "table-status-finished": "Завершена",
@@ -813,7 +807,7 @@
     "launch-error-no-minions-found": "Команда не была запущена: не найдено ни одного клиента по цели \"{{target}}\"",
     "launch-error-unknown": "Команда не была запущена",
     "table-status-unknown": "Unknown",
-    "table-status": "Статус команды",
+    "table-status": "Статус",
     "date-range-label": "Фильтрация за период",
     "date-range-today": "Сегодня",
     "date-range-10-minutes": "10 минут назад",
@@ -836,7 +830,7 @@
     "no-arguments": "Нет аргументов",
     "no-key-value-arguments": "Нет именованных аргументов",
     "full-output": "Полный вывод",
-    "job-created-at": "Время создания",
+    "job-created-at": "Дата создания",
     "job-execution-duration": "Длительность выполнения",
     "job-title-breadcrumb": "Команда",
     "json-table-view": "JSON / Таблица",
@@ -879,7 +873,8 @@
     "waiting-expires-at-label": "Ожидание ответов до",
     "waiting-expires-at-label-past": "Дедлайн ответов был",
     "waiting-countdown-label": "Осталось времени",
-    "executing-command": "Инициализация команды"
+    "executing-command": "Инициализация команды",
+    "table-targets-tooltip": "{{target}} — ID клиентов или выражение выбора согласно методу нацеливания"
   },
   "job": {
     "successful-minions": "успешно",
@@ -909,9 +904,6 @@
     "hint-example-label": "Пример:",
     "advanced-settings": "Расширенные настройки",
     "timeout-label": "Время ожидания ответа команды",
-    "timeout-unit-seconds": "Сек",
-    "timeout-unit-minutes": "Мин",
-    "timeout-unit-hours": "Час",
     "error-job-create": "Не удалось создать команду",
     "warning-template-unavailable": "Не удалось загрузить шаблон команды. Форма открыта с параметрами по умолчанию"
   },
@@ -948,6 +940,7 @@
     "description-placeholder": "Введите описание коллекции",
     "description-max": "Описание не должно превышать {{max}} символов",
     "no-description": "Описание для данной коллекции отсутствует",
+    "clients-count": "Клиентов: {{count}}",
     "create-subcollection": "Создать подколлекцию",
     "tooltip-create-subcollection-blocked": "Необходимо сохранить изменения в коллекции для создания подколлекции",
     "duplicate": "Дублировать",

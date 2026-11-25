@@ -65,7 +65,7 @@ export const MinionDetailsDrawer = observer(function MinionDetailsDrawer({
       push={{ distance: tabKey === "extra-data" ? 370 : 180 }}
       linkPlacement="title"
       extra={
-        isMinionMissing ? null : (
+        !isMinionMissing && (
           <MinionDetailActionsMenu
             minion={minion}
             collectionSlug={slug}

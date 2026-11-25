@@ -40,6 +40,7 @@ import {
   useDashboardFieldOptions,
 } from "saltbox-core/features/minions-dashboard";
 import CollectionCreateModal from "saltbox-core/shared/components/collection-create-modal/collection-create-modal";
+import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
 import { MinionsQueryBuilder } from "saltbox-core/shared/components/minions-query-builder";
 import { COLLECTION_TAB_QUERY_PARAM } from "saltbox-core/shared/constants/collection";
 import { ExtraDataCategoriesContext } from "saltbox-core/shared/contexts/extra-data-categories-context";
@@ -385,7 +386,14 @@ const MinionsPage = observer(() => {
 
   return (
     <>
-      <PageHeader title={`${t("minions.title")} ${collectionStore.collection?.title}`}></PageHeader>
+      <PageHeader
+        title={`${t("minions.title")} ${collectionStore.collection?.title}`}
+        titleExtra={
+          collectionStore.collection ? (
+            <CollectionMinionsCountTag count={collectionStore.collection.minions_count ?? 0} />
+          ) : undefined
+        }
+      />
 
       <ErrorZone
         level="page"

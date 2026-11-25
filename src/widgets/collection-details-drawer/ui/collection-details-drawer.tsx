@@ -23,6 +23,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
+import { CollectionMinionsCountTag } from "saltbox-core/shared/components/collection-minions-count-tag";
 import {
   COLLECTION_DESCRIPTION_MAX_LENGTH,
   ROOT_COLLECTION_SLUG,
@@ -105,6 +106,8 @@ export const CollectionDetailsDrawer = observer(
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     const { isOpened, openedArg } = drawer;
+    const isOpenedRef = useRef(isOpened);
+    isOpenedRef.current = isOpened;
     const viewSlug = openedArg?.mode === "view" ? openedArg.slug : undefined;
     const duplicateArg = openedArg?.mode === "duplicate" ? openedArg : undefined;
 
@@ -201,15 +204,6 @@ export const CollectionDetailsDrawer = observer(
       }
     }, [isOpened, isCollectionLoaded, currentSlug, isRoot, syncFromCollection]);
 
-    useEffect(() => {
-      if (isOpened) {
-        return;
-      }
-
-      filterStore.resetInputMode();
-      filterStore.handleResetFiltersSilent();
-    }, [isOpened, filterStore]);
-
     const applyMinionsPreview = useCallback(() => {
       if (!parentSlug || isRoot) {
         return;
@@ -260,7 +254,7 @@ export const CollectionDetailsDrawer = observer(
       Boolean(initialFiltersKey) &&
       getFilterStateKey(filterStore) !== initialFiltersKey;
 
-    const hasUnsavedChanges = isFormDirty || isFiltersDirty;
+    const hasUnsavedChanges = isOpened && (isFormDirty || isFiltersDirty);
     const canCreateSubcollection = !!onCreateSubcollection && !!currentSlug;
     const canDuplicate = !!onDuplicate && isCollectionLoaded && !isRoot;
 
@@ -410,6 +404,7 @@ export const CollectionDetailsDrawer = observer(
         return;
       }
 
+      const queryChanged = getFilterStateKey(filterStore) !== filtersBaselineKey;
       const currentParentSlug = collection?.parent_slug ?? ROOT_COLLECTION_SLUG;
       const parentChanged = values.parent_slug !== currentParentSlug;
       const newParent = parentChanged
@@ -444,6 +439,10 @@ export const CollectionDetailsDrawer = observer(
               newParent.children?.[0]?.id ?? null
             );
             collectionStore.loadCollection();
+          }
+
+          if (queryChanged) {
+            await collectionsTreeStore.loadTree(true, { reloadFlatList: false });
           }
         },
         onError: handleMutationError,
@@ -495,6 +494,7 @@ export const CollectionDetailsDrawer = observer(
       : isCreateMode
         ? "collection-create-modal.dialog-title"
         : "collection.collection";
+    const titleCollection = isDuplicateMode ? sourceCollection : collection;
 
     return (
       <>
@@ -502,11 +502,17 @@ export const CollectionDetailsDrawer = observer(
         <InfoDrawer
           drawerId={DRAWER_IDS.collectionDetails}
           open={isOpened}
-          width={`min(${COLLECTION_DETAILS_DRAWER_WIDTH}px, calc(100vw - ${COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE}px))`}
+          width={COLLECTION_DETAILS_DRAWER_WIDTH}
+          resizable
           push={{ distance: COLLECTION_DETAILS_DRAWER_PUSH_DISTANCE }}
           fillHeight
-          titleName={isDuplicateMode ? sourceCollection?.title : collection?.title}
+          titleName={titleCollection?.title}
           titleLabel={t(titleLabelKey)}
+          titleExtra={
+            titleCollection ? (
+              <CollectionMinionsCountTag count={titleCollection.minions_count ?? 0} />
+            ) : undefined
+          }
           linkTo={currentSlug ? `/core/minions/${currentSlug}` : undefined}
           linkTitle={t("collection.open-collection-page")}
           linkComponent={Link}
@@ -515,9 +521,20 @@ export const CollectionDetailsDrawer = observer(
           loaders={[activeCollectionLoad]}
           transitionKey={isCreateMode ? openedArg?.id : collection?.slug}
           afterOpenChange={(open) => {
-            if (open && isCreateMode) {
-              focusTitleInput();
+            if (open) {
+              if (isCreateMode) {
+                focusTitleInput();
+              }
+              return;
             }
+
+            if (isOpenedRef.current) {
+              return;
+            }
+
+            filterStore.resetInputMode();
+            filterStore.handleResetFiltersSilent();
+            setFiltersBaselineKey("");
           }}
           onClose={drawer.close}
         >

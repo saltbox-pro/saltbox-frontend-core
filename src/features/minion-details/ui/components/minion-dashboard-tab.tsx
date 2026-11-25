@@ -1,15 +1,11 @@
 import { MinionDetailSchema } from "@saltbox/saltbox-core-api-client";
 import {
-  BooleanDisplay,
-  FilterActionButton,
   formatInfoCardTextValue,
   InfoCardsGrid,
   type InfoCardsGridProps,
   InfoDescriptions,
-  type InfoDescriptionsItem,
-  isEmptyDisplayValue,
 } from "@saltbox/saltbox-frontend-common";
-import { Alert, Collapse, type CollapseProps, Flex, Spin, Typography } from "antd";
+import { Alert, Collapse, Flex, Spin, Typography } from "antd";
 import { useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -23,40 +19,15 @@ import { transformGrainValueToString } from "saltbox-core/shared/utils/transform
 
 import { MINION_DASHBOARD_SUMMARY_TILES } from "../../constants/dashboard-summary-tiles";
 import type { OnFilterButtonHandler } from "../../types/minion-details-props";
+import {
+  minionDetailViewGroupsToCollapseItems,
+  minionDetailsViewsToDescriptionItems,
+  renderArrayValue,
+  type MinionDetailView,
+  type MinionDetailViewGroup,
+} from "../helpers/minion-dashboard-detail-views";
 
 import styles from "./minion-dashboard-tab.module.css";
-
-type SimpleGrainKeys = {
-  [K in keyof MinionDetailSchema["grains"] as MinionDetailSchema["grains"][K] extends ReactNode
-    ? K
-    : never]: MinionDetailSchema["grains"][K];
-};
-
-type MinionDetailItemProps = Partial<
-  Omit<InfoDescriptionsItem, "children" | "copyText" | "actions">
->;
-
-interface MinionSimpleDetailView {
-  key: keyof SimpleGrainKeys;
-  name: string;
-  itemProps?: MinionDetailItemProps;
-}
-
-interface MinionExtendDetailView {
-  key: string;
-  value: (minionDetailSchema: MinionDetailSchema) => ReactNode;
-  render?: (minionDetailSchema: MinionDetailSchema) => ReactNode;
-  name: string;
-  filterField?: string;
-  itemProps?: MinionDetailItemProps;
-}
-
-type MinionDetailView = MinionSimpleDetailView | MinionExtendDetailView;
-
-interface MinionDetailViewGroup {
-  name: string;
-  details: MinionDetailView[];
-}
 
 interface MinionDashboardTabProps {
   minion: MinionDetailSchema | null;
@@ -64,116 +35,6 @@ interface MinionDashboardTabProps {
   isInDrawer?: boolean;
   onFilterButton?: OnFilterButtonHandler;
 }
-
-const transformValueToString = (value: unknown): string => {
-  return transformGrainValueToString(value as ReactNode);
-};
-
-const renderArrayValue = (value: unknown[], keyPrefix: string): ReactNode => {
-  if (value.length === 0) {
-    return null;
-  }
-  return (
-    <Flex vertical>
-      {value.map((item, index) => (
-        <div key={`${keyPrefix}-${index}`}>{transformValueToString(item)}</div>
-      ))}
-    </Flex>
-  );
-};
-
-const renderGrainValue = (value: ReactNode, keyPrefix: string): ReactNode => {
-  if (typeof value === "boolean") {
-    return <BooleanDisplay value={value} />;
-  }
-  if (Array.isArray(value)) {
-    return renderArrayValue(value, keyPrefix);
-  }
-  return value;
-};
-
-const renderFilterButton = (
-  onFilterButton: OnFilterButtonHandler | undefined,
-  name: string,
-  value: unknown
-): ReactNode => {
-  if (!onFilterButton?.canApply(name, value)) {
-    return null;
-  }
-
-  return (
-    <FilterActionButton
-      active={onFilterButton.isActive(name, value)}
-      onClick={() => onFilterButton({ name, value })}
-    />
-  );
-};
-
-interface MinionDetailViewsRenderOptions {
-  schema: MinionDetailSchema;
-  onFilterButton?: OnFilterButtonHandler;
-}
-
-const minionDetailsViewsToDescriptionItems = (
-  minionDetailViews: MinionDetailView[],
-  { schema, onFilterButton }: MinionDetailViewsRenderOptions
-): InfoDescriptionsItem[] => {
-  return minionDetailViews.map((minionDetailView) => {
-    const baseItem = {
-      key: minionDetailView.key,
-      label: minionDetailView.name,
-      ...minionDetailView.itemProps,
-    };
-
-    if ("value" in minionDetailView) {
-      const grainValue = minionDetailView.value(schema);
-      if (isEmptyDisplayValue(grainValue)) {
-        return { ...baseItem, children: null };
-      }
-
-      return {
-        ...baseItem,
-        children: minionDetailView.render ? minionDetailView.render(schema) : grainValue,
-        copyText: transformGrainValueToString(grainValue),
-        actions:
-          minionDetailView.filterField &&
-          renderFilterButton(onFilterButton, minionDetailView.filterField, grainValue),
-      };
-    }
-
-    const grainValue = schema.grains[minionDetailView.key];
-
-    return {
-      ...baseItem,
-      children: renderGrainValue(grainValue, String(minionDetailView.key)),
-      copyText: Array.isArray(grainValue)
-        ? grainValue.map((item) => transformValueToString(item)).join("\n")
-        : transformValueToString(grainValue),
-      actions: renderFilterButton(
-        onFilterButton,
-        `grains.${String(minionDetailView.key)}`,
-        grainValue
-      ),
-    };
-  });
-};
-
-const minionDetailViewGroupsToCollapseItems = (
-  minionDetailViewGroups: MinionDetailViewGroup[],
-  options: MinionDetailViewsRenderOptions
-): CollapseProps["items"] => {
-  return minionDetailViewGroups.map((minionDetailViewGroup) => {
-    return {
-      key: minionDetailViewGroup.name,
-      label: minionDetailViewGroup.name,
-      children: (
-        <InfoDescriptions
-          items={minionDetailsViewsToDescriptionItems(minionDetailViewGroup.details, options)}
-        />
-      ),
-    };
-  });
-};
 
 export function MinionDashboardTab({
   minion,
@@ -229,6 +90,8 @@ export function MinionDashboardTab({
   const minionGeneralDetailViews: MinionDetailView[] = [
     { key: "virtual", name: t("minions.virtualization") },
     { key: "host", name: t("minions.hostname") },
+    { key: "fqdn", name: t("minions.fqdn") },
+    { key: "uuid", name: t("minions.uuid") },
     {
       key: "minion-master",
       name: t("minions.salt-master"),
@@ -237,8 +100,6 @@ export function MinionDashboardTab({
       filterField: "master",
     },
     { key: "master", name: t("minions.salt-master-grains") },
-    { key: "fqdn", name: t("minions.fqdn") },
-    { key: "uuid", name: t("minions.uuid") },
   ];
 
   const minionGroupDetailsViews: MinionDetailViewGroup[] = [
@@ -439,10 +300,17 @@ export function MinionDashboardTab({
       />
 
       <InfoDescriptions
-        items={minionDetailsViewsToDescriptionItems(minionGeneralDetailViews, {
-          schema: minion,
-          onFilterButton,
-        })}
+        items={[
+          ...minionDetailsViewsToDescriptionItems(minionGeneralDetailViews, {
+            schema: minion,
+            onFilterButton,
+          }),
+          {
+            key: "minion-collections",
+            label: t("minions.minion-collections"),
+            children: minion.collections_count ?? 0,
+          },
+        ]}
       />
 
       {!isNeverActive && (

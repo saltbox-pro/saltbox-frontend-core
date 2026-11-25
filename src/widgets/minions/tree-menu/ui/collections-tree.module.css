@@ -11,36 +11,6 @@
   overflow: auto;
 }
 
-.collectionsTree
-  :global(.ant-tree .ant-tree-treenode:not(.ant-tree-treenode-disabled) .ant-tree-title) {
-  color: rgba(0, 0, 0, 0.88);
-}
-
-.collectionsTree
-  :global(
-    .ant-tree .ant-tree-treenode:not(.ant-tree-treenode-disabled) .ant-tree-node-content-wrapper
-  ):hover {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-
-.collectionsTree
-  :global(
-    .ant-tree
-      .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled)
-      .ant-tree-node-content-wrapper
-  ) {
-  background-color: #e6f4ff;
-}
-
-.collectionsTree
-  :global(
-    .ant-tree
-      .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled)
-      .ant-tree-title
-  ) {
-  color: #1677ff;
-}
-
 .editStructureButton {
   --size: 32px;
 
@@ -60,27 +30,6 @@
   font-size: 13px;
 }
 
-.tree {
-  font-size: 13px;
-}
-
-.collectionsTree :global(.ant-tree .ant-tree-node-content-wrapper) {
-  min-width: 0;
-}
-
-.nodeRow {
-  display: flex;
-  width: 100%;
-}
-
-.nodeTitle {
-  flex-shrink: 0;
-  max-width: 45%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .nodeDescription {
   flex: 0 1 auto;
   min-width: 0;
@@ -91,13 +40,4 @@
   flex-shrink: 0;
   margin-left: 8px;
   padding-block: 2px;
-}
-
-.compact .tree {
-  width: max-content;
-  min-width: 100%;
-}
-
-.compact :global(.ant-tree .ant-tree-title) {
-  white-space: nowrap;
 }

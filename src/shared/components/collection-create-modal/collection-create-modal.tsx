@@ -15,7 +15,7 @@ import { useNavigate } from "react-router";
 import { COLLECTION_DESCRIPTION_MAX_LENGTH } from "saltbox-core/shared/constants/collection";
 import { isDuplicateTitleError } from "saltbox-core/shared/helpers/is-duplicate-title-error";
 import { localizeCollectionReferenceError } from "saltbox-core/shared/helpers/localize-collection-reference-error";
-import { apiCoreStore, collectionsFlatListStore, collectionsTreeStore } from "saltbox-core/store";
+import { collectionsFlatListStore, collectionsTreeStore } from "saltbox-core/store";
 
 type collectionCreateFormType = {
   title: string;
@@ -86,14 +86,12 @@ function CollectionCreateModal({
 
     const result = await runMutation({
       run: () =>
-        apiCoreStore.minionCollectionsApi?.minionCollectionCreate({
-          CollectionCreateRequestSchema: {
-            query: filterQuery,
-            title: formValue.title,
-            description: formValue.description?.trim() || undefined,
-            parent_slug: parentSlug,
-          },
-        }) ?? Promise.reject(new Error("Minion collections API is not available")),
+        collectionsTreeStore.createCollection({
+          query: filterQuery,
+          title: formValue.title,
+          description: formValue.description?.trim() || undefined,
+          parent_slug: parentSlug,
+        }),
       onError: (error) => {
         if (isDuplicateTitleError(error)) {
           form.setFields([
@@ -109,7 +107,6 @@ function CollectionCreateModal({
     if (!result.ok) return;
 
     notify.success(t("collection-create-modal.success"));
-    collectionsTreeStore.addNode(result.data);
     setIsModalOpen(false);
     onClose?.(true);
     if (navigateAfterCreate && result.data.slug) {

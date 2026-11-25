@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
+import { isExtraDataCategoryCreateFieldReady } from "../helpers/extra-data-category-field-form";
 import { useExtraDataCategoryFieldsDrag } from "../hooks/use-extra-data-category-fields-drag";
 
 import { ExtraDataCategoryFieldFormFields } from "./extra-data-category-field-form-fields";
@@ -67,6 +68,12 @@ function CreateFieldRow({
 }) {
   const { t } = useTranslation();
   const [form] = Form.useForm<CreateFieldValues>();
+  const watchedName = Form.useWatch("name", form);
+  const watchedType = Form.useWatch("type", form);
+  const isReady = isExtraDataCategoryCreateFieldReady(
+    { name: watchedName, type: watchedType },
+    existingNames
+  );
   const isDisabled = disabled || loading;
 
   return (
@@ -85,7 +92,7 @@ function CreateFieldRow({
 
       <div className={styles.actions}>
         <Button
-          type="dashed"
+          type={isReady ? "primary" : "dashed"}
           icon={<PlusOutlined />}
           loading={loading}
           disabled={isDisabled}

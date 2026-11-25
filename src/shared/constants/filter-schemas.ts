@@ -8,7 +8,7 @@ import {
 } from "@saltbox/saltbox-frontend-common";
 import type { SelectProps } from "antd";
 import type { TFunction } from "i18next";
-import type { OptionList } from "react-querybuilder";
+import { defaultOperators, type OptionList } from "react-querybuilder";
 
 import {
   getEntitySourceTypeSelectOptions,
@@ -21,6 +21,11 @@ export type TasksFilterSchemaOptions = {
   includeSourceType?: boolean;
   taskType?: TaskType;
 };
+
+const templateFilterOperators = [
+  ...defaultStringOperators,
+  ...defaultOperators.filter(({ name }) => name === "null" || name === "notNull"),
+];
 
 const statusSelectOptions = (t: TFunction) => [
   { label: t("task.created"), value: TaskStatus.Created },
@@ -41,11 +46,18 @@ export const getTasksFilterSchema = (
   const fields: Array<Record<string, unknown>> = [];
 
   if (includeTargetCollection) {
-    fields.push({
-      name: "target_collection.slug",
-      label: t("minions.table-collection"),
-      operators: defaultStringOperators,
-    });
+    fields.push(
+      {
+        name: "target_collection.title",
+        label: t("collection.edit-collection-name"),
+        operators: defaultStringOperators,
+      },
+      {
+        name: "target_collection.slug",
+        label: t(["minions.table-collection-key", "minions.table-collection"]),
+        operators: defaultStringOperators,
+      }
+    );
   }
 
   if (showSourceType) {
@@ -62,12 +74,14 @@ export const getTasksFilterSchema = (
     {
       name: "task_template.title",
       label: t("minions.table-task-template-title"),
-      operators: defaultStringOperators,
+      operators: templateFilterOperators,
+      ignoreEmptyValue: true,
     },
     {
       name: "task_template.name",
       label: t("minions.table-task-template-name"),
-      operators: defaultStringOperators,
+      operators: templateFilterOperators,
+      ignoreEmptyValue: true,
     },
     {
       name: "user.name",

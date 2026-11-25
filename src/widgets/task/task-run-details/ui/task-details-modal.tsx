@@ -55,9 +55,9 @@ export const TaskDetailsModal = observer(function TaskDetailsModal({
         batchSize: task?.batch_size,
         maxParallelJobs: task?.max_jobs_count_at_same_time,
         maxRetries: task?.max_retries,
-        retryDelay: task?.retry_delay,
-        ttlJobs: task.ttl_jobs,
-        ttlTask: task.ttl_task,
+        retryDelay: task?.retry_delay == null ? null : { seconds: task.retry_delay },
+        ttlJobs: task.ttl_jobs == null ? null : { seconds: task.ttl_jobs },
+        ttlTask: task.ttl_task == null ? null : { seconds: task.ttl_task },
       },
       target: {
         collection: task.target_collection?.title ?? task.target_collection?.slug,

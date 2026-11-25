@@ -3,13 +3,47 @@ import type {
   MinionExtraDataCategoryFieldType,
 } from "@saltbox/saltbox-core-api-client";
 
+import { isValidExtraDataCategoryFieldName } from "./extra-data-category-name-validation";
+
 export type ExtraDataCategoryFieldFormValue = {
   name: string;
   type?: MinionExtraDataCategoryFieldType;
 };
 
+export type ExtraDataCategoryFieldNameIssue = "empty" | "forbidden" | "duplicate";
+
 export function createEmptyExtraDataCategoryField(): ExtraDataCategoryFieldFormValue {
   return { name: "" };
+}
+
+export function getExtraDataCategoryFieldNameIssue(
+  name: string | undefined,
+  isDuplicate: (trimmedName: string) => boolean
+): ExtraDataCategoryFieldNameIssue | null {
+  const trimmedName = name?.trim() ?? "";
+  if (!trimmedName) {
+    return "empty";
+  }
+  if (!isValidExtraDataCategoryFieldName(trimmedName)) {
+    return "forbidden";
+  }
+  if (isDuplicate(trimmedName)) {
+    return "duplicate";
+  }
+  return null;
+}
+
+export function isExtraDataCategoryCreateFieldReady(
+  values: Partial<ExtraDataCategoryFieldFormValue>,
+  existingNames: ReadonlySet<string>
+): boolean {
+  if (values.type == null) {
+    return false;
+  }
+  return (
+    getExtraDataCategoryFieldNameIssue(values.name, (trimmed) => existingNames.has(trimmed)) ===
+    null
+  );
 }
 
 export function isDuplicateExtraDataCategoryFieldName(

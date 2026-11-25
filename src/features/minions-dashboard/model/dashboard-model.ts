@@ -403,6 +403,41 @@ export const canRemoveDashboardTab = (tab: DashboardTab, tabs: DashboardTab[]): 
   return !tab.primary && tabs.length > 1;
 };
 
+export type StickyDashboardTab =
+  | { kind: "global"; id: string }
+  | { kind: "primary" }
+  | { kind: "local"; name: string };
+
+export const toStickyDashboardTab = (
+  tab: DashboardTab,
+  scope: DashboardTabScope
+): StickyDashboardTab => {
+  if (scope === "global") {
+    return { kind: "global", id: tab.id };
+  }
+  if (tab.primary) {
+    return { kind: "primary" };
+  }
+  return { kind: "local", name: tab.name };
+};
+
+export const resolveStickyDashboardTabId = (
+  sticky: StickyDashboardTab | null,
+  globalTabs: DashboardTab[],
+  localTabs: DashboardTab[]
+): string | null => {
+  if (!sticky) {
+    return null;
+  }
+  if (sticky.kind === "global") {
+    return globalTabs.some((tab) => tab.id === sticky.id) ? sticky.id : null;
+  }
+  if (sticky.kind === "primary") {
+    return localTabs.find((tab) => tab.primary)?.id ?? null;
+  }
+  return localTabs.find((tab) => !tab.primary && tab.name === sticky.name)?.id ?? null;
+};
+
 export const createDashboardTab = (name: string): DashboardTab => {
   return {
     id: createTabId(),

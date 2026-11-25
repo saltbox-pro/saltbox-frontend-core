@@ -1,5 +1,4 @@
 import {
-  type MinionDetailTabPlugin,
   resolvePluginLocalizedLabel,
   useParentDrawerBridge,
 } from "@saltbox/saltbox-frontend-common";
@@ -13,6 +12,7 @@ import { isMinionNeverActive } from "saltbox-core/shared/helpers/minion-activity
 import { asParcelConfig } from "saltbox-core/shared/utils/as-parcel-config";
 import { appStore, i18nStore } from "saltbox-core/store";
 
+import { buildToolkitSlug } from "../../helpers/build-toolkit-slug";
 import {
   getMinionDetailsTabKeys,
   isMinionDetailsTabDisabled,
@@ -34,17 +34,6 @@ type MinionDetailsTabsViewProps = MinionDetailsCommonProps & {
   onTabChange: (key: MinionDetailsTabKey) => void;
 };
 
-function getDetailTabPlugins(): MinionDetailTabPlugin[] {
-  return appStore.pluginsStore?.plugins?.["minion.detail.tabs"] ?? [];
-}
-
-function buildToolkitSlug(minion: MinionDetailsCommonProps["minion"]): string {
-  if (!minion?.master || !minion?.minion_id) {
-    return "";
-  }
-  return `${minion.master}:${minion.minion_id}`;
-}
-
 export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   isInDrawer,
   tabKey,
@@ -58,7 +47,8 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
   onFilterButton,
 }: MinionDetailsTabsViewProps) {
   const { t } = useTranslation();
-  const pluginTabs = getDetailTabPlugins();
+  const rawPluginTabs = appStore.pluginsStore?.plugins?.["minion.detail.tabs"];
+  const pluginTabs = useMemo(() => rawPluginTabs ?? [], [rawPluginTabs]);
   const parentDrawer = useParentDrawerBridge();
   const pluginKeys = useMemo(() => pluginTabs.map((plugin) => plugin.key), [pluginTabs]);
 
@@ -110,7 +100,7 @@ export const MinionDetailsTabsView = observer(function MinionDetailsTabsView({
         key: "dashboard",
         label: t("minions.dashboard"),
         className: styles.minionTabWithBottomOffset,
-        children: (
+        children: tabKey === "dashboard" && (
           <MinionDashboardTab
             minion={minion}
             isMinionLoading={isMinionLoading}
