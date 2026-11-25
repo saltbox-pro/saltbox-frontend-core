@@ -5,6 +5,7 @@ import {
   type ActionDropdownItem,
   Modal,
   notify,
+  notifyApiError,
 } from "@saltbox/saltbox-frontend-common";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
@@ -17,8 +18,7 @@ import {
 
 const notifyBulkActionResult = (
   t: TFunction,
-  { succeeded, failedTaskIds }: TaskBulkActionResult,
-  skipped: number
+  { succeeded, failedTaskIds, skipped }: TaskBulkActionResult
 ) => {
   const title = t("tasks-bulk.result", { succeeded, failed: failedTaskIds.length, skipped });
 
@@ -63,8 +63,12 @@ export const TaskBulkActionsDropdown = ({
       okButtonProps: { danger: true },
       cancelText: t("common.cancel"),
       onOk: async () => {
-        const result = await stopTasks(stoppableTasks);
-        notifyBulkActionResult(t, result, skippedCount);
+        try {
+          const result = await stopTasks(stoppableTasks);
+          notifyBulkActionResult(t, { ...result, skipped: result.skipped + skippedCount });
+        } catch (error) {
+          await notifyApiError(error, t("tasks-bulk.stop-error"));
+        }
         onCompleted();
       },
     });

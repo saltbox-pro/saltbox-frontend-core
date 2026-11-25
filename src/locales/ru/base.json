@@ -1569,6 +1569,7 @@
   },
   "tasks-bulk": {
     "select-tasks": "Выберите задачи",
+    "stop-error": "Не удалось остановить выбранные задачи",
     "stop-confirm-title": "Остановить выбранные задачи: {{count}}?",
     "skipped-description": "Пропущено (действие недоступно): {{count}}",
     "result": "Выполнено: {{succeeded}}, ошибок: {{failed}}, пропущено: {{skipped}}",

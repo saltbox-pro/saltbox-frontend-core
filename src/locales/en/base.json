@@ -1568,6 +1568,7 @@
   },
   "tasks-bulk": {
     "select-tasks": "Select tasks",
+    "stop-error": "Failed to stop selected tasks",
     "stop-confirm-title": "Stop selected tasks: {{count}}?",
     "skipped-description": "Skipped (action unavailable): {{count}}",
     "result": "Done: {{succeeded}}, failed: {{failed}}, skipped: {{skipped}}",

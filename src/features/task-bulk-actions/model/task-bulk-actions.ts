@@ -1,13 +1,11 @@
-import { TaskListResponseSchema } from "@saltbox/saltbox-core-api-client";
+import { TaskListResponseSchema, TaskStatus } from "@saltbox/saltbox-core-api-client";
 
-import { runInBatches } from "saltbox-core/shared/utils/run-in-batches";
 import { getTaskPermissions } from "saltbox-core/shared/utils/task-permissions";
 import { apiCoreStore } from "saltbox-core/store";
 
-const BATCH_SIZE = 5;
-
 export type TaskBulkActionResult = {
   succeeded: number;
+  skipped: number;
   failedTaskIds: string[];
 };
 
@@ -30,16 +28,22 @@ export const getStoppableTasks = (tasks: TaskListResponseSchema[]): TaskListResp
   );
 
 export const stopTasks = async (tasks: TaskListResponseSchema[]): Promise<TaskBulkActionResult> => {
-  const tasksApi = getTasksApi();
-  const results = await runInBatches(
-    tasks,
-    (task) => tasksApi.taskStop({ tid: task.id }),
-    BATCH_SIZE
-  );
+  const taskIds = tasks.map((task) => task.id);
+  const results = await getTasksApi().tasksBulkStop({
+    TaskBulkStopBody: { task_ids: taskIds },
+  });
+  const statuses = new Map(results.map(({ task_id, status }) => [task_id, status]));
+  const result: TaskBulkActionResult = { succeeded: 0, skipped: 0, failedTaskIds: [] };
 
-  const failedTaskIds = tasks
-    .filter((_, index) => results[index].status === "rejected")
-    .map((task) => task.id);
-
-  return { succeeded: tasks.length - failedTaskIds.length, failedTaskIds };
+  for (const id of taskIds) {
+    const status = statuses.get(id);
+    if (status === TaskStatus.Stopping || status === TaskStatus.Stopped) {
+      result.succeeded++;
+    } else if (status === TaskStatus.Finished || status === TaskStatus.Created) {
+      result.skipped++;
+    } else {
+      result.failedTaskIds.push(id);
+    }
+  }
+  return result;
 };
