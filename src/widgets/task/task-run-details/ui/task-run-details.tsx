@@ -87,7 +87,7 @@ export const TaskRunDetails = observer(function TaskRunDetails({ taskStore }: Ta
               : t("task.type-policy")}
           </TaskDetailItem>
           <Divider type="vertical" />
-          <TaskDetailItem label={t("task.created")}>
+          <TaskDetailItem label={t("minions.table-created")}>
             {taskStore.task.created ? (
               formatTimeByUserTZ(taskStore.task.created)
             ) : (

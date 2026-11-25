@@ -17,7 +17,6 @@ export interface MinionDetailsCommonProps {
   isMinionRefreshing?: boolean;
   collectionSlug: string;
   onFilterButton?: OnFilterButtonHandler;
-  onOpenCollection?: (slug: string) => void;
   isFullView?: boolean;
   actionsMenu?: ReactNode;
 }

@@ -33,11 +33,15 @@
   cursor: default;
 }
 
-.treeSelectable :global(.ant-tree-node-content-wrapper) {
+.treeSelectable
+  :global(.ant-tree-treenode:not(.ant-tree-treenode-disabled) .ant-tree-node-content-wrapper) {
   cursor: pointer;
 }
 
-.treeSelectable :global(.ant-tree-node-content-wrapper:hover) {
+.treeSelectable
+  :global(
+    .ant-tree-treenode:not(.ant-tree-treenode-disabled) .ant-tree-node-content-wrapper:hover
+  ) {
   background-color: rgba(0, 0, 0, 0.06);
 }
 

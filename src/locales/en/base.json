@@ -46,7 +46,6 @@
     "minion-id-not-specified": "Unable to determine Minion ID",
     "dashboard": "Dashboard",
     "minion-collections": "Minion collections",
-    "minion-collections-empty": "The minion does not belong to any collection",
     "grains": "Grains",
     "pillars": "Minion Data",
     "extra-data": {
@@ -619,7 +618,7 @@
     "field-form": {
       "field-name-placeholder": "Enter field name",
       "field-name-required": "Field name is required",
-      "field-name-unique": "A field with this name already exists in the category",
+      "field-name-unique": "A field with this name already exists",
       "field-type-placeholder": "Select type",
       "field-type-required": "Select a type"
     },

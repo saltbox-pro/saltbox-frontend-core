@@ -30,37 +30,6 @@
   font-size: 13px;
 }
 
-.nodeRow {
-  display: flex;
-  width: 100%;
-}
-
-.nodeTitle {
-  flex-shrink: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.nodeTitleLimited {
-  max-width: 45%;
-}
-
-.nodeClientsCount {
-  flex-shrink: 0;
-  margin-inline-end: 0;
-  line-height: 18px;
-  color: rgba(0, 0, 0, 0.65);
-}
-
-.collectionsTree
-  :global(.ant-tree .ant-tree-treenode.ant-tree-treenode-selected:not(.ant-tree-treenode-disabled))
-  .nodeClientsCount {
-  color: var(--ant-color-primary, #1677ff);
-  border-color: #91caff;
-  background: #e6f4ff;
-}
-
 .nodeDescription {
   flex: 0 1 auto;
   min-width: 0;

@@ -33,6 +33,8 @@ const PRESET_TO_PERIOD_KEY: Record<JobDateRangePreset, string> = {
   [JOB_DATE_RANGE_PRESET.ALL_TIME]: "jobs.period-all-time",
 };
 
+const DEFAULT_HIDDEN_COLUMN_IDS = ["tgt_type"];
+
 const columnHelper = createColumnHelper<JobsListResponse>();
 
 export interface JobsTableProps {
@@ -102,50 +104,12 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
           minWidth: 220,
         },
       }),
-      ...masterColumn,
       columnHelper.accessor("fun", {
         header: t("jobs.table-function"),
         meta: {
-          width: "11%",
+          width: "14%",
+          minWidth: 180,
           actions: [createFilterAction("fun")],
-        },
-      }),
-      columnHelper.accessor("tgt", {
-        header: t("jobs.table-targets"),
-        meta: {
-          showCopy: true,
-          width: "15%",
-          minWidth: 230,
-          actions: [createFilterAction("tgt")],
-        },
-      }),
-      columnHelper.accessor("tgt_type", {
-        header: t("jobs.table-target-type"),
-        meta: {
-          width: "8%",
-          actions: [createFilterAction("tgt_type")],
-        },
-      }),
-      columnHelper.accessor((row) => row.source?.type, {
-        id: "source.type",
-        header: t("entity-source.column"),
-        cell: (data) => {
-          return (
-            <EntitySourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />
-          );
-        },
-        meta: {
-          width: "9%",
-          minWidth: 150,
-          actions: [createFilterAction("source.type")],
-        },
-      }),
-      columnHelper.accessor("user.name", {
-        id: "user.name",
-        header: t("jobs.table-user"),
-        meta: {
-          width: "10%",
-          actions: [createFilterAction("user.name")],
         },
       }),
       columnHelper.accessor("status", {
@@ -162,6 +126,51 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
           actions: [createFilterAction("status")],
         },
       }),
+      columnHelper.accessor((row) => row.source?.type, {
+        id: "source.type",
+        header: t("entity-source.column"),
+        cell: (data) => {
+          return (
+            <EntitySourceType type={data.getValue()} sourceId={data.row.original?.source?.id} />
+          );
+        },
+        meta: {
+          width: "9%",
+          minWidth: 150,
+          actions: [createFilterAction("source.type")],
+        },
+      }),
+      columnHelper.accessor("tgt", {
+        header: t("jobs.table-targets"),
+        meta: {
+          showCopy: true,
+          getTitle: (value) =>
+            t("jobs.table-targets-tooltip", {
+              target: String(value ?? ""),
+              defaultValue: String(value ?? ""),
+            }),
+          width: "15%",
+          minWidth: 230,
+          actions: [createFilterAction("tgt")],
+        },
+      }),
+      columnHelper.accessor("tgt_type", {
+        header: t("jobs.table-target-type"),
+        meta: {
+          width: "10%",
+          minWidth: 190,
+          actions: [createFilterAction("tgt_type")],
+        },
+      }),
+      ...masterColumn,
+      columnHelper.accessor("user.name", {
+        id: "user.name",
+        header: t("jobs.table-user"),
+        meta: {
+          width: "10%",
+          actions: [createFilterAction("user.name")],
+        },
+      }),
       columnHelper.accessor("created", {
         header: t("jobs.table-created"),
         cell: (data) => formatTimeByUserTZ(data.getValue()),
@@ -175,6 +184,7 @@ export const JobsTable = observer<JobsTableProps>(function JobsTable({
     <Table
       tableId={tableId}
       columns={columns}
+      defaultHiddenColumnIds={DEFAULT_HIDDEN_COLUMN_IDS}
       getRowId={(row) => row.id}
       data={store.jobs}
       total={store.total}

@@ -2,9 +2,9 @@ import { SearchHighlightText } from "@saltbox/saltbox-frontend-common";
 import clsx from "clsx";
 import type { Key } from "react";
 
-import type { CollectionTreeAntdNode } from "../types/node";
+import type { CollectionTreeAntdNode } from "../types";
 
-import styles from "./build-highlighted-tree.module.css";
+import styles from "./build-highlighted-collection-tree-node.module.css";
 
 function getTitleClassName(
   strTitle: string,
@@ -25,12 +25,12 @@ function getTitleClassName(
   );
 }
 
-export function buildHighlightedNode(
+export function buildHighlightedCollectionTreeNode(
   node: CollectionTreeAntdNode,
   appliedSearchQuery: string,
   matchedKeys: Set<Key>
 ): CollectionTreeAntdNode {
-  const strTitle = String(node.title ?? "");
+  const strTitle = node.titleText;
   const isMatched = matchedKeys.has(node.key) || !appliedSearchQuery;
   const titleClassName = getTitleClassName(strTitle, appliedSearchQuery, isMatched);
 
@@ -42,10 +42,11 @@ export function buildHighlightedNode(
     <SearchHighlightText text={strTitle} query={appliedSearchQuery} />
   );
 
-  const children = node.children as CollectionTreeAntdNode[] | undefined;
   return {
     ...node,
     title,
-    children: children?.map((c) => buildHighlightedNode(c, appliedSearchQuery, matchedKeys)),
+    children: node.children?.map((child) =>
+      buildHighlightedCollectionTreeNode(child, appliedSearchQuery, matchedKeys)
+    ),
   };
 }
