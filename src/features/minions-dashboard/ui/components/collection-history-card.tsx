@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { Empty } from "antd";
 import { observer } from "mobx-react-lite";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { apiCoreStore } from "saltbox-core/store";
@@ -33,22 +33,24 @@ export const CollectionHistoryCard = observer(
     const [store] = useState(() => new CollectionHistoryStore());
     const { from, to, interval } = card.settings;
     const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const query = useMemo(
+      () => ({ from, to, interval, timezone: userTimezone }),
+      [from, to, interval, userTimezone]
+    );
     const collectionsApi = apiCoreStore.minionCollectionsApi;
 
     useEffect(() => {
       const controller = new AbortController();
       if (slug && collectionsApi) {
-        store.historyLoad
-          .run(slug, { from, to, interval, timezone: userTimezone }, controller.signal)
-          .catch(() => undefined);
+        store.historyLoad.run(slug, query, controller.signal).catch(() => undefined);
       }
       return () => {
         controller.abort();
         store.historyLoad.resetInitial();
       };
-    }, [slug, from, to, interval, userTimezone, store, collectionsApi]);
+    }, [slug, query, store, collectionsApi]);
 
-    const response = store.response;
+    const response = store.getResponse(slug, query);
     const formatDate = (value: string) =>
       new Intl.DateTimeFormat(i18n.language, {
         timeZone: userTimezone,
@@ -134,70 +136,76 @@ export const CollectionHistoryCard = observer(
         onEdit={onEdit}
         fullscreenContainer={fullscreenContainer}
       >
-        <div className={styles.content}>
-          <dl className={styles.metrics}>
-            <div className={styles.primaryMetric}>
-              <dt>
-                <span className={styles.expanded}>{t("dashboard.history-end-count")}</span>
-                <span className={styles.compact}>{t("dashboard.history-end-count-short")}</span>
-              </dt>
-              <dd>{endCount === null ? "—" : numberFormat.format(endCount)}</dd>
-            </div>
-            <div>
-              <dt>
-                <span className={styles.expanded}>{t("dashboard.history-change")}</span>
-                <span className={styles.compact}>{t("dashboard.history-change-short")}</span>
-              </dt>
-              <dd title={changeRatio === null ? undefined : percentFormat.format(changeRatio)}>
-                {change !== null && <ChangeIcon aria-hidden="true" className={styles.changeIcon} />}
-                {change === null ? "—" : changeFormat.format(change)}
-                {changeRatio !== null && (
-                  <span className={styles.changePercent}>{percentFormat.format(changeRatio)}</span>
-                )}
-              </dd>
-            </div>
-            <div className={styles.startMetric}>
-              <dt>
-                <span className={styles.expanded}>{t("dashboard.history-start-count")}</span>
-                <span className={styles.compact}>{t("dashboard.history-start-count-short")}</span>
-              </dt>
-              <dd>{startCount === null ? "—" : numberFormat.format(startCount)}</dd>
-            </div>
-          </dl>
-          {hasData ? (
-            <div className={styles.chart}>
-              <CollectionHistoryChart response={response} />
-            </div>
-          ) : (
-            <div className={styles.empty}>
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />
-            </div>
-          )}
-          <div className={styles.footer}>
-            <div className={styles.context}>
-              <span title={t("dashboard.history-scope")}>
-                <span className={styles.expanded}>{t("dashboard.history-scope")}</span>
-                <span className={styles.compact}>{t("dashboard.history-scope-short")}</span>
-              </span>
-              <span title={userTimezone}>{timezoneLabel ?? userTimezone}</span>
-            </div>
-            {historyFrom && (
-              <span
-                className={styles.historyAvailable}
-                title={t("dashboard.history-available", { date: formatDate(historyFrom) })}
-              >
-                <span className={styles.expanded}>
-                  {t("dashboard.history-available", { date: formatDate(historyFrom) })}
-                </span>
-                <span className={styles.compact}>
-                  {t("dashboard.history-available-short", {
-                    date: shortDateFormat.format(new Date(historyFrom)),
-                  })}
-                </span>
-              </span>
+        {response && (
+          <div className={styles.content}>
+            <dl className={styles.metrics}>
+              <div className={styles.primaryMetric}>
+                <dt>
+                  <span className={styles.expanded}>{t("dashboard.history-end-count")}</span>
+                  <span className={styles.compact}>{t("dashboard.history-end-count-short")}</span>
+                </dt>
+                <dd>{endCount === null ? "—" : numberFormat.format(endCount)}</dd>
+              </div>
+              <div>
+                <dt>
+                  <span className={styles.expanded}>{t("dashboard.history-change")}</span>
+                  <span className={styles.compact}>{t("dashboard.history-change-short")}</span>
+                </dt>
+                <dd title={changeRatio === null ? undefined : percentFormat.format(changeRatio)}>
+                  {change !== null && (
+                    <ChangeIcon aria-hidden="true" className={styles.changeIcon} />
+                  )}
+                  {change === null ? "—" : changeFormat.format(change)}
+                  {changeRatio !== null && (
+                    <span className={styles.changePercent}>
+                      {percentFormat.format(changeRatio)}
+                    </span>
+                  )}
+                </dd>
+              </div>
+              <div className={styles.startMetric}>
+                <dt>
+                  <span className={styles.expanded}>{t("dashboard.history-start-count")}</span>
+                  <span className={styles.compact}>{t("dashboard.history-start-count-short")}</span>
+                </dt>
+                <dd>{startCount === null ? "—" : numberFormat.format(startCount)}</dd>
+              </div>
+            </dl>
+            {hasData ? (
+              <div className={styles.chart}>
+                <CollectionHistoryChart response={response} />
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={emptyDescription} />
+              </div>
             )}
+            <div className={styles.footer}>
+              <div className={styles.context}>
+                <span title={t("dashboard.history-scope")}>
+                  <span className={styles.expanded}>{t("dashboard.history-scope")}</span>
+                  <span className={styles.compact}>{t("dashboard.history-scope-short")}</span>
+                </span>
+                <span title={userTimezone}>{timezoneLabel ?? userTimezone}</span>
+              </div>
+              {historyFrom && (
+                <span
+                  className={styles.historyAvailable}
+                  title={t("dashboard.history-available", { date: formatDate(historyFrom) })}
+                >
+                  <span className={styles.expanded}>
+                    {t("dashboard.history-available", { date: formatDate(historyFrom) })}
+                  </span>
+                  <span className={styles.compact}>
+                    {t("dashboard.history-available-short", {
+                      date: shortDateFormat.format(new Date(historyFrom)),
+                    })}
+                  </span>
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </DashboardCardShell>
     );
   }

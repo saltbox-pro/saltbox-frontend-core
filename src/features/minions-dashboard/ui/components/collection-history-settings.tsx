@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import {
   CollectionHistorySettings,
-  getHistorySettingsError,
+  type getHistorySettingsError,
   HISTORY_INTERVALS,
   HISTORY_MAX_POINTS,
   HistoryInterval,
@@ -13,17 +13,19 @@ import {
 import styles from "./collection-history.module.css";
 
 type CollectionHistorySettingsProps = {
+  error: ReturnType<typeof getHistorySettingsError>;
+  timezone?: string;
   value: CollectionHistorySettings;
   onChange: (value: CollectionHistorySettings) => void;
 };
 
 export const CollectionHistorySettingsEditor = ({
+  error,
+  timezone,
   value,
   onChange,
 }: CollectionHistorySettingsProps) => {
   const { t } = useTranslation();
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const error = getHistorySettingsError(value, userTimezone);
 
   return (
     <div className={styles.settings}>
@@ -67,7 +69,7 @@ export const CollectionHistorySettingsEditor = ({
         </Typography.Text>
       )}
       <Typography.Text type="secondary" className={styles.settingsHint}>
-        {t("dashboard.history-settings-hint", { timezone: userTimezone })}
+        {t("dashboard.history-settings-hint", { timezone })}
       </Typography.Text>
     </div>
   );

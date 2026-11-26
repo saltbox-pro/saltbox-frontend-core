@@ -119,58 +119,57 @@ export const DashboardCardShell = observer(
         className={clsx(styles.dashboardTableBlock, className, isFullScreen && styles.fullscreen)}
         classNames={{ body: styles.dashboardTableBlockBody }}
       >
-        <Spin spinning={loader.isLoading} tip={t("dashboard.loading-chart")}>
-          <ErrorZone level="block" loaders={[loader]}>
-            <div className={styles.dashboardCardContent}>
-              <div
-                className={clsx(
-                  styles.dashboardTableBlockHeader,
-                  !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
-                )}
+        <div className={styles.dashboardCardContent}>
+          <div
+            className={clsx(
+              styles.dashboardTableBlockHeader,
+              !isFullScreen && DASHBOARD_DRAG_HANDLE_CLASS
+            )}
+          >
+            <HolderOutlined className={styles.dashboardDragIcon} />
+            <div
+              className={clsx(
+                styles.dashboardTableBlockTitleGroup,
+                headerMeta && styles.dashboardTableBlockTitleWithMeta
+              )}
+            >
+              <Typography.Text
+                strong
+                ellipsis
+                title={title}
+                className={styles.dashboardTableBlockTitle}
               >
-                <HolderOutlined className={styles.dashboardDragIcon} />
-                <div
-                  className={clsx(
-                    styles.dashboardTableBlockTitleGroup,
-                    headerMeta && styles.dashboardTableBlockTitleWithMeta
-                  )}
-                >
-                  <Typography.Text
-                    strong
-                    ellipsis
-                    title={title}
-                    className={styles.dashboardTableBlockTitle}
-                  >
-                    {title}
-                  </Typography.Text>
-                  {subtitle !== null && (
-                    <Typography.Text
-                      type="secondary"
-                      className={styles.dashboardTableBlockSubtitle}
-                    >
-                      {subtitle ?? t(`dashboard.preset-${card.preset}`)}
-                    </Typography.Text>
-                  )}
-                  {headerMeta}
-                </div>
-                <div className={styles.dashboardTableBlockHeaderSettings}>
-                  {copyText && <CopyToClipboardButton size="small" type="text" text={copyText} />}
-                  <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
-                    <Button
-                      type="text"
-                      size="small"
-                      loading={isTogglingFullScreen}
-                      icon={<EllipsisOutlined />}
-                      aria-label={t("dashboard.card-actions")}
-                      className={styles.dashboardTableBlockMenuIcon}
-                    />
-                  </Dropdown>
-                </div>
-              </div>
-              <div className={styles.dashboardTableBlockChartBody}>{children}</div>
+                {title}
+              </Typography.Text>
+              {subtitle !== null && (
+                <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
+                  {subtitle ?? t(`dashboard.preset-${card.preset}`)}
+                </Typography.Text>
+              )}
+              {headerMeta}
             </div>
-          </ErrorZone>
-        </Spin>
+            <div className={styles.dashboardTableBlockHeaderSettings}>
+              {copyText && <CopyToClipboardButton size="small" type="text" text={copyText} />}
+              <Dropdown menu={{ items }} trigger={["click"]} disabled={isTogglingFullScreen}>
+                <Button
+                  type="text"
+                  size="small"
+                  loading={isTogglingFullScreen}
+                  icon={<EllipsisOutlined />}
+                  aria-label={t("dashboard.card-actions")}
+                  className={styles.dashboardTableBlockMenuIcon}
+                />
+              </Dropdown>
+            </div>
+          </div>
+          <div className={styles.dashboardTableBlockChartBody}>
+            <Spin spinning={loader.isLoading} tip={t("dashboard.loading-chart")}>
+              <ErrorZone level="block" loaders={[loader]}>
+                {children}
+              </ErrorZone>
+            </Spin>
+          </div>
+        </div>
       </Card>
     );
 

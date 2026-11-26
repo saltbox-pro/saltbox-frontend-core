@@ -111,9 +111,13 @@ export const MinionsDashboardAddBlockModal = ({
   const [historySettings, setHistorySettings] = useState<CollectionHistorySettings>(
     createDefaultHistorySettings
   );
-  const historyError = getHistorySettingsError(
-    historySettings,
-    Intl.DateTimeFormat().resolvedOptions().timeZone
+  const historyTimezone =
+    open && kind === "collection-history"
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone
+      : undefined;
+  const historyError = useMemo(
+    () => (historyTimezone ? getHistorySettingsError(historySettings, historyTimezone) : null),
+    [historySettings, historyTimezone]
   );
 
   useEffect(() => {
@@ -227,6 +231,8 @@ export const MinionsDashboardAddBlockModal = ({
               </Typography.Text>
             </div>
             <CollectionHistorySettingsEditor
+              error={historyError}
+              timezone={historyTimezone}
               value={historySettings}
               onChange={setHistorySettings}
             />

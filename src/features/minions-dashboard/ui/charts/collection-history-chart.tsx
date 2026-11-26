@@ -64,6 +64,7 @@ export const CollectionHistoryChart = ({ response }: { response: CollectionHisto
   const numberFormat = new Intl.NumberFormat(i18n.language);
   const dateFormat = new Intl.DateTimeFormat(i18n.language, {
     timeZone: response.timezone,
+    timeZoneName: "shortOffset",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
