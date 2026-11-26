@@ -12,7 +12,10 @@ export const useTaskSelection = (pageTasks: TaskListResponseSchema[]) => {
     [selectedTasksById]
   );
 
-  const selectedTasks = useMemo(() => Object.values(selectedTasksById), [selectedTasksById]);
+  const selectedTasks = useMemo(() => {
+    const pageById = new Map(pageTasks.map((task) => [task.id, task]));
+    return Object.values(selectedTasksById).map((task) => pageById.get(task.id) ?? task);
+  }, [pageTasks, selectedTasksById]);
 
   const handleRowSelectionChange: OnChangeFn<RowSelectionState> = (updater) => {
     const nextSelection = typeof updater === "function" ? updater(rowSelection) : updater;

@@ -1569,10 +1569,13 @@
   "tasks-bulk": {
     "select-tasks": "Select tasks",
     "stop-error": "Failed to stop selected tasks",
-    "stop-confirm-title": "Stop selected tasks: {{count}}?",
+    "api-unavailable": "Tasks API is not available",
+    "stop-confirm-title": "Stop tasks",
+    "stop-confirm-description": "Are you sure you want to stop selected tasks: {{count}}?",
     "skipped-description": "Skipped (action unavailable): {{count}}",
-    "result": "Done: {{succeeded}}, failed: {{failed}}, skipped: {{skipped}}",
-    "failed-tasks": "Failed tasks: {{ids}}"
+    "result": "Done: {{succeeded}}, failed: {{failed}}, skipped: {{skipped}}, not found: {{notFound}}",
+    "failed-tasks": "Failed tasks: {{ids}}",
+    "not-found-tasks": "Tasks not found: {{ids}}"
   },
   "errors": {
     "form-validation": "Form validation error"

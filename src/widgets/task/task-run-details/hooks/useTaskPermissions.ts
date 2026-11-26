@@ -4,7 +4,7 @@ import {
   getTaskPermissions,
   type TaskPermissions,
   type TaskPermissionsInput,
-} from "saltbox-core/shared/utils/task-permissions";
+} from "saltbox-core/features/task-permissions";
 
 export type TaskRunControlInput = TaskPermissionsInput;
 

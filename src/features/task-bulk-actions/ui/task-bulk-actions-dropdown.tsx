@@ -7,36 +7,14 @@ import {
   notify,
   notifyApiError,
 } from "@saltbox/saltbox-frontend-common";
-import type { TFunction } from "i18next";
+import { Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
-import {
-  getStoppableTasks,
-  stopTasks,
-  type TaskBulkActionResult,
-} from "../model/task-bulk-actions";
+import { stopTasks } from "../api/stop-tasks";
+import { TasksApiUnavailableError } from "../api/tasks-api-unavailable-error";
+import { getStoppableTasks } from "../model/get-stoppable-tasks";
 
-const notifyBulkActionResult = (
-  t: TFunction,
-  { succeeded, failedTaskIds, skipped }: TaskBulkActionResult
-) => {
-  const title = t("tasks-bulk.result", { succeeded, failed: failedTaskIds.length, skipped });
-
-  if (failedTaskIds.length === 0) {
-    notify.success(title);
-    return;
-  }
-
-  const toast = {
-    title,
-    description: t("tasks-bulk.failed-tasks", { ids: failedTaskIds.join(", ") }),
-  };
-  if (succeeded === 0) {
-    notify.error(toast);
-    return;
-  }
-  notify.warning(toast);
-};
+import { notifyBulkActionResult } from "./notify-bulk-action-result";
 
 type TaskBulkActionsDropdownProps = {
   selectedTasks: TaskListResponseSchema[];
@@ -55,9 +33,15 @@ export const TaskBulkActionsDropdown = ({
 
   const handleStopClick = () => {
     modalApi.confirm({
-      title: t("tasks-bulk.stop-confirm-title", { count: stoppableTasks.length }),
-      content:
-        skippedCount > 0 ? t("tasks-bulk.skipped-description", { count: skippedCount }) : null,
+      title: t("tasks-bulk.stop-confirm-title"),
+      content: (
+        <Flex vertical gap={8}>
+          {skippedCount > 0 && (
+            <div>{t("tasks-bulk.skipped-description", { count: skippedCount })}</div>
+          )}
+          <div>{t("tasks-bulk.stop-confirm-description", { count: stoppableTasks.length })}</div>
+        </Flex>
+      ),
       icon: null,
       okText: t("task.stop"),
       okButtonProps: { danger: true },
@@ -66,10 +50,16 @@ export const TaskBulkActionsDropdown = ({
         try {
           const result = await stopTasks(stoppableTasks);
           notifyBulkActionResult(t, { ...result, skipped: result.skipped + skippedCount });
+          if (result.succeeded > 0 || result.skipped > 0) {
+            onCompleted();
+          }
         } catch (error) {
+          if (error instanceof TasksApiUnavailableError) {
+            notify.error(t("tasks-bulk.api-unavailable"));
+            return;
+          }
           await notifyApiError(error, t("tasks-bulk.stop-error"));
         }
-        onCompleted();
       },
     });
   };
