@@ -28,6 +28,13 @@ export type CollectionHistoryResponse = {
   points: Array<{ timestamp: string; count: number | null }>;
 };
 
+export type HistorySettingsError = "invalid-range" | "too-many-points";
+
+export const getCollectionHistoryRequestKey = (
+  slug: string,
+  query: CollectionHistoryQuery
+): string => [slug, query.from, query.to, query.interval, query.timezone].join("\0");
+
 export const getCollectionHistorySummary = (response: CollectionHistoryResponse | null) => {
   const startCount = response?.points[0]?.count ?? null;
   const endCount = response?.points.at(-1)?.count ?? null;
@@ -106,7 +113,7 @@ export const getHistoryTimestamps = (query: CollectionHistoryQuery): number[] =>
 export const getHistorySettingsError = (
   settings: CollectionHistorySettings,
   userTimezone: string
-): "invalid-range" | "too-many-points" | null => {
+): HistorySettingsError | null => {
   try {
     getHistoryTimestamps({ ...settings, timezone: userTimezone });
     return null;

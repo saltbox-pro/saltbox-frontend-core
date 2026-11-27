@@ -3,24 +3,31 @@ import { makeAutoObservable, observable } from "mobx";
 
 import { fetchCollectionHistory } from "../api/collection-history";
 
-import type { CollectionHistoryQuery, CollectionHistoryResponse } from "./collection-history";
+import {
+  getCollectionHistoryRequestKey,
+  type CollectionHistoryQuery,
+  type CollectionHistoryResponse,
+} from "./collection-history";
 
 export class CollectionHistoryStore {
   private result: {
-    slug: string;
-    query: CollectionHistoryQuery;
+    key: string;
     response: CollectionHistoryResponse;
   } | null = null;
 
   getResponse(slug: string | undefined, query: CollectionHistoryQuery) {
-    const result = this.result;
-    return result && result.slug === slug && result.query === query ? result.response : null;
+    if (!slug || !this.result) {
+      return null;
+    }
+    return this.result.key === getCollectionHistoryRequestKey(slug, query)
+      ? this.result.response
+      : null;
   }
 
   readonly historyLoad = createLoader({
     run: fetchCollectionHistory,
     onSuccess: (response, slug, query) => {
-      this.result = { slug, query, response };
+      this.result = { key: getCollectionHistoryRequestKey(slug, query), response };
     },
   });
 

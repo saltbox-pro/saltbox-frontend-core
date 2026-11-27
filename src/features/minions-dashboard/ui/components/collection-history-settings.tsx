@@ -3,17 +3,17 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
 import {
-  CollectionHistorySettings,
-  type getHistorySettingsError,
   HISTORY_INTERVALS,
   HISTORY_MAX_POINTS,
-  HistoryInterval,
+  type CollectionHistorySettings,
+  type HistoryInterval,
+  type HistorySettingsError,
 } from "../../model/collection-history";
 
 import styles from "./collection-history.module.css";
 
 type CollectionHistorySettingsProps = {
-  error: ReturnType<typeof getHistorySettingsError>;
+  error: HistorySettingsError | null;
   timezone?: string;
   value: CollectionHistorySettings;
   onChange: (value: CollectionHistorySettings) => void;

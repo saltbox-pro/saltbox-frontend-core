@@ -27,9 +27,9 @@ import {
   PRESET_PREVIEW_SWATCH_COUNT,
 } from "../../constants/dashboard-preview";
 import {
-  CollectionHistorySettings,
   createDefaultHistorySettings,
   getHistorySettingsError,
+  type CollectionHistorySettings,
 } from "../../model/collection-history";
 import {
   getPresetOptionsForFieldType,
@@ -200,15 +200,17 @@ export const MinionsDashboardAddBlockModal = ({
       width={840}
     >
       <Flex vertical gap={20}>
-        <Segmented<"field" | "collection-history">
-          block
-          value={kind}
-          options={[
-            { value: "field", label: t("dashboard.block-kind-field") },
-            { value: "collection-history", label: t("dashboard.history-title") },
-          ]}
-          onChange={setKind}
-        />
+        {!isEditMode && (
+          <Segmented<"field" | "collection-history">
+            block
+            value={kind}
+            options={[
+              { value: "field", label: t("dashboard.block-kind-field") },
+              { value: "collection-history", label: t("dashboard.history-title") },
+            ]}
+            onChange={setKind}
+          />
+        )}
         {kind === "collection-history" ? (
           <Flex vertical gap={20}>
             <div className={styles.historyPreview}>

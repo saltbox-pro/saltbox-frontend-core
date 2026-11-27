@@ -29,6 +29,7 @@ type DashboardCardShellProps = {
   card: DashboardCardConfig;
   title: string;
   subtitle?: ReactNode;
+  hideSubtitle?: boolean;
   headerMeta?: ReactNode;
   className?: string;
   copyText?: string;
@@ -43,6 +44,7 @@ export const DashboardCardShell = observer(
     card,
     title,
     subtitle,
+    hideSubtitle = false,
     headerMeta,
     className,
     copyText,
@@ -141,7 +143,7 @@ export const DashboardCardShell = observer(
               >
                 {title}
               </Typography.Text>
-              {subtitle !== null && (
+              {!hideSubtitle && (
                 <Typography.Text type="secondary" className={styles.dashboardTableBlockSubtitle}>
                   {subtitle ?? t(`dashboard.preset-${card.preset}`)}
                 </Typography.Text>

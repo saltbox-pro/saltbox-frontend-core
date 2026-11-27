@@ -22,7 +22,7 @@ import {
 import { PRESETS } from "../constants/dashboard-presets";
 import { LEGACY_FIRST_TAB_NAMES } from "../constants/dashboard-tabs";
 
-import { CollectionHistorySettings, normalizeHistorySettings } from "./collection-history";
+import { normalizeHistorySettings, type CollectionHistorySettings } from "./collection-history";
 
 export type DashboardFieldType = "categorical" | "numeric" | "boolean" | "date" | "complex";
 

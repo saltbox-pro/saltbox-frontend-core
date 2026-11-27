@@ -10,12 +10,10 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { apiCoreStore } from "saltbox-core/store";
-
 import { getCollectionHistorySummary } from "../../model/collection-history";
 import { CollectionHistoryStore } from "../../model/collection-history-store";
 import type { DashboardHistoryCardConfig } from "../../model/dashboard-model";
-import { CollectionHistoryChart } from "../charts/collection-history-chart";
+import { CollectionHistoryChart } from "../charts";
 
 import styles from "./collection-history.module.css";
 import { DashboardCardShell } from "./dashboard-card-shell";
@@ -37,18 +35,17 @@ export const CollectionHistoryCard = observer(
       () => ({ from, to, interval, timezone: userTimezone }),
       [from, to, interval, userTimezone]
     );
-    const collectionsApi = apiCoreStore.minionCollectionsApi;
 
     useEffect(() => {
       const controller = new AbortController();
-      if (slug && collectionsApi) {
+      if (slug) {
         store.historyLoad.run(slug, query, controller.signal).catch(() => undefined);
       }
       return () => {
         controller.abort();
         store.historyLoad.resetInitial();
       };
-    }, [slug, query, store, collectionsApi]);
+    }, [slug, query, store]);
 
     const response = store.getResponse(slug, query);
     const formatDate = (value: string) =>
@@ -100,7 +97,7 @@ export const CollectionHistoryCard = observer(
       <DashboardCardShell
         card={card}
         title={t("dashboard.history-title")}
-        subtitle={null}
+        hideSubtitle
         className={styles.card}
         headerMeta={
           <dl className={styles.headerMeta}>
