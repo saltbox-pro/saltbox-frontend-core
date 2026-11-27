@@ -103,6 +103,17 @@ export const CollectionDetailsDrawer = observer(
     );
     const [filtersBaselineKey, setFiltersBaselineKey] = useState("");
     const [filterStore] = useState(() => new MinionFilterStore());
+    const unparsedPreviewQuery = useRef<object | null>(null);
+    const [canFilterPreviewByValue, setCanFilterPreviewByValue] = useState(true);
+    const initializeFilters = useCallback(
+      (query: object) => {
+        filterStore.resetInputMode();
+        filterStore.initializeByQuery(query);
+        unparsedPreviewQuery.current = filterStore.inputMode === "free-text" ? query : null;
+        setCanFilterPreviewByValue(unparsedPreviewQuery.current === null);
+      },
+      [filterStore]
+    );
     const [minionsStore] = useState(() => new MinionsStore(undefined, undefined));
 
     const { isOpened, openedArg } = drawer;
@@ -124,7 +135,13 @@ export const CollectionDetailsDrawer = observer(
       createFiltersBaselineKey,
       draftVersion,
       resetCreateDraft,
-    } = useCollectionCreateDraft({ form, filterStore, openedArg, sourceCollection });
+    } = useCollectionCreateDraft({
+      form,
+      filterStore,
+      initializeFilters,
+      openedArg,
+      sourceCollection,
+    });
     const activeCollectionLoad = isDuplicateMode ? sourceLoad : collectionStore.collectionLoad;
 
     useLayoutEffect(() => {
@@ -174,10 +191,9 @@ export const CollectionDetailsDrawer = observer(
         description: current.description,
         parent_slug: current.parent_slug ?? ROOT_COLLECTION_SLUG,
       });
-      filterStore.resetInputMode();
-      filterStore.initializeByQuery(current.query ?? {});
+      initializeFilters(current.query ?? {});
       setFiltersBaselineKey(getFilterStateKey(filterStore));
-    }, [collectionStore, form, filterStore]);
+    }, [collectionStore, form, filterStore, initializeFilters]);
 
     const focusTitleInput = useCallback(() => {
       requestAnimationFrame(() => titleInputRef.current?.focus({ preventScroll: true }));
@@ -185,9 +201,7 @@ export const CollectionDetailsDrawer = observer(
 
     useEffect(() => {
       setSaveError(null);
-      setFiltersBaselineKey("");
-      filterStore.resetInputMode();
-    }, [collectionStore.collectionSlug, filterStore]);
+    }, [collectionStore.collectionSlug]);
 
     useEffect(() => {
       filterStore.loadFiltersScheme();
@@ -208,8 +222,17 @@ export const CollectionDetailsDrawer = observer(
       if (!parentSlug || isRoot) {
         return;
       }
-      minionsStore.syncAndLoad(parentSlug, filterStore.searchMongoDBQuery);
+      minionsStore.syncAndLoad(
+        parentSlug,
+        unparsedPreviewQuery.current ?? filterStore.searchMongoDBQuery
+      );
     }, [parentSlug, isRoot, filterStore, minionsStore]);
+
+    const handleFiltersApplied = useCallback(() => {
+      unparsedPreviewQuery.current = null;
+      setCanFilterPreviewByValue(true);
+      applyMinionsPreview();
+    }, [applyMinionsPreview]);
 
     useLayoutEffect(() => {
       if (!isOpened || !isReady || !parentSlug || isRoot) {
@@ -225,6 +248,8 @@ export const CollectionDetailsDrawer = observer(
       parentSlug,
       isRoot,
       searchQueryKey,
+      currentSlug,
+      draftVersion,
       filterStore.activeFiltersCount,
       filterStore.isLoading,
       applyMinionsPreview,
@@ -534,6 +559,8 @@ export const CollectionDetailsDrawer = observer(
 
             filterStore.resetInputMode();
             filterStore.handleResetFiltersSilent();
+            unparsedPreviewQuery.current = null;
+            setCanFilterPreviewByValue(true);
             setFiltersBaselineKey("");
           }}
           onClose={drawer.close}
@@ -589,14 +616,15 @@ export const CollectionDetailsDrawer = observer(
                     <CollectionFilterSection
                       filterStore={filterStore}
                       parentSlug={parentSlug}
-                      onFiltersApplied={applyMinionsPreview}
+                      onFiltersApplied={handleFiltersApplied}
                     />
                     {clientsSlug && (
                       <CollectionClientsPreview
                         slug={clientsSlug}
                         filterStore={filterStore}
                         minionsStore={minionsStore}
-                        onFiltersApplied={applyMinionsPreview}
+                        canFilterByValue={canFilterPreviewByValue}
+                        onFiltersApplied={handleFiltersApplied}
                       />
                     )}
                   </>

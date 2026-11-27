@@ -64,6 +64,10 @@ const JobsPage = observer(() => {
     const stateQuery = location.state;
     if (isPlainObject(stateQuery)) {
       jobFilterStore.initializeByQuery(stateQuery);
+      if (jobFilterStore.inputMode === "free-text") {
+        jobFilterStore.handleResetFilters();
+        jobFilterStore.resetInputMode();
+      }
       navigate(location.pathname, { replace: true, state: null });
     }
 

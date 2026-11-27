@@ -53,6 +53,7 @@ export type MinionsTableWithDetailsDrawerProps = {
   onRowSelectionChange?: (updater: RowSelectionState) => void;
 
   filterStore: MinionFilterStore;
+  canFilterByValue?: boolean;
   onAddFilter?: () => void;
   onFiltersApplied?: () => void;
   onRefresh: () => void;
@@ -65,6 +66,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
   rowSelection,
   onRowSelectionChange,
   filterStore,
+  canFilterByValue = true,
   onAddFilter,
   onFiltersApplied,
   onRefresh,
@@ -98,6 +100,8 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
 
   const applyFilter = useCallback(
     (fieldName: string, value: unknown) => {
+      if (!canFilterByValue) return;
+
       const next = applyFilterByValue(filterStore, fieldName, value, {
         search: true,
         fieldOptions: getFieldOptions(fieldName),
@@ -115,7 +119,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         }
       }
     },
-    [drawer.close, filterStore, getFieldOptions, onAddFilter, onFiltersApplied, t]
+    [canFilterByValue, drawer.close, filterStore, getFieldOptions, onAddFilter, onFiltersApplied, t]
   );
 
   const createFilterAction = useCallback(
@@ -124,7 +128,8 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
 
       return {
         icon: FilterActionButton.getIcon(),
-        visible: (value) => canApplyFilterByValue(filterStore, fieldName, value, fieldOptions),
+        visible: (value) =>
+          canFilterByValue && canApplyFilterByValue(filterStore, fieldName, value, fieldOptions),
         getPresentation: (value) =>
           FilterActionButton.getPresentation(
             hasFilterByValue(filterStore, fieldName, value, fieldOptions)
@@ -132,7 +137,7 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         onClick: (value) => applyFilter(fieldName, value),
       };
     },
-    [applyFilter, filterStore, getFieldOptions]
+    [applyFilter, canFilterByValue, filterStore, getFieldOptions]
   );
 
   const columns = useMemo(
@@ -304,7 +309,10 @@ export const MinionsTableWithDetailsDrawer = observer(function MinionsTableWithD
         />
       </FastTable.Provider>
 
-      <MinionDetailsDrawer drawer={drawer} onFilterButton={drawerFilterButton} />
+      <MinionDetailsDrawer
+        drawer={drawer}
+        onFilterButton={canFilterByValue ? drawerFilterButton : undefined}
+      />
     </>
   );
 });
