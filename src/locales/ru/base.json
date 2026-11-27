@@ -1596,6 +1596,17 @@
     "title": "Задачи",
     "policies-title": "Политики"
   },
+  "tasks-bulk": {
+    "select-tasks": "Выберите задачи",
+    "stop-error": "Не удалось остановить выбранные задачи",
+    "api-unavailable": "API задач недоступен",
+    "stop-confirm-title": "Остановка задач",
+    "stop-confirm-description": "Вы действительно хотите остановить выбранные задачи: {{count}}?",
+    "skipped-description": "Пропущено (действие недоступно): {{count}}",
+    "result": "Выполнено: {{succeeded}}, ошибок: {{failed}}, пропущено: {{skipped}}, не найдено: {{notFound}}",
+    "failed-tasks": "Задачи с ошибкой: {{ids}}",
+    "not-found-tasks": "Задачи не найдены: {{ids}}"
+  },
   "errors": {
     "form-validation": "Ошибка валидации формы"
   }

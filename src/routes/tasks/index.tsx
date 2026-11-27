@@ -2,14 +2,17 @@ import { TaskListResponseSchema, TaskType } from "@saltbox/saltbox-core-api-clie
 import {
   FastTable,
   PageHeader,
+  SelectedItemsCounter,
   WebSocketMessage,
   WebSocketService,
+  createSelectColumn,
 } from "@saltbox/saltbox-frontend-common";
 import { observer } from "mobx-react-lite";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 
+import { TaskBulkActionsDropdown, useTaskSelection } from "saltbox-core/features/task-bulk-actions";
 import {
   TASK_TABLE_DEFAULT_HIDDEN_COLUMN_IDS,
   useTaskTableColumns,
@@ -28,6 +31,18 @@ export default observer(function TasksPage() {
   const [tasksStore] = useState(() => new TasksStore(TaskType.Classic));
   const [filterStore] = useState(() => new TasksFilterStore([], "tasksFilter"));
   const [webSocketService] = useState(() => new WebSocketService<TaskListResponseSchema>());
+  const {
+    rowSelection,
+    selectedTasks,
+    handleRowSelectionChange,
+    syncSelectedTasks,
+    clearSelection,
+  } = useTaskSelection(tasksStore.tasks);
+
+  const handleBulkActionCompleted = () => {
+    clearSelection();
+    tasksStore.loadTasks();
+  };
 
   const filterSchema = useMemo(
     () =>
@@ -39,10 +54,14 @@ export default observer(function TasksPage() {
     [t]
   );
 
-  const columns = useTaskTableColumns({
+  const taskColumns = useTaskTableColumns({
     taskType: TaskType.Classic,
     includeTargetCollection: true,
   });
+  const columns = useMemo(
+    () => [createSelectColumn<TaskListResponseSchema>(), ...taskColumns],
+    [taskColumns]
+  );
 
   useEffect(() => {
     filterStore.updateFilterSchema(filterSchema);
@@ -66,6 +85,7 @@ export default observer(function TasksPage() {
               .map((message) => message.payload);
 
             tasksStore.updateTasks(filteredMessages);
+            syncSelectedTasks(filteredMessages);
           }
         },
       }
@@ -77,11 +97,13 @@ export default observer(function TasksPage() {
   }, []);
 
   const handleSearchButtonClick = () => {
+    clearSelection();
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(undefined);
   };
 
   const handleResetButtonClick = () => {
+    clearSelection();
     filterStore.handleResetFilters();
     tasksStore.mongoDBQuery = filterStore.searchMongoDBQuery;
     tasksStore.handleSearch(undefined);
@@ -97,6 +119,11 @@ export default observer(function TasksPage() {
       />
       <FastTable.Provider>
         <div className="page-actions-buttons">
+          <TaskBulkActionsDropdown
+            selectedTasks={selectedTasks}
+            onCompleted={handleBulkActionCompleted}
+          />
+          <SelectedItemsCounter count={selectedTasks.length} align="start" />
           <FastTable.Toolbar />
         </div>
         <TasksTable
@@ -111,6 +138,8 @@ export default observer(function TasksPage() {
           loader={tasksStore.tasksLoad}
           pagination={tasksStore.pagination}
           sorting={tasksStore.sorting}
+          rowSelection={rowSelection}
+          onRowSelectionChange={handleRowSelectionChange}
           onLazyLoad={(pagination, sorting) => tasksStore.handleLazyLoad(pagination, sorting)}
           onRowClick={(task) =>
             navigate(`/core/minions/${task.target_collection.slug}/tasks/${task.id}`)

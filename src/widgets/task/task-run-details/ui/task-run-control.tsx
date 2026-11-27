@@ -3,7 +3,7 @@ import { runMutation } from "@saltbox/saltbox-frontend-common";
 import { Button, Flex } from "antd";
 import { useTranslation } from "react-i18next";
 
-import { type TaskRunControlInput, useTaskPermissions } from "../hooks/useTaskPermition";
+import { type TaskRunControlInput, useTaskPermissions } from "../hooks/useTaskPermissions";
 
 export interface TaskRunControlProps extends TaskRunControlInput {
   onRunTask: () => Promise<void>;

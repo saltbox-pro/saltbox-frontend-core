@@ -20,6 +20,7 @@ export type MinionFieldCascaderOption = {
   label: string;
   icon?: string | null;
   searchText?: string;
+  disabled?: boolean;
   children?: MinionFieldCascaderOption[];
 };
 
@@ -27,8 +28,27 @@ export type MinionSchemaField = {
   name: string;
   label: string;
   group: MinionFilterGroup;
+  isScalarArray?: boolean;
+  operators?: unknown;
   extraCategory?: MinionFilterExtraCategorySchema;
 };
+
+export const MINION_SCHEMA_FIELDS_CONTEXT_KEY = "minionSchemaFields";
+
+export function readMinionSchemaFieldsFromContext(
+  context: unknown
+): ReadonlyArray<MinionSchemaField> | undefined {
+  if (context == null || typeof context !== "object") {
+    return undefined;
+  }
+
+  if (!(MINION_SCHEMA_FIELDS_CONTEXT_KEY in context)) {
+    return undefined;
+  }
+
+  const fields = (context as { minionSchemaFields?: unknown }).minionSchemaFields;
+  return Array.isArray(fields) ? (fields as ReadonlyArray<MinionSchemaField>) : undefined;
+}
 
 type MinionFieldCascaderCategory = MinionFilterExtraCategorySchema & {
   label: string;
@@ -68,6 +88,8 @@ export function flattenMinionFilterSchemaFields(
       label?: unknown;
       group?: unknown;
       extra_category?: unknown;
+      operators?: unknown;
+      isScalarArray?: boolean;
     };
 
     if (Array.isArray(typed.options)) {
@@ -90,6 +112,8 @@ export function flattenMinionFilterSchemaFields(
       name,
       label: typeof typed.label === "string" && typed.label ? typed.label : name,
       group: readMinionFieldGroup(typed.group),
+      ...(typeof typed.isScalarArray === "boolean" ? { isScalarArray: typed.isScalarArray } : {}),
+      ...(Array.isArray(typed.operators) ? { operators: typed.operators } : {}),
       ...(extraCategory ? { extraCategory } : {}),
     });
   };
@@ -339,4 +363,25 @@ export function getMinionFieldCascaderValue(
   }
 
   return findOptionPath(options, fieldName);
+}
+
+export function markMinionFieldCascaderOptionsDisabled(
+  options: ReadonlyArray<MinionFieldCascaderOption>,
+  isLeafAllowed: (value: string) => boolean
+): MinionFieldCascaderOption[] {
+  return options.map((option) => {
+    if (option.children?.length) {
+      const children = markMinionFieldCascaderOptionsDisabled(option.children, isLeafAllowed);
+      return {
+        ...option,
+        children,
+        disabled: children.every((child) => child.disabled),
+      };
+    }
+
+    return {
+      ...option,
+      disabled: !isLeafAllowed(option.value),
+    };
+  });
 }

@@ -2,6 +2,7 @@ import {
   type AntDValueSelectorProps,
   MatIcon,
   normalizeMaterialIconValue,
+  resolveItemGroupQuery,
   SaltBoxMinionValueSelector,
 } from "@saltbox/saltbox-frontend-common";
 import { Cascader, ConfigProvider, Empty, Flex, Input } from "antd";
@@ -14,9 +15,14 @@ import { useValueSelector, type ValueSelectorProps } from "react-querybuilder";
 import { useExtraDataCategoriesStore } from "saltbox-core/shared/contexts/extra-data-categories-context";
 import { getExtraDataCategoryDisplayName } from "saltbox-core/shared/helpers/extra-data-category-name";
 import {
+  filterMinionFieldsForItemGroup,
+  getItemGroupFieldConstraint,
+} from "saltbox-core/shared/helpers/filter-fields-for-item-group";
+import {
   buildMinionFieldCascaderOptions,
   flattenMinionFilterSchemaFields,
   getMinionFieldCascaderValue,
+  markMinionFieldCascaderOptionsDisabled,
   MINION_FIELD_CUSTOM_GRAIN_VALUE,
   MINION_GRAINS_FIELD_PREFIX,
   type MinionFieldCascaderOption,
@@ -39,6 +45,7 @@ type CascaderOptionWithSearch = DefaultOptionType & {
   label: string;
   searchLabel: string;
   icon?: string | null;
+  disabled?: boolean;
   children?: CascaderOptionWithSearch[];
 };
 
@@ -48,6 +55,7 @@ const toCascaderOptions = (options: MinionFieldCascaderOption[]): CascaderOption
     label: option.label,
     searchLabel: option.searchText ?? option.label,
     icon: option.icon,
+    disabled: option.disabled,
     children: option.children ? toCascaderOptions(option.children) : undefined,
   }));
 
@@ -99,7 +107,15 @@ const renderFieldCascaderOption = (option: DefaultOptionType): ReactNode => {
 
 type CoreMinionFieldCascaderProps = Pick<
   ValueSelectorProps,
-  "className" | "handleOnChange" | "options" | "value" | "title" | "disabled"
+  | "className"
+  | "handleOnChange"
+  | "options"
+  | "value"
+  | "title"
+  | "disabled"
+  | "path"
+  | "schema"
+  | "context"
 >;
 
 const CoreMinionFieldCascader = observer(
@@ -110,6 +126,9 @@ const CoreMinionFieldCascader = observer(
     value,
     title,
     disabled,
+    path,
+    schema,
+    context,
   }: CoreMinionFieldCascaderProps) => {
     const { t, i18n } = useTranslation();
     const { t: tCommon } = useTranslation("common");
@@ -126,6 +145,25 @@ const CoreMinionFieldCascader = observer(
     });
 
     const schemaFields = useMemo(() => flattenMinionFilterSchemaFields(options), [options]);
+    const query = resolveItemGroupQuery(schema.getQuery(), context) ?? {
+      combinator: "and",
+      rules: [],
+    };
+    const itemGroupConstraint = getItemGroupFieldConstraint(query, path);
+    const itemGroupActive = itemGroupConstraint.active;
+    const itemGroupCategoryPrefix = itemGroupConstraint.active
+      ? itemGroupConstraint.categoryPrefix
+      : null;
+    const allowedItemGroupFields = useMemo(() => {
+      if (!itemGroupActive) {
+        return null;
+      }
+      return new Set(
+        filterMinionFieldsForItemGroup(schemaFields, itemGroupCategoryPrefix).map(
+          (field) => field.name
+        )
+      );
+    }, [itemGroupActive, itemGroupCategoryPrefix, schemaFields]);
     const knownFieldValues = useMemo(
       () => new Set(schemaFields.map((field) => field.name)),
       [schemaFields]
@@ -168,19 +206,25 @@ const CoreMinionFieldCascader = observer(
       [categoriesStore.categories, i18n.language]
     );
 
-    const cascaderDataOptions = useMemo(
-      () =>
-        buildMinionFieldCascaderOptions({
-          fields: schemaFields,
-          categories: cascaderCategories,
-          generalGroupLabel: t("dashboard.field-group-general"),
-          grainsGroupLabel: t("dashboard.field-group-grains"),
-          extraDataGroupLabel: t("dashboard.field-group-extra"),
-          customGrainLabel: tCommon("query-builder.custom-grain"),
-          compareLabels,
-        }),
-      [cascaderCategories, schemaFields, t, tCommon, compareLabels]
-    );
+    const cascaderDataOptions = useMemo(() => {
+      const optionsTree = buildMinionFieldCascaderOptions({
+        fields: schemaFields,
+        categories: cascaderCategories,
+        generalGroupLabel: t("dashboard.field-group-general"),
+        grainsGroupLabel: t("dashboard.field-group-grains"),
+        extraDataGroupLabel: t("dashboard.field-group-extra"),
+        customGrainLabel: tCommon("query-builder.custom-grain"),
+        compareLabels,
+      });
+
+      if (!allowedItemGroupFields) {
+        return optionsTree;
+      }
+
+      return markMinionFieldCascaderOptionsDisabled(optionsTree, (fieldName) =>
+        allowedItemGroupFields.has(fieldName)
+      );
+    }, [allowedItemGroupFields, cascaderCategories, compareLabels, schemaFields, t, tCommon]);
 
     const cascaderOptions = useMemo(
       () => toCascaderOptions(cascaderDataOptions),
@@ -262,6 +306,9 @@ export const CoreMinionValueSelector: FC<ValueSelectorProps> = (props) => {
         value={props.value}
         title={props.title}
         disabled={props.disabled}
+        path={props.path}
+        schema={props.schema}
+        context={props.context}
       />
     );
   }

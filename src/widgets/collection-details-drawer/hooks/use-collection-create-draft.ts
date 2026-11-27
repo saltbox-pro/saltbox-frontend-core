@@ -16,6 +16,7 @@ import type {
 interface UseCollectionCreateDraftParams {
   form: FormInstance<CollectionEditFormType>;
   filterStore: MinionFilterStore;
+  initializeFilters: (query: object) => void;
   openedArg: CollectionDetailsDrawerOpenParams | null;
   sourceCollection: CollectionDetailSchema | undefined;
 }
@@ -30,6 +31,7 @@ type DraftState = {
 export function useCollectionCreateDraft({
   form,
   filterStore,
+  initializeFilters,
   openedArg,
   sourceCollection,
 }: UseCollectionCreateDraftParams) {
@@ -50,8 +52,7 @@ export function useCollectionCreateDraft({
         { name: "description", value: draft.description, errors: [] },
         { name: "parent_slug", value: draft.parent_slug, errors: [] },
       ]);
-      filterStore.resetInputMode();
-      filterStore.initializeByQuery(draft.query);
+      initializeFilters(draft.query);
       const filtersBaselineKey = getFilterStateKey(filterStore);
       setDraftState((prev) => ({
         id,
@@ -60,7 +61,7 @@ export function useCollectionCreateDraft({
         version: (prev?.version ?? 0) + 1,
       }));
     },
-    [form, filterStore]
+    [form, filterStore, initializeFilters]
   );
 
   useLayoutEffect(() => {

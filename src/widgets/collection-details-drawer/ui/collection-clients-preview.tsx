@@ -11,11 +11,18 @@ interface CollectionClientsPreviewProps {
   slug: string;
   filterStore: MinionFilterStore;
   minionsStore: MinionsStore;
+  canFilterByValue: boolean;
   onFiltersApplied: () => void;
 }
 
 export const CollectionClientsPreview = observer(
-  ({ slug, filterStore, minionsStore, onFiltersApplied }: CollectionClientsPreviewProps) => {
+  ({
+    slug,
+    filterStore,
+    minionsStore,
+    canFilterByValue,
+    onFiltersApplied,
+  }: CollectionClientsPreviewProps) => {
     const reloadMinions = useCallback(() => {
       if (minionsStore.collectionSlug) {
         minionsStore.loadMinions(minionsStore.collectionSlug);
@@ -28,6 +35,7 @@ export const CollectionClientsPreview = observer(
           slug={slug}
           minionsStore={minionsStore}
           filterStore={filterStore}
+          canFilterByValue={canFilterByValue}
           onFiltersApplied={onFiltersApplied}
           onRefresh={reloadMinions}
           toolbar={

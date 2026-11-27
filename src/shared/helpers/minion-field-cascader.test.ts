@@ -5,6 +5,7 @@ import {
   flattenMinionFilterSchemaFields,
   getDefaultMinionFilterField,
   getMinionFieldCascaderValue,
+  markMinionFieldCascaderOptionsDisabled,
   MINION_FIELD_CUSTOM_GRAIN_VALUE,
   MINION_FIELD_EXTRA_DATA_GROUP_KEY,
   MINION_FIELD_GENERAL_GROUP_KEY,
@@ -458,5 +459,44 @@ describe("getMinionFieldCascaderValue", () => {
       MINION_FIELD_GRAINS_GROUP_KEY,
       MINION_FIELD_CUSTOM_GRAIN_VALUE,
     ]);
+  });
+});
+
+describe("markMinionFieldCascaderOptionsDisabled", () => {
+  it("disables leaves outside the allowed set and parents with only disabled children", () => {
+    const marked = markMinionFieldCascaderOptionsDisabled(
+      buildMinionFieldCascaderOptions({
+        fields: [
+          field(MinionFilterGroup.General, "minion_id", "Minion ID"),
+          field(
+            MinionFilterGroup.Extra,
+            "extra.system.hardware.cpu",
+            'Extra data field "system.hardware.cpu"',
+            HARDWARE
+          ),
+          field(
+            MinionFilterGroup.Extra,
+            "extra.system.hardware.ram",
+            'Extra data field "system.hardware.ram"',
+            HARDWARE
+          ),
+        ],
+        categories: [{ ...HARDWARE, label: "Hardware", icon: "memory" }],
+        ...GROUP_LABELS,
+      }),
+      (value) => value === "extra.system.hardware.cpu"
+    );
+
+    const extraGroup = marked.find((option) => option.value === MINION_FIELD_EXTRA_DATA_GROUP_KEY);
+    const hardware = extraGroup?.children?.find((option) => option.value === "system.hardware");
+    const cpu = hardware?.children?.find((option) => option.value === "extra.system.hardware.cpu");
+    const ram = hardware?.children?.find((option) => option.value === "extra.system.hardware.ram");
+    const generalGroup = marked.find((option) => option.value === MINION_FIELD_GENERAL_GROUP_KEY);
+
+    expect(cpu?.disabled).toBe(false);
+    expect(ram?.disabled).toBe(true);
+    expect(hardware?.disabled).toBe(false);
+    expect(extraGroup?.disabled).toBe(false);
+    expect(generalGroup?.disabled).toBe(true);
   });
 });
